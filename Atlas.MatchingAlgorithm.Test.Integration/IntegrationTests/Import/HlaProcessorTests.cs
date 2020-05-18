@@ -13,6 +13,17 @@ using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
+using Atlas.MatchingAlgorithm.Helpers;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+using Atlas.MatchingAlgorithm.ConfigSettings;
+using Microsoft.Extensions.Options;
+using NSubstitute;
+using Locus = Atlas.Common.GeneticData.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 {
@@ -55,7 +66,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             const int expectedPGroupCount = 213;
 
             var donorInfo = new DonorInfoBuilder(DonorIdGenerator.NextId())
-                    .WithHlaAtLocus(Locus.A, TypePosition.One, hlaWithKnownPGroups)
+                    .WithHlaAtLocus(Locus.A, LocusPosition.Position1, hlaWithKnownPGroups)
                     .Build();
 
             await importRepo.InsertBatchOfDonors(new List<DonorInfo> { donorInfo });

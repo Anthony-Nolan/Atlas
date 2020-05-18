@@ -3,10 +3,15 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.HlaMetadataDictionary;
+using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Models;
@@ -51,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
         public async Task<DonorInfoWithExpandedHla> ExpandDonorHlaAsync(DonorInfo donorInfo)
         {
             var hlaNamesCopy = new PhenotypeInfo<string>(donorInfo.HlaNames);
-            var expandedHla = await hlaNamesCopy.WhenAllLoci(GetExpandedHla);
+            var expandedHla = await hlaNamesCopy.MapByLocusAsync(GetExpandedHla);
 
             return new DonorInfoWithExpandedHla
             {

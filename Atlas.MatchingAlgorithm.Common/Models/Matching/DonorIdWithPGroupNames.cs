@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Common.Models.Matching
 {

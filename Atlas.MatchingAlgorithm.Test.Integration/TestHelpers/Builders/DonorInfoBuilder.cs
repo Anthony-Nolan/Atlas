@@ -1,4 +1,5 @@
 ﻿using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
@@ -38,9 +39,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
             };
         }
 
-        public DonorInfoBuilder WithHlaAtLocus(Locus locus, TypePosition position, string hla)
+        public DonorInfoBuilder WithHlaAtLocus(Locus locus, LocusPosition position, string hla)
         {
-            donorInfo.HlaNames.SetAtPosition(locus, position, hla);
+            donorInfo.HlaNames.SetPosition(locus, position, hla);
             return this;
         }
 

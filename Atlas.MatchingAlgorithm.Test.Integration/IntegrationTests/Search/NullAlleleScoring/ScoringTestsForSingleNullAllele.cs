@@ -15,6 +15,13 @@ using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Services.Donors;
 
 // ReSharper disable InconsistentNaming
 
@@ -29,8 +36,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
     public class ScoringTestsForSingleNullAllele
     {
         private const Locus LocusUnderTest = Locus.A;
-        private const TypePosition PositionUnderTest = TypePosition.One;
-        private const TypePosition OtherPosition = TypePosition.Two;
+        private const LocusPosition PositionUnderTest = LocusPosition.Position1;
+        private const LocusPosition OtherPosition = LocusPosition.Position2;
         private const string OriginalNullAllele = "02:43N";
         private const string DifferentNullAllele = "11:69N";
 
@@ -144,15 +151,15 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
 
             originalNullAlleleAtOnePositionPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla);
             originalNullAlleleAtOnePositionPhenotype
-                .SetAtPosition(LocusUnderTest, PositionUnderTest, OriginalNullAllele);
+                .SetPosition(LocusUnderTest, PositionUnderTest, OriginalNullAllele);
 
             differentNullAlleleAtOnePositionPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla);
             differentNullAlleleAtOnePositionPhenotype
-                .SetAtPosition(LocusUnderTest, PositionUnderTest, DifferentNullAllele);
+                .SetPosition(LocusUnderTest, PositionUnderTest, DifferentNullAllele);
 
             homozygousByTypingAtOneLocusPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla);
             homozygousByTypingAtOneLocusPhenotype
-                .SetAtLocus(LocusUnderTest, originalHlaPhenotype.DataAtPosition(LocusUnderTest, OtherPosition));
+                .SetLocus(LocusUnderTest, originalHlaPhenotype.GetPosition(LocusUnderTest, OtherPosition));
         }
 
         private void SetUpTestDonors()

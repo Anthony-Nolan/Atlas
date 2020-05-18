@@ -17,6 +17,14 @@ using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Services.Donors;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 {
@@ -463,8 +471,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private PhenotypeInfo<IHlaMatchingLookupResult> BuildExpandedHlaPhenotype(string hla1, string hla2)
         {
             var newPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla);
-            newPhenotype.SetAtPosition(LocusUnderTest, TypePosition.One, hla1);
-            newPhenotype.SetAtPosition(LocusUnderTest, TypePosition.Two, hla2);
+            newPhenotype.SetPosition(LocusUnderTest, LocusPosition.Position1, hla1);
+            newPhenotype.SetPosition(LocusUnderTest, LocusPosition.Position2, hla2);
 
             var expandedDonor = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = newPhenotype }).Result;
 

@@ -242,7 +242,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
                     Hla = alleles.MapByLocus((l, all1, all2) =>
                     {
                         var allele = TgsAllele.FromTestDataAllele(all1.First());
-                        return new Tuple<TgsAllele, TgsAllele>(allele, allele);
+                        return new LocusInfo<TgsAllele>(allele);
                     }),
                 }
             };

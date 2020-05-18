@@ -2,6 +2,8 @@ using System.ComponentModel.DataAnnotations;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
+using System.ComponentModel.DataAnnotations;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.Entities
 {

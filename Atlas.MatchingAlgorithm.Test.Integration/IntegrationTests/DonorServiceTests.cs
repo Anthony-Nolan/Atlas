@@ -13,6 +13,11 @@ using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 {
@@ -47,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var donorInfo = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
             await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
 
-            var pGroupCount = await GetPGroupCount(donorInfo.DonorId, Locus.A, TypePosition.One);
+            var pGroupCount = await GetPGroupCount(donorInfo.DonorId, Locus.A, LocusPosition.Position1);
             pGroupCount.Should().NotBe(0);
         }
 
@@ -55,7 +60,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         public async Task CreateOrUpdateDonorBatch_DonorDoesNotExist_AndInvalidHlaName_DoesNotCreateDonorInDatabase()
         {
             var donorInfo = new DonorInfoBuilder(DonorIdGenerator.NextId())
-                .WithHlaAtLocus(Locus.A, TypePosition.One, "invalid-hla-name")
+                .WithHlaAtLocus(Locus.A, LocusPosition.Position1, "invalid-hla-name")
                 .Build();
 
             await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
@@ -111,7 +116,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         {
             var donorId = DonorIdGenerator.NextId();
             const Locus locus = Locus.A;
-            const TypePosition position = TypePosition.One;
+            const LocusPosition position = LocusPosition.Position1;
 
             var donorInfo = new DonorInfoBuilder(donorId).WithHlaAtLocus(locus, position, "*01:01").Build();
             await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
@@ -137,7 +142,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
 
             var updatedDonor = new DonorInfoBuilder(donorId).WithDonorType(newDonorType)
-                .WithHlaAtLocus(Locus.A, TypePosition.One, "invalid-hla-name")
+                .WithHlaAtLocus(Locus.A, LocusPosition.Position1, "invalid-hla-name")
                 .Build();
             await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
 
@@ -151,7 +156,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         {
             var donorId = DonorIdGenerator.NextId();
             const Locus locus = Locus.A;
-            const TypePosition position = TypePosition.One;
+            const LocusPosition position = LocusPosition.Position1;
 
             var donorInfo = new DonorInfoBuilder(donorId)
                 .WithHlaAtLocus(locus, position, "*01:01")
@@ -189,7 +194,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var donorInfo2 = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
             await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2 });
 
-            var pGroupCounts = (await GetPGroupCounts(new[] { donorInfo1.DonorId, donorInfo2.DonorId }, Locus.A, TypePosition.One)).ToList();
+            var pGroupCounts = (await GetPGroupCounts(new[] { donorInfo1.DonorId, donorInfo2.DonorId }, Locus.A, LocusPosition.Position1)).ToList();
             pGroupCounts.First().Should().NotBe(0);
             pGroupCounts.Last().Should().NotBe(0);
         }
@@ -221,7 +226,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var donorId1 = DonorIdGenerator.NextId();
             var donorId2 = DonorIdGenerator.NextId();
             const Locus locus = Locus.A;
-            const TypePosition position = TypePosition.One;
+            const LocusPosition position = LocusPosition.Position1;
 
             var donorInfo1 = new DonorInfoBuilder(donorId1).WithHlaAtLocus(locus, position, "*01:01").Build();
             var donorInfo2 = new DonorInfoBuilder(donorId2).WithHlaAtLocus(locus, position, "*01:01:01").Build();
@@ -326,7 +331,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             const string oldHla = "*01:01";
             const string newHla = "*01:XX";
             const Locus locus = Locus.A;
-            const TypePosition position = TypePosition.One;
+            const LocusPosition position = LocusPosition.Position1;
 
             var donorInfo = new DonorInfoBuilder(donorId)
                 .WithDonorType(oldDonorType)
@@ -349,16 +354,16 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             updatedPGroupsCount.Should().BeGreaterThan(initialPGroupsCount);
         }
 
-        private async Task<int> GetPGroupCount(int donorId, Locus locus, TypePosition position)
+        private async Task<int> GetPGroupCount(int donorId, Locus locus, LocusPosition position)
         {
             var counts = await GetPGroupCounts(new[] { donorId }, locus, position);
             return counts.SingleOrDefault();
         }
 
-        private async Task<IEnumerable<int>> GetPGroupCounts(IEnumerable<int> donorIds, Locus locus, TypePosition position)
+        private async Task<IEnumerable<int>> GetPGroupCounts(IEnumerable<int> donorIds, Locus locus, LocusPosition position)
         {
             var pGroupsForDonor = await donorInspectionRepository.GetPGroupsForDonors(donorIds);
-            var pGroupNames = pGroupsForDonor.Select(p => p.PGroupNames.DataAtPosition(locus, position));
+            var pGroupNames = pGroupsForDonor.Select(p => p.PGroupNames.GetPosition(locus, position));
             return pGroupNames.Where(p => p != null).Select(p => p.Count());
         }
     }

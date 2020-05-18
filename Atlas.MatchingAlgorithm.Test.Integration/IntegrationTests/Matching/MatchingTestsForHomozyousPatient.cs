@@ -17,6 +17,14 @@ using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.MatchingAlgorithm.Services.Donors;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 {
@@ -49,17 +57,17 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private class LocusTypingInfo
         {
             public Zygosity Zygosity { get; }
-            public Tuple<string, string> ExpressedHlaTyping { get; }
+            public LocusInfo<string> ExpressedHlaTyping { get; }
             public string NullHlaTyping { get; }
 
-            public LocusTypingInfo(Zygosity zygosity, Tuple<string, string> expressedHlaTyping, string nullHlaTyping = null)
+            public LocusTypingInfo(Zygosity zygosity, LocusInfo<string> expressedHlaTyping, string nullHlaTyping = null)
             {
                 Zygosity = zygosity;
                 ExpressedHlaTyping = expressedHlaTyping;
                 NullHlaTyping = nullHlaTyping;
             }
 
-            public static LocusTypingInfo GetDefaultLocusConditions(Tuple<string, string> expressedHlaTyping)
+            public static LocusTypingInfo GetDefaultLocusConditions(LocusInfo<string> expressedHlaTyping)
             {
                 return new LocusTypingInfo(Zygosity.HeterozygousExpressing, expressedHlaTyping);
             }
@@ -74,8 +82,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private readonly TestHlaPhenotypeCategory patientTestCategory;
 
         private PhenotypeInfo<string> originalHlaPhenotype;
-        private Tuple<string, string> originalHlaAtLocusUnderTest;
-        private Tuple<string, string> mismatchedHlaAtLocusUnderTest;
+        private LocusInfo<string> originalHlaAtLocusUnderTest;
+        private LocusInfo<string> mismatchedHlaAtLocusUnderTest;
         private PhenotypeInfo<IHlaMatchingLookupResult> patientMatchingHlaPhenotype;
 
         private IDonorHlaExpander donorHlaExpander;
@@ -97,16 +105,15 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForActiveHlaNomenclatureVersion();
-            criteriaFromExpandedHla = new AlleleLevelMatchCriteriaFromExpandedHla(
-                LocusUnderTest,
-                MatchingDonorType);
+            donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>()
+                .BuildForActiveHlaNomenclatureVersion();
+            criteriaFromExpandedHla = new AlleleLevelMatchCriteriaFromExpandedHla(LocusUnderTest, MatchingDonorType);
 
             SetSourceHlaPhenotypes();
             SetPatientMatchingHlaPhenotype();
             AddDonorsToRepository();
         }
-        
+
         [OneTimeTearDown]
         public void TearDown()
         {
@@ -151,8 +158,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             originalHlaPhenotype = TestHlaPhenotypeSelector.GetTestHlaPhenotype(new SampleTestHlas.HeterozygousSet1(), patientTestCategory);
             var mismatchedHlaPhenotype = TestHlaPhenotypeSelector.GetTestHlaPhenotype(new SampleTestHlas.HeterozygousSet2(), patientTestCategory);
 
-            originalHlaAtLocusUnderTest = originalHlaPhenotype.DataAtLocus(LocusUnderTest);
-            mismatchedHlaAtLocusUnderTest = mismatchedHlaPhenotype.DataAtLocus(LocusUnderTest);
+            originalHlaAtLocusUnderTest = originalHlaPhenotype.GetLocus(LocusUnderTest);
+            mismatchedHlaAtLocusUnderTest = mismatchedHlaPhenotype.GetLocus(LocusUnderTest);
         }
 
         private void SetPatientMatchingHlaPhenotype()
@@ -164,7 +171,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
             var patientHlaPhenotype = GetHlaPhenotype(originalHlaPhenotype, locusUnderTestConditions);
 
-            patientMatchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = patientHlaPhenotype }).Result.MatchingHla;
+            patientMatchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo {HlaNames = patientHlaPhenotype}).Result.MatchingHla;
         }
 
         private void AddDonorsToRepository()
@@ -232,7 +239,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HeterozygousExpressing,
-                        new Tuple<string, string>(originalHlaAtLocusUnderTest.Item1, mismatchedHlaAtLocusUnderTest.Item2))))
+                        originalHlaAtLocusUnderTest)))
                 .Build();
 
             var donors = new List<DonorInfoWithExpandedHla>
@@ -252,7 +259,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithHla(GetDonorMatchingHlaPhenotype(
                     new LocusTypingInfo(
                         Zygosity.HeterozygousExpressing,
-                        new Tuple<string, string>(mismatchedHlaAtLocusUnderTest.Item1, originalHlaAtLocusUnderTest.Item2))))
+                        mismatchedHlaAtLocusUnderTest)))
                 .Build();
 
             var donorWithMismatchedHla1At1AndOriginalNullAt2 = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
@@ -302,19 +309,18 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private PhenotypeInfo<IHlaMatchingLookupResult> GetDonorMatchingHlaPhenotype(LocusTypingInfo locusUnderTestTypingInfo)
         {
             var donorHlaPhenotype = GetHlaPhenotype(originalHlaPhenotype, locusUnderTestTypingInfo);
-            return donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = donorHlaPhenotype }).Result.MatchingHla;
+            return donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo {HlaNames = donorHlaPhenotype}).Result.MatchingHla;
         }
 
-        private static PhenotypeInfo<string> GetHlaPhenotype(
-            PhenotypeInfo<string> hlaPhenotype,
-            LocusTypingInfo locusUnderTestTypingInfo)
+        private static PhenotypeInfo<string> GetHlaPhenotype(PhenotypeInfo<string> hlaPhenotype, LocusTypingInfo locusUnderTestTypingInfo)
         {
             return hlaPhenotype.MapByLocus((l, hla1, hla2) =>
             {
                 var locusConditions = l == LocusUnderTest
                     ? locusUnderTestTypingInfo
-                    : LocusTypingInfo.GetDefaultLocusConditions(new Tuple<string, string>(hla1, hla2));
-                return GetLocusHlaTyping(locusConditions);
+                    : LocusTypingInfo.GetDefaultLocusConditions(new LocusInfo<string> {Position1 = hla1, Position2 = hla2});
+                var locusHlaTyping = GetLocusHlaTyping(locusConditions);
+                return locusHlaTyping;
             });
         }
 
@@ -322,21 +328,17 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         /// Note: Position one of the expressing typing will be used to produce 
         /// the homozygous locus - whether it be homozygous by typing or expression.
         /// </summary>
-        private static Tuple<string, string> GetLocusHlaTyping(LocusTypingInfo locusTypingInfo)
+        private static LocusInfo<string> GetLocusHlaTyping(LocusTypingInfo locusTypingInfo)
         {
-            switch (locusTypingInfo.Zygosity)
+            return locusTypingInfo.Zygosity switch
             {
-                case Zygosity.HomozygousByTyping:
-                    return new Tuple<string, string>(locusTypingInfo.ExpressedHlaTyping.Item1, locusTypingInfo.ExpressedHlaTyping.Item1);
-                case Zygosity.HomozygousByExpression:
-                    return string.IsNullOrEmpty(locusTypingInfo.NullHlaTyping)
-                        ? throw new ArgumentException("Null HLA typing must be provided.")
-                        : new Tuple<string, string>(locusTypingInfo.ExpressedHlaTyping.Item1, locusTypingInfo.NullHlaTyping);
-                case Zygosity.HeterozygousExpressing:
-                    return locusTypingInfo.ExpressedHlaTyping;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+                Zygosity.HomozygousByTyping => new LocusInfo<string>(locusTypingInfo.ExpressedHlaTyping.Position1),
+                Zygosity.HomozygousByExpression => string.IsNullOrEmpty(locusTypingInfo.NullHlaTyping)
+                    ? throw new ArgumentException("Null HLA typing must be provided.")
+                    : new LocusInfo<string> {Position1 = locusTypingInfo.ExpressedHlaTyping.Position1, Position2 = locusTypingInfo.NullHlaTyping},
+                Zygosity.HeterozygousExpressing => locusTypingInfo.ExpressedHlaTyping,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
         /// <summary>

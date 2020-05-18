@@ -1,5 +1,8 @@
 ﻿using System;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using FluentAssertions;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
@@ -11,9 +14,9 @@ namespace Atlas.MatchingAlgorithm.Test.Models.SearchResults
     [TestFixture]
     public class LocusScoreDetailsTests
     {
-        [TestCase(TypePosition.One)]
-        [TestCase(TypePosition.Two)]
-        public void MatchGradeScore_WhenMatchGradeScoreIsNull_ThrowsException(TypePosition typePosition)
+        [TestCase(LocusPosition.Position1)]
+        [TestCase(LocusPosition.Position2)]
+        public void MatchGradeScore_WhenMatchGradeScoreIsNull_ThrowsException(LocusPosition typePosition)
         {
             var locusScoreDetails = new LocusScoreDetailsBuilder()
                 .WithMatchGradeScoreAtPosition(typePosition, null)
@@ -33,19 +36,19 @@ namespace Atlas.MatchingAlgorithm.Test.Models.SearchResults
             const int expectedTotalScore = 3;
 
             var locusScoreDetails = new LocusScoreDetailsBuilder()
-                .WithMatchGradeScoreAtPosition(TypePosition.One, scoreAtPositionOne)
-                .WithMatchGradeScoreAtPosition(TypePosition.Two, scoreAtPositionTwo)
+                .WithMatchGradeScoreAtPosition(LocusPosition.Position1, scoreAtPositionOne)
+                .WithMatchGradeScoreAtPosition(LocusPosition.Position2, scoreAtPositionTwo)
                 .Build();
 
             locusScoreDetails.MatchGradeScore.Should().Be(expectedTotalScore);
         }
 
-        [TestCase(TypePosition.One)]
-        [TestCase(TypePosition.Two)]
-        public void MatchConfidenceScore_WhenMatchConfidenceScoreIsNull_ThrowsException(TypePosition typePosition)
+        [TestCase(LocusPosition.Position1)]
+        [TestCase(LocusPosition.Position2)]
+        public void MatchConfidenceScore_WhenMatchConfidenceScoreIsNull_ThrowsException(LocusPosition position)
         {
             var locusScoreDetails = new LocusScoreDetailsBuilder()
-                .WithMatchConfidenceScoreAtPosition(typePosition, null)
+                .WithMatchConfidenceScoreAtPosition(position, null)
                 .Build();
 
             Assert.Throws<Exception>(() =>
@@ -62,8 +65,8 @@ namespace Atlas.MatchingAlgorithm.Test.Models.SearchResults
             const int expectedTotalScore = 3;
 
             var locusScoreDetails = new LocusScoreDetailsBuilder()
-                .WithMatchConfidenceScoreAtPosition(TypePosition.One, scoreAtPositionOne)
-                .WithMatchConfidenceScoreAtPosition(TypePosition.Two, scoreAtPositionTwo)
+                .WithMatchConfidenceScoreAtPosition(LocusPosition.Position1, scoreAtPositionOne)
+                .WithMatchConfidenceScoreAtPosition(LocusPosition.Position2, scoreAtPositionTwo)
                 .Build();
 
             locusScoreDetails.MatchConfidenceScore.Should().Be(expectedTotalScore);
@@ -73,8 +76,8 @@ namespace Atlas.MatchingAlgorithm.Test.Models.SearchResults
         public void IsPotentialMatch_WhenMatchConfidencesAreBothPotential_ReturnsTrue()
         {
             var locusScoreDetails = new LocusScoreDetailsBuilder()
-                .WithMatchConfidenceAtPosition(TypePosition.One, MatchConfidence.Potential)
-                .WithMatchConfidenceAtPosition(TypePosition.Two, MatchConfidence.Potential)
+                .WithMatchConfidenceAtPosition(LocusPosition.Position1, MatchConfidence.Potential)
+                .WithMatchConfidenceAtPosition(LocusPosition.Position2, MatchConfidence.Potential)
                 .Build();
 
             locusScoreDetails.IsPotentialMatch.Should().BeTrue();
@@ -100,8 +103,8 @@ namespace Atlas.MatchingAlgorithm.Test.Models.SearchResults
             MatchConfidence matchConfidenceAtTwo)
         {
             var locusScoreDetails = new LocusScoreDetailsBuilder()
-                .WithMatchConfidenceAtPosition(TypePosition.One, matchConfidenceAtOne)
-                .WithMatchConfidenceAtPosition(TypePosition.Two, matchConfidenceAtTwo)
+                .WithMatchConfidenceAtPosition(LocusPosition.Position1, matchConfidenceAtOne)
+                .WithMatchConfidenceAtPosition(LocusPosition.Position2, matchConfidenceAtTwo)
                 .Build();
 
             locusScoreDetails.IsPotentialMatch.Should().BeFalse();
@@ -121,8 +124,8 @@ namespace Atlas.MatchingAlgorithm.Test.Models.SearchResults
             MatchConfidence matchConfidenceAtTwo)
         {
             var locusScoreDetails = new LocusScoreDetailsBuilder()
-                .WithMatchConfidenceAtPosition(TypePosition.One, matchConfidenceAtOne)
-                .WithMatchConfidenceAtPosition(TypePosition.Two, matchConfidenceAtTwo)
+                .WithMatchConfidenceAtPosition(LocusPosition.Position1, matchConfidenceAtOne)
+                .WithMatchConfidenceAtPosition(LocusPosition.Position2, matchConfidenceAtTwo)
                 .Build();
 
             locusScoreDetails.MatchCount().Should().Be(2);
@@ -139,8 +142,8 @@ namespace Atlas.MatchingAlgorithm.Test.Models.SearchResults
             MatchConfidence matchConfidenceAtTwo)
         {
             var locusScoreDetails = new LocusScoreDetailsBuilder()
-                .WithMatchConfidenceAtPosition(TypePosition.One, matchConfidenceAtOne)
-                .WithMatchConfidenceAtPosition(TypePosition.Two, matchConfidenceAtTwo)
+                .WithMatchConfidenceAtPosition(LocusPosition.Position1, matchConfidenceAtOne)
+                .WithMatchConfidenceAtPosition(LocusPosition.Position2, matchConfidenceAtTwo)
                 .Build();
 
             locusScoreDetails.MatchCount().Should().Be(1);
@@ -150,8 +153,8 @@ namespace Atlas.MatchingAlgorithm.Test.Models.SearchResults
         public void MatchCount_WhenBothMatchConfidencesAreMismatch_Returns0()
         {
             var locusScoreDetails = new LocusScoreDetailsBuilder()
-                .WithMatchConfidenceAtPosition(TypePosition.One, MatchConfidence.Mismatch)
-                .WithMatchConfidenceAtPosition(TypePosition.Two, MatchConfidence.Mismatch)
+                .WithMatchConfidenceAtPosition(LocusPosition.Position1, MatchConfidence.Mismatch)
+                .WithMatchConfidenceAtPosition(LocusPosition.Position2, MatchConfidence.Mismatch)
                 .Build();
 
             locusScoreDetails.MatchCount().Should().Be(0);

@@ -1,8 +1,10 @@
 ﻿using System;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Data.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
 {
@@ -32,38 +34,29 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
             };
         }
 
-        public LocusScoreDetailsBuilder WithMatchGradeScoreAtPosition(TypePosition typePosition, int? matchGradeScore)
+        public LocusScoreDetailsBuilder WithMatchGradeScoreAtPosition(LocusPosition position, int? matchGradeScore)
         {
-            var scoreDetails = GetScoreDetailsAtPosition(typePosition);
+            var scoreDetails = GetScoreDetailsAtPosition(position);
             scoreDetails.MatchGradeScore = matchGradeScore;
-            SetScoreDetailsAtPosition(typePosition, scoreDetails);
+            SetScoreDetailsAtPosition(position, scoreDetails);
 
             return this;
         }
 
-        public LocusScoreDetailsBuilder WithMatchConfidenceScoreAtPosition(TypePosition typePosition, int? matchConfidenceScore)
+        public LocusScoreDetailsBuilder WithMatchConfidenceScoreAtPosition(LocusPosition position, int? matchConfidenceScore)
         {
-            var scoreDetails = GetScoreDetailsAtPosition(typePosition);
+            var scoreDetails = GetScoreDetailsAtPosition(position);
             scoreDetails.MatchConfidenceScore = matchConfidenceScore;
-            SetScoreDetailsAtPosition(typePosition, scoreDetails);
+            SetScoreDetailsAtPosition(position, scoreDetails);
 
             return this;
         }
 
-        public LocusScoreDetailsBuilder WithMatchGradeAtPosition(TypePosition typePosition, MatchGrade matchGrade)
+        public LocusScoreDetailsBuilder WithMatchConfidenceAtPosition(LocusPosition position, MatchConfidence matchConfidence)
         {
-            var scoreDetails = GetScoreDetailsAtPosition(typePosition);
-            scoreDetails.MatchGrade = matchGrade;
-            SetScoreDetailsAtPosition(typePosition, scoreDetails);
-
-            return this;
-        }
-
-        public LocusScoreDetailsBuilder WithMatchConfidenceAtPosition(TypePosition typePosition, MatchConfidence matchConfidence)
-        {
-            var scoreDetails = GetScoreDetailsAtPosition(typePosition);
+            var scoreDetails = GetScoreDetailsAtPosition(position);
             scoreDetails.MatchConfidence = matchConfidence;
-            SetScoreDetailsAtPosition(typePosition, scoreDetails);
+            SetScoreDetailsAtPosition(position, scoreDetails);
 
             return this;
         }
@@ -73,31 +66,31 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
             return locusScore;
         }
 
-        private LocusPositionScoreDetails GetScoreDetailsAtPosition(TypePosition typePosition)
+        private LocusPositionScoreDetails GetScoreDetailsAtPosition(LocusPosition position)
         {
-            switch (typePosition)
+            switch (position)
             {
-                case TypePosition.One:
+                case LocusPosition.Position1:
                     return locusScore.ScoreDetailsAtPosition1;
-                case TypePosition.Two:
+                case LocusPosition.Position2:
                     return locusScore.ScoreDetailsAtPosition2;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(typePosition), typePosition, null);
+                    throw new ArgumentOutOfRangeException(nameof(position), position, null);
             }
         }
 
-        private void SetScoreDetailsAtPosition(TypePosition typePosition, LocusPositionScoreDetails locusPositionScoreDetails)
+        private void SetScoreDetailsAtPosition(LocusPosition position, LocusPositionScoreDetails locusPositionScoreDetails)
         {
-            switch (typePosition)
+            switch (position)
             {
-                case TypePosition.One:
+                case LocusPosition.Position1:
                     locusScore.ScoreDetailsAtPosition1 = locusPositionScoreDetails;
                     break;
-                case TypePosition.Two:
+                case LocusPosition.Position2:
                     locusScore.ScoreDetailsAtPosition2 = locusPositionScoreDetails;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(typePosition), typePosition, null);
+                    throw new ArgumentOutOfRangeException(nameof(position), position, null);
             }
         }
     }

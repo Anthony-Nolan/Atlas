@@ -73,7 +73,7 @@ namespace Atlas.MultipleAlleleCodeDictionary
 
             // Create a dummy PhenotypeInfo to make use of its loci helper method
             var dummyPhenotypeInfo = new PhenotypeInfo<int>();
-            await dummyPhenotypeInfo.WhenAllLoci(async (locus, hla1, hla2) =>
+            await dummyPhenotypeInfo.EachLocusAsync(async (locus, hla1, hla2) =>
             {
                 var nmdpCodeLookup = await FetchNmdpCodeLookup(locus);
                 cache.Add(LocusCacheKey(locus), nmdpCodeLookup);
@@ -141,7 +141,7 @@ namespace Atlas.MultipleAlleleCodeDictionary
 
             return antigens
                 .Where(a => IsNmdpCode(a.NmdpString))
-                .Select(a => new { NmdpCode = a.NmdpString, Alleles = GetAllelesFromHlaName(a.HlaName) })
+                .Select(a => new {NmdpCode = a.NmdpString, Alleles = GetAllelesFromHlaName(a.HlaName)})
                 .Where(a => a.Alleles != null)
                 .ToDictionary(a => a.NmdpCode, a => a.Alleles);
         }

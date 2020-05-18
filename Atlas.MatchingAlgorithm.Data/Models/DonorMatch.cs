@@ -8,14 +8,14 @@ namespace Atlas.MatchingAlgorithm.Data.Models
         public int DonorId { get; set; }
         public int TypePosition { get; set; }
         
-        public PotentialHlaMatchRelation ToPotentialHlaMatchRelation(TypePosition searchTypePosition, Locus locus)
+        internal PotentialHlaMatchRelation ToPotentialHlaMatchRelation(TypePosition searchTypePosition, Locus locus)
         {
             return new PotentialHlaMatchRelation()
             {
                 Locus = locus,
                 Name = "Unknown",
-                SearchTypePosition = searchTypePosition,
-                MatchingTypePosition = (TypePosition) TypePosition,
+                SearchTypePosition = searchTypePosition.ToLocusPosition(),
+                MatchingTypePosition = ((TypePosition) TypePosition).ToLocusPosition(),
                 DonorId = DonorId
             };
         }

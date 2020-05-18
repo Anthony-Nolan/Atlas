@@ -21,6 +21,12 @@ using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 {
@@ -96,7 +102,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
             const Locus locus = Locus.B;
             const string patientHlaAtLocus = "patient-hla-locus-B";
             var patientHla = new PhenotypeInfo<string>();
-            patientHla.SetAtLocus(locus, patientHlaAtLocus);
+            patientHla.SetLocus(locus, patientHlaAtLocus);
             var result1 = new MatchResultBuilder()
                 .WithHlaAtLocus(locus, null)
                 .Build();
