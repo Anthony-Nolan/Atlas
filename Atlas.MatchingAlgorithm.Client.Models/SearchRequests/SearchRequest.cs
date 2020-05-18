@@ -27,6 +27,6 @@ namespace Atlas.MatchingAlgorithm.Client.Models.SearchRequests
         /// e.g. MatchCategory, GradeScore, ConfidenceScore
         /// Any loci specified here can be excluded from these aggregates.
         /// </summary>
-        public IEnumerable<LocusType> LociToExcludeFromAggregateScore { get; set; }
+        public IEnumerable<Locus> LociToExcludeFromAggregateScore { get; set; }
     }
 }

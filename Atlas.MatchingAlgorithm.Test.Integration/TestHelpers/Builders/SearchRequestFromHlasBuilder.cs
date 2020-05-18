@@ -23,7 +23,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         {
             searchRequestBuilder = new SearchRequestBuilder()
                 .WithSearchType(DonorType.Adult)
-                .WithLociExcludedFromScoringAggregates(new List<LocusType>())
+                .WithLociExcludedFromScoringAggregates(new List<Locus>())
                 .WithLocusSearchHla(Locus.A, TypePosition.One, searchHlas.A.Position1)
                 .WithLocusSearchHla(Locus.A, TypePosition.Two, searchHlas.A.Position2)
                 .WithLocusSearchHla(Locus.B, TypePosition.One, searchHlas.B.Position1)
@@ -108,7 +108,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 
         public SearchRequestFromHlasBuilder WithDpb1ExcludedFromScoringAggregation()
         {
-            searchRequestBuilder.WithLociExcludedFromScoringAggregates(new List<LocusType> { LocusType.Dpb1 });
+            searchRequestBuilder.WithLociExcludedFromScoringAggregates(new List<Locus> { Locus.Dpb1 });
             return this;
         }
 

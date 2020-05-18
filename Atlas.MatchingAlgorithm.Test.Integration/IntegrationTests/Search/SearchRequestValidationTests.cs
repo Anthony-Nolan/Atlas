@@ -38,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithTotalMismatchCount(0)
                 .WithMismatchCountAtLoci(new List<Locus> {Locus.A, Locus.B, Locus.Drb1}, 0)
                 .WithSearchHla(new SampleTestHlas.HeterozygousSet1().SixLocus_SingleExpressingAlleles)
-                .WithLociExcludedFromScoringAggregates(new List<LocusType>())
+                .WithLociExcludedFromScoringAggregates(new List<Locus>())
                 .Build();
         }
 
@@ -178,18 +178,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public void DispatchSearch_LociToExcludeFromAggregateScoreContainsAlgorithmLocus_DoesNotThrowValidationError()
         {
-            searchRequest.LociToExcludeFromAggregateScore = new List<LocusType> {LocusType.Dpb1};
+            searchRequest.LociToExcludeFromAggregateScore = new List<Locus> { Locus.Dpb1};
 
             Assert.DoesNotThrowAsync(
-                async () => await searchDispatcher.DispatchSearch(searchRequest));
-        }
-
-        [Test]
-        public void DispatchSearch_LociToExcludeFromAggregateScoreContainsNonAlgorithmLocus_ThrowsValidationError()
-        {
-            searchRequest.LociToExcludeFromAggregateScore = new List<LocusType> {LocusType.Drb3};
-
-            Assert.ThrowsAsync<ValidationException>(
                 async () => await searchDispatcher.DispatchSearch(searchRequest));
         }
     }

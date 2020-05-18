@@ -30,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Test.Builders
                     LocusSearchHlaB = new LocusSearchHla(),
                     LocusSearchHlaDrb1 = new LocusSearchHla(),
                 },
-                LociToExcludeFromAggregateScore = new List<LocusType>()
+                LociToExcludeFromAggregateScore = new List<Locus>()
             };
         }
 

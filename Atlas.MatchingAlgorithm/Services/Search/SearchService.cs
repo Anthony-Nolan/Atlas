@@ -68,11 +68,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             });
             stopwatch.Restart();
 
-            var lociToExcludeFromAggregateScoring = searchRequest.LociToExcludeFromAggregateScore
-                .Select(l => l.ToAlgorithmLocus())
-                .Where(l => l != null)
-                .Select(l => l.Value)
-                .ToList();
+            var lociToExcludeFromAggregateScoring = searchRequest.LociToExcludeFromAggregateScore.ToList();
             var scoredMatches = await donorScoringService.ScoreMatchesAgainstHla(matches, patientHla, lociToExcludeFromAggregateScoring);
 
             logger.SendTrace("Search timing: Scoring complete", LogLevel.Info, new Dictionary<string, string>

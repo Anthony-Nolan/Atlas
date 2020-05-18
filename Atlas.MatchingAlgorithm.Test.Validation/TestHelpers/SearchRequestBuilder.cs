@@ -5,7 +5,6 @@ using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.Common.GeneticData;
-using Locus = Atlas.Common.GeneticData.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestHelpers
 {
@@ -30,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestHelpers
                     LocusSearchHlaB = new LocusSearchHla(),
                     LocusSearchHlaDrb1 = new LocusSearchHla(),
                 },
-                LociToExcludeFromAggregateScore = new List<LocusType>()
+                LociToExcludeFromAggregateScore = new List<Locus>()
             };
         }
 
@@ -278,7 +277,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestHelpers
                 .WithLocusSearchHla(Locus.Drb1, TypePosition.Two, searchHla.Drb1.Position2);
         }
 
-        public SearchRequestBuilder WithLociExcludedFromScoringAggregates(IEnumerable<LocusType> loci)
+        public SearchRequestBuilder WithLociExcludedFromScoringAggregates(IEnumerable<Locus> loci)
         {
             searchRequest.LociToExcludeFromAggregateScore = loci;
             return this;
