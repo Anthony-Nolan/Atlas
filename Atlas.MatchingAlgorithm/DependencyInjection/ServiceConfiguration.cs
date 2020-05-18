@@ -42,7 +42,6 @@ using Atlas.MatchingAlgorithm.Services.Utility;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -283,7 +282,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 ClientName = "hla_service_client",
                 JsonSettings = new JsonSerializerSettings()
             };
-            var logger = BuildNovaLogger(sp);
+            var loggingKey = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.InstrumentationKey;
+            var logger = LoggerRegistration.BuildNovaLogger(loggingKey);
 
             try
             {
@@ -327,28 +327,18 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 ClientName = "donor_service_algorithm_client",
                 JsonSettings = new JsonSerializerSettings()
             };
-            var logger = BuildNovaLogger(sp);
+            var insightsSettings = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value;
+            var logger = LoggerRegistration.BuildNovaLogger(insightsSettings.InstrumentationKey);
 
             return new DonorServiceClient(clientSettings, logger);
         }
 
         private static IDonorServiceClient GetFileBasedDonorServiceClient(IServiceProvider sp)
         {
-            var logger = BuildNovaLogger(sp);
+            var insightsSettings = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value;
+            var logger = LoggerRegistration.BuildNovaLogger(insightsSettings.InstrumentationKey);
 
             return new FileBasedDonorServiceClient(logger);
-        }
-
-        private static Logger BuildNovaLogger(IServiceProvider sp)
-        {
-            var insightsSettings = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value;
-
-            var telemetryConfig = new TelemetryConfiguration
-            {
-                InstrumentationKey = insightsSettings.InstrumentationKey
-            };
-            var logger = new Logger(new TelemetryClient(telemetryConfig), LogLevel.Info);
-            return logger;
         }
 
         public static void RegisterDonorManagementServices(this IServiceCollection services)
