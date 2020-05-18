@@ -1,5 +1,7 @@
 using System.Net;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Utils.Http;
 using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
@@ -8,8 +10,6 @@ using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
-using Atlas.Utils.Core.ApplicationInsights;
-using Atlas.Utils.Core.Http.Exceptions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
