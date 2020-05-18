@@ -1,7 +1,7 @@
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Services.Search;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -38,12 +38,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static void RegisterMatchingAlgorithmSettings(this IServiceCollection services)
         {
             services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
-        }
-
-        // TODO: ATLAS-121: Move this to Atlas.Common once Utils rename is merged
-        private static void RegisterOptions<T>(this IServiceCollection services, string sectionName) where T : class
-        {
-            services.AddOptions<T>().Configure<IConfiguration>((settings, config) => { config.GetSection(sectionName).Bind(settings); });
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -143,6 +144,17 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             Drb4 = new LocusInfo<T>();
             Drb5 = new LocusInfo<T>();
             C = new LocusInfo<T>();
+        }
+
+        public async Task WhenAllLoci(Func<Locus, T, T, Task> action)
+        {
+            await Task.WhenAll(
+                action(Locus.A, A.Position1, A.Position2),
+                action(Locus.B, B.Position1, B.Position2),
+                action(Locus.C, C.Position1, C.Position2),
+                action(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2),
+                action(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2),
+                action(Locus.Drb1, Drb1.Position1, Drb1.Position2));
         }
     }
 }
