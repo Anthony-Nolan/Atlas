@@ -1,10 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
+using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
+using System.Collections.Generic;
+using System.Linq;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using TechTalk.SpecFlow;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.PatientDataSelection
@@ -59,7 +63,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                 // 1 mismatch at A
                 new DatabaseDonorSpecification
                 {
-                    ShouldMatchGenotype = new PhenotypeInfo<bool>().Map((l, p, noop) => !(l == Locus.A && p == TypePosition.One)),
+                    ShouldMatchGenotype = new PhenotypeInfo<bool>().Map((l, p, noop) => !(l == Locus.A && p == LocusPosition.Position1)),
                 },
                 // 2 mismatches at A
                 new DatabaseDonorSpecification
@@ -69,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                 // 2 mismatches at A, 1 at B 
                 new DatabaseDonorSpecification
                 {
-                    ShouldMatchGenotype = new PhenotypeInfo<bool>().Map((l, p, noop) => l != Locus.A && !(l == Locus.B && p == TypePosition.One)),
+                    ShouldMatchGenotype = new PhenotypeInfo<bool>().Map((l, p, noop) => l != Locus.A && !(l == Locus.B && p == LocusPosition.Position1)),
                 },
                 // 2 mismatches at A, 2 at B
                 new DatabaseDonorSpecification

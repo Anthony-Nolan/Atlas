@@ -1,4 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection

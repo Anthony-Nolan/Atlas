@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria;
@@ -11,6 +13,9 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
+using FluentAssertions;
+using NSubstitute;
+using NUnit.Framework;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.DataSelectors;
 using FluentAssertions;
 using NSubstitute;
@@ -24,12 +29,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
         private IPatientHlaSelector patientHlaSelector;
         private IAlleleRepository alleleRepository;
 
-        private readonly TypePosition[] bothPosition = { TypePosition.One, TypePosition.Two };
-        
+        private readonly LocusPosition[] bothPosition = {LocusPosition.Position1, LocusPosition.Position2};
+
         private int alleleNumber;
         private PhenotypeInfo<List<AlleleTestData>> alleles;
-        private LocusInfo<AlleleTestData> patientPGroupAlleles;
-        private LocusInfo<List<AlleleTestData>> donorPGroupAlleles;
+        private LociInfo<AlleleTestData> patientPGroupAlleles;
+        private LociInfo<List<AlleleTestData>> donorPGroupAlleles;
         private PhenotypeInfo<List<AlleleTestData>> gGroupAlleles;
 
         [SetUp]
@@ -39,19 +44,19 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
 
             alleles = new PhenotypeInfo<bool>().Map((l, p, noop) => new List<AlleleTestData>
             {
-                GetTestAllele(l, new[]{p}, MatchLevel.Allele),
-                GetTestAllele(l, new[]{p}, MatchLevel.Allele),
+                GetTestAllele(l, new[] {p}, MatchLevel.Allele),
+                GetTestAllele(l, new[] {p}, MatchLevel.Allele),
             });
 
-            patientPGroupAlleles = new LocusInfo<bool>().Map((l, noop) => GetTestAllele(l, bothPosition, MatchLevel.PGroup));
+            patientPGroupAlleles = new LociInfo<bool>().Map((l, noop) => GetTestAllele(l, bothPosition, MatchLevel.PGroup));
 
-            donorPGroupAlleles = new LocusInfo<bool>().Map((l, noop) => new List<AlleleTestData>
+            donorPGroupAlleles = new LociInfo<bool>().Map((l, noop) => new List<AlleleTestData>
             {
                 GetTestAllele(l, bothPosition, MatchLevel.PGroup),
                 GetTestAllele(l, bothPosition, MatchLevel.PGroup),
             });
 
-            gGroupAlleles = new LocusInfo<bool>().Map((l, noop) => new List<AlleleTestData>
+            gGroupAlleles = new LociInfo<bool>().Map((l, noop) => new List<AlleleTestData>
             {
                 GetTestAllele(l, bothPosition, MatchLevel.GGroup),
                 GetTestAllele(l, bothPosition, MatchLevel.GGroup),
@@ -95,10 +100,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             {
                 Genotype =
                 {
-                    Hla = donorPGroupAlleles.Map((locus, all) =>
-                            TgsAllele.FromTestDataAllele(all.First()))
-                        .ToPhenotypeInfo(((locus, allele) => new Tuple<TgsAllele, TgsAllele>(allele, allele))
-                        )
+                    Hla = donorPGroupAlleles.Map((locus, all) => TgsAllele.FromTestDataAllele(all.First()))
+                        .ToPhenotypeInfo((locus, allele) => allele)
                 }
             };
 
@@ -134,7 +137,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             var criteria = new PatientHlaSelectionCriteria
             {
                 PatientTypingResolutions = new PhenotypeInfo<HlaTypingResolution>(HlaTypingResolution.Untyped),
-                Orientations = new LocusInfo<MatchOrientation>(MatchOrientation.Direct)
+                Orientations = new LociInfo<MatchOrientation>(MatchOrientation.Direct)
             };
 
             var metaDonor = new MetaDonor
@@ -149,10 +152,10 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
 
             patientHla.ToEnumerable().All(x => x == null).Should().BeTrue();
         }
-        
-        [TestCase(TypePosition.One)]
-        [TestCase(TypePosition.Two)]
-        public void GetPatientHla_ForHomozygousLocus_WhenShouldMatchAtOnePosition_ReturnsMatchingAlleleAtEachPosition(TypePosition matchingPosition)
+
+        [TestCase(LocusPosition.Position1)]
+        [TestCase(LocusPosition.Position2)]
+        public void GetPatientHla_ForHomozygousLocus_WhenShouldMatchAtOnePosition_ReturnsMatchingAlleleAtEachPosition(LocusPosition matchingPosition)
         {
             const Locus locus = Locus.A;
             var criteria = new PatientHlaSelectionCriteriaBuilder()
@@ -171,12 +174,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             };
 
             var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
-            var hlaAtLocus = patientHla.DataAtLocus(locus);
+            var hlaAtLocus = patientHla.GetLocus(locus);
 
-            hlaAtLocus.Item1.Should().Be(metaDonor.Genotype.Hla.DataAtPosition(locus, matchingPosition).TgsTypedAllele);
-            hlaAtLocus.Item2.Should().Be(metaDonor.Genotype.Hla.DataAtPosition(locus, matchingPosition).TgsTypedAllele);
-        }        
-        
+            hlaAtLocus.Position1.Should().Be(metaDonor.Genotype.Hla.GetPosition(locus, matchingPosition).TgsTypedAllele);
+            hlaAtLocus.Position2.Should().Be(metaDonor.Genotype.Hla.GetPosition(locus, matchingPosition).TgsTypedAllele);
+        }
+
         [Test]
         public void GetPatientHla_ForHomozygousLocus_WhenShouldMatchAtNeitherPosition_ReturnsSameAlleleAtEachPosition()
         {
@@ -196,11 +199,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             };
 
             var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
-            var hlaAtLocus = patientHla.DataAtLocus(locus);            
+            var hlaAtLocus = patientHla.GetLocus(locus);
 
-            hlaAtLocus.Item1.Should().Be(hlaAtLocus.Item2);
-        }   
-        
+            hlaAtLocus.Position1.Should().Be(hlaAtLocus.Position2);
+        }
+
         [Test]
         public void GetPatientHla_ForHomozygousLocus_WhenShouldMatchAtBothPositions_AndDonorNotHomozygous_ThrowsException()
         {
@@ -220,8 +223,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             };
 
             Assert.Throws<HlaSelectionException>(() => patientHlaSelector.GetPatientHla(metaDonor, criteria));
-        }    
-        
+        }
+
         [Test]
         public void GetPatientHla_ForHomozygousLocus_WhenShouldMatchAtBothPositions_AndDonorHomozygous_ReturnsDonorHla()
         {
@@ -245,12 +248,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             };
 
             var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
-            var hlaAtLocus = patientHla.DataAtLocus(locus);
-            var donorHla1 = metaDonor.Genotype.Hla.DataAtPosition(locus, TypePosition.One).TgsTypedAllele;
-            var donorHla2 = metaDonor.Genotype.Hla.DataAtPosition(locus, TypePosition.Two).TgsTypedAllele;
-            
-            hlaAtLocus.Item1.Should().Be(donorHla1);
-            hlaAtLocus.Item2.Should().Be(donorHla2);
+            var hlaAtLocus = patientHla.GetLocus(locus);
+            var donorHla1 = metaDonor.Genotype.Hla.GetPosition(locus, LocusPosition.Position1).TgsTypedAllele;
+            var donorHla2 = metaDonor.Genotype.Hla.GetPosition(locus, LocusPosition.Position2).TgsTypedAllele;
+
+            hlaAtLocus.Position1.Should().Be(donorHla1);
+            hlaAtLocus.Position2.Should().Be(donorHla2);
             donorHla1.Should().Be(donorHla2);
         }
 
@@ -258,7 +261,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
         public void GetPatientHla_ForExpressingMismatch_ReturnsHlaNotMatchingDonor()
         {
             var criteria = new PatientHlaSelectionCriteriaBuilder()
-                .WithHlaSourceAtPosition(Locus.A, TypePosition.One, PatientHlaSource.ExpressingAlleleMismatch)
+                .WithHlaSourceAtPosition(Locus.A, LocusPosition.Position1, PatientHlaSource.ExpressingAlleleMismatch)
                 .Build();
 
             var metaDonor = new MetaDonor
@@ -273,12 +276,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
 
             patientHla.A.Position1.Should().NotBe(metaDonor.Genotype.Hla.A.Position1.TgsTypedAllele);
         }
-        
+
         [Test]
         public void GetPatientHla_ForNullMismatch_ReturnsAlleleNotMatchingDonor()
         {
             var criteria = new PatientHlaSelectionCriteriaBuilder()
-                .WithHlaSourceAtPosition(Locus.A, TypePosition.One, PatientHlaSource.NullAlleleMismatch)
+                .WithHlaSourceAtPosition(Locus.A, LocusPosition.Position1, PatientHlaSource.NullAlleleMismatch)
                 .Build();
 
             var metaDonor = new MetaDonor
@@ -293,12 +296,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
 
             patientHla.A.Position1.Should().NotBe(metaDonor.Genotype.Hla.A.Position1.TgsTypedAllele);
         }
-        
+
         [Test]
         public void GetPatientHla_ForNullMismatch_ReturnsNullAllele()
         {
             var criteria = new PatientHlaSelectionCriteriaBuilder()
-                .WithHlaSourceAtPosition(Locus.A, TypePosition.One, PatientHlaSource.NullAlleleMismatch)
+                .WithHlaSourceAtPosition(Locus.A, LocusPosition.Position1, PatientHlaSource.NullAlleleMismatch)
                 .Build();
 
             var metaDonor = new MetaDonor
@@ -313,13 +316,13 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
 
             patientHla.A.Position1.Should().Contain("N");
         }
-        
+
         [Test]
         public void GetPatientHla_IncludingNullMismatch_NeverReturnsCrossMatchWhenArbitraryMatchOrientationRequested()
         {
             var criteria = new PatientHlaSelectionCriteriaBuilder()
                 .WithMatchOrientationAtLocus(Locus.A, MatchOrientation.Arbitrary)
-                .WithHlaSourceAtPosition(Locus.A, TypePosition.One, PatientHlaSource.NullAlleleMismatch)
+                .WithHlaSourceAtPosition(Locus.A, LocusPosition.Position1, PatientHlaSource.NullAlleleMismatch)
                 .Build();
 
             var metaDonor = new MetaDonor
@@ -340,20 +343,20 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
                 patientHla.A.Position2.Should().NotContain("N");
             }
         }
-        
-        private AlleleTestData GetTestAllele(Locus locus, TypePosition[] position, MatchLevel matchLevel)
+
+        private AlleleTestData GetTestAllele(Locus locus, LocusPosition[] position, MatchLevel matchLevel)
         {
             string positionString;
             switch (position.Length)
             {
-                case 1 when position.Single() == TypePosition.One:
+                case 1 when position.Single() == LocusPosition.Position1:
                     positionString = "1";
                     break;
-                case 1 when position.Single() == TypePosition.Two:
+                case 1 when position.Single() == LocusPosition.Position2:
                     positionString = "2";
                     break;
                 default:
-                    if (position.Contains(TypePosition.One) && position.Contains(TypePosition.Two))
+                    if (position.Contains(LocusPosition.Position1) && position.Contains(LocusPosition.Position2))
                     {
                         positionString = "1&2";
                     }

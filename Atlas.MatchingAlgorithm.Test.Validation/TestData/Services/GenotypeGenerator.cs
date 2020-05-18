@@ -9,6 +9,9 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Helpers;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using static EnumStringValues.EnumExtensions;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
 {
@@ -38,17 +41,17 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
             var hla = new PhenotypeInfo<TgsAllele>();
             foreach (var locus in EnumerateValues<Locus>())
             {
-                var randomTgsAllele1 = RandomTgsAllele(locus, TypePosition.One, criteria);
-                hla.SetAtPosition(locus, TypePosition.One, randomTgsAllele1);
+                var randomTgsAllele1 = RandomTgsAllele(locus, LocusPosition.Position1, criteria);
+                hla.SetPosition(locus, LocusPosition.Position1, randomTgsAllele1);
 
-                if (criteria.IsHomozygous.DataAtLocus(locus))
+                if (criteria.IsHomozygous.GetLocus(locus))
                 {
-                    hla.SetAtPosition(locus, TypePosition.Two, randomTgsAllele1);
+                    hla.SetPosition(locus, LocusPosition.Position2, randomTgsAllele1);
                 }
                 else
                 {
-                    var randomTgsAllele2 = RandomTgsAllele(locus, TypePosition.Two, criteria);
-                    hla.SetAtPosition(locus, TypePosition.Two, randomTgsAllele2);
+                    var randomTgsAllele2 = RandomTgsAllele(locus, LocusPosition.Position2, criteria);
+                    hla.SetPosition(locus, LocusPosition.Position2, randomTgsAllele2);
                 }
             }
 
@@ -58,9 +61,9 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
             };
         }
 
-        private TgsAllele RandomTgsAllele(Locus locus, TypePosition position, GenotypeCriteria criteria)
+        private TgsAllele RandomTgsAllele(Locus locus, LocusPosition position, GenotypeCriteria criteria)
         {
-            var dataset = criteria.AlleleSources.DataAtPosition(locus, position);
+            var dataset = criteria.AlleleSources.GetPosition(locus, position);
 
             var alleles = GetDataset(locus, position, dataset);
             if (alleles.IsNullOrEmpty())
@@ -70,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
 
             var selectedAllele = alleles.GetRandomElement();
 
-            var shouldContainDifferentAlleleGroups = criteria.AlleleStringContainsDifferentAntigenGroups.DataAtPosition(locus, position);
+            var shouldContainDifferentAlleleGroups = criteria.AlleleStringContainsDifferentAntigenGroups.GetPosition(locus, position);
 
             return TgsAllele.FromTestDataAllele(
                 selectedAllele,
@@ -83,45 +86,45 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
                 });
         }
 
-        private List<AlleleTestData> GetDataset(Locus locus, TypePosition position, Dataset dataset)
+        private List<AlleleTestData> GetDataset(Locus locus, LocusPosition position, Dataset dataset)
         {
             switch (dataset)
             {
                 case Dataset.FourFieldTgsAlleles:
-                    return alleleRepository.FourFieldAlleles().DataAtPosition(locus, position);
+                    return alleleRepository.FourFieldAlleles().GetPosition(locus, position);
                 case Dataset.ThreeFieldTgsAlleles:
-                    return alleleRepository.ThreeFieldAlleles().DataAtPosition(locus, position);
+                    return alleleRepository.ThreeFieldAlleles().GetPosition(locus, position);
                 case Dataset.TwoFieldTgsAlleles:
-                    return alleleRepository.TwoFieldAlleles().DataAtPosition(locus, position);
+                    return alleleRepository.TwoFieldAlleles().GetPosition(locus, position);
                 case Dataset.TgsAlleles:
                     // Randomly choose dataset here rather than randomly choosing alleles from full dataset,
                     // as otherwise the data is skewed towards the larger dataset (4-field)
                     return new List<List<AlleleTestData>>
                     {
-                        alleleRepository.FourFieldAlleles().DataAtPosition(locus, position),
-                        alleleRepository.ThreeFieldAlleles().DataAtPosition(locus, position),
-                        alleleRepository.TwoFieldAlleles().DataAtPosition(locus, position)
+                        alleleRepository.FourFieldAlleles().GetPosition(locus, position),
+                        alleleRepository.ThreeFieldAlleles().GetPosition(locus, position),
+                        alleleRepository.TwoFieldAlleles().GetPosition(locus, position)
                     }.GetRandomElement();
                 case Dataset.PGroupMatchPossible:
-                    return alleleRepository.DonorAllelesForPGroupMatching().DataAtLocus(locus);
+                    return alleleRepository.DonorAllelesForPGroupMatching().GetLocus(locus);
                 case Dataset.GGroupMatchPossible:
-                    return alleleRepository.AllelesForGGroupMatching().DataAtPosition(locus, position);
+                    return alleleRepository.AllelesForGGroupMatching().GetPosition(locus, position);
                 case Dataset.FourFieldAllelesWithThreeFieldMatchPossible:
-                    return alleleRepository.DonorAllelesWithThreeFieldMatchPossible().DataAtPosition(locus, position);
+                    return alleleRepository.DonorAllelesWithThreeFieldMatchPossible().GetPosition(locus, position);
                 case Dataset.ThreeFieldAllelesWithTwoFieldMatchPossible:
-                    return alleleRepository.AllelesWithTwoFieldMatchPossible().DataAtPosition(locus, position);
+                    return alleleRepository.AllelesWithTwoFieldMatchPossible().GetPosition(locus, position);
                 case Dataset.AlleleStringOfSubtypesPossible:
-                    return alleleRepository.AllelesWithAlleleStringOfSubtypesPossible().DataAtPosition(locus, position);
+                    return alleleRepository.AllelesWithAlleleStringOfSubtypesPossible().GetPosition(locus, position);
                 case Dataset.NullAlleles:
-                    return alleleRepository.NullAlleles().DataAtPosition(locus, position);
+                    return alleleRepository.NullAlleles().GetPosition(locus, position);
                 case Dataset.AllelesWithNonNullExpressionSuffix:
-                    return alleleRepository.AllelesWithNonNullExpressionSuffix().DataAtPosition(locus, position);
+                    return alleleRepository.AllelesWithNonNullExpressionSuffix().GetPosition(locus, position);
                 case Dataset.CDnaMatchPossible:
-                    return alleleRepository.AllelesForCDnaMatching().DataAtLocus(locus);
+                    return alleleRepository.AllelesForCDnaMatching().GetLocus(locus);
                 case Dataset.ProteinMatchPossible:
-                    return alleleRepository.AllelesForProteinMatching().DataAtPosition(locus, position);
+                    return alleleRepository.AllelesForProteinMatching().GetPosition(locus, position);
                 case Dataset.AllelesWithStringsOfSingleAndMultiplePGroupsPossible:
-                    return alleleRepository.AllelesWithStringsOfSingleAndMultiplePGroupsPossible().DataAtPosition(locus, position);
+                    return alleleRepository.AllelesWithStringsOfSingleAndMultiplePGroupsPossible().GetPosition(locus, position);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
             }

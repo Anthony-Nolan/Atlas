@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
@@ -16,7 +16,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
     /// </summary>
     public static class AllelesWithNonNullExpressionSuffix
     {
-        public static readonly LocusInfo<List<AlleleTestData>> Alleles = new LocusInfo<List<AlleleTestData>>
+        public static readonly LociInfo<List<AlleleTestData>> Alleles = new LociInfo<List<AlleleTestData>>
         {
             A = new List<AlleleTestData>
             {
@@ -40,11 +40,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
                 new AlleleTestData {AlleleName = "*03:244Q"},
                 new AlleleTestData {AlleleName = "*15:105Q"},
             },
-            DPB1 = new List<AlleleTestData>
+            Dpb1 = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*697:01Q"},
             },
-            DQB1 = new List<AlleleTestData>
+            Dqb1 = new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*03:91Q"},
                 new AlleleTestData {AlleleName = "*03:99Q"},
@@ -52,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
                 new AlleleTestData {AlleleName = "*02:53Q"},
             },
             // No alleles with any expression suffix exist in DR_ANTIGENS for Locus DRB1
-            DRB1 = new List<AlleleTestData>
+            Drb1 = new List<AlleleTestData>
             {
             },
         };

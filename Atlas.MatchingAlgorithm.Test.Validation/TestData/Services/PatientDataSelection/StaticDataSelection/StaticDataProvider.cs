@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.StaticDataSelection
 {

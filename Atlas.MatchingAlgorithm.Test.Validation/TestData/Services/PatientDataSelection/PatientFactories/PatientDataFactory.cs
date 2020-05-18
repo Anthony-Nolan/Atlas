@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Atlas.MatchingAlgorithm.Client.Models;
+using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
@@ -24,11 +26,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
         void SetAsSixOutOfSixMatch();
         void SetAsEightOutOfEightMatch();
         void SetAsTenOutOfTenMatch();
-        void SetMismatchAtPosition(Locus locus, TypePosition position);
+        void SetMismatchAtPosition(Locus locus, LocusPosition position);
         void SetPatientUntypedAtLocus(Locus locus);
         void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution);
         void SetMatchOrientationAtLocus(Locus locus, MatchOrientation orientation);
-        void SetPatientNonMatchingNullAlleleAtPosition(Locus locus, TypePosition position);
+        void SetPatientNonMatchingNullAlleleAtPosition(Locus locus, LocusPosition position);
 
         // Meta-donor and patient criteria
         void SetAsMatchLevelAtAllLoci(MatchLevel matchLevel);
@@ -45,7 +47,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
         void SetAlleleStringShouldContainDifferentGroupsAtLocus(Locus locus);
         void SetHasNonNullExpressionSuffixAtLocus(Locus locus);
-        void SetHasNullAlleleAtPosition(Locus locus, TypePosition position);
+        void SetHasNullAlleleAtPosition(Locus locus, LocusPosition position);
 
         // Meta-donor and database-donor criteria
 
@@ -144,9 +146,9 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
                 locus == Locus.Dpb1 ? PatientHlaSource.ExpressingAlleleMismatch: PatientHlaSource.Match);
         }
 
-        public void SetMismatchAtPosition(Locus locus, TypePosition position)
+        public void SetMismatchAtPosition(Locus locus, LocusPosition position)
         {
-            patientHlaSelectionCriteria.HlaSources.SetAtPosition(locus, position, PatientHlaSource.ExpressingAlleleMismatch);
+            patientHlaSelectionCriteria.HlaSources.SetPosition(locus, position, PatientHlaSource.ExpressingAlleleMismatch);
         }
 
         public void SetPatientUntypedAtLocus(Locus locus)
@@ -156,17 +158,17 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
         public void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
         {
-            patientHlaSelectionCriteria.PatientTypingResolutions.SetAtLocus(locus, resolution);
+            patientHlaSelectionCriteria.PatientTypingResolutions.SetLocus(locus, resolution);
         }
 
         public void SetMatchOrientationAtLocus(Locus locus, MatchOrientation orientation)
         {
-            patientHlaSelectionCriteria.Orientations.SetAtLocus(locus, orientation);
+            patientHlaSelectionCriteria.Orientations.SetLocus(locus, orientation);
         }
 
-        public void SetPatientNonMatchingNullAlleleAtPosition(Locus locus, TypePosition position)
+        public void SetPatientNonMatchingNullAlleleAtPosition(Locus locus, LocusPosition position)
         {
-            patientHlaSelectionCriteria.HlaSources.SetAtPosition(locus, position, PatientHlaSource.NullAlleleMismatch);
+            patientHlaSelectionCriteria.HlaSources.SetPosition(locus, position, PatientHlaSource.NullAlleleMismatch);
         }
 
         #endregion
@@ -191,22 +193,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
         public void SetAlleleStringShouldContainDifferentGroupsAtLocus(Locus locus)
         {
-            metaDonorSelectionCriteria.AlleleStringContainsDifferentAntigenGroups.SetAtLocus(locus, true);
+            metaDonorSelectionCriteria.AlleleStringContainsDifferentAntigenGroups.SetLocus(locus, true);
         }
 
         public void SetHasNonNullExpressionSuffixAtLocus(Locus locus)
         {
-            metaDonorSelectionCriteria.HasNonNullExpressionSuffix.SetAtLocus(locus, true);
+            metaDonorSelectionCriteria.HasNonNullExpressionSuffix.SetLocus(locus, true);
         }
 
-        public void SetHasNullAlleleAtPosition(Locus locus, TypePosition position)
+        public void SetHasNullAlleleAtPosition(Locus locus, LocusPosition position)
         {
-            metaDonorSelectionCriteria.IsNullExpressing.SetAtPosition(locus, position, true);
+            metaDonorSelectionCriteria.IsNullExpressing.SetPosition(locus, position, true);
         }
 
         public void SetMatchingDonorHomozygousAtLocus(Locus locus)
         {
-            metaDonorSelectionCriteria.IsHomozygous.SetAtLocus(locus, true);
+            metaDonorSelectionCriteria.IsHomozygous.SetLocus(locus, true);
         }
 
         #endregion
@@ -221,15 +223,15 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
         public void SetPatientHomozygousAtLocus(Locus locus)
         {
-            var matchesAtLocus = patientHlaSelectionCriteria.HlaMatches.DataAtLocus(locus);
-            if (matchesAtLocus.Item1 && matchesAtLocus.Item2)
+            var matchesAtLocus = patientHlaSelectionCriteria.HlaMatches.GetLocus(locus);
+            if (matchesAtLocus.Position1 && matchesAtLocus.Position2)
             {
                 // For an exact match to exist, if the patient is homozygous the donor must implicitly also be homozygous
                 // TODO: NOVA-1188: This assumption is not true when considering null alleles. Update when null matching is implemented
                 SetMatchingDonorHomozygousAtLocus(locus);
             }
 
-            patientHlaSelectionCriteria.IsHomozygous.SetAtLocus(locus, true);
+            patientHlaSelectionCriteria.IsHomozygous.SetLocus(locus, true);
 
             // For a homozygous locus, typing resolution must be single allele (TGS)
             SetPatientTypingResolutionAtLocus(locus, HlaTypingResolution.Tgs);
@@ -258,25 +260,25 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
         {
             foreach (var resolutionSet in metaDonorSelectionCriteria.DatabaseDonorDetailsSets)
             {
-                resolutionSet.MatchingTypingResolutions.SetAtLocus(locus, resolution);
+                resolutionSet.MatchingTypingResolutions.SetLocus(locus, resolution);
             }
 
             foreach (var databaseDonorSelectionCriteria in databaseDonorSelectionCriteriaSet)
             {
-                databaseDonorSelectionCriteria.MatchingTypingResolutions.SetAtLocus(locus, resolution);
+                databaseDonorSelectionCriteria.MatchingTypingResolutions.SetLocus(locus, resolution);
             }
         }
 
-        public void UpdateDonorGenotypeMatchDataAtPosition(Locus locus, TypePosition position, bool shouldMatchGenotype)
+        public void UpdateDonorGenotypeMatchGetPosition(Locus locus, LocusPosition position, bool shouldMatchGenotype)
         {
             foreach (var resolutionSet in metaDonorSelectionCriteria.DatabaseDonorDetailsSets)
             {
-                resolutionSet.ShouldMatchGenotype.SetAtPosition(locus, position, shouldMatchGenotype);
+                resolutionSet.ShouldMatchGenotype.SetPosition(locus, position, shouldMatchGenotype);
             }
 
             foreach (var databaseDonorSelectionCriteria in databaseDonorSelectionCriteriaSet)
             {
-                databaseDonorSelectionCriteria.ShouldMatchGenotype.SetAtPosition(locus, position, shouldMatchGenotype);
+                databaseDonorSelectionCriteria.ShouldMatchGenotype.SetPosition(locus, position, shouldMatchGenotype);
             }
         }
 
@@ -307,14 +309,14 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
         /// <summary>
         /// Should only be called when all criteria are set up.
-        /// If there are any logical inconsitencies in the criteria specified, they should be raised here as an Exception to aid debugging
+        /// If there are any logical inconsistencies in the criteria specified, they should be raised here as an Exception to aid debugging
         /// </summary>
         private void ValidateCriteria()
         {
             patientHlaSelectionCriteria.MatchLevels.EachPosition((l, p, matchLevel) =>
             {
                 if (matchLevel == MatchLevel.FirstThreeFieldAllele
-                    && metaDonorSelectionCriteria.MatchingTgsTypingCategories.DataAtPosition(l, p) != TgsHlaTypingCategory.FourFieldAllele)
+                    && metaDonorSelectionCriteria.MatchingTgsTypingCategories.GetPosition(l, p) != TgsHlaTypingCategory.FourFieldAllele)
                 {
                     throw new InvalidTestDataException(
                         "Cannot generate data for a patient with a three field (not fourth field) match if the matching donor is not four field TGS typed");
@@ -322,7 +324,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
                 if (matchLevel == MatchLevel.FirstTwoFieldAllele)
                 {
-                    var tgsTypingCategory = metaDonorSelectionCriteria.MatchingTgsTypingCategories.DataAtPosition(l, p);
+                    var tgsTypingCategory = metaDonorSelectionCriteria.MatchingTgsTypingCategories.GetPosition(l, p);
                     if (tgsTypingCategory == TgsHlaTypingCategory.FourFieldAllele)
                     {
                         throw new InvalidTestDataException(

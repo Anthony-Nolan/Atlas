@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Helpers;
@@ -8,6 +9,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.DataSelectors
@@ -55,7 +57,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
             TgsAllele allele1;
             TgsAllele allele2;
 
-            if (criteria.IsHomozygous.DataAtLocus(locus))
+            if (criteria.IsHomozygous.GetLocus(locus))
             {
                 var allele = GetHomozygousAllele(locus, tgsAllele1, tgsAllele2, criteria);
                 allele1 = allele;
@@ -68,12 +70,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
                 switch (orientation)
                 {
                     case MatchOrientation.Direct:
-                        allele1 = GetTgsAllele(locus, TypePosition.One, tgsAllele1, tgsAllele2, criteria);
-                        allele2 = GetTgsAllele(locus, TypePosition.Two, tgsAllele2, tgsAllele1, criteria);
+                        allele1 = GetTgsAllele(locus, LocusPosition.Position1, tgsAllele1, tgsAllele2, criteria);
+                        allele2 = GetTgsAllele(locus, LocusPosition.Position2, tgsAllele2, tgsAllele1, criteria);
                         break;
                     case MatchOrientation.Cross:
-                        allele1 = GetTgsAllele(locus, TypePosition.One, tgsAllele2, tgsAllele1, criteria);
-                        allele2 = GetTgsAllele(locus, TypePosition.Two, tgsAllele1, tgsAllele2, criteria);
+                        allele1 = GetTgsAllele(locus, LocusPosition.Position1, tgsAllele2, tgsAllele1, criteria);
+                        allele2 = GetTgsAllele(locus, LocusPosition.Position2, tgsAllele1, tgsAllele2, criteria);
                         break;
                     case MatchOrientation.Arbitrary:
                     default:
@@ -81,8 +83,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
                 }
             }
 
-            var typingResolution1 = criteria.PatientTypingResolutions.DataAtPosition(locus, TypePosition.One);
-            var typingResolution2 = criteria.PatientTypingResolutions.DataAtPosition(locus, TypePosition.Two);
+            var typingResolution1 = criteria.PatientTypingResolutions.GetPosition(locus, LocusPosition.Position1);
+            var typingResolution2 = criteria.PatientTypingResolutions.GetPosition(locus, LocusPosition.Position2);
 
             var hla1 = allele1.GetHlaForResolution(typingResolution1);
             var hla2 = allele2.GetHlaForResolution(typingResolution2);
@@ -91,22 +93,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
         private static MatchOrientation GetDesiredMatchOrientation(Locus locus, PatientHlaSelectionCriteria criteria)
         {
-            var orientation = criteria.Orientations.DataAtLocus(locus);
+            var orientation = criteria.Orientations.GetLocus(locus);
 
             if (orientation == MatchOrientation.Arbitrary)
             {
                 // Some match level specific test data is curated independently for each position, with direct matches in mind.
                 // If cross matches were attempted, we may end up with a better match grade than desired, or without possible patient data
                 var directOnlyMatchLevels = new[] {MatchLevel.GGroup, MatchLevel.FirstThreeFieldAllele, MatchLevel.FirstTwoFieldAllele};
-                var matchLevels = criteria.MatchLevels.DataAtLocus(locus);
+                var matchLevels = criteria.MatchLevels.GetLocus(locus);
             
-                var hlaSourceAtLocus = criteria.HlaSources.DataAtLocus(locus);
+                var hlaSourceAtLocus = criteria.HlaSources.GetLocus(locus);
                 // Null mismatches are specified at a specific locus - if one is specified, and a cross orientation chosen,
                 // we can end up with two null alleles selected (which causes a mismatch result, where a single null allele would be a match)
-                var isMismatchedNullAlleleAtLocus = hlaSourceAtLocus.Item1 == PatientHlaSource.NullAlleleMismatch ||
-                                                    hlaSourceAtLocus.Item2 == PatientHlaSource.NullAlleleMismatch;
+                var isMismatchedNullAlleleAtLocus = hlaSourceAtLocus.Position1 == PatientHlaSource.NullAlleleMismatch ||
+                                                    hlaSourceAtLocus.Position2 == PatientHlaSource.NullAlleleMismatch;
 
-                var shouldForceDirectOrientation = new[] {matchLevels.Item1, matchLevels.Item2}.Intersect(directOnlyMatchLevels).Any() ||
+                var shouldForceDirectOrientation = new[] {matchLevels.Position1, matchLevels.Position2}.Intersect(directOnlyMatchLevels).Any() ||
                                                    isMismatchedNullAlleleAtLocus;
                 return shouldForceDirectOrientation
                     ? MatchOrientation.Direct 
@@ -118,13 +120,13 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
         private static TgsAllele GetHomozygousAllele(Locus locus, TgsAllele tgsAllele1, TgsAllele tgsAllele2, PatientHlaSelectionCriteria criteria)
         {
-            var shouldMatchAtLocus = criteria.HlaMatches.DataAtLocus(locus);
-            if (shouldMatchAtLocus.Item1 ^ shouldMatchAtLocus.Item2)
+            var shouldMatchAtLocus = criteria.HlaMatches.GetLocus(locus);
+            if (shouldMatchAtLocus.Position1 ^ shouldMatchAtLocus.Position2)
             {
-                return shouldMatchAtLocus.Item1 ? tgsAllele1 : tgsAllele2;
+                return shouldMatchAtLocus.Position1 ? tgsAllele1 : tgsAllele2;
             }
 
-            if (!shouldMatchAtLocus.Item1 && !shouldMatchAtLocus.Item2)
+            if (!shouldMatchAtLocus.Position1 && !shouldMatchAtLocus.Position2)
             {
                 return tgsAllele1;
             }
@@ -139,13 +141,13 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
         private TgsAllele GetTgsAllele(
             Locus locus,
-            TypePosition position,
+            LocusPosition position,
             TgsAllele genotypeAllele,
             TgsAllele otherGenotypeAllele,
             PatientHlaSelectionCriteria criteria
         )
         {
-            switch (criteria.HlaSources.DataAtPosition(locus, position))
+            switch (criteria.HlaSources.GetPosition(locus, position))
             {
                 case PatientHlaSource.ExpressingAlleleMismatch:
                     return GetNonMatchingAllele(locus, position);
@@ -157,7 +159,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
                     throw new ArgumentOutOfRangeException();
             }
 
-            switch (criteria.MatchLevels.DataAtPosition(locus, position))
+            switch (criteria.MatchLevels.GetPosition(locus, position))
             {
                 case MatchLevel.PGroup:
                     return GetPGroupMatchLevelTgsAllele(locus);
@@ -176,26 +178,26 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
             }
         }
 
-        private static TgsAllele GetNonMatchingAllele(Locus locus, TypePosition position)
+        private static TgsAllele GetNonMatchingAllele(Locus locus, LocusPosition position)
         {
-            return NonMatchingGenotype.Hla.DataAtPosition(locus, position);
+            return NonMatchingGenotype.Hla.GetPosition(locus, position);
         }
 
-        private static TgsAllele GetNonMatchingNullAllele(Locus locus, TypePosition position)
+        private static TgsAllele GetNonMatchingNullAllele(Locus locus, LocusPosition position)
         {
-            return NonMatchingNullAlleleGenotype.Hla.DataAtPosition(locus, position);
+            return NonMatchingNullAlleleGenotype.Hla.GetPosition(locus, position);
         }
 
         private TgsAllele GetPGroupMatchLevelTgsAllele(Locus locus)
         {
-            var alleleAtLocus = alleleRepository.PatientAllelesForPGroupMatching().DataAtLocus(locus);
+            var alleleAtLocus = alleleRepository.PatientAllelesForPGroupMatching().GetLocus(locus);
 
             return TgsAllele.FromTestDataAllele(alleleAtLocus);
         }
 
-        private TgsAllele GetGGroupMatchLevelTgsAllele(Locus locus, TypePosition position, TgsAllele genotypeAllele)
+        private TgsAllele GetGGroupMatchLevelTgsAllele(Locus locus, LocusPosition position, TgsAllele genotypeAllele)
         {
-            var allelesAtLocus = alleleRepository.AllelesForGGroupMatching().DataAtPosition(locus, position);
+            var allelesAtLocus = alleleRepository.AllelesForGGroupMatching().GetPosition(locus, position);
             var allele = allelesAtLocus.First(a => a.AlleleName != genotypeAllele.TgsTypedAllele);
 
             return TgsAllele.FromTestDataAllele(allele);
@@ -203,12 +205,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
         private TgsAllele GetThreeFieldMatchingTgsAllele(
             Locus locus,
-            TypePosition position,
+            LocusPosition position,
             TgsAllele genotypeAllele,
             TgsAllele otherGenotypeAllele
         )
         {
-            var alleles = alleleRepository.PatientAllelesWithThreeFieldMatchPossible().DataAtPosition(locus, position);
+            var alleles = alleleRepository.PatientAllelesWithThreeFieldMatchPossible().GetPosition(locus, position);
 
             // alleles that match the first three fields
             var matchingAlleles = alleles.Where(a =>
@@ -238,12 +240,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
         private TgsAllele GetTwoFieldMatchingTgsAllele(
             Locus locus,
-            TypePosition position,
+            LocusPosition position,
             TgsAllele genotypeAllele,
             TgsAllele otherGenotypeAllele
         )
         {
-            var alleles = alleleRepository.AllelesWithTwoFieldMatchPossible().DataAtPosition(locus, position);
+            var alleles = alleleRepository.AllelesWithTwoFieldMatchPossible().GetPosition(locus, position);
 
             // alleles that match the first two fields
             var matchingAlleles = alleles.Where(a =>

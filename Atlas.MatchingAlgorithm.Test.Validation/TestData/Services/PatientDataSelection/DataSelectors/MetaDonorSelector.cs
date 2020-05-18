@@ -68,7 +68,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
         {
             var perLocusFulfilment = criteria.HasNonNullExpressionSuffix.Map((locus, position, shouldHaveSuffix) =>
                 !shouldHaveSuffix
-                || metaDonor.GenotypeCriteria.AlleleSources.DataAtPosition(locus, position) == Dataset.AllelesWithNonNullExpressionSuffix);
+                || metaDonor.GenotypeCriteria.AlleleSources.GetPosition(locus, position) == Dataset.AllelesWithNonNullExpressionSuffix);
 
             return perLocusFulfilment.ToEnumerable().All(x => x);
         }
@@ -77,7 +77,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
         {
             var perLocusFulfilment = criteria.IsNullExpressing.Map((locus, position, shouldBeNullExpressing) =>
                 !shouldBeNullExpressing
-                || metaDonor.GenotypeCriteria.AlleleSources.DataAtPosition(locus, position) == Dataset.NullAlleles);
+                || metaDonor.GenotypeCriteria.AlleleSources.GetPosition(locus, position) == Dataset.NullAlleles);
 
             return perLocusFulfilment.ToEnumerable().All(x => x);
         }
@@ -88,7 +88,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
             {
                 if (shouldBeHomozygous)
                 {
-                    return metaDonor.GenotypeCriteria.IsHomozygous.DataAtLocus(locus);
+                    return metaDonor.GenotypeCriteria.IsHomozygous.GetLocus(locus);
                 }
 
                 // If we don't explicitly need a homozygous donor, we don't mind whether the donor is homozygous or not
@@ -104,7 +104,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
             {
                 if (shouldHaveDifferentAlleleGroups)
                 {
-                    return metaDonor.GenotypeCriteria.AlleleStringContainsDifferentAntigenGroups.DataAtPosition(locus, position);
+                    return metaDonor.GenotypeCriteria.AlleleStringContainsDifferentAntigenGroups.GetPosition(locus, position);
                 }
 
                 // If we don't explicitly need a donor with different allele groups in it's allele string representation,
@@ -127,8 +127,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
             // Maps to a list of booleans - each one indicates whether the criteria are met at that locus/position
             return metaDonor.GenotypeCriteria.AlleleSources.Map((l, p, dataset) =>
             {
-                var tgsTypingRequired = criteria.MatchingTgsTypingCategories.DataAtPosition(l, p);
-                var matchLevel = criteria.MatchLevels.DataAtPosition(l, p);
+                var tgsTypingRequired = criteria.MatchingTgsTypingCategories.GetPosition(l, p);
+                var matchLevel = criteria.MatchLevels.GetPosition(l, p);
 
                 switch (dataset)
                 {
@@ -160,11 +160,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
                                && tgsTypingRequired == TgsHlaTypingCategory.Arbitrary;
                     case Dataset.AlleleStringOfSubtypesPossible:
                         return criteria.DatabaseDonorDetailsSets
-                            .Any(d => d.MatchingTypingResolutions.DataAtPosition(l, p) == HlaTypingResolution.AlleleStringOfSubtypes);
+                            .Any(d => d.MatchingTypingResolutions.GetPosition(l, p) == HlaTypingResolution.AlleleStringOfSubtypes);
                     case Dataset.NullAlleles:
-                        return criteria.IsNullExpressing.DataAtPosition(l, p);
+                        return criteria.IsNullExpressing.GetPosition(l, p);
                     case Dataset.AllelesWithNonNullExpressionSuffix:
-                        return criteria.HasNonNullExpressionSuffix.DataAtPosition(l, p);
+                        return criteria.HasNonNullExpressionSuffix.GetPosition(l, p);
                     case Dataset.AllelesWithStringsOfSingleAndMultiplePGroupsPossible:
                         var resolutions = new List<HlaTypingResolution>
                         {
@@ -172,7 +172,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
                             HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups,
                             HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup
                         };
-                        return criteria.DatabaseDonorDetailsSets.Any(d => resolutions.Contains(d.MatchingTypingResolutions.DataAtPosition(l, p)));
+                        return criteria.DatabaseDonorDetailsSets.Any(d => resolutions.Contains(d.MatchingTypingResolutions.GetPosition(l, p)));
                     default:
                         throw new ArgumentOutOfRangeException(nameof(dataset), dataset, null);
                 }
