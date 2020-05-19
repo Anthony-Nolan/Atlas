@@ -43,7 +43,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services
 
             var filteredSources = MultipleAlleleNullFilter.Filter(sources).ToList();
 
-            filteredSources.ShouldBeEquivalentTo(new[] {expressingSource});
+            filteredSources.Should().BeEquivalentTo(new[] {expressingSource});
         }
 
         [Test]
@@ -53,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services
 
             var filteredSources = MultipleAlleleNullFilter.Filter(sources).ToList();
 
-            filteredSources.ShouldBeEquivalentTo(new[] {expressingSource});
+            filteredSources.Should().BeEquivalentTo(new[] {expressingSource});
         }
 
         [Test]
@@ -63,7 +63,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services
 
             var filteredSources = MultipleAlleleNullFilter.Filter(sources).ToList();
 
-            filteredSources.ShouldBeEquivalentTo(new[] {expressingScoringInfo});
+            filteredSources.Should().BeEquivalentTo(new[] {expressingScoringInfo});
         }
 
         [Test]
@@ -73,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services
 
             var filteredSources = MultipleAlleleNullFilter.Filter(sources).ToList();
 
-            filteredSources.ShouldBeEquivalentTo(new[] {expressingScoringInfo});
+            filteredSources.Should().BeEquivalentTo(new[] {expressingScoringInfo});
         }
     }
 }

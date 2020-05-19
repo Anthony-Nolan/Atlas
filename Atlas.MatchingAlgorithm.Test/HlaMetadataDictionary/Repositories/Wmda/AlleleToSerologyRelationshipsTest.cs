@@ -73,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
                 .Select(x => (object[])x)
                 .Select(x => new SerologyAssignment(x[0].ToString(), (Assignment) x[1]));
 
-            actualRelationship.Assignments.ShouldBeEquivalentTo(expectedAssignments);
+            actualRelationship.Assignments.Should().BeEquivalentTo(expectedAssignments);
         }
 
         [TestCase("B*", "83:01")]
@@ -84,7 +84,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
         {
             var actualRelationship = GetSingleWmdaHlaTyping(molecularLocus, alleleName);
 
-            actualRelationship.Assignments.ShouldBeEquivalentTo(new List<SerologyAssignment>());
+            actualRelationship.Assignments.Should().BeEquivalentTo(new List<SerologyAssignment>());
         }
 
         [Test]
@@ -93,7 +93,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
             WmdaHlaTypings
                 .Where(hla => hla.TypingLocus.Equals("DPB1*"))
                 .SelectMany(hla => hla.Assignments)
-                .ShouldAllBeEquivalentTo(new List<SerologyAssignment>());
+                .Should().BeEquivalentTo(new List<SerologyAssignment>());
         }
     }
 }

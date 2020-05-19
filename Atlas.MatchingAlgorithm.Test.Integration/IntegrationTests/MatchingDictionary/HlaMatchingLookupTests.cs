@@ -60,7 +60,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
 
             var result = await lookupService.GetHlaLookupResult(DefaultLocus, nmdpCode, null);
 
-            result.MatchingPGroups.ShouldBeEquivalentTo(new[] { firstAllele, secondAllele });
+            result.MatchingPGroups.Should().BeEquivalentTo(new[] { firstAllele, secondAllele });
         }
 
         [Test]
@@ -73,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
 
             var result = await lookupService.GetHlaLookupResult(DefaultLocus, alleleString, null);
 
-            result.MatchingPGroups.ShouldBeEquivalentTo(new[] { firstAllele, secondAllele });
+            result.MatchingPGroups.Should().BeEquivalentTo(new[] { firstAllele, secondAllele });
         }
 
         [Test]
@@ -86,7 +86,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
 
             var result = await lookupService.GetHlaLookupResult(DefaultLocus, alleleString, null);
 
-            result.MatchingPGroups.ShouldBeEquivalentTo(new[] { firstAllele, secondAllele });
+            result.MatchingPGroups.Should().BeEquivalentTo(new[] { firstAllele, secondAllele });
         }
     }
 }

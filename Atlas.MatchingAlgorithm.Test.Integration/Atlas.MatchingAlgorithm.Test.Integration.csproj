@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="FluentAssertions" Version="4.19.3" />
+      <PackageReference Include="FluentAssertions" Version="5.10.3" />
       <PackageReference Include="LochNessBuilder" Version="1.0.1" />
       <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.4.0" />
       <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />

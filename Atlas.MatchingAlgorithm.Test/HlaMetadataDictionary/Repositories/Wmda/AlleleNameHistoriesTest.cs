@@ -49,7 +49,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
                     new[] { versionedAlleleName.HlaDatabaseVersion, versionedAlleleName.AlleleName })
                 .ToArray();
 
-            actualVersionedAlleleNames.ShouldBeEquivalentTo(expectedVersionedAlleleNames);
+            actualVersionedAlleleNames.Should().BeEquivalentTo(expectedVersionedAlleleNames);
         }
 
         [TestCaseSource(typeof(AlleleNameHistoriesTestCaseSources), nameof(AlleleNameHistoriesTestCaseSources.ExpectedCurrentAlleleNames))]
@@ -71,7 +71,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
         {
             var actualAlleleNameHistory = GetSingleWmdaHlaTyping(sequenceToTest[0], sequenceToTest[1]);
 
-            actualAlleleNameHistory.DistinctAlleleNames.ShouldBeEquivalentTo(expectedDistinctAlleleNames);
+            actualAlleleNameHistory.DistinctAlleleNames.Should().BeEquivalentTo(expectedDistinctAlleleNames);
         }
 
         [TestCaseSource(typeof(AlleleNameHistoriesTestCaseSources), nameof(AlleleNameHistoriesTestCaseSources.ExpectedMostRecentAlleleNames))]

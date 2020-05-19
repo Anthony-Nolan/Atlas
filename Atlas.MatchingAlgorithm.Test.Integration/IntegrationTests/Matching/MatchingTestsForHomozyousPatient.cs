@@ -125,7 +125,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             var criteria = criteriaFromExpandedHla.GetAlleleLevelMatchCriteria(patientMatchingHlaPhenotype);
             var matchingDonors = await GetMatchingDonorIds(criteria);
 
-            matchingDonors.ShouldBeEquivalentTo(twoOutOfTwoMatchCountDonors);
+            matchingDonors.Should().BeEquivalentTo(twoOutOfTwoMatchCountDonors);
         }
 
         [Test]
@@ -134,7 +134,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             var criteria = criteriaFromExpandedHla.GetAlleleLevelMatchCriteria(patientMatchingHlaPhenotype, 1);
             var matchingDonors = await GetMatchingDonorIds(criteria);
 
-            matchingDonors.ShouldBeEquivalentTo(oneOutOfTwoMatchCountDonors);
+            matchingDonors.Should().BeEquivalentTo(oneOutOfTwoMatchCountDonors);
         }
 
         [Test]
@@ -143,7 +143,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             var criteria = criteriaFromExpandedHla.GetAlleleLevelMatchCriteria(patientMatchingHlaPhenotype, 2);
             var matchingDonors = await GetMatchingDonorIds(criteria);
 
-            matchingDonors.ShouldBeEquivalentTo(zeroOutOfTwoMatchCountDonors);
+            matchingDonors.Should().BeEquivalentTo(zeroOutOfTwoMatchCountDonors);
         }
 
         private void SetSourceHlaPhenotypes()

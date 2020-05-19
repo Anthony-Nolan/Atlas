@@ -30,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
         {
             dataRefreshHistoryRepository.GetActiveWmdaDataVersion().Returns(null as string);
 
-            wmdaHlaVersionProvider.Invoking(provider => provider.GetActiveHlaDatabaseVersion()).ShouldThrow<ArgumentNullException>();
+            wmdaHlaVersionProvider.Invoking(provider => provider.GetActiveHlaDatabaseVersion()).Should().Throw<ArgumentNullException>();
         }
     }
 }

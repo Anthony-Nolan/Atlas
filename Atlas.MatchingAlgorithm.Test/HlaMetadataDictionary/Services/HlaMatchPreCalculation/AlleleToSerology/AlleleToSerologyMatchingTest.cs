@@ -23,7 +23,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPr
                 .Select(m => (object[])m)
                 .Select(BuildMatchingSerology);
 
-            actualMatchingSerologies.ShouldBeEquivalentTo(expectedMatchingSerologies);
+            actualMatchingSerologies.Should().BeEquivalentTo(expectedMatchingSerologies);
         }
 
         [Test]
@@ -56,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPr
                 .Select(m => (object[])m)
                 .Select(BuildMatchingSerology);
 
-            actualMatchingSerologies.ShouldBeEquivalentTo(expectedMatchingSerologies);
+            actualMatchingSerologies.Should().BeEquivalentTo(expectedMatchingSerologies);
         }
 
         [Test]
@@ -78,7 +78,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPr
                 .Select(m => (object[])m)
                 .Select(BuildMatchingSerology);
 
-            actualMatchingSerologies.ShouldBeEquivalentTo(expectedMatchingSerologies);
+            actualMatchingSerologies.Should().BeEquivalentTo(expectedMatchingSerologies);
         }
 
         [TestCaseSource(
@@ -96,7 +96,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPr
                 .Select(m => (object[])m)
                 .Select(BuildMatchingSerology);
 
-            actualMatchingSerologies.ShouldBeEquivalentTo(expectedMatchingSerologies);
+            actualMatchingSerologies.Should().BeEquivalentTo(expectedMatchingSerologies);
         }
 
         [TestCaseSource(
@@ -112,7 +112,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPr
                 .Select(m => (object[])m)
                 .Select(BuildMatchingSerology);
 
-            actualMatchingSerologies.ShouldBeEquivalentTo(expectedMatchingSerologies);
+            actualMatchingSerologies.Should().BeEquivalentTo(expectedMatchingSerologies);
         }
 
         private static MatchingSerology BuildMatchingSerology(object[] dataSource)

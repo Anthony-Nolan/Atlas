@@ -31,7 +31,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 
             var actualGGroup = GetSingleWmdaHlaTyping(locus, gGroupName);
 
-            actualGGroup.ShouldBeEquivalentTo(expectedGGroup);
+            actualGGroup.Should().BeEquivalentTo(expectedGGroup);
         }
     }
 }

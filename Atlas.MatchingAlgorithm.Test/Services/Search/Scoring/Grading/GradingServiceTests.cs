@@ -120,9 +120,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.GGroup, expectedMatchOrientations);
 
             // Direct grade (P1: D1) is GGroup; Cross (P1: D2) is Mismatch
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult1);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is GGroup; Cross (P2: D1) is Mismatch
-            actualGradingResults.A.Position2.ShouldBeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
         }
 
         [Test]
@@ -179,9 +179,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.CDna, expectedMatchOrientations);
 
             // Direct grade (P1: D1) is GDna; Cross (P1: D2) is PGroup
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult1);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is CDna; Cross (P2: D1) is PGroup
-            actualGradingResults.A.Position2.ShouldBeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
         }
 
         [Test]
@@ -236,9 +236,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
 
             // Direct grade (P1: D1) is Associated; Cross (P1: D2) is Split
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult1);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is Mismatch; Cross (P2: D1) is Mismatch
-            actualGradingResults.A.Position2.ShouldBeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
         }
 
         [Test]
@@ -284,9 +284,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.GGroup, expectedMatchOrientations);
 
             // Direct grade (P1: D1) is Mismatch; Cross (P1: D2) is GGroup
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult1);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is Mismatch; Cross (P2: D1) is GGroup
-            actualGradingResults.A.Position2.ShouldBeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
         }
 
         [Test]
@@ -343,9 +343,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.CDna, expectedMatchOrientations);
 
             // Direct grade (P1: D1) is PGroup; Cross (P1: D2) is GDna
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult1);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is PGroup; Cross (P2: D1) is CDna
-            actualGradingResults.A.Position2.ShouldBeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
         }
 
         [Test]
@@ -400,9 +400,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
 
             // Direct grade (P1: D1) is Split; Cross (P1: D2) is Associated
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult1);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is Mismatch; Cross (P2: D1) is Mismatch
-            actualGradingResults.A.Position2.ShouldBeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
         }
 
         [Test]
@@ -452,9 +452,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Protein, expectedMatchOrientations);
 
             // Direct grade (P1: D1) is Protein; Cross (P1: D2) is Protein
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult1);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is Protein; Cross (P2: D1) is Protein
-            actualGradingResults.A.Position2.ShouldBeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
         }
 
         [Test]
@@ -499,9 +499,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Split, expectedMatchOrientations);
 
             // Direct grade (P1: D1) is Mismatch; Cross (P1: D2) is Split
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult1);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is Split; Cross (P2: D1) is Mismatch
-            actualGradingResults.A.Position2.ShouldBeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
         }
 
         [Test]
@@ -548,9 +548,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.Mismatch, expectedMatchOrientations);
 
             // Direct grade (P1: D1) is Mismatch; Cross (P1: D2) is Mismatch
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult1);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
             // Direct grade (P2: D2) is Mismatch; Cross (P2: D1) is Mismatch
-            actualGradingResults.A.Position2.ShouldBeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
         }
 
         [TestCase(typeof(SingleAlleleScoringInfo))]
@@ -574,8 +574,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
             var expectedGradingResult1 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult1);
-            actualGradingResults.A.Position2.ShouldBeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
+            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
         }
 
         [TestCase(typeof(SingleAlleleScoringInfo))]
@@ -599,8 +599,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
             var expectedGradingResult1 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult1);
-            actualGradingResults.A.Position2.ShouldBeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
+            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
         }
 
         [Test]
@@ -616,8 +616,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
             var expectedGradingResult1 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
             var expectedGradingResult2 = new MatchGradeResult(MatchGrade.PGroup, expectedMatchOrientations);
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult1);
-            actualGradingResults.A.Position2.ShouldBeEquivalentTo(expectedGradingResult2);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult1);
+            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResult2);
         }
 
         #endregion
@@ -656,7 +656,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] {MatchOrientation.Direct});
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
         }
 
         [Test]
@@ -693,7 +693,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] {MatchOrientation.Direct});
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
         }
 
         [Test]
@@ -734,7 +734,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
         }
 
         [Test]
@@ -771,7 +771,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
         }
 
         [Test]
@@ -808,7 +808,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] {MatchOrientation.Direct});
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
         }
 
         [Test]
@@ -847,7 +847,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] {MatchOrientation.Direct});
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
         }
 
         [Test]
@@ -893,7 +893,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
         }
 
         [Test]
@@ -935,7 +935,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
         }
 
         [Test]
@@ -976,7 +976,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
         }
 
         [Test]
@@ -1022,7 +1022,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
         }
 
         [Test]
@@ -1061,7 +1061,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
         }
 
         [Test]
@@ -1096,7 +1096,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
         }
 
         [Test]
@@ -1133,7 +1133,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
         }
 
         [Test]
@@ -1175,7 +1175,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
         }
 
         [Test]
@@ -1210,7 +1210,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
         }
 
         [Test]
@@ -1243,7 +1243,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
 
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResult);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResult);
         }
 
         #endregion
@@ -1291,14 +1291,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
             var expectedGradingResultAtDrb1 = new MatchGradeResult(MatchGrade.Split, expectedMatchOrientations);
 
             // both grades should be GDna, in both orientations
-            actualGradingResults.A.Position1.ShouldBeEquivalentTo(expectedGradingResultAtA);
-            actualGradingResults.A.Position2.ShouldBeEquivalentTo(expectedGradingResultAtA);
+            actualGradingResults.A.Position1.Should().BeEquivalentTo(expectedGradingResultAtA);
+            actualGradingResults.A.Position2.Should().BeEquivalentTo(expectedGradingResultAtA);
             // both grades should be GGroup, in both orientations
-            actualGradingResults.B.Position1.ShouldBeEquivalentTo(expectedGradingResultAtB);
-            actualGradingResults.B.Position2.ShouldBeEquivalentTo(expectedGradingResultAtB);
+            actualGradingResults.B.Position1.Should().BeEquivalentTo(expectedGradingResultAtB);
+            actualGradingResults.B.Position2.Should().BeEquivalentTo(expectedGradingResultAtB);
             // both grades should be Split, in both orientations
-            actualGradingResults.Drb1.Position1.ShouldBeEquivalentTo(expectedGradingResultAtDrb1);
-            actualGradingResults.Drb1.Position2.ShouldBeEquivalentTo(expectedGradingResultAtDrb1);
+            actualGradingResults.Drb1.Position1.Should().BeEquivalentTo(expectedGradingResultAtDrb1);
+            actualGradingResults.Drb1.Position2.Should().BeEquivalentTo(expectedGradingResultAtDrb1);
         }
 
         private static PhenotypeInfo<IHlaScoringLookupResult> BuildLookupResultsAtMatchedLocus(

@@ -54,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.AlleleName
         {
             var actualAlleleName = GetAlleleNameLookupResult(locus, lookupName);
 
-            actualAlleleName.CurrentAlleleNames.ShouldBeEquivalentTo(expectedCurrentAlleleName);
+            actualAlleleName.CurrentAlleleNames.Should().BeEquivalentTo(expectedCurrentAlleleName);
         }
 
         [TestCase(Locus.A, "02:05",
@@ -77,7 +77,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.AlleleName
         {
             var actualAlleleName = GetAlleleNameLookupResult(locus, lookupName);
 
-            actualAlleleName.CurrentAlleleNames.ShouldBeEquivalentTo(expectedCurrentAlleleNames);
+            actualAlleleName.CurrentAlleleNames.Should().BeEquivalentTo(expectedCurrentAlleleNames);
         }
 
         private IAlleleNameLookupResult GetAlleleNameLookupResult(Locus locus, string lookupName)

@@ -63,7 +63,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Models.HlaTypings
         {
             var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
 
-            actualAlleleTyping.Fields.ShouldBeEquivalentTo(expectedFields);
+            actualAlleleTyping.Fields.Should().BeEquivalentTo(expectedFields);
         }
 
         [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedTwoFieldWithExpressionSuffixNames))]
@@ -95,7 +95,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Models.HlaTypings
         {
             var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
 
-            actualAlleleTyping.NameVariantsTruncatedByFieldAndOrExpressionSuffix.ShouldBeEquivalentTo(expectedAlleleNameVariants);
+            actualAlleleTyping.NameVariantsTruncatedByFieldAndOrExpressionSuffix.Should().BeEquivalentTo(expectedAlleleNameVariants);
         }
     }
 }

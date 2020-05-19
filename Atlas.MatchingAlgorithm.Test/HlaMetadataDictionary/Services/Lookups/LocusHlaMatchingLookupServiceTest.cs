@@ -56,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
                 MatchedLocus,
                 new Tuple<string, string>(hlaString1, hlaString2), "hla-db-version");
 
-            actualResults.ShouldBeEquivalentTo(expectedResults);
+            actualResults.Should().BeEquivalentTo(expectedResults);
         }
 
         [TestCase(TypingMethod.Molecular)]
@@ -89,7 +89,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
                 MatchedLocus,
                 new Tuple<string, string>(typingInPosition1, typingInPosition2), "hla-db-version");
 
-            actualResults.ShouldBeEquivalentTo(expectedResults);
+            actualResults.Should().BeEquivalentTo(expectedResults);
         }
 
         [TestCase(TypingMethod.Molecular)]
@@ -122,7 +122,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
                 MatchedLocus,
                 new Tuple<string, string>(typingInPosition1, typingInPosition2), "hla-db-version");
 
-            actualResults.ShouldBeEquivalentTo(expectedResults);
+            actualResults.Should().BeEquivalentTo(expectedResults);
         }
     }
 }

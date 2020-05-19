@@ -79,8 +79,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
-            scoringInfo.MatchingPGroups.ShouldBeEquivalentTo(alleles);
-            ((ConsolidatedMolecularScoringInfo)scoringInfo).MatchingGGroups.ShouldBeEquivalentTo(alleles);
+            scoringInfo.MatchingPGroups.Should().BeEquivalentTo(alleles);
+            ((ConsolidatedMolecularScoringInfo)scoringInfo).MatchingGGroups.Should().BeEquivalentTo(alleles);
         }
 
         [Test]
@@ -104,8 +104,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
-            scoringInfo.MatchingPGroups.ShouldBeEquivalentTo(expressingAlleles);
-            ((ConsolidatedMolecularScoringInfo)scoringInfo).MatchingGGroups.ShouldBeEquivalentTo(expressingAlleles);
+            scoringInfo.MatchingPGroups.Should().BeEquivalentTo(expressingAlleles);
+            ((ConsolidatedMolecularScoringInfo)scoringInfo).MatchingGGroups.Should().BeEquivalentTo(expressingAlleles);
         }
 
         [Test]
@@ -121,8 +121,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
-            scoringInfo.MatchingPGroups.ShouldBeEquivalentTo(alleles);
-            ((ConsolidatedMolecularScoringInfo)scoringInfo).MatchingGGroups.ShouldBeEquivalentTo(alleles);
+            scoringInfo.MatchingPGroups.Should().BeEquivalentTo(alleles);
+            ((ConsolidatedMolecularScoringInfo)scoringInfo).MatchingGGroups.Should().BeEquivalentTo(alleles);
         }
 
         [Test]
@@ -138,8 +138,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
-            scoringInfo.MatchingPGroups.ShouldBeEquivalentTo(alleles);
-            ((ConsolidatedMolecularScoringInfo)scoringInfo).MatchingGGroups.ShouldBeEquivalentTo(alleles);
+            scoringInfo.MatchingPGroups.Should().BeEquivalentTo(alleles);
+            ((ConsolidatedMolecularScoringInfo)scoringInfo).MatchingGGroups.Should().BeEquivalentTo(alleles);
         }
 
         [Test]
@@ -156,8 +156,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataD
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
-            scoringInfo.MatchingPGroups.ShouldBeEquivalentTo(expressingAlleles);
-            ((ConsolidatedMolecularScoringInfo)scoringInfo).MatchingGGroups.ShouldBeEquivalentTo(expressingAlleles);
+            scoringInfo.MatchingPGroups.Should().BeEquivalentTo(expressingAlleles);
+            ((ConsolidatedMolecularScoringInfo)scoringInfo).MatchingGGroups.Should().BeEquivalentTo(expressingAlleles);
         }
     }
 }
