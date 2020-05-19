@@ -21,7 +21,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         {
             return CalculateMatchDetailsForDonorHla(
                 locusMatchCriteria,
-                new LocusInfo<PGroup>(pGroups.Position1.ToList(), pGroups.Position2.ToList())
+                new LocusInfo<PGroup>(pGroups.Position1?.ToList(), pGroups.Position2?.ToList())
             );
         }
 
