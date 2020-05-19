@@ -1,11 +1,11 @@
 ﻿using System;
 using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Data.Models
 {
     /// <summary>
-    /// Internal position enum allows the data project to ensure that the stored backing values are never changed. 
+    /// Internal position enum allows the data project to ensure that the stored backing values are never changed.
+    /// This should never be made public - common LocusPosition enum should be used outside of the data project.
     /// </summary>
     internal enum TypePosition
     {

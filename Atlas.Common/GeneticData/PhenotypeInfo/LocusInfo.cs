@@ -3,6 +3,12 @@ using System.Collections.Generic;
 
 namespace Atlas.Common.GeneticData.PhenotypeInfo
 {
+    /// <summary>
+    /// LocusInfo is a single Locus' information - with a T at each position.
+    /// A LociInfo has a T at each locus.
+    /// A PhenotypeInfo is a special case of LociInfo, where T = LocusInfo.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class LocusInfo<T>
     {
         public T Position1 { get; set; }
@@ -17,20 +23,16 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             Position1 = initialValue;
             Position2 = initialValue;
         }
-        
-        public LocusInfo(LocusInfo<T> original)
+
+        public LocusInfo(T position1, T position2)
         {
-            Position1 = original.Position1;
-            Position2 = original.Position2;
+            Position1 = position1;
+            Position2 = position2;
         }
 
         public LocusInfo<R> Map<R>(Func<T, R> mapping)
         {
-            return new LocusInfo<R>
-            {
-                Position1 = mapping(Position1),
-                Position2 = mapping(Position2)
-            };
+            return new LocusInfo<R>(mapping(Position1), mapping(Position2));
         }
 
         public IEnumerable<T> ToEnumerable()
