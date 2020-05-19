@@ -24,7 +24,7 @@ namespace Atlas.Common.Test.Core.Http.Exceptions
                 .WithFieldErrors("Field1", "Foo", "Bar")
                 .WithFieldErrors("Field2", "Baz");
 
-            ex.FieldErrors.ShouldBeEquivalentTo(new List<FieldErrorModel>
+            ex.FieldErrors.Should().BeEquivalentTo(new List<FieldErrorModel>
             {
                 new FieldErrorModel { Key = "Field1", Errors = new List<string> { "Foo", "Bar" } },
                 new FieldErrorModel { Key = "Field2", Errors = new List<string> { "Baz" } },
