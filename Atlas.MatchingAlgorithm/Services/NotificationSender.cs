@@ -1,10 +1,10 @@
-using Atlas.MatchingAlgorithm.ApplicationInsights;
-using Atlas.MatchingAlgorithm.Config;
-using Atlas.Common.Notifications;
 using System;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Notifications;
 using Atlas.Common.Notifications.MessageModels;
+using Atlas.MatchingAlgorithm.ApplicationInsights;
+using Atlas.MatchingAlgorithm.Config;
 
 namespace Atlas.MatchingAlgorithm.Services
 {

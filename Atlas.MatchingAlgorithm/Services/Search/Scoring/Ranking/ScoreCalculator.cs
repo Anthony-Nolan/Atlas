@@ -1,6 +1,5 @@
 ﻿using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using Atlas.MatchingAlgorithm.Data.Repositories;
 
 namespace Atlas.MatchingAlgorithm.Services.Scoring.Ranking
 {

@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection;
+﻿using Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using NUnit.Framework;
 

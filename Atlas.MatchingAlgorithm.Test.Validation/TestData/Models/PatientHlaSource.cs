@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models
+﻿namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models
 {
     /// <summary>
     /// Determines what data will be used to select a patient's hla 

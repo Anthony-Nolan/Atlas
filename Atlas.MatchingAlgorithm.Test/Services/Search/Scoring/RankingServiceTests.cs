@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using FluentAssertions;
-using LochNessBuilder;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
 using Atlas.MatchingAlgorithm.Test.Builders.SearchResults;
+using FluentAssertions;
+using LochNessBuilder;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring

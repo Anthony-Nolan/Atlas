@@ -1,6 +1,6 @@
-﻿using Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup;
+﻿using System.Collections.Generic;
+using Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup;
 using Atlas.HlaMetadataDictionary.Repositories;
-using System.Collections.Generic;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories
 {

@@ -1,12 +1,12 @@
-﻿using FluentAssertions;
-using Atlas.MatchingAlgorithm.Models;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
+using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using ILogger = Atlas.Common.ApplicationInsights.ILogger;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 {

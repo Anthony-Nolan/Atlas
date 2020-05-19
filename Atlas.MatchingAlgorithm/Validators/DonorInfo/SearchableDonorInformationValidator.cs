@@ -1,8 +1,8 @@
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Extensions;
-using FluentValidation;
 using Atlas.MatchingAlgorithm.Models;
 using EnumStringValues;
+using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Validators.DonorInfo
 {

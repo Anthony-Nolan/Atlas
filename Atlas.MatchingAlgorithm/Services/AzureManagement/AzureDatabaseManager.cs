@@ -1,14 +1,13 @@
 using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Microsoft.Extensions.Options;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
+using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.Utility;
-using Atlas.MatchingAlgorithm.ConfigSettings;
+using Microsoft.Extensions.Options;
 using Polly;
 
 namespace Atlas.MatchingAlgorithm.Services.AzureManagement

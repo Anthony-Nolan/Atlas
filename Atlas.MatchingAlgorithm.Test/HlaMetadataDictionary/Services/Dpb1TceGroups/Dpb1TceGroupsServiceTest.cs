@@ -1,9 +1,9 @@
-﻿using FluentAssertions;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup;
 using Atlas.HlaMetadataDictionary.Services;
+using FluentAssertions;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Dpb1TceGroups
 {

@@ -1,13 +1,12 @@
-﻿using FluentAssertions;
-using Atlas.MatchingAlgorithm.Common.Models;
+﻿using System;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Services;
+using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using System;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
 {

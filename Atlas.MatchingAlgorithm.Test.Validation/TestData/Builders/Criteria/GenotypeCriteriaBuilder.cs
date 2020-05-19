@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
-using Atlas.MatchingAlgorithm.Common.Models;
 using static EnumStringValues.EnumExtensions;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria

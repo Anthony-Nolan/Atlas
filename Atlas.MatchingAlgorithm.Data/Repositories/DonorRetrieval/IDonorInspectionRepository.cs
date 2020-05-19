@@ -1,7 +1,7 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models.Matching;
-using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Common.Models.Matching;
+using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {

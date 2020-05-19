@@ -1,23 +1,23 @@
-﻿using FluentAssertions;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Common.Models.Scoring;
+﻿using System;
+using Atlas.Common.Caching;
+using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Common.Models.Scoring;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Scoring.Grading;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Test.Builders;
 using Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo;
-using NSubstitute;
-using NUnit.Framework;
-using System;
-using Atlas.Common.GeneticData;
+using FluentAssertions;
 using LazyCache;
 using LazyCache.Providers;
 using Microsoft.Extensions.Caching.Memory;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
-using Atlas.Common.Caching;
+using NSubstitute;
+using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 {

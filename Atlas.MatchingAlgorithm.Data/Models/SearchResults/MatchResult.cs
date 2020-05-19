@@ -1,11 +1,11 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using static EnumStringValues.EnumExtensions;
 using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
+using static EnumStringValues.EnumExtensions;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
 {

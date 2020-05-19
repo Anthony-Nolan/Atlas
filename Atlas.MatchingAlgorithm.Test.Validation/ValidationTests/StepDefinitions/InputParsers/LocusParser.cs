@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using static EnumStringValues.EnumExtensions;
 using Atlas.Common.GeneticData;
+using static EnumStringValues.EnumExtensions;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers
 {

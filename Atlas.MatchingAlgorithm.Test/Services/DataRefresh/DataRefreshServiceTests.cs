@@ -1,24 +1,23 @@
-using Microsoft.Extensions.Options;
+using System;
+using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.HlaMetadataDictionary;
+using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
-using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Test.Builders.DataRefresh;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
+using FluentAssertions;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
-using System;
-using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.HlaMetadataDictionary;
-using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
-using FluentAssertions;
-using CreationBehaviour = Atlas.HlaMetadataDictionary.HlaMetadataDictionary.CreationBehaviour;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 {
@@ -111,7 +110,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             const string hlaDatabaseVersion = "3390";
             hlaMetadataDictionary
-                .RecreateHlaMetadataDictionary(CreationBehaviour.Latest)
+                .RecreateHlaMetadataDictionary(Atlas.HlaMetadataDictionary.HlaMetadataDictionary.CreationBehaviour.Latest)
                 .Returns(hlaDatabaseVersion);
 
             var returnedHlaVersion = await dataRefreshService.RefreshData();
@@ -133,7 +132,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             const string hlaDatabaseVersion = "3390";
             hlaMetadataDictionary
-                .RecreateHlaMetadataDictionary(CreationBehaviour.Latest)
+                .RecreateHlaMetadataDictionary(Atlas.HlaMetadataDictionary.HlaMetadataDictionary.CreationBehaviour.Latest)
                 .Returns(hlaDatabaseVersion);
 
             await dataRefreshService.RefreshData();
@@ -215,7 +214,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Build();
             settingsOptions.Value.Returns(settings);
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
-            hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest).Throws(new Exception());
+            hlaMetadataDictionary.RecreateHlaMetadataDictionary(Atlas.HlaMetadataDictionary.HlaMetadataDictionary.CreationBehaviour.Latest).Throws(new Exception());
 
             try
             {

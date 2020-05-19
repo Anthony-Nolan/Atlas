@@ -1,6 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
-using System.ComponentModel.DataAnnotations;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.Entities
 {

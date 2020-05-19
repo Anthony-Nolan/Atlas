@@ -1,12 +1,12 @@
-﻿using FluentValidation;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ServiceBus.Models;
 using Atlas.MatchingAlgorithm.Extensions;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
-using Atlas.Common.ServiceBus.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
+using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 {

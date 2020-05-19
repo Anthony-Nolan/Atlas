@@ -1,8 +1,7 @@
 ﻿using Atlas.Common.GeneticData;
-using FluentAssertions;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Builders.SearchResults;
+using FluentAssertions;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Models.SearchResults

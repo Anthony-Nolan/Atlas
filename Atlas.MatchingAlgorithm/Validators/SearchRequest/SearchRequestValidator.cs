@@ -1,6 +1,4 @@
-using System.Linq;
 using FluentValidation;
-using Atlas.MatchingAlgorithm.Helpers;
 
 namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
 {

@@ -1,12 +1,11 @@
 ﻿using System.Linq;
 using Atlas.Common.GeneticData;
-using FluentAssertions;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo;
+using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 

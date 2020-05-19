@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Exceptions;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.Entities.MatchingHla

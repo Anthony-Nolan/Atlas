@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models.ScoringWeightings;
+using Microsoft.EntityFrameworkCore;
 using static EnumStringValues.EnumExtensions;
 
 namespace Atlas.MatchingAlgorithm.Data.Persistent

@@ -1,19 +1,18 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MultipleAlleleCodeDictionary;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using Atlas.HlaMetadataDictionary.Services;
+using Atlas.MultipleAlleleCodeDictionary;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.Common.GeneticData.Hla.Services;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
 {

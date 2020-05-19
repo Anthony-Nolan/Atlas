@@ -1,20 +1,20 @@
-﻿using FluentAssertions;
-using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
-using Atlas.HlaMetadataDictionary.Exceptions;
-using Atlas.MatchingAlgorithm.Services.Donors;
-using NSubstitute;
-using NUnit.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.HlaMetadataDictionary;
+using Atlas.HlaMetadataDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
+using FluentAssertions;
+using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-using ILogger = Atlas.Common.ApplicationInsights.ILogger;
+using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 {

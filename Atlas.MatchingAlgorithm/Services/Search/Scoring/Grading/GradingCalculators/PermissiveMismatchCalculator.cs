@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.HlaMetadataDictionary;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
 namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
 {

@@ -1,10 +1,9 @@
 ﻿using Atlas.Common.GeneticData;
-using FluentAssertions;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
+using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 

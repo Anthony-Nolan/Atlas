@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
-using Atlas.MatchingAlgorithm.Models;
-using System;
+﻿using System;
 using Atlas.Common.ApplicationInsights;
+using Atlas.MatchingAlgorithm.Models;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights
 {

@@ -1,15 +1,15 @@
-using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Clients.AzureStorage;
-using Atlas.MatchingAlgorithm.Clients.ServiceBus;
-using Atlas.MatchingAlgorithm.Models;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Clients.AzureStorage;
+using Atlas.MatchingAlgorithm.Clients.ServiceBus;
+using Atlas.MatchingAlgorithm.Models;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
 {

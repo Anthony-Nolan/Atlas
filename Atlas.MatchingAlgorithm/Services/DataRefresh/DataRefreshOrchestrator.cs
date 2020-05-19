@@ -2,15 +2,15 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Microsoft.Extensions.Options;
+using Atlas.HlaMetadataDictionary;
+using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Extensions;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
-using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.HlaMetadataDictionary;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 {

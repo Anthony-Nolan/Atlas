@@ -1,6 +1,6 @@
-﻿using FluentValidation.TestHelper;
-using Atlas.MatchingAlgorithm.Models;
+﻿using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
+using FluentValidation.TestHelper;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates

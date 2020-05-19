@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults
+﻿namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults
 {
     public class SearchResult
     {

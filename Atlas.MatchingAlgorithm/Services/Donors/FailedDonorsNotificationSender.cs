@@ -1,10 +1,10 @@
-﻿using Atlas.MatchingAlgorithm.Models;
-using Atlas.Common.Notifications;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Notifications;
+using Atlas.MatchingAlgorithm.Models;
 
 namespace Atlas.MatchingAlgorithm.Services.Donors
 {

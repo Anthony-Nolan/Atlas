@@ -1,5 +1,5 @@
-﻿using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
-using Atlas.MatchingAlgorithm.Common.Models;
+﻿using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
 {

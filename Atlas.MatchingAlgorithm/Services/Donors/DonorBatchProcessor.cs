@@ -1,11 +1,11 @@
-﻿using Atlas.MatchingAlgorithm.ApplicationInsights.DonorProcessing;
-using Atlas.MatchingAlgorithm.Exceptions;
-using Atlas.MatchingAlgorithm.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.MatchingAlgorithm.ApplicationInsights.DonorProcessing;
+using Atlas.MatchingAlgorithm.Exceptions;
+using Atlas.MatchingAlgorithm.Models;
 
 namespace Atlas.MatchingAlgorithm.Services.Donors
 {

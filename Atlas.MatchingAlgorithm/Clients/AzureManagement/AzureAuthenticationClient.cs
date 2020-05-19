@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Clients.AzureManagement.AzureApiModels;
+using Atlas.MatchingAlgorithm.ConfigSettings;
+using Atlas.MatchingAlgorithm.Exceptions;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Atlas.MatchingAlgorithm.Clients.AzureManagement.AzureApiModels;
-using Atlas.MatchingAlgorithm.Exceptions;
-using Atlas.MatchingAlgorithm.ConfigSettings;
 
 namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
 {

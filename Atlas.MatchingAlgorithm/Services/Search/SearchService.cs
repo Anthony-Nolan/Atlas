@@ -1,13 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Extensions;
-using Atlas.MatchingAlgorithm.Helpers;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Services.Search.Matching;
-using Atlas.MatchingAlgorithm.Services.Search.Scoring;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -15,7 +6,14 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary;
-using SearchResult = Atlas.MatchingAlgorithm.Client.Models.SearchResults.SearchResult;
+using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Extensions;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+using Atlas.MatchingAlgorithm.Services.Search.Matching;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
 {

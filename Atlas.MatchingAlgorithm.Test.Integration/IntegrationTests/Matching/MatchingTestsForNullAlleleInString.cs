@@ -1,21 +1,21 @@
-﻿using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
-using Atlas.MatchingAlgorithm.Client.Models;
-using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
-using Atlas.MatchingAlgorithm.Services.Search.Matching;
-using Atlas.MatchingAlgorithm.Test.Integration.TestData;
-using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
-using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
-using NUnit.Framework;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Donors;
+using Atlas.MatchingAlgorithm.Services.Search.Matching;
+using Atlas.MatchingAlgorithm.Test.Integration.TestData;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
+using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 {

@@ -1,11 +1,11 @@
-﻿using Dapper;
-using Atlas.MatchingAlgorithm.Common.Repositories;
-using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
-using Atlas.MatchingAlgorithm.Data.Services;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Common.Repositories;
+using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Data.Services;
+using Dapper;
 
 // ReSharper disable InconsistentNaming
 

@@ -1,6 +1,6 @@
-﻿using LochNessBuilder;
+﻿using System;
 using Atlas.MatchingAlgorithm.Models;
-using System;
+using LochNessBuilder;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 {

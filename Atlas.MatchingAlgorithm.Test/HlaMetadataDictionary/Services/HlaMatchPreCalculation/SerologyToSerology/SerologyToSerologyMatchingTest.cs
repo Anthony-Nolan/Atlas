@@ -1,18 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using ApprovalTests;
+using ApprovalTests.Namers;
 using ApprovalTests.Reporters;
 using ApprovalTests.Reporters.TestFrameworks;
-using FluentAssertions;
+using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
+using FluentAssertions;
 using NUnit.Framework;
-using Locus = Atlas.Common.GeneticData.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation.SerologyToSerology
 {
     [UseReporter(typeof(NUnitReporter))]
-    [ApprovalTests.Namers.UseApprovalSubdirectory("Approvals")]
+    [UseApprovalSubdirectory("Approvals")]
     public class SerologyToSerologyMatchingTest : MatchedOnTestBase<ISerologyInfoForMatching>
     {
         [TestCaseSource(

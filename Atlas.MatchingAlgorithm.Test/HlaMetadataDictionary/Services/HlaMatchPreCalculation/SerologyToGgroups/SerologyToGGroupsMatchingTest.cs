@@ -1,16 +1,16 @@
-﻿using ApprovalTests;
+﻿using System.Linq;
+using ApprovalTests;
+using ApprovalTests.Namers;
 using ApprovalTests.Reporters;
-using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
-using NUnit.Framework;
-using System.Linq;
 using ApprovalTests.Reporters.TestFrameworks;
 using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
+using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation.SerologyToGgroups
 {
     [UseReporter(typeof(NUnitReporter))]
-    [ApprovalTests.Namers.UseApprovalSubdirectory("Approvals")]
+    [UseApprovalSubdirectory("Approvals")]
     public class SerologyToGGroupsMatchingTest : MatchedOnTestBase<MatchedSerology>
     {
         [Test]

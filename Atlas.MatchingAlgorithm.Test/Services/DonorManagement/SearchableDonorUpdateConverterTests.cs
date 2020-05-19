@@ -1,13 +1,13 @@
-﻿using FluentAssertions;
-using Atlas.MatchingAlgorithm.Models;
-using Atlas.MatchingAlgorithm.Services.DonorManagement;
-using Atlas.Common.ServiceBus.Models;
-using NSubstitute;
-using NUnit.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ILogger = Atlas.Common.ApplicationInsights.ILogger;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ServiceBus.Models;
+using Atlas.MatchingAlgorithm.Models;
+using Atlas.MatchingAlgorithm.Services.DonorManagement;
+using FluentAssertions;
+using NSubstitute;
+using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 {

@@ -1,5 +1,5 @@
-﻿using Atlas.MatchingAlgorithm.Models;
-using System;
+﻿using System;
+using Atlas.MatchingAlgorithm.Models;
 
 namespace Atlas.MatchingAlgorithm.Exceptions
 {

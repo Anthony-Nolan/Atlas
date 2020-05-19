@@ -1,10 +1,10 @@
-using Atlas.MatchingAlgorithm.Models;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.NovaHttpClient;
 using Atlas.Common.NovaHttpClient.Client;
+using Atlas.MatchingAlgorithm.Models;
 
 namespace Atlas.MatchingAlgorithm.Clients.Http.DonorService
 {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
+﻿namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
 {
     /// <summary>
     /// The typing resolutions that TGS typings can be 'dumbed down' to

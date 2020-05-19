@@ -1,10 +1,9 @@
 ﻿using System.Reflection;
-using System.Text.Json.Serialization;
+using Atlas.MatchingAlgorithm.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Atlas.MatchingAlgorithm.DependencyInjection;
 
 namespace Atlas.MatchingAlgorithm.Api
 {

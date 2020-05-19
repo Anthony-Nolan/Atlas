@@ -1,12 +1,13 @@
-using Atlas.MatchingAlgorithm.Models;
-using CsvHelper;
-using CsvHelper.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.MatchingAlgorithm.Models;
+using CsvHelper;
+using CsvHelper.Configuration;
 
 namespace Atlas.MatchingAlgorithm.Clients.Http.DonorService
 {
@@ -60,7 +61,7 @@ namespace Atlas.MatchingAlgorithm.Clients.Http.DonorService
 
         private static List<SearchableDonorInformation> ReadAllDonors()
         {
-            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            var assembly = Assembly.GetExecutingAssembly();
 
             using (var stream = assembly.GetManifestResourceStream(EmbeddedDonorsFile))
             using (var reader = new StreamReader(stream))

@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
 {

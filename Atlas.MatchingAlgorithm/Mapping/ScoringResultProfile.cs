@@ -1,10 +1,9 @@
 ﻿using Atlas.Common.GeneticData;
-using AutoMapper;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
+using AutoMapper;
 
 namespace Atlas.MatchingAlgorithm.Mapping
 {

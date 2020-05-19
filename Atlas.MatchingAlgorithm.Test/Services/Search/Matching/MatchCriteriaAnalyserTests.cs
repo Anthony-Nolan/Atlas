@@ -1,9 +1,8 @@
 ﻿using System.Linq;
 using Atlas.Common.GeneticData;
-using FluentAssertions;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.Matching;
 using Atlas.MatchingAlgorithm.Test.Builders;
+using FluentAssertions;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Matching

@@ -1,6 +1,6 @@
-using FluentValidation;
-using Atlas.MatchingAlgorithm.Models;
 using Atlas.Common.ServiceBus.Models;
+using Atlas.MatchingAlgorithm.Models;
+using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Validators.DonorInfo
 {

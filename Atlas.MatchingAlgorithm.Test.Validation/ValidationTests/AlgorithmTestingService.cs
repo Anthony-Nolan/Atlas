@@ -1,18 +1,18 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Atlas.MatchingAlgorithm.Api;
-using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Api;
+using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
 {

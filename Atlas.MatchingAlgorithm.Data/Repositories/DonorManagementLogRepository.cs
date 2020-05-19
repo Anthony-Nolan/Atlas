@@ -1,14 +1,14 @@
-﻿using Dapper;
-using Atlas.MatchingAlgorithm.Data.Models;
-using Atlas.MatchingAlgorithm.Data.Models.Entities;
-using Atlas.MatchingAlgorithm.Data.Services;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Data.Models;
+using Atlas.MatchingAlgorithm.Data.Models.Entities;
+using Atlas.MatchingAlgorithm.Data.Services;
+using Dapper;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
 {

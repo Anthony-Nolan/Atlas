@@ -1,5 +1,5 @@
-using FluentValidation;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
+using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
 {

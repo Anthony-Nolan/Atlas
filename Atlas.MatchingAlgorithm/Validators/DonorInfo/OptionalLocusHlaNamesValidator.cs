@@ -1,6 +1,6 @@
-using FluentValidation;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
+using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Validators.DonorInfo
 {

@@ -1,4 +1,6 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -13,8 +15,6 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 {

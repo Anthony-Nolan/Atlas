@@ -1,9 +1,9 @@
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Azure.ServiceBus;
-using Newtonsoft.Json;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Models;
+using Microsoft.Azure.ServiceBus;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
 {
