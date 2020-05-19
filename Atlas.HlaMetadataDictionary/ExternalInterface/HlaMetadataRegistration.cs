@@ -25,11 +25,10 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             Func<IServiceProvider, string> fetchInsightsInstrumentationKey)
         {
             services.AddScoped<IHlaMetadataDictionaryFactory, HlaMetadataDictionaryFactory>();
-            services.AddScoped<IWmdaHlaVersionProvider, WmdaHlaVersionProvider>();
             services.RegisterLifeTimeScopedCacheTypes();
-            services.RegisterHlaMetadataDictionaryStorageTypes(fetchAzureStorageConnectionString);
-            services.RegisterHlaMetadataDictionaryPreCalculationTypes(fetchWmdaHlaNomenclatureFilesUri);
-            services.RegisterHlaMetadataDictionaryServices();
+            services.RegisterStorageTypes(fetchAzureStorageConnectionString);
+            services.RegisterTypesRelatedToDictionaryRecreation(fetchWmdaHlaNomenclatureFilesUri);
+            services.RegisterServices();
 
             services.RegisterMacDictionaryServices(
                 fetchHlaClientApiKey,
@@ -38,15 +37,14 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             );
         }
 
-        private static void RegisterHlaMetadataDictionaryStorageTypes(this IServiceCollection services, Func<IServiceProvider, string> fetchAzureStorageConnectionString)
+        private static void RegisterStorageTypes(this IServiceCollection services, Func<IServiceProvider, string> fetchAzureStorageConnectionString)
         {
             services.AddSingleton<ICloudTableFactory, CloudTableFactory>(sp =>
             {
                 var azureConnectionString = fetchAzureStorageConnectionString(sp);
                 return new CloudTableFactory(azureConnectionString);
             });
-
-            services.AddSingleton<ITableReferenceRepository, TableReferenceRepository>(); //@Reviewer. This seems odd. Why would this want to be Singleton.
+            services.AddSingleton<ITableReferenceRepository, TableReferenceRepository>();
 
             services.AddScoped<IHlaMatchingLookupRepository, HlaMatchingLookupRepository>();
             services.AddScoped<IHlaScoringLookupRepository, HlaScoringLookupRepository>();
@@ -54,7 +52,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             services.AddScoped<IDpb1TceGroupsLookupRepository, Dpb1TceGroupsLookupRepository>();
         }
 
-        private static void RegisterHlaMetadataDictionaryPreCalculationTypes(this IServiceCollection services, Func<IServiceProvider, string> fetchWmdaHlaNomenclatureFilesUri)
+        private static void RegisterTypesRelatedToDictionaryRecreation(this IServiceCollection services, Func<IServiceProvider, string> fetchWmdaHlaNomenclatureFilesUri)
         {
             services.AddScoped<IWmdaDataRepository, WmdaDataRepository>();
 
@@ -63,6 +61,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 var wmdaHlaNomenclatureFilesUri = fetchWmdaHlaNomenclatureFilesUri(sp);
                 return new WmdaFileDownloader(wmdaHlaNomenclatureFilesUri);
             });
+            services.AddScoped<IWmdaHlaVersionProvider, WmdaHlaVersionProvider>();
 
             services.AddScoped<IAlleleNameHistoriesConsolidator, AlleleNameHistoriesConsolidator>();
             services.AddScoped<IAlleleNamesFromHistoriesExtractor, AlleleNamesFromHistoriesExtractor>();
@@ -78,7 +77,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             services.AddScoped<IRecreateHlaMetadataService, RecreateHlaMetadataService>();
         }
 
-        private static void RegisterHlaMetadataDictionaryServices(this IServiceCollection services)
+        private static void RegisterServices(this IServiceCollection services)
         {
             services.AddScoped<IAlleleNamesLookupService, AlleleNamesLookupService>();
             services.AddScoped<IHlaLookupResultsService, HlaLookupResultsService>();
