@@ -2,6 +2,7 @@
 using System.Linq;
 using Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup;
 using Atlas.HlaMetadataDictionary.Services;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using FluentAssertions;
 using NUnit.Framework;
 

@@ -5,7 +5,7 @@ using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Common.Models;
 
-namespace Atlas.MatchingAlgorithm.Services.Matching
+namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
     public interface IMatchCriteriaAnalyser
     {

@@ -5,7 +5,7 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using PGroup = System.Collections.Generic.List<string>;
 
-namespace Atlas.MatchingAlgorithm.Services.Matching
+namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
     public interface IDonorMatchCalculator
     {

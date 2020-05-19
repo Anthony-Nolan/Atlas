@@ -1,9 +1,10 @@
 ﻿using System;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 
-namespace Atlas.MatchingAlgorithm.Test.Builders.SearchResults
+namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
 {
     public class LocusScoreDetailsBuilder
     {

@@ -1,6 +1,6 @@
 ﻿using Atlas.HlaMetadataDictionary.Models.Wmda;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors.AlleleGroupExtractors
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.AlleleGroupExtractors
 {
     internal class GGroupExtractor : AlleleGroupExtractorBase<HlaNomG>
     {

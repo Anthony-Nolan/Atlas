@@ -2,7 +2,7 @@
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.TGS
 {
     /// <summary>
     /// This test data was manually curated from 4-field TGS typed alleles found in the SOLAR database

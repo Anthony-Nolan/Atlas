@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
-namespace Atlas.MatchingAlgorithm.Data.Persistent
+namespace Atlas.MatchingAlgorithm.Data.Persistent.Context
 {
     public class ContextFactory : IDesignTimeDbContextFactory<SearchAlgorithmPersistentContext>
     {

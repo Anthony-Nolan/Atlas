@@ -1,6 +1,6 @@
 using System;
-using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
+using Atlas.MatchingAlgorithm.Settings;
 using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh

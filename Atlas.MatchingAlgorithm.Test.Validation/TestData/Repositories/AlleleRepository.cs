@@ -5,6 +5,8 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Helpers;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.MatchGrades;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
 {
@@ -44,17 +46,17 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
     {
         public PhenotypeInfo<List<AlleleTestData>> FourFieldAlleles()
         {
-            return Resources.FourFieldAlleles.Alleles;
+            return Resources.Alleles.TGS.FourFieldAlleles.Alleles;
         }
 
         public PhenotypeInfo<List<AlleleTestData>> ThreeFieldAlleles()
         {
-            return Resources.ThreeFieldAlleles.Alleles;
+            return Resources.Alleles.TGS.ThreeFieldAlleles.Alleles;
         }
 
         public PhenotypeInfo<List<AlleleTestData>> TwoFieldAlleles()
         {
-            return Resources.TwoFieldAlleles.Alleles;
+            return Resources.Alleles.TGS.TwoFieldAlleles.Alleles;
         }
 
         public PhenotypeInfo<List<AlleleTestData>> AllelesForGGroupMatching()
@@ -101,12 +103,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
 
         public PhenotypeInfo<List<AlleleTestData>> NullAlleles()
         {
-            return Resources.NullAlleles.Alleles.ToPhenotypeInfo((l, alleles) => alleles);
+            return Resources.Alleles.NullAlleles.Alleles.ToPhenotypeInfo((l, alleles) => alleles);
         }
 
         public PhenotypeInfo<List<AlleleTestData>> AllelesWithNonNullExpressionSuffix()
         {
-            return Resources.AllelesWithNonNullExpressionSuffix.Alleles.ToPhenotypeInfo((l, alleles) => alleles);
+            return Resources.Alleles.AllelesWithNonNullExpressionSuffix.Alleles.ToPhenotypeInfo((l, alleles) => alleles);
         }
 
         public PhenotypeInfo<List<AlleleTestData>> DonorAllelesWithThreeFieldMatchPossible()

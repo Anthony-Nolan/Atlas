@@ -1,10 +1,10 @@
 using System;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 
-namespace Atlas.MatchingAlgorithm.Services.Matching
+namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
     public interface IMatchFilteringService
     {

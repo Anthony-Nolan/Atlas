@@ -1,4 +1,7 @@
-﻿namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults
+﻿using Atlas.MatchingAlgorithm.Client.Models.Donors;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
+
+namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults
 {
     public class SearchResult
     {

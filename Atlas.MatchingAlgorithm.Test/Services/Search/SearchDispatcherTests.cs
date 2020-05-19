@@ -4,7 +4,7 @@ using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Search;
-using Atlas.MatchingAlgorithm.Test.Builders;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using FluentValidation;
 using NSubstitute;
 using NUnit.Framework;

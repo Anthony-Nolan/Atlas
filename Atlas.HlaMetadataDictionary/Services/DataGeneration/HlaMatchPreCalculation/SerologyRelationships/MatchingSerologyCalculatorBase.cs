@@ -1,10 +1,10 @@
-﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Atlas.HlaMetadataDictionary.Services.HlaMatchPreCalculation.SerologyRelationships
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation.SerologyRelationships
 {
     internal abstract class MatchingSerologyCalculatorBase
     {

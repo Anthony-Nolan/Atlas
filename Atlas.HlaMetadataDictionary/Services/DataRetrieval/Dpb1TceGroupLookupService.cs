@@ -1,14 +1,15 @@
-﻿using Atlas.MultipleAlleleCodeDictionary;
-using Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup;
-using Atlas.HlaMetadataDictionary.Repositories;
-using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.HlaMetadataDictionary.Extensions;
+using Atlas.HlaMetadataDictionary.Models.LookupEntities;
+using Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup;
+using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
+using Atlas.MultipleAlleleCodeDictionary;
 
-namespace Atlas.HlaMetadataDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
     /// <summary>
     ///  Consolidates TCE group assignments for DPB1 alleles.

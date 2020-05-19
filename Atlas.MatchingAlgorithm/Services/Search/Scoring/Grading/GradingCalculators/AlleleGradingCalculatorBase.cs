@@ -1,8 +1,8 @@
 ﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 
-namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
+namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators
 {
     public abstract class AlleleGradingCalculatorBase : GradingCalculatorBase
     {

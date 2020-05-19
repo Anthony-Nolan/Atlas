@@ -1,7 +1,7 @@
 ﻿using System;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 
-namespace Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo
+namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.ScoringInfo
 {
     public class ScoringInfoBuilderFactory
     {

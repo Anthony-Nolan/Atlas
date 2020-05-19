@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models.ScoringWeightings;
 using Microsoft.EntityFrameworkCore;
 using static EnumStringValues.EnumExtensions;
 
-namespace Atlas.MatchingAlgorithm.Data.Persistent
+namespace Atlas.MatchingAlgorithm.Data.Persistent.Context
 {
     public class SearchAlgorithmPersistentContext : DbContext
     {

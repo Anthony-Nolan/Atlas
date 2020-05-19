@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Common.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.Builders
+namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 {
     public class SearchRequestBuilder
     {

@@ -1,4 +1,4 @@
-namespace Atlas.MatchingAlgorithm.ConfigSettings
+namespace Atlas.MatchingAlgorithm.Settings
 {
     public class ApplicationInsightsSettings
     {

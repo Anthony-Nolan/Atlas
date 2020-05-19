@@ -1,7 +1,7 @@
 ﻿using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
 {
     public static class NonMatchingAlleles
     {

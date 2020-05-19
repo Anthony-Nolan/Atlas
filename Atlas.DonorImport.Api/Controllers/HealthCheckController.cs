@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace Atlas.MatchingAlgorithm.Api.Controllers
+namespace Atlas.DonorImport.Api.Controllers
 {
     /// <summary>
     /// Health checks for the API.

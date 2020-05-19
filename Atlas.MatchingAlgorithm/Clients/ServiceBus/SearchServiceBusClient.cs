@@ -1,6 +1,7 @@
 using System.Text;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Models;
 using Microsoft.Azure.ServiceBus;
 using Newtonsoft.Json;

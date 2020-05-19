@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
 using Atlas.HlaMetadataDictionary;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary;
 using Microsoft.Azure.WebJobs;
 

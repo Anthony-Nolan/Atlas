@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Services.Matching;
+using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.Matching
+namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
 {
     [TestFixture]
     public class DonorMatchCalculatorTests

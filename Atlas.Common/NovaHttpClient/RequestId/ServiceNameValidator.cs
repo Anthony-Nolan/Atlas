@@ -1,7 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace Atlas.Common.Core.Middleware.RequestId
+namespace Atlas.Common.NovaHttpClient.RequestId
 {
     public static class ServiceNameValidator
     {

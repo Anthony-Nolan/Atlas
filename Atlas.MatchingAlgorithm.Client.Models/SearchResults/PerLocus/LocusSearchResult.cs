@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults
+﻿namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus
 {
     public class LocusSearchResult
     {

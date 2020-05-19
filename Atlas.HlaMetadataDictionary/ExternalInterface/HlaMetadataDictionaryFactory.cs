@@ -1,9 +1,11 @@
 using Atlas.Common.Caching;
-using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 using Atlas.HlaMetadataDictionary.Services;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using LazyCache;
 
-namespace Atlas.HlaMetadataDictionary
+namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
     public struct HlaMetadataConfiguration
     {

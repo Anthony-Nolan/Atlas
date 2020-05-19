@@ -1,5 +1,6 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.LookupEntities;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup

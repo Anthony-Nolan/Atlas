@@ -6,7 +6,9 @@ using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
 using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 using Atlas.HlaMetadataDictionary.Services;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using NSubstitute;
 using NUnit.Framework;
 

@@ -1,11 +1,12 @@
-using Microsoft.WindowsAzure.Storage.Table;
-using Newtonsoft.Json;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
 using System;
 using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.Lookups;
+using Atlas.HlaMetadataDictionary.Services.AzureStorage;
+using Microsoft.WindowsAzure.Storage.Table;
+using Newtonsoft.Json;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
+namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
 {
     public class HlaLookupTableEntity : TableEntity
     {

@@ -3,9 +3,8 @@ using System.Linq;
 using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 using Atlas.HlaMetadataDictionary.Repositories;
-using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
 
-namespace Atlas.HlaMetadataDictionary.Services.AlleleNames
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 {
     public interface IReservedAlleleNamesExtractor
     {

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.Models.LookupEntities;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup
 {

@@ -1,8 +1,9 @@
+using System;
+using Atlas.HlaMetadataDictionary.Models.LookupEntities;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
-using System;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
+namespace Atlas.HlaMetadataDictionary.Extensions
 {
     public static class HlaScoringLookupResultExtensions
     {

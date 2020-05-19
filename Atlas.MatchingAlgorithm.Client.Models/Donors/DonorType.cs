@@ -1,6 +1,6 @@
 ﻿using EnumStringValues;
 
-namespace Atlas.MatchingAlgorithm.Client.Models
+namespace Atlas.MatchingAlgorithm.Client.Models.Donors
 {
     public enum DonorType
     {

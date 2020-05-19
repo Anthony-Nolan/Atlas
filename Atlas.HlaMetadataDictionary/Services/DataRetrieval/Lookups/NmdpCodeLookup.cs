@@ -1,10 +1,10 @@
-﻿using Atlas.MultipleAlleleCodeDictionary;
-using Atlas.HlaMetadataDictionary.Repositories;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
+using Atlas.MultipleAlleleCodeDictionary;
 
-namespace Atlas.HlaMetadataDictionary.Services.Lookups
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 {
     internal class NmdpCodeLookup : AlleleNamesLookupBase
     {

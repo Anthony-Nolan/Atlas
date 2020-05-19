@@ -6,7 +6,6 @@ using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.Core.Middleware.RequestId;
 using Atlas.Common.NovaHttpClient.ApplicationInsights;
 using Atlas.Common.NovaHttpClient.RequestId;
 using Atlas.Common.NovaHttpClient.Http;

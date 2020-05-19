@@ -3,7 +3,7 @@ using System.Linq;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 
-namespace Atlas.HlaMetadataDictionary.Services.HlaMatchPreCalculation
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation
 {
     /// <summary>
     /// Creates a complete collection of matched alleles

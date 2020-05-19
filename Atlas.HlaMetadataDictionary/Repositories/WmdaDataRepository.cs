@@ -2,10 +2,10 @@
 using System.Linq;
 using Atlas.HlaMetadataDictionary.Data;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
-using Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors;
-using Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors.AlleleGroupExtractors;
-using Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors.HlaNomExtractors;
-using Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors.SerologyRelationshipExtractors;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.AlleleGroupExtractors;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.HlaNomExtractors;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.SerologyRelationshipExtractors;
 
 namespace Atlas.HlaMetadataDictionary.Repositories
 {

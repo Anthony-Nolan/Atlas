@@ -2,7 +2,7 @@
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
 {
     /// <summary>
     /// This test data was manually curated full sequence alleles from Allele_status.txt (v3330)

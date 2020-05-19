@@ -3,7 +3,7 @@ using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
 using Atlas.HlaMetadataDictionary.Services;
-using Atlas.HlaMetadataDictionary.Services.AlleleNames;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
 using FluentAssertions;
 using NUnit.Framework;

@@ -1,6 +1,6 @@
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 
-namespace Atlas.MatchingAlgorithm.Models
+namespace Atlas.MatchingAlgorithm.Common.Models
 {
     public class IdentifiedSearchRequest
     {

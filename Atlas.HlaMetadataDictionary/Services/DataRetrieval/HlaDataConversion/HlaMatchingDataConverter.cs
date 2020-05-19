@@ -1,11 +1,12 @@
-﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
-using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.HlaMetadataDictionary.Extensions;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.Lookups;
+using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 
-namespace Atlas.HlaMetadataDictionary.Services.HlaDataConversion
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
 {
     /// <summary>
     /// Converts Matched HLA to model optimised for HLA Scoring lookups.

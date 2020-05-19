@@ -1,6 +1,7 @@
+using Atlas.HlaMetadataDictionary.Models.LookupEntities;
 using Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
+namespace Atlas.HlaMetadataDictionary.Extensions
 {
     public static class Dpb1TceGroupLookupResultExtensions
     {

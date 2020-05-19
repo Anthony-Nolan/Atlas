@@ -4,7 +4,7 @@ using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 
-namespace Atlas.MatchingAlgorithm.Test.Builders.SearchResults
+namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
 {
     public class MatchResultBuilder
     {

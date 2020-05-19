@@ -1,7 +1,7 @@
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
-using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Services.Search;
+using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 
 namespace Atlas.MatchingAlgorithm.Common.Models
 {

@@ -1,9 +1,9 @@
-﻿using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
-using Atlas.HlaMetadataDictionary.Models.Wmda;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
+using Atlas.HlaMetadataDictionary.Models.Wmda;
 
-namespace Atlas.HlaMetadataDictionary.Services.HlaMatchPreCalculation.SerologyRelationships
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation.SerologyRelationships
 {
     internal class SplitCalculator: MatchingSerologyCalculatorBase
     {

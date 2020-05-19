@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.HlaMetadataDictionary.Extensions;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 
-namespace Atlas.HlaMetadataDictionary.Services.HlaDataConversion
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
 {
     public interface IMatchedHlaDataConverterBase
     {

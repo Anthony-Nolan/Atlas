@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.Test.Integration.TestData
+﻿namespace Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData
 {
     public enum TestHlaPhenotypeCategory
     {

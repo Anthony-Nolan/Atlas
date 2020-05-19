@@ -1,8 +1,9 @@
 ﻿using System;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.HlaMetadataDictionary.Services;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
 
-namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
+namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
 {
     public static class GradingCalculatorFactory
     {

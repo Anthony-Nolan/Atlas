@@ -3,14 +3,15 @@ using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Services.Scoring.Grading;
-using Atlas.MatchingAlgorithm.Test.Builders;
-using Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.ScoringInfo;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
+namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 {
     [TestFixture]
     public class MultipleAlleleGradingCalculatorTests : GradingCalculatorTestsBase

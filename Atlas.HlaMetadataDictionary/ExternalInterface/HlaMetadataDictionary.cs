@@ -6,8 +6,10 @@ using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.HlaMetadataDictionary.Services;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 
-namespace Atlas.HlaMetadataDictionary
+namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
     public interface IHlaMetadataDictionary
     {

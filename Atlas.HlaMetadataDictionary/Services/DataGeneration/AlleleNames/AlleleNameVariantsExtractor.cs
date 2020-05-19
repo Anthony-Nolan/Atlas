@@ -1,11 +1,10 @@
-﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
 using Atlas.HlaMetadataDictionary.Repositories;
-using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
 
-namespace Atlas.HlaMetadataDictionary.Services.AlleleNames
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 {
     public interface IAlleleNameVariantsExtractor
     {

@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors
 {
     internal class Dpb1TceGroupAssignmentExtractor : WmdaDataExtractor<Dpb1TceGroupAssignment>
     {

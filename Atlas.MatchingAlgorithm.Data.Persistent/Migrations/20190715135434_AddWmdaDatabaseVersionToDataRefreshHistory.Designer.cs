@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Atlas.MatchingAlgorithm.Data.Persistent;
+using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 
 namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
 {

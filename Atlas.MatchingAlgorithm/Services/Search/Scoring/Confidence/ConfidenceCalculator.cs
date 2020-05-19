@@ -2,9 +2,9 @@
 using System.Linq;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 
-namespace Atlas.MatchingAlgorithm.Services.Scoring.Confidence
+namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
 {
     public interface IConfidenceCalculator
     {

@@ -1,12 +1,12 @@
-﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Repositories;
-using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.LookupEntities;
+using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 
-namespace Atlas.HlaMetadataDictionary.Services.Lookups
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 {
     /// <summary>
     /// Base class for all lookups that involve searching the lookup repository

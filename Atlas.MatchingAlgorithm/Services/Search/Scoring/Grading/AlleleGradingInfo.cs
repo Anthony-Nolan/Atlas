@@ -2,7 +2,7 @@
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 
-namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
+namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
 {
     public class AlleleGradingInfo
     {

@@ -2,12 +2,11 @@
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.Scoring;
-using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 
-namespace Atlas.MatchingAlgorithm.Services.Scoring.Confidence
+namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
 {
     public interface IConfidenceService
     {

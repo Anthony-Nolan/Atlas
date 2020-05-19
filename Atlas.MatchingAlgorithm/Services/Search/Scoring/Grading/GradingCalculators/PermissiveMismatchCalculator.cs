@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
-namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
+namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators
 {
     /// <summary>
     /// Calculates whether a patient and donor molecular HLA typing are

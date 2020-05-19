@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary;
-using Atlas.MatchingAlgorithm.ConfigSettings;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Extensions;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
@@ -10,6 +10,7 @@ using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+using Atlas.MatchingAlgorithm.Settings;
 using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
@@ -107,7 +108,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private async Task<string> RecreateHlaMetadataDictionary()
         {
             logger.SendTrace($"DATA REFRESH: Recreating HLA Metadata dictionary from latest WMDA database version.", LogLevel.Info);
-            var wmdaDatabaseVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(HlaMetadataDictionary.HlaMetadataDictionary.CreationBehaviour.Latest);
+            var wmdaDatabaseVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary.CreationBehaviour.Latest);
             logger.SendTrace($"DATA REFRESH: HLA Metadata dictionary recreated at version: {wmdaDatabaseVersion}", LogLevel.Info);
             return wmdaDatabaseVersion;
         }

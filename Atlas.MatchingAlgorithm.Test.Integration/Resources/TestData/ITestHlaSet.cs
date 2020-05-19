@@ -2,7 +2,7 @@ using Atlas.MatchingAlgorithm.Common.Models;
 
 // ReSharper disable InconsistentNaming
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.TestData
+namespace Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData
 {
     /// <summary>
     /// Phenotypes listed within a set must be fully matched to one another.

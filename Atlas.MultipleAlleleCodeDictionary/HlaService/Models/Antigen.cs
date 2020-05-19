@@ -1,6 +1,6 @@
 ﻿using Atlas.Common.GeneticData;
 
-namespace Atlas.MultipleAlleleCodeDictionary.HLAService
+namespace Atlas.MultipleAlleleCodeDictionary.HlaService.Models
 {
     public class Antigen
     {

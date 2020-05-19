@@ -1,6 +1,6 @@
 ﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors.HlaNomExtractors
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.HlaNomExtractors
 {
     internal class SerologyExtractor : HlaNomExtractorBase
     {

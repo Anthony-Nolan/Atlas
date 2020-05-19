@@ -2,7 +2,7 @@
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
-using Atlas.MatchingAlgorithm.Test.Builders.SearchResults;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
 using FluentAssertions;
 using LochNessBuilder;
 using NUnit.Framework;
