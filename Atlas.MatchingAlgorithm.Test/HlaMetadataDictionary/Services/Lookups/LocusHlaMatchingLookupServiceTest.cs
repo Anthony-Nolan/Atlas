@@ -8,6 +8,10 @@ using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using System;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
 {
@@ -47,14 +51,11 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
                 .GetHlaLookupResult(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
                 .Returns(lookupResult1, lookupResult2);
 
-            var expectedResults =
-                new Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>(
-                    lookupResult1,
-                    lookupResult2);
+            var expectedResults = new LocusInfo<IHlaMatchingLookupResult>(lookupResult1, lookupResult2);
 
             var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                 MatchedLocus,
-                new Tuple<string, string>(hlaString1, hlaString2), "hla-db-version");
+                new LocusInfo<string>(hlaString1, hlaString2), "hla-db-version");
 
             actualResults.Should().BeEquivalentTo(expectedResults);
         }
@@ -80,14 +81,11 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
             var nullAlleleResultWithExpressedPGroup =
                 new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, TypingMethod.Molecular, new[] {pGroup});
 
-            var expectedResults =
-                new Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>(
-                    expressedHlaResult,
-                    nullAlleleResultWithExpressedPGroup);
+            var expectedResults = new LocusInfo<IHlaMatchingLookupResult>(expressedHlaResult, nullAlleleResultWithExpressedPGroup);
 
             var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                 MatchedLocus,
-                new Tuple<string, string>(typingInPosition1, typingInPosition2), "hla-db-version");
+                new LocusInfo<string>(typingInPosition1, typingInPosition2), "hla-db-version");
 
             actualResults.Should().BeEquivalentTo(expectedResults);
         }
@@ -113,14 +111,11 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
             var nullAlleleResultWithExpressedPGroup =
                 new HlaMatchingLookupResult(MatchedLocus, typingInPosition1, TypingMethod.Molecular, new[] {pGroup});
 
-            var expectedResults =
-                new Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>(
-                    nullAlleleResultWithExpressedPGroup,
-                    expressedHlaResult);
+            var expectedResults = new LocusInfo<IHlaMatchingLookupResult>(nullAlleleResultWithExpressedPGroup, expressedHlaResult);
 
             var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                 MatchedLocus,
-                new Tuple<string, string>(typingInPosition1, typingInPosition2), "hla-db-version");
+                new LocusInfo<string>(typingInPosition1, typingInPosition2), "hla-db-version");
 
             actualResults.Should().BeEquivalentTo(expectedResults);
         }

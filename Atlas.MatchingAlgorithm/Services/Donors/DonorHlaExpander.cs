@@ -67,14 +67,14 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             };
         }
 
-        private async Task<Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>> GetExpandedHla(Locus locus, string hla1, string hla2)
+        private async Task<LocusInfo<IHlaMatchingLookupResult>> GetExpandedHla(Locus locus, string hla1, string hla2)
         {
             if (string.IsNullOrEmpty(hla1) || string.IsNullOrEmpty(hla2))
             {
-                return new Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>(null, null);
+                return new LocusInfo<IHlaMatchingLookupResult>(null, null);
             }
 
-            return await hlaMetadataDictionary.GetLocusHlaMatchingLookupResults(locus, new Tuple<string, string>(hla1, hla2));
+            return await hlaMetadataDictionary.GetLocusHlaMatchingLookupResults(locus, new LocusInfo<string>(hla1, hla2));
         }
 
     }
