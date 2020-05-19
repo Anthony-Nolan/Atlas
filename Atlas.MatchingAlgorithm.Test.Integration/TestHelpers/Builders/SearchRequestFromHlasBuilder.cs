@@ -28,18 +28,18 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
             searchRequestBuilder = new SearchRequestBuilder()
                 .WithSearchType(DonorType.Adult)
                 .WithLociExcludedFromScoringAggregates(new List<Locus>())
-                .WithLocusSearchHla(Locus.A, LocusPosition.Position1, searchHlas.A.Position1)
-                .WithLocusSearchHla(Locus.A, LocusPosition.Position2, searchHlas.A.Position2)
-                .WithLocusSearchHla(Locus.B, LocusPosition.Position1, searchHlas.B.Position1)
-                .WithLocusSearchHla(Locus.B, LocusPosition.Position2, searchHlas.B.Position2)
-                .WithLocusSearchHla(Locus.C, LocusPosition.Position1, searchHlas.C.Position1)
-                .WithLocusSearchHla(Locus.C, LocusPosition.Position2, searchHlas.C.Position2)
-                .WithLocusSearchHla(Locus.Dpb1, LocusPosition.Position1, searchHlas.Dpb1.Position1)
-                .WithLocusSearchHla(Locus.Dpb1, LocusPosition.Position2, searchHlas.Dpb1.Position2)
-                .WithLocusSearchHla(Locus.Dqb1, LocusPosition.Position1, searchHlas.Dqb1.Position1)
-                .WithLocusSearchHla(Locus.Dqb1, LocusPosition.Position2, searchHlas.Dqb1.Position2)
-                .WithLocusSearchHla(Locus.Drb1, LocusPosition.Position1, searchHlas.Drb1.Position1)
-                .WithLocusSearchHla(Locus.Drb1, LocusPosition.Position2, searchHlas.Drb1.Position2);
+                .WithLocusSearchHla(Locus.A, LocusPosition.One, searchHlas.A.Position1)
+                .WithLocusSearchHla(Locus.A, LocusPosition.Two, searchHlas.A.Position2)
+                .WithLocusSearchHla(Locus.B, LocusPosition.One, searchHlas.B.Position1)
+                .WithLocusSearchHla(Locus.B, LocusPosition.Two, searchHlas.B.Position2)
+                .WithLocusSearchHla(Locus.C, LocusPosition.One, searchHlas.C.Position1)
+                .WithLocusSearchHla(Locus.C, LocusPosition.Two, searchHlas.C.Position2)
+                .WithLocusSearchHla(Locus.Dpb1, LocusPosition.One, searchHlas.Dpb1.Position1)
+                .WithLocusSearchHla(Locus.Dpb1, LocusPosition.Two, searchHlas.Dpb1.Position2)
+                .WithLocusSearchHla(Locus.Dqb1, LocusPosition.One, searchHlas.Dqb1.Position1)
+                .WithLocusSearchHla(Locus.Dqb1, LocusPosition.Two, searchHlas.Dqb1.Position2)
+                .WithLocusSearchHla(Locus.Drb1, LocusPosition.One, searchHlas.Drb1.Position1)
+                .WithLocusSearchHla(Locus.Drb1, LocusPosition.Two, searchHlas.Drb1.Position2);
 
             this.nonMatchingHlas = nonMatchingHlas;
         }
@@ -106,7 +106,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
             }
 
             searchRequestBuilder = searchRequestBuilder
-                .WithLocusSearchHla(locus, LocusPosition.Position1, nonMatchingHlas.GetLocus(locus).Position1);
+                .WithLocusSearchHla(locus, LocusPosition.One, nonMatchingHlas.GetLocus(locus).Position1);
             return this;
         }
 
@@ -124,8 +124,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 
         public SearchRequestFromHlasBuilder WithNullLocusSearchHlasAt(Locus locus)
         {
-            searchRequestBuilder.WithLocusSearchHla(locus, LocusPosition.Position1, null);
-            searchRequestBuilder.WithLocusSearchHla(locus, LocusPosition.Position2, null);
+            searchRequestBuilder.WithLocusSearchHla(locus, LocusPosition.One, null);
+            searchRequestBuilder.WithLocusSearchHla(locus, LocusPosition.Two, null);
             return this;
         }
 

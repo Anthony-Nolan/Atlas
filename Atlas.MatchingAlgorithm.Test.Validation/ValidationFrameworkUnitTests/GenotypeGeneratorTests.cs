@@ -45,7 +45,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests
 
         private static PhenotypeInfo<List<AlleleTestData>> AllelesPhenotype
         {
-            get { return new PhenotypeInfo<bool>().Map((l, p, noop) => p == LocusPosition.Position1 ? Alleles1 : Alleles2); }
+            get { return new PhenotypeInfo<bool>().Map((l, p, noop) => p == LocusPosition.One ? Alleles1 : Alleles2); }
         }
 
         [SetUp]
@@ -101,7 +101,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             var criteria = new GenotypeCriteriaBuilder().HomozygousAtLocus(locus).Build();
             var genotype = genotypeGenerator.GenerateGenotype(criteria);
 
-            genotype.Hla.GetPosition(locus, LocusPosition.Position1).Should().Be(genotype.Hla.GetPosition(locus, LocusPosition.Position2));
+            genotype.Hla.GetPosition(locus, LocusPosition.One).Should().Be(genotype.Hla.GetPosition(locus, LocusPosition.Two));
         }
 
         [Test]
@@ -111,7 +111,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests
             var criteria = new GenotypeCriteriaBuilder().Build();
             var genotype = genotypeGenerator.GenerateGenotype(criteria);
 
-            genotype.Hla.GetPosition(locus, LocusPosition.Position1).Should().NotBe(genotype.Hla.GetPosition(locus, LocusPosition.Position2));
+            genotype.Hla.GetPosition(locus, LocusPosition.One).Should().NotBe(genotype.Hla.GetPosition(locus, LocusPosition.Two));
         }
 
         [Test]

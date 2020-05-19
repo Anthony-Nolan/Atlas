@@ -70,12 +70,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
                 switch (orientation)
                 {
                     case MatchOrientation.Direct:
-                        allele1 = GetTgsAllele(locus, LocusPosition.Position1, tgsAllele1, tgsAllele2, criteria);
-                        allele2 = GetTgsAllele(locus, LocusPosition.Position2, tgsAllele2, tgsAllele1, criteria);
+                        allele1 = GetTgsAllele(locus, LocusPosition.One, tgsAllele1, tgsAllele2, criteria);
+                        allele2 = GetTgsAllele(locus, LocusPosition.Two, tgsAllele2, tgsAllele1, criteria);
                         break;
                     case MatchOrientation.Cross:
-                        allele1 = GetTgsAllele(locus, LocusPosition.Position1, tgsAllele2, tgsAllele1, criteria);
-                        allele2 = GetTgsAllele(locus, LocusPosition.Position2, tgsAllele1, tgsAllele2, criteria);
+                        allele1 = GetTgsAllele(locus, LocusPosition.One, tgsAllele2, tgsAllele1, criteria);
+                        allele2 = GetTgsAllele(locus, LocusPosition.Two, tgsAllele1, tgsAllele2, criteria);
                         break;
                     case MatchOrientation.Arbitrary:
                     default:
@@ -83,8 +83,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
                 }
             }
 
-            var typingResolution1 = criteria.PatientTypingResolutions.GetPosition(locus, LocusPosition.Position1);
-            var typingResolution2 = criteria.PatientTypingResolutions.GetPosition(locus, LocusPosition.Position2);
+            var typingResolution1 = criteria.PatientTypingResolutions.GetPosition(locus, LocusPosition.One);
+            var typingResolution2 = criteria.PatientTypingResolutions.GetPosition(locus, LocusPosition.Two);
 
             var hla1 = allele1.GetHlaForResolution(typingResolution1);
             var hla2 = allele2.GetHlaForResolution(typingResolution2);

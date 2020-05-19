@@ -61,8 +61,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
             return new AlleleLevelLocusMatchCriteria
             {
                 MismatchCount = mismatchCount,
-                PGroupsToMatchInPositionOne = phenotype.GetPosition(locus, LocusPosition.Position1).MatchingPGroups,
-                PGroupsToMatchInPositionTwo = phenotype.GetPosition(locus, LocusPosition.Position2).MatchingPGroups
+                PGroupsToMatchInPositionOne = phenotype.GetPosition(locus, LocusPosition.One).MatchingPGroups,
+                PGroupsToMatchInPositionTwo = phenotype.GetPosition(locus, LocusPosition.Two).MatchingPGroups
             };
         }
     }

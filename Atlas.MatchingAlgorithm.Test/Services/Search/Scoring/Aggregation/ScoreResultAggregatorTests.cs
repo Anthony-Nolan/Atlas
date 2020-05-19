@@ -242,8 +242,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
             const MatchConfidence lowerMatchConfidence = MatchConfidence.Potential;
             var scoreResult = new ScoreResultBuilder()
                 .WithMatchConfidenceAtLocus(Locus.A, higherMatchConfidence)
-                .WithMatchConfidenceAtLocusPosition(Locus.B, LocusPosition.Position1, higherMatchConfidence)
-                .WithMatchConfidenceAtLocusPosition(Locus.B, LocusPosition.Position2, lowerMatchConfidence)
+                .WithMatchConfidenceAtLocusPosition(Locus.B, LocusPosition.One, higherMatchConfidence)
+                .WithMatchConfidenceAtLocusPosition(Locus.B, LocusPosition.Two, lowerMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.C, higherMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.Dpb1, higherMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.Dqb1, higherMatchConfidence)
@@ -263,8 +263,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
             const MatchConfidence lowerMatchConfidence = MatchConfidence.Mismatch;
             var scoreResult = new ScoreResultBuilder()
                 .WithMatchConfidenceAtLocus(Locus.A, higherMatchConfidence)
-                .WithMatchConfidenceAtLocusPosition(Locus.B, LocusPosition.Position1, higherMatchConfidence)
-                .WithMatchConfidenceAtLocusPosition(Locus.B, LocusPosition.Position2, midMatchConfidence)
+                .WithMatchConfidenceAtLocusPosition(Locus.B, LocusPosition.One, higherMatchConfidence)
+                .WithMatchConfidenceAtLocusPosition(Locus.B, LocusPosition.Two, midMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.C, higherMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.Dpb1, lowerMatchConfidence)
                 .WithMatchConfidenceAtLocus(Locus.Dqb1, higherMatchConfidence)
@@ -399,8 +399,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
             var scoreResult = new ScoreResultBuilder()
                 .WithMatchConfidenceAtAllLoci(MatchConfidence.Definite)
                 .WithMatchGradeAtAllLoci(MatchGrade.GDna)
-                .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, LocusPosition.Position1, MatchConfidence.Mismatch)
-                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.Position1, MatchGrade.PermissiveMismatch)
+                .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, LocusPosition.One, MatchConfidence.Mismatch)
+                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.One, MatchGrade.PermissiveMismatch)
                 .Build();
 
             var aggregate = resultAggregator.AggregateScoreDetails(scoreResult);
@@ -414,8 +414,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
             var scoreResult = new ScoreResultBuilder()
                 .WithMatchConfidenceAtAllLoci(MatchConfidence.Definite)
                 .WithMatchGradeAtAllLoci(MatchGrade.GDna)
-                .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, LocusPosition.Position1, MatchConfidence.Mismatch)
-                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.Position1, MatchGrade.PermissiveMismatch)
+                .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, LocusPosition.One, MatchConfidence.Mismatch)
+                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.One, MatchGrade.PermissiveMismatch)
                 .Build();
 
             var aggregate = resultAggregator.AggregateScoreDetails(scoreResult, new List<Locus> {Locus.Dpb1});
@@ -444,10 +444,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation
             var scoreResult = new ScoreResultBuilder()
                 .WithMatchConfidenceAtAllLoci(MatchConfidence.Definite)
                 .WithMatchGradeAtAllLoci(MatchGrade.GDna)
-                .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, LocusPosition.Position1, MatchConfidence.Mismatch)
-                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.Position1, MatchGrade.PermissiveMismatch)
-                .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, LocusPosition.Position2, MatchConfidence.Mismatch)
-                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.Position2, MatchGrade.Mismatch)
+                .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, LocusPosition.One, MatchConfidence.Mismatch)
+                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.One, MatchGrade.PermissiveMismatch)
+                .WithMatchConfidenceAtLocusPosition(Locus.Dpb1, LocusPosition.Two, MatchConfidence.Mismatch)
+                .WithMatchGradeAtLocusPosition(Locus.Dpb1, LocusPosition.Two, MatchGrade.Mismatch)
                 .Build();
 
             var aggregate = resultAggregator.AggregateScoreDetails(scoreResult);

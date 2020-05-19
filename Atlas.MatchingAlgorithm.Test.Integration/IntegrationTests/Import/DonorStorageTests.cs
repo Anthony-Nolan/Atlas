@@ -199,8 +199,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         public void InsertBatchOfDonors_ForDonorWithUntypedRequiredLocus_ThrowsException()
         {
             var donor = new DonorInfoBuilder(DonorIdGenerator.NextId())
-                .WithHlaAtLocus(Locus.A, LocusPosition.Position1, null)
-                .WithHlaAtLocus(Locus.A, LocusPosition.Position2, null)
+                .WithHlaAtLocus(Locus.A, LocusPosition.One, null)
+                .WithHlaAtLocus(Locus.A, LocusPosition.Two, null)
                 .Build();
 
             Assert.ThrowsAsync<InvalidOperationException>(async () =>

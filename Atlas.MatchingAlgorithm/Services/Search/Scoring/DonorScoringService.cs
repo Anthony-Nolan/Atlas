@@ -130,15 +130,15 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
             foreach (var locus in scoredLoci)
             {
-                var gradeResultAtPosition1 = grades.GetPosition(locus, LocusPosition.Position1).GradeResult;
-                var confidenceAtPosition1 = confidences.GetPosition(locus, LocusPosition.Position1);
-                var gradeResultAtPosition2 = grades.GetPosition(locus, LocusPosition.Position2).GradeResult;
-                var confidenceAtPosition2 = confidences.GetPosition(locus, LocusPosition.Position2);
+                var gradeResultAtPosition1 = grades.GetPosition(locus, LocusPosition.One).GradeResult;
+                var confidenceAtPosition1 = confidences.GetPosition(locus, LocusPosition.One);
+                var gradeResultAtPosition2 = grades.GetPosition(locus, LocusPosition.Two).GradeResult;
+                var confidenceAtPosition2 = confidences.GetPosition(locus, LocusPosition.Two);
 
                 var scoreDetails = new LocusScoreDetails
                 {
                     // Either position can be used here, as the locus will either be typed at both positions or neither
-                    IsLocusTyped = locusTypingInformation.GetPosition(locus, LocusPosition.Position1),
+                    IsLocusTyped = locusTypingInformation.GetPosition(locus, LocusPosition.One),
                     ScoreDetailsAtPosition1 = BuildScoreDetailsForPosition(gradeResultAtPosition1, confidenceAtPosition1),
                     ScoreDetailsAtPosition2 = BuildScoreDetailsForPosition(gradeResultAtPosition2, confidenceAtPosition2)
                 };

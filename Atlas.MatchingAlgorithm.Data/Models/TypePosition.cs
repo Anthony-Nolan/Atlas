@@ -1,4 +1,5 @@
 ﻿using System;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Data.Models
@@ -19,8 +20,8 @@ namespace Atlas.MatchingAlgorithm.Data.Models
         {
             return typePosition switch
             {
-                TypePosition.One => LocusPosition.Position1,
-                TypePosition.Two => LocusPosition.Position2,
+                TypePosition.One => LocusPosition.One,
+                TypePosition.Two => LocusPosition.Two,
                 _ => throw new ArgumentOutOfRangeException(nameof(typePosition), typePosition, null)
             };
         }
@@ -29,8 +30,8 @@ namespace Atlas.MatchingAlgorithm.Data.Models
         {
             return locusPosition switch
             {
-                LocusPosition.Position1 => TypePosition.One,
-                LocusPosition.Position2 => TypePosition.Two,
+                LocusPosition.One => TypePosition.One,
+                LocusPosition.Two => TypePosition.Two,
                 _ => throw new ArgumentOutOfRangeException(nameof(locusPosition), locusPosition, null)
             };
         }

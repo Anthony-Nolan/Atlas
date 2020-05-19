@@ -1309,8 +1309,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             IHlaScoringLookupResult positionTwoResult)
         {
             var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            donorLookupResults.SetPosition(MatchedLocus, LocusPosition.Position1, positionOneResult);
-            donorLookupResults.SetPosition(MatchedLocus, LocusPosition.Position2, positionTwoResult);
+            donorLookupResults.SetPosition(MatchedLocus, LocusPosition.One, positionOneResult);
+            donorLookupResults.SetPosition(MatchedLocus, LocusPosition.Two, positionTwoResult);
 
             return donorLookupResults;
         }

@@ -34,8 +34,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
     public class ScoringTestsForNullAlleleInString
     {
         private const Locus LocusUnderTest = Locus.A;
-        private const LocusPosition PositionUnderTest = LocusPosition.Position1;
-        private const LocusPosition OtherPosition = LocusPosition.Position2;
+        private const LocusPosition PositionUnderTest = LocusPosition.One;
+        private const LocusPosition OtherPosition = LocusPosition.Two;
 
         private readonly List<MatchGrade> matchGradesForExpressingAlleleOfSameGGroups = new List<MatchGrade>
         {

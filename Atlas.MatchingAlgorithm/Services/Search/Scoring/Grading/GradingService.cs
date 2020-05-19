@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
@@ -88,8 +89,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
                     patientLookupResultsAtLocus,
                     donorLookupResultsAtLocus);
 
-                gradeResults.SetPosition(locus, LocusPosition.Position1, locusGradeResults.Result1);
-                gradeResults.SetPosition(locus, LocusPosition.Position2, locusGradeResults.Result2);
+                gradeResults.SetPosition(locus, LocusPosition.One, locusGradeResults.Result1);
+                gradeResults.SetPosition(locus, LocusPosition.Two, locusGradeResults.Result2);
             });
 
             return gradeResults;

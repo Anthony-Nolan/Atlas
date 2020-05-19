@@ -42,8 +42,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
                 var orientations = matchGradesAtLocus.Position1.Orientations;
 
                 var confidences = orientations.Select(o => new Tuple<MatchConfidence, MatchConfidence>(
-                    CalculateConfidenceForOrientation(locus, LocusPosition.Position1, patientLookupResult1, donorLookupResults, o),
-                    CalculateConfidenceForOrientation(locus, LocusPosition.Position2, patientLookupResult2, donorLookupResults, o)
+                    CalculateConfidenceForOrientation(locus, LocusPosition.One, patientLookupResult1, donorLookupResults, o),
+                    CalculateConfidenceForOrientation(locus, LocusPosition.Two, patientLookupResult2, donorLookupResults, o)
                 ));
 
                 // In the case where the best grade for a donor is the same for both a cross and direct match, but the confidence for each is different,
@@ -52,8 +52,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
                     .OrderByDescending(c => (int) c.Item1 + (int) c.Item2)
                     .First();
 
-                confidenceResults.SetPosition(locus, LocusPosition.Position1, selectedConfidences.Item1);
-                confidenceResults.SetPosition(locus, LocusPosition.Position2, selectedConfidences.Item2);
+                confidenceResults.SetPosition(locus, LocusPosition.One, selectedConfidences.Item1);
+                confidenceResults.SetPosition(locus, LocusPosition.Two, selectedConfidences.Item2);
             });
 
             return confidenceResults;
@@ -91,8 +91,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
         {
             return position switch
             {
-                LocusPosition.Position1 => GetConfidence(patientLookupResult, donorLookupResults.GetPosition(locus, LocusPosition.Position2)),
-                LocusPosition.Position2 => GetConfidence(patientLookupResult, donorLookupResults.GetPosition(locus, LocusPosition.Position1)),
+                LocusPosition.One => GetConfidence(patientLookupResult, donorLookupResults.GetPosition(locus, LocusPosition.Two)),
+                LocusPosition.Two => GetConfidence(patientLookupResult, donorLookupResults.GetPosition(locus, LocusPosition.One)),
                 _ => throw new ArgumentOutOfRangeException(nameof(position), position, null)
             };
         }
