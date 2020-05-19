@@ -31,7 +31,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         bool IsActiveVersionDifferentFromLatestVersion();
     }
 
-    internal enum CreationBehaviour
+    public enum CreationBehaviour
     {
         Latest,
         Active
