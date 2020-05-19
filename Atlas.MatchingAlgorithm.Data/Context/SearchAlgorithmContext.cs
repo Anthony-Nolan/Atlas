@@ -36,14 +36,14 @@ namespace Atlas.MatchingAlgorithm.Data.Context
             // when making changes to the following index definitions,
             // or if adding new filtered indexes to the same table.
             modelBuilder.Entity<Donor>()
-                .ForSqlServerHasIndex(d => d.DonorId)
-                .ForSqlServerInclude(d => new { d.C_1, d.C_2 })
+                .HasIndex(d => d.DonorId)
+                .IncludeProperties(d => new { d.C_1, d.C_2 })
                 .HasFilter("[C_1] IS NULL AND [C_2] IS NULL")
                 .HasName("FI_DonorIdsWithoutLocusC");
 
             modelBuilder.Entity<Donor>()
-                .ForSqlServerHasIndex(d => d.DonorId)
-                .ForSqlServerInclude(d => new { d.DQB1_1, d.DQB1_2 })
+                .HasIndex(d => d.DonorId)
+                .IncludeProperties(d => new { d.DQB1_1, d.DQB1_2 })
                 .HasFilter("[DQB1_1] IS NULL AND [DQB1_2] IS NULL")
                 .HasName("FI_DonorIdsWithoutLocusDQB1");
 
