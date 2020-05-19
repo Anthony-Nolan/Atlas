@@ -79,15 +79,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
 
             patientLookupResults.EachLocus((locus, patientLookupResult1, patientLookupResult2) =>
             {
-                var patientLookupResultsAtLocus =
-                    new Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult>(patientLookupResult1, patientLookupResult2);
+                var patientLookupResultsAtLocus = new LocusInfo<IHlaScoringLookupResult>(patientLookupResult1, patientLookupResult2);
 
                 var lookupResults = donorLookupResults.GetLocus(locus);
-                var donorLookupResultsAtLocus = new Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult>(lookupResults.Position1, lookupResults.Position2);
-                
-                var locusGradeResults = GetLocusGradeResults(
-                    patientLookupResultsAtLocus,
-                    donorLookupResultsAtLocus);
+                var donorLookupResultsAtLocus = new LocusInfo<IHlaScoringLookupResult>(lookupResults.Position1, lookupResults.Position2);
+
+                var locusGradeResults = GetLocusGradeResults(patientLookupResultsAtLocus, donorLookupResultsAtLocus);
 
                 gradeResults.SetPosition(locus, LocusPosition.One, locusGradeResults.Result1);
                 gradeResults.SetPosition(locus, LocusPosition.Two, locusGradeResults.Result2);
@@ -97,8 +94,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         }
 
         private LocusMatchGradeResults GetLocusGradeResults(
-            Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> patientLookupResults,
-            Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> donorLookupResults)
+            LocusInfo<IHlaScoringLookupResult> patientLookupResults,
+            LocusInfo<IHlaScoringLookupResult> donorLookupResults)
         {
             var directGrades = GetMatchGradesForDirectOrientation(patientLookupResults, donorLookupResults);
             var crossGrades = GetMatchGradesForCrossOrientation(patientLookupResults, donorLookupResults);
@@ -107,21 +104,21 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         }
 
         private LocusMatchGrades GetMatchGradesForDirectOrientation(
-            Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> patientLookupResults,
-            Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> donorLookupResults)
+            LocusInfo<IHlaScoringLookupResult> patientLookupResults,
+            LocusInfo<IHlaScoringLookupResult> donorLookupResults)
         {
-            var grade1 = CalculateMatchGrade(patientLookupResults.Item1, donorLookupResults.Item1);
-            var grade2 = CalculateMatchGrade(patientLookupResults.Item2, donorLookupResults.Item2);
+            var grade1 = CalculateMatchGrade(patientLookupResults.Position1, donorLookupResults.Position1);
+            var grade2 = CalculateMatchGrade(patientLookupResults.Position2, donorLookupResults.Position2);
 
             return new LocusMatchGrades(grade1, grade2);
         }
 
         private LocusMatchGrades GetMatchGradesForCrossOrientation(
-            Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> patientLookupResults,
-            Tuple<IHlaScoringLookupResult, IHlaScoringLookupResult> donorLookupResults)
+            LocusInfo<IHlaScoringLookupResult> patientLookupResults,
+            LocusInfo<IHlaScoringLookupResult> donorLookupResults)
         {
-            var grade1 = CalculateMatchGrade(patientLookupResults.Item1, donorLookupResults.Item2);
-            var grade2 = CalculateMatchGrade(patientLookupResults.Item2, donorLookupResults.Item1);
+            var grade1 = CalculateMatchGrade(patientLookupResults.Position1, donorLookupResults.Position2);
+            var grade2 = CalculateMatchGrade(patientLookupResults.Position2, donorLookupResults.Position1);
 
             return new LocusMatchGrades(grade1, grade2);
         }

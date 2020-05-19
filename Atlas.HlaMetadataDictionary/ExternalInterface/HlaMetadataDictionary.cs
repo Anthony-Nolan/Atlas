@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
@@ -16,7 +17,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         Task<string> RecreateHlaMetadataDictionary(HlaMetadataDictionary.CreationBehaviour wmdaHlaVersionToRecreate);
         Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName);
         Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName);
-        Task<Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>> GetLocusHlaMatchingLookupResults(Locus locus, Tuple<string, string> locusTyping);
+        Task<LocusInfo<IHlaMatchingLookupResult>> GetLocusHlaMatchingLookupResults(Locus locus, LocusInfo<string> locusTyping);
         Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
         IEnumerable<string> GetAllPGroups();
@@ -97,7 +98,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             return await hlaMatchingLookupService.GetHlaLookupResult(locus, hlaName, config.ActiveWmdaVersion);
         }
 
-        public async Task<Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>> GetLocusHlaMatchingLookupResults(Locus locus, Tuple<string, string> locusTyping)
+        public async Task<LocusInfo<IHlaMatchingLookupResult>> GetLocusHlaMatchingLookupResults(Locus locus, LocusInfo<string> locusTyping)
         {
             return await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(locus, locusTyping, config.ActiveWmdaVersion);
         }

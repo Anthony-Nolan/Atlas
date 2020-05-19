@@ -41,7 +41,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
                 var matchGradesAtLocus = matchGrades.GetLocus(locus);
                 var orientations = matchGradesAtLocus.Position1.Orientations;
 
-                var confidences = orientations.Select(o => new Tuple<MatchConfidence, MatchConfidence>(
+                var confidences = orientations.Select(o => new LocusInfo<MatchConfidence>(
                     CalculateConfidenceForOrientation(locus, LocusPosition.One, patientLookupResult1, donorLookupResults, o),
                     CalculateConfidenceForOrientation(locus, LocusPosition.Two, patientLookupResult2, donorLookupResults, o)
                 ));
@@ -49,11 +49,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
                 // In the case where the best grade for a donor is the same for both a cross and direct match, but the confidence for each is different,
                 // We should return the best confidence amongst orientations provided
                 var selectedConfidences = confidences
-                    .OrderByDescending(c => (int) c.Item1 + (int) c.Item2)
+                    .OrderByDescending(c => (int) c.Position1 + (int) c.Position2)
                     .First();
 
-                confidenceResults.SetPosition(locus, LocusPosition.One, selectedConfidences.Item1);
-                confidenceResults.SetPosition(locus, LocusPosition.Two, selectedConfidences.Item2);
+                confidenceResults.SetPosition(locus, LocusPosition.One, selectedConfidences.Position1);
+                confidenceResults.SetPosition(locus, LocusPosition.Two, selectedConfidences.Position2);
             });
 
             return confidenceResults;

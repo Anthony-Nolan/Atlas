@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
@@ -89,8 +90,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
             if (IsIndirectMatch(
                 patientSerologies,
                 donorSerologies,
-                new[] { SerologySubtype.Split, SerologySubtype.NotSplit },
-                new[] { SerologySubtype.Associated }))
+                new[] {SerologySubtype.Split, SerologySubtype.NotSplit},
+                new[] {SerologySubtype.Associated}))
             {
                 return true;
             }
@@ -115,8 +116,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
             if (IsIndirectMatch(
                 patientSerologies,
                 donorSerologies,
-                new[] { SerologySubtype.Broad },
-                new[] { SerologySubtype.Split, SerologySubtype.Associated }))
+                new[] {SerologySubtype.Broad},
+                new[] {SerologySubtype.Split, SerologySubtype.Associated}))
             {
                 return true;
             }
@@ -154,31 +155,31 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
                 .SelectMany(subtypePair => subtypePair)
                 .ToList();
 
-            var isPatientVsDonorMatch = subtypePairs.Any(subtypePair => 
+            var isPatientVsDonorMatch = subtypePairs.Any(subtypePair =>
                 IsIndirectSerologySubtypeMatch(
                     patientSerologies,
                     donorSerologies,
-                    subtypePair.Item1,
-                    subtypePair.Item2));
+                    subtypePair.Position1,
+                    subtypePair.Position2));
 
-            var isDonorVsPatientMatch = subtypePairs.Any(subtypePair => 
+            var isDonorVsPatientMatch = subtypePairs.Any(subtypePair =>
                 IsIndirectSerologySubtypeMatch(
                     donorSerologies,
                     patientSerologies,
-                    subtypePair.Item1,
-                    subtypePair.Item2));
+                    subtypePair.Position1,
+                    subtypePair.Position2));
 
             return isPatientVsDonorMatch || isDonorVsPatientMatch;
         }
 
-        private static IEnumerable<Tuple<SerologySubtype, SerologySubtype>> GetSubtypePairs(
+        private static IEnumerable<LocusInfo<SerologySubtype>> GetSubtypePairs(
             SerologySubtype firstSubtype,
             SerologySubtype secondSubtype)
         {
-            var firstPair = new Tuple<SerologySubtype, SerologySubtype>(firstSubtype, secondSubtype);
-            var secondPair = new Tuple<SerologySubtype, SerologySubtype>(secondSubtype, firstSubtype);
+            var firstPair = new LocusInfo<SerologySubtype>(firstSubtype, secondSubtype);
+            var secondPair = new LocusInfo<SerologySubtype>(secondSubtype, firstSubtype);
 
-            return new[] { firstPair, secondPair };
+            return new[] {firstPair, secondPair};
         }
 
         private static bool IsIndirectSerologySubtypeMatch(
@@ -192,9 +193,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
             var secondTypingDirect = GetDirectlyMappedSerologies(secondTypingSerologies);
 
             return firstTypingDirect.Any(serology => serology.Item2 == directMatchingSubtype) &&
-                firstTypingIndirect
-                    .Intersect(secondTypingDirect)
-                    .Any(serology => serology.Item2 == indirectMatchingSubtype);
+                   firstTypingIndirect
+                       .Intersect(secondTypingDirect)
+                       .Any(serology => serology.Item2 == indirectMatchingSubtype);
         }
 
         private static IEnumerable<Tuple<string, SerologySubtype>> GetDirectlyMappedSerologies(
