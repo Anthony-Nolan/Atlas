@@ -228,14 +228,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
         private static bool DirectMatch(IList<PotentialHlaMatchRelation> matches)
         {
-            return matches.Any(m => m.SearchTypePosition == LocusPosition.Position1 && m.MatchingTypePosition == LocusPosition.Position1)
-                   && matches.Any(m => m.SearchTypePosition == LocusPosition.Position2 && m.MatchingTypePosition == LocusPosition.Position2);
+            return matches.Any(m => m.SearchTypePosition == LocusPosition.One && m.MatchingTypePosition == LocusPosition.One)
+                   && matches.Any(m => m.SearchTypePosition == LocusPosition.Two && m.MatchingTypePosition == LocusPosition.Two);
         }
 
         private static bool CrossMatch(IList<PotentialHlaMatchRelation> matches)
         {
-            return matches.Any(m => m.SearchTypePosition == LocusPosition.Position1 && m.MatchingTypePosition == LocusPosition.Position2)
-                   && matches.Any(m => m.SearchTypePosition == LocusPosition.Position2 && m.MatchingTypePosition == LocusPosition.Position1);
+            return matches.Any(m => m.SearchTypePosition == LocusPosition.One && m.MatchingTypePosition == LocusPosition.Two)
+                   && matches.Any(m => m.SearchTypePosition == LocusPosition.Two && m.MatchingTypePosition == LocusPosition.One);
         }
 
         private class DonorAndMatchForLocus

@@ -74,8 +74,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             {
                 // If no mismatch allowed at this locus, the donor must have been matched at both loci. 
                 groupedResults = groupedResults.Where(g =>
-                    g.Count(r => r.MatchingTypePosition == LocusPosition.Position1) >= 1 
-                    && g.Count(r => r.MatchingTypePosition == LocusPosition.Position2) >= 1
+                    g.Count(r => r.MatchingTypePosition == LocusPosition.One) >= 1 
+                    && g.Count(r => r.MatchingTypePosition == LocusPosition.Two) >= 1
                 );
             }
 
@@ -192,7 +192,7 @@ GROUP BY m.DonorId, TypePosition";
             }
 
             var untypedDonorIds = await GetIdsOfDonorsUntypedAtLocus(locus, donorIds);
-            var untypedDonorResults = untypedDonorIds.SelectMany(id => new[] { LocusPosition.Position1, LocusPosition.Position2 }.Select(
+            var untypedDonorResults = untypedDonorIds.SelectMany(id => new[] { LocusPosition.One, LocusPosition.Two }.Select(
                 position =>
                     new PotentialHlaMatchRelation
                     {

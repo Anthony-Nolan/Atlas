@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using Atlas.Common.GeneticData;
+using FluentAssertions;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using NUnit.Framework;
 
@@ -18,8 +19,8 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
                 Position2 = position2
             };
 
-            locusInfo.GetAtPosition(LocusPosition.Position1).Should().Be(position1);
-            locusInfo.GetAtPosition(LocusPosition.Position2).Should().Be(position2);
+            locusInfo.GetAtPosition(LocusPosition.One).Should().Be(position1);
+            locusInfo.GetAtPosition(LocusPosition.Two).Should().Be(position2);
         }
 
         [Test]
@@ -29,8 +30,8 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
             const string position2 = "[TEST] SECOND POSITION";
             var locusInfo = new LocusInfo<string>();
 
-            locusInfo.SetAtPosition(LocusPosition.Position1, position1);
-            locusInfo.SetAtPosition(LocusPosition.Position2, position2);
+            locusInfo.SetAtPosition(LocusPosition.One, position1);
+            locusInfo.SetAtPosition(LocusPosition.Two, position2);
 
             locusInfo.Position1.Should().Be(position1);
             locusInfo.Position2.Should().Be(position2);

@@ -1,4 +1,5 @@
 ﻿using System;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Common.Models;
@@ -69,9 +70,9 @@ namespace Atlas.MatchingAlgorithm.Test.Builders.SearchResults
         {
             switch (position)
             {
-                case LocusPosition.Position1:
+                case LocusPosition.One:
                     return locusScore.ScoreDetailsAtPosition1;
-                case LocusPosition.Position2:
+                case LocusPosition.Two:
                     return locusScore.ScoreDetailsAtPosition2;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), position, null);
@@ -82,10 +83,10 @@ namespace Atlas.MatchingAlgorithm.Test.Builders.SearchResults
         {
             switch (position)
             {
-                case LocusPosition.Position1:
+                case LocusPosition.One:
                     locusScore.ScoreDetailsAtPosition1 = locusPositionScoreDetails;
                     break;
-                case LocusPosition.Position2:
+                case LocusPosition.Two:
                     locusScore.ScoreDetailsAtPosition2 = locusPositionScoreDetails;
                     break;
                 default:

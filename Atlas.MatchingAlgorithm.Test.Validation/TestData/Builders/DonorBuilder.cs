@@ -45,18 +45,18 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
 
         public Donor Build()
         {
-            donor.A_1 = GetHla(Locus.A, LocusPosition.Position1);
-            donor.A_2 = GetHla(Locus.A, LocusPosition.Position2);
-            donor.B_1 = GetHla(Locus.B, LocusPosition.Position1);
-            donor.B_2 = GetHla(Locus.B, LocusPosition.Position2);
-            donor.C_1 = GetHla(Locus.C, LocusPosition.Position1);
-            donor.C_2 = GetHla(Locus.C, LocusPosition.Position2);
-            donor.DPB1_1 = GetHla(Locus.Dpb1, LocusPosition.Position1);
-            donor.DPB1_2 = GetHla(Locus.Dpb1, LocusPosition.Position2);
-            donor.DQB1_1 = GetHla(Locus.Dqb1, LocusPosition.Position1);
-            donor.DQB1_2 = GetHla(Locus.Dqb1, LocusPosition.Position2);
-            donor.DRB1_1 = GetHla(Locus.Drb1, LocusPosition.Position1);
-            donor.DRB1_2 = GetHla(Locus.Drb1, LocusPosition.Position2);
+            donor.A_1 = GetHla(Locus.A, LocusPosition.One);
+            donor.A_2 = GetHla(Locus.A, LocusPosition.Two);
+            donor.B_1 = GetHla(Locus.B, LocusPosition.One);
+            donor.B_2 = GetHla(Locus.B, LocusPosition.Two);
+            donor.C_1 = GetHla(Locus.C, LocusPosition.One);
+            donor.C_2 = GetHla(Locus.C, LocusPosition.Two);
+            donor.DPB1_1 = GetHla(Locus.Dpb1, LocusPosition.One);
+            donor.DPB1_2 = GetHla(Locus.Dpb1, LocusPosition.Two);
+            donor.DQB1_1 = GetHla(Locus.Dqb1, LocusPosition.One);
+            donor.DQB1_2 = GetHla(Locus.Dqb1, LocusPosition.Two);
+            donor.DRB1_1 = GetHla(Locus.Drb1, LocusPosition.One);
+            donor.DRB1_2 = GetHla(Locus.Drb1, LocusPosition.Two);
             return donor;
         }
 

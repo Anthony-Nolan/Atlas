@@ -82,9 +82,9 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         {
             switch (position)
             {
-                case LocusPosition.Position1:
+                case LocusPosition.One:
                     return Position1;
-                case LocusPosition.Position2:
+                case LocusPosition.Two:
                     return Position2;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), position, null);
@@ -95,10 +95,10 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         {
             switch (position)
             {
-                case LocusPosition.Position1:
+                case LocusPosition.One:
                     Position1 = value;
                     break;
-                case LocusPosition.Position2:
+                case LocusPosition.Two:
                     Position2 = value;
                     break;
                 default:

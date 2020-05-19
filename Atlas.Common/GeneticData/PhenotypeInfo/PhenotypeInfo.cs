@@ -60,8 +60,8 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         {
             return new PhenotypeInfo<R>(Map((locusType, locusInfo) => new LocusInfo<R>()
             {
-                Position1 = mapping(locusType, LocusPosition.Position1, locusInfo.Position1),
-                Position2 = mapping(locusType, LocusPosition.Position2, locusInfo.Position2)
+                Position1 = mapping(locusType, LocusPosition.One, locusInfo.Position1),
+                Position2 = mapping(locusType, LocusPosition.Two, locusInfo.Position2)
             }));
         }
 
@@ -78,18 +78,18 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         public async Task<PhenotypeInfo<R>> MapAsync<R>(Func<Locus, LocusPosition, T, Task<R>> mapping)
         {
-            var a_1 = mapping(Locus.A, LocusPosition.Position1, A.Position1);
-            var a_2 = mapping(Locus.A, LocusPosition.Position2, A.Position2);
-            var b_1 = mapping(Locus.B, LocusPosition.Position1, B.Position1);
-            var b_2 = mapping(Locus.B, LocusPosition.Position2, B.Position2);
-            var c_1 = mapping(Locus.C, LocusPosition.Position1, C.Position1);
-            var c_2 = mapping(Locus.C, LocusPosition.Position2, C.Position2);
-            var dpb1_1 = mapping(Locus.Dpb1, LocusPosition.Position1, Dpb1.Position1);
-            var dpb1_2 = mapping(Locus.Dpb1, LocusPosition.Position2, Dpb1.Position2);
-            var dqb1_1 = mapping(Locus.Dqb1, LocusPosition.Position1, Dqb1.Position1);
-            var dqb1_2 = mapping(Locus.Dqb1, LocusPosition.Position2, Dqb1.Position2);
-            var drb1_1 = mapping(Locus.Drb1, LocusPosition.Position1, Drb1.Position1);
-            var drb1_2 = mapping(Locus.Drb1, LocusPosition.Position2, Drb1.Position2);
+            var a_1 = mapping(Locus.A, LocusPosition.One, A.Position1);
+            var a_2 = mapping(Locus.A, LocusPosition.Two, A.Position2);
+            var b_1 = mapping(Locus.B, LocusPosition.One, B.Position1);
+            var b_2 = mapping(Locus.B, LocusPosition.Two, B.Position2);
+            var c_1 = mapping(Locus.C, LocusPosition.One, C.Position1);
+            var c_2 = mapping(Locus.C, LocusPosition.Two, C.Position2);
+            var dpb1_1 = mapping(Locus.Dpb1, LocusPosition.One, Dpb1.Position1);
+            var dpb1_2 = mapping(Locus.Dpb1, LocusPosition.Two, Dpb1.Position2);
+            var dqb1_1 = mapping(Locus.Dqb1, LocusPosition.One, Dqb1.Position1);
+            var dqb1_2 = mapping(Locus.Dqb1, LocusPosition.Two, Dqb1.Position2);
+            var drb1_1 = mapping(Locus.Drb1, LocusPosition.One, Drb1.Position1);
+            var drb1_2 = mapping(Locus.Drb1, LocusPosition.Two, Drb1.Position2);
 
             await Task.WhenAll(a_1, a_2, b_1, b_2, c_1, c_2, dpb1_1, dpb1_2, dqb1_1, dqb1_2, drb1_1, drb1_2);
 
@@ -176,8 +176,8 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
 
         public void SetLocus(Locus locus, T value)
         {
-            SetPosition(locus, LocusPosition.Position1, value);
-            SetPosition(locus, LocusPosition.Position2, value);
+            SetPosition(locus, LocusPosition.One, value);
+            SetPosition(locus, LocusPosition.Two, value);
         }
 
         public void EachLocus(Action<Locus, T, T> action)
@@ -203,18 +203,18 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
 
         public void EachPosition(Action<Locus, LocusPosition, T> action)
         {
-            action(Locus.A, LocusPosition.Position1, A.Position1);
-            action(Locus.A, LocusPosition.Position2, A.Position2);
-            action(Locus.B, LocusPosition.Position1, B.Position1);
-            action(Locus.B, LocusPosition.Position2, B.Position2);
-            action(Locus.C, LocusPosition.Position1, C.Position1);
-            action(Locus.C, LocusPosition.Position2, C.Position2);
-            action(Locus.Dpb1, LocusPosition.Position1, Dpb1.Position1);
-            action(Locus.Dpb1, LocusPosition.Position2, Dpb1.Position2);
-            action(Locus.Dqb1, LocusPosition.Position1, Dqb1.Position1);
-            action(Locus.Dqb1, LocusPosition.Position2, Dqb1.Position2);
-            action(Locus.Drb1, LocusPosition.Position1, Drb1.Position1);
-            action(Locus.Drb1, LocusPosition.Position2, Drb1.Position2);
+            action(Locus.A, LocusPosition.One, A.Position1);
+            action(Locus.A, LocusPosition.Two, A.Position2);
+            action(Locus.B, LocusPosition.One, B.Position1);
+            action(Locus.B, LocusPosition.Two, B.Position2);
+            action(Locus.C, LocusPosition.One, C.Position1);
+            action(Locus.C, LocusPosition.Two, C.Position2);
+            action(Locus.Dpb1, LocusPosition.One, Dpb1.Position1);
+            action(Locus.Dpb1, LocusPosition.Two, Dpb1.Position2);
+            action(Locus.Dqb1, LocusPosition.One, Dqb1.Position1);
+            action(Locus.Dqb1, LocusPosition.Two, Dqb1.Position2);
+            action(Locus.Drb1, LocusPosition.One, Drb1.Position1);
+            action(Locus.Drb1, LocusPosition.Two, Drb1.Position2);
         }
 
         public new IEnumerable<T> ToEnumerable()

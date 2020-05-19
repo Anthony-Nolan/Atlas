@@ -370,7 +370,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             
             metaDonorRepository.AllMetaDonors().Returns(metaDonors);
             
-            var criteria = new MetaDonorSelectionCriteriaBuilder().WithNullAlleleAtPosition(Locus.A, LocusPosition.Position1).Build();
+            var criteria = new MetaDonorSelectionCriteriaBuilder().WithNullAlleleAtPosition(Locus.A, LocusPosition.One).Build();
 
             Assert.Throws<MetaDonorNotFoundException>(() => metaDonorSelector.GetMetaDonor(criteria));
         }
@@ -379,7 +379,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
         public void GetMetaDonor_WhenShouldHaveNullAlleleAtOnePosition_AndDonorHasNullAlleleAtCorrectPosition_ReturnsMetaDonor()
         {
             const Locus locus = Locus.A;
-            const LocusPosition position = LocusPosition.Position1;
+            const LocusPosition position = LocusPosition.One;
             var metaDonors = new List<MetaDonor>()
             {
                 new MetaDonorBuilder()

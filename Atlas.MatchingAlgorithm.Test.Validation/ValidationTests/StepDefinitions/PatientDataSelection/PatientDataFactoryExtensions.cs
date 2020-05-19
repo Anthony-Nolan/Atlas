@@ -61,12 +61,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             {
                 if (mismatchCount > 0)
                 {
-                    factory.SetMismatchAtPosition(locus, LocusPosition.Position1);
+                    factory.SetMismatchAtPosition(locus, LocusPosition.One);
                 }
 
                 if (mismatchCount > 1)
                 {
-                    factory.SetMismatchAtPosition(locus, LocusPosition.Position2);
+                    factory.SetMismatchAtPosition(locus, LocusPosition.Two);
                 }
             }
 
