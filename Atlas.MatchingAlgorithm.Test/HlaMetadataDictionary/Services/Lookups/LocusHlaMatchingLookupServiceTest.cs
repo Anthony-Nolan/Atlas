@@ -110,7 +110,8 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
 
             var actualResults = await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(
                 MatchedLocus,
-                new LocusInfo<string>(typingInPosition1, typingInPosition2), "hla-db-version");
+                new LocusInfo<string>(typingInPosition1, typingInPosition2), 
+                "hla-db-version");
 
             actualResults.Should().BeEquivalentTo(expectedResults);
         }

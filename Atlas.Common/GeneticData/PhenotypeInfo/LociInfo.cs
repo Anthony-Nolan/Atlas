@@ -10,10 +10,10 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
 {
     /// <summary>
     /// Data type to hold one instance of T for each of the supported HLA loci.
-    /// 
-    /// LocusInfo is a single Locus' information - with a T at each position.
-    /// A LociInfo has a T at each locus.
-    /// A PhenotypeInfo is a special case of LociInfo, where T = LocusInfo.
+    ///
+    /// <see cref="LocusInfo{T}"/> is a single Locus' information - with a T at each position.
+    /// A <see cref="LociInfo{T}"/> has a T at each locus.
+    /// A <see cref="PhenotypeInfo{T}"/> is a special case of <see cref="LociInfo{T}"/>, where T = LocusInfo.
     /// </summary>
     /// <typeparam name="T">The type of the information that is required for each locus.</typeparam>
     public class LociInfo<T>
