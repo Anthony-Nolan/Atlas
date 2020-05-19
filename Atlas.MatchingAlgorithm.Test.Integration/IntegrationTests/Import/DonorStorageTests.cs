@@ -277,7 +277,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             actualDonorInfo.DonorId.Should().Be(expectedDonorInfo.DonorId);
             actualDonorInfo.DonorType.Should().Be(expectedDonorInfo.DonorType);
             actualDonorInfo.IsAvailableForSearch.Should().Be(expectedDonorInfo.IsAvailableForSearch);
-            actualDonorInfo.HlaNames.ShouldBeEquivalentTo(expectedDonorInfo.HlaNames);
+            actualDonorInfo.HlaNames.Should().BeEquivalentTo(expectedDonorInfo.HlaNames);
         }
     }
 }

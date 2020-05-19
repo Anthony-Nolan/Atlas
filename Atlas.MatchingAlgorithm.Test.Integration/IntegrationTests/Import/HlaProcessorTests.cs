@@ -102,7 +102,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             donorInfoActual.DonorId.Should().Be(donorInfoExpected.DonorId);
             donorInfoActual.DonorType.Should().Be(donorInfoExpected.DonorType);
             donorInfoActual.IsAvailableForSearch.Should().Be(donorInfoExpected.IsAvailableForSearch);
-            donorInfoActual.HlaNames.ShouldBeEquivalentTo(donorInfoExpected.HlaNames);
+            donorInfoActual.HlaNames.Should().BeEquivalentTo(donorInfoExpected.HlaNames);
         }
 
         private async Task<int?> GetPGroupCountAtLocusAPositionOne(int donorId)

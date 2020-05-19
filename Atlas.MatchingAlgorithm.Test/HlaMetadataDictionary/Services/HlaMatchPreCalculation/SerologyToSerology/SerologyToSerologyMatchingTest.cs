@@ -44,7 +44,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPr
                 expectedMatchingSerologies
             );
 
-            actualSerologyInfo.ShouldBeEquivalentTo(expectedSerologyInfo);
+            actualSerologyInfo.Should().BeEquivalentTo((ISerologyInfoForMatching)expectedSerologyInfo);
         }
 
         [Test]
@@ -74,7 +74,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPr
                 expectedMatchingSerologies
             );
 
-            actualSerologyInfo.ShouldBeEquivalentTo(expectedSerologyInfo);
+            actualSerologyInfo.Should().BeEquivalentTo((ISerologyInfoForMatching)expectedSerologyInfo);
         }
 
         [Test]

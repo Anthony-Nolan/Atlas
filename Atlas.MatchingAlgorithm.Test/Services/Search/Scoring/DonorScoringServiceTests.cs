@@ -146,7 +146,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 
             var results = await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult}, new PhenotypeInfo<string>());
 
-            results.First().MatchResult.ShouldBeEquivalentTo(matchResult);
+            results.First().MatchResult.Should().BeEquivalentTo(matchResult);
         }
 
         [Test]

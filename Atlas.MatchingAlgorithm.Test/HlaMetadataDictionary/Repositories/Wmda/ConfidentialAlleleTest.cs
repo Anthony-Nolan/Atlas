@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
                 new ConfidentialAllele("DQB1*", "06:02:29")
             };
 
-            WmdaHlaTypings.ShouldAllBeEquivalentTo(expectedConfidentialAlleles);
+            WmdaHlaTypings.Should().BeEquivalentTo(expectedConfidentialAlleles);
         }
     }
 }
