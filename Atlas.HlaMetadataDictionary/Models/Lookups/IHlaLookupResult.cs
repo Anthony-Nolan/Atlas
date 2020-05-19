@@ -7,7 +7,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups
     /// <summary>
     /// Data returned from a HLA lookup.
     /// </summary>
-    internal interface IHlaLookupResult
+    public interface IHlaLookupResult
     {
         Locus Locus { get; }
 
