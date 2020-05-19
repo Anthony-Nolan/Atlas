@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
-    internal static class HlaMetadataRegistration
+    public static class HlaMetadataRegistration
     {
         public static void RegisterHlaMetadataDictionary(this IServiceCollection services,
             Func<IServiceProvider, string> fetchAzureStorageConnectionString,
