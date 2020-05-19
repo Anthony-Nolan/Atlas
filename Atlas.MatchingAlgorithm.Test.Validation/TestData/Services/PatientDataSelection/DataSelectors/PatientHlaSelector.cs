@@ -88,7 +88,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
             var hla1 = allele1.GetHlaForResolution(typingResolution1);
             var hla2 = allele2.GetHlaForResolution(typingResolution2);
-            return new LocusInfo<string> {Position1 = hla1, Position2 = hla2};
+            return new LocusInfo<string>(hla1, hla2);
         }
 
         private static MatchOrientation GetDesiredMatchOrientation(Locus locus, PatientHlaSelectionCriteria criteria)

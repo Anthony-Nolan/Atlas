@@ -318,7 +318,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             {
                 var locusConditions = l == LocusUnderTest
                     ? locusUnderTestTypingInfo
-                    : LocusTypingInfo.GetDefaultLocusConditions(new LocusInfo<string> {Position1 = hla1, Position2 = hla2});
+                    : LocusTypingInfo.GetDefaultLocusConditions(new LocusInfo<string>(hla1, hla2));
                 var locusHlaTyping = GetLocusHlaTyping(locusConditions);
                 return locusHlaTyping;
             });
@@ -333,10 +333,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             return locusTypingInfo.Zygosity switch
             {
                 Zygosity.HomozygousByTyping => new LocusInfo<string>(locusTypingInfo.ExpressedHlaTyping.Position1),
-                Zygosity.HomozygousByExpression => string.IsNullOrEmpty(locusTypingInfo.NullHlaTyping)
-                    ? throw new ArgumentException("Null HLA typing must be provided.")
-                    : new LocusInfo<string> {Position1 = locusTypingInfo.ExpressedHlaTyping.Position1, Position2 = locusTypingInfo.NullHlaTyping},
                 Zygosity.HeterozygousExpressing => locusTypingInfo.ExpressedHlaTyping,
+                Zygosity.HomozygousByExpression when string.IsNullOrEmpty(locusTypingInfo.NullHlaTyping) =>
+                throw new ArgumentException("Null HLA typing must be provided."),
+                Zygosity.HomozygousByExpression => new LocusInfo<string>(locusTypingInfo.ExpressedHlaTyping.Position1, locusTypingInfo.NullHlaTyping),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
