@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Newtonsoft.Json;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {
@@ -9,7 +10,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
     /// Only to be used with molecular types, such as NMDP codes & XX codes,
     /// where consolidated data is sufficient for scoring.
     /// </summary>
-    internal class ConsolidatedMolecularScoringInfo : 
+    public class ConsolidatedMolecularScoringInfo : 
         IHlaScoringInfo,
         IEquatable<ConsolidatedMolecularScoringInfo>
     {
@@ -17,7 +18,8 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         public IEnumerable<string> MatchingGGroups { get; }
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }
 
-        public ConsolidatedMolecularScoringInfo(
+        [JsonConstructor]
+        internal ConsolidatedMolecularScoringInfo(
             IEnumerable<string> matchingPGroups,
             IEnumerable<string> matchingGGroups, 
             IEnumerable<SerologyEntry> matchingSerologies)
@@ -27,7 +29,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
             MatchingSerologies = matchingSerologies;
         }
 
-        public static ConsolidatedMolecularScoringInfo GetScoringInfo(
+        internal static ConsolidatedMolecularScoringInfo GetScoringInfo(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> allelesSource)
         {
             var alleles = allelesSource.ToList();

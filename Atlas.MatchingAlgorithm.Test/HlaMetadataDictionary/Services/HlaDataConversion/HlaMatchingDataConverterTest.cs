@@ -10,7 +10,7 @@ using System.Linq;
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataConversion
 {
     [TestFixture]
-    public class HlaMatchingDataConverterTest :
+    internal class HlaMatchingDataConverterTest :
         MatchedHlaDataConverterTestBase<HlaMatchingDataConverter>
     {
         [TestCase("999:999", "999:XX")]

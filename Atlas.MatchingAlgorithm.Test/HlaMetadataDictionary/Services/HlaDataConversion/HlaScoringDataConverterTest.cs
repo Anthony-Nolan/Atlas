@@ -11,7 +11,7 @@ using NUnit.Framework;
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataConversion
 {
     [TestFixture]
-    public class HlaScoringDataConverterTest :
+    internal class HlaScoringDataConverterTest :
         MatchedHlaDataConverterTestBase<HlaScoringDataConverter>
     {
         private static readonly List<SerologyEntry> SerologyEntries =

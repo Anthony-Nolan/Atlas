@@ -7,7 +7,7 @@ using Atlas.Common.GeneticData.Hla.Models;
 
 namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {
-    internal class AlleleTyping : HlaTyping
+    public class AlleleTyping : HlaTyping
     {
         public IEnumerable<string> Fields { get; }
         public string ExpressionSuffix { get; }
@@ -20,7 +20,7 @@ namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 
         private const char FieldDelimiter = ':';
 
-        public AlleleTyping(string typingLocus, string name, AlleleTypingStatus status, bool isDeleted = false)
+        internal AlleleTyping(string typingLocus, string name, AlleleTypingStatus status, bool isDeleted = false)
                 : base(TypingMethod.Molecular, typingLocus, name, isDeleted)
         {
             Status = status;
@@ -33,8 +33,8 @@ namespace Atlas.HlaMetadataDictionary.Models.HLATypings
             NameVariantsTruncatedByFieldAndOrExpressionSuffix = GetTruncatedVariantsOfAlleleName();
         }
 
-        public AlleleTyping(Locus locus, string name, bool isDeleted = false)
-            : this(locus.ToMolecularLocusIfExists(), name, AlleleTypingStatus.GetDefaultStatus(), isDeleted)
+        internal AlleleTyping(Locus locus, string name, AlleleTypingStatus status = null)
+            : this(locus.ToMolecularLocusIfExists(), name, status ?? AlleleTypingStatus.GetDefaultStatus())
         {
         }
 

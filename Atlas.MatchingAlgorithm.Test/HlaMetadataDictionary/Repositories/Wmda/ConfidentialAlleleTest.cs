@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 {
-    public class ConfidentialAlleleTest : WmdaRepositoryTestBase<ConfidentialAllele>
+    internal class ConfidentialAlleleTest : WmdaRepositoryTestBase<ConfidentialAllele>
     {
         protected override void SetupTestData()
         {

@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 {
-    public class SerologyToSerologyRelationshipsTest : WmdaRepositoryTestBase<RelSerSer>
+    internal class SerologyToSerologyRelationshipsTest : WmdaRepositoryTestBase<RelSerSer>
     {
         protected override void SetupTestData()
         {

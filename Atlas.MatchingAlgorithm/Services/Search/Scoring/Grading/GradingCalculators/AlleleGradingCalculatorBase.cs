@@ -22,11 +22,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
         {
             var patientInfo = new AlleleGradingInfo(
                 patientLookupResult.Locus,
-                patientLookupResult.HlaScoringInfo);
+                (SingleAlleleScoringInfo)patientLookupResult.HlaScoringInfo);
 
             var donorInfo = new AlleleGradingInfo(
                 donorLookupResult.Locus,
-                donorLookupResult.HlaScoringInfo);
+                (SingleAlleleScoringInfo)donorLookupResult.HlaScoringInfo);
 
             return GetAlleleMatchGrade(patientInfo, donorInfo);
         }

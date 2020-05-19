@@ -6,7 +6,7 @@ namespace Atlas.HlaMetadataDictionary.Services
     internal static class ExpressionSuffixParser
     {
         // This is done instead of Regex matching for performance reasons
-        private static readonly char[] AllSuffixes =
+        private static readonly char[] AllSuffixes = //QQ Perf.
         {
             'A',
             'B',

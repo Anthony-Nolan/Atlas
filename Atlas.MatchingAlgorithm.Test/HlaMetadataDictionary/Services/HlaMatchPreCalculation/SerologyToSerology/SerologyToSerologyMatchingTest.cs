@@ -14,7 +14,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPr
 {
     [UseReporter(typeof(NUnitReporter))]
     [UseApprovalSubdirectory("Approvals")]
-    public class SerologyToSerologyMatchingTest : MatchedOnTestBase<ISerologyInfoForMatching>
+    internal class SerologyToSerologyMatchingTest : MatchedOnTestBase<ISerologyInfoForMatching>
     {
         [TestCaseSource(
             typeof(SerologyToSerologyMatchingTestCaseSources),

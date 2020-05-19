@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="Atlas.DonorImport.Test" />
+        <InternalsVisibleToSuffix Include=".Test" />
         <InternalsVisibleTo Include="Atlas.DonorImport.Test.Integration" />
         <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     </ItemGroup>

@@ -4,7 +4,7 @@ using Atlas.HlaMetadataDictionary.Models.Wmda;
 
 namespace Atlas.HlaMetadataDictionary.Exceptions
 {
-    internal class HlaMetadataDictionaryException : Exception
+    public class HlaMetadataDictionaryException : Exception
     {
         public string Locus { get; set; }
         public string HlaName { get; set; }

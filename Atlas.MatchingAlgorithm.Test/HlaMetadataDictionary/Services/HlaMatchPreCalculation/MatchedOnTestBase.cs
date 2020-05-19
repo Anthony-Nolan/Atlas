@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation
 {
-    public abstract class MatchedOnTestBase<TMatchedOn> where TMatchedOn : IMatchedOn
+    internal abstract class MatchedOnTestBase<TMatchedOn> where TMatchedOn : IMatchedOn
     {
         protected const string HlaDatabaseVersionToTest = "3330";
 

@@ -16,7 +16,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
     /// An implementation of a HLA lookup repository which loads the data from a file,
     /// necessary for testing without an internet dependency.
     /// </summary>
-    public abstract class FileBackedHlaLookupRepositoryBase<THlaLookupResult> :
+    internal abstract class FileBackedHlaLookupRepositoryBase<THlaLookupResult> :
         FileBackedHlaLookupRepositoryBaseReader,
         IHlaLookupRepository
         where THlaLookupResult : IHlaLookupResult

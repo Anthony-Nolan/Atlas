@@ -28,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
     /// We expect the Factory itself to be Transient, but it gets a reference to a singleton Persistent Cache of the Dictionaries that it has made previously.
     /// It needs to be Transient so that it is using a new copy of the dependencies each time it tries to create a fresh object.
     /// </remarks>
-    public class HlaMetadataDictionaryFactory : IHlaMetadataDictionaryFactory
+    internal class HlaMetadataDictionaryFactory : IHlaMetadataDictionaryFactory
     {
         private readonly IAppCache cache;
 
@@ -49,7 +49,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository;
 
 
-        internal HlaMetadataDictionaryFactory(
+        public HlaMetadataDictionaryFactory(
             IPersistentCacheProvider cacheProvider,
 
             //For Dictionary

@@ -7,7 +7,7 @@ using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation
 {
-    public class ReciprocalMatchingTest : MatchedOnTestBase<IMatchedHla>
+    internal class ReciprocalMatchingTest : MatchedOnTestBase<IMatchedHla>
     {
         [TestCase(Locus.A, "02:01:100", "2")]
         [TestCase(Locus.B, "39:55", "39")]

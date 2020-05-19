@@ -11,7 +11,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPr
 {
     [UseReporter(typeof(NUnitReporter))]
     [UseApprovalSubdirectory("Approvals")]
-    public class SerologyToGGroupsMatchingTest : MatchedOnTestBase<MatchedSerology>
+    internal class SerologyToGGroupsMatchingTest : MatchedOnTestBase<MatchedSerology>
     {
         [Test]
         public void SerologyToAlleleMatching_BroadWhereSplitHasAssociated_GGroupsAreCorrect()

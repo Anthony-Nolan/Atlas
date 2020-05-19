@@ -4,7 +4,7 @@ using Atlas.HlaMetadataDictionary.Models.LookupEntities;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup
 {
-    internal interface IDpb1TceGroupsLookupResult : IHlaLookupResult
+    public interface IDpb1TceGroupsLookupResult : IHlaLookupResult
     {
         string TceGroup { get; }
     }

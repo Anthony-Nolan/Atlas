@@ -3,13 +3,15 @@ using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.Services;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {
     /// <summary>
     /// Data needed to score a single allele typing.
     /// </summary>
-    internal class SingleAlleleScoringInfo : 
+    public class SingleAlleleScoringInfo : 
         IHlaScoringInfo,
         IEquatable<SingleAlleleScoringInfo>
     {
@@ -37,7 +39,11 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         [JsonIgnore]
         public IEnumerable<string> MatchingPGroups => new List<string> { MatchingPGroup };
 
-        public SingleAlleleScoringInfo(
+        [JsonIgnore]
+        public bool IsNullExpresser { get; }
+
+        [JsonConstructor]
+        internal SingleAlleleScoringInfo(
             string alleleName,
             AlleleTypingStatus alleleTypingStatus,
             string matchingPGroup,
@@ -49,9 +55,10 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
             MatchingPGroup = matchingPGroup;
             MatchingGGroup = matchingGGroup;
             MatchingSerologies = matchingSerologies ?? new List<SerologyEntry>();
+            IsNullExpresser = ExpressionSuffixParser.IsAlleleNull(alleleName);
         }
 
-        public static SingleAlleleScoringInfo GetScoringInfoWithMatchingSerologies(
+        internal static SingleAlleleScoringInfo GetScoringInfoWithMatchingSerologies(
             IHlaLookupResultSource<AlleleTyping> alleleSource)
         {
             return new SingleAlleleScoringInfo(
@@ -63,7 +70,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
             );
         }
 
-        public static SingleAlleleScoringInfo GetScoringInfoExcludingMatchingSerologies(
+        internal static SingleAlleleScoringInfo GetScoringInfoExcludingMatchingSerologies(
             IHlaLookupResultSource<AlleleTyping> alleleSource)
         {
             return new SingleAlleleScoringInfo(
@@ -74,9 +81,12 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
             );
         }
 
-        public bool IsConvertibleToSingleAllelesInfo => true;
         public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo() => new List<SingleAlleleScoringInfo>{this};
 
+        public AlleleTyping GenerateTypingAtLocus(Locus locus)
+        {
+            return new AlleleTyping(locus, AlleleName/*, AlleleTypingStatus QQ passing this in appears to actually break things!  :'(  */);
+        }
         #region IEquatable
         public bool Equals(SingleAlleleScoringInfo other)
         {

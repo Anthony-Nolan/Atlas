@@ -1,6 +1,5 @@
 ﻿using System;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
@@ -46,15 +45,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
             SingleAlleleScoringInfo patientInfo,
             SingleAlleleScoringInfo donorInfo)
         {
-            var patientAlleleIsNull = ExpressionSuffixParser.IsAlleleNull(patientInfo.AlleleName);
-            var donorAlleleIsNull = ExpressionSuffixParser.IsAlleleNull(donorInfo.AlleleName);
-
-            if (!patientAlleleIsNull && !donorAlleleIsNull)
+            if (!patientInfo.IsNullExpresser && !donorInfo.IsNullExpresser)
             {
                 return new ExpressingAlleleGradingCalculator(permissiveMismatchCalculator);
             }
 
-            if (patientAlleleIsNull && donorAlleleIsNull)
+            if (patientInfo.IsNullExpresser && donorInfo.IsNullExpresser)
             {
                 return new NullAlleleGradingCalculator();
             }
@@ -64,7 +60,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
 
         private static bool IsSingleNullAllele(IHlaScoringInfo scoringInfo)
         {
-            return scoringInfo is SingleAlleleScoringInfo info && ExpressionSuffixParser.IsAlleleNull(info.AlleleName);
+            return scoringInfo is SingleAlleleScoringInfo info && info.IsNullExpresser;
         }
     }
 }

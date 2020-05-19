@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 {
-    public class AlleleToSerologyRelationshipsTest : WmdaRepositoryTestBase<RelDnaSer>
+    internal class AlleleToSerologyRelationshipsTest : WmdaRepositoryTestBase<RelDnaSer>
     {
 
         protected override void SetupTestData()

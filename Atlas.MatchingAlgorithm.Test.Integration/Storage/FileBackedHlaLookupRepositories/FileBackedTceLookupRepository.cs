@@ -4,7 +4,7 @@ using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories
 {
-    public class FileBackedTceLookupRepository :
+    internal class FileBackedTceLookupRepository :
         FileBackedHlaLookupRepositoryBase<IDpb1TceGroupsLookupResult>,
         IDpb1TceGroupsLookupRepository
     {

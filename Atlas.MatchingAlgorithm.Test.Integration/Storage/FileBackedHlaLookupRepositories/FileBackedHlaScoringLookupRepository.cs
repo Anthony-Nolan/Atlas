@@ -4,7 +4,7 @@ using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories
 {
-    public class FileBackedHlaScoringLookupRepository :
+    internal class FileBackedHlaScoringLookupRepository :
         FileBackedHlaLookupRepositoryBase<IHlaScoringLookupResult>,
         IHlaScoringLookupRepository
     {
