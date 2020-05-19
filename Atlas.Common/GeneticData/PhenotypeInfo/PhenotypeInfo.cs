@@ -119,7 +119,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
-        public async Task<PhenotypeInfo<R>> MapByLocusAsync<R>(Func<Locus, T, T, Task<Tuple<R, R>>> action)
+        public async Task<PhenotypeInfo<R>> MapByLocusAsync<R>(Func<Locus, T, T, Task<LocusInfo<R>>> action)
         {
             var a = action(Locus.A, A.Position1, A.Position2);
             var b = action(Locus.B, B.Position1, B.Position2);
@@ -134,33 +134,33 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             {
                 A =
                 {
-                    Position1 = a.Result.Item1,
-                    Position2 = a.Result.Item2,
+                    Position1 = a.Result.Position1,
+                    Position2 = a.Result.Position2,
                 },
                 B =
                 {
-                    Position1 = b.Result.Item1,
-                    Position2 = b.Result.Item2,
+                    Position1 = b.Result.Position1,
+                    Position2 = b.Result.Position2,
                 },
                 C =
                 {
-                    Position1 = c.Result.Item1,
-                    Position2 = c.Result.Item2,
+                    Position1 = c.Result.Position1,
+                    Position2 = c.Result.Position2,
                 },
                 Dpb1 =
                 {
-                    Position1 = dpb1.Result.Item1,
-                    Position2 = dpb1.Result.Item2,
+                    Position1 = dpb1.Result.Position1,
+                    Position2 = dpb1.Result.Position2,
                 },
                 Dqb1 =
                 {
-                    Position1 = dqb1.Result.Item1,
-                    Position2 = dqb1.Result.Item2,
+                    Position1 = dqb1.Result.Position1,
+                    Position2 = dqb1.Result.Position2,
                 },
                 Drb1 =
                 {
-                    Position1 = drb1.Result.Item1,
-                    Position2 = drb1.Result.Item2
+                    Position1 = drb1.Result.Position1,
+                    Position2 = drb1.Result.Position2
                 }
             };
         }

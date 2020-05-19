@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using FluentAssertions;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.Matching;
@@ -54,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         public void CalculateMatchesForDonors_WhenNoPGroupsMatch_ReturnsMatchCountOfZero()
         {
             var donorPGroups = new List<string>{NonMatchingPGroup};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups, donorPGroups);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups, donorPGroups);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
 
@@ -64,7 +65,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         [Test]
         public void CalculateMatchesForDonors_WhenDonorNotTypedAtLocus_ReturnsMatchCountOfTwo()
         {
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(null, null);
+            var donorHla = new LocusInfo<IEnumerable<string>>(null, null);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
 
@@ -76,7 +77,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         {
             var donorPGroups1 = new List<string>{PatientPGroup1_1};
             var donorPGroups2 = new List<string>{PatientPGroup2};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups1, donorPGroups2);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
 
@@ -88,7 +89,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         {
             var donorPGroups1 = new List<string>{PatientPGroup2};
             var donorPGroups2 = new List<string>{PatientPGroup1_1};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups1, donorPGroups2);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
 
@@ -100,7 +101,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         {
             var donorPGroups1 = new List<string>{PatientPGroup1_1};
             var donorPGroups2 = new List<string>{NonMatchingPGroup};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups1, donorPGroups2);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
 
@@ -112,7 +113,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         {
             var donorPGroups1 = new List<string>{NonMatchingPGroup};
             var donorPGroups2 = new List<string>{PatientPGroup2};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups1, donorPGroups2);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
 
@@ -124,7 +125,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         {
             var donorPGroups1 = new List<string>{PatientPGroup2};
             var donorPGroups2 = new List<string>{NonMatchingPGroup};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups1, donorPGroups2);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
 
@@ -136,7 +137,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         {
             var donorPGroups1 = new List<string>{NonMatchingPGroup};
             var donorPGroups2 = new List<string>{PatientPGroup1_2};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups1, donorPGroups2);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
 
@@ -148,7 +149,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         {
             var donorPGroups1 = new List<string>{NonMatchingPGroup};
             var donorPGroups2 = new List<string>{PatientPGroup1_2, PatientPGroup2};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups1, donorPGroups2);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
 
@@ -160,7 +161,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         {
             var donorPGroups1 = new List<string>{PatientPGroup2};
             var donorPGroups2 = new List<string>{PatientPGroup2};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups1, donorPGroups2);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
 
@@ -172,7 +173,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         {
             var donorPGroups1 = new List<string>{NonMatchingPGroup};
             var donorPGroups2 = new List<string>{PatientPGroup1_1, PatientPGroup1_2};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups1, donorPGroups2);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
 
@@ -184,7 +185,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         {
             var donorPGroups1 = new List<string>{NonMatchingPGroup};
             var donorPGroups2 = new List<string>{NonMatchingPGroup};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups1, donorPGroups2);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(homozygousPatientCriteria, donorHla);
 
@@ -196,7 +197,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         {
             var donorPGroups1 = new List<string>{PatientPGroupHomozygous};
             var donorPGroups2 = new List<string>{NonMatchingPGroup};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups1, donorPGroups2);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(homozygousPatientCriteria, donorHla);
 
@@ -208,7 +209,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         {
             var donorPGroups1 = new List<string>{NonMatchingPGroup};
             var donorPGroups2 = new List<string>{PatientPGroupHomozygous};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups1, donorPGroups2);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(homozygousPatientCriteria, donorHla);
 
@@ -220,7 +221,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         {
             var donorPGroups1 = new List<string>{PatientPGroupHomozygous};
             var donorPGroups2 = new List<string>{PatientPGroupHomozygous};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups1, donorPGroups2);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(homozygousPatientCriteria, donorHla);
 
@@ -233,7 +234,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
             // This can happen in the case of a null allele
             var donorPGroups1 = new List<string>{};
             var donorPGroups2 = new List<string>{PatientPGroupHomozygous};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups1, donorPGroups2);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(homozygousPatientCriteria, donorHla);
 
@@ -245,7 +246,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         {
             var donorPGroups1 = new List<string>{PatientPGroup2};
             var donorPGroups2 = new List<string>{PatientPGroup2};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups1, donorPGroups2);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups1, donorPGroups2);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(patientWithNoPGroupsAtPositionOneCriteria, donorHla);
 
@@ -258,7 +259,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         public void CalculateMatchesForDonors_WhenOnlyDonorPositionOneNull_ThrowsException()
         {
             var donorPGroups = new List<string>{ArbitraryPGroup};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(null, donorPGroups);
+            var donorHla = new LocusInfo<IEnumerable<string>>(null, donorPGroups);
 
             Assert.Throws<ArgumentException>(() =>donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla));
         }
@@ -268,7 +269,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Matching
         public void CalculateMatchesForDonors_WhenOnlyDonorPositionTwoNull_ThrowsException()
         {
             var donorPGroups = new List<string>{ArbitraryPGroup};
-            var donorHla = new Tuple<IEnumerable<string>, IEnumerable<string>>(donorPGroups, null);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups, null);
 
             Assert.Throws<ArgumentException>(() =>donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla));
         }

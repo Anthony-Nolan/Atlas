@@ -32,8 +32,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             hlaMetadataDictionary = Substitute.For<IHlaMetadataDictionary>();
             hlaMetadataDictionary.GetLocusHlaMatchingLookupResults(default, default).ReturnsForAnyArgs(call =>
             {
-                var input = call.Arg<Tuple<string, string>>();
-                return Task.FromResult(new Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>(default, default));
+                var input = call.Arg<LocusInfo<string>>();
+                return Task.FromResult(new LocusInfo<IHlaMatchingLookupResult>(default, default));
             });
 
             logger = Substitute.For<ILogger>();
@@ -53,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 "event-name");
 
 
-            await hlaMetadataDictionary.Received().GetLocusHlaMatchingLookupResults(Arg.Any<Locus>(), Arg.Any<Tuple<string, string>>());
+            await hlaMetadataDictionary.Received().GetLocusHlaMatchingLookupResults(Arg.Any<Locus>(), Arg.Any<LocusInfo<string>>());
         }
 
         [Test]
@@ -74,7 +74,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 
             await hlaMetadataDictionary.Received().GetLocusHlaMatchingLookupResults(
                 Arg.Any<Locus>(),
-                Arg.Any<Tuple<string,string>>());
+                Arg.Any<LocusInfo<string>>());
         }
 
         [Test]
@@ -84,7 +84,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 
             hlaMetadataDictionary
                 .GetLocusHlaMatchingLookupResults(default, default)
-                .ReturnsForAnyArgs(new Tuple<IHlaMatchingLookupResult, IHlaMatchingLookupResult>(null, null));
+                .ReturnsForAnyArgs(new LocusInfo<IHlaMatchingLookupResult>(null));
                 
             var result = await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<DonorInfo>
             {
@@ -125,7 +125,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         public void ExpandDonorHlaBatchAsync_AnticipatedExpansionFailure_DoesNotThrowException()
         {
             hlaMetadataDictionary
-                .GetLocusHlaMatchingLookupResults(Locus.A, Arg.Any<Tuple<string, string>>())
+                .GetLocusHlaMatchingLookupResults(Locus.A, Arg.Any<LocusInfo<string>>())
                 .Throws(new HlaMetadataDictionaryException(new HlaInfo(Locus.A, "hla"), "error"));
 
             Assert.DoesNotThrowAsync(async () =>
@@ -145,7 +145,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         public void ExpandDonorHlaBatchAsync_UnanticipatedExpansionFailure_ThrowsException()
         {
             hlaMetadataDictionary
-                .GetLocusHlaMatchingLookupResults(Locus.A, Arg.Any<Tuple<string, string>>())
+                .GetLocusHlaMatchingLookupResults(Locus.A, Arg.Any<LocusInfo<string>>())
                 .Throws(new Exception("error"));
 
             Assert.ThrowsAsync<Exception>(async () =>
