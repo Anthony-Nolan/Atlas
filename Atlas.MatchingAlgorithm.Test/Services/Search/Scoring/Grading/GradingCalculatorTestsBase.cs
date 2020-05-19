@@ -1,10 +1,10 @@
 ﻿using System;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Services.Scoring.Grading;
-using Atlas.MatchingAlgorithm.Test.Builders;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
+namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 {
     public abstract class GradingCalculatorTestsBase
     {

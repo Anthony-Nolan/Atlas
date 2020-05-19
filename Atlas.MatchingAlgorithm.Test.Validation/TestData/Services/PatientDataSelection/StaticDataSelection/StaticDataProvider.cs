@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Atlas.MatchingAlgorithm.Common.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.StaticDataSelection
 {
     public interface IStaticDataProvider
     {

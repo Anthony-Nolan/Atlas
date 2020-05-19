@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors.SerologyRelationshipExtractors
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.SerologyRelationshipExtractors
 {
     internal class SerologyToSerologyRelationshipExtractor : WmdaDataExtractor<RelSerSer>
     {

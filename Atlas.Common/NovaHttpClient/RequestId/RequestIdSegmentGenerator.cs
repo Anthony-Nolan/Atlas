@@ -1,6 +1,4 @@
-﻿using Atlas.Common.Core.Middleware.RequestId;
-
-namespace Atlas.Common.NovaHttpClient.RequestId
+﻿namespace Atlas.Common.NovaHttpClient.RequestId
 {
     public static class RequestIdSegmentGenerator
     {

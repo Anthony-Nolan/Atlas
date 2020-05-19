@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace Atlas.Common.NovaHttpClient
+namespace Atlas.Common.NovaHttpClient.Client
 {
     public class HttpClientSettings
     {

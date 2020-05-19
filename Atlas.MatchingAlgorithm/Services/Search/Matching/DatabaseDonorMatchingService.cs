@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.Matching;
@@ -15,7 +16,6 @@ using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
-using Atlas.MatchingAlgorithm.Services.Matching;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {

@@ -1,12 +1,12 @@
 using System;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using LazyCache;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
+namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 {
     /// <summary>
     /// Wraps a cache provided by LazyCache

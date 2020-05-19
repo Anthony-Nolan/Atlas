@@ -6,6 +6,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.DataSelectors;
 using FluentAssertions;
 using NUnit.Framework;
 

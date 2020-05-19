@@ -5,7 +5,7 @@ using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 using Atlas.HlaMetadataDictionary.Repositories;
 
-namespace Atlas.HlaMetadataDictionary.Services.HlaMatchPreCalculation
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation
 {
     /// <summary>
     /// Pulls together data from different WMDA files

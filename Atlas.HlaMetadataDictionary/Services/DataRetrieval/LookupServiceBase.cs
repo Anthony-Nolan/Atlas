@@ -1,9 +1,9 @@
-﻿using Atlas.HlaMetadataDictionary.Exceptions;
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.Exceptions;
 
-namespace Atlas.HlaMetadataDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
     public abstract class LookupServiceBase<T>
     {

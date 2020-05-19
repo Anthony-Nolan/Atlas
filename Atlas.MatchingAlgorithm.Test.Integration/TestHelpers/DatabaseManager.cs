@@ -1,6 +1,7 @@
 using System;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent;
+using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

@@ -6,9 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement.AzureApiModels.Database;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement.Extensions;
-using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Exceptions;
+using Atlas.MatchingAlgorithm.Exceptions.Azure;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
+using Atlas.MatchingAlgorithm.Settings.Azure;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 

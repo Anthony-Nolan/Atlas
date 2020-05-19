@@ -1,13 +1,13 @@
-﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.Extensions;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 using Atlas.HlaMetadataDictionary.Repositories;
-using Atlas.HlaMetadataDictionary.Services.HlaDataConversion;
-using System.Collections.Generic;
-using System.Linq;
-using Atlas.Common.GeneticData;
 
-namespace Atlas.HlaMetadataDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 {
     /// <summary>
     /// Generates a complete collection of DPB1 TCE Group lookup results.

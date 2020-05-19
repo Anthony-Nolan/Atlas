@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 
-namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
+namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators
 {
     /// <summary>
     /// To be used when both typings represent multiple alleles,

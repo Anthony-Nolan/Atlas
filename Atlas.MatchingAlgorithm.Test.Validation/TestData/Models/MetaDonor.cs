@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders;

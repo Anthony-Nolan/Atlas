@@ -2,7 +2,7 @@
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.TestData
+namespace Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData
 {
     /// <summary>
     /// Holds sets of HLA phenotypes that can be re-used across the integration test suite.

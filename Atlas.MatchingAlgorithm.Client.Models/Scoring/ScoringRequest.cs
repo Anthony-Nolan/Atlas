@@ -1,6 +1,6 @@
 ﻿using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 
-namespace Atlas.MatchingAlgorithm.Client.Models
+namespace Atlas.MatchingAlgorithm.Client.Models.Scoring
 {
     public class ScoringRequest
     {

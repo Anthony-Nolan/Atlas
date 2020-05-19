@@ -11,16 +11,15 @@ using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
-using Atlas.MatchingAlgorithm.Services.Matching;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
-using Atlas.MatchingAlgorithm.Test.Builders;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
 // ReSharper disable InconsistentNaming
 
-namespace Atlas.MatchingAlgorithm.Test.Services.Matching
+namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
 {
     [TestFixture]
     public class DatabaseDonorMatchingServiceTests

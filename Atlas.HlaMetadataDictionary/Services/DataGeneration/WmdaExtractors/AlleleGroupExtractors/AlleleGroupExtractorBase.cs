@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors.AlleleGroupExtractors
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.AlleleGroupExtractors
 {
     internal abstract class AlleleGroupExtractorBase<TWmdaAlleleGroup> : WmdaDataExtractor<TWmdaAlleleGroup>
         where TWmdaAlleleGroup : IWmdaAlleleGroup, new()

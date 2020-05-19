@@ -1,6 +1,9 @@
 ﻿using System;
 using Atlas.HlaMetadataDictionary;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Services;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using NSubstitute;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
@@ -87,7 +90,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 return cannedResponse;
             }
 
-            return new Atlas.HlaMetadataDictionary.HlaMetadataDictionary(
+            return new Atlas.HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary(
                 config,
                 recreate,
                 name,

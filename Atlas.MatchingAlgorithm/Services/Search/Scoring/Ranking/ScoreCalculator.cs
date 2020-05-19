@@ -1,7 +1,7 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+﻿using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 
-namespace Atlas.MatchingAlgorithm.Services.Scoring.Ranking
+namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking
 {
     public interface IMatchScoreCalculator
     {

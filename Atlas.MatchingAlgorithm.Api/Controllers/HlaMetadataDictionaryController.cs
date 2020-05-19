@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
@@ -26,14 +27,14 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
         [Route("create-latest-version")]
         public async Task CreateLatestHlaMetadataDictionary()
         {
-            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(HlaMetadataDictionary.HlaMetadataDictionary.CreationBehaviour.Latest);
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary.CreationBehaviour.Latest);
         }
 
         [HttpPost]
         [Route("recreate-active-version")]
         public async Task RecreateActiveHlaMetadataDictionary()
         {
-            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(HlaMetadataDictionary.HlaMetadataDictionary.CreationBehaviour.Active);
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary.CreationBehaviour.Active);
         }
 
         [HttpGet]

@@ -1,7 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Atlas.MatchingAlgorithm.ConfigSettings;
+using Atlas.MatchingAlgorithm.Settings.Azure;
 
 namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
 {

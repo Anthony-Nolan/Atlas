@@ -4,9 +4,10 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
-using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 
-namespace Atlas.HlaMetadataDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 {
     /// <summary>
     /// Manages the contents of the matching dictionary

@@ -4,15 +4,15 @@ using System.Threading.Tasks;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
-using Atlas.HlaMetadataDictionary.Services;
-using Atlas.MultipleAlleleCodeDictionary.HLAService;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using Atlas.MultipleAlleleCodeDictionary.HlaService;
 using FluentAssertions;
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataDictionary
+namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDictionary
 {
     /// <summary>
     /// Fixture relies on a file-backed HlaMetadataDictionary - tests may break if underlying data is changed.

@@ -1,5 +1,6 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
 namespace Atlas.MatchingAlgorithm.Services.Donors

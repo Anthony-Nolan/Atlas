@@ -2,6 +2,7 @@
 using System.Linq;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories
 {

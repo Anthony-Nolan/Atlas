@@ -1,10 +1,10 @@
-﻿using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 
-namespace Atlas.HlaMetadataDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
     /// <summary>
     /// Handles matching HLA lookup logic at the locus-level,

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Atlas.HlaMetadataDictionary.Data;
 
-namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary
+namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Data
 {
     public class WmdaTestFileImporter : IWmdaFileReader
     {

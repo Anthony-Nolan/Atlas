@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.Builders
+namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 {
     public class DonorMatchCriteriaBuilder
     {

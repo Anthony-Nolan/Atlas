@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 
-namespace Atlas.HlaMetadataDictionary
+namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
     public interface IHlaMetadataCacheControl
     {

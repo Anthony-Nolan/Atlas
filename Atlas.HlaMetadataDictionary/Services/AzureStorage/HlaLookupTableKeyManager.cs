@@ -1,10 +1,10 @@
-﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using static EnumStringValues.EnumExtensions;
 using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using static EnumStringValues.EnumExtensions;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
+namespace Atlas.HlaMetadataDictionary.Services.AzureStorage
 {
     /// <summary>
     /// Manages the partition and row key values to be used with HLA lookup tables.

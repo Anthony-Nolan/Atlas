@@ -1,6 +1,7 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Test.Builders.SearchResults;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
 using FluentAssertions;
 using NUnit.Framework;
 

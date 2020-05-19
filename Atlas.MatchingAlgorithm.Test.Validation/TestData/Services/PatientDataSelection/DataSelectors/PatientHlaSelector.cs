@@ -8,9 +8,9 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
-using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.DataSelectors
 {
     /// <summary>
     /// Responsible for deciding a patient's hla based on criteria

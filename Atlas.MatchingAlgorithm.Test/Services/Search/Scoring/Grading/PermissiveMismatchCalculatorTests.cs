@@ -1,13 +1,14 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Services;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Services.Scoring.Grading;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
+namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 {
     [TestFixture]
     public class PermissiveMismatchCalculatorTests

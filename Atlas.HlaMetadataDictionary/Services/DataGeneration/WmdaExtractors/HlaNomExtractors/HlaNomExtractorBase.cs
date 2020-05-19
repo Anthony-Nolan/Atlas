@@ -2,7 +2,7 @@
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.WmdaExtractors.HlaNomExtractors
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.HlaNomExtractors
 {
     internal abstract class HlaNomExtractorBase : WmdaDataExtractor<HlaNom>
     {

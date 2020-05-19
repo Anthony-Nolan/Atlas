@@ -4,7 +4,7 @@ using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 using Atlas.HlaMetadataDictionary.Repositories;
-using Atlas.HlaMetadataDictionary.Services.HlaMatchPreCalculation.SerologyRelationships;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation.SerologyRelationships;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation
 {

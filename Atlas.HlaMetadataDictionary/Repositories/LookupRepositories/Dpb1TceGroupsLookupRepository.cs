@@ -1,7 +1,7 @@
 ﻿using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
-namespace Atlas.HlaMetadataDictionary.Repositories
+namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {
     public interface IDpb1TceGroupsLookupRepository : IHlaLookupRepository
     {

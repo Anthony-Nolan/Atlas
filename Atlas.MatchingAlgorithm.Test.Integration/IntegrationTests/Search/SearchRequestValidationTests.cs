@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Services.Search;
-using Atlas.MatchingAlgorithm.Test.Integration.TestData;
+using Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;

@@ -3,7 +3,7 @@ using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
-using Atlas.HlaMetadataDictionary.Services.HlaDataConversion;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;

@@ -3,10 +3,10 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
-using Atlas.Common.NovaHttpClient;
 using Atlas.Common.NovaHttpClient.Client;
+using Atlas.MultipleAlleleCodeDictionary.HlaService.Models;
 
-namespace Atlas.MultipleAlleleCodeDictionary.HLAService
+namespace Atlas.MultipleAlleleCodeDictionary.HlaService
 {
     public interface IHlaServiceClient
     {

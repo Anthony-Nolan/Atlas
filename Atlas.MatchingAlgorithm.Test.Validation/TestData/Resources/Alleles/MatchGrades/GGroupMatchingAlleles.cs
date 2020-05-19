@@ -2,7 +2,7 @@
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.MatchGrades
 {
     /// <summary>
     /// This test data was manually curated from alleles found in hla_nom_g (v3330)

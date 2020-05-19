@@ -3,6 +3,8 @@ using System.Linq;
 using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Services;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation;
+using Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Data;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary
 {

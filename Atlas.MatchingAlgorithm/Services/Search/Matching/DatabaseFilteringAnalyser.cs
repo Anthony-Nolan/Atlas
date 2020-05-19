@@ -1,7 +1,7 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models;
+﻿using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 
-namespace Atlas.MatchingAlgorithm.Services.Matching
+namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
     /// <summary>
     /// Determines whether certain levels of filtering should be performed in the database layer or not

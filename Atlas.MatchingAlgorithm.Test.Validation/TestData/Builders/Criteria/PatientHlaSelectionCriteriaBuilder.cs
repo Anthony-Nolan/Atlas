@@ -3,7 +3,7 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
 {
     public class PatientHlaSelectionCriteriaBuilder
     {

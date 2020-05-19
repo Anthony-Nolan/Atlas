@@ -2,6 +2,7 @@
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using System;
 using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.Models.LookupEntities;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {

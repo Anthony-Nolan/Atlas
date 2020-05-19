@@ -2,7 +2,7 @@
 using System.Linq;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
-namespace Atlas.HlaMetadataDictionary.Services.HlaDataConversion
+namespace Atlas.HlaMetadataDictionary.Extensions
 {
     internal static class AlleleTypingExtensions
     {

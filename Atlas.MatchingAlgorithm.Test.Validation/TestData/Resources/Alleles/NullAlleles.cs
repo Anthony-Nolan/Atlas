@@ -2,7 +2,7 @@
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
 {
     /// <summary>
     /// This test data was manually curated from null expressing alleles found in the SOLAR database

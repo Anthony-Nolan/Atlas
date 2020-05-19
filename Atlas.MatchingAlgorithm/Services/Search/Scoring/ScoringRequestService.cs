@@ -1,10 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Extensions;
-using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using AutoMapper;
 
-namespace Atlas.MatchingAlgorithm.Services.Scoring
+namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 {
     public interface IScoringRequestService
     {

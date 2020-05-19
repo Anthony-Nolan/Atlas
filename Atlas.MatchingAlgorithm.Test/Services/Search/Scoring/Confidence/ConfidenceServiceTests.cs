@@ -5,13 +5,14 @@ using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Services.Scoring.Confidence;
-using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
-using Atlas.MatchingAlgorithm.Test.Builders;
-using Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.ScoringInfo;
 using FluentAssertions;
 using LazyCache;
 using LazyCache.Providers;
@@ -19,7 +20,7 @@ using Microsoft.Extensions.Caching.Memory;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Confidence
+namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
 {
     [TestFixture]
     public class ConfidenceServiceTests

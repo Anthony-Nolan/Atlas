@@ -1,9 +1,9 @@
-﻿using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
-using Atlas.HlaMetadataDictionary.Services.AlleleNames;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
 
-namespace Atlas.HlaMetadataDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 {
     /// <summary>
     /// Generates a complete collection of Allele Names.

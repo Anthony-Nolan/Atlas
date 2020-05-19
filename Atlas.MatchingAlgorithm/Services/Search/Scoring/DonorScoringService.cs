@@ -2,17 +2,18 @@
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Services.Scoring.Confidence;
-using Atlas.MatchingAlgorithm.Services.Scoring.Grading;
-using Atlas.MatchingAlgorithm.Services.Scoring.Ranking;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
 using static EnumStringValues.EnumExtensions;
 

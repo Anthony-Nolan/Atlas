@@ -1,7 +1,8 @@
 ﻿using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.NovaHttpClient;
-using Atlas.MultipleAlleleCodeDictionary.HLAService;
+using Atlas.Common.NovaHttpClient.Client;
+using Atlas.MultipleAlleleCodeDictionary.HlaService;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 

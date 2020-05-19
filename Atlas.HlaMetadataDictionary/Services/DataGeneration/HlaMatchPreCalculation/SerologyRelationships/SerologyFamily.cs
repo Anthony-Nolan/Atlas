@@ -3,7 +3,7 @@ using System.Linq;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 
-namespace Atlas.HlaMetadataDictionary.Services.HlaMatchPreCalculation.SerologyRelationships
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation.SerologyRelationships
 {
     /// <summary>
     /// Calculates a serology typing's own properties, parent and child(ren)

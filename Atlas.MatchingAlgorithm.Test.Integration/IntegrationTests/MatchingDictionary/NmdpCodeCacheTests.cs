@@ -4,14 +4,15 @@ using System.Threading.Tasks;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.MultipleAlleleCodeDictionary;
-using Atlas.MultipleAlleleCodeDictionary.HLAService;
+using Atlas.MultipleAlleleCodeDictionary.HlaService;
+using Atlas.MultipleAlleleCodeDictionary.HlaService.Models;
 using FluentAssertions;
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataDictionary
+namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDictionary
 {
     [TestFixture]
     public class NmdpCodeCacheTests

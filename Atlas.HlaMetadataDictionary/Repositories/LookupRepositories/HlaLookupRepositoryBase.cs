@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Caching;
+using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.LookupEntities;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
-using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
+using Atlas.HlaMetadataDictionary.Services.AzureStorage;
 
-namespace Atlas.HlaMetadataDictionary.Repositories
+namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {
     public interface IHlaLookupRepository : ILookupRepository<IHlaLookupResult, HlaLookupTableEntity>
     {

@@ -4,7 +4,7 @@ using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 
-namespace Atlas.HlaMetadataDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
     /// <summary>
     /// When scoring multiple alleles (e.g. allele string, xx code, nmdp code), we do not want to consider null alleles 

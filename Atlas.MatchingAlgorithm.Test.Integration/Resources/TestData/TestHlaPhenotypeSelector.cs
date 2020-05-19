@@ -1,7 +1,7 @@
 ﻿using System;
 using Atlas.MatchingAlgorithm.Common.Models;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.TestData
+namespace Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData
 {
     public class TestHlaPhenotypeSelector
     {

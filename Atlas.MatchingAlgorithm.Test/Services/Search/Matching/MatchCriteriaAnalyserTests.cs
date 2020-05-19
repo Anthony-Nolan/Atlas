@@ -1,11 +1,11 @@
 ﻿using System.Linq;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Services.Matching;
-using Atlas.MatchingAlgorithm.Test.Builders;
+using Atlas.MatchingAlgorithm.Services.Search.Matching;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.Matching
+namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
 {
     [TestFixture]
     public class MatchCriteriaAnalyserTests

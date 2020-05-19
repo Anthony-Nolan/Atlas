@@ -2,14 +2,14 @@
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Exceptions;
-using Atlas.HlaMetadataDictionary.Services;
-using Atlas.MultipleAlleleCodeDictionary.HLAService;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using Atlas.MultipleAlleleCodeDictionary.HlaService;
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataDictionary
+namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDictionary
 {
     /// <summary>
     /// Fixture testing the base functionality of HlaSearchingLookupService via an arbitrarily chosen base class.

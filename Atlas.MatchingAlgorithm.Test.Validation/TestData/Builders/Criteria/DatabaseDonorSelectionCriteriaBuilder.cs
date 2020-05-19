@@ -5,7 +5,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelecti
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases;
 using static EnumStringValues.EnumExtensions;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
 {
     public class DatabaseDonorSelectionCriteriaBuilder
     {

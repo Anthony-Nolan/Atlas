@@ -2,7 +2,7 @@
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection
+namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.DataSelectors
 {
     public interface IDatabaseDonorSelector
     {

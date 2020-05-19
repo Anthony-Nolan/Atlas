@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.StaticDataSelection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

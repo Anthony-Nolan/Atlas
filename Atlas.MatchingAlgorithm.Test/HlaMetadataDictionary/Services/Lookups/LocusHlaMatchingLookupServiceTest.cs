@@ -4,6 +4,7 @@ using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Services;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;

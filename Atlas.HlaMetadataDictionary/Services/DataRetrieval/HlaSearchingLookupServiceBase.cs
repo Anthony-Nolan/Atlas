@@ -1,14 +1,14 @@
-﻿using Atlas.MultipleAlleleCodeDictionary;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
-using Atlas.HlaMetadataDictionary.Repositories;
-using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
-using Atlas.HlaMetadataDictionary.Services.Lookups;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.HlaMetadataDictionary.Models.LookupEntities;
+using Atlas.HlaMetadataDictionary.Models.Lookups;
+using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups;
+using Atlas.MultipleAlleleCodeDictionary;
 
-namespace Atlas.HlaMetadataDictionary.Services
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
     public interface IHlaSearchingLookupService<THlaLookupResult>
         where THlaLookupResult : IHlaLookupResult

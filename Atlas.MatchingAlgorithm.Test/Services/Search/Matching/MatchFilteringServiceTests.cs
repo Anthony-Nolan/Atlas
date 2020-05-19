@@ -1,14 +1,15 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Services.Matching;
+using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.Matching
+namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
 {
     [TestFixture]
     public class MatchFilteringServiceTests

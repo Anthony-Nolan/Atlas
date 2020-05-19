@@ -1,7 +1,7 @@
-using Atlas.MatchingAlgorithm.ConfigSettings;
+using Atlas.MatchingAlgorithm.Settings;
 using LochNessBuilder;
 
-namespace Atlas.MatchingAlgorithm.Test.Builders.DataRefresh
+namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh
 {
     [Builder]
     public static class DataRefreshSettingsBuilder
