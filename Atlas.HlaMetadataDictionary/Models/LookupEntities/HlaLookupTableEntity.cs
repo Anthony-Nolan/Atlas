@@ -11,7 +11,7 @@ using static Atlas.Common.GeneticData.Hla.Models.HlaTypingCategory;
 
 namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
 {
-    internal class HlaLookupTableEntity : TableEntity
+    public class HlaLookupTableEntity : TableEntity //QQ definitely not.
     {
         public string LocusAsString { get; set; }
         public Locus Locus => LocusAsString.ParseToEnum<Locus>();
