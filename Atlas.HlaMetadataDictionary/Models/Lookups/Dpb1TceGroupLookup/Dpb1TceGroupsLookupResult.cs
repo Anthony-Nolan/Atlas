@@ -4,12 +4,12 @@ using Atlas.HlaMetadataDictionary.Models.LookupEntities;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup
 {
-    public interface IDpb1TceGroupsLookupResult : IHlaLookupResult
+    internal interface IDpb1TceGroupsLookupResult : IHlaLookupResult
     {
         string TceGroup { get; }
     }
 
-    public class Dpb1TceGroupsLookupResult : IDpb1TceGroupsLookupResult
+    internal class Dpb1TceGroupsLookupResult : IDpb1TceGroupsLookupResult
     {
         public Locus Locus => Locus.Dpb1;
         public string LookupName { get; }

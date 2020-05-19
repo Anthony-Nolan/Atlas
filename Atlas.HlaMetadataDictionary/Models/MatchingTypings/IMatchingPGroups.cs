@@ -2,7 +2,7 @@
 
 namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
-    public interface IMatchingPGroups
+    internal interface IMatchingPGroups
     {
         IEnumerable<string> MatchingPGroups { get; }
     }

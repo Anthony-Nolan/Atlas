@@ -12,7 +12,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
     /// <summary>
     /// Generates a complete collection of DPB1 TCE Group lookup results.
     /// </summary>
-    public interface IDpb1TceGroupsService
+    internal interface IDpb1TceGroupsService
     {
         IEnumerable<IDpb1TceGroupsLookupResult> GetDpb1TceGroupLookupResults(string hlaDatabaseVersion);
     }
@@ -21,7 +21,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
     /// <summary>
     /// Extracts DPB1 TCE groups from a WMDA data repository.
     /// </summary>
-    public class Dpb1TceGroupsService : IDpb1TceGroupsService
+    internal class Dpb1TceGroupsService : IDpb1TceGroupsService
     {
         private readonly IWmdaDataRepository wmdaDataRepository;
 

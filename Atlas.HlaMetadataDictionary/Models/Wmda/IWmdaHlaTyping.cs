@@ -2,7 +2,7 @@
 
 namespace Atlas.HlaMetadataDictionary.Models.Wmda
 {
-    public interface IWmdaHlaTyping
+    internal interface IWmdaHlaTyping
     {
         TypingMethod TypingMethod { get; }
         string TypingLocus { get; set; }

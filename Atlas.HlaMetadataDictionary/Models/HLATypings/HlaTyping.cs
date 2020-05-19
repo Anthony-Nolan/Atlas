@@ -6,7 +6,7 @@ using Atlas.Common.GeneticData.Hla.Models;
 
 namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {
-    public class HlaTyping : IEquatable<HlaTyping>, IWmdaHlaTyping
+    internal class HlaTyping : IEquatable<HlaTyping>, IWmdaHlaTyping
     {
         public TypingMethod TypingMethod { get; }
         public string TypingLocus { get; set; }

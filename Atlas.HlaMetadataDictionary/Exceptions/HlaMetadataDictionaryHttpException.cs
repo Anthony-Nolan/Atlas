@@ -4,7 +4,7 @@ using Atlas.Common.Utils.Http;
 
 namespace Atlas.HlaMetadataDictionary.Exceptions
 {
-    public class HlaMetadataDictionaryHttpException : AtlasHttpException
+    internal class HlaMetadataDictionaryHttpException : AtlasHttpException
     {
         public HlaMetadataDictionaryHttpException(string message)
             : base(HttpStatusCode.InternalServerError, message)

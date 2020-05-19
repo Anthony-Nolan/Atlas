@@ -9,12 +9,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
     /// Creates a complete collection of matched HLA
     /// by orchestrating the generation and compilation of matching info extracted from the WMDA files.
     /// </summary>
-    public interface IHlaMatchPreCalculationService
+    internal interface IHlaMatchPreCalculationService
     {
         IEnumerable<IMatchedHla> GetMatchedHla(string hlaDatabaseVersion);
     }
 
-    public class HlaMatchPreCalculationService : IHlaMatchPreCalculationService
+    internal class HlaMatchPreCalculationService : IHlaMatchPreCalculationService
     {
         private readonly IWmdaDataRepository dataRepository;
 

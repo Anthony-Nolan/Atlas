@@ -2,7 +2,7 @@
 
 namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
-    public interface IMatchingSerologies
+    internal interface IMatchingSerologies
     {
         IEnumerable<MatchingSerology> MatchingSerologies { get; }
     }

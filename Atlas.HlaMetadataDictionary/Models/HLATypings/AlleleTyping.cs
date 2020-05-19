@@ -7,7 +7,7 @@ using Atlas.Common.GeneticData.Hla.Models;
 
 namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {
-    public class AlleleTyping : HlaTyping
+    internal class AlleleTyping : HlaTyping
     {
         public IEnumerable<string> Fields { get; }
         public string ExpressionSuffix { get; }

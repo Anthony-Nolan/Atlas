@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup
 {
-    public class HlaMatchingLookupResult :
+    internal class HlaMatchingLookupResult :
         IHlaMatchingLookupResult,
         IEquatable<HlaMatchingLookupResult>
     {

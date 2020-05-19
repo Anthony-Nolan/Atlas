@@ -14,12 +14,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// <summary>
     ///  Consolidates TCE group assignments for DPB1 alleles.
     /// </summary>
-    public interface IDpb1TceGroupLookupService : IHlaSearchingLookupService<IDpb1TceGroupsLookupResult>
+    internal interface IDpb1TceGroupLookupService : IHlaSearchingLookupService<IDpb1TceGroupsLookupResult>
     {
         Task<string> GetDpb1TceGroup(string dpb1HlaName, string hlaDatabaseVersion);
     }
 
-    public class Dpb1TceGroupLookupService : 
+    internal class Dpb1TceGroupLookupService : 
         HlaSearchingLookupServiceBase<IDpb1TceGroupsLookupResult>, 
         IDpb1TceGroupLookupService
     {

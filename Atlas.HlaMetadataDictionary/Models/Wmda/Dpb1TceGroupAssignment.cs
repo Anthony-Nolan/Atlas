@@ -3,7 +3,7 @@ using System;
 
 namespace Atlas.HlaMetadataDictionary.Models.Wmda
 {
-    public class Dpb1TceGroupAssignment : IWmdaHlaTyping, IEquatable<Dpb1TceGroupAssignment>
+    internal class Dpb1TceGroupAssignment : IWmdaHlaTyping, IEquatable<Dpb1TceGroupAssignment>
     {
         public TypingMethod TypingMethod => TypingMethod.Molecular;
 

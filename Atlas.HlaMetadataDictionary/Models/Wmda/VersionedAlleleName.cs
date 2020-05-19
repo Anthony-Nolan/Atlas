@@ -2,7 +2,7 @@
 
 namespace Atlas.HlaMetadataDictionary.Models.Wmda
 {
-    public class VersionedAlleleName : IEquatable<VersionedAlleleName>
+    internal class VersionedAlleleName : IEquatable<VersionedAlleleName>
     {
         public string HlaDatabaseVersion { get; }
         public string AlleleName { get; }

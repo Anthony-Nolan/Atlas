@@ -5,7 +5,7 @@ using Atlas.Common.GeneticData.Hla.Models;
 
 namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {
-    public class SerologyTyping : HlaTyping, IEquatable<SerologyTyping>
+    internal class SerologyTyping : HlaTyping, IEquatable<SerologyTyping>
     {
         public SerologySubtype SerologySubtype { get; }
 

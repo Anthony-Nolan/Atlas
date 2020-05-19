@@ -6,12 +6,12 @@ using System.Linq;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 {
-    public interface IAlleleNameHistoriesConsolidator
+    internal interface IAlleleNameHistoriesConsolidator
     {
         IEnumerable<AlleleNameHistory> GetConsolidatedAlleleNameHistories(string hlaDatabaseVersion);
     }
 
-    public class AlleleNameHistoriesConsolidator : IAlleleNameHistoriesConsolidator
+    internal class AlleleNameHistoriesConsolidator : IAlleleNameHistoriesConsolidator
     {
         private readonly IWmdaDataRepository dataRepository;
 

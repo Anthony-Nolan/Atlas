@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {
-    public interface IHlaLookupRepository : ILookupRepository
+    internal interface IHlaLookupRepository : ILookupRepository
     {
         Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults, string hlaDatabaseVersion);
 
@@ -21,7 +21,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
             string hlaDatabaseVersion);
     }
 
-    public abstract class HlaLookupRepositoryBase :
+    internal abstract class HlaLookupRepositoryBase :
         LookupRepositoryBase<IHlaLookupResult, HlaLookupTableEntity>,
         IHlaLookupRepository
     {

@@ -5,7 +5,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Atlas.HlaMetadataDictionary.Exceptions
 {
-    public class CloudTableBatchInsertException : Exception
+    internal class CloudTableBatchInsertException : Exception
     {
         public CloudTableBatchInsertException(IEnumerable<TableEntity> tableEntities, Exception inner)
             : base(GetErrorMessage(tableEntities), inner)

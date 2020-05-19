@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
-    public class MatchedAllele : IMatchedHla, IHlaLookupResultSource<AlleleTyping>
+    internal class MatchedAllele : IMatchedHla, IHlaLookupResultSource<AlleleTyping>
     {
         public HlaTyping HlaTyping { get; }
         public HlaTyping TypingUsedInMatching { get; }

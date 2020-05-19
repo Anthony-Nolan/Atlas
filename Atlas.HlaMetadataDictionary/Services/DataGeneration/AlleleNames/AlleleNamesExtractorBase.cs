@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 {
-    public abstract class AlleleNamesExtractorBase
+    internal abstract class AlleleNamesExtractorBase
     {
         private readonly IWmdaDataRepository dataRepository;
         private readonly Dictionary<string, IList<HlaNom>> historicAlleleNamesCache = new Dictionary<string, IList<HlaNom>>();

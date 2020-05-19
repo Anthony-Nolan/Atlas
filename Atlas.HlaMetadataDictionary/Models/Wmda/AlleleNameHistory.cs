@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Atlas.HlaMetadataDictionary.Models.Wmda
 {
-    public class AlleleNameHistory : IWmdaHlaTyping
+    internal class AlleleNameHistory : IWmdaHlaTyping
     {
         public TypingMethod TypingMethod => TypingMethod.Molecular;
         public string TypingLocus { get; set; }

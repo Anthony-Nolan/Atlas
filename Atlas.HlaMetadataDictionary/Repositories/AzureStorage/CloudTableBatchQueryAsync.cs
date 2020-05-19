@@ -7,7 +7,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
 {
-    public class CloudTableBatchQueryAsync<TTableEntity> : IBatchQueryAsync<TTableEntity> 
+    internal class CloudTableBatchQueryAsync<TTableEntity> : IBatchQueryAsync<TTableEntity> 
         where TTableEntity : TableEntity, new()
     {
         private readonly TableQuery<TTableEntity> query;

@@ -6,7 +6,7 @@ using LazyCache;
 
 namespace Atlas.HlaMetadataDictionary.Services
 {
-    public interface IWmdaHlaVersionProvider
+    internal interface IWmdaHlaVersionProvider
     {
         /// <summary>
         /// Fetches the last stable hla database version.
@@ -15,7 +15,7 @@ namespace Atlas.HlaMetadataDictionary.Services
         string GetLatestStableHlaDatabaseVersion();
     }
 
-    public class WmdaHlaVersionProvider : IWmdaHlaVersionProvider
+    internal class WmdaHlaVersionProvider : IWmdaHlaVersionProvider
     {
         private readonly IWmdaFileReader fileReader;
         private readonly IAppCache cache;

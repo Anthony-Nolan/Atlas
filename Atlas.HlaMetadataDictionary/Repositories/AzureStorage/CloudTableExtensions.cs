@@ -7,7 +7,7 @@ using Atlas.HlaMetadataDictionary.Exceptions;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
 {
-    public static class CloudTableExtensions
+    internal static class CloudTableExtensions
     {
         private const int BatchSize = 100;
 

@@ -7,7 +7,7 @@ using Atlas.HlaMetadataDictionary.Models.LookupEntities;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {
-    public class HlaScoringLookupResult : 
+    internal class HlaScoringLookupResult : 
         IHlaScoringLookupResult, 
         IEquatable<HlaScoringLookupResult>
     {

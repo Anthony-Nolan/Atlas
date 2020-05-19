@@ -16,12 +16,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// Orchestrates the generation of the HLA Lookup Results dataset.
     /// The resulting data is not persisted.
     /// </summary>
-    public interface IHlaLookupResultsService
+    internal interface IHlaLookupResultsService
     {
         HlaLookupResultCollections GetAllHlaLookupResults(string hlaDatabaseVersion);
     }
 
-    public class HlaLookupResultsService : IHlaLookupResultsService
+    internal class HlaLookupResultsService : IHlaLookupResultsService
     {
         private readonly IHlaMatchPreCalculationService matchPreCalculationService;
         private readonly IAlleleNamesService alleleNamesService;

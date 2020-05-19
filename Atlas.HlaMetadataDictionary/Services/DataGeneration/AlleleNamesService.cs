@@ -8,7 +8,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
     /// <summary>
     /// Generates a complete collection of Allele Names.
     /// </summary>
-    public interface IAlleleNamesService
+    internal interface IAlleleNamesService
     {
         IEnumerable<IAlleleNameLookupResult> GetAlleleNamesAndTheirVariants(string hlaDatabaseVersion);
     }
@@ -17,7 +17,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
     /// <summary>
     /// Extracts allele names from a WMDA data repository.
     /// </summary>
-    public class AlleleNamesService : IAlleleNamesService
+    internal class AlleleNamesService : IAlleleNamesService
     {
         private readonly IAlleleNamesFromHistoriesExtractor alleleNamesFromHistoriesExtractor;
         private readonly IAlleleNameVariantsExtractor alleleNameVariantsExtractor;

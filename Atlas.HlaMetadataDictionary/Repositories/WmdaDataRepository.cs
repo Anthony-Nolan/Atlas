@@ -9,12 +9,12 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.Serolog
 
 namespace Atlas.HlaMetadataDictionary.Repositories
 {
-    public interface IWmdaDataRepository
+    internal interface IWmdaDataRepository
     {
         WmdaDataset GetWmdaDataset(string hlaDatabaseVersion);
     }
 
-    public class WmdaDataRepository : IWmdaDataRepository
+    internal class WmdaDataRepository : IWmdaDataRepository
     {
         private readonly Dictionary<string, WmdaDataset> wmdaDatasets = new Dictionary<string, WmdaDataset>();
 

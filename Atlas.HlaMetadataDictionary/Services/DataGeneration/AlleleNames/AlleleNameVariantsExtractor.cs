@@ -6,12 +6,12 @@ using Atlas.HlaMetadataDictionary.Repositories;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 {
-    public interface IAlleleNameVariantsExtractor
+    internal interface IAlleleNameVariantsExtractor
     {
         IEnumerable<IAlleleNameLookupResult> GetAlleleNames(IEnumerable<IAlleleNameLookupResult> originalAlleleNames, string hlaDatabaseVersion);
     }
 
-    public class AlleleNameVariantsExtractor : AlleleNamesExtractorBase, IAlleleNameVariantsExtractor
+    internal class AlleleNameVariantsExtractor : AlleleNamesExtractorBase, IAlleleNameVariantsExtractor
     {
         public AlleleNameVariantsExtractor(IWmdaDataRepository dataRepository)
             : base(dataRepository)

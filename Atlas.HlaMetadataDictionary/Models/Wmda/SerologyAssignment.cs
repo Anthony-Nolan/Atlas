@@ -2,7 +2,7 @@
 
 namespace Atlas.HlaMetadataDictionary.Models.Wmda
 {
-    public class SerologyAssignment : IEquatable<SerologyAssignment>
+    internal class SerologyAssignment : IEquatable<SerologyAssignment>
     {
         public string Name { get; }
         public Assignment Assignment { get; }

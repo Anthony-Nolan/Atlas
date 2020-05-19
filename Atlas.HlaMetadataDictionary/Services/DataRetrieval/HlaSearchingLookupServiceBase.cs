@@ -10,7 +10,7 @@ using Atlas.MultipleAlleleCodeDictionary;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
-    public interface IHlaSearchingLookupService<THlaLookupResult>
+    internal interface IHlaSearchingLookupService<THlaLookupResult>
         where THlaLookupResult : IHlaLookupResult
     {
         Task<THlaLookupResult> GetHlaLookupResult(Locus locus, string hlaName, string hlaDatabaseVersion);
@@ -20,7 +20,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// Common functionality used when querying a HLA 'searching' 
     /// (i.e., matching or scoring) lookup repository.
     /// </summary>
-    public abstract class HlaSearchingLookupServiceBase<THlaLookupResult> :
+    internal abstract class HlaSearchingLookupServiceBase<THlaLookupResult> :
         LookupServiceBase<THlaLookupResult>,
         IHlaSearchingLookupService<THlaLookupResult>
         where THlaLookupResult : IHlaLookupResult

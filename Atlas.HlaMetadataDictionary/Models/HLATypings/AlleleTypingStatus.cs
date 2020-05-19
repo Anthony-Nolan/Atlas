@@ -3,7 +3,7 @@ using System;
 
 namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {
-    public enum SequenceStatus
+    internal enum SequenceStatus
     {
         // Enum values stored in db; changing values will require rebuild
         // of the matching dictionary.
@@ -12,7 +12,7 @@ namespace Atlas.HlaMetadataDictionary.Models.HLATypings
         Full = 2
     }
 
-    public enum DnaCategory
+    internal enum DnaCategory
     {
         // Enum values stored in db; changing values will require rebuild
         // of the matching dictionary.
@@ -21,7 +21,7 @@ namespace Atlas.HlaMetadataDictionary.Models.HLATypings
         GDna = 2
     }
 
-    public class AlleleTypingStatus : IEquatable<AlleleTypingStatus>
+    internal class AlleleTypingStatus : IEquatable<AlleleTypingStatus>
     {
         // Shortened property names are used when serialising the object for storage
         // to reduce the total row size

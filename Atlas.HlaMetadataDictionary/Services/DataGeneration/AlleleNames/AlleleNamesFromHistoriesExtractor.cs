@@ -8,12 +8,12 @@ using System.Linq;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 {
-    public interface IAlleleNamesFromHistoriesExtractor
+    internal interface IAlleleNamesFromHistoriesExtractor
     {
         IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaDatabaseVersion);
     }
 
-    public class AlleleNamesFromHistoriesExtractor : AlleleNamesExtractorBase, IAlleleNamesFromHistoriesExtractor
+    internal class AlleleNamesFromHistoriesExtractor : AlleleNamesExtractorBase, IAlleleNamesFromHistoriesExtractor
     {
         private readonly IAlleleNameHistoriesConsolidator historiesConsolidator;
 

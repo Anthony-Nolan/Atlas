@@ -4,7 +4,7 @@ using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
 namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
-    public class MatchedSerology : IMatchedHla, IHlaLookupResultSource<SerologyTyping>
+    internal class MatchedSerology : IMatchedHla, IHlaLookupResultSource<SerologyTyping>
     {
         public HlaTyping HlaTyping { get; }
         public HlaTyping TypingUsedInMatching { get; }

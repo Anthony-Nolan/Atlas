@@ -5,12 +5,12 @@ using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
 namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
-    public interface IAlleleInfoForMatching : IMatchedOn, IMatchingPGroups, IMatchingGGroups
+    internal interface IAlleleInfoForMatching : IMatchedOn, IMatchingPGroups, IMatchingGGroups
     {
         
     }
 
-    public class AlleleInfoForMatching : IAlleleInfoForMatching, IEquatable<IAlleleInfoForMatching>
+    internal class AlleleInfoForMatching : IAlleleInfoForMatching, IEquatable<IAlleleInfoForMatching>
     {
         public HlaTyping HlaTyping { get; }
         public HlaTyping TypingUsedInMatching { get; }

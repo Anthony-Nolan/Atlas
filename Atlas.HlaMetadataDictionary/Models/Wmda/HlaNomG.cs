@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Atlas.HlaMetadataDictionary.Models.Wmda
 {
-    public class HlaNomG : IWmdaAlleleGroup, IEquatable<HlaNomG>
+    internal class HlaNomG : IWmdaAlleleGroup, IEquatable<HlaNomG>
     {
         public TypingMethod TypingMethod => TypingMethod.Molecular;
         public string TypingLocus { get; set; }

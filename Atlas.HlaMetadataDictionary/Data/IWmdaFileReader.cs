@@ -2,7 +2,7 @@
 
 namespace Atlas.HlaMetadataDictionary.Data
 {
-    public interface IWmdaFileReader
+    internal interface IWmdaFileReader
     {
         IEnumerable<string> GetFileContentsWithoutHeader(string hlaDatabaseVersion, string fileName);
     }

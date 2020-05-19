@@ -2,7 +2,7 @@
 
 namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
-    public interface IMatchedOn
+    internal interface IMatchedOn
     {
         HlaTyping HlaTyping { get; }
         HlaTyping TypingUsedInMatching { get; }

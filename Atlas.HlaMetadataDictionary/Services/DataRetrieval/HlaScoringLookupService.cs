@@ -18,11 +18,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// The relationship of info-to-typing is preserved within the result
     /// for typing categories that require it; else the data is consolidated.
     /// </summary>
-    public interface IHlaScoringLookupService : IHlaSearchingLookupService<IHlaScoringLookupResult>
+    internal interface IHlaScoringLookupService : IHlaSearchingLookupService<IHlaScoringLookupResult>
     {
     }
 
-    public class HlaScoringLookupService :
+    internal class HlaScoringLookupService :
         HlaSearchingLookupServiceBase<IHlaScoringLookupResult>,
         IHlaScoringLookupService
     {

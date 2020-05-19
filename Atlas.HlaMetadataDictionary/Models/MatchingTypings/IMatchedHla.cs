@@ -1,6 +1,6 @@
 ﻿namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
-    public interface IMatchedHla : IAlleleInfoForMatching, ISerologyInfoForMatching
+    internal interface IMatchedHla : IAlleleInfoForMatching, ISerologyInfoForMatching
     {
     }
 }

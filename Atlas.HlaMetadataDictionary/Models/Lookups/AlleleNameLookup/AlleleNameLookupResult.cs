@@ -8,12 +8,12 @@ using System.Linq;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup
 {
-    public interface IAlleleNameLookupResult : IHlaLookupResult
+    internal interface IAlleleNameLookupResult : IHlaLookupResult
     {
         IEnumerable<string> CurrentAlleleNames { get; }
     }
 
-    public class AlleleNameLookupResult : 
+    internal class AlleleNameLookupResult : 
         IAlleleNameLookupResult, 
         IEquatable<AlleleNameLookupResult>
     {

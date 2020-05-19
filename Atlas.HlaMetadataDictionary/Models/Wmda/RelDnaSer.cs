@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Atlas.HlaMetadataDictionary.Models.Wmda
 {
-    public class RelDnaSer : IWmdaHlaTyping, IEquatable<RelDnaSer>
+    internal class RelDnaSer : IWmdaHlaTyping, IEquatable<RelDnaSer>
     {
         public TypingMethod TypingMethod => TypingMethod.Molecular;
         public string TypingLocus { get; set; }

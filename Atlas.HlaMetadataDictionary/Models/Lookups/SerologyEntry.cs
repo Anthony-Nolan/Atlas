@@ -4,7 +4,7 @@ using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups
 {
-    public class SerologyEntry : IEquatable<SerologyEntry>
+    internal class SerologyEntry : IEquatable<SerologyEntry>
     {
         // Shortened property names are used when serialising the object for storage
         // to reduce the total row size
