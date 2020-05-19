@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using FluentValidation;
 

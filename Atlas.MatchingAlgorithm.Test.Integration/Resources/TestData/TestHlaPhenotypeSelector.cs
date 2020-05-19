@@ -1,6 +1,5 @@
 ﻿using System;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.MatchingAlgorithm.Common.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData
 {

@@ -1,18 +1,13 @@
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using FluentValidation;
 using NSubstitute;
 using NUnit.Framework;
-using System.Net;
-using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Utils.Http;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search
 {

@@ -1,5 +1,4 @@
 ﻿using System;
-using Atlas.HlaMetadataDictionary;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;

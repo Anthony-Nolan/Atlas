@@ -1,6 +1,5 @@
 ﻿using System;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 

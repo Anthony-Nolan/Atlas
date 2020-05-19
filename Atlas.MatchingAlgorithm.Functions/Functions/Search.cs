@@ -6,7 +6,6 @@ using Atlas.Common.Utils;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Helpers;
-using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Search;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;

@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using Microsoft.AspNetCore.Mvc;

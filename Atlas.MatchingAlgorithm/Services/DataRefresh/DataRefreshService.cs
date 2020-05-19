@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.HlaMetadataDictionary;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Extensions;

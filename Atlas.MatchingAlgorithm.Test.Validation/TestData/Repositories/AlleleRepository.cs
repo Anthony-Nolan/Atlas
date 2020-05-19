@@ -11,31 +11,31 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
 {
     public interface IAlleleRepository
     {
-        Common.Models.PhenotypeInfo<List<AlleleTestData>> FourFieldAlleles();
-        Common.Models.PhenotypeInfo<List<AlleleTestData>> ThreeFieldAlleles();
-        Common.Models.PhenotypeInfo<List<AlleleTestData>> TwoFieldAlleles();
+        PhenotypeInfo<List<AlleleTestData>> FourFieldAlleles();
+        PhenotypeInfo<List<AlleleTestData>> ThreeFieldAlleles();
+        PhenotypeInfo<List<AlleleTestData>> TwoFieldAlleles();
 
         /// <returns>
         /// All 2, 3, and 4 field alleles from the datasets generated from TGS-typed donors in Solar.
         /// Does not include manually curated test data used for e.g. p-group/g-group matching
         /// </returns>
-        Common.Models.PhenotypeInfo<List<AlleleTestData>> AllTgsAlleles();
+        PhenotypeInfo<List<AlleleTestData>> AllTgsAlleles();
 
-        Common.Models.PhenotypeInfo<List<AlleleTestData>> AllelesForGGroupMatching();
+        PhenotypeInfo<List<AlleleTestData>> AllelesForGGroupMatching();
         LociInfo<List<AlleleTestData>> DonorAllelesForPGroupMatching();
         LociInfo<AlleleTestData> PatientAllelesForPGroupMatching();
         LociInfo<List<AlleleTestData>> AllelesForCDnaMatching();
-        Common.Models.PhenotypeInfo<List<AlleleTestData>> AllelesForProteinMatching();
+        PhenotypeInfo<List<AlleleTestData>> AllelesForProteinMatching();
 
-        Common.Models.PhenotypeInfo<List<AlleleTestData>> DonorAllelesWithThreeFieldMatchPossible();
-        Common.Models.PhenotypeInfo<List<AlleleTestData>> PatientAllelesWithThreeFieldMatchPossible();
-        Common.Models.PhenotypeInfo<List<AlleleTestData>> AllelesWithTwoFieldMatchPossible();
+        PhenotypeInfo<List<AlleleTestData>> DonorAllelesWithThreeFieldMatchPossible();
+        PhenotypeInfo<List<AlleleTestData>> PatientAllelesWithThreeFieldMatchPossible();
+        PhenotypeInfo<List<AlleleTestData>> AllelesWithTwoFieldMatchPossible();
 
-        Common.Models.PhenotypeInfo<List<AlleleTestData>> AllelesWithAlleleStringOfSubtypesPossible();
-        Common.Models.PhenotypeInfo<List<AlleleTestData>> NullAlleles();
-        Common.Models.PhenotypeInfo<List<AlleleTestData>> AllelesWithNonNullExpressionSuffix();
+        PhenotypeInfo<List<AlleleTestData>> AllelesWithAlleleStringOfSubtypesPossible();
+        PhenotypeInfo<List<AlleleTestData>> NullAlleles();
+        PhenotypeInfo<List<AlleleTestData>> AllelesWithNonNullExpressionSuffix();
 
-        Common.Models.PhenotypeInfo<List<AlleleTestData>> AllelesWithStringsOfSingleAndMultiplePGroupsPossible();
+        PhenotypeInfo<List<AlleleTestData>> AllelesWithStringsOfSingleAndMultiplePGroupsPossible();
     }
 
     /// <summary>
@@ -43,22 +43,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
     /// </summary>
     public class AlleleRepository : IAlleleRepository
     {
-        public Common.Models.PhenotypeInfo<List<AlleleTestData>> FourFieldAlleles()
+        public PhenotypeInfo<List<AlleleTestData>> FourFieldAlleles()
         {
             return Resources.Alleles.TGS.FourFieldAlleles.Alleles;
         }
 
-        public Common.Models.PhenotypeInfo<List<AlleleTestData>> ThreeFieldAlleles()
+        public PhenotypeInfo<List<AlleleTestData>> ThreeFieldAlleles()
         {
             return Resources.Alleles.TGS.ThreeFieldAlleles.Alleles;
         }
 
-        public Common.Models.PhenotypeInfo<List<AlleleTestData>> TwoFieldAlleles()
+        public PhenotypeInfo<List<AlleleTestData>> TwoFieldAlleles()
         {
             return Resources.Alleles.TGS.TwoFieldAlleles.Alleles;
         }
 
-        public Common.Models.PhenotypeInfo<List<AlleleTestData>> AllelesForGGroupMatching()
+        public PhenotypeInfo<List<AlleleTestData>> AllelesForGGroupMatching()
         {
             return GGroupMatchingAlleles.Alleles;
         }
@@ -78,13 +78,13 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
             return CDnaMatchingAlleles.Alleles;
         }
 
-        public Common.Models.PhenotypeInfo<List<AlleleTestData>> AllelesForProteinMatching()
+        public PhenotypeInfo<List<AlleleTestData>> AllelesForProteinMatching()
         {
             // 2-field (different 3rd field) dataset curated such that all alleles are full sequences, so they are also valid for protein match grade tests
             return AllelesWithTwoFieldMatchPossible();
         }
 
-        public Common.Models.PhenotypeInfo<List<AlleleTestData>> AllelesWithAlleleStringOfSubtypesPossible()
+        public PhenotypeInfo<List<AlleleTestData>> AllelesWithAlleleStringOfSubtypesPossible()
         {
             return AllTgsAlleles().Map((l, p, alleles) =>
             {
@@ -100,17 +100,17 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
             });
         }
 
-        public Common.Models.PhenotypeInfo<List<AlleleTestData>> NullAlleles()
+        public PhenotypeInfo<List<AlleleTestData>> NullAlleles()
         {
             return Resources.Alleles.NullAlleles.Alleles.ToPhenotypeInfo((l, alleles) => alleles);
         }
 
-        public Common.Models.PhenotypeInfo<List<AlleleTestData>> AllelesWithNonNullExpressionSuffix()
+        public PhenotypeInfo<List<AlleleTestData>> AllelesWithNonNullExpressionSuffix()
         {
             return Resources.Alleles.AllelesWithNonNullExpressionSuffix.Alleles.ToPhenotypeInfo((l, alleles) => alleles);
         }
 
-        public Common.Models.PhenotypeInfo<List<AlleleTestData>> DonorAllelesWithThreeFieldMatchPossible()
+        public PhenotypeInfo<List<AlleleTestData>> DonorAllelesWithThreeFieldMatchPossible()
         {
             return FourFieldAlleles().Map((locus, position, alleles) =>
             {
@@ -136,7 +136,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
             });
         }
 
-        public Common.Models.PhenotypeInfo<List<AlleleTestData>> PatientAllelesWithThreeFieldMatchPossible()
+        public PhenotypeInfo<List<AlleleTestData>> PatientAllelesWithThreeFieldMatchPossible()
         {
             return FourFieldAlleles().Map((locus, position, alleles) =>
             {
@@ -145,12 +145,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
             });
         }
 
-        public Common.Models.PhenotypeInfo<List<AlleleTestData>> AllelesWithTwoFieldMatchPossible()
+        public PhenotypeInfo<List<AlleleTestData>> AllelesWithTwoFieldMatchPossible()
         {
             return AllelesWithDifferentThirdFields.Alleles.ToPhenotypeInfo((l, alleles) => alleles);
         }
 
-        public Common.Models.PhenotypeInfo<List<AlleleTestData>> AllTgsAlleles()
+        public PhenotypeInfo<List<AlleleTestData>> AllTgsAlleles()
         {
             return FourFieldAlleles().Map((l, p, alleles) =>
                 alleles.Concat(ThreeFieldAlleles().GetPosition(l, p))
@@ -159,7 +159,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
             );
         }
 
-        public Common.Models.PhenotypeInfo<List<AlleleTestData>> AllelesWithStringsOfSingleAndMultiplePGroupsPossible()
+        public PhenotypeInfo<List<AlleleTestData>> AllelesWithStringsOfSingleAndMultiplePGroupsPossible()
         {
             return FourFieldAlleles().Map((l, p, alleles) =>
             {

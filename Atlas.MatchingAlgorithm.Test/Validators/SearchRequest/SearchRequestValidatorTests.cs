@@ -1,5 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
+﻿using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using FluentAssertions;

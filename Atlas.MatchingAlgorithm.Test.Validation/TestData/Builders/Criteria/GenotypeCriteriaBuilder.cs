@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
