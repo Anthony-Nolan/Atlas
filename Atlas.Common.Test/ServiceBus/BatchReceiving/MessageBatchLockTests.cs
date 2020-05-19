@@ -16,7 +16,7 @@ namespace Atlas.Common.Test.ServiceBus.BatchReceiving
         private const string LockToken = "lock-token";
         private const string MessageBody = "message-body";
         private const double LockTimeFraction = 1;
-        private const int LockRenewalTime = 1000;
+        private const int LockRenewalTime = 100;
 
         private IServiceBusMessageReceiver<string> messageReceiver;
         private IEnumerable<ServiceBusMessage<string>> messages;
