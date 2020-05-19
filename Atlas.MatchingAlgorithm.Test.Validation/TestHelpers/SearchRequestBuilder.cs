@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.Common.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestHelpers
 {

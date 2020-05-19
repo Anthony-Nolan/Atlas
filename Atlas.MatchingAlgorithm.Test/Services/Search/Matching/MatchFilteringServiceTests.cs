@@ -1,13 +1,12 @@
-﻿using FluentAssertions;
+﻿using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.Matching;
+using FluentAssertions;
 using NUnit.Framework;
-using System.Collections.Generic;
-using Atlas.Common.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Matching
 {

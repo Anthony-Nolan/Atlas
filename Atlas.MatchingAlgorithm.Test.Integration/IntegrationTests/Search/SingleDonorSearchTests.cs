@@ -1,17 +1,17 @@
-﻿using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
+using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Services.Donors;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 {

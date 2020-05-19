@@ -1,5 +1,5 @@
-﻿using FluentValidation.TestHelper;
-using Atlas.MatchingAlgorithm.Validators.SearchRequest;
+﻿using Atlas.MatchingAlgorithm.Validators.SearchRequest;
+using FluentValidation.TestHelper;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest

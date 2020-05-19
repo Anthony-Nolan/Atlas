@@ -1,14 +1,14 @@
 ﻿using System;
-using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
-using Atlas.HlaMetadataDictionary.Exceptions;
-using Atlas.MatchingAlgorithm.Models;
-using Atlas.HlaMetadataDictionary;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary;
+using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Models;
 
 namespace Atlas.MatchingAlgorithm.Services.Donors
 {

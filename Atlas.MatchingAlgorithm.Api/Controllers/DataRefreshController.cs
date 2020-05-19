@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Atlas.MatchingAlgorithm.Api.Controllers
 {

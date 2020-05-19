@@ -1,4 +1,12 @@
-﻿using Atlas.MatchingAlgorithm.ApplicationInsights;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Notifications;
+using Atlas.HlaMetadataDictionary;
+using Atlas.MatchingAlgorithm.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Common.Repositories;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Repositories;
@@ -7,14 +15,6 @@ using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MultipleAlleleCodeDictionary;
-using Atlas.Common.Notifications;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
-using Atlas.HlaMetadataDictionary;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 {

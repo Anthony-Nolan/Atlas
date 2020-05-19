@@ -1,10 +1,10 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Common.Models.Scoring;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
-using System;
+﻿using System;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 
 namespace Atlas.MatchingAlgorithm.Services.Scoring.Confidence

@@ -1,8 +1,8 @@
-using FluentValidation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.Utils.Http;
+using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Helpers
 {

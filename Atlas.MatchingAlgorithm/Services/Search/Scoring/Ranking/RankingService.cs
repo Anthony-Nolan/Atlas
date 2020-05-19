@@ -1,6 +1,6 @@
-﻿using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking
 {

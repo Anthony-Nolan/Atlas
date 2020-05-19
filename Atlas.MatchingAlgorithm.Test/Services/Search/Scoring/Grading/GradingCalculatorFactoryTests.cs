@@ -1,11 +1,11 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.Collections.Generic;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.MatchingAlgorithm.Services.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo;
+using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 {

@@ -3,9 +3,9 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Helpers;
-using Newtonsoft.Json;
 using Atlas.MatchingAlgorithm.Models;
 using FluentValidation;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights.DonorProcessing
 {

@@ -2,7 +2,6 @@
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common;
 using Atlas.Common.Utils;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;

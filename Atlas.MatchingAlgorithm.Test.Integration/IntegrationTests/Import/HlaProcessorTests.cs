@@ -1,6 +1,7 @@
-﻿using System;
-using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
@@ -9,17 +10,9 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
+using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using Atlas.MatchingAlgorithm.Helpers;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.ConfigSettings;
-using Microsoft.Extensions.Options;
-using NSubstitute;
-using Locus = Atlas.Common.GeneticData.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 {

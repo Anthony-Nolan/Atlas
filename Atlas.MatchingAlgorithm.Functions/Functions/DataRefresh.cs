@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
+using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
-using Atlas.MatchingAlgorithm.Services.DataRefresh;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {

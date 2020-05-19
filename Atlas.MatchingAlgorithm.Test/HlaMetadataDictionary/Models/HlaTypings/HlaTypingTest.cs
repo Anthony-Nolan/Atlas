@@ -1,5 +1,4 @@
 ﻿using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using NUnit.Framework;

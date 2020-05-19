@@ -1,17 +1,16 @@
-﻿using FluentAssertions;
-using Atlas.MatchingAlgorithm.Client.Models;
-using Atlas.MatchingAlgorithm.Common.Config;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestHelpers;
+using FluentAssertions;
 using TechTalk.SpecFlow;
-using Locus = Atlas.Common.GeneticData.Locus;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 {

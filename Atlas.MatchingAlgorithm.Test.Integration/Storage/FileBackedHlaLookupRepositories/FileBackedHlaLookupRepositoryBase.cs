@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
-using Newtonsoft.Json;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories
 {
@@ -65,7 +65,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
 
         private static FileBackedHlaLookupResultCollections GetLookupResultsFromJsonFile()
         {
-            var assem = System.Reflection.Assembly.GetExecutingAssembly();
+            var assem = Assembly.GetExecutingAssembly();
             using (var stream =
                 assem.GetManifestResourceStream("Atlas.MatchingAlgorithm.Test.Integration.Resources.HlaMetadataDictionary.all_hla_lookup_results.json"))
             {

@@ -2,11 +2,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
+using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Services.Scoring;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
-using Atlas.MatchingAlgorithm.Client.Models;
-using Atlas.MatchingAlgorithm.Services.Scoring;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {

@@ -1,11 +1,10 @@
-﻿using Newtonsoft.Json;
-using Atlas.MatchingAlgorithm.Common.Models;
+﻿using System;
+using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
-using System;
-using Atlas.Common.GeneticData;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories.Models
 {

@@ -1,6 +1,7 @@
 using System;
-using Newtonsoft.Json;
+using System.Dynamic;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Clients.AzureManagement.Extensions
 {
@@ -84,11 +85,11 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement.Extensions
                     throw new ArgumentOutOfRangeException(nameof(databaseSize), databaseSize, null);
             }
 
-            dynamic skuObject = new System.Dynamic.ExpandoObject();
+            dynamic skuObject = new ExpandoObject();
             skuObject.tier = tier;
             skuObject.capacity = capacity;
 
-            dynamic body = new System.Dynamic.ExpandoObject();
+            dynamic body = new ExpandoObject();
             body.sku = skuObject;
 
             return JsonConvert.SerializeObject(body);

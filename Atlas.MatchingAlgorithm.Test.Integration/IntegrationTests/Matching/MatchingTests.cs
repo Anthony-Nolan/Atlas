@@ -1,5 +1,6 @@
-﻿using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -8,10 +9,9 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
+using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
 
 // ReSharper disable InconsistentNaming
 

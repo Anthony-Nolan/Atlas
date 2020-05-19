@@ -1,7 +1,7 @@
 ﻿using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
-using Atlas.MatchingAlgorithm.Common.Models;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders
 {

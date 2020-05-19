@@ -1,10 +1,10 @@
-﻿using FluentAssertions;
-using FluentValidation.TestHelper;
-using Atlas.MatchingAlgorithm.Models;
+﻿using System;
 using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
+using FluentAssertions;
+using FluentValidation.TestHelper;
 using NUnit.Framework;
-using System;
 
 namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
 {

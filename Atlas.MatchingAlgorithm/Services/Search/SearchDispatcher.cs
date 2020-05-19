@@ -1,11 +1,10 @@
-using FluentValidation;
+using System;
+using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
-using System;
-using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
+using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
 {

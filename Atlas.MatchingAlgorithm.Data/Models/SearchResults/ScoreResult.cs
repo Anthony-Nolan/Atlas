@@ -1,6 +1,5 @@
 ﻿using System;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults

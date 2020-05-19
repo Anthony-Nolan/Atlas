@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Services.Donors;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Atlas.MatchingAlgorithm.Api.Controllers
 {

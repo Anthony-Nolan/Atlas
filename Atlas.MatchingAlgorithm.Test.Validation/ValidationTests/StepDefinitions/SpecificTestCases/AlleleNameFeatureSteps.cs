@@ -1,5 +1,5 @@
-using Atlas.MatchingAlgorithm.Common.Models;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Common.Models;
 using TechTalk.SpecFlow;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.SpecificTestCases

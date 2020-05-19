@@ -1,13 +1,4 @@
-﻿using Dapper;
-using Atlas.MatchingAlgorithm.Client.Models;
-using Atlas.MatchingAlgorithm.Common.Config;
-using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Common.Models.Matching;
-using Atlas.MatchingAlgorithm.Data.Helpers;
-using Atlas.MatchingAlgorithm.Data.Models;
-using Atlas.MatchingAlgorithm.Data.Models.Entities;
-using Atlas.MatchingAlgorithm.Data.Services;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.SqlClient;
@@ -16,6 +7,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Client.Models;
+using Atlas.MatchingAlgorithm.Common.Config;
+using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Common.Models.Matching;
+using Atlas.MatchingAlgorithm.Data.Helpers;
+using Atlas.MatchingAlgorithm.Data.Models;
+using Atlas.MatchingAlgorithm.Data.Models.Entities;
+using Atlas.MatchingAlgorithm.Data.Services;
+using Dapper;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {

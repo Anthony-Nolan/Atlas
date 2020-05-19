@@ -1,11 +1,11 @@
 using Atlas.Common.Caching;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
+using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using FluentAssertions;
 using LazyCache;
 using LazyCache.Providers;
 using Microsoft.Extensions.Caching.Memory;
-using Atlas.MatchingAlgorithm.Data.Persistent.Models;
-using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using NSubstitute;
 using NUnit.Framework;
 

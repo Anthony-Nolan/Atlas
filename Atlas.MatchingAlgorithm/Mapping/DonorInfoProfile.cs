@@ -1,5 +1,5 @@
-﻿using AutoMapper;
-using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+﻿using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using AutoMapper;
 
 namespace Atlas.MatchingAlgorithm.Mapping
 {

@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Services.Scoring;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Atlas.MatchingAlgorithm.Api.Controllers
 {

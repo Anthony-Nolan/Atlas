@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
-using Microsoft.AspNetCore.Mvc;
+using Atlas.HlaMetadataDictionary;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.HlaMetadataDictionary;
-using CreationBehaviour = Atlas.HlaMetadataDictionary.HlaMetadataDictionary.CreationBehaviour;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Atlas.MatchingAlgorithm.Api.Controllers
 {
@@ -27,14 +26,14 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
         [Route("create-latest-version")]
         public async Task CreateLatestHlaMetadataDictionary()
         {
-            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(HlaMetadataDictionary.HlaMetadataDictionary.CreationBehaviour.Latest);
         }
 
         [HttpPost]
         [Route("recreate-active-version")]
         public async Task RecreateActiveHlaMetadataDictionary()
         {
-            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Active);
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(HlaMetadataDictionary.HlaMetadataDictionary.CreationBehaviour.Active);
         }
 
         [HttpGet]

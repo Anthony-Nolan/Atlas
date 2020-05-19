@@ -1,5 +1,5 @@
-﻿using FluentAssertions;
-using Atlas.HlaMetadataDictionary.Services;
+﻿using Atlas.HlaMetadataDictionary.Services;
+using FluentAssertions;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services

@@ -1,9 +1,10 @@
+using System;
+using Atlas.MatchingAlgorithm.Data.Context;
+using Atlas.MatchingAlgorithm.Data.Persistent;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Atlas.MatchingAlgorithm.Data.Context;
-using Atlas.MatchingAlgorithm.Data.Persistent;
-using System;
+using ContextFactory = Atlas.MatchingAlgorithm.Data.Context.ContextFactory;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
 {
@@ -18,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
             var persistentContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmPersistentContext>();
 
             var connectionStringB = DependencyInjection.DependencyInjection.Provider.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"];
-            var transientContextB = new Data.Context.ContextFactory().Create(connectionStringB);
+            var transientContextB = new ContextFactory().Create(connectionStringB);
             
             if (transientContext == null || persistentContext == null)
             {
@@ -39,7 +40,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
             ClearDatabase(transientContextA);
             
             var connectionStringB = DependencyInjection.DependencyInjection.Provider.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"];
-            var transientContextB = new Data.Context.ContextFactory().Create(connectionStringB);
+            var transientContextB = new ContextFactory().Create(connectionStringB);
             ClearDatabase(transientContextB);
         }
 

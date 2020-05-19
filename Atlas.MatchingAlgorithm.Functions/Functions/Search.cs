@@ -3,16 +3,16 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
+using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
+using Atlas.MatchingAlgorithm.Helpers;
+using Atlas.MatchingAlgorithm.Models;
+using Atlas.MatchingAlgorithm.Services.Search;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
-using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
-using Atlas.MatchingAlgorithm.Helpers;
-using Atlas.MatchingAlgorithm.Models;
-using Atlas.MatchingAlgorithm.Services.Search;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {

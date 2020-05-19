@@ -1,5 +1,5 @@
-using FluentValidation;
 using Atlas.MatchingAlgorithm.Models;
+using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Validators.DonorInfo
 {

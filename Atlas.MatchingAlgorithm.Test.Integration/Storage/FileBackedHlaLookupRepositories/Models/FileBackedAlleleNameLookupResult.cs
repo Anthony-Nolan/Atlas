@@ -1,9 +1,8 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
+﻿using System.Collections.Generic;
+using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
-using System.Collections.Generic;
-using Atlas.Common.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories.Models
 {

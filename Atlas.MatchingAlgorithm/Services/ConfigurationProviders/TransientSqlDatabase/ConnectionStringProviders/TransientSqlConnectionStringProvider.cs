@@ -1,7 +1,7 @@
 using System;
+using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Services;
-using Atlas.MatchingAlgorithm.ConfigSettings;
 
 namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders
 {

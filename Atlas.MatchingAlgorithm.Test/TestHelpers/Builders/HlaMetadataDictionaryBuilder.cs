@@ -1,6 +1,6 @@
 ﻿using System;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary;
+using Atlas.HlaMetadataDictionary.Services;
 using NSubstitute;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders

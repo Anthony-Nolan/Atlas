@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Linq;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Models.Entities.MatchingHla;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchingAlgorithm.Data.Context
 {

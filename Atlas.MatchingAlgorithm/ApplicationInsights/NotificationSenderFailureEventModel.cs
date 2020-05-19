@@ -1,8 +1,7 @@
-﻿using Newtonsoft.Json;
-using Atlas.Common.Notifications;
-using System;
+﻿using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications.MessageModels;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights
 {

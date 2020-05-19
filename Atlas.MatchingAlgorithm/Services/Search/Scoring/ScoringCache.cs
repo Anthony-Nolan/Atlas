@@ -1,10 +1,10 @@
 using System;
+using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
-using LazyCache;
-using Microsoft.Extensions.Caching.Memory;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.Common.Caching;
+using LazyCache;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
 {

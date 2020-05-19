@@ -1,16 +1,16 @@
-﻿using FluentAssertions;
-using Atlas.MatchingAlgorithm.Common.Models;
-using NSubstitute;
-using NUnit.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.PatientDataSelection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
+using FluentAssertions;
+using NSubstitute;
+using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.PatientDataSelection.PatientFactories
 {

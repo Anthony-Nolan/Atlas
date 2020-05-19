@@ -1,15 +1,15 @@
-﻿using FluentAssertions;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.Scoring.Confidence;
 using Atlas.MatchingAlgorithm.Test.Builders;
 using Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo;
+using FluentAssertions;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Confidence
 {

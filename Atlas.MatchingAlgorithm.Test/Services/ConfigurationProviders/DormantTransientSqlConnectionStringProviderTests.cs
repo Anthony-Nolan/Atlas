@@ -1,10 +1,9 @@
-using FluentAssertions;
+using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Services;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
-using Atlas.MatchingAlgorithm.ConfigSettings;
+using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 

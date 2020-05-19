@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using Atlas.Common.GeneticData;
-using FluentAssertions;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
+using FluentAssertions;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Aggregation

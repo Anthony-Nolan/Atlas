@@ -1,17 +1,16 @@
-﻿using FluentAssertions;
-using LazyCache;
-using Microsoft.Extensions.DependencyInjection;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
-using Atlas.HlaMetadataDictionary.Services;
-using NSubstitute;
-using NUnit.Framework;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MultipleAlleleCodeDictionary.HLAService;
-using Locus = Atlas.Common.GeneticData.Locus;
+using FluentAssertions;
+using LazyCache;
+using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
+using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.HlaMetadataDictionary
 {

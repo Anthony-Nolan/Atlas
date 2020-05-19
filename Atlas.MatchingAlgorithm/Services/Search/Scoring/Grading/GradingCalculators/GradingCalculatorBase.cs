@@ -1,6 +1,6 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+﻿using System;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
-using System;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 
 namespace Atlas.MatchingAlgorithm.Services.Scoring.Grading
 {

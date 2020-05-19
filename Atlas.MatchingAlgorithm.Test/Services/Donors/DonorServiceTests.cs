@@ -1,15 +1,15 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.Notifications;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using NSubstitute;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.MatchingAlgorithm.Models;
-using Atlas.Common.Notifications;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 {

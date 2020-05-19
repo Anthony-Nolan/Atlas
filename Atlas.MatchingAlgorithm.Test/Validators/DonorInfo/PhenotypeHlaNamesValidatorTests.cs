@@ -1,6 +1,6 @@
-﻿using FluentValidation.TestHelper;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
-using Atlas.Common.GeneticData.PhenotypeInfo;
+using FluentValidation.TestHelper;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Validators.DonorInfo

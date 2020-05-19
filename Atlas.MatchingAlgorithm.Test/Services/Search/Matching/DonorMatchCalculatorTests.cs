@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using FluentAssertions;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.Matching;
+using FluentAssertions;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Matching

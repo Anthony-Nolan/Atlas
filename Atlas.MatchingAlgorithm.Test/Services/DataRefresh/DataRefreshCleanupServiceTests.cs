@@ -1,17 +1,17 @@
-using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.MatchingAlgorithm.ConfigSettings;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
-using Atlas.MatchingAlgorithm.ConfigSettings;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 {

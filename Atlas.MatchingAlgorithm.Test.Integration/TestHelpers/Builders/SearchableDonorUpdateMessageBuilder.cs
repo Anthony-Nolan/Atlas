@@ -1,7 +1,7 @@
-﻿using LochNessBuilder;
-using Atlas.MatchingAlgorithm.Models;
+﻿using System;
 using Atlas.Common.ServiceBus.Models;
-using System;
+using Atlas.MatchingAlgorithm.Models;
+using LochNessBuilder;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 {

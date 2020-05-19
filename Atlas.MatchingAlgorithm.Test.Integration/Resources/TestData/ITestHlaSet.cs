@@ -1,4 +1,5 @@
 using Atlas.MatchingAlgorithm.Common.Models;
+
 // ReSharper disable InconsistentNaming
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestData

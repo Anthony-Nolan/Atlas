@@ -1,12 +1,12 @@
-﻿using FluentAssertions;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Common.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
+using FluentAssertions;
 using TechTalk.SpecFlow;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions

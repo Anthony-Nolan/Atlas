@@ -1,17 +1,16 @@
-﻿using FluentAssertions;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Common.Models;
+﻿using System;
+using System.Collections.Generic;
+using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Test.Builders;
 using Atlas.MatchingAlgorithm.Test.Builders.ScoringInfo;
+using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using Atlas.Common.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Scoring.Grading
 {

@@ -1,22 +1,22 @@
-using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
-using Atlas.MatchingAlgorithm.Clients.ServiceBus;
-using Atlas.MatchingAlgorithm.Data.Context;
-using Atlas.MatchingAlgorithm.DependencyInjection;
-using Atlas.HlaMetadataDictionary.Services;
-using Atlas.HlaMetadataDictionary.Repositories;
-using Atlas.MatchingAlgorithm.Models;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories;
-using Atlas.Common.Notifications;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Notifications;
+using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.Services;
+using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
+using Atlas.MatchingAlgorithm.Clients.ServiceBus;
+using Atlas.MatchingAlgorithm.Data.Context;
+using Atlas.MatchingAlgorithm.DependencyInjection;
+using Atlas.MatchingAlgorithm.Models;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+using Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories;
 using Atlas.MultipleAlleleCodeDictionary.HLAService;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 {

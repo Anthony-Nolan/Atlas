@@ -1,7 +1,7 @@
-﻿using FluentAssertions;
+﻿using System.Collections.Generic;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
+using FluentAssertions;
 using NUnit.Framework;
-using System.Collections.Generic;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 {

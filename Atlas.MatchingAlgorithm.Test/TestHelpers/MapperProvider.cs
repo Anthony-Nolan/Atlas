@@ -1,5 +1,5 @@
-using AutoMapper;
 using Atlas.MatchingAlgorithm.Config;
+using AutoMapper;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers
 {

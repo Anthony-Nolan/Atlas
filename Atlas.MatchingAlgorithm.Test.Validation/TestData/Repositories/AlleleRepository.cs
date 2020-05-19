@@ -1,10 +1,10 @@
-﻿using Atlas.MatchingAlgorithm.Common.Models;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Helpers;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
+using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
 {
@@ -59,22 +59,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
 
         public PhenotypeInfo<List<AlleleTestData>> AllelesForGGroupMatching()
         {
-            return Resources.GGroupMatchingAlleles.Alleles;
+            return GGroupMatchingAlleles.Alleles;
         }
 
         public LocusInfo<List<AlleleTestData>> DonorAllelesForPGroupMatching()
         {
-            return Resources.PGroupMatchingAlleles.DonorAlleles;
+            return PGroupMatchingAlleles.DonorAlleles;
         }
 
         public LocusInfo<AlleleTestData> PatientAllelesForPGroupMatching()
         {
-            return Resources.PGroupMatchingAlleles.PatientAlleles;
+            return PGroupMatchingAlleles.PatientAlleles;
         }
 
         public LocusInfo<List<AlleleTestData>> AllelesForCDnaMatching()
         {
-            return Resources.CDnaMatchingAlleles.Alleles;
+            return CDnaMatchingAlleles.Alleles;
         }
 
         public PhenotypeInfo<List<AlleleTestData>> AllelesForProteinMatching()
@@ -146,7 +146,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
 
         public PhenotypeInfo<List<AlleleTestData>> AllelesWithTwoFieldMatchPossible()
         {
-            return Resources.AllelesWithDifferentThirdFields.Alleles.ToPhenotypeInfo((l, alleles) => alleles);
+            return AllelesWithDifferentThirdFields.Alleles.ToPhenotypeInfo((l, alleles) => alleles);
         }
 
         public PhenotypeInfo<List<AlleleTestData>> AllTgsAlleles()

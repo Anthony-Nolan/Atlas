@@ -1,5 +1,5 @@
-using LochNessBuilder;
 using Atlas.MatchingAlgorithm.ConfigSettings;
+using LochNessBuilder;
 
 namespace Atlas.MatchingAlgorithm.Test.Builders.DataRefresh
 {

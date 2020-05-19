@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Clients.AzureManagement.AzureApiModels.Database
 {
