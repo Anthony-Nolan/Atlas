@@ -74,23 +74,19 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
 
         public IEnumerable<Donor> GetDonors(IEnumerable<int> donorIds)
         {
-            var donors = from d in context.Donors
-                join id in donorIds
-                    on d.DonorId equals id
-                select d;
-            return donors.ToList();
+            return context.Donors.Where(d => donorIds.Contains(d.DonorId));
         }
 
         private void RemoveTestData()
         {
             if (TransientDatabaseExists() && DonorTableExists())
             {
-                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [Donors]");
-                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtA]");
-                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtB]");
-                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtC]");
-                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtDrb1]");
-                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtDqb1]");
+                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [Donors]");
+                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtA]");
+                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtB]");
+                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtC]");
+                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtDrb1]");
+                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtDqb1]");
                 context.SaveChanges();
             }
         }
