@@ -3,7 +3,7 @@ using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
-    internal interface IHlaMetadataCacheControl
+    public interface IHlaMetadataCacheControl
     {
         /// <summary>
         /// Force all in-memory caches to populate (used to achieve slow-start-up, rather than slow-first-request)

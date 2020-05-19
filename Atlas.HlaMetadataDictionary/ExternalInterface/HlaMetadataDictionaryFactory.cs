@@ -7,7 +7,7 @@ using LazyCache;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
-    internal interface IHlaMetadataDictionaryFactory
+    public interface IHlaMetadataDictionaryFactory
     {
         /// <summary>
         /// Returns an appropriate Dictionary or CacheControl, given the config settings.
@@ -28,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
     /// We expect the Factory itself to be Transient, but it gets a reference to a singleton Persistent Cache of the Dictionaries that it has made previously.
     /// It needs to be Transient so that it is using a new copy of the dependencies each time it tries to create a fresh object.
     /// </remarks>
-    internal class HlaMetadataDictionaryFactory : IHlaMetadataDictionaryFactory
+    public class HlaMetadataDictionaryFactory : IHlaMetadataDictionaryFactory
     {
         private readonly IAppCache cache;
 

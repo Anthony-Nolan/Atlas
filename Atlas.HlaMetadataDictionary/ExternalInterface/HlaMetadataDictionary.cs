@@ -12,7 +12,7 @@ using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
-    internal interface IHlaMetadataDictionary
+    public interface IHlaMetadataDictionary
     {
         Task<string> RecreateHlaMetadataDictionary(CreationBehaviour wmdaHlaVersionToRecreate);
         Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName);
