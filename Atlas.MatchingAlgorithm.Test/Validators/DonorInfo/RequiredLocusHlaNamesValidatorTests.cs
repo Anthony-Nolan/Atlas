@@ -27,11 +27,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorInfo
         [Test]
         public void Validator_WhenEmptyHlaStringsAreProvided_ShouldHaveValidationError()
         {
-            var locusHlaNames = new LocusInfo<string>
-            {
-                Position1 = "",
-                Position2 = ""
-            };
+            var locusHlaNames = new LocusInfo<string>("");
             var result = validator.Validate(locusHlaNames);
             result.IsValid.Should().BeFalse();
         }
@@ -61,11 +57,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorInfo
         [Test]
         public void Validator_WhenBothHlaStringsProvided_ShouldNotHaveValidationError()
         {
-            var locusHlaNames = new LocusInfo<string>
-            {
-                Position1 = "hla-string-1",
-                Position2 = "hla-string-2"
-            };
+            var locusHlaNames = new LocusInfo<string>("hla-string-1", "hla-string-2");
             var result = validator.Validate(locusHlaNames);
             result.IsValid.Should().BeTrue();
         }
@@ -73,11 +65,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorInfo
         [Test]
         public void Validator_WhenFirstHlaStringNull_ShouldHaveValidationError()
         {
-            var locusHlaNames = new LocusInfo<string>
-            {
-                Position1 = null,
-                Position2 = "not-null"
-            };
+            var locusHlaNames = new LocusInfo<string>(null, "not-null");
             var result = validator.Validate(locusHlaNames);
             result.IsValid.Should().BeFalse();
         }
@@ -85,11 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorInfo
         [Test]
         public void Validator_WhenSecondHlaStringNull_ShouldHaveValidationError()
         {
-            var locusHlaNames = new LocusInfo<string>
-            {
-                Position1 = "not-null",
-                Position2 = null
-            };
+            var locusHlaNames = new LocusInfo<string>("not-null", null);
             var result = validator.Validate(locusHlaNames);
             result.IsValid.Should().BeFalse();
         }
@@ -97,11 +81,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorInfo
         [Test]
         public void Validator_WhenBothHlaStringsNull_ShouldHaveValidationError()
         {
-            var locusHlaNames = new LocusInfo<string>
-            {
-                Position1 = null,
-                Position2 = null
-            };
+            var locusHlaNames = new LocusInfo<string>(null as string);
             var result = validator.Validate(locusHlaNames);
             result.IsValid.Should().BeFalse();
         }

@@ -4,12 +4,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 // ReSharper disable MemberCanBePrivate.Global
-
-// TODO: ATLAS-121: Merge with Atlas version of PhenotypeInfo
 namespace Atlas.Common.GeneticData.PhenotypeInfo
 {
     /// <summary>
     /// Data type to hold one instance of T for each of the supported HLA loci and each type position within.
+    /// 
+    /// LocusInfo is a single Locus' information - with a T at each position.
+    /// A LociInfo has a T at each locus.
+    /// A PhenotypeInfo is a special case of LociInfo, where T = LocusInfo.
     /// </summary>
     /// <typeparam name="T">The type of the information that is required for each loci position.</typeparam>
     public class PhenotypeInfo<T> : LociInfo<LocusInfo<T>>
@@ -27,12 +29,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         /// </summary>
         public PhenotypeInfo(LociInfo<LocusInfo<T>> source)
         {
-            A = new LocusInfo<T>(source.A);
-            B = new LocusInfo<T>(source.B);
-            C = new LocusInfo<T>(source.C);
-            Dpb1 = new LocusInfo<T>(source.Dpb1);
-            Dqb1 = new LocusInfo<T>(source.Dqb1);
-            Drb1 = new LocusInfo<T>(source.Drb1);
+            A = new LocusInfo<T>(source.A.Position1, source.A.Position2);
+            B = new LocusInfo<T>(source.B.Position1, source.B.Position2);
+            C = new LocusInfo<T>(source.C.Position1, source.C.Position2);
+            Dpb1 = new LocusInfo<T>(source.Dpb1.Position1, source.Dpb1.Position2);
+            Dqb1 = new LocusInfo<T>(source.Dqb1.Position1, source.Dqb1.Position2);
+            Drb1 = new LocusInfo<T>(source.Drb1.Position1, source.Drb1.Position2);
         }
 
         /// <summary>
@@ -58,11 +60,10 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
 
         public PhenotypeInfo<R> Map<R>(Func<Locus, LocusPosition, T, R> mapping)
         {
-            return new PhenotypeInfo<R>(Map((locusType, locusInfo) => new LocusInfo<R>()
-            {
-                Position1 = mapping(locusType, LocusPosition.One, locusInfo.Position1),
-                Position2 = mapping(locusType, LocusPosition.Two, locusInfo.Position2)
-            }));
+            return new PhenotypeInfo<R>(Map((locusType, locusInfo) => new LocusInfo<R>(
+                mapping(locusType, LocusPosition.One, locusInfo.Position1),
+                mapping(locusType, LocusPosition.Two, locusInfo.Position2)
+            )));
         }
 
         public PhenotypeInfo<R> Map<R>(Func<Locus, T, R> mapping)
@@ -95,12 +96,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
 
             return new PhenotypeInfo<R>
             {
-                A = new LocusInfo<R> {Position1 = a_1.Result, Position2 = a_2.Result},
-                B = new LocusInfo<R> {Position1 = b_1.Result, Position2 = b_2.Result},
-                C = new LocusInfo<R> {Position1 = c_1.Result, Position2 = c_2.Result},
-                Dpb1 = new LocusInfo<R> {Position1 = dpb1_1.Result, Position2 = dpb1_2.Result},
-                Dqb1 = new LocusInfo<R> {Position1 = dqb1_1.Result, Position2 = dqb1_2.Result},
-                Drb1 = new LocusInfo<R> {Position1 = drb1_1.Result, Position2 = drb1_2.Result},
+                A = new LocusInfo<R>(a_1.Result, a_2.Result),
+                B = new LocusInfo<R>(b_1.Result, b_2.Result),
+                C = new LocusInfo<R>(c_1.Result, c_2.Result),
+                Dpb1 = new LocusInfo<R>(dpb1_1.Result, dpb1_2.Result),
+                Dqb1 = new LocusInfo<R>(dqb1_1.Result, dqb1_2.Result),
+                Drb1 = new LocusInfo<R>(drb1_1.Result, drb1_2.Result),
             };
         }
 
