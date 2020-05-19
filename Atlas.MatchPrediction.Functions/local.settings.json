@@ -2,6 +2,8 @@
   "IsEncrypted": false,
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
+    "AzureStorage:HaplotypeFrequencySetImportContainer": "haplotype-frequency-set-import",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet"
   }
 }
