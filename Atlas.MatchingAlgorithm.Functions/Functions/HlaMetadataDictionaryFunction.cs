@@ -23,7 +23,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         [FunctionName("RefreshHlaMetadataDictionary")]
         public async Task Refresh([HttpTrigger] HttpRequest httpRequest)
         {
-            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary.CreationBehaviour.Latest);
+            await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
         }
     }
 }
