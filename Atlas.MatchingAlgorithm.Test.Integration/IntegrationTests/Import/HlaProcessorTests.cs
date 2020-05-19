@@ -16,6 +16,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Helpers;
@@ -66,7 +67,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             const int expectedPGroupCount = 213;
 
             var donorInfo = new DonorInfoBuilder(DonorIdGenerator.NextId())
-                    .WithHlaAtLocus(Locus.A, LocusPosition.Position1, hlaWithKnownPGroups)
+                    .WithHlaAtLocus(Locus.A, LocusPosition.One, hlaWithKnownPGroups)
                     .Build();
 
             await importRepo.InsertBatchOfDonors(new List<DonorInfo> { donorInfo });

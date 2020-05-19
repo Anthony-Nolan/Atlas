@@ -78,7 +78,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
         public void SetPatientHomozygousAtLocus_WhenMismatchAllowed_DoesNotSetDonorAsHomozygous()
         {
             const Locus locus = Locus.A;
-            patientDataFactory.SetMismatchAtPosition(locus, LocusPosition.Position1);
+            patientDataFactory.SetMismatchAtPosition(locus, LocusPosition.One);
             patientDataFactory.SetPatientHomozygousAtLocus(locus);
 
             CaptureCriteria();
@@ -166,7 +166,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
         public void UpdateDonorGenotypeMatchGetPosition_UpdatesMetaDonorAndDatabaseDonorCriteria()
         {
             const Locus locus = Locus.A;
-            const LocusPosition position = LocusPosition.Position1;
+            const LocusPosition position = LocusPosition.One;
             const bool shouldMatchGenotype = false;
             
             patientDataFactory.UpdateDonorGenotypeMatchGetPosition(locus, position, shouldMatchGenotype);
@@ -180,7 +180,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
         public void UpdateDonorGenotypeMatchGetPosition_UpdatesAllDatabaseDonorCriteria()
         {
             const Locus locus = Locus.A;
-            const LocusPosition position = LocusPosition.Position1;
+            const LocusPosition position = LocusPosition.One;
             const bool shouldMatchGenotype = false;
             patientDataFactory.AddExpectedDatabaseDonor(new DatabaseDonorSpecification());
             

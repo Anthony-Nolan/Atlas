@@ -52,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var donorInfo = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
             await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
 
-            var pGroupCount = await GetPGroupCount(donorInfo.DonorId, Locus.A, LocusPosition.Position1);
+            var pGroupCount = await GetPGroupCount(donorInfo.DonorId, Locus.A, LocusPosition.One);
             pGroupCount.Should().NotBe(0);
         }
 
@@ -60,7 +60,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         public async Task CreateOrUpdateDonorBatch_DonorDoesNotExist_AndInvalidHlaName_DoesNotCreateDonorInDatabase()
         {
             var donorInfo = new DonorInfoBuilder(DonorIdGenerator.NextId())
-                .WithHlaAtLocus(Locus.A, LocusPosition.Position1, "invalid-hla-name")
+                .WithHlaAtLocus(Locus.A, LocusPosition.One, "invalid-hla-name")
                 .Build();
 
             await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
@@ -116,7 +116,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         {
             var donorId = DonorIdGenerator.NextId();
             const Locus locus = Locus.A;
-            const LocusPosition position = LocusPosition.Position1;
+            const LocusPosition position = LocusPosition.One;
 
             var donorInfo = new DonorInfoBuilder(donorId).WithHlaAtLocus(locus, position, "*01:01").Build();
             await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
@@ -142,7 +142,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
 
             var updatedDonor = new DonorInfoBuilder(donorId).WithDonorType(newDonorType)
-                .WithHlaAtLocus(Locus.A, LocusPosition.Position1, "invalid-hla-name")
+                .WithHlaAtLocus(Locus.A, LocusPosition.One, "invalid-hla-name")
                 .Build();
             await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
 
@@ -156,7 +156,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         {
             var donorId = DonorIdGenerator.NextId();
             const Locus locus = Locus.A;
-            const LocusPosition position = LocusPosition.Position1;
+            const LocusPosition position = LocusPosition.One;
 
             var donorInfo = new DonorInfoBuilder(donorId)
                 .WithHlaAtLocus(locus, position, "*01:01")
@@ -194,7 +194,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var donorInfo2 = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
             await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2 });
 
-            var pGroupCounts = (await GetPGroupCounts(new[] { donorInfo1.DonorId, donorInfo2.DonorId }, Locus.A, LocusPosition.Position1)).ToList();
+            var pGroupCounts = (await GetPGroupCounts(new[] { donorInfo1.DonorId, donorInfo2.DonorId }, Locus.A, LocusPosition.One)).ToList();
             pGroupCounts.First().Should().NotBe(0);
             pGroupCounts.Last().Should().NotBe(0);
         }
@@ -226,7 +226,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var donorId1 = DonorIdGenerator.NextId();
             var donorId2 = DonorIdGenerator.NextId();
             const Locus locus = Locus.A;
-            const LocusPosition position = LocusPosition.Position1;
+            const LocusPosition position = LocusPosition.One;
 
             var donorInfo1 = new DonorInfoBuilder(donorId1).WithHlaAtLocus(locus, position, "*01:01").Build();
             var donorInfo2 = new DonorInfoBuilder(donorId2).WithHlaAtLocus(locus, position, "*01:01:01").Build();
@@ -331,7 +331,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             const string oldHla = "*01:01";
             const string newHla = "*01:XX";
             const Locus locus = Locus.A;
-            const LocusPosition position = LocusPosition.Position1;
+            const LocusPosition position = LocusPosition.One;
 
             var donorInfo = new DonorInfoBuilder(donorId)
                 .WithDonorType(oldDonorType)

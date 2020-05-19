@@ -36,8 +36,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
     public class ScoringTestsForSingleNullAllele
     {
         private const Locus LocusUnderTest = Locus.A;
-        private const LocusPosition PositionUnderTest = LocusPosition.Position1;
-        private const LocusPosition OtherPosition = LocusPosition.Position2;
+        private const LocusPosition PositionUnderTest = LocusPosition.One;
+        private const LocusPosition OtherPosition = LocusPosition.Two;
         private const string OriginalNullAllele = "02:43N";
         private const string DifferentNullAllele = "11:69N";
 

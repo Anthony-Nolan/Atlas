@@ -31,7 +31,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
     {
         // Unless specified otherwise, all tests will be at a shared locus + position, to reduce setup in the individual test cases
         private const Locus Locus = Atlas.Common.GeneticData.Locus.A;
-        private const LocusPosition Position = LocusPosition.Position1;
+        private const LocusPosition Position = LocusPosition.One;
 
         private IConfidenceService confidenceService;
 
@@ -99,10 +99,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
                 .Build();
 
 
-            patientLookupResults.SetPosition(Locus, LocusPosition.Position1, patientLookupResultSingleAllele1);
-            patientLookupResults.SetPosition(Locus, LocusPosition.Position2, patientLookupResultSingleAllele2);
-            donorLookupResults.SetPosition(Locus, LocusPosition.Position1, donorLookupResultSerology);
-            donorLookupResults.SetPosition(Locus, LocusPosition.Position2, donorLookupResultSingleAllele);
+            patientLookupResults.SetPosition(Locus, LocusPosition.One, patientLookupResultSingleAllele1);
+            patientLookupResults.SetPosition(Locus, LocusPosition.Two, patientLookupResultSingleAllele2);
+            donorLookupResults.SetPosition(Locus, LocusPosition.One, donorLookupResultSerology);
+            donorLookupResults.SetPosition(Locus, LocusPosition.Two, donorLookupResultSingleAllele);
 
             var gradingResults = defaultGradingResults;
             gradingResults.SetPosition(Locus, Position, new MatchGradeResult {Orientations = new List<MatchOrientation> {MatchOrientation.Cross}});
@@ -110,9 +110,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
             var confidences = confidenceService.CalculateMatchConfidences(patientLookupResults, donorLookupResults, gradingResults);
 
             // Direct confidence (P1: D1) is Potential, Cross (P1: D2) is Definite
-            confidences.GetPosition(Locus, LocusPosition.Position1).Should().Be(MatchConfidence.Definite);
+            confidences.GetPosition(Locus, LocusPosition.One).Should().Be(MatchConfidence.Definite);
             // Direct confidence (P2: D2) is Definite, Cross (P2: D1) is Potential
-            confidences.GetPosition(Locus, LocusPosition.Position2).Should().Be(MatchConfidence.Potential);
+            confidences.GetPosition(Locus, LocusPosition.Two).Should().Be(MatchConfidence.Potential);
         }
 
         [Test]
@@ -137,10 +137,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
                 .Build();
 
 
-            patientLookupResults.SetPosition(Locus, LocusPosition.Position1, patientLookupResultSingleAllele1);
-            patientLookupResults.SetPosition(Locus, LocusPosition.Position2, patientLookupResultSingleAllele2);
-            donorLookupResults.SetPosition(Locus, LocusPosition.Position1, donorLookupResultSerology);
-            donorLookupResults.SetPosition(Locus, LocusPosition.Position2, donorLookupResultSingleAllele);
+            patientLookupResults.SetPosition(Locus, LocusPosition.One, patientLookupResultSingleAllele1);
+            patientLookupResults.SetPosition(Locus, LocusPosition.Two, patientLookupResultSingleAllele2);
+            donorLookupResults.SetPosition(Locus, LocusPosition.One, donorLookupResultSerology);
+            donorLookupResults.SetPosition(Locus, LocusPosition.Two, donorLookupResultSingleAllele);
 
             var gradingResults = defaultGradingResults;
             gradingResults.SetPosition(Locus, Position, new MatchGradeResult {Orientations = new List<MatchOrientation> {MatchOrientation.Direct}});
@@ -148,9 +148,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
             var confidences = confidenceService.CalculateMatchConfidences(patientLookupResults, donorLookupResults, gradingResults);
 
             // Direct confidence (P1: D1) is Potential, Cross (P1: D2) is Definite
-            confidences.GetPosition(Locus, LocusPosition.Position1).Should().Be(MatchConfidence.Potential);
+            confidences.GetPosition(Locus, LocusPosition.One).Should().Be(MatchConfidence.Potential);
             // Direct confidence (P2: D2) is Definite, Cross (P2: D1) is Potential
-            confidences.GetPosition(Locus, LocusPosition.Position2).Should().Be(MatchConfidence.Definite);
+            confidences.GetPosition(Locus, LocusPosition.Two).Should().Be(MatchConfidence.Definite);
         }
 
         [Test]
@@ -176,10 +176,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
                 .Build();
 
 
-            patientLookupResults.SetPosition(Locus, LocusPosition.Position1, patientLookupResultSingleAllele1);
-            patientLookupResults.SetPosition(Locus, LocusPosition.Position2, patientLookupResultSingleAllele2);
-            donorLookupResults.SetPosition(Locus, LocusPosition.Position1, donorLookupResultSerology);
-            donorLookupResults.SetPosition(Locus, LocusPosition.Position2, donorLookupResultSingleAllele);
+            patientLookupResults.SetPosition(Locus, LocusPosition.One, patientLookupResultSingleAllele1);
+            patientLookupResults.SetPosition(Locus, LocusPosition.Two, patientLookupResultSingleAllele2);
+            donorLookupResults.SetPosition(Locus, LocusPosition.One, donorLookupResultSerology);
+            donorLookupResults.SetPosition(Locus, LocusPosition.Two, donorLookupResultSingleAllele);
 
             var gradingResults = defaultGradingResults;
             gradingResults.SetPosition(Locus, Position,
@@ -189,8 +189,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
 
             var confidencesAtLocus = new List<MatchConfidence>
             {
-                confidences.GetPosition(Locus, LocusPosition.Position1),
-                confidences.GetPosition(Locus, LocusPosition.Position2)
+                confidences.GetPosition(Locus, LocusPosition.One),
+                confidences.GetPosition(Locus, LocusPosition.Two)
             };
 
             // Direct confidence (P1: D1) is Potential, Cross (P1: D2) is Definite
@@ -222,10 +222,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 
-            patientLookupResults.SetPosition(Locus, LocusPosition.Position1, patientLookupResultSingleAllele);
-            patientLookupResults.SetPosition(Locus, LocusPosition.Position2, patientLookupResultSerology);
-            donorLookupResults.SetPosition(Locus, LocusPosition.Position1, donorLookupResultSerology);
-            donorLookupResults.SetPosition(Locus, LocusPosition.Position2, donorLookupResultSingleAllele);
+            patientLookupResults.SetPosition(Locus, LocusPosition.One, patientLookupResultSingleAllele);
+            patientLookupResults.SetPosition(Locus, LocusPosition.Two, patientLookupResultSerology);
+            donorLookupResults.SetPosition(Locus, LocusPosition.One, donorLookupResultSerology);
+            donorLookupResults.SetPosition(Locus, LocusPosition.Two, donorLookupResultSingleAllele);
 
             var gradingResults = defaultGradingResults;
             gradingResults.SetPosition(Locus, Position,
@@ -237,8 +237,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
             // Direct confidence (P2: D2) is Potential, Cross (P2: D1) is Potential
 
             // Cross match has a higher confidence, so should be returned
-            confidences.GetPosition(Locus, LocusPosition.Position1).Should().Be(MatchConfidence.Definite);
-            confidences.GetPosition(Locus, LocusPosition.Position2).Should().Be(MatchConfidence.Potential);
+            confidences.GetPosition(Locus, LocusPosition.One).Should().Be(MatchConfidence.Definite);
+            confidences.GetPosition(Locus, LocusPosition.Two).Should().Be(MatchConfidence.Potential);
         }
     }
 }

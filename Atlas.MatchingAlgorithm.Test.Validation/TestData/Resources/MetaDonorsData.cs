@@ -190,7 +190,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
             new MetaDonor
             {
                 DonorType = DonorType.Adult,
-                GenotypeCriteria = new GenotypeCriteriaBuilder().WithNullAlleleAtPosition(Locus.A, LocusPosition.Position1).Build(),
+                GenotypeCriteria = new GenotypeCriteriaBuilder().WithNullAlleleAtPosition(Locus.A, LocusPosition.One).Build(),
             },
 
             // Non null alleles with an expression suffix
@@ -213,11 +213,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
                 GenotypeCriteria = new GenotypeCriteriaBuilder().Build(),
                 DatabaseDonorSpecifications = new List<DatabaseDonorSpecification>
                 {
-                    new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtPosition(Locus.A, LocusPosition.Position1).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtPosition(Locus.A, LocusPosition.One).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithNonGenotypeAlleleAtLocus(Locus.A).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder()
                         .WithNonGenotypeAlleleAtLocus(Locus.A)
-                        .WithNonGenotypeAlleleAtPosition(Locus.B, LocusPosition.Position1)
+                        .WithNonGenotypeAlleleAtPosition(Locus.B, LocusPosition.One)
                         .Build(),
                     new DatabaseDonorSelectionCriteriaBuilder()
                         .WithNonGenotypeAlleleAtLocus(Locus.A)
@@ -227,7 +227,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
                         .WithNonGenotypeAlleleAtLocus(Locus.Dqb1)
                         .Build(),
                     new DatabaseDonorSelectionCriteriaBuilder()
-                        .WithNonGenotypeAlleleAtPosition(Locus.Dqb1, LocusPosition.Position1)
+                        .WithNonGenotypeAlleleAtPosition(Locus.Dqb1, LocusPosition.One)
                         .Build(),
                     // Exact match must be last, to ensure ranking tests do not give a false positive.
                     new DatabaseDonorSelectionCriteriaBuilder()

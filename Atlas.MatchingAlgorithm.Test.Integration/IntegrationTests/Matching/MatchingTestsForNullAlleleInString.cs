@@ -471,8 +471,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private PhenotypeInfo<IHlaMatchingLookupResult> BuildExpandedHlaPhenotype(string hla1, string hla2)
         {
             var newPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla);
-            newPhenotype.SetPosition(LocusUnderTest, LocusPosition.Position1, hla1);
-            newPhenotype.SetPosition(LocusUnderTest, LocusPosition.Position2, hla2);
+            newPhenotype.SetPosition(LocusUnderTest, LocusPosition.One, hla1);
+            newPhenotype.SetPosition(LocusUnderTest, LocusPosition.Two, hla2);
 
             var expandedDonor = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = newPhenotype }).Result;
 

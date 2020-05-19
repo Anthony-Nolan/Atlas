@@ -251,11 +251,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             switch (position)
             {
                 case "both positions":
-                    return new LocusPosition?[] { LocusPosition.Position1, LocusPosition.Position2 };
+                    return new LocusPosition?[] { LocusPosition.One, LocusPosition.Two };
                 case "position 1":
-                    return new LocusPosition?[] { LocusPosition.Position1 };
+                    return new LocusPosition?[] { LocusPosition.One };
                 case "position 2":
-                    return new LocusPosition?[] { LocusPosition.Position2 };
+                    return new LocusPosition?[] { LocusPosition.Two };
                 default:
                     scenarioContext.Pending();
                     return null;
@@ -381,12 +381,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             IReadOnlyCollection<MatchGrade> validMatchGrades
         )
         {
-            if (expectedPosition.Contains(LocusPosition.Position1))
+            if (expectedPosition.Contains(LocusPosition.One))
             {
                 validMatchGrades.Should().Contain(locusSearchResult.ScoreDetailsAtPositionOne.MatchGrade);
             }
 
-            if (expectedPosition.Contains(LocusPosition.Position2))
+            if (expectedPosition.Contains(LocusPosition.Two))
             {
                 validMatchGrades.Should().Contain(locusSearchResult.ScoreDetailsAtPositionTwo.MatchGrade);
             }
@@ -398,12 +398,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             MatchConfidence? validMatchConfidence
         )
         {
-            if (expectedPosition.Contains(LocusPosition.Position1))
+            if (expectedPosition.Contains(LocusPosition.One))
             {
                 validMatchConfidence.Should().Be(locusSearchResult.ScoreDetailsAtPositionOne.MatchConfidence);
             }
 
-            if (expectedPosition.Contains(LocusPosition.Position2))
+            if (expectedPosition.Contains(LocusPosition.Two))
             {
                 validMatchConfidence.Should().Be(locusSearchResult.ScoreDetailsAtPositionTwo.MatchConfidence);
             }

@@ -114,10 +114,10 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
             var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
             switch (position)
             {
-                case LocusPosition.Position1:
+                case LocusPosition.One:
                     locusScoreDetails.ScoreDetailsAtPosition1.MatchGrade = matchGrade;
                     break;
-                case LocusPosition.Position2:
+                case LocusPosition.Two:
                     locusScoreDetails.ScoreDetailsAtPosition2.MatchGrade = matchGrade;
                     break;
                 default:
@@ -172,10 +172,10 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
             var locusScoreDetails = scoreResult.ScoreDetailsForLocus(locus);
             switch (position)
             {
-                case LocusPosition.Position1:
+                case LocusPosition.One:
                     locusScoreDetails.ScoreDetailsAtPosition1.MatchConfidence = matchConfidence;
                     break;
-                case LocusPosition.Position2:
+                case LocusPosition.Two:
                     locusScoreDetails.ScoreDetailsAtPosition2.MatchConfidence = matchConfidence;
                     break;
                 default:
@@ -205,7 +205,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
                 case 2:
                     return this.WithMatchConfidenceAtLocus(locus, MatchConfidence.Definite);
                 case 1:
-                    return this.WithMatchConfidenceAtLocusPosition(locus, LocusPosition.Position1, MatchConfidence.Mismatch);
+                    return this.WithMatchConfidenceAtLocusPosition(locus, LocusPosition.One, MatchConfidence.Mismatch);
                 case 0:
                     return this.WithMatchConfidenceAtLocus(locus, MatchConfidence.Mismatch);
                 default:

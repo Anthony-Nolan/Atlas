@@ -29,8 +29,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
 
         public PatientHlaSelectionCriteriaBuilder MatchingAtBothPositions(Locus locus)
         {
-            criteria.HlaSources.SetPosition(locus, LocusPosition.Position1, PatientHlaSource.Match);
-            criteria.HlaSources.SetPosition(locus, LocusPosition.Position2, PatientHlaSource.Match);
+            criteria.HlaSources.SetPosition(locus, LocusPosition.One, PatientHlaSource.Match);
+            criteria.HlaSources.SetPosition(locus, LocusPosition.Two, PatientHlaSource.Match);
             return this;
         }
 
@@ -42,8 +42,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
 
         public PatientHlaSelectionCriteriaBuilder NotMatchingAtEitherPosition(Locus locus)
         {
-            criteria.HlaSources.SetPosition(locus, LocusPosition.Position1, PatientHlaSource.ExpressingAlleleMismatch);
-            criteria.HlaSources.SetPosition(locus, LocusPosition.Position2, PatientHlaSource.ExpressingAlleleMismatch);
+            criteria.HlaSources.SetPosition(locus, LocusPosition.One, PatientHlaSource.ExpressingAlleleMismatch);
+            criteria.HlaSources.SetPosition(locus, LocusPosition.Two, PatientHlaSource.ExpressingAlleleMismatch);
             return this;
         }
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Atlas.Common.GeneticData.PhenotypeInfo
+namespace Atlas.Common.GeneticData
 {
     /// <summary>
     /// Position of an allele or other information *within* a locus.
@@ -10,8 +10,8 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
     /// </summary>
     public enum LocusPosition
     {
-        Position1,
-        Position2
+        One,
+        Two
     }
     
     public static class LocusPositionExtensions
@@ -20,8 +20,8 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         {
             return typePosition switch
             {
-                LocusPosition.Position2 => LocusPosition.Position1,
-                LocusPosition.Position1 => LocusPosition.Position2,
+                LocusPosition.Two => LocusPosition.One,
+                LocusPosition.One => LocusPosition.Two,
                 _ => throw new ArgumentOutOfRangeException(nameof(typePosition), typePosition, null)
             };
         }

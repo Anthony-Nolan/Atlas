@@ -83,7 +83,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
         public MetaDonorSelectionCriteriaBuilder WithNullAlleleAtAllPositions()
         {
             return EnumerateValues<Locus>().Aggregate(this,
-                (current, locus) => current.WithNullAlleleAtPosition(locus, LocusPosition.Position1).WithNullAlleleAtPosition(locus, LocusPosition.Position2));
+                (current, locus) => current.WithNullAlleleAtPosition(locus, LocusPosition.One).WithNullAlleleAtPosition(locus, LocusPosition.Two));
         }
 
         public MetaDonorSelectionCriteriaBuilder WithNonNullExpressionSuffixAtAllLoci()

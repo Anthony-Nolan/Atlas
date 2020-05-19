@@ -41,17 +41,17 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
             var hla = new PhenotypeInfo<TgsAllele>();
             foreach (var locus in EnumerateValues<Locus>())
             {
-                var randomTgsAllele1 = RandomTgsAllele(locus, LocusPosition.Position1, criteria);
-                hla.SetPosition(locus, LocusPosition.Position1, randomTgsAllele1);
+                var randomTgsAllele1 = RandomTgsAllele(locus, LocusPosition.One, criteria);
+                hla.SetPosition(locus, LocusPosition.One, randomTgsAllele1);
 
                 if (criteria.IsHomozygous.GetLocus(locus))
                 {
-                    hla.SetPosition(locus, LocusPosition.Position2, randomTgsAllele1);
+                    hla.SetPosition(locus, LocusPosition.Two, randomTgsAllele1);
                 }
                 else
                 {
-                    var randomTgsAllele2 = RandomTgsAllele(locus, LocusPosition.Position2, criteria);
-                    hla.SetPosition(locus, LocusPosition.Position2, randomTgsAllele2);
+                    var randomTgsAllele2 = RandomTgsAllele(locus, LocusPosition.Two, criteria);
+                    hla.SetPosition(locus, LocusPosition.Two, randomTgsAllele2);
                 }
             }
 

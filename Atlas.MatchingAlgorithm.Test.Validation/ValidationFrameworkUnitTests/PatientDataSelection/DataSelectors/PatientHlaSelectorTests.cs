@@ -29,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
         private IPatientHlaSelector patientHlaSelector;
         private IAlleleRepository alleleRepository;
 
-        private readonly LocusPosition[] bothPosition = {LocusPosition.Position1, LocusPosition.Position2};
+        private readonly LocusPosition[] bothPosition = {LocusPosition.One, LocusPosition.Two};
 
         private int alleleNumber;
         private PhenotypeInfo<List<AlleleTestData>> alleles;
@@ -153,8 +153,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             patientHla.ToEnumerable().All(x => x == null).Should().BeTrue();
         }
 
-        [TestCase(LocusPosition.Position1)]
-        [TestCase(LocusPosition.Position2)]
+        [TestCase(LocusPosition.One)]
+        [TestCase(LocusPosition.Two)]
         public void GetPatientHla_ForHomozygousLocus_WhenShouldMatchAtOnePosition_ReturnsMatchingAlleleAtEachPosition(LocusPosition matchingPosition)
         {
             const Locus locus = Locus.A;
@@ -249,8 +249,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
 
             var patientHla = patientHlaSelector.GetPatientHla(metaDonor, criteria);
             var hlaAtLocus = patientHla.GetLocus(locus);
-            var donorHla1 = metaDonor.Genotype.Hla.GetPosition(locus, LocusPosition.Position1).TgsTypedAllele;
-            var donorHla2 = metaDonor.Genotype.Hla.GetPosition(locus, LocusPosition.Position2).TgsTypedAllele;
+            var donorHla1 = metaDonor.Genotype.Hla.GetPosition(locus, LocusPosition.One).TgsTypedAllele;
+            var donorHla2 = metaDonor.Genotype.Hla.GetPosition(locus, LocusPosition.Two).TgsTypedAllele;
 
             hlaAtLocus.Position1.Should().Be(donorHla1);
             hlaAtLocus.Position2.Should().Be(donorHla2);
@@ -261,7 +261,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
         public void GetPatientHla_ForExpressingMismatch_ReturnsHlaNotMatchingDonor()
         {
             var criteria = new PatientHlaSelectionCriteriaBuilder()
-                .WithHlaSourceAtPosition(Locus.A, LocusPosition.Position1, PatientHlaSource.ExpressingAlleleMismatch)
+                .WithHlaSourceAtPosition(Locus.A, LocusPosition.One, PatientHlaSource.ExpressingAlleleMismatch)
                 .Build();
 
             var metaDonor = new MetaDonor
@@ -281,7 +281,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
         public void GetPatientHla_ForNullMismatch_ReturnsAlleleNotMatchingDonor()
         {
             var criteria = new PatientHlaSelectionCriteriaBuilder()
-                .WithHlaSourceAtPosition(Locus.A, LocusPosition.Position1, PatientHlaSource.NullAlleleMismatch)
+                .WithHlaSourceAtPosition(Locus.A, LocusPosition.One, PatientHlaSource.NullAlleleMismatch)
                 .Build();
 
             var metaDonor = new MetaDonor
@@ -301,7 +301,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
         public void GetPatientHla_ForNullMismatch_ReturnsNullAllele()
         {
             var criteria = new PatientHlaSelectionCriteriaBuilder()
-                .WithHlaSourceAtPosition(Locus.A, LocusPosition.Position1, PatientHlaSource.NullAlleleMismatch)
+                .WithHlaSourceAtPosition(Locus.A, LocusPosition.One, PatientHlaSource.NullAlleleMismatch)
                 .Build();
 
             var metaDonor = new MetaDonor
@@ -322,7 +322,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
         {
             var criteria = new PatientHlaSelectionCriteriaBuilder()
                 .WithMatchOrientationAtLocus(Locus.A, MatchOrientation.Arbitrary)
-                .WithHlaSourceAtPosition(Locus.A, LocusPosition.Position1, PatientHlaSource.NullAlleleMismatch)
+                .WithHlaSourceAtPosition(Locus.A, LocusPosition.One, PatientHlaSource.NullAlleleMismatch)
                 .Build();
 
             var metaDonor = new MetaDonor
@@ -349,14 +349,14 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             string positionString;
             switch (position.Length)
             {
-                case 1 when position.Single() == LocusPosition.Position1:
+                case 1 when position.Single() == LocusPosition.One:
                     positionString = "1";
                     break;
-                case 1 when position.Single() == LocusPosition.Position2:
+                case 1 when position.Single() == LocusPosition.Two:
                     positionString = "2";
                     break;
                 default:
-                    if (position.Contains(LocusPosition.Position1) && position.Contains(LocusPosition.Position2))
+                    if (position.Contains(LocusPosition.One) && position.Contains(LocusPosition.Two))
                     {
                         positionString = "1&2";
                     }
