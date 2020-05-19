@@ -55,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         public void CalculateMatchesForDonors_WhenNoPGroupsMatch_ReturnsMatchCountOfZero()
         {
             var donorPGroups = new List<string>{NonMatchingPGroup};
-            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups, donorPGroups);
+            var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
 
@@ -65,7 +65,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         [Test]
         public void CalculateMatchesForDonors_WhenDonorNotTypedAtLocus_ReturnsMatchCountOfTwo()
         {
-            var donorHla = new LocusInfo<IEnumerable<string>>(null, null);
+            var donorHla = new LocusInfo<IEnumerable<string>>(null);
 
             var matchDetails = donorMatchCalculator.CalculateMatchDetailsForDonorHla(defaultCriteria, donorHla);
 
