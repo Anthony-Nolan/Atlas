@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
-using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Exceptions.Azure;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;

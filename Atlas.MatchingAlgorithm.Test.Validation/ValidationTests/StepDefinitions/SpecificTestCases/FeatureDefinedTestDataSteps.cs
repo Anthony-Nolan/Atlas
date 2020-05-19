@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.MatchingAlgorithm.Common.Models;
 using TechTalk.SpecFlow;
 using TechTalk.SpecFlow.Assist;
 

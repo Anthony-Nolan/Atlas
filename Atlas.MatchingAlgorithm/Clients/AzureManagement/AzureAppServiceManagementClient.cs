@@ -3,7 +3,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement.AzureApiModels.AppSettings;
-using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Exceptions.Azure;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Microsoft.Extensions.Options;

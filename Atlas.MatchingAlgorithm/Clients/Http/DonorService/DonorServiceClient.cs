@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.NovaHttpClient;
 using Atlas.Common.NovaHttpClient.Client;
 using Atlas.MatchingAlgorithm.Models;
 

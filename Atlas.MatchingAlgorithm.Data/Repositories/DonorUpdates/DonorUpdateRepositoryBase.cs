@@ -4,10 +4,10 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Common.Repositories;
 using Atlas.MatchingAlgorithm.Data.Helpers;
+using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Services;
 

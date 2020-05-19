@@ -1,12 +1,11 @@
 ﻿using System;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
@@ -20,7 +19,6 @@ using LazyCache.Providers;
 using Microsoft.Extensions.Caching.Memory;
 using NSubstitute;
 using NUnit.Framework;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 {

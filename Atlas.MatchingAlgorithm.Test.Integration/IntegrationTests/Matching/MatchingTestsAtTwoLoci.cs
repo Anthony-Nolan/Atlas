@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;

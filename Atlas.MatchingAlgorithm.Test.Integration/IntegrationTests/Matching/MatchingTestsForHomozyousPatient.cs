@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
-using Atlas.MatchingAlgorithm.Client.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -17,14 +17,6 @@ using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
-using Atlas.MatchingAlgorithm.Services.Donors;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 {

@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
-using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories

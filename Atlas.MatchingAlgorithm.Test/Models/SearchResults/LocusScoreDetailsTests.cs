@@ -1,11 +1,6 @@
 using System;
 using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
-using FluentAssertions;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
 using FluentAssertions;
 using NUnit.Framework;

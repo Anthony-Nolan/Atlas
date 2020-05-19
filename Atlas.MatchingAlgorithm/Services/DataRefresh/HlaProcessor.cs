@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.HlaMetadataDictionary;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Common.Repositories;

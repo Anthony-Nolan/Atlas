@@ -1,5 +1,4 @@
 ﻿using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Common.Models;
 
 namespace Atlas.MatchingAlgorithm.Data.Models
 {
