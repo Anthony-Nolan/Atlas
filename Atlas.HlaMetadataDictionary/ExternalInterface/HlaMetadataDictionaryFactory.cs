@@ -49,7 +49,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository;
 
 
-        public HlaMetadataDictionaryFactory(
+        internal HlaMetadataDictionaryFactory(
             IPersistentCacheProvider cacheProvider,
 
             //For Dictionary
