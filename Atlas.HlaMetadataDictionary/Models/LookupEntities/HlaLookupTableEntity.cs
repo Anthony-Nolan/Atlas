@@ -13,7 +13,7 @@ using static Atlas.Common.Utils.Extensions.TypeExtensions;
 
 namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
 {
-    public class HlaLookupTableEntity : TableEntity
+    internal class HlaLookupTableEntity : TableEntity
     {
         public string LocusAsString { get; set; }
         public Locus Locus => LocusAsString.ParseToEnum<Locus>();

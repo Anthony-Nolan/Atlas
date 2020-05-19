@@ -4,12 +4,12 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
 {
-    public interface ICloudTableFactory
+    internal interface ICloudTableFactory
     {
         Task<CloudTable> GetTable(string tableReferenceString);
     }
 
-    public class CloudTableFactory : ICloudTableFactory
+    internal class CloudTableFactory : ICloudTableFactory
     {
         private readonly string storageConnectionString;
         public CloudTableFactory(string storageConnectionString)

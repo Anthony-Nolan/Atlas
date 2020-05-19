@@ -4,7 +4,7 @@ using System.Net;
 
 namespace Atlas.HlaMetadataDictionary.Data
 {
-    public class WmdaFileDownloader : IWmdaFileReader
+    internal class WmdaFileDownloader : IWmdaFileReader
     {
         private readonly string wmdaFileUri;
 

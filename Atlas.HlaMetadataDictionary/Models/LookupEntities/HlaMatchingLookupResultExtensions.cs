@@ -4,7 +4,7 @@ using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 
 namespace Atlas.HlaMetadataDictionary.Extensions
 {
-    public static class HlaMatchingLookupResultExtensions
+    internal static class HlaMatchingLookupResultExtensions
     {
         public static IHlaMatchingLookupResult ToHlaMatchingLookupResult(this HlaLookupTableEntity entity)
         {

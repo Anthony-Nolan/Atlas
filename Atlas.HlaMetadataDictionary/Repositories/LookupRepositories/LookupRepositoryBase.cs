@@ -15,12 +15,12 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
     /// Generic repository that persists data to a CloudTable
     /// & also caches it in memory for optimal read-access.
     /// </summary>
-    public interface ILookupRepository
+    internal interface ILookupRepository
     {
         Task LoadDataIntoMemory(string hlaDatabaseVersion);
     }
 
-    public abstract class LookupRepositoryBase<TStorable, TTableEntity> :
+    internal abstract class LookupRepositoryBase<TStorable, TTableEntity> :
         ILookupRepository
         where TTableEntity : TableEntity, new()
         where TStorable : IHlaLookupResult

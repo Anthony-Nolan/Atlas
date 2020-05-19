@@ -13,12 +13,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// <summary>
     ///  Consolidates HLA info used in matching for all alleles that map to the hla name.
     /// </summary>
-    public interface IHlaMatchingLookupService : IHlaSearchingLookupService<IHlaMatchingLookupResult>
+    internal interface IHlaMatchingLookupService : IHlaSearchingLookupService<IHlaMatchingLookupResult>
     {
         IEnumerable<string> GetAllPGroups(string hlaDatabaseVersion);
     }
 
-    public class HlaMatchingLookupService : 
+    internal class HlaMatchingLookupService : 
         HlaSearchingLookupServiceBase<IHlaMatchingLookupResult>, 
         IHlaMatchingLookupService
     {

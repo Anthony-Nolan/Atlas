@@ -8,12 +8,12 @@ using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {
-    public interface IHlaMatchingLookupRepository : IHlaLookupRepository
+    internal interface IHlaMatchingLookupRepository : IHlaLookupRepository
     {
         IEnumerable<string> GetAllPGroups(string hlaDatabaseVersion);
     }
 
-    public class HlaMatchingLookupRepository : HlaLookupRepositoryBase, IHlaMatchingLookupRepository
+    internal class HlaMatchingLookupRepository : HlaLookupRepositoryBase, IHlaMatchingLookupRepository
     {
         private const string DataTableReferencePrefix = "HlaMatchingLookupData";
         private const string CacheKey = "HlaMatchingLookup";

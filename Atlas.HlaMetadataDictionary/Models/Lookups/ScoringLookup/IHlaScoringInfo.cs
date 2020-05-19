@@ -2,7 +2,7 @@
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {
-    public interface IHlaScoringInfo
+    internal interface IHlaScoringInfo
     {
         /// <summary>
         /// Used when scoring against a serology typing.

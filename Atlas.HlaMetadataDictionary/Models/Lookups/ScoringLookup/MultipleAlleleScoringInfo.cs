@@ -10,7 +10,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
     /// To be used with allele name variants that map to >1 allele,
     /// where info on each individual allele represented by the typing is needed for scoring.
     /// </summary>
-    public class MultipleAlleleScoringInfo : 
+    internal class MultipleAlleleScoringInfo : 
         IHlaScoringInfo, 
         IEquatable<MultipleAlleleScoringInfo>
     {

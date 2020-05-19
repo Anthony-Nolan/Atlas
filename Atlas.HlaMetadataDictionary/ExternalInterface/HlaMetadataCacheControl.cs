@@ -3,7 +3,7 @@ using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
-    public interface IHlaMetadataCacheControl
+    internal interface IHlaMetadataCacheControl
     {
         /// <summary>
         /// Force all in-memory caches to populate (used to achieve slow-start-up, rather than slow-first-request)
@@ -16,7 +16,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         Task PreWarmAlleleNameCache();
     }
 
-    public class HlaMetadataCacheControl : IHlaMetadataCacheControl
+    internal class HlaMetadataCacheControl : IHlaMetadataCacheControl
     {
         private readonly string hlaNomenclatureVersion;
 

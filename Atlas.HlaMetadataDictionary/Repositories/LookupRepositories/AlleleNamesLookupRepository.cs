@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {
-    public interface IAlleleNamesLookupRepository : IHlaLookupRepository
+    internal interface IAlleleNamesLookupRepository : IHlaLookupRepository
     {
         Task<IAlleleNameLookupResult> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaDatabaseVersion);
     }
 
-    public class AlleleNamesLookupRepository : 
+    internal class AlleleNamesLookupRepository : 
         HlaLookupRepositoryBase,
         IAlleleNamesLookupRepository
     {

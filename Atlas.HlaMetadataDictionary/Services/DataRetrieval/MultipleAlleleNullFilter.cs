@@ -9,7 +9,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// <summary>
     /// When scoring multiple alleles (e.g. allele string, xx code, nmdp code), we do not want to consider null alleles 
     /// </summary>
-    public static class MultipleAlleleNullFilter
+    internal static class MultipleAlleleNullFilter
     {
         public static IEnumerable<IHlaLookupResultSource<AlleleTyping>> Filter(IEnumerable<IHlaLookupResultSource<AlleleTyping>> resultSource)
         {

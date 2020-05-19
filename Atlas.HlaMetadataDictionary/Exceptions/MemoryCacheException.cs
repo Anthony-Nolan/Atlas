@@ -2,7 +2,7 @@
 
 namespace Atlas.HlaMetadataDictionary.Exceptions
 {
-    public class MemoryCacheException : Exception
+    internal class MemoryCacheException : Exception
     {
         public MemoryCacheException(string message)
             : base(message)

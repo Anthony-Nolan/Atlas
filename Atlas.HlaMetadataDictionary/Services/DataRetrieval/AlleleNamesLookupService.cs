@@ -8,12 +8,12 @@ using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
-    public interface IAlleleNamesLookupService
+    internal interface IAlleleNamesLookupService
     {
         Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName, string hlaDatabaseVersion);
     }
 
-    public class AlleleNamesLookupService : LookupServiceBase<IEnumerable<string>>, IAlleleNamesLookupService
+    internal class AlleleNamesLookupService : LookupServiceBase<IEnumerable<string>>, IAlleleNamesLookupService
     {
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;
         private readonly IHlaCategorisationService hlaCategorisationService;

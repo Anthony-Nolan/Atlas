@@ -4,7 +4,7 @@ using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
 
 namespace Atlas.HlaMetadataDictionary.Extensions
 {
-    public static class AlleleNameLookupResultExtensions
+    internal static class AlleleNameLookupResultExtensions
     {
         public static IAlleleNameLookupResult ToAlleleNameLookupResult(this HlaLookupTableEntity entity)
         {

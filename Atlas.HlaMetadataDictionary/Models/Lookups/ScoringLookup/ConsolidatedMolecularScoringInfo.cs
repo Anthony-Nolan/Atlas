@@ -9,7 +9,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
     /// Only to be used with molecular types, such as NMDP codes & XX codes,
     /// where consolidated data is sufficient for scoring.
     /// </summary>
-    public class ConsolidatedMolecularScoringInfo : 
+    internal class ConsolidatedMolecularScoringInfo : 
         IHlaScoringInfo,
         IEquatable<ConsolidatedMolecularScoringInfo>
     {

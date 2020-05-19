@@ -5,12 +5,12 @@ using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
 namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
-    public interface ISerologyInfoForMatching : IMatchedOn, IMatchingSerologies
+    internal interface ISerologyInfoForMatching : IMatchedOn, IMatchingSerologies
     {
         
     }
 
-    public class SerologyInfoForMatching : ISerologyInfoForMatching, IEquatable<ISerologyInfoForMatching>
+    internal class SerologyInfoForMatching : ISerologyInfoForMatching, IEquatable<ISerologyInfoForMatching>
     {
         public HlaTyping HlaTyping { get; }
         public HlaTyping TypingUsedInMatching { get; }

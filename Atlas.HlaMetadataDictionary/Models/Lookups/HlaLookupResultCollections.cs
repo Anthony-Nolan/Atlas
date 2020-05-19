@@ -2,7 +2,7 @@
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups
 {
-    public class HlaLookupResultCollections
+    internal class HlaLookupResultCollections
     {
         public IEnumerable<IHlaLookupResult> AlleleNameLookupResults { get; set; }
         public IEnumerable<IHlaLookupResult> HlaMatchingLookupResults { get; set; }

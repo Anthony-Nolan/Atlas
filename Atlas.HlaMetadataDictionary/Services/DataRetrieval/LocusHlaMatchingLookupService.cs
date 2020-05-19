@@ -11,7 +11,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// Handles matching HLA lookup logic at the locus-level,
     /// including handling of null-expressing alleles within the typing.
     /// </summary>
-    public interface ILocusHlaMatchingLookupService
+    internal interface ILocusHlaMatchingLookupService
     {
         Task<LocusInfo<IHlaMatchingLookupResult>> GetHlaMatchingLookupResults(
             Locus locus,
@@ -20,7 +20,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     }
 
     /// <inheritdoc />
-    public class LocusHlaMatchingLookupService : ILocusHlaMatchingLookupService
+    internal class LocusHlaMatchingLookupService : ILocusHlaMatchingLookupService
     {
         private readonly IHlaMatchingLookupService singleHlaLookupService;
 

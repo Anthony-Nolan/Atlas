@@ -13,14 +13,14 @@ namespace Atlas.HlaMetadataDictionary.Repositories
     /// hold a reference via this repository to the "current" version of the table,
     /// generate a new table from scratch, then update the reference when done.
     /// </summary>
-    public interface ITableReferenceRepository
+    internal interface ITableReferenceRepository
     {
         Task<string> GetCurrentTableReference(string tablePrefix);
         string GetNewTableReference(string tablePrefix);
         Task UpdateTableReference(string tablePrefix, string tableReference);
     }
 
-    public class TableReferenceRepository : ITableReferenceRepository
+    internal class TableReferenceRepository : ITableReferenceRepository
     {
         private readonly ICloudTableFactory factory;
         private const string CloudTableReference = "TableReferences";

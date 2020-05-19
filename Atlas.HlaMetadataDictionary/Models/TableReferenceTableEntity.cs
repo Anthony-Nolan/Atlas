@@ -2,7 +2,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Atlas.HlaMetadataDictionary.Models
 {
-    public class TableReferenceTableEntity : TableEntity
+    internal class TableReferenceTableEntity : TableEntity
     {
         public string TableReference { get; set; }
 

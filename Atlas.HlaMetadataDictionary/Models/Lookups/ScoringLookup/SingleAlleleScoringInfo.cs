@@ -9,7 +9,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
     /// <summary>
     /// Data needed to score a single allele typing.
     /// </summary>
-    public class SingleAlleleScoringInfo : 
+    internal class SingleAlleleScoringInfo : 
         IHlaScoringInfo,
         IEquatable<SingleAlleleScoringInfo>
     {

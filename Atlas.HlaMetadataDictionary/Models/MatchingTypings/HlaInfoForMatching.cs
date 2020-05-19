@@ -3,7 +3,7 @@ using Atlas.HlaMetadataDictionary.Models.Wmda;
 
 namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
-    public class HlaInfoForMatching: IHlaInfoToMapAlleleToSerology, IHlaInfoToMapSerologyToAllele
+    internal class HlaInfoForMatching: IHlaInfoToMapAlleleToSerology, IHlaInfoToMapSerologyToAllele
     {
         public List<IAlleleInfoForMatching> AlleleInfoForMatching { get; }
         public List<ISerologyInfoForMatching> SerologyInfoForMatching { get; }

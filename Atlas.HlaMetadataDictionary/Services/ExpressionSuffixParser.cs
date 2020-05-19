@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Atlas.HlaMetadataDictionary.Services
 {
-    public static class ExpressionSuffixParser
+    internal static class ExpressionSuffixParser
     {
         // This is done instead of Regex matching for performance reasons
         private static readonly char[] AllSuffixes =

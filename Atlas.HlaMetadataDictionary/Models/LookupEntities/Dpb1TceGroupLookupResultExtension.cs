@@ -3,7 +3,7 @@ using Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup;
 
 namespace Atlas.HlaMetadataDictionary.Extensions
 {
-    public static class Dpb1TceGroupLookupResultExtensions
+    internal static class Dpb1TceGroupLookupResultExtensions
     {
         public static IDpb1TceGroupsLookupResult ToDpb1TceGroupLookupResult(this HlaLookupTableEntity entity)
         {

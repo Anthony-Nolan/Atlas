@@ -13,12 +13,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
     /// Manages the contents of the matching dictionary
     /// by orchestrating the generation and storage of the HLA Lookup Results dataset.
     /// </summary>
-    public interface IRecreateHlaMetadataService
+    internal interface IRecreateHlaMetadataService
     {
         Task RefreshAllHlaMetadata(string hlaDatabaseVersion);
     }
 
-    public class RecreateHlaMetadataService : IRecreateHlaMetadataService
+    internal class RecreateHlaMetadataService : IRecreateHlaMetadataService
     {
         private readonly IHlaLookupResultsService hlaLookupResultsService;
         private readonly IAlleleNamesLookupRepository alleleNamesLookupRepository;

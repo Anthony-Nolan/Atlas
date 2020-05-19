@@ -3,7 +3,7 @@ using System;
 
 namespace Atlas.HlaMetadataDictionary.Models.Wmda
 {
-    public class AlleleStatus : IWmdaHlaTyping, IEquatable<AlleleStatus>
+    internal class AlleleStatus : IWmdaHlaTyping, IEquatable<AlleleStatus>
     {
         public TypingMethod TypingMethod => TypingMethod.Molecular;
         public string TypingLocus { get; set; }

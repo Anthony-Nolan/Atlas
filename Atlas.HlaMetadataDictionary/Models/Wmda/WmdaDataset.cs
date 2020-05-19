@@ -7,7 +7,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Wmda
     /// We do not want the collections to be of type IEnumerable as they are accessed thousands of times during the matching dictionary refresh
     /// Without enumerating them first we risk a huge performance hit due to multiple enumerations of large collections
     /// </summary>
-    public class WmdaDataset
+    internal class WmdaDataset
     {
         public string HlaDatabaseVersion { get; set; }
         public IList<HlaNom> Serologies { get; set; }

@@ -6,7 +6,7 @@ namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
     /// <summary>
     /// Serology that matches to another HLA typing, directly or indirectly.
     /// </summary>
-    public class MatchingSerology : IEquatable<MatchingSerology>
+    internal class MatchingSerology : IEquatable<MatchingSerology>
     {
         /// <summary>
         /// Typing details about the matching serology.

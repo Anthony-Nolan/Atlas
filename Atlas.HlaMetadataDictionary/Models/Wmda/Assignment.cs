@@ -4,7 +4,7 @@ using Newtonsoft.Json.Converters;
 namespace Atlas.HlaMetadataDictionary.Models.Wmda
 {
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum Assignment
+    internal enum Assignment
     {
         Unambiguous,
         Possible,

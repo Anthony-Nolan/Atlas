@@ -3,7 +3,7 @@ using System;
 
 namespace Atlas.HlaMetadataDictionary.Models.Wmda
 {
-    public class HlaNom : IWmdaHlaTyping, IEquatable<HlaNom>
+    internal class HlaNom : IWmdaHlaTyping, IEquatable<HlaNom>
     {
         public TypingMethod TypingMethod { get; }
         public string TypingLocus { get; set; }

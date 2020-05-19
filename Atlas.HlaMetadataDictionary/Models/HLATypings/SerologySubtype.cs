@@ -1,6 +1,6 @@
 ﻿namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {
-    public enum SerologySubtype
+    internal enum SerologySubtype
     {
         // Enum values stored in db; changing values will require rebuild
         // of the matching dictionary.

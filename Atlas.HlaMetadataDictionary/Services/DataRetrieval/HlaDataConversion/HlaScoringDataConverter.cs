@@ -12,11 +12,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
     /// <summary>
     /// Converts Matched HLA to model optimised for HLA Scoring lookups.
     /// </summary>
-    public interface IHlaScoringDataConverter : IMatchedHlaDataConverterBase
+    internal interface IHlaScoringDataConverter : IMatchedHlaDataConverterBase
     {
     }
 
-    public class HlaScoringDataConverter :
+    internal class HlaScoringDataConverter :
         MatchedHlaDataConverterBase,
         IHlaScoringDataConverter
     {

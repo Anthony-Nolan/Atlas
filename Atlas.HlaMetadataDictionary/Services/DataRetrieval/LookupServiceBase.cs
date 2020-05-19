@@ -5,7 +5,7 @@ using Atlas.HlaMetadataDictionary.Exceptions;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
-    public abstract class LookupServiceBase<T>
+    internal abstract class LookupServiceBase<T>
     {
         protected async Task<T> GetLookupResults(Locus locus, string lookupName, string hlaDatabaseVersion)
         {
