@@ -9,7 +9,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary
 {
     // Some test data is shared between test fixtures and takes a long time to generate. 
     // This class will evaluate such data the first time it's requested, and serve it from a cache thereafter
-    public static class SharedTestDataCache
+    internal static class SharedTestDataCache
     {
         public const string HlaDatabaseVersionToTest = "3330";
 

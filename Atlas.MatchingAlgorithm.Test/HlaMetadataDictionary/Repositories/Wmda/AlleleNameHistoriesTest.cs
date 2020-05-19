@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 {
-    public class AlleleNameHistoriesTest : WmdaRepositoryTestBase<AlleleNameHistory>
+    internal class AlleleNameHistoriesTest : WmdaRepositoryTestBase<AlleleNameHistory>
     {
         protected override void SetupTestData()
         {

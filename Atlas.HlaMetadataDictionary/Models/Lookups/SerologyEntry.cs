@@ -17,13 +17,15 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups
         [JsonProperty("direct")]
         public bool IsDirectMapping { get; }
 
-        public SerologyEntry(string name, SerologySubtype serologySubtype, bool isDirectMapping)
+        [JsonConstructor]
+        internal SerologyEntry(string name, SerologySubtype serologySubtype, bool isDirectMapping)
         {
             Name = name;
             SerologySubtype = serologySubtype;
             IsDirectMapping = isDirectMapping;
         }
 
+        #region IEquatable
         public bool Equals(SerologyEntry other)
         {
             if (ReferenceEquals(null, other)) return false;
@@ -52,5 +54,6 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups
                 return hashCode;
             }
         }
+        #endregion
     }
 }

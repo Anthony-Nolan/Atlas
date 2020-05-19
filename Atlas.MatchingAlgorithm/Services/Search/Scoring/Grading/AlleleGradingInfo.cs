@@ -9,10 +9,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         public SingleAlleleScoringInfo ScoringInfo { get; }
         public AlleleTyping Allele { get; }
 
-        public AlleleGradingInfo(Locus locus, IHlaScoringInfo scoringInfo)
+        public AlleleGradingInfo(Locus locus, SingleAlleleScoringInfo scoringInfo)
         {
-            ScoringInfo = (SingleAlleleScoringInfo)scoringInfo;
-            Allele = new AlleleTyping(locus, ScoringInfo.AlleleName);
+            ScoringInfo = scoringInfo;
+            Allele = scoringInfo.GenerateTypingAtLocus(locus);
         }
     }
 }

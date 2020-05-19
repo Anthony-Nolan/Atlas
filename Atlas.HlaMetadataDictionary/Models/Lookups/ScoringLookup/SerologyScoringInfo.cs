@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {
-    internal class SerologyScoringInfo : 
+    public class SerologyScoringInfo : 
         IHlaScoringInfo,
         IEquatable<SerologyScoringInfo>
     {
@@ -18,13 +18,14 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         [JsonIgnore]
         public IEnumerable<string> MatchingPGroups => new List<string>();
 
-        public SerologyScoringInfo(
+        [JsonConstructor]
+        internal SerologyScoringInfo(
             IEnumerable<SerologyEntry> matchingSerologies)
         {
             MatchingSerologies = matchingSerologies;
         }
 
-        public static SerologyScoringInfo GetScoringInfo(
+        internal static SerologyScoringInfo GetScoringInfo(
             IHlaLookupResultSource<SerologyTyping> lookupResultSource)
         {
             return new SerologyScoringInfo(

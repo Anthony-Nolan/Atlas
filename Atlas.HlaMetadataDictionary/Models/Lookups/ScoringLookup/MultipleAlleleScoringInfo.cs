@@ -10,7 +10,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
     /// To be used with allele name variants that map to >1 allele,
     /// where info on each individual allele represented by the typing is needed for scoring.
     /// </summary>
-    internal class MultipleAlleleScoringInfo : 
+    public class MultipleAlleleScoringInfo : 
         IHlaScoringInfo, 
         IEquatable<MultipleAlleleScoringInfo>
     {
@@ -39,7 +39,8 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
             .Where(pGroup => pGroup != null)
             .Distinct();
 
-        public MultipleAlleleScoringInfo(
+        [JsonConstructor]
+        internal MultipleAlleleScoringInfo(
             IEnumerable<SingleAlleleScoringInfo> alleleScoringInfos, 
             IEnumerable<SerologyEntry> matchingSerologies)
         {
@@ -47,7 +48,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
             MatchingSerologies = matchingSerologies;
         }
 
-        public static MultipleAlleleScoringInfo GetScoringInfo(
+        internal static MultipleAlleleScoringInfo GetScoringInfo(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources)
         {
             var sources = lookupResultSources.ToList();

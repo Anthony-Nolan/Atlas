@@ -7,7 +7,7 @@ using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation.AlleleToSerology
 {
-    public class AlleleToSerologyMatchingTest : MatchedOnTestBase<MatchedAllele>
+    internal class AlleleToSerologyMatchingTest : MatchedOnTestBase<MatchedAllele>
     {
         [TestCaseSource(
             typeof(AlleleToSerologyMatchingTestCaseSources),

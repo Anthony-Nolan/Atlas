@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation
 {
-    public class MatchedHlaTest : MatchedOnTestBase<IMatchedHla>
+    internal class MatchedHlaTest : MatchedOnTestBase<IMatchedHla>
     {
         private static readonly List<string> ExpectedMatchLoci = new List<string> { "A", "B", "C", "DPB1", "DQB1", "DRB1" };
 

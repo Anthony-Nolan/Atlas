@@ -61,34 +61,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
             return allGrades.Max();
         }
 
-        private static IEnumerable<IHlaScoringLookupResult> GetSingleAlleleLookupResults(
-            IHlaScoringLookupResult lookupResult)
-        {
-            var singleAlleleInfos = GetSingleAlleleInfos(lookupResult);
-
-            return singleAlleleInfos.Select(alleleInfo => new HlaScoringLookupResult(
-                lookupResult.Locus,
-                alleleInfo.AlleleName,
-                alleleInfo,
-                TypingMethod.Molecular));
-        }
-
-        private static IEnumerable<SingleAlleleScoringInfo> GetSingleAlleleInfos(
-            IHlaScoringLookupResult lookupResult)
-        {
-            var scoringInfo = lookupResult.HlaScoringInfo;
-
-            switch (scoringInfo)
-            {
-                case MultipleAlleleScoringInfo info:
-                    return info.AlleleScoringInfos;
-                case SingleAlleleScoringInfo info:
-                    return new[] { info };
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
         private MatchGrade GetSingleAlleleMatchGrade(
             IHlaScoringLookupResult patientLookupResult,
             IHlaScoringLookupResult donorLookupResult)

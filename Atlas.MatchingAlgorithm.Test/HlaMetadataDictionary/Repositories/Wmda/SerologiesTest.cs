@@ -8,7 +8,7 @@ using System.Linq;
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 {
     [UseReporter(typeof(DiffReporter))]
-    public class SerologiesTest : WmdaRepositoryTestBase<HlaNom>
+    internal class SerologiesTest : WmdaRepositoryTestBase<HlaNom>
     {
         protected override void SetupTestData()
         {

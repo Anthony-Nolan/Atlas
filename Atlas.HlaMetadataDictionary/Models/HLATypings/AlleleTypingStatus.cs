@@ -3,7 +3,7 @@ using System;
 
 namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {
-    internal enum SequenceStatus
+    public enum SequenceStatus
     {
         // Enum values stored in db; changing values will require rebuild
         // of the matching dictionary.
@@ -12,7 +12,7 @@ namespace Atlas.HlaMetadataDictionary.Models.HLATypings
         Full = 2
     }
 
-    internal enum DnaCategory
+    public enum DnaCategory
     {
         // Enum values stored in db; changing values will require rebuild
         // of the matching dictionary.
@@ -21,7 +21,7 @@ namespace Atlas.HlaMetadataDictionary.Models.HLATypings
         GDna = 2
     }
 
-    internal class AlleleTypingStatus : IEquatable<AlleleTypingStatus>
+    public class AlleleTypingStatus : IEquatable<AlleleTypingStatus>
     {
         // Shortened property names are used when serialising the object for storage
         // to reduce the total row size
@@ -32,7 +32,8 @@ namespace Atlas.HlaMetadataDictionary.Models.HLATypings
         [JsonProperty("dna")]
         public DnaCategory DnaCategory { get; }
 
-        public AlleleTypingStatus(SequenceStatus sequenceStatus, DnaCategory dnaCategory)
+        [JsonConstructor]
+        internal AlleleTypingStatus(SequenceStatus sequenceStatus, DnaCategory dnaCategory)
         {
             if (sequenceStatus == SequenceStatus.Unknown ^ dnaCategory == DnaCategory.Unknown)
             {
@@ -43,15 +44,12 @@ namespace Atlas.HlaMetadataDictionary.Models.HLATypings
             DnaCategory = dnaCategory;
         }
 
-        private AlleleTypingStatus() : this(SequenceStatus.Unknown, DnaCategory.Unknown)
+        internal static AlleleTypingStatus GetDefaultStatus()
         {
+            return new AlleleTypingStatus(SequenceStatus.Unknown, DnaCategory.Unknown);
         }
 
-        public static AlleleTypingStatus GetDefaultStatus()
-        {
-            return new AlleleTypingStatus();
-        }
-
+        #region IEquatable
         public bool Equals(AlleleTypingStatus other)
         {
             if (ReferenceEquals(null, other)) return false;
@@ -74,5 +72,6 @@ namespace Atlas.HlaMetadataDictionary.Models.HLATypings
                 return ((int) SequenceStatus * 397) ^ (int) DnaCategory;
             }
         }
+        #endregion
     }
 }

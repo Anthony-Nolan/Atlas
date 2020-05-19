@@ -7,7 +7,7 @@ using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories
 {
-    public class FileBackedAlleleNamesLookupRepository :
+    internal class FileBackedAlleleNamesLookupRepository :
         FileBackedHlaLookupRepositoryBase<IAlleleNameLookupResult>,
         IAlleleNamesLookupRepository
     {

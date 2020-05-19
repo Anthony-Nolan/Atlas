@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 {
-    public class GGroupsTest : WmdaRepositoryTestBase<HlaNomG>
+    internal class GGroupsTest : WmdaRepositoryTestBase<HlaNomG>
     {
         protected override void SetupTestData()
         {

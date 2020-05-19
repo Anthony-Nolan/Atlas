@@ -1,14 +1,13 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.HlaTypingInfo;
-using Atlas.HlaMetadataDictionary.Models.LookupEntities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup
 {
-    internal interface IAlleleNameLookupResult : IHlaLookupResult
+    public interface IAlleleNameLookupResult : IHlaLookupResult
     {
         IEnumerable<string> CurrentAlleleNames { get; }
     }

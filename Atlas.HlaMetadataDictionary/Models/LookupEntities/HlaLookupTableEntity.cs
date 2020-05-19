@@ -13,7 +13,7 @@ using static Atlas.Common.Utils.Extensions.TypeExtensions;
 
 namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
 {
-    public class HlaLookupTableEntity : TableEntity //QQ definitely not.
+    internal class HlaLookupTableEntity : TableEntity
     {
         public string LocusAsString { get; set; }
         public Locus Locus => LocusAsString.ParseToEnum<Locus>();
@@ -61,7 +61,7 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
     /// doesn't support sub-typing at all nicely. All the other extension methods are in separate sibling files.
     /// This one is here in this file because it is so tightly integrated with BackwardsCompatible_SerialisedHlaInfoType.
     /// TODO: ATLAS-282. Once that's gone, it can be moved into a separate sibling file like the other extension classes.
-    public static class HlaScoringLookupResultExtensions
+    internal static class HlaScoringLookupResultExtensions
     {
         public static IHlaScoringLookupResult ToHlaScoringLookupResult(this HlaLookupTableEntity entity)
         {

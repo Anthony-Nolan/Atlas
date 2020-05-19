@@ -6,7 +6,7 @@ using Atlas.Common.GeneticData.Hla.Models;
 
 namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {
-    internal class HlaTyping : IEquatable<HlaTyping>, IWmdaHlaTyping
+    public class HlaTyping : IEquatable<HlaTyping>, IWmdaHlaTyping
     {
         public TypingMethod TypingMethod { get; }
         public string TypingLocus { get; set; }
@@ -14,7 +14,7 @@ namespace Atlas.HlaMetadataDictionary.Models.HLATypings
         public string Name { get; set; }
         public bool IsDeleted { get; }
 
-        public HlaTyping(TypingMethod typingMethod, string typingLocus, string name, bool isDeleted = false)
+        internal HlaTyping(TypingMethod typingMethod, string typingLocus, string name, bool isDeleted = false)
         {
             TypingLocus = typingLocus;
             Name = name;
@@ -27,7 +27,8 @@ namespace Atlas.HlaMetadataDictionary.Models.HLATypings
         {
             return $"{Locus}{Name}";
         }
-        
+
+        #region IEquatable
         public bool Equals(HlaTyping other)
         {
             if (ReferenceEquals(null, other)) return false;
@@ -60,5 +61,6 @@ namespace Atlas.HlaMetadataDictionary.Models.HLATypings
                 return hashCode;
             }
         }
+        #endregion
     }
 }

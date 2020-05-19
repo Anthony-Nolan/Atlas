@@ -10,7 +10,7 @@ using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataConversion
 {
-    public abstract class MatchedHlaDataConverterTestBase<TGenerator>
+    internal abstract class MatchedHlaDataConverterTestBase<TGenerator>
         where TGenerator : IMatchedHlaDataConverterBase, new()
     {
         protected TGenerator LookupResultGenerator;

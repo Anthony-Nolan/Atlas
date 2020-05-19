@@ -6,7 +6,7 @@ using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.ScoringInfo;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 {
-    public class HlaScoringLookupResultBuilder
+    internal class HlaScoringLookupResultBuilder
     {
         private HlaScoringLookupResult result;
 

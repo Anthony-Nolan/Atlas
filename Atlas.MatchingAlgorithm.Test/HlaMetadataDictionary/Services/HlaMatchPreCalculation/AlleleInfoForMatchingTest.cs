@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation
 {
-    public class AlleleInfoForMatchingTest : MatchedOnTestBase<IAlleleInfoForMatching>
+    internal class AlleleInfoForMatchingTest : MatchedOnTestBase<IAlleleInfoForMatching>
     {
         private class MatchedAlleleTestData
         {

@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 {
-    public class AlleleStatusesTest : WmdaRepositoryTestBase<AlleleStatus>
+    internal class AlleleStatusesTest : WmdaRepositoryTestBase<AlleleStatus>
     {
         protected override void SetupTestData()
         {
