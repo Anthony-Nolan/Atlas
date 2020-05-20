@@ -48,13 +48,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
         {
             if (context != null)
             {
-                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [Donors]");
-                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtA]");
-                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtB]");
-                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtC]");
-                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtDrb1]");
-                context.Database.ExecuteSqlCommand("TRUNCATE TABLE [MatchingHlaAtDqb1]");
-                context.Database.ExecuteSqlCommand("DELETE FROM PGroupNames");
+                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [Donors]");
+                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtA]");
+                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtB]");
+                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtC]");
+                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtDrb1]");
+                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtDqb1]");
+                context.Database.ExecuteSqlRaw("DELETE FROM PGroupNames");
             }
         }
     }
