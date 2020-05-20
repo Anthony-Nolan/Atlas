@@ -15,21 +15,21 @@ namespace Atlas.HlaMetadataDictionary.Extensions
             return new HlaScoringLookupResult(
                 entity.Locus,
                 entity.LookupName,
-                entity.LookupNameCategory,
+                entity.HlaTypingCategoryzxyzxtzx,
                 scoringInfo);
         }
 
         private static IHlaScoringInfo GetPreCalculatedScoringInfo(HlaLookupTableEntity entity)
         {
-            switch (entity.LookupNameCategory)
+            switch (entity.HlaTypingCategoryzxyzxtzx)
             {
-                case LookupNameCategory.Serology:
+                case HlaTypingCategoryzxyzxtzx.Serology:
                     return entity.GetHlaInfo<SerologyScoringInfo>();
-                case LookupNameCategory.OriginalAllele:
+                case HlaTypingCategoryzxyzxtzx.OriginalAllele:
                     return entity.GetHlaInfo<SingleAlleleScoringInfo>();
-                case LookupNameCategory.NmdpCodeAllele:
+                case HlaTypingCategoryzxyzxtzx.NmdpCodeAllele:
                     return entity.GetHlaInfo<MultipleAlleleScoringInfo>();
-                case LookupNameCategory.XxCode:
+                case HlaTypingCategoryzxyzxtzx.XxCode:
                     return entity.GetHlaInfo<ConsolidatedMolecularScoringInfo>();
                 default:
                     throw new ArgumentOutOfRangeException();

@@ -17,32 +17,32 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 Locus.A,
                 // Scoring information is cached per-lookup name - so these should be unique by default to avoid cache key collision
                 Guid.NewGuid().ToString(),
-                LookupNameCategory.OriginalAllele,
+                HlaTypingCategoryzxyzxtzx.OriginalAllele,
                 new SingleAlleleScoringInfoBuilder().Build()
             );
         }
 
         public HlaScoringLookupResultBuilder AtLocus(Locus locus)
         {
-            result = new HlaScoringLookupResult(locus, result.LookupName, result.LookupNameCategory, result.HlaScoringInfo);
+            result = new HlaScoringLookupResult(locus, result.LookupName, result.HlaTypingCategoryzxyzxtzx, result.HlaScoringInfo);
             return this;
         }
 
         public HlaScoringLookupResultBuilder WithLookupName(string lookupName)
         {
-            result = new HlaScoringLookupResult(result.Locus, lookupName, result.LookupNameCategory, result.HlaScoringInfo);
+            result = new HlaScoringLookupResult(result.Locus, lookupName, result.HlaTypingCategoryzxyzxtzx, result.HlaScoringInfo);
             return this;
         }
 
-        public HlaScoringLookupResultBuilder WithLookupNameCategory(LookupNameCategory lookupNameCategory)
+        public HlaScoringLookupResultBuilder WithLookupNameCategory(HlaTypingCategoryzxyzxtzx hlaTypingCategoryzxyzxtzx)
         {
-            result = new HlaScoringLookupResult(result.Locus, result.LookupName, lookupNameCategory, result.HlaScoringInfo);
+            result = new HlaScoringLookupResult(result.Locus, result.LookupName, hlaTypingCategoryzxyzxtzx, result.HlaScoringInfo);
             return this;
         }
 
         public HlaScoringLookupResultBuilder WithHlaScoringInfo(IHlaScoringInfo scoringInfo)
         {
-            result = new HlaScoringLookupResult(result.Locus, result.LookupName, result.LookupNameCategory, scoringInfo);
+            result = new HlaScoringLookupResult(result.Locus, result.LookupName, result.HlaTypingCategoryzxyzxtzx, scoringInfo);
             return this;
         }
         

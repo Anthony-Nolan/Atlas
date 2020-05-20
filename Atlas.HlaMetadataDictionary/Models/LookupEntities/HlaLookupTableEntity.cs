@@ -18,7 +18,7 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
 
         public Locus Locus => ParseStringToEnum<Locus>(LocusAsString);
         public TypingMethod TypingMethod => ParseStringToEnum<TypingMethod>(TypingMethodAsString);
-        public LookupNameCategory LookupNameCategory => ParseStringToEnum<LookupNameCategory>(LookupNameCategoryAsString); //QQ needs attention for rename
+        public HlaTypingCategoryzxyzxtzx HlaTypingCategoryzxyzxtzx => ParseStringToEnum<HlaTypingCategoryzxyzxtzx>(LookupNameCategoryAsString); //QQ needs attention for rename
 
         public HlaLookupTableEntity() { }
 
