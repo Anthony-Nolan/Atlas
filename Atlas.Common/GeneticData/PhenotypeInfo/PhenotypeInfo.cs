@@ -105,28 +105,27 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
-        // TODO: Use locusInfo
-        public PhenotypeInfo<R> MapByLocus<R>(Func<Locus, T, T, LocusInfo<R>> mapping)
+        public PhenotypeInfo<R> MapByLocus<R>(Func<Locus, LocusInfo<T>, LocusInfo<R>> mapping)
         {
             return new PhenotypeInfo<R>
             {
-                A = mapping(Locus.A, A.Position1, A.Position2),
-                B = mapping(Locus.B, B.Position1, B.Position2),
-                C = mapping(Locus.C, C.Position1, C.Position2),
-                Dpb1 = mapping(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2),
-                Dqb1 = mapping(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2),
-                Drb1 = mapping(Locus.Drb1, Drb1.Position1, Drb1.Position2)
+                A = mapping(Locus.A, A),
+                B = mapping(Locus.B, B),
+                C = mapping(Locus.C, C),
+                Dpb1 = mapping(Locus.Dpb1, Dpb1),
+                Dqb1 = mapping(Locus.Dqb1, Dqb1),
+                Drb1 = mapping(Locus.Drb1, Drb1)
             };
         }
 
-        public async Task<PhenotypeInfo<R>> MapByLocusAsync<R>(Func<Locus, T, T, Task<LocusInfo<R>>> action)
+        public async Task<PhenotypeInfo<R>> MapByLocusAsync<R>(Func<Locus, LocusInfo<T>, Task<LocusInfo<R>>> action)
         {
-            var a = action(Locus.A, A.Position1, A.Position2);
-            var b = action(Locus.B, B.Position1, B.Position2);
-            var c = action(Locus.C, C.Position1, C.Position2);
-            var dpb1 = action(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2);
-            var dqb1 = action(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2);
-            var drb1 = action(Locus.Drb1, Drb1.Position1, Drb1.Position2);
+            var a = action(Locus.A, A);
+            var b = action(Locus.B, B);
+            var c = action(Locus.C, C);
+            var dpb1 = action(Locus.Dpb1, Dpb1);
+            var dqb1 = action(Locus.Dqb1, Dqb1);
+            var drb1 = action(Locus.Drb1, Drb1);
 
             await Task.WhenAll(a, b, c, dpb1, dqb1, drb1);
 
@@ -181,25 +180,25 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             SetPosition(locus, LocusPosition.Two, value);
         }
 
-        public void EachLocus(Action<Locus, T, T> action)
+        public void EachLocus(Action<Locus, LocusInfo<T>> action)
         {
-            action(Locus.A, A.Position1, A.Position2);
-            action(Locus.B, B.Position1, B.Position2);
-            action(Locus.C, C.Position1, C.Position2);
-            action(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2);
-            action(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2);
-            action(Locus.Drb1, Drb1.Position1, Drb1.Position2);
+            action(Locus.A, A);
+            action(Locus.B, B);
+            action(Locus.C, C);
+            action(Locus.Dpb1, Dpb1);
+            action(Locus.Dqb1, Dqb1);
+            action(Locus.Drb1, Drb1);
         }
 
-        public async Task EachLocusAsync(Func<Locus, T, T, Task> action)
+        public async Task EachLocusAsync(Func<Locus, LocusInfo<T>, Task> action)
         {
             await Task.WhenAll(
-                action(Locus.A, A.Position1, A.Position2),
-                action(Locus.B, B.Position1, B.Position2),
-                action(Locus.C, C.Position1, C.Position2),
-                action(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2),
-                action(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2),
-                action(Locus.Drb1, Drb1.Position1, Drb1.Position2));
+                action(Locus.A, A),
+                action(Locus.B, B),
+                action(Locus.C, C),
+                action(Locus.Dpb1, Dpb1),
+                action(Locus.Dqb1, Dqb1),
+                action(Locus.Drb1, Drb1));
         }
 
         public void EachPosition(Action<Locus, LocusPosition, T> action)
@@ -247,15 +246,15 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             C = new LocusInfo<T>();
         }
 
-        public async Task WhenAllLoci(Func<Locus, T, T, Task> action)
+        public async Task WhenAllLoci(Func<Locus, LocusInfo<T>, Task> action)
         {
             await Task.WhenAll(
-                action(Locus.A, A.Position1, A.Position2),
-                action(Locus.B, B.Position1, B.Position2),
-                action(Locus.C, C.Position1, C.Position2),
-                action(Locus.Dpb1, Dpb1.Position1, Dpb1.Position2),
-                action(Locus.Dqb1, Dqb1.Position1, Dqb1.Position2),
-                action(Locus.Drb1, Drb1.Position1, Drb1.Position2));
+                action(Locus.A, A),
+                action(Locus.B, B),
+                action(Locus.C, C),
+                action(Locus.Dpb1, Dpb1),
+                action(Locus.Dqb1, Dqb1),
+                action(Locus.Drb1, Drb1));
         }
     }
 }
