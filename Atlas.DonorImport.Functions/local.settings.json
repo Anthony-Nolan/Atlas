@@ -1,0 +1,14 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "ApplicationInsights:InstrumentationKey": "key",
+    "ApplicationInsights:LogLevel": "Info",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
+    "AzureStorage:DonorFileBlobContainer": "donors",
+    "FUNCTIONS.WORKER.RUNTIME": "dotnet"
+  },
+  "ConnectionStrings": {
+    "Donor": "Data Source=(local);Initial Catalog=DonorImport;Integrated Security=True;MultipleActiveResultSets=True;"
+  }
+}

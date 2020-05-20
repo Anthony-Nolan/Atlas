@@ -14,7 +14,7 @@ locals {
   min_tls_version     = "1.0"
   resource_group_name = "${local.environment}-ATLAS-RESOURCE-GROUP"
   subscription_id     = var.AZURE_SUBSCRIPTION_ID
-  common_tags = {
+  common_tags         = {
     controlled_by_terraform = true
     repository_name         = local.repository_name
   }
@@ -120,13 +120,15 @@ module "donor_import" {
   default_servicebus_settings = local.service-bus
 
   app_service_plan     = azurerm_app_service_plan.atlas
-  sql_server           = azurerm_sql_server.atlas_sql_server
-  function_storage     = azurerm_storage_account.function_storage
+  application_insights = azurerm_application_insights.atlas
   azure_storage        = azurerm_storage_account.azure_storage
+  function_storage     = azurerm_storage_account.function_storage
   servicebus_namespace = azurerm_servicebus_namespace.general
+  sql_server           = azurerm_sql_server.atlas_sql_server
 
-  DATABASE_PASSWORD = var.DONOR_DATABASE_PASSWORD
-  DATABASE_USERNAME = var.DONOR_DATABASE_USERNAME
+  APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
+  DATABASE_PASSWORD              = var.DONOR_DATABASE_PASSWORD
+  DATABASE_USERNAME              = var.DONOR_DATABASE_USERNAME
 }
 
 module "support" {
