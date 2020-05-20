@@ -1,21 +1,27 @@
 ﻿using System;
+using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.Models.Wmda;
 
 namespace Atlas.HlaMetadataDictionary.Exceptions
 {
     public class HlaMetadataDictionaryException : Exception
     {
-        public HlaInfo HlaInfo { get; }
+        public string Locus { get; set; }
+        public string HlaName { get; set; }
 
-        public HlaMetadataDictionaryException(HlaInfo hlaInfo, string message)
-            : base(message)
-        {
-            HlaInfo = hlaInfo;
-        }
-
-        public HlaMetadataDictionaryException(HlaInfo hlaInfo, string message, Exception inner)
+        internal HlaMetadataDictionaryException(string locus, string hlaName, string message, Exception inner = null)
             : base(message, inner)
         {
-            HlaInfo = hlaInfo;
+            Locus = locus;
+            HlaName = hlaName;
         }
+
+        internal HlaMetadataDictionaryException(Locus locus, string hlaName, string message, Exception inner = null)
+            : this(locus.ToString(), hlaName, message, inner)
+        { }
+
+        internal HlaMetadataDictionaryException(AlleleStatus status, string message, Exception inner = null)
+            : this(status.TypingLocus, status.Name, message, inner)
+        { }
     }
 }

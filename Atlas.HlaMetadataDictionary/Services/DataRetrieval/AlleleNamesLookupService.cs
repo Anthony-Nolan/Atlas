@@ -43,7 +43,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
             if (alleleNameLookupResult == null)
             {
-                throw new InvalidHlaException(new HlaInfo(locus, lookupName));
+                throw new InvalidHlaException(locus, lookupName);
             }
 
             return alleleNameLookupResult.CurrentAlleleNames;
