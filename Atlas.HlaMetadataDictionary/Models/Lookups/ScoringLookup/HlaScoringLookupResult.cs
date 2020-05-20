@@ -12,23 +12,23 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         public Locus Locus { get; }
         public string LookupName { get; }
 
-        public TypingMethod TypingMethod => LookupNameCategory == LookupNameCategory.Serology
+        public TypingMethod TypingMethod => HlaTypingCategoryzxyzxtzx == HlaTypingCategoryzxyzxtzx.Serology
             ? TypingMethod.Serology
             : TypingMethod.Molecular;
 
-        public LookupNameCategory LookupNameCategory { get; }
+        public HlaTypingCategoryzxyzxtzx HlaTypingCategoryzxyzxtzx { get; }
         public IHlaScoringInfo HlaScoringInfo { get; }
         public object HlaInfoToSerialise => HlaScoringInfo;
 
         public HlaScoringLookupResult(
             Locus locus,
             string lookupName,
-            LookupNameCategory lookupNameCategory,
+            HlaTypingCategoryzxyzxtzx hlaTypingCategoryzxyzxtzx,
             IHlaScoringInfo hlaScoringInfo)
         {
             Locus = locus;
             LookupName = lookupName;
-            LookupNameCategory = lookupNameCategory;
+            HlaTypingCategoryzxyzxtzx = hlaTypingCategoryzxyzxtzx;
             HlaScoringInfo = hlaScoringInfo;
         }
 
@@ -36,7 +36,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         {
             return new HlaLookupTableEntity(this)
             {
-                LookupNameCategoryAsString = LookupNameCategory.ToString()  //QQ needs attention for rename
+                LookupNameCategoryAsString = HlaTypingCategoryzxyzxtzx.ToString() //QQ needs attention for rename
             };
         }
 
@@ -48,7 +48,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
                 Locus == other.Locus && 
                 string.Equals(LookupName, other.LookupName) && 
                 TypingMethod == other.TypingMethod && 
-                LookupNameCategory == other.LookupNameCategory && 
+                HlaTypingCategoryzxyzxtzx == other.HlaTypingCategoryzxyzxtzx && 
                 HlaScoringInfo.Equals(other.HlaScoringInfo);
         }
 
@@ -67,7 +67,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
                 var hashCode = (int) Locus;
                 hashCode = (hashCode * 397) ^ LookupName.GetHashCode();
                 hashCode = (hashCode * 397) ^ (int) TypingMethod;
-                hashCode = (hashCode * 397) ^ (int) LookupNameCategory;
+                hashCode = (hashCode * 397) ^ (int) HlaTypingCategoryzxyzxtzx;
                 hashCode = (hashCode * 397) ^ HlaScoringInfo.GetHashCode();
                 return hashCode;
             }

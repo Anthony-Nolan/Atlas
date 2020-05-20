@@ -6,7 +6,7 @@ namespace Atlas.Common.GeneticData.Hla.Models
     ///QQ Combine with <see cref="Common.GeneticData.Hla.Models.HlaTypingCategory"/>
     /// Check for usages of strings!
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum LookupNameCategory
+    public enum HlaTypingCategoryzxyzxtzx
     {
         /// <summary>
         /// Lookup name is original serology name, as listed in hla_nom.
