@@ -3,6 +3,8 @@ using Newtonsoft.Json.Converters;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups
 {
+    ///QQ Combine with <see cref="Common.GeneticData.Hla.Models.HlaTypingCategory"/>
+    /// Check for usages of strings!
     [JsonConverter(typeof(StringEnumConverter))]
     public enum LookupNameCategory
     {
@@ -29,6 +31,6 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups
         /// <summary>
         /// Lookup name represents multiple alleles. 
         /// </summary>
-        MultipleAlleles
+        MultipleAlleles //QQCareful with this!
     }
 }
