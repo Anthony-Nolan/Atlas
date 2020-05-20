@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+// ReSharper disable InconsistentNaming
 
 namespace Atlas.DonorImport.Data.Models
 {
@@ -9,7 +10,7 @@ namespace Atlas.DonorImport.Data.Models
         public int DonorId { get; set; }
         public int DonorType { get; set; }
         public string Ethnicity { get; set; }
-        public int RegistryCode { get; set; }
+        public string Registry { get; set; }
         public string A_1 { get; set; }
         public string A_2 { get; set; }
         public string B_1 { get; set; }
