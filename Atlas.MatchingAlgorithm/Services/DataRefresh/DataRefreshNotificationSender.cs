@@ -1,6 +1,7 @@
-using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
+using Atlas.MatchingAlgorithm.Config;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 {
@@ -18,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
     {
         public DataRefreshNotificationSender(
             INotificationsClient notificationsClient,
-            ILogger logger) : base(notificationsClient, logger)
+            ILogger logger) : base(notificationsClient, logger, NotificationConstants.OriginatorName)
         {
         }
         

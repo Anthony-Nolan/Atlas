@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Notifications;
+using Atlas.MatchingAlgorithm.Config;
+using Atlas.MatchingAlgorithm.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
-using Atlas.Common.Notifications;
-using Atlas.MatchingAlgorithm.Models;
 
 namespace Atlas.MatchingAlgorithm.Services.Donors
 {
@@ -20,7 +21,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
     {
         public FailedDonorsNotificationSender(
             INotificationsClient notificationsClient,
-            ILogger logger) : base(notificationsClient, logger)
+            ILogger logger) : base(notificationsClient, logger, NotificationConstants.OriginatorName)
         {
         }
 

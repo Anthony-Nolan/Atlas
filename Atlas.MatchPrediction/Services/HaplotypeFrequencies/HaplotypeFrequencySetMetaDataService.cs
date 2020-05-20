@@ -29,14 +29,14 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         {
             if (fileName.IsNullOrEmpty())
             {
-                throw new ArgumentException($"Argument {nameof(fileName)} cannot be null or empty.");
+                throw new ArgumentException($"{nameof(fileName)} cannot be null or empty.");
             }
 
             var filePathSections = fileName.Split('/');
 
             if (filePathSections.Length < 1 || filePathSections.Length > 3)
             {
-                throw new ArgumentException($"Argument {nameof(fileName)} of value {fileName} is not valid.");
+                throw new ArgumentException($"'{fileName}' is not a valid {nameof(fileName)}.");
             }
 
             return filePathSections;
