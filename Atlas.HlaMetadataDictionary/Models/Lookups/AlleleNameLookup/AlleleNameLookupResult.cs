@@ -2,7 +2,6 @@
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.HlaTypingInfo;
 using Atlas.HlaMetadataDictionary.Models.LookupEntities;
-using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
