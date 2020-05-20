@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MultipleAlleleCodeDictionary;
 using Microsoft.Azure.WebJobs;
 
@@ -14,11 +15,12 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
 
         public Caching(
             IAntigenCachingService antigenCachingService,
-            IHlaMetadataCacheControl hlaMetadataCacheControl
+            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
+            IActiveHlaVersionAccessor hlaVersionAccessor
         )
         {
             this.antigenCachingService = antigenCachingService;
-            this.hlaMetadataCacheControl = hlaMetadataCacheControl;
+            hlaMetadataCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaVersionAccessor.GetActiveHlaDatabaseVersion());
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
