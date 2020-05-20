@@ -8,7 +8,7 @@ namespace Atlas.DonorImport.Data.Models
         public int Id { get; set; }
         public int DonorId { get; set; }
         public int DonorType { get; set; }
-        public string Ethnicity { get; set; }
+        public string EthnicityCode { get; set; }
         public string RegistryCode { get; set; }
         public string A_1 { get; set; }
         public string A_2 { get; set; }
