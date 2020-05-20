@@ -67,7 +67,7 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.Property<int>("DonorType")
                         .HasColumnType("int");
 
-                    b.Property<string>("Ethnicity")
+                    b.Property<string>("EthnicityCode")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Hash")
