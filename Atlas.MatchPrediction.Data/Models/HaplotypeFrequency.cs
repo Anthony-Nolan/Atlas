@@ -6,8 +6,6 @@ namespace Atlas.MatchPrediction.Data.Models
     public class HaplotypeFrequency
     {
         public long Id { get; set; }
-        [ForeignKey("Set_Id")]
-        public HaplotypeFrequencySet Set { get; set; }
         public decimal Frequency { get; set; }
         [Required]
         public string A { get; set; }
@@ -19,5 +17,8 @@ namespace Atlas.MatchPrediction.Data.Models
         public string DQB1 { get; set; }
         [Required]
         public string DRB1 { get; set; }
+
+        [ForeignKey("Set_Id")]
+        public HaplotypeFrequencySet Set { get; set; }
     }
 }
