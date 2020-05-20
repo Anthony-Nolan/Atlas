@@ -14,7 +14,7 @@ namespace Atlas.MatchPrediction.Data.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<HaplotypeFrequencySet>()
-                .HasIndex(d => new { d.Ethnicity, d.Registry })
+                .HasIndex(d => new { Ethnicity = d.EthnicityCode, Registry = d.RegistryCode })
                 .HasName("IX_RegistryAndEthnicity")
                 .IsUnique()
                 .HasFilter("[Active] = 'True'");
