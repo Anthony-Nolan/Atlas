@@ -53,7 +53,7 @@ namespace Atlas.MultipleAlleleCodeDictionary
                 ClientName = "hla_service_client",
                 JsonSettings = new JsonSerializerSettings()
             };
-            var logger = LoggerRegistration.BuildNovaLogger(insightsInstrumentationKey);
+            var logger = LoggerRegistration.BuildAtlasLogger(insightsInstrumentationKey);
 
             try
             {
