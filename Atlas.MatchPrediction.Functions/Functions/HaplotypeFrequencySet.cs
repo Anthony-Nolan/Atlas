@@ -1,4 +1,4 @@
-﻿using Atlas.MatchPrediction.Services;
+﻿using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Microsoft.Azure.WebJobs;
 using System.IO;
 using System.Threading.Tasks;
@@ -7,11 +7,15 @@ namespace Atlas.MatchPrediction.Functions.Functions
 {
     public class HaplotypeFrequencySet
     {
-        private readonly IHaplotypeFrequencySetService haplotypeFrequencySetService;
+        private readonly IHaplotypeFrequencySetMetaDataService metaDataService;
+        private readonly IHaplotypeFrequencySetImportService importService;
         
-        public HaplotypeFrequencySet(IHaplotypeFrequencySetService haplotypeFrequencySetService)
+        public HaplotypeFrequencySet(
+            IHaplotypeFrequencySetMetaDataService metaDataService,
+            IHaplotypeFrequencySetImportService importService)
         {
-            this.haplotypeFrequencySetService = haplotypeFrequencySetService;
+            this.metaDataService = metaDataService;
+            this.importService = importService;
         }
 
         [FunctionName(nameof(ImportHaplotypeFrequencySet))]
@@ -19,7 +23,9 @@ namespace Atlas.MatchPrediction.Functions.Functions
             [BlobTrigger("%AzureStorage:HaplotypeFrequencySetImportContainer%/{fileName}", Connection = "AzureStorage:ConnectionString")] Stream blob,
             string fileName)
         {
-            await haplotypeFrequencySetService.ImportHaplotypeFrequencySet(fileName, blob);
+            var metaData = metaDataService.GetMetadataFromFileName(fileName);
+
+            await importService.Import(blob, metaData);
         }
     }
 }
