@@ -14,7 +14,7 @@ namespace Atlas.DonorImport.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.4-servicing-10062")
+                .HasAnnotation("ProductVersion", "3.1.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -22,41 +22,59 @@ namespace Atlas.DonorImport.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("A_1");
+                    b.Property<string>("A_1")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("A_2");
+                    b.Property<string>("A_2")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("B_1");
+                    b.Property<string>("B_1")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("B_2");
+                    b.Property<string>("B_2")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("C_1");
+                    b.Property<string>("C_1")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("C_2");
+                    b.Property<string>("C_2")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DPB_1");
+                    b.Property<string>("DPB_1")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DPB_2");
+                    b.Property<string>("DPB_2")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DQB1_1");
+                    b.Property<string>("DQB1_1")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DQB1_2");
+                    b.Property<string>("DQB1_2")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DRB1_1");
+                    b.Property<string>("DRB1_1")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DRB1_2");
+                    b.Property<string>("DRB1_2")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("DonorId");
+                    b.Property<int>("DonorId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("DonorType");
+                    b.Property<int>("DonorType")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Ethnicity");
+                    b.Property<string>("Ethnicity")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Hash");
+                    b.Property<string>("Hash")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RegistryCode");
+                    b.Property<string>("RegistryCode")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
