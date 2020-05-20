@@ -124,8 +124,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         public void ExpandDonorHlaBatchAsync_AnticipatedExpansionFailure_DoesNotThrowException()
         {
             hlaMetadataDictionary
-                .GetLocusHlaMatchingLookupResults(Locus.A, Arg.Any<LocusInfo<string>>())
-                .Throws(new HlaMetadataDictionaryException(Locus.A, "hla", "error"));
+                .GetLocusHlaMatchingLookupResults(default, default)
+                .ThrowsForAnyArgs(new HlaMetadataDictionaryException(Locus.A, "hla", "error"));
 
             Assert.DoesNotThrowAsync(async () =>
             {
