@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
@@ -20,6 +16,10 @@ using Atlas.MultipleAlleleCodeDictionary.HlaService.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 {
@@ -72,6 +72,5 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 
             return services.BuildServiceProvider();
         }
-
     }
 }

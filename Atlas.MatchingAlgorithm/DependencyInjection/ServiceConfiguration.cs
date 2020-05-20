@@ -175,7 +175,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<INotificationsClient, NotificationsClient>(sp =>
             {
                 var settings = sp.GetService<IOptions<NotificationsServiceBusSettings>>().Value;
-                return new NotificationsClient(settings.ConnectionString, settings.NotificationsTopic, settings.AlertsTopic);
+                return new NotificationsClient(settings);
             });
 
             services.AddScoped<IScoringCache, ScoringCache>();
@@ -231,7 +231,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 JsonSettings = new JsonSerializerSettings()
             };
             var insightsSettings = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value;
-            var logger = LoggerRegistration.BuildAtlasLogger(insightsSettings.InstrumentationKey);
+            var logger = LoggerRegistration.BuildLogger(insightsSettings.InstrumentationKey);
 
             return new DonorServiceClient(clientSettings, logger);
         }
@@ -239,7 +239,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static IDonorServiceClient GetFileBasedDonorServiceClient(IServiceProvider sp)
         {
             var insightsSettings = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value;
-            var logger = LoggerRegistration.BuildAtlasLogger(insightsSettings.InstrumentationKey);
+            var logger = LoggerRegistration.BuildNovaLogger(insightsSettings.InstrumentationKey);
 
             return new FileBasedDonorServiceClient(logger);
         }

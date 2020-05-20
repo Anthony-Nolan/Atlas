@@ -10,4 +10,8 @@
     <ProjectReference Include="..\Atlas.MatchPrediction.Data\Atlas.MatchPrediction.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ApplicationInsights\" />
+  </ItemGroup>
+
 </Project>

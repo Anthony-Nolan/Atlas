@@ -1,9 +1,9 @@
-﻿using System;
-using Atlas.Common.ApplicationInsights;
+﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications.MessageModels;
 using Newtonsoft.Json;
+using System;
 
-namespace Atlas.MatchingAlgorithm.ApplicationInsights
+namespace Atlas.Common.Notifications
 {
     public class NotificationSenderFailureEventModel : EventModel
     {

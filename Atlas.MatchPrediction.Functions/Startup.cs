@@ -9,8 +9,8 @@ namespace Atlas.MatchPrediction.Functions
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.Services.RegisterMatchPredictionServices();
             builder.Services.RegisterFunctionsAppSettings();
+            builder.Services.RegisterMatchPredictionServices();
         }
     }
 }
