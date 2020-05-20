@@ -1,10 +1,9 @@
-﻿using System;
-using Atlas.Common.ApplicationInsights;
-using Atlas.Common.NovaHttpClient;
+﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.NovaHttpClient.Client;
 using Atlas.MultipleAlleleCodeDictionary.HlaService;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using System;
 
 namespace Atlas.MultipleAlleleCodeDictionary
 {
@@ -53,7 +52,7 @@ namespace Atlas.MultipleAlleleCodeDictionary
                 ClientName = "hla_service_client",
                 JsonSettings = new JsonSerializerSettings()
             };
-            var logger = LoggerRegistration.BuildAtlasLogger(insightsInstrumentationKey);
+            var logger = LoggerRegistration.BuildLogger(insightsInstrumentationKey);
 
             try
             {
