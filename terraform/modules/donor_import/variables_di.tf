@@ -7,16 +7,9 @@ variable "app_service_plan" {
   })
 }
 
-variable "sql_server" {
+variable "application_insights" {
   type = object({
-    name                        = string
-    fully_qualified_domain_name = string
-  })
-}
-
-variable "function_storage" {
-  type = object({
-    primary_connection_string = string
+    instrumentation_key = string
   })
 }
 
@@ -27,8 +20,23 @@ variable "azure_storage" {
   })
 }
 
+variable "function_storage" {
+  type = object({
+    primary_connection_string = string
+  })
+}
+
 variable "servicebus_namespace" {
   type = object({
     name = string
   })
 }
+
+variable "sql_server" {
+  type = object({
+    name                        = string
+    fully_qualified_domain_name = string
+  })
+}
+
+
