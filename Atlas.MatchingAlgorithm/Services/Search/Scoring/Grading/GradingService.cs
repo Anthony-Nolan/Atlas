@@ -72,9 +72,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         {
             var gradeResults = new PhenotypeInfo<MatchGradeResult>();
 
-            patientLookupResults.EachLocus((locus, patientLookupResult1, patientLookupResult2) =>
+            patientLookupResults.EachLocus((locus, patientLookupResultsAtLocus) =>
             {
-                var patientLookupResultsAtLocus = new LocusInfo<IHlaScoringLookupResult>(patientLookupResult1, patientLookupResult2);
                 var donorLookupResultsAtLocus = donorLookupResults.GetLocus(locus);
 
                 var locusGradeResults = GetLocusGradeResults(patientLookupResultsAtLocus, donorLookupResultsAtLocus);
