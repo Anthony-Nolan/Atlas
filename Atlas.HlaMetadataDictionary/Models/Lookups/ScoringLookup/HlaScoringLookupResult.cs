@@ -36,7 +36,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         {
             return new HlaLookupTableEntity(this)
             {
-                LookupNameCategoryAsString = LookupNameCategory.ToString()
+                LookupNameCategoryAsString = LookupNameCategory.ToString()  //QQ needs attention for rename
             };
         }
 
