@@ -1,29 +1,29 @@
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Notifications.MessageModels;
 using System;
 using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
-using Atlas.Common.Notifications;
-using Atlas.Common.Notifications.MessageModels;
-using Atlas.MatchingAlgorithm.ApplicationInsights;
-using Atlas.MatchingAlgorithm.Config;
 
-namespace Atlas.MatchingAlgorithm.Services
+namespace Atlas.Common.Notifications
 {
     public abstract class NotificationSender
     {
         private readonly INotificationsClient notificationsClient;
         private readonly ILogger logger;
+        private readonly string originatorName;
 
         protected NotificationSender(
             INotificationsClient notificationsClient,
-            ILogger logger)
+            ILogger logger,
+            string originatorName)
         {
             this.notificationsClient = notificationsClient;
             this.logger = logger;
+            this.originatorName = originatorName;
         }
 
         protected async Task SendNotification(string summary, string description)
         {
-            var notification = new Notification(summary, description, NotificationConstants.OriginatorName);
+            var notification = new Notification(summary, description, originatorName);
 
             try
             {
@@ -37,7 +37,7 @@ namespace Atlas.MatchingAlgorithm.Services
 
         protected async Task SendAlert(string summary, string description, Priority priority)
         {
-            var alert = new Alert(summary, description, priority, NotificationConstants.OriginatorName);
+            var alert = new Alert(summary, description, priority, originatorName);
 
             try
             {
