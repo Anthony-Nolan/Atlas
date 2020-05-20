@@ -1,27 +1,34 @@
-﻿using System.Collections.Generic;
+﻿using Atlas.MatchPrediction.Data.Models;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.Data.Context;
-using Atlas.MatchPrediction.Data.Models;
 
 namespace Atlas.MatchPrediction.Data.Repositories
 {
     public interface IHaplotypeFrequencySetImportRepository
     {
-        Task InsertHaplotypeFrequencySet(HaplotypeFrequencySet haplotypeFrequencySet, IEnumerable<HaplotypeFrequency> haplotypeFrequencies);
+        /// <returns>New Id for the set.</returns>
+        Task<int> AddHaplotypeFrequencySet(HaplotypeFrequencySet set);
+
+        Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies);
     }
 
     public class HaplotypeFrequencySetImportRepository : IHaplotypeFrequencySetImportRepository
     {
-        private readonly MatchPredictionContext context;
+        private string connectionString;
 
-        public HaplotypeFrequencySetImportRepository(MatchPredictionContext context)
+        public HaplotypeFrequencySetImportRepository(string connectionString)
         {
-            this.context = context;
+            this.connectionString = connectionString;
         }
 
-        public async Task InsertHaplotypeFrequencySet(HaplotypeFrequencySet haplotypeFrequencySet, IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
+        public async Task<int> AddHaplotypeFrequencySet(HaplotypeFrequencySet set)
         {
+            throw new System.NotImplementedException();
+        }
 
+        public async Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }
