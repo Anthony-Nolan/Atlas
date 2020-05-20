@@ -93,7 +93,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             return new HlaScoringLookupResult(
                 locus,
                 lookupName,
-                LookupNameCategory.MultipleAlleles,
+                HlaTypingCategoryzxyzxtzx.MultipleAlleles,
                 multipleAlleleScoringInfo
             );
         }
@@ -117,7 +117,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             return new HlaScoringLookupResult(
                 locus,
                 lookupName,
-                LookupNameCategory.MultipleAlleles,
+                HlaTypingCategoryzxyzxtzx.MultipleAlleles,
                 consolidatedMolecularScoringInfo
             );
         }

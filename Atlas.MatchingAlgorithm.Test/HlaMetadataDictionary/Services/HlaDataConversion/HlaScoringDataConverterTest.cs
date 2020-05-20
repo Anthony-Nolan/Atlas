@@ -105,7 +105,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataCon
             return new HlaScoringLookupResult(
                 MatchedLocus,
                 SerologyName,
-                LookupNameCategory.Serology,
+                HlaTypingCategoryzxyzxtzx.Serology,
                 scoringInfo);
         }
 
@@ -114,7 +114,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataCon
             return new HlaScoringLookupResult(
                 MatchedLocus,
                 alleleName,
-                LookupNameCategory.OriginalAllele,
+                HlaTypingCategoryzxyzxtzx.OriginalAllele,
                 BuildSingleAlleleScoringInfoWithMatchingSerologies(alleleName)
             );
         }
@@ -124,7 +124,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataCon
             return new HlaScoringLookupResult(
                 MatchedLocus,
                 lookupName,
-                LookupNameCategory.NmdpCodeAllele,
+                HlaTypingCategoryzxyzxtzx.NmdpCodeAllele,
                 new MultipleAlleleScoringInfo(
                     alleleNames.Select(BuildSingleAlleleScoringInfoExcludingMatchingSerologies),
                     SerologyEntries)
@@ -138,7 +138,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataCon
             return new HlaScoringLookupResult(
                 MatchedLocus,
                 xxCodeLookupName,
-                LookupNameCategory.XxCode,
+                HlaTypingCategoryzxyzxtzx.XxCode,
                 new ConsolidatedMolecularScoringInfo(alleleNamesCollection, alleleNamesCollection, SerologyEntries)
             );
         }
