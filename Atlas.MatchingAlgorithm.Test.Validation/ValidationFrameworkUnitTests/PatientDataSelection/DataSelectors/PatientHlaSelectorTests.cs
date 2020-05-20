@@ -232,9 +232,9 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             {
                 Genotype =
                 {
-                    Hla = alleles.MapByLocus((l, all1, all2) =>
+                    Hla = alleles.MapByLocus((l, hla) =>
                     {
-                        var allele = TgsAllele.FromTestDataAllele(all1.First());
+                        var allele = TgsAllele.FromTestDataAllele(hla.Position1.First());
                         return new LocusInfo<TgsAllele>(allele);
                     }),
                 }

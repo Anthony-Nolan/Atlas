@@ -47,7 +47,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
         public PhenotypeInfo<string> GetPatientHla(MetaDonor metaDonor, PatientHlaSelectionCriteria criteria)
         {
-            return metaDonor.Genotype.Hla.MapByLocus((locus, allele1, allele2) => GetHlaName(locus, allele1, allele2, criteria));
+            return metaDonor.Genotype.Hla.MapByLocus((locus, hla) => GetHlaName(locus, hla.Position1, hla.Position2, criteria));
         }
 
         private LocusInfo<string> GetHlaName(Locus locus, TgsAllele tgsAllele1, TgsAllele tgsAllele2, PatientHlaSelectionCriteria criteria)

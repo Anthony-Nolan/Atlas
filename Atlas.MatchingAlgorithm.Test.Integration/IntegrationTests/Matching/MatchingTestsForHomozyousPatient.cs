@@ -306,11 +306,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private static PhenotypeInfo<string> GetHlaPhenotype(PhenotypeInfo<string> hlaPhenotype, LocusTypingInfo locusUnderTestTypingInfo)
         {
-            return hlaPhenotype.MapByLocus((l, hla1, hla2) =>
+            return hlaPhenotype.MapByLocus((l, hla) =>
             {
                 var locusConditions = l == LocusUnderTest
                     ? locusUnderTestTypingInfo
-                    : LocusTypingInfo.GetDefaultLocusConditions(new LocusInfo<string>(hla1, hla2));
+                    : LocusTypingInfo.GetDefaultLocusConditions(hla);
                 var locusHlaTyping = GetLocusHlaTyping(locusConditions);
                 return locusHlaTyping;
             });

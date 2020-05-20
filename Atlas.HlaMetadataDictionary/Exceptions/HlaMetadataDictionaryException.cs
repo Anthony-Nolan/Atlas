@@ -16,7 +16,8 @@ namespace Atlas.HlaMetadataDictionary.Exceptions
             HlaName = hlaName;
         }
 
-        internal HlaMetadataDictionaryException(Locus locus, string hlaName, string message, Exception inner = null)
+        // TODO: ATLAS-46: Ensure this can be made internal, or decide to leave it public
+        public HlaMetadataDictionaryException(Locus locus, string hlaName, string message, Exception inner = null)
             : this(locus.ToString(), hlaName, message, inner)
         { }
 
