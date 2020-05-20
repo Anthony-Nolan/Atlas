@@ -22,4 +22,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Atlas.DonorImport\Atlas.DonorImport.csproj" />
+  </ItemGroup>
+
 </Project>
