@@ -5,14 +5,13 @@ namespace Atlas.Common.ApplicationInsights
 {
     public static class LoggerRegistration
     {
-        public static Logger BuildNovaLogger(string instrumentationKey)
+        public static Logger BuildAtlasLogger(string instrumentationKey)
         {
             var telemetryConfig = new TelemetryConfiguration
             {
                 InstrumentationKey = instrumentationKey
             };
-            var logger = new Logger(new TelemetryClient(telemetryConfig), LogLevel.Info);
-            return logger;
+            return new Logger(new TelemetryClient(telemetryConfig), LogLevel.Info);
         }
     }
 }

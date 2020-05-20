@@ -46,8 +46,8 @@ using Atlas.MatchingAlgorithm.Services.Utility;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
-using Atlas.MultipleAlleleCodeDictionary;
 using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -92,11 +92,16 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.AddScoped<ISearchRequestContext, SearchRequestContext>();
             services.AddScoped<ILogger>(sp =>
-                new SearchRequestAwareLogger(
+            {
+                var telemetryConfig = new TelemetryConfiguration
+                {
+                    InstrumentationKey = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.InstrumentationKey
+                };
+                return new SearchRequestAwareLogger(
                     sp.GetService<ISearchRequestContext>(),
-                    new TelemetryClient(),
-                    sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel())
-            );
+                    new TelemetryClient(telemetryConfig),
+                    sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel());
+            });
 
             services.RegisterLifeTimeScopedCacheTypes();
 
@@ -196,17 +201,17 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         }
 
         private static IDonorServiceClient GetDonorServiceClient(IServiceProvider sp)
-        { 
+        {
             var donorServiceSettings = sp.GetService<IOptions<DonorServiceSettings>>().Value;
             var readDonorsFromFile = donorServiceSettings.ReadDonorsFromFile ?? false;
             var apiKeyProvided = !string.IsNullOrWhiteSpace(donorServiceSettings.ApiKey);
 
-            if(readDonorsFromFile)
+            if (readDonorsFromFile)
             {
                 return GetFileBasedDonorServiceClient(sp);
             }
 
-            if(apiKeyProvided)
+            if (apiKeyProvided)
             {
                 return GetRemoteDonorServiceClient(sp);
             }
@@ -226,7 +231,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 JsonSettings = new JsonSerializerSettings()
             };
             var insightsSettings = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value;
-            var logger = LoggerRegistration.BuildNovaLogger(insightsSettings.InstrumentationKey);
+            var logger = LoggerRegistration.BuildAtlasLogger(insightsSettings.InstrumentationKey);
 
             return new DonorServiceClient(clientSettings, logger);
         }
@@ -234,7 +239,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static IDonorServiceClient GetFileBasedDonorServiceClient(IServiceProvider sp)
         {
             var insightsSettings = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value;
-            var logger = LoggerRegistration.BuildNovaLogger(insightsSettings.InstrumentationKey);
+            var logger = LoggerRegistration.BuildAtlasLogger(insightsSettings.InstrumentationKey);
 
             return new FileBasedDonorServiceClient(logger);
         }
@@ -277,7 +282,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                     int.Parse(settings.BatchSize));
             });
         }
-        
+
         public static void RegisterSettingsForDonorManagementFunctionsApp(this IServiceCollection services)
         {
             services.ManuallyRegisterSettings<ApplicationInsightsSettings>("ApplicationInsights");
@@ -287,7 +292,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.ManuallyRegisterSettings<DonorManagementSettings>("MessagingServiceBus:DonorManagement");
             services.ManuallyRegisterSettings<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
-        
+
         public static void RegisterSettingsForFunctionsApp(this IServiceCollection services)
         {
             services.ManuallyRegisterSettings<ApplicationInsightsSettings>("ApplicationInsights");
@@ -302,7 +307,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.ManuallyRegisterSettings<DataRefreshSettings>("DataRefresh");
             services.ManuallyRegisterSettings<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
-        
+
         /// <summary>
         /// The common search algorithm project relies on the same app settings regardless of whether it is called by the azure function, or the web api.
         /// Both frameworks use different configuration patterns:
@@ -315,7 +320,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         /// This method has been moved from the functions app to the shared app to ensure the version of the package that provides IConfiguration
         /// is the same for both this set up, and any other DI set up involving IConfiguration (e.g. database connection strings) 
         /// </summary>
-        private static void ManuallyRegisterSettings<TSettings>(this IServiceCollection services, string configPrefix = "") where TSettings : class, new()
+        private static void ManuallyRegisterSettings<TSettings>(this IServiceCollection services, string configPrefix = "")
+            where TSettings : class, new()
         {
             services.AddSingleton<IOptions<TSettings>>(sp =>
             {
