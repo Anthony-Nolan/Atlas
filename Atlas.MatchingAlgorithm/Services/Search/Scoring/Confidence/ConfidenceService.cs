@@ -34,14 +34,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
         {
             var confidenceResults = new PhenotypeInfo<MatchConfidence>();
 
-            patientLookupResults.EachLocus((locus, patientLookupResult1, patientLookupResult2) =>
+            patientLookupResults.EachLocus((locus, patientLookupResultsAtLocus) =>
             {
                 var matchGradesAtLocus = matchGrades.GetLocus(locus);
                 var orientations = matchGradesAtLocus.Position1.Orientations;
 
                 var confidences = orientations.Select(o => new LocusInfo<MatchConfidence>(
-                    CalculateConfidenceForOrientation(locus, LocusPosition.One, patientLookupResult1, donorLookupResults, o),
-                    CalculateConfidenceForOrientation(locus, LocusPosition.Two, patientLookupResult2, donorLookupResults, o)
+                    CalculateConfidenceForOrientation(locus, LocusPosition.One, patientLookupResultsAtLocus.Position1, donorLookupResults, o),
+                    CalculateConfidenceForOrientation(locus, LocusPosition.Two, patientLookupResultsAtLocus.Position2, donorLookupResults, o)
                 ));
 
                 // In the case where the best grade for a donor is the same for both a cross and direct match, but the confidence for each is different,
