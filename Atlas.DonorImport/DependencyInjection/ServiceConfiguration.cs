@@ -16,15 +16,15 @@ namespace Atlas.DonorImport.DependencyInjection
         private static void RegisterServices(this IServiceCollection services)
         {
             services.AddScoped<IDonorFileImporter, DonorFileImporter>();
+            services.AddScoped<IDonorImportFileParser, DonorImportFileParser>();
             services.AddScoped<IDonorOperationApplier, DonorOperationApplier>();
         }
-        
+
         private static void RegisterDatabaseTypes(this IServiceCollection services)
         {
             services.AddScoped<IDonorRepository>(sp =>
                 new DonorRepository(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["Sql"])
             );
-            services.AddScoped<IDonorImportFileParser, DonorImportFileParser>();
         }
     }
 }
