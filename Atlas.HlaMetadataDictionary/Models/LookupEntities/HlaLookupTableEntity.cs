@@ -1,6 +1,6 @@
 using System;
 using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Services.AzureStorage;
 using Microsoft.WindowsAzure.Storage.Table;

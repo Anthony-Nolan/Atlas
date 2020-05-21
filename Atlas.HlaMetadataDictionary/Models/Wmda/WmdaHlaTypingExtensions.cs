@@ -1,6 +1,6 @@
-﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using System.Linq;
+﻿using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.HlaTypingInfo;
+using System.Linq;
 
 namespace Atlas.HlaMetadataDictionary.Models.Wmda
 {

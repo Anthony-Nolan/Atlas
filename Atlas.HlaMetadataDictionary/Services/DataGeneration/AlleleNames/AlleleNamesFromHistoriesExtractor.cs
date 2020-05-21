@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Extensions;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 using Atlas.HlaMetadataDictionary.Repositories;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 {

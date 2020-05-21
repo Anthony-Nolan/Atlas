@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
@@ -7,6 +8,7 @@ using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using static Atlas.Common.GeneticData.Hla.Models.TypingMethod;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
 {
@@ -24,10 +26,10 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
             locusHlaMatchingLookupService = new LocusHlaMatchingLookupService(matchingLookupService);
         }
 
-        [TestCase(TypingMethod.Molecular, TypingMethod.Molecular)]
-        [TestCase(TypingMethod.Serology, TypingMethod.Serology)]
-        [TestCase(TypingMethod.Molecular, TypingMethod.Serology)]
-        [TestCase(TypingMethod.Serology, TypingMethod.Molecular)]
+        [TestCase(Molecular, Molecular)]
+        [TestCase(Serology, Serology)]
+        [TestCase(Molecular, Serology)]
+        [TestCase(Serology, Molecular)]
         public async Task GetHlaMatchingLookupResultForLocus_WhenTwoExpressingTypings_ReturnsExpectedLookupResults(
             TypingMethod typingMethod1,
             TypingMethod typingMethod2)
@@ -55,8 +57,8 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
             actualResults.Should().BeEquivalentTo(expectedResults);
         }
 
-        [TestCase(TypingMethod.Molecular)]
-        [TestCase(TypingMethod.Serology)]
+        [TestCase(Molecular)]
+        [TestCase(Serology)]
         public async Task GetHlaMatchingLookupResultForLocus_WhenPositionOneIsExpressedTyping_AndPositionTwoIsNullAllele_PGroupOfOneCopiedToTwo(
             TypingMethod expressedHlaTypingMethod)
         {
@@ -67,14 +69,14 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
             var expressedHlaResult =
                 new HlaMatchingLookupResult(MatchedLocus, typingInPosition1, expressedHlaTypingMethod, new[] {pGroup});
             var nullAlleleResult =
-                new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, TypingMethod.Molecular, new string[] { });
+                new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, Molecular, new string[] { });
 
             matchingLookupService
                 .GetHlaLookupResult(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
                 .Returns(expressedHlaResult, nullAlleleResult);
 
             var nullAlleleResultWithExpressedPGroup =
-                new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, TypingMethod.Molecular, new[] {pGroup});
+                new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, Molecular, new[] {pGroup});
 
             var expectedResults = new LocusInfo<IHlaMatchingLookupResult>(expressedHlaResult, nullAlleleResultWithExpressedPGroup);
 
@@ -85,8 +87,8 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
             actualResults.Should().BeEquivalentTo(expectedResults);
         }
 
-        [TestCase(TypingMethod.Molecular)]
-        [TestCase(TypingMethod.Serology)]
+        [TestCase(Molecular)]
+        [TestCase(Serology)]
         public async Task GetHlaMatchingLookupResultForLocus_WhenPositionOneIsNullAllele_AndPositionTwoIsExpressedTyping_PGroupOfTwoCopiedToOne(
             TypingMethod expressedHlaTypingMethod)
         {
@@ -95,7 +97,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
             const string pGroup = "expressed-hla-p-group";
 
             var nullAlleleResult =
-                new HlaMatchingLookupResult(MatchedLocus, typingInPosition1, TypingMethod.Molecular, new string[] { });
+                new HlaMatchingLookupResult(MatchedLocus, typingInPosition1, Molecular, new string[] { });
             var expressedHlaResult =
                 new HlaMatchingLookupResult(MatchedLocus, typingInPosition2, expressedHlaTypingMethod, new[] {pGroup});
 
@@ -104,7 +106,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Lookups
                 .Returns(nullAlleleResult, expressedHlaResult);
 
             var nullAlleleResultWithExpressedPGroup =
-                new HlaMatchingLookupResult(MatchedLocus, typingInPosition1, TypingMethod.Molecular, new[] {pGroup});
+                new HlaMatchingLookupResult(MatchedLocus, typingInPosition1, Molecular, new[] {pGroup});
 
             var expectedResults = new LocusInfo<IHlaMatchingLookupResult>(nullAlleleResultWithExpressedPGroup, expressedHlaResult);
 

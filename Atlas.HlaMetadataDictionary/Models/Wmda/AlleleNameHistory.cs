@@ -1,4 +1,4 @@
-﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
+﻿using Atlas.Common.GeneticData.Hla.Models;
 using System.Collections.Generic;
 using System.Linq;
 

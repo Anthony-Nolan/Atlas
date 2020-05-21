@@ -1,8 +1,8 @@
-﻿using System.Linq;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
+﻿using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 using FluentAssertions;
 using NUnit.Framework;
+using System.Linq;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 {
