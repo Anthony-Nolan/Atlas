@@ -55,7 +55,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
             var lookupResult = HlaLookupResults.FirstOrDefault(hla =>
                 hla.Locus.Equals(locus) && hla.LookupName == lookupName);
 
-            return Task.FromResult(lookupResult?.ConvertToTableEntity());
+            var entity = lookupResult == null ? null : new HlaLookupTableEntity(lookupResult);
+            return Task.FromResult(entity);
         }
 
         private void PopulateHlaLookupResults()
