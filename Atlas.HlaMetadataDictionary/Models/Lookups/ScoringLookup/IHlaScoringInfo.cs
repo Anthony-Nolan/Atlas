@@ -18,5 +18,12 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         /// Used when scoring against a consolidated molecular typing.
         /// </summary>
         IEnumerable<string> MatchingPGroups { get; }
+
+        public bool IsConvertibleToSingleAllelesInfo { get; }
+        /// <summary>
+        /// If it is possible to express the ScoringInfo Type as an array of <see cref="SingleAlleleScoringInfo"/>s then does so.
+        /// Otherwise, throws <see cref="System.InvalidOperationException"/>
+        /// </summary>
+        public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo();
     }
 }
