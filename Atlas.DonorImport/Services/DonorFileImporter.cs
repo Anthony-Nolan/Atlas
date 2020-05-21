@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Atlas.DonorImport.Models.FileSchema;
 using Newtonsoft.Json;
-
 // ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
 
 namespace Atlas.DonorImport.Services
@@ -23,7 +22,7 @@ namespace Atlas.DonorImport.Services
             this.donorOperationApplier = donorOperationApplier;
             this.batchSize = batchSize;
         }
-
+        
         public async Task ImportDonorFile(Stream fileStream)
         {
             using var streamReader = new StreamReader(fileStream);
@@ -31,7 +30,7 @@ namespace Atlas.DonorImport.Services
             var serializer = new JsonSerializer();
 
             var donorBatch = new List<DonorUpdate>();
-
+            
             var inDonorsProperty = false;
             var inDonorUpdateArray = false;
             while (await reader.ReadAsync())
@@ -52,7 +51,6 @@ namespace Atlas.DonorImport.Services
                             await donorOperationApplier.ApplyDonorOperationBatch(donorBatch);
                             donorBatch = new List<DonorUpdate>();
                         }
-
                         break;
                     case JsonToken.EndArray when inDonorUpdateArray:
                         await donorOperationApplier.ApplyDonorOperationBatch(donorBatch);
