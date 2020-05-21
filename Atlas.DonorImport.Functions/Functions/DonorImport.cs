@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading.Tasks;
 using Atlas.DonorImport.Services;
 using Microsoft.Azure.WebJobs;
 
@@ -6,20 +7,20 @@ namespace Atlas.DonorImport.Functions.Functions
 {
     public class DonorImport
     {
-        private readonly IDonorImporter donorImporter;
+        private readonly IDonorFileImporter donorFileImporter;
 
-        public DonorImport(IDonorImporter donorImporter)
+        public DonorImport(IDonorFileImporter donorFileImporter)
         {
-            this.donorImporter = donorImporter;
+            this.donorFileImporter = donorFileImporter;
         }
         
         [FunctionName(nameof(ImportDonorFile))]
-        public void ImportDonorFile(
+        public async Task ImportDonorFile(
             [BlobTrigger("%AzureStorage:DonorFileBlobContainer%/{fileName}", Connection = "AzureStorage:ConnectionString")]
             Stream blobStream,
             string fileName)
         {
-            donorImporter.ImportDonorFile(blobStream);
+            await donorFileImporter.ImportDonorFile(blobStream);
         }
     }
 }
