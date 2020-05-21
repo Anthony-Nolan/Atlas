@@ -1,12 +1,13 @@
 ﻿using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Exceptions;
-using Atlas.HlaMetadataDictionary.Models;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using LazyCache;
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.HlaMetadataDictionary.Models.LookupEntities;
+using Atlas.HlaMetadataDictionary.Models.Lookups;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {
@@ -14,19 +15,15 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
     /// Generic repository that persists data to a CloudTable
     /// & also caches it in memory for optimal read-access.
     /// </summary>
-    /// <typeparam name="TStorable"></typeparam>
-    /// <typeparam name="TTableEntity"></typeparam>
-    public interface ILookupRepository<in TStorable, TTableEntity>
-        where TTableEntity : TableEntity, new()
-        where TStorable : IStorableInCloudTable<TTableEntity>
+    public interface ILookupRepository
     {
         Task LoadDataIntoMemory(string hlaDatabaseVersion);
     }
 
     public abstract class LookupRepositoryBase<TStorable, TTableEntity> :
-        ILookupRepository<TStorable, TTableEntity>
+        ILookupRepository
         where TTableEntity : TableEntity, new()
-        where TStorable : IStorableInCloudTable<TTableEntity>
+        where TStorable : IHlaLookupResult
     {
         protected readonly IAppCache cache;
 
@@ -139,7 +136,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
         private static async Task InsertIntoDataTable(IEnumerable<TStorable> contents, IEnumerable<string> partitions, CloudTable dataTable)
         {
             var entities = contents
-                .Select(data => data.ConvertToTableEntity())
+                .Select(data => new HlaLookupTableEntity(data))
                 .ToList();
 
             foreach (var partition in partitions)
