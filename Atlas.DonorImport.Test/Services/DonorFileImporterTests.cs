@@ -37,7 +37,7 @@ namespace Atlas.DonorImport.Test.Services
 
             donorFileImporter.ImportDonorFile(fileStream);
 
-            donorOperationApplier.Received(fullBatches + 1).ApplyDonorOperationBatch(Arg.Any<IEnumerable<DonorUpdate>>());
+            donorOperationApplier.Received(fullBatches + 1).ApplyDonorOperationBatch(Arg.Any<UpdateMode>(), Arg.Any<IEnumerable<DonorUpdate>>());
         }
 
         private class DonorFile

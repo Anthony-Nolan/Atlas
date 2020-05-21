@@ -20,5 +20,14 @@ namespace Atlas.DonorImport.Models.FileSchema
                 _ => throw new ArgumentOutOfRangeException(nameof(fileDonorType), fileDonorType, null)
             };
         }
+        public static MatchingAlgorithm.Client.Models.Donors.DonorType ToMatchingAlgorithmType(this DonorType fileDonorType)
+        {
+            return fileDonorType switch
+            {
+                DonorType.Adult => MatchingAlgorithm.Client.Models.Donors.DonorType.Adult,
+                DonorType.Cord => MatchingAlgorithm.Client.Models.Donors.DonorType.Cord,
+                _ => throw new ArgumentOutOfRangeException(nameof(fileDonorType), fileDonorType, null)
+            };
+        }
     }
 }

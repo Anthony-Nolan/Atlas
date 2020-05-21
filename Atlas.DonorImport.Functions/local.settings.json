@@ -6,6 +6,8 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:DonorFileBlobContainer": "donors",
+    "MessagingServiceBus:ConnectionString": "override-this",
+    "MessagingServiceBus:MatchingDonorUpdateTopic": "updated-searchable-donors",
     "FUNCTIONS.WORKER.RUNTIME": "dotnet"
   },
   "ConnectionStrings": {

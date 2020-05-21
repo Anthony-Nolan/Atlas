@@ -16,6 +16,7 @@ namespace Atlas.DonorImport.Services
     {
         private readonly IDonorOperationApplier donorOperationApplier;
         private readonly int batchSize;
+        private const UpdateMode DefaultUpdateMode = UpdateMode.Differential;
 
         public DonorFileImporter(IDonorOperationApplier donorOperationApplier, int batchSize = 10000)
         {
@@ -29,6 +30,8 @@ namespace Atlas.DonorImport.Services
             using var reader = new JsonTextReader(streamReader);
             var serializer = new JsonSerializer();
 
+            var updateMode = DefaultUpdateMode;
+            
             var donorBatch = new List<DonorUpdate>();
             
             var inDonorsProperty = false;
@@ -37,6 +40,10 @@ namespace Atlas.DonorImport.Services
             {
                 switch (reader.TokenType)
                 {
+                    case JsonToken.PropertyName when reader.Value?.ToString() == "updateMode":
+                        await reader.ReadAsync();
+                        updateMode = serializer.Deserialize<UpdateMode>(reader);
+                        break;
                     case JsonToken.PropertyName when reader.Value?.ToString() == "donors":
                         inDonorsProperty = true;
                         break;
@@ -48,12 +55,12 @@ namespace Atlas.DonorImport.Services
                         donorBatch.Add(donorOperation);
                         if (donorBatch.Count >= batchSize)
                         {
-                            await donorOperationApplier.ApplyDonorOperationBatch(donorBatch);
+                            await donorOperationApplier.ApplyDonorOperationBatch(updateMode, donorBatch);
                             donorBatch = new List<DonorUpdate>();
                         }
                         break;
                     case JsonToken.EndArray when inDonorUpdateArray:
-                        await donorOperationApplier.ApplyDonorOperationBatch(donorBatch);
+                        await donorOperationApplier.ApplyDonorOperationBatch(updateMode, donorBatch);
                         inDonorUpdateArray = false;
                         break;
                     case JsonToken.EndObject when !inDonorUpdateArray && inDonorsProperty:
