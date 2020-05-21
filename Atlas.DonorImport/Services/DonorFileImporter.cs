@@ -26,10 +26,11 @@ namespace Atlas.DonorImport.Services
 
         public async Task ImportDonorFile(Stream fileStream)
         {
+            var updateType = fileParser.ParseUpdateMode(fileStream);
             var donorUpdates = fileParser.LazilyParseDonorUpdates(fileStream);
             foreach (var donorUpdateBatch in donorUpdates.Batch(BatchSize))
             {
-                await donorRecordChangeApplier.ApplyDonorOperationBatch(donorUpdateBatch.ToList());
+                await donorRecordChangeApplier.ApplyDonorOperationBatch(updateType, donorUpdateBatch.ToList());
             }
         }
     }
