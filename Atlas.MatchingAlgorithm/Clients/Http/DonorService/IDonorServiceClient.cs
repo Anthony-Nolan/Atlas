@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Models;
 
 namespace Atlas.MatchingAlgorithm.Clients.Http.DonorService
