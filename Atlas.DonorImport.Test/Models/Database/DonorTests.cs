@@ -35,7 +35,7 @@ namespace Atlas.DonorImport.Test.Models.Database
                 DRB1_2 = "hla-drb1-2",
             };
 
-            donor.CalculateHash().Should().Be("qlL3cKZWsvUhFzUOEYXUdw==");
+            donor.CalculateHash().Should().Be("amJl+zBIGZjmia0oF2p8lA==");
         }
         /// <summary>
         /// This test is a snapshot of the donor hash implementation, rather than a logical assertion.
@@ -57,7 +57,7 @@ namespace Atlas.DonorImport.Test.Models.Database
                 DRB1_2 = "hla-drb1-2",
             };
 
-            donor.CalculateHash().Should().Be("OD+1NI1gNnqOlB9CZWLrdg==");
+            donor.CalculateHash().Should().Be("JBUD1rJB2tuUSv6BZ6CqWQ==");
         }
     }
 }

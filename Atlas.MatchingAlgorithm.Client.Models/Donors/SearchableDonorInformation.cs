@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+// ReSharper disable InconsistentNaming
 
-namespace Atlas.MatchingAlgorithm.Models
+namespace Atlas.MatchingAlgorithm.Client.Models.Donors
 {
     /// <summary>
     /// Donor info containing only the information required to search for donors - e.g. by the search algorithm service

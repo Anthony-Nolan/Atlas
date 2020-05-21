@@ -26,7 +26,7 @@ namespace Atlas.DonorImport.Test.Services
         {
             // Ensure multiple full batches, and one partial batch 
             const int donorCount = 100;
-            var file = new DonorFile {donors = Enumerable.Range(0, donorCount).Select(i => new DonorUpdate())};
+            var file = new DonorFile {updateMode = UpdateMode.Differential, donors = Enumerable.Range(0, donorCount).Select(i => new DonorUpdate())};
             var fileJson = JsonConvert.SerializeObject(file);
             var fileStream = new MemoryStream(Encoding.Default.GetBytes(fileJson));
 
@@ -38,7 +38,10 @@ namespace Atlas.DonorImport.Test.Services
         private class DonorFile
         {
             // ReSharper disable once InconsistentNaming
-            public IEnumerable<DonorUpdate> donors;
+            public UpdateMode updateMode { get; set; }
+
+            // ReSharper disable once InconsistentNaming
+            public IEnumerable<DonorUpdate> donors { get; set; }
         }
     }
 }
