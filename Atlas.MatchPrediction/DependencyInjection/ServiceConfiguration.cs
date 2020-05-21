@@ -43,6 +43,7 @@ namespace Atlas.MatchPrediction.DependencyInjection
 
             services.AddScoped<IHaplotypeFrequencySetMetaDataService, HaplotypeFrequencySetMetaDataService>();
             services.AddScoped<IHaplotypeFrequencySetImportService, HaplotypeFrequencySetImportService>();
+            services.AddScoped<IHaplotypeFrequenciesStreamReader, HaplotypeFrequencyCsvFileReader>();
             services.AddScoped<IHaplotypeFrequencySetRepository, HaplotypeFrequencySetRepository>();
             services.AddScoped<IHaplotypeFrequenciesRepository, HaplotypeFrequenciesRepository>();
             services.AddScoped<IFailedImportNotificationSender, FailedImportNotificationSender>();

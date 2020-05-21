@@ -2,10 +2,9 @@
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models;
-using CsvHelper.Configuration;
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
@@ -17,11 +16,16 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
     public class HaplotypeFrequencySetImportService : IHaplotypeFrequencySetImportService
     {
+        private readonly IHaplotypeFrequenciesStreamReader frequenciesStreamReader;
         private readonly IHaplotypeFrequencySetRepository setRepository;
         private readonly IHaplotypeFrequenciesRepository frequenciesRepository;
 
-        public HaplotypeFrequencySetImportService(IHaplotypeFrequencySetRepository setRepository, IHaplotypeFrequenciesRepository frequenciesRepository)
+        public HaplotypeFrequencySetImportService(
+            IHaplotypeFrequenciesStreamReader frequenciesStreamReader,
+            IHaplotypeFrequencySetRepository setRepository,
+            IHaplotypeFrequenciesRepository frequenciesRepository)
         {
+            this.frequenciesStreamReader = frequenciesStreamReader;
             this.setRepository = setRepository;
             this.frequenciesRepository = frequenciesRepository;
         }
@@ -35,9 +39,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
             var set = await AddSet(metaData);
 
-            var frequencies = ReadAllHaplotypeFrequencies(blob);
-
-            await frequenciesRepository.AddHaplotypeFrequencies(set.Id, frequencies);
+            await StoreFrequencies(blob, set);
         }
 
         private async Task<HaplotypeFrequencySet> AddSet(HaplotypeFrequencySetMetaData metaData)
@@ -81,32 +83,22 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             return await setRepository.AddSet(newSet);
         }
 
-        private static IEnumerable<HaplotypeFrequency> ReadAllHaplotypeFrequencies(Stream blob)
+        private async Task StoreFrequencies(Stream blob, HaplotypeFrequencySet set)
         {
-            // TODO: ATLAS-15 - Complete implementation
-            return new List<HaplotypeFrequency>();
-            /*
-            using var reader = new StreamReader(blob);
-            using var csv = new CsvReader(reader);
-            csv.Configuration.Delimiter = ";";
-            csv.Configuration.PrepareHeaderForMatch = (string header, int index) => header.ToUpper();
-            csv.Configuration.RegisterClassMap<HaplotypeFrequencyMap>();
-            return csv.GetRecords<HaplotypeFrequency>().ToList();
-            */
-        }
+            const int batchSize = 1000;
+            var startFrom = 0;
+            var frequencies = frequenciesStreamReader.GetFrequencies(blob, batchSize, startFrom).ToList();
 
-        public sealed class HaplotypeFrequencyMap : ClassMap<HaplotypeFrequency>
-        {
-            public HaplotypeFrequencyMap()
+            if (!frequencies.Any())
             {
-                Map(m => m.A);
-                Map(m => m.B);
-                Map(m => m.C);
-                Map(m => m.DQB1);
-                Map(m => m.DRB1);
-                Map(m => m.Frequency).Name("freq");
-                Map(m => m.Id).Ignore();
-                Map(m => m.Set).Ignore();
+                throw new Exception("No haplotype frequencies could be read from the file.");
+            }
+
+            while (frequencies.Any())
+            {
+                await frequenciesRepository.AddHaplotypeFrequencies(set.Id, frequencies);
+                startFrom += frequencies.Count;
+                frequencies = frequenciesStreamReader.GetFrequencies(blob, batchSize, startFrom).ToList();
             }
         }
     }
