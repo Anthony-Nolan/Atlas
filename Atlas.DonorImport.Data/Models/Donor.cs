@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using Atlas.Common.Utils.Extensions;
 
 // ReSharper disable InconsistentNaming
 
@@ -10,6 +11,7 @@ namespace Atlas.DonorImport.Data.Models
         public int Id { get; set; }
 
         // TODO: ATLAS-167: ADD unique index to DonorId
+        // TODO: ATLAS-281: Convert to a string
         public int DonorId { get; set; }
         
         public DatabaseDonorType DonorType { get; set; }
@@ -28,5 +30,15 @@ namespace Atlas.DonorImport.Data.Models
         public string DRB1_1 { get; set; }
         public string DRB1_2 { get; set; }
         public string Hash { get; set; }
+
+        /// <summary>
+        /// Calculates a hash of donor data.
+        /// Used to efficiently determine whether an inbound donor's details matches one already stored in the system. 
+        /// </summary>
+        public string CalculateHash()
+        {
+            return $"{DonorId}|{DonorType}|{EthnicityCode}|{RegistryCode}|{A_1}|{A_2}|{B_1}|{B_2}|{C_1}|{C_2}|{DPB1_1}|{DPB1_2}|{DQB1_1}|{DQB1_2}|{DRB1_1}|{DRB1_2}"
+                .ToMd5Hash();
+        }
     }
 }

@@ -45,7 +45,7 @@ namespace Atlas.DonorImport.Services
 
         private static Donor MapDonor(DonorUpdate fileUpdate)
         {
-            return new Donor
+            var donor = new Donor
             {
                 DonorId = fileUpdate.RecordId,
                 DonorType = fileUpdate.DonorType.ToDatabaseType(),
@@ -63,9 +63,9 @@ namespace Atlas.DonorImport.Services
                 DQB1_2 = fileUpdate.Hla.DQB1.Field2,
                 DRB1_1 = fileUpdate.Hla.DRB1.Field1,
                 DRB1_2 = fileUpdate.Hla.DRB1.Field2,
-                // TODO: ATLAS-167: Actually calculate hash
-                Hash = ""
             };
+            donor.Hash = donor.CalculateHash();
+            return donor;
         }
     }
 }
