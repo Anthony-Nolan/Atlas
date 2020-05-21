@@ -80,6 +80,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.Functions", "Atlas.Fu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.DonorImport", "Atlas.DonorImport\Atlas.DonorImport.csproj", "{8CC3D81A-E791-4698-AFA8-63AC76068EE2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.DonorImport.Test", "Atlas.DonorImport.Test\Atlas.DonorImport.Test.csproj", "{7FCCC9F6-361E-4B84-A86B-85AC4364C1E1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -249,6 +251,12 @@ Global
 		{8CC3D81A-E791-4698-AFA8-63AC76068EE2}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{8CC3D81A-E791-4698-AFA8-63AC76068EE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CC3D81A-E791-4698-AFA8-63AC76068EE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FCCC9F6-361E-4B84-A86B-85AC4364C1E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FCCC9F6-361E-4B84-A86B-85AC4364C1E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FCCC9F6-361E-4B84-A86B-85AC4364C1E1}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FCCC9F6-361E-4B84-A86B-85AC4364C1E1}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{7FCCC9F6-361E-4B84-A86B-85AC4364C1E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FCCC9F6-361E-4B84-A86B-85AC4364C1E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -279,6 +287,7 @@ Global
 		{6716E55C-48DF-4425-A603-FA36BC362591} = {DCB9E81B-16A1-4D0D-BB02-42A138B4D078}
 		{DE77A9A5-BCD3-478A-B319-1997E1D217AD} = {DCB9E81B-16A1-4D0D-BB02-42A138B4D078}
 		{8CC3D81A-E791-4698-AFA8-63AC76068EE2} = {FA86EBC5-984E-4694-876D-FB64B239E0FC}
+		{7FCCC9F6-361E-4B84-A86B-85AC4364C1E1} = {FA86EBC5-984E-4694-876D-FB64B239E0FC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB0B0AD5-58AC-4CDF-826D-C653D03DC2AC}

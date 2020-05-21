@@ -24,7 +24,7 @@ namespace Atlas.DonorImport.Services
             {
                 if (reader.TokenType == JsonToken.PropertyName)
                 {
-                    var propertyName = reader.Value.ToString();
+                    var propertyName = reader.Value?.ToString();
                     switch (propertyName)
                     {
                         case "updateMode":
