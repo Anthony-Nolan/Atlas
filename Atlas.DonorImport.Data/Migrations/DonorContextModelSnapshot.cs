@@ -61,8 +61,9 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.Property<string>("DRB1_2")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("DonorId")
-                        .HasColumnType("int");
+                    b.Property<string>("DonorId")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
 
                     b.Property<int>("DonorType")
                         .HasColumnType("int");
@@ -71,12 +72,20 @@ namespace Atlas.DonorImport.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Hash")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("RegistryCode")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DonorId")
+                        .IsUnique()
+                        .HasFilter("[DonorId] IS NOT NULL");
+
+                    b.HasIndex("Hash")
+                        .IsUnique()
+                        .HasFilter("[Hash] IS NOT NULL");
 
                     b.ToTable("Donors");
                 });

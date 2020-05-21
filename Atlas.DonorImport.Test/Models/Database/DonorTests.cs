@@ -17,7 +17,7 @@ namespace Atlas.DonorImport.Test.Models.Database
         {
             var donor = new Donor
             {
-                DonorId = 1,
+                DonorId = "donor-id",
                 DonorType = DonorType.Adult,
                 EthnicityCode = "ethnicity",
                 RegistryCode = "registry",
@@ -35,7 +35,7 @@ namespace Atlas.DonorImport.Test.Models.Database
                 DRB1_2 = "hla-drb1-2",
             };
 
-            donor.CalculateHash().Should().Be("qlL3cKZWsvUhFzUOEYXUdw==");
+            donor.CalculateHash().Should().Be("c+khmu4cVtRd89ehSsG3Cg==");
         }
     }
 }
