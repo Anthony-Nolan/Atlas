@@ -1,22 +1,9 @@
-using System;
-using System.ComponentModel;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Notifications;
 using Atlas.Common.NovaHttpClient.Client;
 using Atlas.Common.ServiceBus.BatchReceiving;
-using Atlas.HlaMetadataDictionary.Data;
-using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.HlaMetadataDictionary.Repositories;
-using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
-using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
-using Atlas.HlaMetadataDictionary.Services;
-using Atlas.HlaMetadataDictionary.Services.DataGeneration;
-using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
-using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation;
-using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
-using Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion;
 using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
@@ -53,6 +40,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System;
+using System.ComponentModel;
 
 namespace Atlas.MatchingAlgorithm.DependencyInjection
 {
@@ -239,7 +228,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static IDonorServiceClient GetFileBasedDonorServiceClient(IServiceProvider sp)
         {
             var insightsSettings = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value;
-            var logger = LoggerRegistration.BuildNovaLogger(insightsSettings.InstrumentationKey);
+            var logger = LoggerRegistration.BuildLogger(insightsSettings.InstrumentationKey);
 
             return new FileBasedDonorServiceClient(logger);
         }
