@@ -40,6 +40,13 @@ variable "servicebus_namespace_authorization_rules" {
   })
 }
 
+variable "servicebus_topics" {
+  type = object({
+    alerts        = object({ name = string })
+    notifications = object({ name = string })
+  })
+}
+
 variable "sql_server" {
   type = object({
     name                        = string
