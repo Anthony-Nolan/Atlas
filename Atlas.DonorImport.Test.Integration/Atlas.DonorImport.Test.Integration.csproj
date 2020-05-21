@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Dapper" Version="2.0.35" />
+        <PackageReference Include="FluentAssertions" Version="5.10.3" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.4" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.4" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.4" />
+        <PackageReference Include="NSubstitute" Version="4.2.1" />
+        <PackageReference Include="nunit" Version="3.12.0" />
+        <PackageReference Include="NUnit3TestAdapter" Version="3.16.1" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Atlas.DonorImport\Atlas.DonorImport.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="IntegrationTests\InitialDataLoad\1000-initial-donors.json" />
+    </ItemGroup>
+
+</Project>
