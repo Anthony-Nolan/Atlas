@@ -4,9 +4,11 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Extensions;
+using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Settings;
+using EnumStringValues;
 using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
@@ -99,7 +101,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         private async Task ScaleDatabase()
         {
-            var targetSize = dataRefreshSettings.Value.DormantDatabaseSize.ToAzureDatabaseSize();
+            var targetSize = dataRefreshSettings.Value.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>();
             var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetDormantDatabase());
             logger.SendTrace($"DATA REFRESH CLEANUP: Scaling database: {databaseName} to size {targetSize}", LogLevel.Info);
             await azureDatabaseManager.UpdateDatabaseSize(databaseName, targetSize);

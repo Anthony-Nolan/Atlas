@@ -6,10 +6,12 @@ using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Extensions;
+using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Settings;
+using EnumStringValues;
 using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
@@ -145,7 +147,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         private async Task ScaleDownDatabaseToDormantLevel(string databaseName)
         {
-            var dormantSize = settingsOptions.Value.DormantDatabaseSize.ToAzureDatabaseSize();
+            var dormantSize = settingsOptions.Value.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>();
             logger.SendTrace($"DATA REFRESH TEAR DOWN: Scaling down database: {databaseName} to dormant size: {dormantSize}", LogLevel.Info);
             await azureDatabaseManager.UpdateDatabaseSize(databaseName, dormantSize);
         }

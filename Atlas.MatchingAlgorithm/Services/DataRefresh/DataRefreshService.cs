@@ -10,6 +10,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Settings;
+using EnumStringValues;
 using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
@@ -75,10 +76,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             {
                 var newHlaDatabaseVersion = await RecreateHlaMetadataDictionary();
                 await RemoveExistingDonorData();
-                await ScaleDatabase(settingsOptions.Value.RefreshDatabaseSize.ToAzureDatabaseSize());
+                await ScaleDatabase(settingsOptions.Value.RefreshDatabaseSize.ParseToEnum<AzureDatabaseSize>());
                 await ImportDonors();
                 await ProcessDonorHla(newHlaDatabaseVersion);
-                await ScaleDatabase(settingsOptions.Value.ActiveDatabaseSize.ToAzureDatabaseSize());
+                await ScaleDatabase(settingsOptions.Value.ActiveDatabaseSize.ParseToEnum<AzureDatabaseSize>());
 
                 return newHlaDatabaseVersion;
             }
@@ -94,7 +95,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             try
             {
-                await ScaleDatabase(settingsOptions.Value.DormantDatabaseSize.ToAzureDatabaseSize());
+                await ScaleDatabase(settingsOptions.Value.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>());
             }
             catch (Exception e)
             {
