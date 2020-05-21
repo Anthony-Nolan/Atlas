@@ -16,16 +16,16 @@ namespace Atlas.DonorImport.DependencyInjection
         private static void RegisterServices(this IServiceCollection services)
         {
             services.AddScoped<IDonorFileImporter, DonorFileImporter>();
+            services.AddScoped<IDonorImportFileParser, DonorImportFileParser>();
             services.AddScoped<IDonorRecordChangeApplier, DonorRecordChangeApplier>();
         }
-        
+
         private static void RegisterDatabaseTypes(this IServiceCollection services)
         {
             services.AddScoped<IDonorRepository>(sp =>
                 // TODO: ATLAS-186: Ensure this is passed into an appropriate public configuration method when accessing from another project
                 new DonorRepository(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["Sql"])
             );
-            services.AddScoped<IDonorImportFileParser, DonorImportFileParser>();
         }
     }
 }

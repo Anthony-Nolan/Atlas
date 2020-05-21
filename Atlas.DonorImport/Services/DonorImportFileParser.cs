@@ -8,17 +8,20 @@ namespace Atlas.DonorImport.Services
 {
     internal interface IDonorImportFileParser
     {
-        public IEnumerable<DonorUpdate> LazilyParseDonorUpdates(Stream stream);
+        /// <returns>A batch of parsed donor updates</returns>
+        public IEnumerable<IEnumerable<DonorUpdate>> LazilyParseDonorUpdates(Stream stream, int batchSize = 10000);
     }
 
     internal class DonorImportFileParser : IDonorImportFileParser
     {
-        public IEnumerable<DonorUpdate> LazilyParseDonorUpdates(Stream stream)
+        public IEnumerable<IEnumerable<DonorUpdate>> LazilyParseDonorUpdates(Stream stream, int batchSize)
         {
             using var streamReader = new StreamReader(stream);
             using var reader = new JsonTextReader(streamReader);
             var serializer = new JsonSerializer();
 
+            var donorBatch = new List<DonorUpdate>();
+            
             // Loops through top level JSON
             while (reader.Read())
             {
@@ -41,7 +44,12 @@ namespace Atlas.DonorImport.Services
                             do
                             {
                                 var donorOperation = serializer.Deserialize<DonorUpdate>(reader);
-                                yield return donorOperation;
+                                donorBatch.Add(donorOperation);
+                                if (donorBatch.Count >= batchSize)
+                                {
+                                    yield return donorBatch;
+                                    donorBatch = new List<DonorUpdate>();
+                                }
                             } while (reader.Read() && reader.TokenType != JsonToken.EndArray);
 
                             break;
@@ -50,6 +58,8 @@ namespace Atlas.DonorImport.Services
                     }
                 }
             }
+
+            yield return donorBatch;
         }
     }
 }
