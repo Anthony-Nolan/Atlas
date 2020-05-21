@@ -1,8 +1,9 @@
 ﻿using System.Text;
 using System.Threading.Tasks;
 using Atlas.Common.Notifications.MessageModels;
-using Newtonsoft.Json;
 using Microsoft.Azure.ServiceBus;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace Atlas.Common.Notifications
 {
@@ -14,15 +15,13 @@ namespace Atlas.Common.Notifications
 
     public class NotificationsClient : INotificationsClient
     {
-        private readonly string connectionString;
         private readonly TopicClient notificationTopicClient;
         private readonly TopicClient alertTopicClient;
 
-        public NotificationsClient(string connectionString, string notificationTopic, string alertTopic)
+        public NotificationsClient(IOptions<NotificationsServiceBusSettings> settings)
         {
-            this.connectionString = connectionString;
-            notificationTopicClient = CreateNewTopicClient(notificationTopic);
-            alertTopicClient = CreateNewTopicClient(alertTopic);
+            notificationTopicClient = new TopicClient(settings.Value.ConnectionString, settings.Value.NotificationsTopic);
+            alertTopicClient = new TopicClient(settings.Value.ConnectionString, settings.Value.AlertsTopic);
         }
 
         public async Task SendAlert(Alert alert)
@@ -42,13 +41,6 @@ namespace Atlas.Common.Notifications
             var messageJson = JsonConvert.SerializeObject(message);
             var brokeredMessage = new Message(Encoding.UTF8.GetBytes(messageJson));
             return brokeredMessage;
-        }
-
-
-        private TopicClient CreateNewTopicClient(string path)
-        {
-            var client = new TopicClient(connectionString, path);
-            return client;
         }
     }
 }
