@@ -6,10 +6,10 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:DonorFileBlobContainer": "donors",
-    "MessagingServiceBus:ConnectionString": "override-this",
+    "MessagingServiceBus:ConnectionString": "Endpoint=sb://local-dev-atlas-combined.servicebus.windows.net/;SharedAccessKeyName=read-write;SharedAccessKey=nVloHP+FVzkowjA0EBLzhn2ra+W/4ZIpK11TcKJEwac=",
     "MessagingServiceBus:MatchingDonorUpdateTopic": "updated-searchable-donors",
     "NotificationsServiceBus:AlertsTopic": "alerts",
-    "NotificationsServiceBus:ConnectionString": "override-this",
+    "NotificationsServiceBus:ConnectionString": "Endpoint=sb://local-dev-atlas-combined.servicebus.windows.net/;SharedAccessKeyName=read-write;SharedAccessKey=nVloHP+FVzkowjA0EBLzhn2ra+W/4ZIpK11TcKJEwac=",
     "NotificationsServiceBus:NotificationsTopic": "notifications",
     "FUNCTIONS.WORKER.RUNTIME": "dotnet"
   },
