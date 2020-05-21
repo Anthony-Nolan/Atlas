@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Models.LookupEntities;
@@ -32,6 +34,17 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
             return new HlaLookupTableEntity(this);
         }
 
+        public IEnumerable<IHlaScoringLookupResult> GetInTermsOfSingleAlleleScoringMetadata()
+        {
+            return HlaScoringInfo.ConvertToSingleAllelesInfo().Select(info => new HlaScoringLookupResult(
+                Locus,
+                info.AlleleName,
+                info,
+                TypingMethod
+            ));
+        }
+
+        #region IEquatable
         public bool Equals(HlaScoringLookupResult other)
         {
             if (ReferenceEquals(null, other)) return false;
@@ -62,5 +75,6 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
                 return hashCode;
             }
         }
+        #endregion
     }
 }
