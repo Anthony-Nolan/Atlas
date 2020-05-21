@@ -25,9 +25,9 @@ namespace Atlas.HlaMetadataDictionary.Extensions
             {
                 case HlaTypingCategory.Serology:
                     return entity.GetHlaInfo<SerologyScoringInfo>();
-                case HlaTypingCategory.OriginalAllele:
+                case HlaTypingCategory.Allele:
                     return entity.GetHlaInfo<SingleAlleleScoringInfo>();
-                case HlaTypingCategory.NmdpCodeAllele:
+                case HlaTypingCategory.NmdpCode:
                     return entity.GetHlaInfo<MultipleAlleleScoringInfo>();
                 case HlaTypingCategory.XxCode:
                     return entity.GetHlaInfo<ConsolidatedMolecularScoringInfo>();

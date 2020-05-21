@@ -39,7 +39,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
             return GetMolecularLookupResult(
                 new[] { lookupResultSource },
                 allele => allele.Name,
-                HlaTypingCategory.OriginalAllele,
+                HlaTypingCategory.Allele,
                 sources => SingleAlleleScoringInfo.GetScoringInfoWithMatchingSerologies(sources.First()));
         }
 
@@ -50,7 +50,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
             return GetMolecularLookupResult(
                 lookupResultSources,
                 allele => nmdpLookupName,
-                HlaTypingCategory.NmdpCodeAllele,
+                HlaTypingCategory.NmdpCode,
                 MultipleAlleleScoringInfo.GetScoringInfo);
         }
 
