@@ -7,7 +7,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
     /// </summary>
     public interface IHlaScoringLookupResult : IHlaLookupResult
     {
-        HlaTypingCategoryzxyzxtzx HlaTypingCategoryzxyzxtzx { get; }
+        HlaTypingCategory HlaTypingCategory { get; }
         IHlaScoringInfo HlaScoringInfo { get; }
     }
 }

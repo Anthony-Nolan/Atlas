@@ -13,44 +13,44 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
         public object HlaInfoToSerialise => HlaScoringInfo;
-        public HlaTypingCategoryzxyzxtzx HlaTypingCategoryzxyzxtzx { get; }
+        public HlaTypingCategory HlaTypingCategory { get; }
         public IHlaScoringInfo HlaScoringInfo { get; }
 
         public FileBackedHlaScoringLookupResult(
             Locus locus, 
             string lookupName, 
             TypingMethod typingMethod, 
-            HlaTypingCategoryzxyzxtzx hlaTypingCategoryzxyzxtzx,
+            HlaTypingCategory hlaTypingCategory,
             object hlaScoringInfo)
         {
             Locus = locus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
-            HlaTypingCategoryzxyzxtzx = hlaTypingCategoryzxyzxtzx;
-            HlaScoringInfo = GetHlaScoringInfo(hlaTypingCategoryzxyzxtzx, hlaScoringInfo.ToString());
+            HlaTypingCategory = hlaTypingCategory;
+            HlaScoringInfo = GetHlaScoringInfo(hlaTypingCategory, hlaScoringInfo.ToString());
         }
 
         public HlaLookupTableEntity ConvertToTableEntity()
         {
             return new HlaLookupTableEntity(this)
             {
-                LookupNameCategoryAsString = HlaTypingCategoryzxyzxtzx.ToString() //QQ needs attention for rename
+                LookupNameCategoryAsString = HlaTypingCategory.ToString() //QQ needs attention for rename
             };
         }
 
         private static IHlaScoringInfo GetHlaScoringInfo(
-            HlaTypingCategoryzxyzxtzx hlaTypingCategoryzxyzxtzx,
+            HlaTypingCategory hlaTypingCategory,
             string hlaScoringInfoString)
         {
-            switch (hlaTypingCategoryzxyzxtzx)
+            switch (hlaTypingCategory)
             {
-                case HlaTypingCategoryzxyzxtzx.Serology:
+                case HlaTypingCategory.Serology:
                     return JsonConvert.DeserializeObject<SerologyScoringInfo>(hlaScoringInfoString);
-                case HlaTypingCategoryzxyzxtzx.OriginalAllele:
+                case HlaTypingCategory.OriginalAllele:
                     return JsonConvert.DeserializeObject<SingleAlleleScoringInfo>(hlaScoringInfoString);
-                case HlaTypingCategoryzxyzxtzx.NmdpCodeAllele:
+                case HlaTypingCategory.NmdpCodeAllele:
                     return JsonConvert.DeserializeObject<MultipleAlleleScoringInfo>(hlaScoringInfoString);
-                case HlaTypingCategoryzxyzxtzx.XxCode:
+                case HlaTypingCategory.XxCode:
                     return JsonConvert.DeserializeObject<ConsolidatedMolecularScoringInfo>(hlaScoringInfoString);
                 default:
                     throw new ArgumentOutOfRangeException();
