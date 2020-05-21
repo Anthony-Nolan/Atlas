@@ -18,6 +18,7 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion;
 using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
 using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
