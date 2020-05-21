@@ -27,13 +27,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
             Locus locus,                            //*******************
             string lookupName,                      //****    See    ****
             TypingMethod typingMethod,              //****  warning  ****
-            HlaTypingCategory hlaTypingCategory,    //****   above   ****
+            HlaTypingCategory hlaScoringInfoType,   //****   above   ****
             object hlaScoringInfo)                  //*******************
         {
             Locus = locus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
-            HlaScoringInfo = GetHlaScoringInfo(hlaTypingCategory, hlaScoringInfo.ToString());
+            HlaScoringInfo = GetHlaScoringInfo(hlaScoringInfoType, hlaScoringInfo.ToString());
         }
 
         public HlaLookupTableEntity ConvertToTableEntity()
