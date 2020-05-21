@@ -70,7 +70,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
                 lookupResult.Locus,
                 alleleInfo.AlleleName,
                 alleleInfo,
-                HlaTypingCategory.Allele));
+                TypingMethod.Molecular));
         }
 
         private static IEnumerable<SingleAlleleScoringInfo> GetSingleAlleleInfos(
