@@ -23,7 +23,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         {
             await SendAlert(
                 alertSummary, 
-                $"Import of file, '{fileName}', failed with the following exception message: {exception.Message}. " +
+                $"Import of file, '{fileName}', failed with the following exception message: {exception.Message} " +
                     "Full exception info has been logged to Application Insights.",
                 Priority.High);
         }
