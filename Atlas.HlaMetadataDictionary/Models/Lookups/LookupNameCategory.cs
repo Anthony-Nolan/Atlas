@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Atlas.HlaMetadataDictionary.Models.Lookups
+namespace Atlas.Common.GeneticData.Hla.Models
 {
     ///QQ Combine with <see cref="Common.GeneticData.Hla.Models.HlaTypingCategory"/>
     /// Check for usages of strings!
