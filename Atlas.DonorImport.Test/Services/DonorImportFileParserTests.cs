@@ -24,7 +24,6 @@ namespace Atlas.DonorImport.Test.Services
         [Test]
         public void ImportDonorFile_ProcessesAllDonors()
         {
-            // Ensure multiple full batches, and one partial batch 
             const int donorCount = 100;
             var file = new DonorFile {updateMode = UpdateMode.Differential, donors = Enumerable.Range(0, donorCount).Select(i => new DonorUpdate())};
             var fileJson = JsonConvert.SerializeObject(file);
