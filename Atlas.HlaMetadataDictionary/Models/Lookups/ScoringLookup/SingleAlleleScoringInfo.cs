@@ -74,6 +74,10 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
             );
         }
 
+        public bool IsConvertibleToSingleAllelesInfo => true;
+        public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo() => new List<SingleAlleleScoringInfo>{this};
+
+        #region IEquatable
         public bool Equals(SingleAlleleScoringInfo other)
         {
             if (ReferenceEquals(null, other)) return false;
@@ -106,5 +110,6 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
                 return hashCode;
             }
         }
+        #endregion
     }
 }

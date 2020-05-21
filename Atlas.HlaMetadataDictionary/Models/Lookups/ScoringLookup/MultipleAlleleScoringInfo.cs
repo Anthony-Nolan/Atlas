@@ -65,6 +65,10 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
                 matchingSerologies);
         }
 
+        public bool IsConvertibleToSingleAllelesInfo => true;
+        public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo() => AlleleScoringInfos.ToList();
+
+        #region IEquatable
         public bool Equals(MultipleAlleleScoringInfo other)
         {
             if (ReferenceEquals(null, other)) return false;
@@ -89,5 +93,6 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
                 return (AlleleScoringInfos.GetHashCode() * 397) ^ MatchingSerologies.GetHashCode();
             }
         }
+        #endregion
     }
 }
