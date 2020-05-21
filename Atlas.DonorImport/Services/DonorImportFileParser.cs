@@ -8,6 +8,7 @@ namespace Atlas.DonorImport.Services
 {
     internal interface IDonorImportFileParser
     {
+        /// <returns>A batch of parsed donor updates</returns>
         public IEnumerable<DonorUpdate> LazilyParseDonorUpdates(Stream stream);
     }
 
@@ -18,6 +19,8 @@ namespace Atlas.DonorImport.Services
             using var streamReader = new StreamReader(stream);
             using var reader = new JsonTextReader(streamReader);
             var serializer = new JsonSerializer();
+
+            var donorBatch = new List<DonorUpdate>();
 
             // Loops through top level JSON
             while (reader.Read())
