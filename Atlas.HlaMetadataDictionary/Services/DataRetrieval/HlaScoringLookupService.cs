@@ -53,7 +53,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                     entity.Locus,
                     entity.LookupName,
                     scoringInfo,
-                    entity.HlaInfoTypeSerialised);
+                    entity.TypingMethod);
             });
         }
 
@@ -102,7 +102,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             return new HlaScoringLookupResult(
                 locus,
                 lookupName,
-                multipleAlleleScoringInfo
+                multipleAlleleScoringInfo,
+                TypingMethod.Molecular
             );
         }
 
@@ -125,7 +126,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             return new HlaScoringLookupResult(
                 locus,
                 lookupName,
-                consolidatedMolecularScoringInfo
+                consolidatedMolecularScoringInfo,
+                TypingMethod.Molecular
             );
         }
 

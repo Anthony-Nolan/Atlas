@@ -13,33 +13,39 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
         public object HlaInfoToSerialise => HlaScoringInfo;
-        public HlaTypingCategory HlaTypingCategory { get; }
         public IHlaScoringInfo HlaScoringInfo { get; }
 
+        /// <remarks>
+        /// ********************* WARNING! *********************
+        /// The names of these parameters MUST stay in sync
+        /// with the property names of the JSON objects found in
+        /// the IntegrationTest MetadataDictionary test file.
+        /// i.e. `all_hla_lookup_results.json`.
+        /// ********************* WARNING! *********************
+        /// </remarks>
         public FileBackedHlaScoringLookupResult(
-            Locus locus, 
-            string lookupName, 
-            TypingMethod typingMethod, 
-            HlaTypingCategory hlaTypingCategory,
-            object hlaScoringInfo)
+            Locus locus,                            //*******************
+            string lookupName,                      //****    See    ****
+            TypingMethod typingMethod,              //****  warning  ****
+            HlaTypingCategory hlaTypingCategory,    //****   above   ****
+            object hlaScoringInfo)                  //*******************
         {
             Locus = locus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
-            HlaTypingCategory = hlaTypingCategory;
             HlaScoringInfo = GetHlaScoringInfo(hlaTypingCategory, hlaScoringInfo.ToString());
         }
 
         public HlaLookupTableEntity ConvertToTableEntity()
         {
-            return new HlaLookupTableEntity(this, HlaTypingCategory);
+            return new HlaLookupTableEntity(this);
         }
 
         private static IHlaScoringInfo GetHlaScoringInfo(
-            HlaTypingCategory hlaTypingCategory,
+            HlaTypingCategory hlaScoringInfoType,
             string hlaScoringInfoString)
         {
-            switch (hlaTypingCategory)
+            switch (hlaScoringInfoType)
             {
                 case HlaTypingCategory.Serology:
                     return JsonConvert.DeserializeObject<SerologyScoringInfo>(hlaScoringInfoString);

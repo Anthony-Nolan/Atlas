@@ -106,7 +106,8 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataCon
                 MatchedLocus,
                 SerologyName,
                 scoringInfo,
-                HlaTypingCategory.Serology);
+                TypingMethod.Serology
+            );
         }
 
         private static IHlaLookupResult BuildSingleAlleleLookupResult(string alleleName)
@@ -115,7 +116,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataCon
                 MatchedLocus,
                 alleleName,
                 BuildSingleAlleleScoringInfoWithMatchingSerologies(alleleName),
-                HlaTypingCategory.Allele
+                TypingMethod.Molecular
             );
         }
 
@@ -127,7 +128,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataCon
                 new MultipleAlleleScoringInfo(
                     alleleNames.Select(BuildSingleAlleleScoringInfoExcludingMatchingSerologies),
                     SerologyEntries),
-                HlaTypingCategory.NmdpCode
+                TypingMethod.Molecular
             );
         }
 
@@ -139,7 +140,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataCon
                 MatchedLocus,
                 xxCodeLookupName,
                 new ConsolidatedMolecularScoringInfo(alleleNamesCollection, alleleNamesCollection, SerologyEntries),
-                HlaTypingCategory.XxCode
+                TypingMethod.Molecular
             );
         }
 

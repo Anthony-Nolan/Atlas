@@ -29,7 +29,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
                 lookupResultSource.TypingForHlaLookupResult.Locus,
                 lookupResultSource.TypingForHlaLookupResult.Name,
                 scoringInfo,
-                HlaTypingCategory.Serology
+                TypingMethod.Serology
             );
         }
 
@@ -39,7 +39,6 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
             return GetMolecularLookupResult(
                 new[] { lookupResultSource },
                 allele => allele.Name,
-                HlaTypingCategory.Allele,
                 sources => SingleAlleleScoringInfo.GetScoringInfoWithMatchingSerologies(sources.First()));
         }
 
@@ -50,7 +49,6 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
             return GetMolecularLookupResult(
                 lookupResultSources,
                 allele => nmdpLookupName,
-                HlaTypingCategory.NmdpCode,
                 MultipleAlleleScoringInfo.GetScoringInfo);
         }
 
@@ -60,14 +58,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
             return GetMolecularLookupResult(
                 lookupResultSources,
                 allele => allele.ToXxCodeLookupName(),
-                HlaTypingCategory.XxCode,
                 ConsolidatedMolecularScoringInfo.GetScoringInfo);
         }
 
         private static HlaScoringLookupResult GetMolecularLookupResult(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources,
             Func<AlleleTyping, string> getLookupName,
-            HlaTypingCategory hlaTypingCategory,
             Func<IEnumerable<IHlaLookupResultSource<AlleleTyping>>, IHlaScoringInfo> getScoringInfo)
         {
             var sources = lookupResultSources.ToList();
@@ -80,7 +76,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
                 firstAllele.Locus,
                 getLookupName(firstAllele),
                 getScoringInfo(sources),
-                hlaTypingCategory
+                TypingMethod.Molecular
             );
         }
     }

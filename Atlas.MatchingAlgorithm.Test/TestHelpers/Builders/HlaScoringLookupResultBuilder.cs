@@ -17,31 +17,31 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 // Scoring information is cached per-lookup name - so these should be unique by default to avoid cache key collision
                 Guid.NewGuid().ToString(),
                 new SingleAlleleScoringInfoBuilder().Build(),
-                HlaTypingCategory.Allele
+                TypingMethod.Molecular
             );
         }
 
         public HlaScoringLookupResultBuilder AtLocus(Locus locus)
         {
-            result = new HlaScoringLookupResult(locus, result.LookupName, result.HlaScoringInfo, result.HlaTypingCategory);
+            result = new HlaScoringLookupResult(locus, result.LookupName, result.HlaScoringInfo, result.TypingMethod);
             return this;
         }
 
         public HlaScoringLookupResultBuilder WithLookupName(string lookupName)
         {
-            result = new HlaScoringLookupResult(result.Locus, lookupName, result.HlaScoringInfo, result.HlaTypingCategory);
+            result = new HlaScoringLookupResult(result.Locus, lookupName, result.HlaScoringInfo, result.TypingMethod);
             return this;
         }
 
         public HlaScoringLookupResultBuilder WithHlaScoringInfo(IHlaScoringInfo scoringInfo)
         {
-            result = new HlaScoringLookupResult(result.Locus, result.LookupName, scoringInfo, result.HlaTypingCategory);
+            result = new HlaScoringLookupResult(result.Locus, result.LookupName, scoringInfo, result.TypingMethod);
             return this;
         }
         
-        public HlaScoringLookupResultBuilder WithHlaTypingCategory(HlaTypingCategory hlaTypingCategory)
+        public HlaScoringLookupResultBuilder WithTypingMethod(TypingMethod typingMethod)
         {
-            result = new HlaScoringLookupResult(result.Locus, result.LookupName, result.HlaScoringInfo, hlaTypingCategory);
+            result = new HlaScoringLookupResult(result.Locus, result.LookupName, result.HlaScoringInfo, typingMethod);
             return this;
         }
 
