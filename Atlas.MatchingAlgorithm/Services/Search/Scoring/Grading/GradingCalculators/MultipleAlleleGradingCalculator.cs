@@ -69,7 +69,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
             return singleAlleleInfos.Select(alleleInfo => new HlaScoringLookupResult(
                 lookupResult.Locus,
                 alleleInfo.AlleleName,
-                HlaTypingCategory.OriginalAllele,
+                HlaTypingCategory.Allele,
                 alleleInfo));
         }
 

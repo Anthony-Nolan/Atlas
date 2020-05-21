@@ -114,7 +114,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataCon
             return new HlaScoringLookupResult(
                 MatchedLocus,
                 alleleName,
-                HlaTypingCategory.OriginalAllele,
+                HlaTypingCategory.Allele,
                 BuildSingleAlleleScoringInfoWithMatchingSerologies(alleleName)
             );
         }
@@ -124,7 +124,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataCon
             return new HlaScoringLookupResult(
                 MatchedLocus,
                 lookupName,
-                HlaTypingCategory.NmdpCodeAllele,
+                HlaTypingCategory.NmdpCode,
                 new MultipleAlleleScoringInfo(
                     alleleNames.Select(BuildSingleAlleleScoringInfoExcludingMatchingSerologies),
                     SerologyEntries)
