@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
+using EnumStringValues;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
@@ -34,11 +35,8 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         public TransientDatabase? GetActiveDatabase()
         {
             var lastCompletedRecord = GetLastSuccessfulRecord();
-            if (lastCompletedRecord == null)
-            {
-                return null;
-            }
-            return (TransientDatabase) Enum.Parse(typeof(TransientDatabase), lastCompletedRecord.Database);
+
+            return lastCompletedRecord?.Database.ParseToEnum<TransientDatabase>();
         }
 
         public string GetActiveWmdaDataVersion()

@@ -2,6 +2,7 @@
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 using System;
+using EnumStringValues;
 
 namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
@@ -14,12 +15,12 @@ namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
                 return AlleleTypingStatus.GetDefaultStatus();
             }
 
-            if (!Enum.TryParse(alleleStatus.SequenceStatus, true, out SequenceStatus sequenceStatus))
+            if (!alleleStatus.SequenceStatus.TryParseStringValueToEnum<SequenceStatus>(out var sequenceStatus))
             {
                 throw new HlaMetadataDictionaryException(alleleStatus, $"Sequence status {alleleStatus.SequenceStatus} not recognised.");
             }
 
-            if (!Enum.TryParse(alleleStatus.DnaCategory, true, out DnaCategory dnaCategory))
+            if (!alleleStatus.DnaCategory.TryParseStringValueToEnum<DnaCategory>(out var dnaCategory))
             {
                 throw new HlaMetadataDictionaryException(alleleStatus, $"DNA category {alleleStatus.DnaCategory} not recognised.");
             }
