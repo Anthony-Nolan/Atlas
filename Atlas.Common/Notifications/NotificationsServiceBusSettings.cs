@@ -1,4 +1,4 @@
-namespace Atlas.MatchingAlgorithm.Settings.ServiceBus
+namespace Atlas.Common.Notifications
 {
     public class NotificationsServiceBusSettings
     {

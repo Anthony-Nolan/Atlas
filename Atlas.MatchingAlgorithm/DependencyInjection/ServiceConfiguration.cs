@@ -6,17 +6,6 @@ using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Notifications;
 using Atlas.Common.NovaHttpClient.Client;
 using Atlas.Common.ServiceBus.BatchReceiving;
-using Atlas.HlaMetadataDictionary.Data;
-using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.HlaMetadataDictionary.Repositories;
-using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
-using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
-using Atlas.HlaMetadataDictionary.Services;
-using Atlas.HlaMetadataDictionary.Services.DataGeneration;
-using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
-using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation;
-using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
-using Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion;
 using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
@@ -26,7 +15,6 @@ using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Config;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
@@ -47,7 +35,6 @@ using Atlas.MatchingAlgorithm.Services.Utility;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
-using Atlas.MultipleAlleleCodeDictionary;
 using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -168,11 +155,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IAzureFunctionManager, AzureFunctionManager>();
             services.AddScoped<IAzureDatabaseManager, AzureDatabaseManager>();
 
-            services.AddScoped<INotificationsClient, NotificationsClient>(sp =>
-            {
-                var settings = sp.GetService<IOptions<NotificationsServiceBusSettings>>().Value;
-                return new NotificationsClient(settings.ConnectionString, settings.NotificationsTopic, settings.AlertsTopic);
-            });
+            services.AddScoped<INotificationsClient, NotificationsClient>();
 
             services.AddScoped<IScoringCache, ScoringCache>();
         }
