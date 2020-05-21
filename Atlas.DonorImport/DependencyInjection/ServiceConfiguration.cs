@@ -1,3 +1,4 @@
+using Atlas.Common.Notifications;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Repositories;
@@ -21,12 +22,13 @@ namespace Atlas.DonorImport.DependencyInjection
         private static void RegisterSettings(this IServiceCollection services)
         {
             services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+            services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
 
         private static void RegisterServices(this IServiceCollection services)
         {
             services.AddScoped<IDonorFileImporter, DonorFileImporter>(sp =>
-                new DonorFileImporter(sp.GetService<IDonorOperationApplier>())
+                new DonorFileImporter(sp.GetService<IDonorOperationApplier>(), sp.GetService<INotificationsClient>())
             );
             services.AddScoped<IDonorOperationApplier, DonorOperationApplier>();
         }
@@ -34,6 +36,7 @@ namespace Atlas.DonorImport.DependencyInjection
         private static void RegisterClients(this IServiceCollection services)
         {
             services.AddScoped<IMessagingServiceBusClient, MessagingServiceBusClient>();
+            services.AddScoped<INotificationsClient, NotificationsClient>();
         }
 
         private static void RegisterDatabaseTypes(this IServiceCollection services)

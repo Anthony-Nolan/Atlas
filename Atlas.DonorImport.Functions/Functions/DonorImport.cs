@@ -20,7 +20,7 @@ namespace Atlas.DonorImport.Functions.Functions
             Stream blobStream,
             string fileName)
         {
-            await donorFileImporter.ImportDonorFile(blobStream);
+            await donorFileImporter.ImportDonorFile(blobStream, fileName);
         }
     }
 }
