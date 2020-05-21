@@ -28,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
             return new HlaScoringLookupResult(
                 lookupResultSource.TypingForHlaLookupResult.Locus,
                 lookupResultSource.TypingForHlaLookupResult.Name,
-                HlaTypingCategoryzxyzxtzx.Serology,
+                HlaTypingCategory.Serology,
                 scoringInfo
             );
         }
@@ -39,7 +39,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
             return GetMolecularLookupResult(
                 new[] { lookupResultSource },
                 allele => allele.Name,
-                HlaTypingCategoryzxyzxtzx.OriginalAllele,
+                HlaTypingCategory.OriginalAllele,
                 sources => SingleAlleleScoringInfo.GetScoringInfoWithMatchingSerologies(sources.First()));
         }
 
@@ -50,7 +50,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
             return GetMolecularLookupResult(
                 lookupResultSources,
                 allele => nmdpLookupName,
-                HlaTypingCategoryzxyzxtzx.NmdpCodeAllele,
+                HlaTypingCategory.NmdpCodeAllele,
                 MultipleAlleleScoringInfo.GetScoringInfo);
         }
 
@@ -60,14 +60,14 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
             return GetMolecularLookupResult(
                 lookupResultSources,
                 allele => allele.ToXxCodeLookupName(),
-                HlaTypingCategoryzxyzxtzx.XxCode,
+                HlaTypingCategory.XxCode,
                 ConsolidatedMolecularScoringInfo.GetScoringInfo);
         }
 
         private static HlaScoringLookupResult GetMolecularLookupResult(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources,
             Func<AlleleTyping, string> getLookupName,
-            HlaTypingCategoryzxyzxtzx hlaTypingCategoryzxyzxtzx,
+            HlaTypingCategory hlaTypingCategory,
             Func<IEnumerable<IHlaLookupResultSource<AlleleTyping>>, IHlaScoringInfo> getScoringInfo)
         {
             var sources = lookupResultSources.ToList();
@@ -79,7 +79,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
             return new HlaScoringLookupResult(
                 firstAllele.Locus,
                 getLookupName(firstAllele),
-                hlaTypingCategoryzxyzxtzx,
+                hlaTypingCategory,
                 getScoringInfo(sources)
             );
         }
