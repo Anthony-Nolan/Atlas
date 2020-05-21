@@ -81,7 +81,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
 
             var assem = Assembly.GetExecutingAssembly();
             using (var stream =
-                assem.GetManifestResourceStream("Atlas.MatchingAlgorithm.Test.Integration.Resources.HlaMetadataDictionary.all_hla_lookup_results.json")) //QQ this file will need updating.
+                assem.GetManifestResourceStream("Atlas.MatchingAlgorithm.Test.Integration.Resources.HlaMetadataDictionary.all_hla_lookup_results.json"))
             {
                 using (var reader = new StreamReader(stream))
                 {
