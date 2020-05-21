@@ -3,6 +3,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Services.AzureStorage;
+using EnumStringValues;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 
@@ -13,12 +14,25 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
         public string LocusAsString { get; set; }
         public string TypingMethodAsString { get; set; }
         public string HlaTypingCategoryAsString { get; set; }
+        [Obsolete("Deprecated in favour of " + nameof(HlaTypingCategoryAsString))]
+        public string LookupNameCategoryAsString { get; set; }
         public string LookupName { get; set; }
         public string SerialisedHlaInfo { get; set; }
 
-        public Locus Locus => ParseStringToEnum<Locus>(LocusAsString);
-        public TypingMethod TypingMethod => ParseStringToEnum<TypingMethod>(TypingMethodAsString);
-        public HlaTypingCategory HlaTypingCategory => ParseStringToEnum<HlaTypingCategory>(HlaTypingCategoryAsString); //QQ needs attention for rename
+        public Locus Locus => LocusAsString.ParseToEnum<Locus>();
+        public TypingMethod TypingMethod => TypingMethodAsString.ParseToEnum<TypingMethod>();
+
+        public HlaTypingCategory HlaTypingCategory
+        {
+            get
+            {
+                var stringToRead = string.IsNullOrWhiteSpace(HlaTypingCategoryAsString)
+                    ? LookupNameCategoryAsString
+                    : HlaTypingCategoryAsString;
+
+                return stringToRead.ParseToEnum<HlaTypingCategory>();
+            }
+        }
 
         public HlaLookupTableEntity() { }
 
@@ -40,13 +54,6 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
         private static string SerialiseHlaInfo(object hlaInfo)
         {
             return JsonConvert.SerializeObject(hlaInfo);
-        }
-
-        private static TEnum ParseStringToEnum<TEnum>(string str)
-        {
-            return string.IsNullOrEmpty(str)
-                ? throw new ArgumentException($"Cannot convert empty string to {typeof(TEnum).Name}.")
-                : (TEnum)Enum.Parse(typeof(TEnum), str);
         }
     }
 }

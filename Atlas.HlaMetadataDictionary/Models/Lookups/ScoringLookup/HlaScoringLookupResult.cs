@@ -2,6 +2,7 @@
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Models.LookupEntities;
+using EnumStringValues;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {
@@ -36,7 +37,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         {
             return new HlaLookupTableEntity(this)
             {
-                HlaTypingCategoryAsString = HlaTypingCategory.ToString() //QQ needs attention for rename
+                HlaTypingCategoryAsString = HlaTypingCategory.GetStringValue()
             };
         }
 
