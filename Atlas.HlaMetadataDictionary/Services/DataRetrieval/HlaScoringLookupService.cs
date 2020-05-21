@@ -45,7 +45,16 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         protected override IEnumerable<IHlaScoringLookupResult> ConvertTableEntitiesToLookupResults(
             IEnumerable<HlaLookupTableEntity> lookupTableEntities)
         {
-            return lookupTableEntities.Select(entity => entity.ToHlaScoringLookupResult());
+            return lookupTableEntities.Select(entity =>
+            {
+                var scoringInfo = entity.DeserialiseTypedScoringInfo();
+
+                return new HlaScoringLookupResult(
+                    entity.Locus,
+                    entity.LookupName,
+                    scoringInfo,
+                    entity.HlaInfoTypeSerialised);
+            });
         }
 
         protected override IHlaScoringLookupResult ConsolidateHlaLookupResults(
@@ -93,7 +102,6 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             return new HlaScoringLookupResult(
                 locus,
                 lookupName,
-                HlaTypingCategory.AlleleStringOfSubtypes,
                 multipleAlleleScoringInfo
             );
         }
@@ -117,7 +125,6 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             return new HlaScoringLookupResult(
                 locus,
                 lookupName,
-                HlaTypingCategory.AlleleStringOfSubtypes,
                 consolidatedMolecularScoringInfo
             );
         }

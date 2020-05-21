@@ -105,8 +105,8 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataCon
             return new HlaScoringLookupResult(
                 MatchedLocus,
                 SerologyName,
-                HlaTypingCategory.Serology,
-                scoringInfo);
+                scoringInfo,
+                HlaTypingCategory.Serology);
         }
 
         private static IHlaLookupResult BuildSingleAlleleLookupResult(string alleleName)
@@ -114,8 +114,8 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataCon
             return new HlaScoringLookupResult(
                 MatchedLocus,
                 alleleName,
-                HlaTypingCategory.Allele,
-                BuildSingleAlleleScoringInfoWithMatchingSerologies(alleleName)
+                BuildSingleAlleleScoringInfoWithMatchingSerologies(alleleName),
+                HlaTypingCategory.Allele
             );
         }
 
@@ -124,10 +124,10 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataCon
             return new HlaScoringLookupResult(
                 MatchedLocus,
                 lookupName,
-                HlaTypingCategory.NmdpCode,
                 new MultipleAlleleScoringInfo(
                     alleleNames.Select(BuildSingleAlleleScoringInfoExcludingMatchingSerologies),
-                    SerologyEntries)
+                    SerologyEntries),
+                HlaTypingCategory.NmdpCode
             );
         }
 
@@ -138,8 +138,8 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataCon
             return new HlaScoringLookupResult(
                 MatchedLocus,
                 xxCodeLookupName,
-                HlaTypingCategory.XxCode,
-                new ConsolidatedMolecularScoringInfo(alleleNamesCollection, alleleNamesCollection, SerologyEntries)
+                new ConsolidatedMolecularScoringInfo(alleleNamesCollection, alleleNamesCollection, SerologyEntries),
+                HlaTypingCategory.XxCode
             );
         }
 

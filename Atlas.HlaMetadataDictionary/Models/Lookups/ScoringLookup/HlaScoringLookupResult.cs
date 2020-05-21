@@ -2,7 +2,6 @@
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Models.LookupEntities;
-using EnumStringValues;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {
@@ -21,11 +20,22 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         public IHlaScoringInfo HlaScoringInfo { get; }
         public object HlaInfoToSerialise => HlaScoringInfo;
 
+        /// <param name="locus">Locus</param>
+        /// <param name="lookupName">Allele Descriptor</param>
+        /// <param name="hlaTypingCategory">
+        /// This parameter is used for 2 purposes:
+        ///  * Indicating whether the data is Serological or Molecular
+        ///  * Indicating the nature of data to be serialised to AzureStorage
+        /// If this entity won't be serialised then it doesn't matter which of the Molecular values is provided.
+        /// We default to 'AlleleStringOfNames' because it's NOT supported as a serialisation type, thus
+        /// inaccurate usages will cause noisy errors (rather than silent after-the-fact errors)
+        /// </param>
+        /// <param name="hlaScoringInfo">Data</param>
         public HlaScoringLookupResult(
             Locus locus,
             string lookupName,
-            HlaTypingCategory hlaTypingCategory,
-            IHlaScoringInfo hlaScoringInfo)
+            IHlaScoringInfo hlaScoringInfo,
+            HlaTypingCategory hlaTypingCategory = HlaTypingCategory.AlleleStringOfNames)
         {
             Locus = locus;
             LookupName = lookupName;
@@ -35,10 +45,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 
         public HlaLookupTableEntity ConvertToTableEntity()
         {
-            return new HlaLookupTableEntity(this)
-            {
-                HlaTypingCategoryAsString = HlaTypingCategory.GetStringValue()
-            };
+            return new HlaLookupTableEntity(this, HlaTypingCategory);
         }
 
         public bool Equals(HlaScoringLookupResult other)

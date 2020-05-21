@@ -28,8 +28,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
             return new HlaScoringLookupResult(
                 lookupResultSource.TypingForHlaLookupResult.Locus,
                 lookupResultSource.TypingForHlaLookupResult.Name,
-                HlaTypingCategory.Serology,
-                scoringInfo
+                scoringInfo,
+                HlaTypingCategory.Serology
             );
         }
 
@@ -79,8 +79,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
             return new HlaScoringLookupResult(
                 firstAllele.Locus,
                 getLookupName(firstAllele),
-                hlaTypingCategory,
-                getScoringInfo(sources)
+                getScoringInfo(sources),
+                hlaTypingCategory
             );
         }
     }
