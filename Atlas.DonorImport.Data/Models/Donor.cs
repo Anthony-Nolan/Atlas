@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Atlas.Common.Utils.Extensions;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 // ReSharper disable InconsistentNaming
@@ -13,7 +14,6 @@ namespace Atlas.DonorImport.Data.Models
 
         [MaxLength(64)]
         public string DonorId { get; set; }
-
         public DatabaseDonorType DonorType { get; set; }
         public string EthnicityCode { get; set; }
         public string RegistryCode { get; set; }
@@ -30,6 +30,16 @@ namespace Atlas.DonorImport.Data.Models
         public string DRB1_1 { get; set; }
         public string DRB1_2 { get; set; }
         public string Hash { get; set; }
+
+        /// <summary>
+        /// Calculates a hash of donor data.
+        /// Used to efficiently determine whether an inbound donor's details matches one already stored in the system. 
+        /// </summary>
+        public string CalculateHash()
+        {
+            return $"{DonorId}|{DonorType}|{EthnicityCode}|{RegistryCode}|{A_1}|{A_2}|{B_1}|{B_2}|{C_1}|{C_2}|{DPB1_1}|{DPB1_2}|{DQB1_1}|{DQB1_2}|{DRB1_1}|{DRB1_2}"
+                .ToMd5Hash();
+        }
     }
 
     public static class DonorModelBuilder
