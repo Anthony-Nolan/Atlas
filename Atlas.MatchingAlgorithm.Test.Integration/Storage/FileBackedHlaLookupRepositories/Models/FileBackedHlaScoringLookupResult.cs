@@ -46,9 +46,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
             {
                 case HlaTypingCategory.Serology:
                     return JsonConvert.DeserializeObject<SerologyScoringInfo>(hlaScoringInfoString);
-                case HlaTypingCategory.OriginalAllele:
+                case HlaTypingCategory.Allele:
                     return JsonConvert.DeserializeObject<SingleAlleleScoringInfo>(hlaScoringInfoString);
-                case HlaTypingCategory.NmdpCodeAllele:
+                case HlaTypingCategory.NmdpCode:
                     return JsonConvert.DeserializeObject<MultipleAlleleScoringInfo>(hlaScoringInfoString);
                 case HlaTypingCategory.XxCode:
                     return JsonConvert.DeserializeObject<ConsolidatedMolecularScoringInfo>(hlaScoringInfoString);

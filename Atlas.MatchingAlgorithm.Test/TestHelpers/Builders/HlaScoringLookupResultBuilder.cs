@@ -17,7 +17,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 Locus.A,
                 // Scoring information is cached per-lookup name - so these should be unique by default to avoid cache key collision
                 Guid.NewGuid().ToString(),
-                HlaTypingCategory.OriginalAllele,
+                HlaTypingCategory.Allele,
                 new SingleAlleleScoringInfoBuilder().Build()
             );
         }
