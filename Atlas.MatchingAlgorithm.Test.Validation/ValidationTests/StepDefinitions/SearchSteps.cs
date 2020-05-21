@@ -9,6 +9,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestHelpers;
+using EnumStringValues;
 using FluentAssertions;
 using TechTalk.SpecFlow;
 
@@ -27,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         [Given(@"the search type is (.*)")]
         public void GivenTheSearchTypeIs(string searchType)
         {
-            var donorType = (DonorType) Enum.Parse(typeof(DonorType), searchType, true);
+            var donorType = searchType.ParseToEnum<DonorType>();
             var searchRequest = scenarioContext.Get<SearchRequestBuilder>();
             scenarioContext.Set(searchRequest.WithSearchType(donorType));
         }
@@ -35,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         [Given(@"locus (.*) is excluded from aggregate scoring")]
         public void GivenLocusIsExcludedFromAggregateScoring(string locusString)
         {
-            var locus = (Locus) Enum.Parse(typeof(Locus), locusString, true);
+            var locus = locusString.ParseToEnum<Locus>();
             var searchRequest = scenarioContext.Get<SearchRequestBuilder>();
             scenarioContext.Set(searchRequest.WithLociExcludedFromScoringAggregates(new List<Locus> {locus}));
         }
@@ -157,7 +158,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             var searchRequestBuilder = scenarioContext.Get<SearchRequestBuilder>();
 
             var searchHla = patientDataProvider.GetPatientHla();
-            var locus = (Locus) Enum.Parse(typeof(Locus), locusString, true);
+            var locus = locusString.ParseToEnum<Locus>();
             var fullyMatchedLoci = LocusSettings.MatchingOnlyLoci.Except(new[] {locus});
 
             var searchRequest = searchRequestBuilder
