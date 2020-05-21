@@ -17,6 +17,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
     /// necessary for testing without an internet dependency.
     /// </summary>
     public abstract class FileBackedHlaLookupRepositoryBase<THlaLookupResult> :
+        FileBackedHlaLookupRepositoryBaseReader,
         IHlaLookupRepository
         where THlaLookupResult : IHlaLookupResult
     {
@@ -63,19 +64,33 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
             HlaLookupResults = GetHlaLookupResults(resultCollections);
         }
 
-        private static FileBackedHlaLookupResultCollections GetLookupResultsFromJsonFile()
+        protected abstract IEnumerable<THlaLookupResult> GetHlaLookupResults(FileBackedHlaLookupResultCollections resultCollections);
+    }
+
+    /// <summary>
+    /// Static variables exist per-type for generic classes.
+    /// So this would read afresh for each distinct class, if it lived in the class above.
+    /// Having this class allows us to read the file only once.
+    /// </summary>
+    public abstract class FileBackedHlaLookupRepositoryBaseReader
+    {
+        private static FileBackedHlaLookupResultCollections loadedFile = null;
+        protected static FileBackedHlaLookupResultCollections GetLookupResultsFromJsonFile()
         {
+            if (loadedFile != null) { return loadedFile; }
+
             var assem = Assembly.GetExecutingAssembly();
             using (var stream =
                 assem.GetManifestResourceStream("Atlas.MatchingAlgorithm.Test.Integration.Resources.HlaMetadataDictionary.all_hla_lookup_results.json"))
             {
                 using (var reader = new StreamReader(stream))
                 {
-                    return JsonConvert.DeserializeObject<FileBackedHlaLookupResultCollections>(reader.ReadToEnd());
+                    loadedFile = JsonConvert.DeserializeObject<FileBackedHlaLookupResultCollections>(reader.ReadToEnd());
                 }
             }
-        }
 
-        protected abstract IEnumerable<THlaLookupResult> GetHlaLookupResults(FileBackedHlaLookupResultCollections resultCollections);
+            var forceEvaluation = loadedFile.AlleleNameLookupResults.Count(); //Forces population of all the IEnumerables.
+            return loadedFile;
+        }
     }
 }
