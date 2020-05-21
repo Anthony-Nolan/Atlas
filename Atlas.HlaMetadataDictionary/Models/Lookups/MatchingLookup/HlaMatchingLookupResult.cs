@@ -1,10 +1,10 @@
-﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
+﻿using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
+using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.HlaMetadataDictionary.Models.LookupEntities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.Models.LookupEntities;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup
 {

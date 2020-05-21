@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
-using Atlas.Common.Caching;
+﻿using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Extensions;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {

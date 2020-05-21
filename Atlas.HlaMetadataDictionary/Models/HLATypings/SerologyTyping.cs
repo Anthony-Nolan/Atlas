@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 using System;
+using Atlas.Common.GeneticData.Hla.Models;
 
 namespace Atlas.HlaMetadataDictionary.Models.HLATypings
 {

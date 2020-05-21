@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPreCalculation;
 using FluentAssertions;
 using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Models.HlaTypings
 {
