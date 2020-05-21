@@ -3,7 +3,6 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Models.LookupEntities;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
-using EnumStringValues;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories.Models
@@ -33,10 +32,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
 
         public HlaLookupTableEntity ConvertToTableEntity()
         {
-            return new HlaLookupTableEntity(this)
-            {
-                HlaTypingCategoryAsString = HlaTypingCategory.GetStringValue()
-            };
+            return new HlaLookupTableEntity(this, HlaTypingCategory);
         }
 
         private static IHlaScoringInfo GetHlaScoringInfo(
