@@ -16,5 +16,7 @@ namespace Atlas.DonorImport.Models.FileSchema
         public string Ethnicity { get; set; }
         
         public Hla Hla {get;set;}
+        
+        public UpdateMode UpdateMode { get; set; }
     }
 }

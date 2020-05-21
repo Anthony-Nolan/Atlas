@@ -14,15 +14,13 @@ namespace Atlas.Common.Notifications
 
     public class NotificationsClient : INotificationsClient
     {
-        private readonly string connectionString;
         private readonly TopicClient notificationTopicClient;
         private readonly TopicClient alertTopicClient;
 
-        public NotificationsClient(NotificationsServiceBusSettings settings)
+        public NotificationsClient(IOptions<NotificationsServiceBusSettings> settings)
         {
-            connectionString = settings.ConnectionString;
-            notificationTopicClient = CreateNewTopicClient(settings.NotificationsTopic);
-            alertTopicClient = CreateNewTopicClient(settings.AlertsTopic);
+            notificationTopicClient = new TopicClient(settings.Value.ConnectionString, settings.Value.NotificationsTopic);
+            alertTopicClient = new TopicClient(settings.Value.ConnectionString, settings.Value.AlertsTopic);
         }
 
         public async Task SendAlert(Alert alert)
@@ -42,13 +40,6 @@ namespace Atlas.Common.Notifications
             var messageJson = JsonConvert.SerializeObject(message);
             var brokeredMessage = new Message(Encoding.UTF8.GetBytes(messageJson));
             return brokeredMessage;
-        }
-
-
-        private TopicClient CreateNewTopicClient(string path)
-        {
-            var client = new TopicClient(connectionString, path);
-            return client;
         }
     }
 }

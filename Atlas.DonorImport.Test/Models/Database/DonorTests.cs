@@ -17,7 +17,7 @@ namespace Atlas.DonorImport.Test.Models.Database
         {
             var donor = new Donor
             {
-                DonorId = 1,
+                DonorId = "donor-id",
                 DonorType = DatabaseDonorType.Adult,
                 EthnicityCode = "ethnicity",
                 RegistryCode = "registry",
@@ -35,7 +35,7 @@ namespace Atlas.DonorImport.Test.Models.Database
                 DRB1_2 = "hla-drb1-2",
             };
 
-            donor.CalculateHash().Should().Be("qlL3cKZWsvUhFzUOEYXUdw==");
+            donor.CalculateHash().Should().Be("xoP9FpcgRDlMwpCJG9thZQ==");
         }
         /// <summary>
         /// This test is a snapshot of the donor hash implementation, rather than a logical assertion.
@@ -47,7 +47,7 @@ namespace Atlas.DonorImport.Test.Models.Database
         {
             var donor = new Donor
             {
-                DonorId = 1,
+                DonorId = "donor-id",
                 DonorType = DatabaseDonorType.Adult,
                 A_1 = "hla-a-1",
                 A_2 = "hla-a-2",
@@ -57,7 +57,7 @@ namespace Atlas.DonorImport.Test.Models.Database
                 DRB1_2 = "hla-drb1-2",
             };
 
-            donor.CalculateHash().Should().Be("OD+1NI1gNnqOlB9CZWLrdg==");
+            donor.CalculateHash().Should().Be("9OTBtPhkq8BydDpbUUg2qA==");
         }
     }
 }

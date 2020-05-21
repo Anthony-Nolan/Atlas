@@ -9,6 +9,7 @@ namespace Atlas.DonorImport.Data.Context
         public DonorContext(DbContextOptions<DonorContext> options) : base(options)
         {       
         }
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Donor>().SetUpDonorModel();

@@ -5,6 +5,7 @@ using Atlas.Common.Notifications;
 using Atlas.Common.NovaHttpClient.Client;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
 using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
@@ -12,7 +13,6 @@ using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Config;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
@@ -161,11 +161,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IAzureFunctionManager, AzureFunctionManager>();
             services.AddScoped<IAzureDatabaseManager, AzureDatabaseManager>();
 
-            services.AddScoped<INotificationsClient, NotificationsClient>(sp =>
-            {
-                var settings = sp.GetService<IOptions<NotificationsServiceBusSettings>>().Value;
-                return new NotificationsClient(settings);
-            });
+            services.AddScoped<INotificationsClient, NotificationsClient>();
 
             services.AddScoped<IScoringCache, ScoringCache>();
         }

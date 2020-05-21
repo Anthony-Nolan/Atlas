@@ -43,15 +43,11 @@ namespace Atlas.DonorImport.Data.Models
     }
 
     public static class DonorModelBuilder
-
     {
         public static void SetUpDonorModel(this EntityTypeBuilder<Donor> donorModel)
-
         {
             donorModel.Property(p => p.Id).ValueGeneratedOnAdd();
-
             donorModel.HasIndex(d => d.DonorId).IsUnique();
-
             donorModel.HasIndex(d => d.Hash);
         }
     }

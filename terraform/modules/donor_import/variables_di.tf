@@ -32,6 +32,21 @@ variable "servicebus_namespace" {
   })
 }
 
+variable "servicebus_namespace_authorization_rules" {
+  type = object({
+    write-only = object({
+      primary_connection_string = string
+    })
+  })
+}
+
+variable "servicebus_topics" {
+  type = object({
+    alerts        = object({ name = string })
+    notifications = object({ name = string })
+  })
+}
+
 variable "sql_server" {
   type = object({
     name                        = string
