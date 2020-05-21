@@ -22,7 +22,7 @@ namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 
             if (!alleleStatus.DnaCategory.TryParseStringValueToEnum<DnaCategory>(out var dnaCategory))
             {
-                throw new HlaMetadataDictionaryException(alleleStatus, $"DNA category {alleleStatus.DnaCategory} not recognised.");
+                    throw new HlaMetadataDictionaryException(alleleStatus, $"DNA category {alleleStatus.DnaCategory} not recognised.");
             }
 
             return new AlleleTypingStatus(sequenceStatus, dnaCategory);
