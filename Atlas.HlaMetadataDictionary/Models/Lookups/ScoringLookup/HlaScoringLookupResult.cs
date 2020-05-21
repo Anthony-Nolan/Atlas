@@ -17,7 +17,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         public IHlaScoringInfo HlaScoringInfo { get; }
         public object HlaInfoToSerialise => HlaScoringInfo;
 
-        public HlaScoringLookupResult(
+        internal HlaScoringLookupResult( //QQ
             Locus locus,
             string lookupName,
             IHlaScoringInfo hlaScoringInfo,
