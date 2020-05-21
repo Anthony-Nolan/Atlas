@@ -43,10 +43,10 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.Property<string>("C_2")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DPB_1")
+                    b.Property<string>("DPB1_1")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DPB_2")
+                    b.Property<string>("DPB1_2")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DQB1_1")
