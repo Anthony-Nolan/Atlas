@@ -61,7 +61,7 @@ namespace Atlas.DonorImport.Services
         {
             var donor = new Donor
             {
-                DonorId = fileUpdate.RecordId,
+                DonorId = fileUpdate.RecordId.ToString(),
                 DonorType = fileUpdate.DonorType.ToDatabaseType(),
                 EthnicityCode = fileUpdate.Ethnicity,
                 RegistryCode = fileUpdate.RegistryCode,
