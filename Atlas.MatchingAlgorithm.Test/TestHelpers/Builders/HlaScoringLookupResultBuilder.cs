@@ -34,7 +34,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             return this;
         }
 
-        public HlaScoringLookupResultBuilder WithLookupNameCategory(HlaTypingCategory hlaTypingCategory)
+        public HlaScoringLookupResultBuilder WithHlaTypingCategory(HlaTypingCategory hlaTypingCategory)
         {
             result = new HlaScoringLookupResult(result.Locus, result.LookupName, hlaTypingCategory, result.HlaScoringInfo);
             return this;

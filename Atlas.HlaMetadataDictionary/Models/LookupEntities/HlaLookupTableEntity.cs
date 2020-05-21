@@ -12,13 +12,13 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
     {
         public string LocusAsString { get; set; }
         public string TypingMethodAsString { get; set; }
-        public string LookupNameCategoryAsString { get; set; }
+        public string HlaTypingCategoryAsString { get; set; }
         public string LookupName { get; set; }
         public string SerialisedHlaInfo { get; set; }
 
         public Locus Locus => ParseStringToEnum<Locus>(LocusAsString);
         public TypingMethod TypingMethod => ParseStringToEnum<TypingMethod>(TypingMethodAsString);
-        public HlaTypingCategory HlaTypingCategory => ParseStringToEnum<HlaTypingCategory>(LookupNameCategoryAsString); //QQ needs attention for rename
+        public HlaTypingCategory HlaTypingCategory => ParseStringToEnum<HlaTypingCategory>(HlaTypingCategoryAsString); //QQ needs attention for rename
 
         public HlaLookupTableEntity() { }
 

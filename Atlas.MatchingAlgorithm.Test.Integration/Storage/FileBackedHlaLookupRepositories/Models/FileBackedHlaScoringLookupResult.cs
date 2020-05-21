@@ -34,7 +34,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
         {
             return new HlaLookupTableEntity(this)
             {
-                LookupNameCategoryAsString = HlaTypingCategory.ToString() //QQ needs attention for rename
+                HlaTypingCategoryAsString = HlaTypingCategory.ToString() //QQ needs attention for rename
             };
         }
 
