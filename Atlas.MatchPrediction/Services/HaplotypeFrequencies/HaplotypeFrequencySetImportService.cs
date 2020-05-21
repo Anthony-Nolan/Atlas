@@ -1,55 +1,98 @@
-﻿using Atlas.MatchPrediction.Data.Models;
+﻿using Atlas.Common.Utils.Extensions;
+using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models;
-using CsvHelper;
 using CsvHelper.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 {
     public interface IHaplotypeFrequencySetImportService
     {
-        Task Import(Stream blob, HaplotypeFrequencySetMetaData metaData);
+        Task Import(HaplotypeFrequencySetMetaData metaData, Stream blob);
     }
 
     public class HaplotypeFrequencySetImportService : IHaplotypeFrequencySetImportService
     {
-        private readonly IHaplotypeFrequencySetImportRepository importRepository;
+        private readonly IHaplotypeFrequencySetRepository setRepository;
+        private readonly IHaplotypeFrequenciesRepository frequenciesRepository;
 
-        public HaplotypeFrequencySetImportService(IHaplotypeFrequencySetImportRepository importRepository)
+        public HaplotypeFrequencySetImportService(IHaplotypeFrequencySetRepository setRepository, IHaplotypeFrequenciesRepository frequenciesRepository)
         {
-            this.importRepository = importRepository;
+            this.setRepository = setRepository;
+            this.frequenciesRepository = frequenciesRepository;
         }
 
-        public async Task Import(Stream blob, HaplotypeFrequencySetMetaData metaData)
+        public async Task Import(HaplotypeFrequencySetMetaData metaData, Stream blob)
         {
-            var setId = await importRepository.AddHaplotypeFrequencySet(
-                new HaplotypeFrequencySet
-                {
-                    Registry = metaData.Registry,
-                    Ethnicity = metaData.Ethnicity,
-                    Active = true,
-                    Name = metaData.Name,
-                    DateTimeAdded = DateTimeOffset.Now
-                });
+            if (metaData == null || blob == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            var set = await AddSet(metaData);
 
             var frequencies = ReadAllHaplotypeFrequencies(blob);
 
-            await importRepository.AddHaplotypeFrequencies(setId, frequencies);
+            await frequenciesRepository.AddHaplotypeFrequencies(set.Id, frequencies);
+        }
+
+        private async Task<HaplotypeFrequencySet> AddSet(HaplotypeFrequencySetMetaData metaData)
+        {
+            ValidateMetaData(metaData);
+            await DeactivateActiveSetIfExists(metaData);
+            return await AddNewActiveSet(metaData);
+        }
+
+        private static void ValidateMetaData(HaplotypeFrequencySetMetaData metaData)
+        {
+            if (!metaData.Ethnicity.IsNullOrEmpty() && metaData.Registry.IsNullOrEmpty())
+            {
+                throw new ArgumentException($"Cannot import set: Ethnicity ('{metaData.Ethnicity}') provided but no registry.");
+            }
+        }
+
+        private async Task DeactivateActiveSetIfExists(HaplotypeFrequencySetMetaData metaData)
+        {
+           var existingSet = await setRepository.GetActiveSet(metaData.Registry, metaData.Ethnicity);
+
+           if (existingSet == null)
+           {
+               return;
+           }
+
+           await setRepository.DeactivateSet(existingSet);
+        }
+
+        private async Task<HaplotypeFrequencySet> AddNewActiveSet(HaplotypeFrequencySetMetaData metaData)
+        {
+            var newSet = new HaplotypeFrequencySet
+            {
+                Registry = metaData.Registry,
+                Ethnicity = metaData.Ethnicity,
+                Active = true,
+                Name = metaData.Name,
+                DateTimeAdded = DateTimeOffset.Now
+            };
+
+            return await setRepository.AddSet(newSet);
         }
 
         private static IEnumerable<HaplotypeFrequency> ReadAllHaplotypeFrequencies(Stream blob)
         {
+            // TODO: ATLAS-15 - Complete implementation
+            return new List<HaplotypeFrequency>();
+            /*
             using var reader = new StreamReader(blob);
             using var csv = new CsvReader(reader);
             csv.Configuration.Delimiter = ";";
             csv.Configuration.PrepareHeaderForMatch = (string header, int index) => header.ToUpper();
             csv.Configuration.RegisterClassMap<HaplotypeFrequencyMap>();
             return csv.GetRecords<HaplotypeFrequency>().ToList();
+            */
         }
 
         public sealed class HaplotypeFrequencyMap : ClassMap<HaplotypeFrequency>
