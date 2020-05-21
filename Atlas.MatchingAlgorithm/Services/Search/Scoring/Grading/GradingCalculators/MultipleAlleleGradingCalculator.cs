@@ -53,8 +53,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
             IHlaScoringLookupResult patientLookupResult,
             IHlaScoringLookupResult donorLookupResult)
         {
-            var patientAlleles = GetSingleAlleleLookupResults(patientLookupResult);
-            var donorAlleles = GetSingleAlleleLookupResults(donorLookupResult);
+            var patientAlleles = patientLookupResult.GetInTermsOfSingleAlleleScoringMetadata();
+            var donorAlleles = donorLookupResult.GetInTermsOfSingleAlleleScoringMetadata();
 
             var allGrades = patientAlleles.SelectMany(patientAllele => donorAlleles, GetSingleAlleleMatchGrade);
 
