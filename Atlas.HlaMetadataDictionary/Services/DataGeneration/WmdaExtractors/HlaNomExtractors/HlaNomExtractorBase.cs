@@ -1,6 +1,6 @@
-﻿using System.Text.RegularExpressions;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
+﻿using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
+using System.Text.RegularExpressions;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.HlaNomExtractors
 {

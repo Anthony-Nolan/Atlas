@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
+﻿using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Models.LookupEntities;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories
 {

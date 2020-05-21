@@ -1,9 +1,9 @@
-﻿using System.Linq;
-using ApprovalTests;
+﻿using ApprovalTests;
 using ApprovalTests.Reporters;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 using NUnit.Framework;
+using System.Linq;
 
 namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
 {
