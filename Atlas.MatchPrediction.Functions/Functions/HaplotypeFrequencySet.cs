@@ -37,7 +37,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
             {
                 var metaData = metaDataService.GetMetadataFromFileName(fileName);
 
-                await importService.Import(blob, metaData);
+                await importService.Import(metaData, blob);
             }
             catch (Exception ex)
             {
