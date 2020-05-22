@@ -30,6 +30,6 @@
         </None>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
+      <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
     </ItemGroup>
 </Project>
