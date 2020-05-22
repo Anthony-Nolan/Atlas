@@ -53,7 +53,6 @@ namespace Atlas.MatchPrediction.DependencyInjection
             });
         }
 
-
         private static void RegisterServices(this IServiceCollection services)
         {
             services.AddScoped<ILogger>(sp =>
@@ -62,10 +61,10 @@ namespace Atlas.MatchPrediction.DependencyInjection
                 return LoggerRegistration.BuildLogger(settings.InstrumentationKey);
             });
 
-            services.AddScoped<IHaplotypeFrequencySetMetaDataService, HaplotypeFrequencySetMetadataExtractor>();
-            services.AddScoped<IHaplotypeFrequencySetImportService, HaplotypeFrequencySetImportService>();
-            services.AddScoped<IHaplotypeFrequenciesStreamReader, HaplotypeFrequencyCsvFileReader>();
-            services.AddScoped<IFailedImportNotificationSender, FailedImportNotificationSender>();
+            services.AddScoped<IFrequencySetMetadataExtractor, FrequencySetMetadataExtractor>();
+            services.AddScoped<IFrequencySetImporter, FrequencySetImporter>();
+            services.AddScoped<IFrequencyCsvReader, FrequencyCsvReader>();
+            services.AddScoped<IFrequencySetService, FrequencySetService>();
         }
 
         private static string GetSqlConnectionString(IServiceProvider sp)

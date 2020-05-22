@@ -1,6 +1,6 @@
 ﻿namespace Atlas.MatchPrediction.Models
 {
-    public class HaplotypeFrequencySetMetadata
+    internal class HaplotypeFrequencySetMetadata
     {
         public string Registry { get; set; }
         public string Ethnicity { get; set; }

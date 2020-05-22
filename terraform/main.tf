@@ -102,6 +102,18 @@ module "match_prediction" {
   azure_storage        = azurerm_storage_account.azure_storage
   application_insights = azurerm_application_insights.atlas
 
+
+  servicebus_namespace_authorization_rules = {
+    read-write = azurerm_servicebus_namespace_authorization_rule.read-write
+    read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
+    write-only = azurerm_servicebus_namespace_authorization_rule.write-only
+  }
+
+  servicebus_topics = {
+    alerts                    = module.support.general.alerts_servicebus_topic
+    notifications             = module.support.general.notifications_servicebus_topic
+  }
+  
   APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
   DATABASE_PASSWORD              = var.MATCH_PREDICTION_DATABASE_PASSWORD
   DATABASE_USERNAME              = var.MATCH_PREDICTION_DATABASE_USERNAME

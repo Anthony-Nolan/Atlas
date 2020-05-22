@@ -5,13 +5,12 @@ using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 {
-    public interface IHaplotypeFrequencySetMetaDataService
+    internal interface IFrequencySetMetadataExtractor
     {
         HaplotypeFrequencySetMetadata GetMetadataFromFileName(string fileName);
-
     }
 
-    public class HaplotypeFrequencySetMetadataExtractor : IHaplotypeFrequencySetMetaDataService
+    internal class FrequencySetMetadataExtractor : IFrequencySetMetadataExtractor
     {
         public HaplotypeFrequencySetMetadata GetMetadataFromFileName(string fileName)
         {
