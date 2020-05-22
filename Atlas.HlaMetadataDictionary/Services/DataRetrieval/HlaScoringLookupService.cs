@@ -45,16 +45,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         protected override IEnumerable<IHlaScoringLookupResult> ConvertTableEntitiesToLookupResults(
             IEnumerable<HlaLookupTableEntity> lookupTableEntities)
         {
-            return lookupTableEntities.Select(entity =>
-            {
-                var scoringInfo = entity.DeserialiseTypedScoringInfo();
-
-                return new HlaScoringLookupResult(
-                    entity.Locus,
-                    entity.LookupName,
-                    scoringInfo,
-                    entity.TypingMethod);
-            });
+            return lookupTableEntities.Select(entity => entity.ToHlaScoringLookupResult());
         }
 
         protected override IHlaScoringLookupResult ConsolidateHlaLookupResults(

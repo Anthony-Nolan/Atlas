@@ -5,6 +5,10 @@ using Newtonsoft.Json.Converters;
 
 namespace Atlas.Common.GeneticData.Hla.Models
 {
+    /// <summary>
+    /// EnumConverter that recognizes the StringValue attributes and thus can parse out-dated representations of the Enum.
+    /// </summary>
+    /// <typeparam name="TEnum"></typeparam>
     internal class TargetedFlexibleEnumConverter<TEnum> : StringEnumConverter where TEnum : Enum
     {
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
@@ -32,7 +36,7 @@ namespace Atlas.Common.GeneticData.Hla.Models
         }
     }
 
-    [JsonConverter(typeof(TargetedFlexibleEnumConverter<HlaTypingCategory>))]
+    [JsonConverter(typeof(TargetedFlexibleEnumConverter<HlaTypingCategory>))]//TODO: ATLAS-282 All of this stuff about parsing old enum values should be removed.
     public enum HlaTypingCategory
     {
         /// <summary>
