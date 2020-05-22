@@ -21,6 +21,8 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="Atlas.DonorImport.Test" />
+        <InternalsVisibleTo Include="Atlas.DonorImport.Test.Integration" />
+        <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     </ItemGroup>
 
 </Project>
