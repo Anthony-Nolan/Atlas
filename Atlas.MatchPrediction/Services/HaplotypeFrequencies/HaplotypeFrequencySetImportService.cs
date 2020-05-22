@@ -1,17 +1,17 @@
-﻿using Atlas.Common.Utils.Extensions;
-using Atlas.MatchPrediction.Data.Models;
-using Atlas.MatchPrediction.Data.Repositories;
-using Atlas.MatchPrediction.Models;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Utils.Extensions;
+using Atlas.MatchPrediction.Data.Models;
+using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 {
     public interface IHaplotypeFrequencySetImportService
     {
-        Task Import(HaplotypeFrequencySetMetaData metaData, Stream blob);
+        Task Import(HaplotypeFrequencySetMetadata metadata, Stream blob);
     }
 
     public class HaplotypeFrequencySetImportService : IHaplotypeFrequencySetImportService
@@ -30,36 +30,36 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             this.frequenciesRepository = frequenciesRepository;
         }
 
-        public async Task Import(HaplotypeFrequencySetMetaData metaData, Stream blob)
+        public async Task Import(HaplotypeFrequencySetMetadata metadata, Stream blob)
         {
-            if (metaData == null || blob == null)
+            if (metadata == null || blob == null)
             {
                 throw new ArgumentNullException();
             }
 
-            var set = await AddSet(metaData);
+            var set = await AddSet(metadata);
 
             await StoreFrequencies(blob, set);
         }
 
-        private async Task<HaplotypeFrequencySet> AddSet(HaplotypeFrequencySetMetaData metaData)
+        private async Task<HaplotypeFrequencySet> AddSet(HaplotypeFrequencySetMetadata metadata)
         {
-            ValidateMetaData(metaData);
-            await DeactivateActiveSetIfExists(metaData);
-            return await AddNewActiveSet(metaData);
+            ValidateMetaData(metadata);
+            await DeactivateActiveSetIfExists(metadata);
+            return await AddNewActiveSet(metadata);
         }
 
-        private static void ValidateMetaData(HaplotypeFrequencySetMetaData metaData)
+        private static void ValidateMetaData(HaplotypeFrequencySetMetadata metadata)
         {
-            if (!metaData.Ethnicity.IsNullOrEmpty() && metaData.Registry.IsNullOrEmpty())
+            if (!metadata.Ethnicity.IsNullOrEmpty() && metadata.Registry.IsNullOrEmpty())
             {
-                throw new ArgumentException($"Cannot import set: Ethnicity ('{metaData.Ethnicity}') provided but no registry.");
+                throw new ArgumentException($"Cannot import set: Ethnicity ('{metadata.Ethnicity}') provided but no registry.");
             }
         }
 
-        private async Task DeactivateActiveSetIfExists(HaplotypeFrequencySetMetaData metaData)
+        private async Task DeactivateActiveSetIfExists(HaplotypeFrequencySetMetadata metadata)
         {
-           var existingSet = await setRepository.GetActiveSet(metaData.Registry, metaData.Ethnicity);
+           var existingSet = await setRepository.GetActiveSet(metadata.Registry, metadata.Ethnicity);
 
            if (existingSet == null)
            {
@@ -69,14 +69,14 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
            await setRepository.DeactivateSet(existingSet);
         }
 
-        private async Task<HaplotypeFrequencySet> AddNewActiveSet(HaplotypeFrequencySetMetaData metaData)
+        private async Task<HaplotypeFrequencySet> AddNewActiveSet(HaplotypeFrequencySetMetadata metadata)
         {
             var newSet = new HaplotypeFrequencySet
             {
-                Registry = metaData.Registry,
-                Ethnicity = metaData.Ethnicity,
+                Registry = metadata.Registry,
+                Ethnicity = metadata.Ethnicity,
                 Active = true,
-                Name = metaData.Name,
+                Name = metadata.Name,
                 DateTimeAdded = DateTimeOffset.Now
             };
 

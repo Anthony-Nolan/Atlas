@@ -1,4 +1,5 @@
-﻿using Atlas.Common.ApplicationInsights;
+﻿using System;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Data.Context;
@@ -14,39 +15,62 @@ namespace Atlas.MatchPrediction.DependencyInjection
 {
     public static class ServiceConfiguration
     {
-        public static void RegisterFunctionsAppSettings(this IServiceCollection services)
+        public static void RegisterMatchPredictionServices(this IServiceCollection services)
+        {
+            services.RegisterSettings();
+            services.RegisterServices();
+            services.RegisterDatabaseServices();
+            services.RegisterClientServices();
+        }
+
+        private static void RegisterSettings(this IServiceCollection services)
         {
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
 
-        public static void RegisterMatchPredictionServices(this IServiceCollection services)
+        private static void RegisterDatabaseServices(this IServiceCollection services)
         {
             services.AddDbContext<MatchPredictionContext>((sp, options) =>
             {
-                var connString = sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["Sql"];
+                var connString = GetSqlConnectionString(sp);
                 options.UseSqlServer(connString);
             });
 
+            services.AddScoped<IHaplotypeFrequencySetRepository, HaplotypeFrequencySetRepository>();
+            services.AddScoped<IHaplotypeFrequenciesRepository, HaplotypeFrequenciesRepository>(sp =>
+                new HaplotypeFrequenciesRepository(GetSqlConnectionString(sp))
+            );
+        }
+
+        private static void RegisterClientServices(this IServiceCollection services)
+        {
+            services.AddScoped<INotificationsClient, NotificationsClient>(sp =>
+            {
+                var settings = sp.GetService<IOptions<NotificationsServiceBusSettings>>().Value;
+                return new NotificationsClient(settings);
+            });
+        }
+
+
+        private static void RegisterServices(this IServiceCollection services)
+        {
             services.AddScoped<ILogger>(sp =>
             {
                 var settings = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value;
                 return LoggerRegistration.BuildLogger(settings.InstrumentationKey);
             });
 
-            services.AddScoped<INotificationsClient, NotificationsClient>(sp =>
-            {
-                var settings = sp.GetService<IOptions<NotificationsServiceBusSettings>>().Value;
-                return new NotificationsClient(settings);
-            });
-
-            services.AddScoped<IHaplotypeFrequencySetMetaDataService, HaplotypeFrequencySetMetaDataService>();
+            services.AddScoped<IHaplotypeFrequencySetMetaDataService, HaplotypeFrequencySetMetadataExtractor>();
             services.AddScoped<IHaplotypeFrequencySetImportService, HaplotypeFrequencySetImportService>();
             services.AddScoped<IHaplotypeFrequenciesStreamReader, HaplotypeFrequencyCsvFileReader>();
-            services.AddScoped<IHaplotypeFrequencySetRepository, HaplotypeFrequencySetRepository>();
-            services.AddScoped<IHaplotypeFrequenciesRepository, HaplotypeFrequenciesRepository>();
             services.AddScoped<IFailedImportNotificationSender, FailedImportNotificationSender>();
+        }
+
+        private static string GetSqlConnectionString(IServiceProvider sp)
+        {
+            return sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["Sql"];
         }
     }
 }

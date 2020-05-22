@@ -1,4 +1,9 @@
-﻿using Atlas.MatchPrediction.Data.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -6,11 +11,6 @@ using FluentAssertions;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 {
@@ -52,14 +52,14 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         [Test]
         public void Import_BlobStreamIsNull_ThrowsException()
         {
-            importService.Invoking(async service => await service.Import(new HaplotypeFrequencySetMetaData(), null))
+            importService.Invoking(async service => await service.Import(new HaplotypeFrequencySetMetadata(), null))
                 .Should().Throw<Exception>();
         }
 
         [Test]
         public void Import_EthnicityProvidedWithoutRegistry_ThrowsException()
         {
-            var metaData = new HaplotypeFrequencySetMetaData { Ethnicity = "ethnicity" };
+            var metaData = new HaplotypeFrequencySetMetadata { Ethnicity = "ethnicity" };
 
             importService.Invoking(async service => await service.Import(metaData, Stream.Null))
                 .Should().Throw<Exception>();
@@ -70,7 +70,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         [TestCase(null, null)]
         public async Task Import_ChecksForExistingActiveSetUsingMetaData(string registry, string ethnicity)
         {
-            var metaData = new HaplotypeFrequencySetMetaData
+            var metaData = new HaplotypeFrequencySetMetadata
             {
                 Registry = registry,
                 Ethnicity = ethnicity
@@ -91,7 +91,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             const string ethnicity = "ethnicity";
             const int setId = 123;
 
-            var metaData = new HaplotypeFrequencySetMetaData
+            var metaData = new HaplotypeFrequencySetMetadata
             {
                 Registry = registry,
                 Ethnicity = ethnicity
@@ -115,7 +115,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             const string registry = "registry";
             const string ethnicity = "ethnicity";
 
-            var metaData = new HaplotypeFrequencySetMetaData
+            var metaData = new HaplotypeFrequencySetMetadata
             {
                 Registry = registry,
                 Ethnicity = ethnicity
@@ -138,7 +138,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             const string ethnicity = "ethnicity";
             const string name = "name";
 
-            var metaData = new HaplotypeFrequencySetMetaData
+            var metaData = new HaplotypeFrequencySetMetadata
             {
                 Registry = registry,
                 Ethnicity = ethnicity,
@@ -167,7 +167,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         {
             await using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("test")))
             {
-                await importService.Import(new HaplotypeFrequencySetMetaData(), stream);
+                await importService.Import(new HaplotypeFrequencySetMetadata(), stream);
             }
 
             frequenciesStreamReader.Received(1).GetFrequencies(Arg.Any<Stream>(), batchSize: Arg.Any<int>(), startFrom: Arg.Is(0));
@@ -184,7 +184,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 
             await using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("test")))
             {
-                await importService.Import(new HaplotypeFrequencySetMetaData(), stream);
+                await importService.Import(new HaplotypeFrequencySetMetadata(), stream);
             }
 
             await frequenciesRepository.Received(1)
@@ -207,7 +207,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 
             await using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("test")))
             {
-                await importService.Import(new HaplotypeFrequencySetMetaData(), stream);
+                await importService.Import(new HaplotypeFrequencySetMetadata(), stream);
             }
 
             frequenciesStreamReader.Received(1).GetFrequencies(Arg.Any<Stream>(), Arg.Any<int>(), Arg.Is(nonEmptyList.Count));
@@ -221,7 +221,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("test")))
             {
-                importService.Invoking(service => service.Import(new HaplotypeFrequencySetMetaData(), stream))
+                importService.Invoking(service => service.Import(new HaplotypeFrequencySetMetadata(), stream))
                     .Should().Throw<Exception>();
             }
         }

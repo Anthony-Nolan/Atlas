@@ -1,7 +1,7 @@
-﻿using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+﻿using System;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using FluentAssertions;
 using NUnit.Framework;
-using System;
 
 namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 {
@@ -12,7 +12,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         [SetUp]
         public void Setup()
         {
-            metaDataService = new HaplotypeFrequencySetMetaDataService();
+            metaDataService = new HaplotypeFrequencySetMetadataExtractor();
         }
 
         [TestCase(null)]

@@ -1,23 +1,23 @@
-﻿using Atlas.Common.Utils.Extensions;
-using Atlas.MatchPrediction.Models;
-using System;
+﻿using System;
 using System.Linq;
+using Atlas.Common.Utils.Extensions;
+using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 {
     public interface IHaplotypeFrequencySetMetaDataService
     {
-        HaplotypeFrequencySetMetaData GetMetadataFromFileName(string fileName);
+        HaplotypeFrequencySetMetadata GetMetadataFromFileName(string fileName);
 
     }
 
-    public class HaplotypeFrequencySetMetaDataService : IHaplotypeFrequencySetMetaDataService
+    public class HaplotypeFrequencySetMetadataExtractor : IHaplotypeFrequencySetMetaDataService
     {
-        public HaplotypeFrequencySetMetaData GetMetadataFromFileName(string fileName)
+        public HaplotypeFrequencySetMetadata GetMetadataFromFileName(string fileName)
         {
             var filePathSections = GetFilePathSections(fileName);
 
-            return new HaplotypeFrequencySetMetaData
+            return new HaplotypeFrequencySetMetadata
             {
                 Registry = filePathSections.Length > 1 ? filePathSections.First() : null,
                 Ethnicity = filePathSections.Length == 3 ? filePathSections[1] : null,
