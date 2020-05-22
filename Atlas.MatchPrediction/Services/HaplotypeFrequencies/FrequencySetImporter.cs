@@ -6,22 +6,23 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models;
+using MoreLinq.Extensions;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 {
-    public interface IHaplotypeFrequencySetImportService
+    internal interface IFrequencySetImporter
     {
         Task Import(HaplotypeFrequencySetMetadata metadata, Stream blob);
     }
 
-    public class HaplotypeFrequencySetImportService : IHaplotypeFrequencySetImportService
+    internal class FrequencySetImporter : IFrequencySetImporter
     {
-        private readonly IHaplotypeFrequenciesStreamReader frequenciesStreamReader;
+        private readonly IFrequencyCsvReader frequenciesStreamReader;
         private readonly IHaplotypeFrequencySetRepository setRepository;
         private readonly IHaplotypeFrequenciesRepository frequenciesRepository;
 
-        public HaplotypeFrequencySetImportService(
-            IHaplotypeFrequenciesStreamReader frequenciesStreamReader,
+        public FrequencySetImporter(
+            IFrequencyCsvReader frequenciesStreamReader,
             IHaplotypeFrequencySetRepository setRepository,
             IHaplotypeFrequenciesRepository frequenciesRepository)
         {
@@ -37,16 +38,10 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 throw new ArgumentNullException();
             }
 
-            var set = await AddSet(metadata);
-
-            await StoreFrequencies(blob, set);
-        }
-
-        private async Task<HaplotypeFrequencySet> AddSet(HaplotypeFrequencySetMetadata metadata)
-        {
             ValidateMetaData(metadata);
-            await DeactivateActiveSetIfExists(metadata);
-            return await AddNewActiveSet(metadata);
+            var set = await AddNewInactiveSet(metadata);
+            await StoreFrequencies(blob, set.Id);
+            await setRepository.ActivateSet(set.Id);
         }
 
         private static void ValidateMetaData(HaplotypeFrequencySetMetadata metadata)
@@ -57,25 +52,13 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             }
         }
 
-        private async Task DeactivateActiveSetIfExists(HaplotypeFrequencySetMetadata metadata)
-        {
-           var existingSet = await setRepository.GetActiveSet(metadata.Registry, metadata.Ethnicity);
-
-           if (existingSet == null)
-           {
-               return;
-           }
-
-           await setRepository.DeactivateSet(existingSet);
-        }
-
-        private async Task<HaplotypeFrequencySet> AddNewActiveSet(HaplotypeFrequencySetMetadata metadata)
+        private async Task<HaplotypeFrequencySet> AddNewInactiveSet(HaplotypeFrequencySetMetadata metadata)
         {
             var newSet = new HaplotypeFrequencySet
             {
                 Registry = metadata.Registry,
                 Ethnicity = metadata.Ethnicity,
-                Active = true,
+                Active = false,
                 Name = metadata.Name,
                 DateTimeAdded = DateTimeOffset.Now
             };
@@ -83,22 +66,20 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             return await setRepository.AddSet(newSet);
         }
 
-        private async Task StoreFrequencies(Stream blob, HaplotypeFrequencySet set)
+        private async Task StoreFrequencies(Stream stream, int setId)
         {
-            const int batchSize = 1000;
-            var startFrom = 0;
-            var frequencies = frequenciesStreamReader.GetFrequencies(blob, batchSize, startFrom).ToList();
-
+            const int batchSize = 10000;
+            var frequencies = frequenciesStreamReader.GetFrequencies(stream);
+            // ReSharper disable once PossibleMultipleEnumeration - Any will evaluate at most one item
             if (!frequencies.Any())
             {
-                throw new Exception("No haplotype frequencies could be read from the file.");
+                throw new Exception("No haplotype frequencies provided");
             }
-
-            while (frequencies.Any())
+            
+            // ReSharper disable once PossibleMultipleEnumeration
+            foreach (var frequencyBatch in frequencies.Batch(batchSize))
             {
-                await frequenciesRepository.AddHaplotypeFrequencies(set.Id, frequencies);
-                startFrom += frequencies.Count;
-                frequencies = frequenciesStreamReader.GetFrequencies(blob, batchSize, startFrom).ToList();
+                await frequenciesRepository.AddHaplotypeFrequencies(setId, frequencyBatch);
             }
         }
     }

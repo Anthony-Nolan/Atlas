@@ -11,6 +11,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
         Task<HaplotypeFrequencySet> GetActiveSet(string registry, string ethnicity);
         Task DeactivateSet(HaplotypeFrequencySet set);
         Task<HaplotypeFrequencySet> AddSet(HaplotypeFrequencySet set);
+        Task ActivateSet(int setId);
     }
 
     public class HaplotypeFrequencySetRepository : IHaplotypeFrequencySetRepository
@@ -41,6 +42,20 @@ namespace Atlas.MatchPrediction.Data.Repositories
             await context.HaplotypeFrequencySets.AddAsync(set);
             await context.SaveChangesAsync();
             return set;
+        }
+
+        // TODO: Integration tests for this
+        public async Task ActivateSet(int setId)
+        {
+            var set = await context.HaplotypeFrequencySets.SingleAsync(s => s.Id == setId);
+            set.Active = true;
+            var otherMatchingSets = context.HaplotypeFrequencySets.Where(s => s.Ethnicity == set.Ethnicity && s.Registry == set.Registry);
+            foreach (var otherMatchingSet in otherMatchingSets)
+            {
+                otherMatchingSet.Active = false;
+            }
+
+            await context.SaveChangesAsync();
         }
     }
 }
