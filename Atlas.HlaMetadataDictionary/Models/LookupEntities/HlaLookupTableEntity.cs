@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
@@ -18,7 +19,7 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
         public string TypingMethodAsString { get; set; }
         public TypingMethod TypingMethod => TypingMethodAsString.ParseToEnum<TypingMethod>();
         public string LookupName { get; set; }
-        public string SerialisedHlaInfoType { get; set; }
+        public string SerialisedHlaInfoType { get; set; } //This field is only in-practice used for ScoringInfos. See
         public string SerialisedHlaInfo { get; set; }
 
         public HlaLookupTableEntity() { }
@@ -39,9 +40,9 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
         // It's all related specifically to the Serialised data associated with Scoring LookupResults which is sub-typed depending on the
         // nature of the allele descriptor in question.
 
-        [Obsolete("Deprecated in favour of " + nameof(SerialisedHlaInfoType))]//TODO: Delete this property once all the extant Storages have been re-generated.
+        [Obsolete("Deprecated in favour of " + nameof(SerialisedHlaInfoType))]//TODO: ATLAS-282 Delete this property once all the extant Storages have been re-generated.
         public string LookupNameCategoryAsString { get; set; }
-        public string BackwardsCompatible_SerialisedHlaInfoType
+        public string BackwardsCompatible_SerialisedHlaInfoType //TODO: ATLAS-282
         {
             get
             {
@@ -75,25 +76,49 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
 
         public T GetHlaInfo<T>()
         {
+            if (nameof(T) != SerialisedHlaInfoType)
+            {
+                throw new InvalidOperationException($"Expected to find '{nameof(T)}' data to be deserialised. But actually the data is labeled as '{SerialisedHlaInfoType}'. Unable to proceed.");
+            }
             return JsonConvert.DeserializeObject<T>(SerialisedHlaInfo);
         }
 
-        public IHlaScoringInfo DeserialiseTypedScoringInfo()
+        #endregion
+    }
+
+    /// There are a bunch of extension methods on HlaLookupTableEntity trying to work around the fact that Azure Storage
+    /// doesn't support sub-typing at all nicely. All the other extension methods are in separate sibling files.
+    /// This one is here in this file because it is so tightly integrated with BackwardsCompatible_SerialisedHlaInfoType.
+    /// TODO: ATLAS-282. Once that's gone, it can be moved into a separate sibling file like the other extension classes.
+    public static class HlaScoringLookupResultExtensions
+    {
+        public static IHlaScoringLookupResult ToHlaScoringLookupResult(this HlaLookupTableEntity entity)
         {
-            switch (BackwardsCompatible_SerialisedHlaInfoType)
+            var scoringInfo = entity.DeserialiseTypedScoringInfo();
+
+            return new HlaScoringLookupResult(
+                entity.Locus,
+                entity.LookupName,
+                scoringInfo,
+                entity.TypingMethod);
+        }
+
+        private static IHlaScoringInfo DeserialiseTypedScoringInfo(this HlaLookupTableEntity entity)
+        {
+            switch (entity.BackwardsCompatible_SerialisedHlaInfoType)
             {
                 case nameof(SerologyScoringInfo):
-                    return GetHlaInfo<SerologyScoringInfo>();
+                    return entity.GetHlaInfo<SerologyScoringInfo>();
                 case nameof(SingleAlleleScoringInfo):
-                    return GetHlaInfo<SingleAlleleScoringInfo>();
+                    return entity.GetHlaInfo<SingleAlleleScoringInfo>();
                 case nameof(MultipleAlleleScoringInfo):
-                    return GetHlaInfo<MultipleAlleleScoringInfo>();
+                    return entity.GetHlaInfo<MultipleAlleleScoringInfo>();
                 case nameof(ConsolidatedMolecularScoringInfo):
-                    return GetHlaInfo<ConsolidatedMolecularScoringInfo>();
+                    return entity.GetHlaInfo<ConsolidatedMolecularScoringInfo>();
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
-        #endregion
     }
+
 }

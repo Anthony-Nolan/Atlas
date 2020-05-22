@@ -27,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
             Locus locus,                            //*******************
             string lookupName,                      //****    See    ****
             TypingMethod typingMethod,              //****  warning  ****
-            HlaTypingCategory hlaScoringInfoType,   //****   above   ****
+            string hlaScoringInfoType,              //****   above   ****
             object hlaScoringInfo)                  //*******************
         {
             Locus = locus;
@@ -42,18 +42,18 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
         }
 
         private static IHlaScoringInfo GetHlaScoringInfo(
-            HlaTypingCategory hlaScoringInfoType,
+            string hlaScoringInfoType,
             string hlaScoringInfoString)
         {
             switch (hlaScoringInfoType)
             {
-                case HlaTypingCategory.Serology:
+                case nameof(SerologyScoringInfo):
                     return JsonConvert.DeserializeObject<SerologyScoringInfo>(hlaScoringInfoString);
-                case HlaTypingCategory.Allele:
+                case nameof(SingleAlleleScoringInfo):
                     return JsonConvert.DeserializeObject<SingleAlleleScoringInfo>(hlaScoringInfoString);
-                case HlaTypingCategory.NmdpCode:
+                case nameof(MultipleAlleleScoringInfo):
                     return JsonConvert.DeserializeObject<MultipleAlleleScoringInfo>(hlaScoringInfoString);
-                case HlaTypingCategory.XxCode:
+                case nameof(ConsolidatedMolecularScoringInfo):
                     return JsonConvert.DeserializeObject<ConsolidatedMolecularScoringInfo>(hlaScoringInfoString);
                 default:
                     throw new ArgumentOutOfRangeException();
