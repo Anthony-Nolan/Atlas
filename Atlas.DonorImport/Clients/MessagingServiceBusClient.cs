@@ -1,4 +1,3 @@
-using System;
 using System.Text;
 using System.Threading.Tasks;
 using Atlas.DonorImport.Settings.ServiceBus;
@@ -9,12 +8,12 @@ using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Clients
 {
-    public interface IMessagingServiceBusClient
+    internal interface IMessagingServiceBusClient
     {
         Task PublishDonorUpdateMessage(SearchableDonorUpdate donorUpdate);
     }
 
-    public class MessagingServiceBusClient : IMessagingServiceBusClient
+    internal class MessagingServiceBusClient : IMessagingServiceBusClient
     {
         private readonly TopicClient donorUpdateTopicClient;
 
