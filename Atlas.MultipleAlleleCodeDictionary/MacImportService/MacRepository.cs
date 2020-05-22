@@ -5,20 +5,19 @@ using Atlas.MultipleAlleleCodeDictionary.Models;
 using Microsoft.Azure.Cosmos.Table;
 
 namespace Atlas.MultipleAlleleCodeDictionary.MacImportService{
-    public interface IMacCodeRepository
+    public interface IMacRepository
     {
-        public string GetLastMacCodeEntry();
-        public Task InsertMac(List<MacCode> macCodes);
+        public string GetLastMacEntry();
+        public Task InsertMacs(List<MultipleAlleleCodeEntity> macCodes);
     }
     
-    public class MacCodeRepository : IMacCodeRepository
+    public class MacRepository : IMacRepository
     {
 
         private CloudTable Table { get; set; }
         
-        public MacCodeRepository()
+        public MacRepository()
         {
-            var settings = AppSettings.LoadAppSettings();
             var connectionString  = AppSettings.LoadAppSettings().StorageConnectionString;
             connectionString =
                 "DefaultEndpointsProtocol=https;AccountName=devatlasstorage;AccountKey=ELvrCzBAaZBrpmSgZhV1X18q619mv3+dp+ldsd6D6QGYAEIVTO1c690eOiK4HmyBBmrczjW4gK6BZjE54ZJggA==;EndpointSuffix=core.windows.net";
@@ -30,13 +29,13 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportService{
             Table = tableClient.GetTableReference(tableName);
         }
         
-        public string GetLastMacCodeEntry()
+        public string GetLastMacEntry()
         {
-            var query = new TableQuery<MacCode>();
+            var query = new TableQuery<MultipleAlleleCodeEntity>();
             return Table.ExecuteQuery(query).OrderByDescending(x => x.PartitionKey).First().PartitionKey;
         }
 
-        public async Task InsertMac(List<MacCode> objects){
+        public async Task InsertMacs(List<MultipleAlleleCodeEntity> objects){
             for (var i = 0; i < objects.Count - 100 ; i += 100)
             {
                 var batchOp = new TableBatchOperation();

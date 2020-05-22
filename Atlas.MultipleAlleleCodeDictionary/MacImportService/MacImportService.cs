@@ -6,19 +6,19 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
     public class MacImporter
     {
         
-        private IMacCodeRepository MacCodeRepository { get; set; }
-        private INmdpCodeParser MacCodeParser { get; set; }
+        private IMacRepository MacRepository { get; set; }
+        private IMacParser MacCodeParser { get; set; }
         
         public MacImporter()
         {
-            MacCodeRepository = new MacCodeRepository();
-            MacCodeParser = new NmdpCodeLineParser();
+            MacRepository = new MacRepository();
+            MacCodeParser = new MacLineParser();
         }
         public void ImportLatestMultipleAlleleCodes()
         {
-            var lastEntryBeforeInsert = MacCodeRepository.GetLastMacCodeEntry();
-            var blank = MacCodeParser.ParseNmdpCodeLinesToModelSet(lastEntryBeforeInsert);
-            MacCodeRepository.InsertMac(blank);
+            var lastEntryBeforeInsert = MacRepository.GetLastMacEntry();
+            var newMacs = MacCodeParser.GetMacsSinceLastEntry(lastEntryBeforeInsert);
+            MacRepository.InsertMacs(newMacs);
         }
     }
 }
