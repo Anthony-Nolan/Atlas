@@ -65,7 +65,6 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
                 matchingSerologies);
         }
 
-        public bool IsConvertibleToSingleAllelesInfo => true;
         public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo() => AlleleScoringInfos.ToList();
 
         #region IEquatable
