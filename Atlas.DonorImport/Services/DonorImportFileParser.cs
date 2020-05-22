@@ -8,12 +8,12 @@ namespace Atlas.DonorImport.Services
 {
     internal interface IDonorImportFileParser
     {
-        public IEnumerable<DonorUpdate> ParseDonorUpdates(Stream stream);
+        public IEnumerable<DonorUpdate> LazilyParseDonorUpdates(Stream stream);
     }
 
     internal class DonorImportFileParser : IDonorImportFileParser
     {
-        public IEnumerable<DonorUpdate> ParseDonorUpdates(Stream stream)
+        public IEnumerable<DonorUpdate> LazilyParseDonorUpdates(Stream stream)
         {
             using var streamReader = new StreamReader(stream);
             using var reader = new JsonTextReader(streamReader);
@@ -34,10 +34,9 @@ namespace Atlas.DonorImport.Services
                             // We do not yet care about the update mode
                             break;
                         case "donors":
-                            // Read into property
-                            reader.Read();
-                            // Read into array. Do not deserialize to collection, as the collection can be very large and requires streaming.
-                            reader.Read();
+                            reader.Read(); // Read into property
+                            reader.Read(); // Read into array. Do not deserialize to collection, as the collection can be very large and requires streaming.
+
                             // Loops through all donors in array
                             do
                             {
