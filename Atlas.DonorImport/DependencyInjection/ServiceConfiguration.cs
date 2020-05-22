@@ -8,6 +8,7 @@ namespace Atlas.DonorImport.DependencyInjection
         public static void RegisterDonorImportTypes(this IServiceCollection services)
         {
             services.AddScoped<IDonorImporter, DonorImporter>();
+            services.AddScoped<IDonorImportFileParser, DonorImportFileParser>();
         }
     }
 }
