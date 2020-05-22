@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace Atlas.DonorImport.Test.Services
 {
     [TestFixture]
-    public class DonorImportFileParserTests
+    internal class DonorImportFileParserTests
     {
         private IDonorImportFileParser donorImportFileParser;
 

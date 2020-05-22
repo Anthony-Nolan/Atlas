@@ -21,6 +21,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="Atlas.DonorImport.Test" />
+        <InternalsVisibleTo Include="Atlas.DonorImport.Test.Integration" />
     </ItemGroup>
 
 </Project>

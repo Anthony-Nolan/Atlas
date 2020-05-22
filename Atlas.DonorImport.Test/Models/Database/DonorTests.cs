@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace Atlas.DonorImport.Test.Models.Database
 {
     [TestFixture]
-    public class DonorTests
+    internal class DonorTests
     {
         /// <summary>
         /// This test is a snapshot of the donor hash implementation, rather than a logical assertion.

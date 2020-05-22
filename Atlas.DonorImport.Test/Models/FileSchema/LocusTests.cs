@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace Atlas.DonorImport.Test.Models.FileSchema
 {
     [TestFixture]
-    public class LocusTests
+    internal class LocusTests
     {
         private const string DefaultMolecularHlaValue = "hla-molecular";
         private const string DefaultSerologyHlaValue = "hla-serology";

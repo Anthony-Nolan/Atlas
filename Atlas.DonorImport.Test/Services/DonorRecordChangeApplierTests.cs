@@ -14,7 +14,7 @@ using NUnit.Framework;
 namespace Atlas.DonorImport.Test.Services
 {
     [TestFixture]
-    public class DonorRecordChangeApplierTests
+    internal class DonorRecordChangeApplierTests
     {
         private IDonorRepository donorRepository;
         private IMessagingServiceBusClient messagingServiceBusClient;
