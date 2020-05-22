@@ -40,7 +40,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.InitialDataLoad
         public async Task ImportDonors_NewDonor_IsAddedCorrectly()
         {
             const string selectedDonorId = "1";
-            const string expectedDonorHash = "eZOqelWRzPRjIlO/E8b6OQ=="; 
+            const string expectedDonorHash = "MHH/OTtSeI96PClybhTF0g=="; 
 
             var actualDonor = await donorRepository.GetDonor(selectedDonorId);
             
