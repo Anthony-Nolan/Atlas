@@ -15,6 +15,7 @@ namespace Atlas.DonorImport.Functions.Functions
         
         [FunctionName(nameof(ImportDonorFile))]
         public void ImportDonorFile(
+            // Raw JSON Text file containing donor updates in expected schema
             [BlobTrigger("%AzureStorage:DonorFileBlobContainer%/{fileName}", Connection = "AzureStorage:ConnectionString")]
             Stream blobStream,
             string fileName)

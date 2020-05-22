@@ -5,7 +5,7 @@ namespace Atlas.DonorImport.Models.FileSchema
     /// <summary>
     /// Donor Type as defined by the schema agreed for external use when uploading donor imports.  
     /// </summary>
-    public enum ImportDonorType
+    internal enum ImportDonorType
     {
         [EnumMember(Value = "D")] Adult,
         [EnumMember(Value = "C")] Cord,

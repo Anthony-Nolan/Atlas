@@ -8,12 +8,12 @@ namespace Atlas.DonorImport.Services
 {
     internal interface IDonorImportFileParser
     {
-        public IEnumerable<DonorUpdate> ParseDonorUpdates(Stream stream);
+        public IEnumerable<DonorUpdate> LazilyParseDonorUpdates(Stream stream);
     }
 
     internal class DonorImportFileParser : IDonorImportFileParser
     {
-        public IEnumerable<DonorUpdate> ParseDonorUpdates(Stream stream)
+        public IEnumerable<DonorUpdate> LazilyParseDonorUpdates(Stream stream)
         {
             using var streamReader = new StreamReader(stream);
             using var reader = new JsonTextReader(streamReader);
