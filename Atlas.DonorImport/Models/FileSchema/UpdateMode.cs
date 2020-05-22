@@ -6,7 +6,7 @@ namespace Atlas.DonorImport.Models.FileSchema
     /// Used to differentiate between the type of file being uploaded.
     /// All files will use the same differential schema - this is used to distinguish an initial load of donors from ongoing additions of new donors.
     /// </summary>
-    public enum UpdateMode
+    internal enum UpdateMode
     {
         [EnumMember(Value = "diff")] Differential,
         [EnumMember(Value = "initial")] Initial
