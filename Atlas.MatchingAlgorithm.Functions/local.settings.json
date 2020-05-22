@@ -1,7 +1,7 @@
 {
   "IsEncrypted": false,
   "Values": {
-    "ApplicationInsights:InstrumentationKey": "key",
+    "ApplicationInsights:InstrumentationKey": "dummy-key",
     "ApplicationInsights:LogLevel": "Info",
     "AzureManagement:Authentication:ClientId": "5b04c766-cc2e-41f6-9782-2b93df889e44",
     "AzureManagement:Authentication:ClientSecret": "override-this",
