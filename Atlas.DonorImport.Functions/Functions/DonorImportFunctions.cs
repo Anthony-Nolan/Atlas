@@ -4,11 +4,11 @@ using Microsoft.Azure.WebJobs;
 
 namespace Atlas.DonorImport.Functions.Functions
 {
-    public class DonorImport
+    public class DonorImportFunctions
     {
         private readonly IDonorImporter donorImporter;
 
-        public DonorImport(IDonorImporter donorImporter)
+        public DonorImportFunctions(IDonorImporter donorImporter)
         {
             this.donorImporter = donorImporter;
         }
