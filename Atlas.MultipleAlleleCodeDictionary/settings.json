@@ -1,0 +1,4 @@
+﻿{
+  "StorageConnectionString": "DefaultEndpointsProtocol=https;AccountName=devatlasstorage;AccountKey=ELvrCzBAaZBrpmSgZhV1X18q619mv3+dp+ldsd6D6QGYAEIVTO1c690eOiK4HmyBBmrczjW4gK6BZjE54ZJggA==;EndpointSuffix=core.windows.net",
+  "TableName": "AtlasMultipleAlleleCodes"
+}
