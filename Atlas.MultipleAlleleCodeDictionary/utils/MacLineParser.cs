@@ -6,53 +6,53 @@ using Atlas.MultipleAlleleCodeDictionary.Models;
 
 namespace Atlas.MultipleAlleleCodeDictionary.utils
 {
-    public interface INmdpCodeParser
+    public interface IMacParser
     {
-        public List<MacCode> ParseNmdpCodeLinesToModelSet(string lastNmdpCodeEntry);
+        public List<MultipleAlleleCodeEntity> GetMacsSinceLastEntry(string lastMacEntry);
     }
 
-    public class NmdpCodeLineParser : INmdpCodeParser
+    public class MacLineParser : IMacParser
     {
         private readonly IStreamProcessor streamProcessor;
 
-        public NmdpCodeLineParser()
+        public MacLineParser()
         {
             const string url = "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip";
             streamProcessor = new StreamProcessor(url);
         }
 
-        public List<MacCode> ParseNmdpCodeLinesToModelSet(string lastNmdpCodeEntry)
+        public List<MultipleAlleleCodeEntity> GetMacsSinceLastEntry(string lastMacEntry)
         {
-            var macCodes = new List<MacCode>();
+            var macCodes = new List<MultipleAlleleCodeEntity>();
 
-            using var stream = GetNmdpCodeStream();
+            using var stream = GetStream();
             using var reader = new StreamReader(stream);
-            ReadToEntry(reader, lastNmdpCodeEntry);
+            ReadToEntry(reader, lastMacEntry);
 
             while (!reader.EndOfStream)
             {
-                var nmdpCodeLine = reader.ReadLine()?.TrimEnd();
+                var macLine = reader.ReadLine()?.TrimEnd();
 
-                if (string.IsNullOrWhiteSpace(nmdpCodeLine))
+                if (string.IsNullOrWhiteSpace(macLine))
                 {
                     continue;
                 }
                 
-                macCodes.Add(ParseMac(nmdpCodeLine)); 
+                macCodes.Add(ParseMac(macLine)); 
             }
 
             return macCodes;
         }
 
-        private static MacCode ParseMac(string macString)
+        private static MultipleAlleleCodeEntity ParseMac(string macString)
         {
             var substrings = macString.Split('\t');
             var isGeneric = substrings[0] != "*";
-            return new MacCode(substrings[1], substrings[2], isGeneric);
+            return new MultipleAlleleCodeEntity(substrings[1], substrings[2], isGeneric);
 
         }
 
-        private Stream GetNmdpCodeStream()
+        private Stream GetStream()
         {
             const int maxRetries = 3;
             var retries = 0;
