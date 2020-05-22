@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Atlas.DonorImport.Models.FileSchema;
 using Newtonsoft.Json;
@@ -18,7 +17,7 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
 
         public static Stream BuildFileStream(int numberOfDonors)
         {
-            var donorUpdates = Enumerable.Range(0, numberOfDonors).Select(i => DonorUpdateBuilder.New.Build());
+            var donorUpdates = DonorUpdateBuilder.New.Build(numberOfDonors);
             return BuildFileStream(donorUpdates);
         }
 
