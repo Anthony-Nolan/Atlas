@@ -31,9 +31,8 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
                 lookupResultSource.MatchingSerologies.Select(m => m.ToSerologyEntry()));
         }
 
-        public bool IsConvertibleToSingleAllelesInfo => false;
         public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo()
-            => throw new InvalidOperationException($"{nameof(SerologyScoringInfo)} cannot be expressed in terms of SingleAlleles, as requested.");
+            => throw new NotSupportedException($"Converting {nameof(SerologyScoringInfo)} to SingleAllele Info cannot be done quickly and is thus not currently supported.");
 
         #region IEquatable
         public bool Equals(SerologyScoringInfo other)

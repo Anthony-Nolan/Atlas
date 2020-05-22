@@ -39,9 +39,8 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
                 );
         }
 
-        public bool IsConvertibleToSingleAllelesInfo => false;
         public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo()
-            => throw new InvalidOperationException($"{nameof(ConsolidatedMolecularScoringInfo)} cannot be expressed in terms of SingleAlleles, as requested.");
+            => throw new NotSupportedException($"Converting {nameof(ConsolidatedMolecularScoringInfo)} to SingleAllele Info cannot be done quickly and is thus not currently supported.");
 
         #region IEquatable
         public bool Equals(ConsolidatedMolecularScoringInfo other)
