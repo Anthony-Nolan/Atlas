@@ -18,7 +18,7 @@ namespace Atlas.DonorImport.Services
         
         public void ImportDonorFile(Stream fileStream)
         {
-            var donorUpdates = fileParser.ParseDonorUpdates(fileStream);
+            var donorUpdates = fileParser.LazilyParseDonorUpdates(fileStream);
         }
     }
 }
