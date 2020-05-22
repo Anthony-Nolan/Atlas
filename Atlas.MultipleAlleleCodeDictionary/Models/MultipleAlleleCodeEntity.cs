@@ -3,13 +3,13 @@ using Microsoft.Azure.Cosmos.Table;
 
 namespace Atlas.MultipleAlleleCodeDictionary.Models
 {
-    public class MacCode : TableEntity
+    public class MultipleAlleleCodeEntity : TableEntity
     {
-        public MacCode()
+        public MultipleAlleleCodeEntity()
         {
             
         }
-        public MacCode(string mac, string hla, bool isGeneric = false)
+        public MultipleAlleleCodeEntity(string mac, string hla, bool isGeneric = false)
         {
             PartitionKey = "MAC";
             RowKey = mac;
