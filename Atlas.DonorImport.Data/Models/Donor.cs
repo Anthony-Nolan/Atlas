@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 // ReSharper disable InconsistentNaming
 
@@ -9,9 +11,9 @@ namespace Atlas.DonorImport.Data.Models
     {
         public int Id { get; set; }
 
-        // TODO: ATLAS-167: ADD unique index to DonorId
-        public int DonorId { get; set; }
-        
+        [MaxLength(64)]
+        public string DonorId { get; set; }
+
         public DatabaseDonorType DonorType { get; set; }
         public string EthnicityCode { get; set; }
         public string RegistryCode { get; set; }
@@ -28,5 +30,19 @@ namespace Atlas.DonorImport.Data.Models
         public string DRB1_1 { get; set; }
         public string DRB1_2 { get; set; }
         public string Hash { get; set; }
+    }
+
+    public static class DonorModelBuilder
+
+    {
+        public static void SetUpDonorModel(this EntityTypeBuilder<Donor> donorModel)
+
+        {
+            donorModel.Property(p => p.Id).ValueGeneratedOnAdd();
+
+            donorModel.HasIndex(d => d.DonorId).IsUnique();
+
+            donorModel.HasIndex(d => d.Hash);
+        }
     }
 }
