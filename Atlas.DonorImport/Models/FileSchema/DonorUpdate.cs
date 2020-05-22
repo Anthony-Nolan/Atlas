@@ -2,11 +2,11 @@ using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Models.FileSchema
 {
-    public class DonorUpdate
+    internal class DonorUpdate
     {
         public int RecordId { get; set; }
-        public ChangeType ChangeType { get; set; }
-        public DonorType DonorType { get; set; }
+        public ImportDonorChangeType ImportDonorChangeType { get; set; }
+        public ImportDonorType ImportDonorType { get; set; }
 
         [JsonProperty(PropertyName = "donPool")]
         public int RegistryCode { get; set; }

@@ -2,7 +2,7 @@ using System.Runtime.Serialization;
 
 namespace Atlas.DonorImport.Models.FileSchema
 {
-    public enum ChangeType
+    internal enum ImportDonorChangeType
     {
         [EnumMember(Value = "N")] Create,
         [EnumMember(Value = "D")] Delete,
