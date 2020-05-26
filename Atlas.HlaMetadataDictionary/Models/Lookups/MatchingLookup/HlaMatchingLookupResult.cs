@@ -29,11 +29,6 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup
             TypingMethod = typingMethod;
             MatchingPGroups = matchingPGroups;
         }
-
-        public HlaLookupTableEntity ConvertToTableEntity()
-        {
-            return new HlaLookupTableEntity(this);
-        }
         
         public bool Equals(HlaMatchingLookupResult other)
         {

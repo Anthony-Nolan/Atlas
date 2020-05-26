@@ -18,10 +18,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         public TypingMethod TypingMethod { get; }
         public object HlaInfoToSerialise { get; }
         public bool IsNullExpressingTyping { get; }
-        public HlaLookupTableEntity ConvertToTableEntity()
-        {
-            throw new NotImplementedException();
-        }
     }
 
 

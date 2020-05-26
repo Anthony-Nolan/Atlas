@@ -29,10 +29,5 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
             MatchingPGroups = matchingPGroups;
             IsNullExpressingTyping = isNullExpressingTyping;
         }
-
-        public HlaLookupTableEntity ConvertToTableEntity()
-        {
-            return new HlaLookupTableEntity(this);
-        }
     }
 }
