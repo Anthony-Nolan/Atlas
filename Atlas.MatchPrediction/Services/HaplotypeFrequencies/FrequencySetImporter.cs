@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Data.Models;
@@ -70,16 +69,19 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         {
             const int batchSize = 10000;
             var frequencies = frequenciesStreamReader.GetFrequencies(stream);
-            // ReSharper disable once PossibleMultipleEnumeration - Any will evaluate at most one item
-            if (!frequencies.Any())
-            {
-                throw new Exception("No haplotype frequencies provided");
-            }
+
+            // Cannot check if full frequency list has any entries without enumerating it, so we must check when processing rather than up-front
+            var hasImportedAnyFrequencies = false;
             
-            // ReSharper disable once PossibleMultipleEnumeration
             foreach (var frequencyBatch in frequencies.Batch(batchSize))
             {
                 await frequenciesRepository.AddHaplotypeFrequencies(setId, frequencyBatch);
+                hasImportedAnyFrequencies = true;
+            }
+            
+            if (!hasImportedAnyFrequencies)
+            {
+                throw new Exception("No haplotype frequencies provided");
             }
         }
     }
