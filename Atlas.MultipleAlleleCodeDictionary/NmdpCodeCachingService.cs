@@ -140,6 +140,7 @@ namespace Atlas.MultipleAlleleCodeDictionary
             });
 
             return antigens
+                .Distinct()
                 .Where(a => IsNmdpCode(a.NmdpString))
                 .Select(a => new {NmdpCode = a.NmdpString, Alleles = GetAllelesFromHlaName(a.HlaName)})
                 .Where(a => a.Alleles != null)
