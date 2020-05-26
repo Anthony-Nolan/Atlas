@@ -32,7 +32,7 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
             LocusAsString = lookupResult.Locus.ToString();
             TypingMethodAsString = lookupResult.TypingMethod.ToString();
             LookupName = lookupResult.LookupName;
-            SerialisedHlaInfoType = lookupResult.HlaInfoToSerialise.GetType().GetNeatCSharpName(); //See not below.
+            SerialisedHlaInfoType = lookupResult.HlaInfoToSerialise.GetType().GetNeatCSharpName(); //See note below.
             SerialisedHlaInfo = SerialiseHlaInfo(lookupResult.HlaInfoToSerialise);
         }
 
