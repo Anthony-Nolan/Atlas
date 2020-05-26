@@ -44,10 +44,6 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
 
         public T GetHlaInfo<T>()
         {
-            if (nameof(T) != SerialisedHlaInfoType)
-            {
-                throw new InvalidOperationException($"Expected to find '{nameof(T)}' data to be deserialised. But actually the data is labeled as '{SerialisedHlaInfoType}'. Unable to proceed.");
-            }
             return JsonConvert.DeserializeObject<T>(SerialisedHlaInfo);
         }
     }
