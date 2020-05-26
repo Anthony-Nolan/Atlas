@@ -14,6 +14,6 @@
     "FUNCTIONS.WORKER.RUNTIME": "dotnet"
   },
   "ConnectionStrings": {
-    "Sql": "Data Source=(local);Initial Catalog=DonorImport;Integrated Security=True;MultipleActiveResultSets=True;"
+    "Sql": "Data Source=(local);Initial Catalog=AtlasDonorImport;Integrated Security=True;MultipleActiveResultSets=True;"
   }
 }
