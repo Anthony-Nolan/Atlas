@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Atlas.MatchPrediction.Data.Models;
+﻿using Atlas.MatchPrediction.Data.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchPrediction.Data.Context
 {
@@ -13,8 +13,8 @@ namespace Atlas.MatchPrediction.Data.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<HaplotypeFrequencySet>()
-                .HasIndex(d => new { d.Ethnicity, d.Registry })
-                .HasName("IX_RegistryAndEthnicity")
+                .HasIndex(d => new { d.EthnicityCode, d.RegistryCode })
+                .HasName("IX_RegistryCode_And_EthnicityCode")
                 .IsUnique()
                 .HasFilter("[Active] = 'True'");
 

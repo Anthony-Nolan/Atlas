@@ -9,7 +9,6 @@ using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using FluentAssertions;
 using NSubstitute;
-using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
@@ -83,8 +82,8 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 
             await setRepository.Received().AddSet(Arg.Is<HaplotypeFrequencySet>(x =>
                 !x.Active &&
-                x.Registry == registry &&
-                x.Ethnicity == ethnicity &&
+                x.RegistryCode == registry &&
+                x.EthnicityCode == ethnicity &&
                 x.Name == name &&
                 x.DateTimeAdded != null));
         }
