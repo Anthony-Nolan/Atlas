@@ -36,6 +36,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportService{
         }
 
         public async Task InsertMacs(List<MultipleAlleleCodeEntity> objects){
+            // ExecuteBatchAsync can only perform 100 operations at a maximum
             for (var i = 0; i < objects.Count - 100 ; i += 100)
             {
                 var batchOp = new TableBatchOperation();
