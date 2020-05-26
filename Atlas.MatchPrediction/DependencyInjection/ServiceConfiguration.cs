@@ -46,11 +46,7 @@ namespace Atlas.MatchPrediction.DependencyInjection
 
         private static void RegisterClientServices(this IServiceCollection services)
         {
-            services.AddScoped<INotificationsClient, NotificationsClient>(sp =>
-            {
-                var settings = sp.GetService<IOptions<NotificationsServiceBusSettings>>().Value;
-                return new NotificationsClient(settings);
-            });
+            services.AddScoped<INotificationsClient, NotificationsClient>();
         }
 
         private static void RegisterServices(this IServiceCollection services)

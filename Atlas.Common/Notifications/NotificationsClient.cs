@@ -1,8 +1,9 @@
-﻿using Atlas.Common.Notifications.MessageModels;
-using Microsoft.Azure.ServiceBus;
-using Newtonsoft.Json;
-using System.Text;
+﻿using System.Text;
 using System.Threading.Tasks;
+using Atlas.Common.Notifications.MessageModels;
+using Microsoft.Azure.ServiceBus;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace Atlas.Common.Notifications
 {
