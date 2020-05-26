@@ -23,4 +23,10 @@ resource "azurerm_function_app" "atlas_match_prediction_function" {
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"         = "1"
     "WEBSITE_RUN_FROM_PACKAGE"                          = var.WEBSITE_RUN_FROM_PACKAGE
   }
+
+  connection_string {
+    name  = "Sql"
+    type  = "SQLAzure"
+    value = local.match_prediction_database_connection_string
+  }
 }
