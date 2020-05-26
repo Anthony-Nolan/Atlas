@@ -23,7 +23,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             
             using var reader = new StreamReader(stream);
             using var csv = new CsvReader(reader);
-            stream.Position = 0;
             ConfigureCsvReader(csv);
 
             while (csv.Read())
