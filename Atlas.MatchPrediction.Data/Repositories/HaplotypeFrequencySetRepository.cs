@@ -1,8 +1,8 @@
-﻿using Atlas.MatchPrediction.Data.Context;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Data.Repositories
 {
@@ -26,7 +26,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
         public async Task<HaplotypeFrequencySet> GetActiveSet(string registry, string ethnicity)
         {
             return await context.HaplotypeFrequencySets
-                .Where(set => set.Active == true && set.Registry == registry && set.Ethnicity == ethnicity)
+                .Where(set => set.Active == true && set.RegistryCode == registry && set.EthnicityCode == ethnicity)
                 .SingleOrDefaultAsync();
         }
 
@@ -49,7 +49,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
         {
             var set = await context.HaplotypeFrequencySets.SingleAsync(s => s.Id == setId);
             set.Active = true;
-            var otherMatchingSets = context.HaplotypeFrequencySets.Where(s => s.Ethnicity == set.Ethnicity && s.Registry == set.Registry);
+            var otherMatchingSets = context.HaplotypeFrequencySets.Where(s => s.EthnicityCode == set.EthnicityCode && s.RegistryCode == set.RegistryCode);
             foreach (var otherMatchingSet in otherMatchingSets)
             {
                 otherMatchingSet.Active = false;
