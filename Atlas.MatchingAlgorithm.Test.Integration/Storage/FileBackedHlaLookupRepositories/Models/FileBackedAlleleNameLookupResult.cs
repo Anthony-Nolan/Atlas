@@ -18,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
             Locus locus,
             string lookupName,
             TypingMethod typingMethod,
-            IEnumerable<string> currentAlleleNames)
+            List<string> currentAlleleNames)
         {
             Locus = locus;
             LookupName = lookupName;

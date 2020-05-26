@@ -19,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
             Locus locus,
             string lookupName,
             TypingMethod typingMethod,
-            IEnumerable<string> matchingPGroups, 
+            List<string> matchingPGroups, 
             bool isNullExpressingTyping)
         {
             Locus = locus;

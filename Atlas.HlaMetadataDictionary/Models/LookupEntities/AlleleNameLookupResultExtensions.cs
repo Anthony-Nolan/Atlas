@@ -8,7 +8,7 @@ namespace Atlas.HlaMetadataDictionary.Extensions
     {
         public static IAlleleNameLookupResult ToAlleleNameLookupResult(this HlaLookupTableEntity entity)
         {
-            var currentAlleleNames = entity.GetHlaInfo<IEnumerable<string>>();
+            var currentAlleleNames = entity.GetHlaInfo<List<string>>();
 
             return new AlleleNameLookupResult(
                 entity.Locus, 
