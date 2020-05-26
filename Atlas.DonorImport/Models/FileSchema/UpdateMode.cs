@@ -9,6 +9,6 @@ namespace Atlas.DonorImport.Models.FileSchema
     internal enum UpdateMode
     {
         [EnumMember(Value = "diff")] Differential,
-        [EnumMember(Value = "initial")] Initial
+        [EnumMember(Value = "full")] Full
     }
 }

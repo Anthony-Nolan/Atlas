@@ -65,8 +65,8 @@ namespace Atlas.DonorImport.Test.Services
         {
             var donorUpdates = new List<DonorUpdate>
             {
-                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Initial).Build(),
-                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Initial).Build()
+                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Full).Build(),
+                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Full).Build()
             };
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates);

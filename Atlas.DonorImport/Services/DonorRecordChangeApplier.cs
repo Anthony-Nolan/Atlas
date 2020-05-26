@@ -49,7 +49,7 @@ namespace Atlas.DonorImport.Services
                 // For an initial load, donors will be imported in bulk to the matching algorithm, via a manually triggered process 
                 foreach (var update in updatesOfSameOperationType)
                 {
-                    if (update.UpdateMode != UpdateMode.Initial)
+                    if (update.UpdateMode != UpdateMode.Full)
                     {
                         await messagingServiceBusClient.PublishDonorUpdateMessage(MapToMatchingUpdateMessage(update));
                     }
