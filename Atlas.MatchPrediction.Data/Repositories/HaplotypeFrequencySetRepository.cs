@@ -25,7 +25,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
         public async Task<HaplotypeFrequencySet> GetActiveSet(string registry, string ethnicity)
         {
             return await context.HaplotypeFrequencySets
-                .Where(set => set.Active == true && set.Registry == registry && set.Ethnicity == ethnicity)
+                .Where(set => set.Active == true && set.RegistryCode == registry && set.EthnicityCode == ethnicity)
                 .SingleOrDefaultAsync();
         }
 
@@ -43,8 +43,8 @@ namespace Atlas.MatchPrediction.Data.Repositories
             set.Active = true;
             var otherMatchingSets = context.HaplotypeFrequencySets.Where(s =>
                 s.Id != setId
-                && s.Ethnicity == set.Ethnicity
-                && s.Registry == set.Registry
+                && s.EthnicityCode == set.EthnicityCode
+                && s.RegistryCode == set.RegistryCode
             );
             foreach (var otherMatchingSet in otherMatchingSets)
             {

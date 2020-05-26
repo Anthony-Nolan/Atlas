@@ -55,8 +55,8 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         {
             var newSet = new HaplotypeFrequencySet
             {
-                Registry = metadata.Registry,
-                Ethnicity = metadata.Ethnicity,
+                RegistryCode = metadata.Registry,
+                EthnicityCode = metadata.Ethnicity,
                 Active = false,
                 Name = metadata.Name,
                 DateTimeAdded = DateTimeOffset.Now
