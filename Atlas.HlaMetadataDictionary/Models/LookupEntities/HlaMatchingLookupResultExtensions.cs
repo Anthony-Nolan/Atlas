@@ -8,7 +8,7 @@ namespace Atlas.HlaMetadataDictionary.Extensions
     {
         public static IHlaMatchingLookupResult ToHlaMatchingLookupResult(this HlaLookupTableEntity entity)
         {
-            var matchingPGroups = entity.GetHlaInfo<IEnumerable<string>>();
+            var matchingPGroups = entity.GetHlaInfo<List<string>>();
 
             return new HlaMatchingLookupResult(
                 entity.Locus, 

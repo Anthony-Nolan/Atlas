@@ -1,6 +1,7 @@
 using System;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.HlaMetadataDictionary.Services.AzureStorage;
@@ -8,6 +9,7 @@ using EnumStringValues;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using static Atlas.Common.GeneticData.Hla.Models.HlaTypingCategory;
+using static Atlas.Common.Utils.Extensions.TypeExtensions;
 
 namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
 {
@@ -30,7 +32,7 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
             LocusAsString = lookupResult.Locus.ToString();
             TypingMethodAsString = lookupResult.TypingMethod.ToString();
             LookupName = lookupResult.LookupName;
-            SerialisedHlaInfoType = lookupResult.HlaInfoToSerialise.GetType().Name; 
+            SerialisedHlaInfoType = lookupResult.HlaInfoToSerialise.GetType().GetNeatCSharpName(); //See not below.
             SerialisedHlaInfo = SerialiseHlaInfo(lookupResult.HlaInfoToSerialise);
         }
 
@@ -44,6 +46,13 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
 
         public T GetHlaInfo<T>()
         {
+            // Alas "nameof(T)", which would be compile-time constant, and thus compatible with a switch, doesn't give values that always match with typeof(T).Name
+            // So we have to calculate these ourselves. `.Name` doesn't qualify Generic Types, and `.FullName` is incredibly verbose for Generic Types, hence using this helper.
+            var typeName = typeof(T).GetNeatCSharpName();
+            if (typeName != SerialisedHlaInfoType)
+            {
+                throw new InvalidOperationException($"Expected to find '{typeName}' data to be deserialised. But actually the data is labeled as '{SerialisedHlaInfoType}'. Unable to proceed.");
+            }
             return JsonConvert.DeserializeObject<T>(SerialisedHlaInfo);
         }
     }
@@ -65,21 +74,33 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
                 entity.TypingMethod);
         }
 
+        // Alas "nameof(T)", which would be compile-time constant, and thus compatible with a switch, doesn't give values that always match with typeof(T).Name
+        // So we have to calculate these ourselves.
+        private static readonly string SerologyInfoType = GetNeatCSharpName<SerologyScoringInfo>();
+        private static readonly string SingleAlleleInfoType = GetNeatCSharpName<SingleAlleleScoringInfo>();
+        private static readonly string MultipleAlleleInfoType = GetNeatCSharpName<MultipleAlleleScoringInfo>();
+        private static readonly string ConsolidatedMolecularInfoType = GetNeatCSharpName<ConsolidatedMolecularScoringInfo>();
+
         private static IHlaScoringInfo DeserialiseTypedScoringInfo(this HlaLookupTableEntity entity)
         {
-            switch (entity.BackwardsCompatibleScoringHlaInfoType())
+            var infoTypeString = entity.BackwardsCompatibleScoringHlaInfoType();
+            if (infoTypeString == SerologyInfoType)
             {
-                case nameof(SerologyScoringInfo):
-                    return entity.GetHlaInfo<SerologyScoringInfo>();
-                case nameof(SingleAlleleScoringInfo):
-                    return entity.GetHlaInfo<SingleAlleleScoringInfo>();
-                case nameof(MultipleAlleleScoringInfo):
-                    return entity.GetHlaInfo<MultipleAlleleScoringInfo>();
-                case nameof(ConsolidatedMolecularScoringInfo):
-                    return entity.GetHlaInfo<ConsolidatedMolecularScoringInfo>();
-                default:
-                    throw new ArgumentOutOfRangeException();
+                return entity.GetHlaInfo<SerologyScoringInfo>();
             }
+            if (infoTypeString == SingleAlleleInfoType)
+            {
+                return entity.GetHlaInfo<SingleAlleleScoringInfo>();
+            }
+            if (infoTypeString == MultipleAlleleInfoType)
+            {
+                return entity.GetHlaInfo<MultipleAlleleScoringInfo>();
+            }
+            if (infoTypeString == ConsolidatedMolecularInfoType)
+            {
+                return entity.GetHlaInfo<ConsolidatedMolecularScoringInfo>();
+            }
+            throw new ArgumentOutOfRangeException();
         }
 
         private static string BackwardsCompatibleScoringHlaInfoType(this HlaLookupTableEntity entity) //TODO: ATLAS-282 Delete this entirely, just use SerialisedHlaInfoType directly.
@@ -89,20 +110,24 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
                 return entity.SerialisedHlaInfoType;
             }
 
+#pragma warning disable 618 //Designed to be used in this class, temporarily. See TODO: ATLAS-282
             var oldCategoryEnum = entity.LookupNameCategoryAsString.ParseToEnum<HlaTypingCategory>();
+#pragma warning restore 618
 
             switch (oldCategoryEnum)
             {
                 case Serology:
-                    return nameof(SerologyScoringInfo);
+                    return SerologyInfoType;
                 case Allele:
-                    return nameof(SingleAlleleScoringInfo);
+                    return SingleAlleleInfoType;
                 case NmdpCode:
-                    return nameof(MultipleAlleleScoringInfo);
+                    return MultipleAlleleInfoType;
                 case XxCode:
-                    return nameof(ConsolidatedMolecularScoringInfo);
+                    return ConsolidatedMolecularInfoType;
                 default:
+#pragma warning disable 618 //Designed to be used in this class, temporarily. See TODO: ATLAS-282
                     return entity.LookupNameCategoryAsString;
+#pragma warning restore 618
             }
         }
 
