@@ -37,11 +37,6 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup
             CurrentAlleleNames = new[] {currentAlleleName};
         }
 
-        public HlaLookupTableEntity ConvertToTableEntity()
-        {
-            return new HlaLookupTableEntity(this);
-        }
-
         public bool Equals(AlleleNameLookupResult other)
         {
             if (ReferenceEquals(null, other)) return false;

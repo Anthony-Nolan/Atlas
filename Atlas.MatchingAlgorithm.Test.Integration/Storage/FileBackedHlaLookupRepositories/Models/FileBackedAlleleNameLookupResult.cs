@@ -26,10 +26,5 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
             HlaInfoToSerialise = currentAlleleNames;
             CurrentAlleleNames = currentAlleleNames;
         }
-
-        public HlaLookupTableEntity ConvertToTableEntity()
-        {
-            return new HlaLookupTableEntity(this);
-        }
     }
 }

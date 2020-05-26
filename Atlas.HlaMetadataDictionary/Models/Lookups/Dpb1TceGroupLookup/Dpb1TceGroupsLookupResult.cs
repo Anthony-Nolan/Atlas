@@ -24,10 +24,5 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup
             LookupName = lookupName;
             TceGroup = tceGroup;
         }
-
-        public HlaLookupTableEntity ConvertToTableEntity()
-        {
-            return new HlaLookupTableEntity(this);
-        }
     }
 }

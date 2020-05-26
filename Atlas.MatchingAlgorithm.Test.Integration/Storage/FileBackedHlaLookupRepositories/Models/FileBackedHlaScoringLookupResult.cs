@@ -38,11 +38,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
             HlaScoringInfo = GetHlaScoringInfo(hlaScoringInfoType, hlaScoringInfo.ToString());
         }
 
-        public HlaLookupTableEntity ConvertToTableEntity()
-        {
-            return new HlaLookupTableEntity(this);
-        }
-
         public IEnumerable<IHlaScoringLookupResult> GetInTermsOfSingleAlleleScoringMetadata()
         {
             return HlaScoringInfo.ConvertToSingleAllelesInfo().Select(info => new HlaScoringLookupResult(

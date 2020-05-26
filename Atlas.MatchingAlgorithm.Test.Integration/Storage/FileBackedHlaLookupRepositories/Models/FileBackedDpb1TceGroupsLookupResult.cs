@@ -18,10 +18,5 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
             LookupName = lookupName;
             TceGroup = tceGroup;
         }
-
-        public HlaLookupTableEntity ConvertToTableEntity()
-        {
-            return new HlaLookupTableEntity(this);
-        }
     }
 }
