@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.Utils.Extensions;
@@ -46,10 +47,23 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
 
         public T GetHlaInfo<T>()
         {
+            var infoTypeString = this.BackwardsCompatibleScoringHlaInfoType();
+            if (
+                infoTypeString == ""
+                &&
+                (typeof(T) == typeof(string) || typeof(T) == typeof(List<string>))
+               )
+            {
+                // This means that we're looking at simple data generated prior to the "nice-typing-info" change.
+                // i.e. the data needing "BackwardsCompatibility". In that case, just deserialise the data and move on.
+                // TODO: ATLAS-282. Delete this when we can.
+                return JsonConvert.DeserializeObject<T>(SerialisedHlaInfo);
+            }
+
             // Alas "nameof(T)", which would be compile-time constant, and thus compatible with a switch, doesn't give values that always match with typeof(T).Name
             // So we have to calculate these ourselves. `.Name` doesn't qualify Generic Types, and `.FullName` is incredibly verbose for Generic Types, hence using this helper.
             var typeName = typeof(T).GetNeatCSharpName();
-            if (typeName != SerialisedHlaInfoType)
+            if (typeName != infoTypeString)
             {
                 throw new InvalidOperationException($"Expected to find '{typeName}' data to be deserialised. But actually the data is labeled as '{SerialisedHlaInfoType}'. Unable to proceed.");
             }
@@ -103,7 +117,7 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
             throw new ArgumentOutOfRangeException();
         }
 
-        private static string BackwardsCompatibleScoringHlaInfoType(this HlaLookupTableEntity entity) //TODO: ATLAS-282 Delete this entirely, just use SerialisedHlaInfoType directly.
+        internal static string BackwardsCompatibleScoringHlaInfoType(this HlaLookupTableEntity entity) //TODO: ATLAS-282 Delete this entirely, just use SerialisedHlaInfoType directly.
         {
             if (!string.IsNullOrWhiteSpace(entity.SerialisedHlaInfoType))
             {
@@ -111,6 +125,10 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
             }
 
 #pragma warning disable 618 //Designed to be used in this class, temporarily. See TODO: ATLAS-282
+            if (string.IsNullOrEmpty(entity.LookupNameCategoryAsString))
+            {
+                return "";
+            }
             var oldCategoryEnum = entity.LookupNameCategoryAsString.ParseToEnum<HlaTypingCategory>();
 #pragma warning restore 618
 
@@ -126,7 +144,7 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
                     return ConsolidatedMolecularInfoType;
                 default:
 #pragma warning disable 618 //Designed to be used in this class, temporarily. See TODO: ATLAS-282
-                    return entity.LookupNameCategoryAsString;
+                    return "";
 #pragma warning restore 618
             }
         }
