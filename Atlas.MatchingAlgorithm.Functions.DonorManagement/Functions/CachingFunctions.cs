@@ -8,12 +8,12 @@ using Microsoft.Azure.WebJobs;
 
 namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
 {
-    public class Caching
+    public class CachingFunctions
     {
         private readonly IAntigenCachingService antigenCachingService;
         private readonly IHlaMetadataCacheControl hlaMetadataCacheControl;
 
-        public Caching(
+        public CachingFunctions(
             IAntigenCachingService antigenCachingService,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             IActiveHlaVersionAccessor hlaVersionAccessor

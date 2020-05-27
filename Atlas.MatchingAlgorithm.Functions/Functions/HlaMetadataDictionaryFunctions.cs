@@ -5,23 +5,24 @@ using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
-    public class HlaMetadataDictionaryFunction //TODO: ATLAS-262 (MDM) migrate to new project
+    public class HlaMetadataDictionaryFunctions //TODO: ATLAS-262 (MDM) migrate to new project
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
 
-        public HlaMetadataDictionaryFunction(
+        public HlaMetadataDictionaryFunctions(
             IHlaMetadataDictionaryFactory factory,
             IActiveHlaVersionAccessor hlaVersionAccessor)
         {
-            this.hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaDatabaseVersion());
+            hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaDatabaseVersion());
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName("RefreshHlaMetadataDictionary")]
-        public async Task Refresh([HttpTrigger] HttpRequest httpRequest)
+        [FunctionName(nameof(RefreshHlaMetadataDictionary))]
+        public async Task RefreshHlaMetadataDictionary([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
         {
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
         }

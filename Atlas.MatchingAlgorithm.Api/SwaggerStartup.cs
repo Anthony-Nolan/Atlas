@@ -9,9 +9,9 @@ namespace Atlas.MatchingAlgorithm.Api
     {
         public static IServiceCollection ConfigureSwaggerService(this IServiceCollection services)
         {
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+                options.SwaggerDoc("v1", new OpenApiInfo {Title = "My API", Version = "v1"});
             });
             return services;
         }

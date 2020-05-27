@@ -1,17 +1,15 @@
-﻿using Atlas.Common.ApplicationInsights;
+﻿using System.IO;
+using System.Threading.Tasks;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Microsoft.Azure.WebJobs;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Functions.Functions
 {
-    public class HaplotypeFrequencySet
+    public class HaplotypeFrequencySetFunctions
     {
         private readonly IFrequencySetService frequencySetService;
 
-        public HaplotypeFrequencySet(IFrequencySetService frequencySetService)
+        public HaplotypeFrequencySetFunctions(IFrequencySetService frequencySetService)
         {
             this.frequencySetService = frequencySetService;
         }
