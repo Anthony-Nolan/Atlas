@@ -1,3 +1,5 @@
+// TODO: ATLAS-314 finish off and test this terraform code
+
 terraform {
   backend "azurerm" {
     storage_account_name = "novaterraform"

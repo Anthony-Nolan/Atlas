@@ -523,6 +523,11 @@ Once terraform has created ATLAS resources for the first time, certain actions m
   - IP Whitelisting (Optional)
     - By default, only other azure services will be allowed to access the database server through the firewall. For development access, any known IP addresses should be manually added to the IP whitelist in Azure.  
 
+### System Tests
+
+The system tests require some Azure resources of their own - primarily SQL databases. For now these are manually created, in Azure.
+// TODO: ATLAS-314: Create these resources using terraform.
+
 ## Releasing to multiple environments
 
 The expected use case for multiple environments is a development -> uat -> live route.
