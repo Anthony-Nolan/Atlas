@@ -1,4 +1,5 @@
 using System;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Data;
 using Atlas.HlaMetadataDictionary.Repositories;
@@ -15,18 +16,19 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
-    public static class HlaMetadataRegistration
+    public static class ServiceConfiguration
     {
         public static void RegisterHlaMetadataDictionary(this IServiceCollection services,
             Func<IServiceProvider, string> fetchAzureStorageConnectionString,
             Func<IServiceProvider, string> fetchWmdaHlaNomenclatureFilesUri,
             Func<IServiceProvider, string> fetchHlaClientApiKey,
             Func<IServiceProvider, string> fetchHlaClientBaseUrl,
-            Func<IServiceProvider, string> fetchInsightsInstrumentationKey)
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
         {
+            services.RegisterLifeTimeScopedCacheTypes();
+            services.RegisterCommonGeneticServices();
             services.AddScoped<IHlaMetadataDictionaryFactory, HlaMetadataDictionaryFactory>();
             services.AddScoped<IHlaMetadataCacheControl, HlaMetadataCacheControl>();
-            services.RegisterLifeTimeScopedCacheTypes();
             services.RegisterStorageTypes(fetchAzureStorageConnectionString);
             services.RegisterTypesRelatedToDictionaryRecreation(fetchWmdaHlaNomenclatureFilesUri);
             services.RegisterServices();
@@ -34,7 +36,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             services.RegisterMacDictionaryServices(
                 fetchHlaClientApiKey,
                 fetchHlaClientBaseUrl,
-                fetchInsightsInstrumentationKey
+                fetchApplicationInsightsSettings
             );
         }
 
