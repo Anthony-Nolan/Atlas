@@ -35,14 +35,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         [BeforeTestRun]
         public static async Task BeforeTestRun()
         {
-            SetupLogging();
+            try
+            {
+                SetupLogging();
 
-            serviceProvider = ServiceConfiguration.CreateProvider();
-            var testDataService = serviceProvider.GetService<ITestDataService>();
+                serviceProvider = ServiceConfiguration.CreateProvider();
+                var testDataService = serviceProvider.GetService<ITestDataService>();
 
-            testDataService.SetupTestData();
-            AlgorithmTestingService.StartServer();
-            await AlgorithmTestingService.RunHlaRefresh();
+                testDataService.SetupTestData();
+                AlgorithmTestingService.StartServer();
+                await AlgorithmTestingService.RunHlaRefresh();
+            }
+            catch (Exception e)
+            {
+                //Unfortunately the Test Logging for errors in here is awful :( so we have to do this hideous abuse to get anything interprettable.
+                throw new Exception(e.ToString(), e);
+            }
         }
 
         private static void SetupLogging()
