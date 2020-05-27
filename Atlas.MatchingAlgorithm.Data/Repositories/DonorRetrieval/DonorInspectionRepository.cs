@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData.PhenotypeInfo;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Common.Models.Matching;
 using Atlas.MatchingAlgorithm.Data.Helpers;
@@ -11,6 +7,10 @@ using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
+using Microsoft.Data.SqlClient;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {

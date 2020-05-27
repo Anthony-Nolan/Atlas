@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.MatchingAlgorithm.Common.Repositories;
+﻿using Atlas.MatchingAlgorithm.Common.Repositories;
 using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
+using Microsoft.Data.SqlClient;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
 {
