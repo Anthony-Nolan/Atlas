@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Atlas.Common.GeneticData.PhenotypeInfo;
+﻿using Atlas.MatchPrediction.Client.Models.GenotypeLikelihood;
 
 namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
     public interface IGenotypeLikelihoodService
     {
-        public decimal CalculateLikelihood(PhenotypeInfo<string> genotype);
+        public GenotypeLikelihoodResponse CalculateLikelihood(GenotypeLikelihoodInput genotypeLikelihood);
     }
 
     public class GenotypeLikelihoodService : IGenotypeLikelihoodService
     {
-        public decimal CalculateLikelihood(PhenotypeInfo<string> genotype)
+        public GenotypeLikelihoodResponse CalculateLikelihood(GenotypeLikelihoodInput genotypeLikelihood)
         {
-            return 1;
+
+            return new GenotypeLikelihoodResponse() { Likelihood = 1 };
         }
     }
 }
