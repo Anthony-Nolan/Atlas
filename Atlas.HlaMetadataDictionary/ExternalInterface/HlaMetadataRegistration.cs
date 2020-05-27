@@ -25,6 +25,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             Func<IServiceProvider, string> fetchInsightsInstrumentationKey)
         {
             services.AddScoped<IHlaMetadataDictionaryFactory, HlaMetadataDictionaryFactory>();
+            services.AddScoped<IHlaMetadataCacheControl, HlaMetadataCacheControl>();
             services.RegisterLifeTimeScopedCacheTypes();
             services.RegisterStorageTypes(fetchAzureStorageConnectionString);
             services.RegisterTypesRelatedToDictionaryRecreation(fetchWmdaHlaNomenclatureFilesUri);
