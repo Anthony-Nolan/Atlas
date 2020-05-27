@@ -10,7 +10,7 @@ schedules:
 pr: none
 
 jobs: 
-- job: Integration_Tests
+- job: Matching_Algorithm_Integration_Tests
   pool:
     name: Hosted Ubuntu 1604
   steps:
@@ -18,27 +18,26 @@ jobs:
     inputs:
       command: 'restore'
       feedsToUse: 'select'
-      vstsFeed: '47b810d9-ad1c-410b-b5e5-45a100bcf88a'
   - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
     displayName: 'Update connection string ''SqlA'''
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/appsettings.json'
       keyname: SqlA
-      connectionstringvalue: 'Server=tcp:dev-nova-db.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm;Persist Security Info=False;User ID=$(TF_VAR_DATABASE_SERVER_ADMIN_LOGIN);Password=$(TF_VAR_DATABASE_SERVER_ADMIN_LOGIN_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+      connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 
   - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
     displayName: 'Update connection string ''SqlB'''
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/appsettings.json'
       keyname: SqlB
-      connectionstringvalue: 'Server=tcp:dev-nova-db.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm;Persist Security Info=False;User ID=$(TF_VAR_DATABASE_SERVER_ADMIN_LOGIN);Password=$(TF_VAR_DATABASE_SERVER_ADMIN_LOGIN_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+      connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 
   - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
     displayName: 'Update connection string ''PersistentSql'' '
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/appsettings.json'
       keyname: PersistentSql
-      connectionstringvalue: 'Server=tcp:dev-nova-db.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm;Persist Security Info=False;User ID=$(TF_VAR_DATABASE_SERVER_ADMIN_LOGIN);Password=$(TF_VAR_DATABASE_SERVER_ADMIN_LOGIN_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+      connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet test'
@@ -46,11 +45,10 @@ jobs:
       command: test
       projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/Atlas.MatchingAlgorithm.Test.Integration.csproj'
       arguments: '--no-restore -v d'
-- job: Validation_Tests
+- job: Matching_Algorithm_Validation_Tests
   pool:
     name: Hosted Ubuntu 1604
   #Your build pipeline references an undefined variable named ‘Parameters.packagesDirectory’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
-
   steps:
   - task: UseDotNet@2
     displayName: 'Use .Net Core sdk 3.1.102'
@@ -60,7 +58,6 @@ jobs:
   - task: DotNetCoreCLI@2
     inputs:
       command: 'restore'
-      feedsToUse: 'select'
       vstsFeed: '47b810d9-ad1c-410b-b5e5-45a100bcf88a'
 
   - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
@@ -68,21 +65,21 @@ jobs:
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
       keyname: SqlA
-      connectionstringvalue: 'Server=tcp:dev-nova-db.database.windows.net,1433;Initial Catalog=DEV-NOVA-DB-SEARCH-ALGORITHM-VALIDATION-TESTING;Persist Security Info=False;User ID=nova_algorithm_validation_tests;Password=24533345-c84e-441a-a1ba-c5d9235b6ef3;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+      connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm-validation;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 
   - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
     displayName: 'Update connection string ''SqlB'''
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
       keyname: SqlB
-      connectionstringvalue: 'Server=tcp:dev-nova-db.database.windows.net,1433;Initial Catalog=DEV-NOVA-DB-SEARCH-ALGORITHM-VALIDATION-TESTING;Persist Security Info=False;User ID=nova_algorithm_validation_tests;Password=24533345-c84e-441a-a1ba-c5d9235b6ef3;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+      connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm-validation;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 
   - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
     displayName: 'Update connection string ''PersistentSql'' '
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
       keyname: PersistentSql
-      connectionstringvalue: 'Server=tcp:dev-nova-db.database.windows.net,1433;Initial Catalog=DEV-NOVA-DB-SEARCH-ALGORITHM-VALIDATION-TESTING;Persist Security Info=False;User ID=nova_algorithm_validation_tests;Password=24533345-c84e-441a-a1ba-c5d9235b6ef3;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+      connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm-validation;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 
   - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
     displayName: 'Set HLA service API Key'
@@ -118,4 +115,25 @@ jobs:
       command: test
       projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/Atlas.MatchingAlgorithm.Test.Validation.csproj'
       arguments: '--no-restore -v d'
+- job: Donor_Import_Integration_Tests
+  pool:
+    name: Hosted Ubuntu 1604
+  steps:
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'restore'
+        feedsToUse: 'select'
+    - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
+      displayName: 'Update Sql connection string' 
+      inputs:
+        filename: '$(System.DefaultWorkingDirectory)/Atlas.DonorImport.Test.Integration/appsettings.json'
+        keyname: Sql
+        connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-donor-import;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet test'
+      inputs:
+        command: test
+        projects: '$(System.DefaultWorkingDirectory)/Atlas.DonorImport.Test.Integration/Atlas.DonorImport.Test.Integration.csproj'
+        arguments: '--no-restore -v d'
 
