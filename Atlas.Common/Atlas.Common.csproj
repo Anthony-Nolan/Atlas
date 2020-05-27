@@ -6,6 +6,10 @@
 
   <ItemGroup>
     <PackageReference Include="EnumStringValues" Version="4.0.2" />
+    <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="LazyCache" Version="2.0.1" />
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.5.1" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
@@ -13,6 +17,11 @@
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.4" />
     <PackageReference Include="NeoSmart.AsyncLock" Version="0.3.0.2" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToSuffix Include=".Test" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
 </Project>

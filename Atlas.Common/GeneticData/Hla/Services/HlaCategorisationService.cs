@@ -12,7 +12,7 @@ namespace Atlas.Common.GeneticData.Hla.Services
         HlaTypingCategory GetHlaTypingCategory(string hlaName);
     }
 
-    public class HlaCategorisationService : IHlaCategorisationService
+    internal class HlaCategorisationService : IHlaCategorisationService
     {
         private const string SingleFieldPattern = "\\d+";
         private static readonly string ExpressionSuffixPattern = $"[{MolecularTypingNameConstants.ExpressionSuffixes}]?";
