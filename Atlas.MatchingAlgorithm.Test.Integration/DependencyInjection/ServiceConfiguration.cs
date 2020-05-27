@@ -1,16 +1,11 @@
 using Atlas.Common.GeneticData;
 using Atlas.Common.Notifications;
-using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Test.Integration.Storage;
-using Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRepositories;
 using Atlas.MultipleAlleleCodeDictionary.HlaService;
 using Atlas.MultipleAlleleCodeDictionary.HlaService.Models;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +15,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.Common.ApplicationInsights;
 using Microsoft.Extensions.Options;
 
@@ -38,11 +36,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.AddSingleton<IConfiguration>(sp => configuration);
             
             services.RegisterSettings(configuration);
-            services.Configure<IntegrationTestSettings>(configuration.GetSection("Testing"));
 
             services.RegisterSearchAlgorithmTypes();
-            Func<IServiceProvider, string> blank = _ => "";
-            services.RegisterHlaMetadataDictionary(blank, blank, blank, blank, sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value); //These configuration values won't be used, because all they are all (indirectly) overridden, below.
+            services.RegisterFileBasedHlaMetadataDictionaryForTesting(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value); //These configuration values won't be used, because all they are all (indirectly) overridden, below.
             services.RegisterDataServices();
             services.RegisterDonorManagementServices();
             
@@ -50,19 +46,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 new ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"])
             );
 
-            // HlaMetadataDictionary Overrides
-            services.AddScoped<IWmdaHlaVersionProvider, MockHlaVersionProvider>();
             services.AddScoped<IActiveHlaVersionAccessor, MockHlaVersionProvider>();
-            services.AddScoped<IHlaScoringLookupRepository, FileBackedHlaScoringLookupRepository>();
-            services.AddScoped<IHlaMatchingLookupRepository, FileBackedHlaMatchingLookupRepository>();
-            services.AddScoped<IAlleleNamesLookupRepository, FileBackedAlleleNamesLookupRepository>();
-            services.AddScoped<IDpb1TceGroupsLookupRepository, FileBackedTceLookupRepository>();
 
             // Clients
-            var mockHlaServiceClient = Substitute.For<IHlaServiceClient>();
-            mockHlaServiceClient.GetAntigens(Arg.Any<Locus>(), Arg.Any<bool>()).Returns(new List<Antigen>());
-            services.AddScoped(sp => mockHlaServiceClient);
-
             var mockSearchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
             mockSearchServiceBusClient
                 .PublishToSearchQueue(Arg.Any<IdentifiedSearchRequest>())

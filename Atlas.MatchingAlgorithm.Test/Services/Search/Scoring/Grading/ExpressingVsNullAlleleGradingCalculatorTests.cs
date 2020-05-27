@@ -1,9 +1,9 @@
 ﻿using System;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.ScoringInfoBuilders;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
-using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.ScoringInfo;
 using FluentAssertions;
 using NUnit.Framework;
 
