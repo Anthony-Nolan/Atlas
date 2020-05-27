@@ -76,13 +76,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MultipleAlleleCodeDic
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MultipleAlleleCodeDictionary.Test", "Atlas.MultipleAlleleCodeDictionary.Test\Atlas.MultipleAlleleCodeDictionary.Test.csproj", "{DE77A9A5-BCD3-478A-B319-1997E1D217AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.Functions", "Atlas.Functions\Atlas.Functions.csproj", "{4398D855-A19F-4E01-B1F4-E6ED92465DB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.Functions", "Atlas.Functions\Atlas.Functions.csproj", "{4398D855-A19F-4E01-B1F4-E6ED92465DB3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.DonorImport", "Atlas.DonorImport\Atlas.DonorImport.csproj", "{8CC3D81A-E791-4698-AFA8-63AC76068EE2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.DonorImport", "Atlas.DonorImport\Atlas.DonorImport.csproj", "{8CC3D81A-E791-4698-AFA8-63AC76068EE2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.DonorImport.Test", "Atlas.DonorImport.Test\Atlas.DonorImport.Test.csproj", "{7FCCC9F6-361E-4B84-A86B-85AC4364C1E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.DonorImport.Test", "Atlas.DonorImport.Test\Atlas.DonorImport.Test.csproj", "{7FCCC9F6-361E-4B84-A86B-85AC4364C1E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.DonorImport.Test.Integration", "Atlas.DonorImport.Test.Integration\Atlas.DonorImport.Test.Integration.csproj", "{263F79E5-38EF-46B4-A6B6-AC47CAEE532F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.DonorImport.Test.Integration", "Atlas.DonorImport.Test.Integration\Atlas.DonorImport.Test.Integration.csproj", "{263F79E5-38EF-46B4-A6B6-AC47CAEE532F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.MatchPrediction.Client.Models", "Atlas.MatchPrediction.Client.Models\Atlas.MatchPrediction.Client.Models.csproj", "{E1D33B92-6AFE-48F0-9873-D0B86CF1AEE6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -265,6 +267,12 @@ Global
 		{263F79E5-38EF-46B4-A6B6-AC47CAEE532F}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{263F79E5-38EF-46B4-A6B6-AC47CAEE532F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{263F79E5-38EF-46B4-A6B6-AC47CAEE532F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1D33B92-6AFE-48F0-9873-D0B86CF1AEE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1D33B92-6AFE-48F0-9873-D0B86CF1AEE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1D33B92-6AFE-48F0-9873-D0B86CF1AEE6}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1D33B92-6AFE-48F0-9873-D0B86CF1AEE6}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{E1D33B92-6AFE-48F0-9873-D0B86CF1AEE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1D33B92-6AFE-48F0-9873-D0B86CF1AEE6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -297,6 +305,7 @@ Global
 		{8CC3D81A-E791-4698-AFA8-63AC76068EE2} = {FA86EBC5-984E-4694-876D-FB64B239E0FC}
 		{7FCCC9F6-361E-4B84-A86B-85AC4364C1E1} = {FA86EBC5-984E-4694-876D-FB64B239E0FC}
 		{263F79E5-38EF-46B4-A6B6-AC47CAEE532F} = {FA86EBC5-984E-4694-876D-FB64B239E0FC}
+		{E1D33B92-6AFE-48F0-9873-D0B86CF1AEE6} = {8DF9D0B6-B94E-4680-8AB8-CB1509F23A74}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB0B0AD5-58AC-4CDF-826D-C653D03DC2AC}
