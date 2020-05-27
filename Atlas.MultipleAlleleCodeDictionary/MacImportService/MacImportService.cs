@@ -9,10 +9,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
         private IMacRepository MacRepository { get; set; }
         private IMacParser MacCodeParser { get; set; }
         
-        public MacImporter()
+        public MacImporter(IMacRepository macRepository, IMacParser macParser)
         {
-            MacRepository = new MacRepository();
-            MacCodeParser = new MacLineParser();
+            MacRepository = macRepository;
+            MacCodeParser = macParser;
         }
         public void ImportLatestMultipleAlleleCodes()
         {

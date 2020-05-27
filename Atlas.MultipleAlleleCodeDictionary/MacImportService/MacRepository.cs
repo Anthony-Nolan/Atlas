@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MultipleAlleleCodeDictionary.Models;
+using Atlas.MultipleAlleleCodeDictionary.Settings.MacImport;
 using Microsoft.Azure.Cosmos.Table;
+using Microsoft.Extensions.Options;
 
 namespace Atlas.MultipleAlleleCodeDictionary.MacImportService{
     public interface IMacRepository
@@ -16,14 +18,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportService{
 
         private CloudTable Table { get; set; }
         
-        public MacRepository()
+        public MacRepository(IOptions<MacImportSettings> messagingServiceBusSettings)
         {
-            var connectionString  = AppSettings.LoadAppSettings().StorageConnectionString;
-            connectionString =
-                "DefaultEndpointsProtocol=https;AccountName=devatlasstorage;AccountKey=ELvrCzBAaZBrpmSgZhV1X18q619mv3+dp+ldsd6D6QGYAEIVTO1c690eOiK4HmyBBmrczjW4gK6BZjE54ZJggA==;EndpointSuffix=core.windows.net";
-            
-            var tableName = AppSettings.LoadAppSettings().TableName;
-            tableName = "AtlasMultipleAlleleCodes";
+            var connectionString = messagingServiceBusSettings.Value.ConnectionString;
+            var tableName = messagingServiceBusSettings.Value.TableName;
             var storageAccount = CloudStorageAccount.Parse(connectionString);
             var tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
             Table = tableClient.GetTableReference(tableName);

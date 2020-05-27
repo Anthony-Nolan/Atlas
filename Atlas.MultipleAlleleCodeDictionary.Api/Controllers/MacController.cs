@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Mvc;
 using Atlas.MultipleAlleleCodeDictionary.MacImportService;
+using Atlas.MultipleAlleleCodeDictionary.utils;
 
 namespace Atlas.MultipleAlleleCodeDictionary.Api.Controllers
 {
@@ -15,7 +11,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Api.Controllers
         [HttpGet]
         public OkResult Get()
         {
-            var importer = new MacImporter();
+            var importer = new MacImporter(new MacRepository(), new MacLineParser());
             importer.ImportLatestMultipleAlleleCodes();
             return Ok();
         }
