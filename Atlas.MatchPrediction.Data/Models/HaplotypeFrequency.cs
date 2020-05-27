@@ -8,6 +8,8 @@ namespace Atlas.MatchPrediction.Data.Models
     public class HaplotypeFrequency
     {
         public long Id { get; set; }
+
+        [Column(TypeName = "decimal(21,20)")]
         public decimal Frequency { get; set; }
 
         [Required]
