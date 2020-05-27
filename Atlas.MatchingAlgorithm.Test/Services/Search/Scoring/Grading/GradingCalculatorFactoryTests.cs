@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.ScoringInfoBuilders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
-using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.ScoringInfo;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;

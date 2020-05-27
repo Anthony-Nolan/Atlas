@@ -2,7 +2,7 @@
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
-using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.ScoringInfo;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.ScoringInfoBuilders;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 {
