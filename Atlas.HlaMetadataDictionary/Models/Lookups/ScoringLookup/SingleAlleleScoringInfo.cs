@@ -85,7 +85,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 
         public AlleleTyping GenerateTypingAtLocus(Locus locus)
         {
-            return new AlleleTyping(locus, AlleleName/*, AlleleTypingStatus QQ passing this in appears to actually break things!  :'(  */);
+            return new AlleleTyping(locus, AlleleName, AlleleTypingStatus);
         }
         #region IEquatable
         public bool Equals(SingleAlleleScoringInfo other)

@@ -18,7 +18,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup
         public bool IsNullExpressingTyping => TypingMethod == TypingMethod.Molecular && !MatchingPGroups.Any();
         public object HlaInfoToSerialise => MatchingPGroups;
 
-        internal HlaMatchingLookupResult( //QQ
+        internal HlaMatchingLookupResult(
             Locus locus,
             string lookupName,
             TypingMethod typingMethod,
