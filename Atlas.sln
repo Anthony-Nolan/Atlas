@@ -84,7 +84,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.DonorImport.Test", "A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.DonorImport.Test.Integration", "Atlas.DonorImport.Test.Integration\Atlas.DonorImport.Test.Integration.csproj", "{263F79E5-38EF-46B4-A6B6-AC47CAEE532F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.MatchPrediction.Client.Models", "Atlas.MatchPrediction.Client.Models\Atlas.MatchPrediction.Client.Models.csproj", "{E1D33B92-6AFE-48F0-9873-D0B86CF1AEE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction.Client.Models", "Atlas.MatchPrediction.Client.Models\Atlas.MatchPrediction.Client.Models.csproj", "{E1D33B92-6AFE-48F0-9873-D0B86CF1AEE6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
