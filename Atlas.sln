@@ -82,7 +82,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.DonorImport", "Atlas.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.DonorImport.Test", "Atlas.DonorImport.Test\Atlas.DonorImport.Test.csproj", "{7FCCC9F6-361E-4B84-A86B-85AC4364C1E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.MatchPrediction.Client.Models", "Atlas.MatchPrediction.Client.Models\Atlas.MatchPrediction.Client.Models.csproj", "{E1D33B92-6AFE-48F0-9873-D0B86CF1AEE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.DonorImport.Test.Integration", "Atlas.DonorImport.Test.Integration\Atlas.DonorImport.Test.Integration.csproj", "{263F79E5-38EF-46B4-A6B6-AC47CAEE532F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction.Client.Models", "Atlas.MatchPrediction.Client.Models\Atlas.MatchPrediction.Client.Models.csproj", "{E1D33B92-6AFE-48F0-9873-D0B86CF1AEE6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HlaMetadataDictionary", "HlaMetadataDictionary", "{86922A44-CA43-4DC8-A6A0-3973117C77EB}"
 EndProject
