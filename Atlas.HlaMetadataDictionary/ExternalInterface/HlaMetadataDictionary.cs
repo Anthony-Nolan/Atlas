@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
@@ -29,12 +30,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         /// </summary>
         /// <returns>True if the versions are different, otherwise false.</returns>
         bool IsActiveVersionDifferentFromLatestVersion();
-    }
-
-    public enum CreationBehaviour
-    {
-        Latest,
-        Active
     }
 
     internal class HlaMetadataDictionary: IHlaMetadataDictionary
@@ -78,14 +73,26 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             return active != latest;
         }
 
-        public async Task<string> RecreateHlaMetadataDictionary(CreationBehaviour wmdaHlaVersionToRecreate)
+        public async Task<string> RecreateHlaMetadataDictionary(CreationBehaviour creationConfig)
         {
-            var version = wmdaHlaVersionToRecreate == CreationBehaviour.Active
-                ? activeHlaNomenclatureVersion
-                : wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
-
+            var version = IdentifyVersionToRecreate(creationConfig);
             await recreateMetadataService.RefreshAllHlaMetadata(version);
             return version;
+        }
+
+        private string IdentifyVersionToRecreate(CreationBehaviour creationConfig)
+        {
+            switch (creationConfig.CreationMode)
+            {
+                case CreationBehaviour.Mode.Specific:
+                    return creationConfig.SpecificVersion;
+                case CreationBehaviour.Mode.Active:
+                    return activeHlaNomenclatureVersion;
+                case CreationBehaviour.Mode.Latest:
+                    return wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(creationConfig.CreationMode), creationConfig.CreationMode, "Unexpected enum value");
+            }
         }
 
         public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)
