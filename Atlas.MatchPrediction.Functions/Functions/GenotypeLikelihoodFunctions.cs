@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using FluentValidation;
+using System.Web.Http;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Client.Models.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
@@ -14,29 +14,29 @@ using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Functions.Functions
 {
-    public class GenotypeLikelihoodFunction
+    public class GenotypeLikelihoodFunctions
     {
         private readonly IGenotypeLikelihoodService genotypeLikelihoodService;
 
-        public GenotypeLikelihoodFunction(IGenotypeLikelihoodService genotypeLikelihoodService)
+        public GenotypeLikelihoodFunctions(IGenotypeLikelihoodService genotypeLikelihoodService)
         {
             this.genotypeLikelihoodService = genotypeLikelihoodService;
         }
 
         [FunctionName(nameof(CalculateGenotypeLikelihood))]
         public async Task<IActionResult> CalculateGenotypeLikelihood([HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(PhenotypeInfo<string>), "genotype info")] HttpRequest request)
+            [RequestBodyType(typeof(GenotypeLikelihoodInput), "genotype input")] HttpRequest request)
         {
-            var genotype = JsonConvert.DeserializeObject<PhenotypeInfo<string>>(await new StreamReader(request.Body).ReadToEndAsync());
+            var genotypeLikelihood = JsonConvert.DeserializeObject<GenotypeLikelihoodInput>(await new StreamReader(request.Body).ReadToEndAsync());
 
             try
             {
-                var likelihood = genotypeLikelihoodService.CalculateLikelihood(genotype);
+                var likelihood = genotypeLikelihoodService.CalculateLikelihood(genotypeLikelihood.Genotype);
                 return new JsonResult(new GenotypeLikelihoodResponse() { Likelihood = likelihood });
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                return new BadRequestObjectResult(e);
+                return new InternalServerErrorResult();
             }
 
         }
