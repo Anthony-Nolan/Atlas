@@ -12,7 +12,7 @@ namespace Atlas.Common.GeneticData.Hla.Services
         IEnumerable<string> GetAlleleNamesFromAlleleString(string alleleString);
     }
 
-    public class AlleleStringSplitterService : IAlleleStringSplitterService
+    internal class AlleleStringSplitterService : IAlleleStringSplitterService
     {
         private readonly IHlaCategorisationService categorisationService;
 
