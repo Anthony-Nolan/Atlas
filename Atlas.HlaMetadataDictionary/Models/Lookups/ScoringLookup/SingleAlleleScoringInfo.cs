@@ -74,7 +74,6 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
             );
         }
 
-        public bool IsConvertibleToSingleAllelesInfo => true;
         public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo() => new List<SingleAlleleScoringInfo>{this};
 
         #region IEquatable
