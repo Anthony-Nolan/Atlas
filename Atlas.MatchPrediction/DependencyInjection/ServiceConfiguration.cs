@@ -4,6 +4,7 @@ using Atlas.Common.Notifications;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Settings.Azure;
 using Microsoft.EntityFrameworkCore;
@@ -61,6 +62,8 @@ namespace Atlas.MatchPrediction.DependencyInjection
             services.AddScoped<IFrequencySetImporter, FrequencySetImporter>();
             services.AddScoped<IFrequencyCsvReader, FrequencyCsvReader>();
             services.AddScoped<IFrequencySetService, FrequencySetService>();
+
+            services.AddScoped<IGenotypeLikelihoodService, GenotypeLikelihoodService>();
         }
 
         private static string GetSqlConnectionString(IServiceProvider sp)
