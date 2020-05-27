@@ -4,12 +4,12 @@ using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 
-namespace Atlas.MatchPrediction.Functions.Functions
+namespace Atlas.Functions.Functions
 {
     public static class SwaggerFunctions
     {
         [SwaggerIgnore]
-        [FunctionName("Swagger")]
+        [FunctionName(nameof(Swagger))]
         public static HttpResponseMessage Swagger(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "swagger/json")]
             HttpRequestMessage req,
@@ -19,7 +19,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
         }
 
         [SwaggerIgnore]
-        [FunctionName("SwaggerUi")]
+        [FunctionName(nameof(SwaggerUi))]
         public static HttpResponseMessage SwaggerUi(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "swagger/ui")]
             HttpRequestMessage req,

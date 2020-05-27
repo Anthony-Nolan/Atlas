@@ -7,12 +7,12 @@ using Microsoft.Azure.WebJobs;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
-    public class Caching
+    public class CachingFunctions
     {
         private readonly IAntigenCachingService antigenCachingService;
         private readonly IHlaMetadataCacheControl hlaMetadataCacheControl;
 
-        public Caching(
+        public CachingFunctions(
             IAntigenCachingService antigenCachingService,
             IHlaMetadataCacheControl hlaMetadataCacheControl
         )

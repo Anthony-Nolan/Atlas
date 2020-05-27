@@ -8,28 +8,29 @@ using Atlas.Common.ServiceBus.Exceptions;
 using Atlas.Common.Utils;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Exceptions;
-using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Microsoft.Azure.WebJobs;
 
 namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
 {
-    public class DonorManagement
+    public class DonorManagementFunctions
     {
-        const string ErrorMessagePrefix = "Error when running the donor management function. ";
+        private const string ErrorMessagePrefix = "Error when running the donor management function. ";
 
         private readonly IDonorUpdateProcessor donorUpdateProcessor;
         private readonly ILogger logger;
 
-        public DonorManagement(IDonorUpdateProcessor donorUpdateProcessor, ILogger logger)
+        public DonorManagementFunctions(IDonorUpdateProcessor donorUpdateProcessor, ILogger logger)
         {
             this.donorUpdateProcessor = donorUpdateProcessor;
             this.logger = logger;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName("ManageDonorByAvailability")]
-        public async Task Run([TimerTrigger("%MessagingServiceBus:DonorManagement:CronSchedule%")] TimerInfo myTimer)
+        [FunctionName(nameof(ManageDonorByAvailability))]
+        public async Task ManageDonorByAvailability(
+            [TimerTrigger("%MessagingServiceBus:DonorManagement:CronSchedule%")]
+            TimerInfo myTimer)
         {
             try
             {
