@@ -16,7 +16,16 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         IEquatable<SingleAlleleScoringInfo>
     {
         // Shortened property names are used when serialising the object for storage
-        // to reduce the total row size
+        // to reduce the total row size.
+        // Note this isn't *JUST* for efficiency: the TruncatedAllele ScoringInfo
+        // records contain a copy of this class for every relevant 'child' allele, so
+        // some of the larger cases contain 300+ copies of this class, which takes
+        // the payload somewhat near its maximum limit.
+        // That limit in those cases is currently somewhere between
+        // * ave. 90 chars per info
+        // and
+        // * ave. 130 chars per info
+        // QQ Create a test for this.
 
         [JsonProperty("name")]
         public string AlleleName { get; }

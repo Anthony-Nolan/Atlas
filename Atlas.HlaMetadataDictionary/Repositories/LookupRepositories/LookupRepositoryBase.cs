@@ -1,4 +1,5 @@
-﻿using Atlas.Common.Caching;
+﻿using System;
+using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using LazyCache;
@@ -56,11 +57,11 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
             cache.Add(VersionedCacheKey(hlaDatabaseVersion), data);
         }
 
-        protected async Task RecreateDataTable(IEnumerable<TStorable> tableContents, IEnumerable<string> partitions, string hlaDatabaseVersion)
+        protected async Task RecreateDataTable(IEnumerable<TStorable> tableContents, string hlaDatabaseVersion)
         {
             var tablePrefix = VersionedTableReferencePrefix(hlaDatabaseVersion);
             var newDataTable = await CreateNewDataTable(tablePrefix);
-            await InsertIntoDataTable(tableContents, partitions, newDataTable);
+            await InsertIntoDataTable(tableContents, newDataTable);
             await tableReferenceRepository.UpdateTableReference(tablePrefix, newDataTable.Name);
             cloudTable = null;
         }
@@ -133,18 +134,18 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
             return await tableFactory.GetTable(dataTableReference);
         }
 
-        private static async Task InsertIntoDataTable(IEnumerable<TStorable> contents, IEnumerable<string> partitions, CloudTable dataTable)
+        private static async Task InsertIntoDataTable(IEnumerable<TStorable> contents, CloudTable dataTable)
         {
-            var entities = contents
+            var partitionedEntities = contents
                 .Select(data => new HlaLookupTableEntity(data))
+                .GroupBy(ent => ent.PartitionKey)
                 .ToList();
 
-            foreach (var partition in partitions)
+            foreach (var partition in partitionedEntities)
             {
-                var partitionedEntities = entities
-                    .Where(entity => entity.PartitionKey.Equals(partition));
+                var entitiesInCurrentPartition = partition.ToList();
                 
-                await dataTable.BatchInsert(partitionedEntities);
+                await dataTable.BatchInsert(entitiesInCurrentPartition);
             }
         }
     }

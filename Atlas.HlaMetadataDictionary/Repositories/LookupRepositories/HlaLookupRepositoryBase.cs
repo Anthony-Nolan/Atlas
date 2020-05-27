@@ -37,7 +37,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 
         public async Task RecreateHlaLookupTable(IEnumerable<ISerialisableHlaMetadata> lookupResults, string hlaDatabaseVersion)
         {
-            await RecreateDataTable(lookupResults, HlaLookupTableKeyManager.GetTablePartitionKeys(), hlaDatabaseVersion);
+            await RecreateDataTable(lookupResults, hlaDatabaseVersion);
         }
 
         public async Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(
