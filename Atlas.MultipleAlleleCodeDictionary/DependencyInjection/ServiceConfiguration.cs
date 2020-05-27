@@ -24,6 +24,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.DependencyInjection
         {
             services.AddScoped<IMacRepository, MacRepository>();
             services.AddScoped<IMacParser, MacLineParser>();
+            services.AddScoped<IMacImporter, MacImporter>();
         }
     }
 }

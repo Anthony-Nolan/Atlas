@@ -3,7 +3,11 @@ using Atlas.MultipleAlleleCodeDictionary.utils;
 
 namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
 {
-    public class MacImporter
+    public interface IMacImporter
+    {
+        public void ImportLatestMultipleAlleleCodes();
+    }
+    public class MacImporter : IMacImporter
     {
         
         private IMacRepository MacRepository { get; set; }
