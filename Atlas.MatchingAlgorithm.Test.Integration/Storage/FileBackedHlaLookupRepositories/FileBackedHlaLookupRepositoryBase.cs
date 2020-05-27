@@ -28,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
             PopulateHlaLookupResults();
         }
 
-        public Task RecreateDataTable(IEnumerable<IHlaLookupResult> tableContents, IEnumerable<string> partitions, string hlaDatabaseVersion)
+        public Task RecreateDataTable(IEnumerable<IHlaLookupResult> tableContents, string hlaDatabaseVersion)
         {
             // No operation needed
             return Task.CompletedTask;
