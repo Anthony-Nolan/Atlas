@@ -51,6 +51,7 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services
 
             result.Should().BeFalse();
         }
+
         [Test]
         public void IsAlleleNull_WhenAlleleHasNoSuffix_ReturnsFalse()
         {
@@ -58,6 +59,32 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services
             var result = ExpressionSuffixParser.IsAlleleNull(alleleName);
 
             result.Should().BeFalse();
+        }
+
+        [Test, Repeat(100000), Ignore("Only used for manual benchmarking. Ran in ~700ms")]
+        public void PerfTest()
+        {
+            ExpressionSuffixParser.GetExpressionSuffix("01:01");
+            ExpressionSuffixParser.GetExpressionSuffix("01:01N");
+            ExpressionSuffixParser.GetExpressionSuffix("01:01n");
+            ExpressionSuffixParser.GetExpressionSuffix("01:01A");
+            ExpressionSuffixParser.GetExpressionSuffix("01:01a");
+            ExpressionSuffixParser.GetExpressionSuffix("01:01Z");
+            ExpressionSuffixParser.GetExpressionSuffix("01:01z");
+            ExpressionSuffixParser.GetExpressionSuffix("03:12");
+            ExpressionSuffixParser.GetExpressionSuffix("03:12N");
+            ExpressionSuffixParser.GetExpressionSuffix("03:12n");
+            ExpressionSuffixParser.GetExpressionSuffix("03:12A");
+            ExpressionSuffixParser.GetExpressionSuffix("03:12a");
+            ExpressionSuffixParser.GetExpressionSuffix("03:12Z");
+            ExpressionSuffixParser.GetExpressionSuffix("03:12z");
+            ExpressionSuffixParser.GetExpressionSuffix("02:01:02:12");
+            ExpressionSuffixParser.GetExpressionSuffix("02:01:02:12N");
+            ExpressionSuffixParser.GetExpressionSuffix("02:01:02:12n");
+            ExpressionSuffixParser.GetExpressionSuffix("02:01:02:12A");
+            ExpressionSuffixParser.GetExpressionSuffix("02:01:02:12a");
+            ExpressionSuffixParser.GetExpressionSuffix("02:01:02:12Z");
+            ExpressionSuffixParser.GetExpressionSuffix("02:01:02:12z");
         }
     }
 }
