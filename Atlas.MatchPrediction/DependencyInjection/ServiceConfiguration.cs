@@ -19,6 +19,7 @@ namespace Atlas.MatchPrediction.DependencyInjection
         public static void RegisterMatchPredictionServices(this IServiceCollection services)
         {
             services.RegisterSettings();
+            services.RegisterAtlasLogger(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value);
             services.RegisterServices();
             services.RegisterDatabaseServices();
             services.RegisterClientServices();
@@ -52,11 +53,6 @@ namespace Atlas.MatchPrediction.DependencyInjection
 
         private static void RegisterServices(this IServiceCollection services)
         {
-            services.AddScoped<ILogger>(sp =>
-            {
-                var settings = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value;
-                return LoggerRegistration.BuildLogger(settings.InstrumentationKey);
-            });
 
             services.AddScoped<IFrequencySetMetadataExtractor, FrequencySetMetadataExtractor>();
             services.AddScoped<IFrequencySetImporter, FrequencySetImporter>();

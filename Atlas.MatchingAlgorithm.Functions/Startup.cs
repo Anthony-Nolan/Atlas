@@ -23,7 +23,7 @@ namespace Atlas.MatchingAlgorithm.Functions
                 sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
                 sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
                 sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
-                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.InstrumentationKey
+                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value
                 );
             builder.Services.RegisterSearchAlgorithmTypes();
         }

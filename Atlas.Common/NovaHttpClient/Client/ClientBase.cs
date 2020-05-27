@@ -29,7 +29,7 @@ namespace Atlas.Common.NovaHttpClient.Client
         private readonly HttpErrorParser errorsParser;
         private readonly ILogger logger;
 
-        protected ClientBase(HttpClientSettings settings, ILogger logger = null, HttpMessageHandler handler = null, HttpErrorParser errorsParser = null)
+        protected ClientBase(HttpClientSettings settings, ILogger logger, HttpMessageHandler handler = null, HttpErrorParser errorsParser = null)
         {
             clientName = ServiceNameValidator.Validate(settings.ClientName);
             client = GetClient(
@@ -42,7 +42,7 @@ namespace Atlas.Common.NovaHttpClient.Client
             {
                 SerializerSettings = settings.JsonSettings
             };
-            this.logger = logger ?? new NoOpLogger();
+            this.logger = logger;
 
             this.errorsParser = errorsParser ?? new HttpErrorParser();
         }

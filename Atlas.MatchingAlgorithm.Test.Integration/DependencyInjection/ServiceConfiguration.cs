@@ -20,6 +20,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 {
@@ -40,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 
             services.RegisterSearchAlgorithmTypes();
             Func<IServiceProvider, string> blank = _ => "";
-            services.RegisterHlaMetadataDictionary(blank, blank, blank, blank, blank); //These configuration values won't be used, because all they are all (indirectly) overridden, below.
+            services.RegisterHlaMetadataDictionary(blank, blank, blank, blank, sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value); //These configuration values won't be used, because all they are all (indirectly) overridden, below.
             services.RegisterDataServices();
             services.RegisterDonorManagementServices();
             

@@ -131,8 +131,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IPermissiveMismatchCalculator, PermissiveMismatchCalculator>();
             services.AddScoped<IScoreResultAggregator, ScoreResultAggregator>();
 
-            services.AddScoped<IAlleleStringSplitterService, AlleleStringSplitterService>();
-            services.AddScoped<IHlaCategorisationService, HlaCategorisationService>();
+            services.RegisterCommonGeneticServices();
 
             services.AddScoped<IActiveHlaVersionAccessor, ActiveHlaVersionAccessor>();
 
@@ -181,6 +180,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
         public static void RegisterDonorClient(this IServiceCollection services)
         {
+            services.RegisterAtlasLogger(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value);
             services.AddSingleton(GetDonorServiceClient);
         }
 
@@ -214,16 +214,14 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 ClientName = "donor_service_algorithm_client",
                 JsonSettings = new JsonSerializerSettings()
             };
-            var insightsSettings = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value;
-            var logger = LoggerRegistration.BuildLogger(insightsSettings.InstrumentationKey);
+            var logger = sp.GetService<ILogger>();
 
             return new DonorServiceClient(clientSettings, logger);
         }
 
         private static IDonorServiceClient GetFileBasedDonorServiceClient(IServiceProvider sp)
         {
-            var insightsSettings = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value;
-            var logger = LoggerRegistration.BuildLogger(insightsSettings.InstrumentationKey);
+            var logger = sp.GetService<ILogger>();
 
             return new FileBasedDonorServiceClient(logger);
         }
