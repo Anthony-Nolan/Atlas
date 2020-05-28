@@ -23,7 +23,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
     internal abstract class LookupRepositoryBase<TStorable, TTableEntity> :
         ILookupRepository
         where TTableEntity : TableEntity, new()
-        where TStorable : IHlaLookupResult
+        where TStorable : ISerialisableHlaMetadata
     {
         protected readonly IAppCache cache;
 

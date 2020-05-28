@@ -89,17 +89,17 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             return alleleNamesService.GetAlleleNamesAndTheirVariants(hlaDatabaseVersion);
         }
 
-        private IEnumerable<IHlaLookupResult> GetMatchingLookupResults(IEnumerable<IMatchedHla> matchedHla)
+        private IEnumerable<ISerialisableHlaMetadata> GetMatchingLookupResults(IEnumerable<IMatchedHla> matchedHla)
         {
             return hlaMatchingDataConverter.ConvertToHlaLookupResults(matchedHla);
         }
 
-        private IEnumerable<IHlaLookupResult> GetScoringLookupResults(IEnumerable<IMatchedHla> matchedHla)
+        private IEnumerable<ISerialisableHlaMetadata> GetScoringLookupResults(IEnumerable<IMatchedHla> matchedHla)
         {
             return hlaScoringDataConverter.ConvertToHlaLookupResults(matchedHla);
         }
 
-        private IEnumerable<IHlaLookupResult> GetDpb1TceGroupLookupResults(string hlaDatabaseVersion)
+        private IEnumerable<ISerialisableHlaMetadata> GetDpb1TceGroupLookupResults(string hlaDatabaseVersion)
         {
             return dpb1TceGroupsService.GetDpb1TceGroupLookupResults(hlaDatabaseVersion);
         }

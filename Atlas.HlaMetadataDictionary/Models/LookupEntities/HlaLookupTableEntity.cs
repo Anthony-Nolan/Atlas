@@ -26,7 +26,7 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
 
         public HlaLookupTableEntity() { }
 
-        public HlaLookupTableEntity(IHlaLookupResult lookupResult)
+        public HlaLookupTableEntity(ISerialisableHlaMetadata lookupResult)
             : base(HlaLookupTableKeyManager.GetEntityPartitionKey(lookupResult.Locus),
                 HlaLookupTableKeyManager.GetEntityRowKey(lookupResult.LookupName, lookupResult.TypingMethod))
         {

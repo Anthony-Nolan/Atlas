@@ -9,7 +9,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
 {
     internal interface IMatchedHlaDataConverterBase
     {
-        IEnumerable<IHlaLookupResult> ConvertToHlaLookupResults(IEnumerable<IMatchedHla> matchedHla);
+        IEnumerable<ISerialisableHlaMetadata> ConvertToHlaLookupResults(IEnumerable<IMatchedHla> matchedHla);
     }
 
     /// <summary>
@@ -17,7 +17,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
     /// </summary>
     internal abstract class MatchedHlaDataConverterBase : IMatchedHlaDataConverterBase
     {
-        public IEnumerable<IHlaLookupResult> ConvertToHlaLookupResults(IEnumerable<IMatchedHla> matchedHla)
+        public IEnumerable<ISerialisableHlaMetadata> ConvertToHlaLookupResults(IEnumerable<IMatchedHla> matchedHla)
         {
             var matchedHlaList = matchedHla.ToList();
 
@@ -28,13 +28,13 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
                         matchedHlaList.OfType<IHlaLookupResultSource<AlleleTyping>>()));
         }
 
-        private IEnumerable<IHlaLookupResult> GetHlaLookupResultsFromMatchedSerologies(
+        private IEnumerable<ISerialisableHlaMetadata> GetHlaLookupResultsFromMatchedSerologies(
             IEnumerable<IHlaLookupResultSource<SerologyTyping>> matchedSerologies)
         {
             return matchedSerologies.Select(GetSerologyLookupResult);
         }
 
-        private IEnumerable<IHlaLookupResult> GetHlaLookupResultsFromMatchedAlleles(
+        private IEnumerable<ISerialisableHlaMetadata> GetHlaLookupResultsFromMatchedAlleles(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> matchedAlleles)
         {
             var singleAlleleLookupSource = matchedAlleles.ToList();
@@ -49,7 +49,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
         /// <summary>
         /// Maps data using original allele names with no modification.
         /// </summary>
-        private IEnumerable<IHlaLookupResult> GetLookupResultsForSingleAlleles(
+        private IEnumerable<ISerialisableHlaMetadata> GetLookupResultsForSingleAlleles(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> matchedAlleles)
         {
             return matchedAlleles.Select(GetSingleAlleleLookupResult);
@@ -59,7 +59,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
         /// Coallesces data for alleles with 3+ fields that share the same locus and two-field name
         /// to speed up NMDP code lookups.
         /// </summary>
-        private IEnumerable<IHlaLookupResult> GetLookupResultsForNmdpCodeAlleleNames(
+        private IEnumerable<ISerialisableHlaMetadata> GetLookupResultsForNmdpCodeAlleleNames(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> matchedAlleles)
         {
             var allelesGroupedByLocusAndLookupName = matchedAlleles
@@ -83,7 +83,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
         /// Coalesces data for alleles with 2+ fields that share the same locus and first field
         /// to speed up XX code lookups.
         /// </summary>
-        private IEnumerable<IHlaLookupResult> GetLookupResultsForXxCodeNames(
+        private IEnumerable<ISerialisableHlaMetadata> GetLookupResultsForXxCodeNames(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> matchedAlleles)
         {
             // A few deleted alleles in hla_nom do not conform to v3.0 HLA nomenclature standards: 
@@ -107,20 +107,20 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
         /// <summary>
         /// Maps data using original serology name with no modification.
         /// </summary>
-        protected abstract IHlaLookupResult GetSerologyLookupResult(
+        protected abstract ISerialisableHlaMetadata GetSerologyLookupResult(
             IHlaLookupResultSource<SerologyTyping> lookupResultSource);
 
         /// <summary>
         /// Maps data using original allele name with no modification.
         /// </summary>
-        protected abstract IHlaLookupResult GetSingleAlleleLookupResult(
+        protected abstract ISerialisableHlaMetadata GetSingleAlleleLookupResult(
             IHlaLookupResultSource<AlleleTyping> lookupResultSource);
 
         /// <summary>
         /// To create lookup result for an NMDP code allele, pass in a set of allele typings 
         /// that map to the same Locus & NMDP code allele lookup name value.
         /// </summary>
-        protected abstract IHlaLookupResult GetNmdpCodeAlleleLookupResult(
+        protected abstract ISerialisableHlaMetadata GetNmdpCodeAlleleLookupResult(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources,
             string nmdpLookupName);
 
@@ -128,7 +128,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
         /// To create an XX code lookup result, pass in a set of allele typings 
         /// that map to the same Locus & XX code lookup name value.
         /// </summary>
-        protected abstract IHlaLookupResult GetXxCodeLookupResult(
+        protected abstract ISerialisableHlaMetadata GetXxCodeLookupResult(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources);
 
         #endregion

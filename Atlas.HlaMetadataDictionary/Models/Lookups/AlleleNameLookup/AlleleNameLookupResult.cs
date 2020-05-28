@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup
 {
-    public interface IAlleleNameLookupResult : IHlaLookupResult
+    internal interface IAlleleNameLookupResult : ISerialisableHlaMetadata
     {
         IEnumerable<string> CurrentAlleleNames { get; }
     }

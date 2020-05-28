@@ -19,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
     internal abstract class FileBackedHlaLookupRepositoryBase<THlaLookupResult> :
         FileBackedHlaLookupRepositoryBaseReader,
         IHlaLookupRepository
-        where THlaLookupResult : IHlaLookupResult
+        where THlaLookupResult : ISerialisableHlaMetadata
     {
         protected IEnumerable<THlaLookupResult> HlaLookupResults;
 
@@ -40,7 +40,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
             return Task.CompletedTask;
         }
 
-        public Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults, string hlaDatabaseVersion)
+        public Task RecreateHlaLookupTable(IEnumerable<ISerialisableHlaMetadata> lookupResults, string hlaDatabaseVersion)
         {
             // No operation needed
             return Task.CompletedTask;
