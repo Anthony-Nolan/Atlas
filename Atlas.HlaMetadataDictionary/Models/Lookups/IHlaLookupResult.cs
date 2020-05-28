@@ -18,7 +18,11 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups
         string LookupName { get; }
 
         TypingMethod TypingMethod { get; }
+    }
 
+
+    public interface ISerialisableHlaMetadata : IHlaLookupResult
+    {
         /// <summary>
         /// Property containing HLA information to be stored as a serialised string.
         /// </summary>

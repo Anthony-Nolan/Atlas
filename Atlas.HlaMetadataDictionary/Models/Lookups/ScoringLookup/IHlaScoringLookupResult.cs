@@ -5,7 +5,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
     /// <summary>
     /// Lookup result with data required to score HLA pairings.
     /// </summary>
-    public interface IHlaScoringLookupResult : IHlaLookupResult
+    public interface IHlaScoringLookupResult : ISerialisableHlaMetadata
     {
         IHlaScoringInfo HlaScoringInfo { get; }
         IEnumerable<IHlaScoringLookupResult> GetInTermsOfSingleAlleleScoringMetadata();

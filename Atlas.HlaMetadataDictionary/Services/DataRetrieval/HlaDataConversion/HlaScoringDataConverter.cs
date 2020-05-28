@@ -20,7 +20,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
         MatchedHlaDataConverterBase,
         IHlaScoringDataConverter
     {
-        protected override IHlaLookupResult GetSerologyLookupResult(
+        protected override ISerialisableHlaMetadata GetSerologyLookupResult(
             IHlaLookupResultSource<SerologyTyping> lookupResultSource)
         {
             var scoringInfo = SerologyScoringInfo.GetScoringInfo(lookupResultSource);
@@ -33,7 +33,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
             );
         }
 
-        protected override IHlaLookupResult GetSingleAlleleLookupResult(
+        protected override ISerialisableHlaMetadata GetSingleAlleleLookupResult(
             IHlaLookupResultSource<AlleleTyping> lookupResultSource)
         {
             return GetMolecularLookupResult(
@@ -42,7 +42,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
                 sources => SingleAlleleScoringInfo.GetScoringInfoWithMatchingSerologies(sources.First()));
         }
 
-        protected override IHlaLookupResult GetNmdpCodeAlleleLookupResult(
+        protected override ISerialisableHlaMetadata GetNmdpCodeAlleleLookupResult(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources,
             string nmdpLookupName)
         {
@@ -52,7 +52,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
                 MultipleAlleleScoringInfo.GetScoringInfo);
         }
 
-        protected override IHlaLookupResult GetXxCodeLookupResult(
+        protected override ISerialisableHlaMetadata GetXxCodeLookupResult(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources)
         {
             return GetMolecularLookupResult(

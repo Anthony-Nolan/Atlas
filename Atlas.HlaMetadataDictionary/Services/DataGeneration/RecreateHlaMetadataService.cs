@@ -71,22 +71,22 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             );
         }
 
-        private async Task PersistAlleleNamesLookupResults(IEnumerable<IHlaLookupResult> alleleNames, string hlaDatabaseVersion)
+        private async Task PersistAlleleNamesLookupResults(IEnumerable<ISerialisableHlaMetadata> alleleNames, string hlaDatabaseVersion)
         {
             await alleleNamesLookupRepository.RecreateHlaLookupTable(alleleNames, hlaDatabaseVersion);
         }
 
-        private async Task PersistHlaMatchingLookupResults(IEnumerable<IHlaLookupResult> hlaMatchingLookupResults, string hlaDatabaseVersion)
+        private async Task PersistHlaMatchingLookupResults(IEnumerable<ISerialisableHlaMetadata> hlaMatchingLookupResults, string hlaDatabaseVersion)
         {
             await hlaMatchingLookupRepository.RecreateHlaLookupTable(hlaMatchingLookupResults, hlaDatabaseVersion);
         }
 
-        private async Task PersistHlaScoringLookupResults(IEnumerable<IHlaLookupResult> hlaScoringLookupResults, string hlaDatabaseVersion)
+        private async Task PersistHlaScoringLookupResults(IEnumerable<ISerialisableHlaMetadata> hlaScoringLookupResults, string hlaDatabaseVersion)
         {
             await hlaScoringLookupRepository.RecreateHlaLookupTable(hlaScoringLookupResults, hlaDatabaseVersion);
         }
 
-        private async Task PersistDpb1TceGroupLookupResults(IEnumerable<IHlaLookupResult> dpb1TceGroupLookupResults, string hlaDatabaseVersion)
+        private async Task PersistDpb1TceGroupLookupResults(IEnumerable<ISerialisableHlaMetadata> dpb1TceGroupLookupResults, string hlaDatabaseVersion)
         {
             await dpb1TceGroupsLookupRepository.RecreateHlaLookupTable(dpb1TceGroupLookupResults, hlaDatabaseVersion);
         }

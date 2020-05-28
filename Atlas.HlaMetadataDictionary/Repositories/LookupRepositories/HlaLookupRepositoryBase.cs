@@ -12,7 +12,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {
     internal interface IHlaLookupRepository : ILookupRepository
     {
-        Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults, string hlaDatabaseVersion);
+        Task RecreateHlaLookupTable(IEnumerable<ISerialisableHlaMetadata> lookupResults, string hlaDatabaseVersion);
 
         Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(
             Locus locus,
@@ -22,7 +22,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
     }
 
     internal abstract class HlaLookupRepositoryBase :
-        LookupRepositoryBase<IHlaLookupResult, HlaLookupTableEntity>,
+        LookupRepositoryBase<ISerialisableHlaMetadata, HlaLookupTableEntity>,
         IHlaLookupRepository
     {
         protected HlaLookupRepositoryBase(
@@ -35,7 +35,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
         {
         }
 
-        public async Task RecreateHlaLookupTable(IEnumerable<IHlaLookupResult> lookupResults, string hlaDatabaseVersion)
+        public async Task RecreateHlaLookupTable(IEnumerable<ISerialisableHlaMetadata> lookupResults, string hlaDatabaseVersion)
         {
             await RecreateDataTable(lookupResults, HlaLookupTableKeyManager.GetTablePartitionKeys(), hlaDatabaseVersion);
         }

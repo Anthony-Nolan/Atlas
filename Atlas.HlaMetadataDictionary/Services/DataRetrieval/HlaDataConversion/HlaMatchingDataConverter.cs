@@ -20,7 +20,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
         MatchedHlaDataConverterBase,
         IHlaMatchingDataConverter
     {
-        protected override IHlaLookupResult GetSerologyLookupResult(IHlaLookupResultSource<SerologyTyping> lookupResultSource)
+        protected override ISerialisableHlaMetadata GetSerologyLookupResult(IHlaLookupResultSource<SerologyTyping> lookupResultSource)
         {
             return new HlaMatchingLookupResult(
                     lookupResultSource.TypingForHlaLookupResult.Locus,
@@ -29,7 +29,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
                     lookupResultSource.MatchingPGroups);
         }
 
-        protected override IHlaLookupResult GetSingleAlleleLookupResult(
+        protected override ISerialisableHlaMetadata GetSingleAlleleLookupResult(
             IHlaLookupResultSource<AlleleTyping> lookupResultSource)
         {
             return GetMolecularLookupResult(
@@ -38,7 +38,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
             );
         }
 
-        protected override IHlaLookupResult GetNmdpCodeAlleleLookupResult(
+        protected override ISerialisableHlaMetadata GetNmdpCodeAlleleLookupResult(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources,
             string nmdpLookupName)
         {
@@ -48,7 +48,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
             );
         }
 
-        protected override IHlaLookupResult GetXxCodeLookupResult(
+        protected override ISerialisableHlaMetadata GetXxCodeLookupResult(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources)
         {
             return GetMolecularLookupResult(
@@ -57,7 +57,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
             );
         }
         
-        private static IHlaLookupResult GetMolecularLookupResult(
+        private static ISerialisableHlaMetadata GetMolecularLookupResult(
             IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources,
             Func<AlleleTyping, string> getLookupName)
         {
