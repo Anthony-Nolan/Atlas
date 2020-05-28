@@ -60,7 +60,7 @@ namespace Atlas.MatchPrediction.DependencyInjection
             services.AddScoped<IFrequencySetService, FrequencySetService>();
 
             services.AddScoped<IGenotypeLikelihoodService, GenotypeLikelihoodService>();
-            services.AddScoped<ISplitGenotype, SplitGenotype>();
+            services.AddScoped<IGenotypeImputation, GenotypeImputation>();
         }
 
         private static string GetSqlConnectionString(IServiceProvider sp)
