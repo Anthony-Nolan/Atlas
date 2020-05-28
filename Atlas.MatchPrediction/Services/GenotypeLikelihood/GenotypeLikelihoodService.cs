@@ -9,16 +9,16 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 
     public class GenotypeLikelihoodService : IGenotypeLikelihoodService
     {
-        private readonly ISplitGenotype splitGenotype;
+        private readonly IGenotypeImputation genotypeImputation;
 
-        public GenotypeLikelihoodService(ISplitGenotype splitGenotype)
+        public GenotypeLikelihoodService(IGenotypeImputation genotypeImputation)
         {
-            this.splitGenotype = splitGenotype;
+            this.genotypeImputation = genotypeImputation;
         }
 
         public GenotypeLikelihoodResponse CalculateLikelihood(GenotypeLikelihoodInput genotypeLikelihood)
         {
-            var diplotypes = splitGenotype.SplitIntoDiplotypes(genotypeLikelihood.Genotype);
+            var diplotypes = genotypeImputation.GetPossibleDiplotypes(genotypeLikelihood.Genotype);
 
             return new GenotypeLikelihoodResponse() { Likelihood = 1 };
         }
