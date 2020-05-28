@@ -1,3 +1,5 @@
+using System;
+using System.ComponentModel;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData.Hla.Services;
@@ -34,14 +36,11 @@ using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System;
-using System.ComponentModel;
 
 namespace Atlas.MatchingAlgorithm.DependencyInjection
 {
@@ -82,13 +81,13 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<ISearchRequestContext, SearchRequestContext>();
             services.AddScoped<ILogger>(sp =>
             {
-                var telemetryConfig = new TelemetryConfiguration
-                {
-                    InstrumentationKey = sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.InstrumentationKey
-                };
+#pragma warning disable 618
+                // TODO: ATLAS-313: If this fixed telemetry info in AI, work out how to achieve this with the new constructor. Else, revert.
+                var telemetryClient = new TelemetryClient();
+#pragma warning restore 618
                 return new SearchRequestAwareLogger(
                     sp.GetService<ISearchRequestContext>(),
-                    new TelemetryClient(telemetryConfig),
+                    telemetryClient,
                     sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel());
             });
 
