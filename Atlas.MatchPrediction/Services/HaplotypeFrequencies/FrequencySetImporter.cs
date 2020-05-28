@@ -1,11 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using Atlas.Common.Utils.Extensions;
+﻿using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models;
 using MoreLinq.Extensions;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 {
@@ -16,16 +16,16 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
     internal class FrequencySetImporter : IFrequencySetImporter
     {
-        private readonly IFrequencyCsvReader frequenciesStreamReader;
+        private readonly IFrequencyCsvReader frequencyCsvReader;
         private readonly IHaplotypeFrequencySetRepository setRepository;
         private readonly IHaplotypeFrequenciesRepository frequenciesRepository;
 
         public FrequencySetImporter(
-            IFrequencyCsvReader frequenciesStreamReader,
+            IFrequencyCsvReader frequencyCsvReader,
             IHaplotypeFrequencySetRepository setRepository,
             IHaplotypeFrequenciesRepository frequenciesRepository)
         {
-            this.frequenciesStreamReader = frequenciesStreamReader;
+            this.frequencyCsvReader = frequencyCsvReader;
             this.setRepository = setRepository;
             this.frequenciesRepository = frequenciesRepository;
         }
@@ -68,7 +68,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         private async Task StoreFrequencies(Stream stream, int setId)
         {
             const int batchSize = 10000;
-            var frequencies = frequenciesStreamReader.GetFrequencies(stream);
+            var frequencies = frequencyCsvReader.GetFrequencies(stream);
 
             // Cannot check if full frequency list has any entries without enumerating it, so we must check when processing rather than up-front
             var hasImportedAnyFrequencies = false;

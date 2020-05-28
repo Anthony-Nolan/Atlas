@@ -1,15 +1,15 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Text;
-using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+﻿using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using CsvHelper;
 using FluentAssertions;
 using NUnit.Framework;
+using System;
+using System.IO;
+using System.Linq;
+using System.Text;
 
 namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 {
-    public class HaplotypeFrequenciesStreamReaderTests
+    public class FrequencyCsvReaderTests
     {
         private const string CsvHeader = "a;b;c;drb1;dqb1;population_id;freq";
         private const string CsvFileBodySingleFrequency = "A-HLA;B-HLA;C-HLA;DRB1-HLA;DQBQ-HLA;1;0.00001";
