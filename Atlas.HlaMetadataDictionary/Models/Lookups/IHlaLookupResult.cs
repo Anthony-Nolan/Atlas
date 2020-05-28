@@ -1,6 +1,5 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.HlaMetadataDictionary.Models.LookupEntities;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups
 {
