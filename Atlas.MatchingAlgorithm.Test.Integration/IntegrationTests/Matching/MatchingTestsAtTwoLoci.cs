@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -82,68 +83,71 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeSetUp]
         public void ImportTestDonors()
         {
-            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
-            var donorRepo = repositoryFactory.GetDonorUpdateRepository();
-
-            cordDonorInfoWithNoMatchAtEitherLocus = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
-                .WithMatchesAtLocus1(0)
-                .WithMatchesAtLocus2(0)
-                .Build();
-            
-            cordDonorInfoWithNoMatchAtLocus1AndHalfMatchAtLocus2 = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
-                .WithMatchesAtLocus1(0)
-                .WithMatchesAtLocus2(1)
-                .Build();
-            
-            cordDonorInfoWithNoMatchAtLocus1AndFullMatchAtLocus2 = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
-                .WithMatchesAtLocus1(0)
-                .WithMatchesAtLocus2(2)
-                .Build();
-            
-            cordDonorInfoWithHalfMatchAtLocus1AndNoMatchAtLocus2 = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
-                .WithMatchesAtLocus1(1)
-                .WithMatchesAtLocus2(0)
-                .Build();
-            
-            cordDonorInfoWithHalfMatchAtBothLoci = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
-                .WithMatchesAtLocus1(1)
-                .WithMatchesAtLocus2(1)
-                .Build();
-            
-            cordDonorInfoWithHalfMatchAtLocus1AndFullMatchAtLocus2 = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
-                .WithMatchesAtLocus1(1)
-                .WithMatchesAtLocus2(2)
-                .Build();
-            
-            cordDonorInfoWithFullMatchAtLocus1AndNoMatchAtLocus2 = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
-                .WithMatchesAtLocus1(2)
-                .WithMatchesAtLocus2(0)
-                .Build();
-            
-            cordDonorInfoWithFullMatchAtLocus1AndHalfMatchAtLocus2= new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
-                .WithMatchesAtLocus1(2)
-                .WithMatchesAtLocus2(1)
-                .Build();
-            
-            cordDonorInfoWithFullMatchAtBothLoci = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
-                .WithMatchesAtLocus1(2)
-                .WithMatchesAtLocus2(2)
-                .Build();
-
-            var allDonors = new List<DonorInfoWithExpandedHla>
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                cordDonorInfoWithNoMatchAtEitherLocus,
-                cordDonorInfoWithNoMatchAtLocus1AndHalfMatchAtLocus2,
-                cordDonorInfoWithNoMatchAtLocus1AndFullMatchAtLocus2,
-                cordDonorInfoWithHalfMatchAtBothLoci,
-                cordDonorInfoWithHalfMatchAtLocus1AndNoMatchAtLocus2,
-                cordDonorInfoWithHalfMatchAtLocus1AndFullMatchAtLocus2, 
-                cordDonorInfoWithFullMatchAtBothLoci, 
-                cordDonorInfoWithFullMatchAtLocus1AndHalfMatchAtLocus2,
-                cordDonorInfoWithFullMatchAtLocus1AndNoMatchAtLocus2
-            };
+                var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
+                var donorRepo = repositoryFactory.GetDonorUpdateRepository();
 
-            Task.Run(() => donorRepo.InsertBatchOfDonorsWithExpandedHla(allDonors)).Wait();
+                cordDonorInfoWithNoMatchAtEitherLocus = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+                        .WithMatchesAtLocus1(0)
+                        .WithMatchesAtLocus2(0)
+                        .Build();
+
+                cordDonorInfoWithNoMatchAtLocus1AndHalfMatchAtLocus2 = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+                        .WithMatchesAtLocus1(0)
+                        .WithMatchesAtLocus2(1)
+                        .Build();
+
+                cordDonorInfoWithNoMatchAtLocus1AndFullMatchAtLocus2 = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+                        .WithMatchesAtLocus1(0)
+                        .WithMatchesAtLocus2(2)
+                        .Build();
+
+                cordDonorInfoWithHalfMatchAtLocus1AndNoMatchAtLocus2 = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+                        .WithMatchesAtLocus1(1)
+                        .WithMatchesAtLocus2(0)
+                        .Build();
+
+                cordDonorInfoWithHalfMatchAtBothLoci = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+                        .WithMatchesAtLocus1(1)
+                        .WithMatchesAtLocus2(1)
+                        .Build();
+
+                cordDonorInfoWithHalfMatchAtLocus1AndFullMatchAtLocus2 = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+                        .WithMatchesAtLocus1(1)
+                        .WithMatchesAtLocus2(2)
+                        .Build();
+
+                cordDonorInfoWithFullMatchAtLocus1AndNoMatchAtLocus2 = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+                        .WithMatchesAtLocus1(2)
+                        .WithMatchesAtLocus2(0)
+                        .Build();
+
+                cordDonorInfoWithFullMatchAtLocus1AndHalfMatchAtLocus2 = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+                        .WithMatchesAtLocus1(2)
+                        .WithMatchesAtLocus2(1)
+                        .Build();
+
+                cordDonorInfoWithFullMatchAtBothLoci = new TwoLociTestsDonorBuilder(DonorIdGenerator.NextId(), locus1, locus2)
+                        .WithMatchesAtLocus1(2)
+                        .WithMatchesAtLocus2(2)
+                        .Build();
+
+                var allDonors = new List<DonorInfoWithExpandedHla>
+                {
+                    cordDonorInfoWithNoMatchAtEitherLocus,
+                    cordDonorInfoWithNoMatchAtLocus1AndHalfMatchAtLocus2,
+                    cordDonorInfoWithNoMatchAtLocus1AndFullMatchAtLocus2,
+                    cordDonorInfoWithHalfMatchAtBothLoci,
+                    cordDonorInfoWithHalfMatchAtLocus1AndNoMatchAtLocus2,
+                    cordDonorInfoWithHalfMatchAtLocus1AndFullMatchAtLocus2,
+                    cordDonorInfoWithFullMatchAtBothLoci,
+                    cordDonorInfoWithFullMatchAtLocus1AndHalfMatchAtLocus2,
+                    cordDonorInfoWithFullMatchAtLocus1AndNoMatchAtLocus2
+                };
+
+                Task.Run(() => donorRepo.InsertBatchOfDonorsWithExpandedHla(allDonors)).Wait();
+            });
         }
         
         [OneTimeTearDown]

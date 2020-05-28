@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.MultipleAlleleCodeDictionary.HlaService;
@@ -28,9 +29,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.MatchingDict
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            lookupService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMatchingLookupService>();
-            hlaServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IHlaServiceClient>();
-            appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                lookupService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMatchingLookupService>();
+                hlaServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IHlaServiceClient>();
+                appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
+            });
         }
 
         [SetUp]

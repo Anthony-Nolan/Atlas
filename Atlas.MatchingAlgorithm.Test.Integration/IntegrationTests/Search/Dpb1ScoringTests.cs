@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -42,8 +43,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [OneTimeSetUp]
         public void OneTimeSetup()
         {
-            defaultPhenotype = GetDefaultPhenotype();
-            testDonorId = SetupTestDonor(defaultPhenotype);
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                defaultPhenotype = GetDefaultPhenotype();
+                testDonorId = SetupTestDonor(defaultPhenotype);
+            });
         }
 
         [SetUp]

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
@@ -17,7 +18,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            permissiveMismatchCalculator = Substitute.For<IPermissiveMismatchCalculator>();
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                permissiveMismatchCalculator = Substitute.For<IPermissiveMismatchCalculator>();
+            });
         }
 
         [Test]

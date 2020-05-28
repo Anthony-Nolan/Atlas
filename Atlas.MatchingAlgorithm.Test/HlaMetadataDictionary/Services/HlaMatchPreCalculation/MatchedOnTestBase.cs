@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 using NUnit.Framework;
 
@@ -20,8 +21,11 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaMatchPr
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            var matchedHlaFromCache = SharedTestDataCache.GetMatchedHla();
-            MatchedHla = matchedHlaFromCache.OfType<TMatchedOn>().ToList();
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                var matchedHlaFromCache = SharedTestDataCache.GetMatchedHla();
+                MatchedHla = matchedHlaFromCache.OfType<TMatchedOn>().ToList();
+            });
         }
     }
 }

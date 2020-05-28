@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Utils.Http;
 using FluentAssertions;
 using NUnit.Framework;
@@ -14,8 +15,11 @@ namespace Atlas.Common.Test.Hla.Services
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            var categorisationService = new HlaCategorisationService();
-            splitterService = new AlleleStringSplitterService(categorisationService);
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                var categorisationService = new HlaCategorisationService();
+                splitterService = new AlleleStringSplitterService(categorisationService);
+            });
         }
 
         [TestCase("*01:01/01:02", new[] { "01:01", "01:02" })]
