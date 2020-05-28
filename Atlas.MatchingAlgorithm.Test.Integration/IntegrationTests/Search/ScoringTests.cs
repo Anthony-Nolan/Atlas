@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -36,14 +37,17 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [OneTimeSetUp]
         public void ImportTestDonor()
         {
-            // source of donor HLA phenotypes
-            defaultHlaSet = new SampleTestHlas.HeterozygousSet1();
-            mismatchHlaSet = new SampleTestHlas.HeterozygousSet2();
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                // source of donor HLA phenotypes
+                defaultHlaSet = new SampleTestHlas.HeterozygousSet1();
+                mismatchHlaSet = new SampleTestHlas.HeterozygousSet2();
 
-            testDonor = BuildTestDonor();
-            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
-            var donorRepository = repositoryFactory.GetDonorUpdateRepository();
-            donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { testDonor }).Wait();
+                testDonor = BuildTestDonor();
+                var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
+                var donorRepository = repositoryFactory.GetDonorUpdateRepository();
+                donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] {testDonor}).Wait();
+            });
         }
 
         [SetUp]

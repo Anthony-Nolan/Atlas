@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -64,43 +65,47 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
         {
-            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
-            donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForActiveHlaNomenclatureVersion();
-            donorRepository = repositoryFactory.GetDonorUpdateRepository();
-
-            // Matching & scoring assertions are based on the following assumptions:
-            // In v.3.3.0 of HLA db, the null allele below is the only null member of the group of alleles beginning with the same first two fields.
-            // Therefore, the two- and three-field truncated name variants - WITH suffix - should only map this null allele.
-            // The truncated name variants that have NO suffix should return the relevant expressing alleles, as well as the null allele.
-            expressingAlleleFromSameGGroupAsNullAllele = BuildTestData("01:01:01:01");
-            nullAllele = BuildTestData("01:01:01:02N");
-            nullAlleleAsTwoFieldNameNoSuffix = BuildTestData("01:01");
-            nullAlleleAsTwoFieldNameWithSuffix = BuildTestData("01:01N");
-            nullAlleleAsThreeFieldNameNoSuffix = BuildTestData("01:01:01");
-            nullAlleleAsThreeFieldNameWithSuffix = BuildTestData("01:01:01N");
-            nullAlleleAsStringWithExpressingAlleleOfSameGGroup = BuildTestData(nullAllele.AlleleName + "/" + expressingAlleleFromSameGGroupAsNullAllele.AlleleName);
-            nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup = BuildTestData(nullAllele.AlleleName + "/01:09:01:01");
-            nullAlleleAsXxCode = BuildTestData("01:XX");
-            differentNullAllele = BuildTestData("03:01:01:02N");
-
-            var allTestAlleles = new[]
+            await TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage_Async(async () =>
             {
-                expressingAlleleFromSameGGroupAsNullAllele,
-                nullAllele,
-                nullAlleleAsTwoFieldNameNoSuffix,
-                nullAlleleAsTwoFieldNameWithSuffix,
-                nullAlleleAsThreeFieldNameNoSuffix,
-                nullAlleleAsThreeFieldNameWithSuffix,
-                nullAlleleAsStringWithExpressingAlleleOfSameGGroup,
-                nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup,
-                nullAlleleAsXxCode,
-                differentNullAllele,
-            };
 
-            foreach (var testAllele in allTestAlleles)
-            {
-                await AddDonorPhenotypeToDonorRepository(testAllele.Phenotype, testAllele.DonorId);
-            }
+                var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
+                donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForActiveHlaNomenclatureVersion();
+                donorRepository = repositoryFactory.GetDonorUpdateRepository();
+
+                // Matching & scoring assertions are based on the following assumptions:
+                // In v.3.3.0 of HLA db, the null allele below is the only null member of the group of alleles beginning with the same first two fields.
+                // Therefore, the two- and three-field truncated name variants - WITH suffix - should only map this null allele.
+                // The truncated name variants that have NO suffix should return the relevant expressing alleles, as well as the null allele.
+                expressingAlleleFromSameGGroupAsNullAllele = BuildTestData("01:01:01:01");
+                nullAllele = BuildTestData("01:01:01:02N");
+                nullAlleleAsTwoFieldNameNoSuffix = BuildTestData("01:01");
+                nullAlleleAsTwoFieldNameWithSuffix = BuildTestData("01:01N");
+                nullAlleleAsThreeFieldNameNoSuffix = BuildTestData("01:01:01");
+                nullAlleleAsThreeFieldNameWithSuffix = BuildTestData("01:01:01N");
+                nullAlleleAsStringWithExpressingAlleleOfSameGGroup = BuildTestData(nullAllele.AlleleName + "/" + expressingAlleleFromSameGGroupAsNullAllele.AlleleName);
+                nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup = BuildTestData(nullAllele.AlleleName + "/01:09:01:01");
+                nullAlleleAsXxCode = BuildTestData("01:XX");
+                differentNullAllele = BuildTestData("03:01:01:02N");
+
+                var allTestAlleles = new[]
+                {
+                    expressingAlleleFromSameGGroupAsNullAllele,
+                    nullAllele,
+                    nullAlleleAsTwoFieldNameNoSuffix,
+                    nullAlleleAsTwoFieldNameWithSuffix,
+                    nullAlleleAsThreeFieldNameNoSuffix,
+                    nullAlleleAsThreeFieldNameWithSuffix,
+                    nullAlleleAsStringWithExpressingAlleleOfSameGGroup,
+                    nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup,
+                    nullAlleleAsXxCode,
+                    differentNullAllele,
+                };
+
+                foreach (var testAllele in allTestAlleles)
+                {
+                    await AddDonorPhenotypeToDonorRepository(testAllele.Phenotype, testAllele.DonorId);
+                }
+            });
         }
 
         private AlleleTestData BuildTestData(string alleleName)

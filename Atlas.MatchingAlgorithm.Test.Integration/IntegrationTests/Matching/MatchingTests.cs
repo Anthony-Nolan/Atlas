@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -51,11 +52,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
-            var donorUpdateRepository = repositoryFactory.GetDonorUpdateRepository();
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
+                var donorUpdateRepository = repositoryFactory.GetDonorUpdateRepository();
 
-            AddTestDonorsAvailableForSearch(donorUpdateRepository);
-            AddTestDonorUnavailableForSearch(donorUpdateRepository);
+                AddTestDonorsAvailableForSearch(donorUpdateRepository);
+                AddTestDonorUnavailableForSearch(donorUpdateRepository);
+            });
         }
 
         private void AddTestDonorsAvailableForSearch(IDonorUpdateRepository donorUpdateRepository)

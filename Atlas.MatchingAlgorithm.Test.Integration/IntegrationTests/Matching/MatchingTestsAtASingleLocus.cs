@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -54,108 +55,111 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeSetUp]
         public void ImportTestDonors()
         {
-            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
-            var updateRepo = repositoryFactory.GetDonorUpdateRepository();
-
-            var defaultRequiredHla = new TestHlaBuilder()
-                .WithPGroups(MatchingPGroup)
-                .Build();
-
-            donorInfoWithFullHomozygousMatchAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
-                .WithHlaAtLocus(
-                    locus,
-                    new TestHlaBuilder()
-                        .WithPGroups(PatientPGroupAtBothPositions, PatientPGroupAtPositionOne)
-                        .Build(),
-                    new TestHlaBuilder()
-                        .WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup")
-                        .Build()
-                )
-                .WithDefaultRequiredHla(defaultRequiredHla)
-                .WithDonorType(DefaultDonorType)
-                .Build();
-
-            donorInfoWithFullExactHeterozygousMatchAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
-                .WithHlaAtLocus(
-                    locus,
-                    new TestHlaBuilder()
-                        .WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup")
-                        .Build(),
-                    new TestHlaBuilder()
-                        .WithPGroups(PatientPGroupAtPositionTwo, "non-matching-pgroup")
-                        .Build()
-                )
-                .WithDefaultRequiredHla(defaultRequiredHla)
-                .WithDonorType(DefaultDonorType)
-                .Build();
-
-            donorInfoWithFullCrossHeterozygousMatchAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
-                .WithHlaAtLocus(
-                    locus,
-                    new TestHlaBuilder()
-                        .WithPGroups(PatientPGroupAtPositionTwo)
-                        .Build(),
-                    new TestHlaBuilder()
-                        .WithPGroups(PatientPGroupAtPositionOne)
-                        .Build()
-                )
-                .WithDefaultRequiredHla(defaultRequiredHla)
-                .WithDonorType(DefaultDonorType)
-                .Build();
-
-            donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
-                .WithHlaAtLocus(
-                    locus,
-                    new TestHlaBuilder()
-                        .WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup")
-                        .Build(),
-                    new TestHlaBuilder()
-                        .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
-                        .Build()
-                )
-                .WithDefaultRequiredHla(defaultRequiredHla)
-                .WithDonorType(DefaultDonorType)
-                .Build();
-
-            donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
-                .WithHlaAtLocus(
-                    locus,
-                    new TestHlaBuilder()
-                        .WithPGroups(PatientPGroupAtPositionOne, PatientPGroupAtPositionTwo)
-                        .Build(),
-                    new TestHlaBuilder()
-                        .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
-                        .Build()
-                )
-                .WithDefaultRequiredHla(defaultRequiredHla)
-                .WithDonorType(DefaultDonorType)
-                .Build();
-
-            donorInfoWithNoMatchAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
-                .WithHlaAtLocus(
-                    locus,
-                    new TestHlaBuilder()
-                        .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
-                        .Build(),
-                    new TestHlaBuilder()
-                        .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
-                        .Build()
-                )
-                .WithDefaultRequiredHla(defaultRequiredHla)
-                .WithDonorType(DefaultDonorType)
-                .Build();
-
-            var allDonors = new List<DonorInfoWithExpandedHla>
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                donorInfoWithFullHomozygousMatchAtLocus,
-                donorInfoWithFullExactHeterozygousMatchAtLocus,
-                donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus,
-                donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus,
-                donorInfoWithNoMatchAtLocus,
-                donorInfoWithFullCrossHeterozygousMatchAtLocus
-            };
+                var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
+                var updateRepo = repositoryFactory.GetDonorUpdateRepository();
 
-            Task.Run(() => updateRepo.InsertBatchOfDonorsWithExpandedHla(allDonors)).Wait();
+                var defaultRequiredHla = new TestHlaBuilder()
+                    .WithPGroups(MatchingPGroup)
+                    .Build();
+
+                donorInfoWithFullHomozygousMatchAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
+                    .WithHlaAtLocus(
+                        locus,
+                        new TestHlaBuilder()
+                            .WithPGroups(PatientPGroupAtBothPositions, PatientPGroupAtPositionOne)
+                            .Build(),
+                        new TestHlaBuilder()
+                            .WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup")
+                            .Build()
+                    )
+                    .WithDefaultRequiredHla(defaultRequiredHla)
+                    .WithDonorType(DefaultDonorType)
+                    .Build();
+
+                donorInfoWithFullExactHeterozygousMatchAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
+                        .WithHlaAtLocus(
+                            locus,
+                            new TestHlaBuilder()
+                                .WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup")
+                                .Build(),
+                            new TestHlaBuilder()
+                                .WithPGroups(PatientPGroupAtPositionTwo, "non-matching-pgroup")
+                                .Build()
+                        )
+                        .WithDefaultRequiredHla(defaultRequiredHla)
+                        .WithDonorType(DefaultDonorType)
+                        .Build();
+
+                donorInfoWithFullCrossHeterozygousMatchAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
+                        .WithHlaAtLocus(
+                            locus,
+                            new TestHlaBuilder()
+                                .WithPGroups(PatientPGroupAtPositionTwo)
+                                .Build(),
+                            new TestHlaBuilder()
+                                .WithPGroups(PatientPGroupAtPositionOne)
+                                .Build()
+                        )
+                        .WithDefaultRequiredHla(defaultRequiredHla)
+                        .WithDonorType(DefaultDonorType)
+                        .Build();
+
+                donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
+                        .WithHlaAtLocus(
+                            locus,
+                            new TestHlaBuilder()
+                                .WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup")
+                                .Build(),
+                            new TestHlaBuilder()
+                                .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
+                                .Build()
+                        )
+                        .WithDefaultRequiredHla(defaultRequiredHla)
+                        .WithDonorType(DefaultDonorType)
+                        .Build();
+
+                donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
+                        .WithHlaAtLocus(
+                            locus,
+                            new TestHlaBuilder()
+                                .WithPGroups(PatientPGroupAtPositionOne, PatientPGroupAtPositionTwo)
+                                .Build(),
+                            new TestHlaBuilder()
+                                .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
+                                .Build()
+                        )
+                        .WithDefaultRequiredHla(defaultRequiredHla)
+                        .WithDonorType(DefaultDonorType)
+                        .Build();
+
+                donorInfoWithNoMatchAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
+                    .WithHlaAtLocus(
+                        locus,
+                        new TestHlaBuilder()
+                            .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
+                            .Build(),
+                        new TestHlaBuilder()
+                            .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
+                            .Build()
+                    )
+                    .WithDefaultRequiredHla(defaultRequiredHla)
+                    .WithDonorType(DefaultDonorType)
+                    .Build();
+
+                var allDonors = new List<DonorInfoWithExpandedHla>
+                {
+                    donorInfoWithFullHomozygousMatchAtLocus,
+                    donorInfoWithFullExactHeterozygousMatchAtLocus,
+                    donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus,
+                    donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus,
+                    donorInfoWithNoMatchAtLocus,
+                    donorInfoWithFullCrossHeterozygousMatchAtLocus
+                };
+
+                Task.Run(() => updateRepo.InsertBatchOfDonorsWithExpandedHla(allDonors)).Wait();
+            });
         }
 
         [OneTimeTearDown]

@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Threading.Tasks;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using FluentAssertions;
@@ -18,10 +19,13 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.InitialDataLoad
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
         {
-            donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
-            donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
-            // Run operation under test once for this fixture, to (a) improve performance (b) remove the need to clean up duplicate ids between runs
-            await ImportFile();
+            await TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage_Async(async () =>
+            {
+                donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
+                donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
+                // Run operation under test once for this fixture, to (a) improve performance (b) remove the need to clean up duplicate ids between runs
+                await ImportFile();
+            });
         }
 
         [Test]

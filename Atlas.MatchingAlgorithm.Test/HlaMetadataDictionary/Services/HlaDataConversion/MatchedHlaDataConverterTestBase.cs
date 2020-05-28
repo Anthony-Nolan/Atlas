@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.Lookups;
 using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
@@ -24,7 +25,10 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.HlaDataCon
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            LookupResultGenerator = new TGenerator();
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                LookupResultGenerator = new TGenerator();
+            });
         }
 
         [Test]

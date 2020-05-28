@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
@@ -44,15 +45,18 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         [OneTimeSetUp]
         public void ImportTestDonor()
         {
-            matchGradesForMatchingNullAlleles = new List<MatchGrade>
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                MatchGrade.NullGDna,
-                MatchGrade.NullCDna,
-                MatchGrade.NullPartial
-            };
+                matchGradesForMatchingNullAlleles = new List<MatchGrade>
+                {
+                    MatchGrade.NullGDna,
+                    MatchGrade.NullCDna,
+                    MatchGrade.NullPartial
+                };
 
-            SetPhenotypes();
-            SetUpTestDonors();
+                SetPhenotypes();
+                SetUpTestDonors();
+            });
         }
 
         [SetUp]

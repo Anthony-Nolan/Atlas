@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Models.Wmda;
 using Atlas.HlaMetadataDictionary.Repositories;
 using FluentAssertions;
@@ -28,8 +29,11 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Repositories.Wmda
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            WmdaDataRepository = SharedTestDataCache.GetWmdaDataRepository();
-            SetupTestData();
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                WmdaDataRepository = SharedTestDataCache.GetWmdaDataRepository();
+                SetupTestData();
+            });
         }
 
         protected abstract void SetupTestData();

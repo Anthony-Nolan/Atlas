@@ -68,6 +68,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Atlas.Common.Test\Atlas.Common.Test.csproj" />
         <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
         <ProjectReference Include="..\Atlas.MatchingAlgorithm.Api\Atlas.MatchingAlgorithm.Api.csproj" />
         <ProjectReference Include="..\Atlas.MatchingAlgorithm.Data\Atlas.MatchingAlgorithm.Data.csproj" />

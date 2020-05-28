@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
@@ -74,19 +75,22 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [OneTimeSetUp]
         public void ImportTestDonor()
         {
-            var donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForActiveHlaNomenclatureVersion();
-            var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = donorHlas }).Result.MatchingHla;
-            var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
-            var donorRepository = repositoryFactory.GetDonorUpdateRepository();
-
-            donor = new DonorInfoWithExpandedHla
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                DonorType = DonorType.Adult,
-                DonorId = DonorIdGenerator.NextId(),
-                HlaNames = donorHlas,
-                MatchingHla = matchingHlaPhenotype
-            };
-            donorRepository.InsertBatchOfDonorsWithExpandedHla(new []{donor}).Wait();
+                var donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForActiveHlaNomenclatureVersion();
+                var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo {HlaNames = donorHlas}).Result.MatchingHla;
+                var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
+                var donorRepository = repositoryFactory.GetDonorUpdateRepository();
+
+                donor = new DonorInfoWithExpandedHla
+                {
+                    DonorType = DonorType.Adult,
+                    DonorId = DonorIdGenerator.NextId(),
+                    HlaNames = donorHlas,
+                    MatchingHla = matchingHlaPhenotype
+                };
+                donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor}).Wait();
+            });
         }
 
         [SetUp]

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
@@ -16,15 +17,18 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.AlleleName
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            var dataRepository = SharedTestDataCache.GetWmdaDataRepository();
-            var historiesConsolidator = new AlleleNameHistoriesConsolidator(dataRepository);
-            var fromExtractorExtractor = new AlleleNamesFromHistoriesExtractor(historiesConsolidator, dataRepository);
-            var variantsExtractor = new AlleleNameVariantsExtractor(dataRepository);
-            var reservedNamesExtractor = new ReservedAlleleNamesExtractor(dataRepository);
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                var dataRepository = SharedTestDataCache.GetWmdaDataRepository();
+                var historiesConsolidator = new AlleleNameHistoriesConsolidator(dataRepository);
+                var fromExtractorExtractor = new AlleleNamesFromHistoriesExtractor(historiesConsolidator, dataRepository);
+                var variantsExtractor = new AlleleNameVariantsExtractor(dataRepository);
+                var reservedNamesExtractor = new ReservedAlleleNamesExtractor(dataRepository);
 
-            alleleNameLookupResults = new AlleleNamesService(fromExtractorExtractor, variantsExtractor, reservedNamesExtractor)
-                .GetAlleleNamesAndTheirVariants(SharedTestDataCache.HlaDatabaseVersionToTest)
-                .ToList();
+                alleleNameLookupResults = new AlleleNamesService(fromExtractorExtractor, variantsExtractor, reservedNamesExtractor)
+                    .GetAlleleNamesAndTheirVariants(SharedTestDataCache.HlaDatabaseVersionToTest)
+                    .ToList();
+            });
         }
 
         [Test]

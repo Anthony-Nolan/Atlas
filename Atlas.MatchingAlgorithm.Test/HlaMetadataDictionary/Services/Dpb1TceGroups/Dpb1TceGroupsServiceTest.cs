@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using FluentAssertions;
@@ -14,11 +15,14 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.Dpb1TceGro
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            var dataRepository = SharedTestDataCache.GetWmdaDataRepository();
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                var dataRepository = SharedTestDataCache.GetWmdaDataRepository();
 
-            tceGroupsLookupResults = new Dpb1TceGroupsService(dataRepository)
-                .GetDpb1TceGroupLookupResults(SharedTestDataCache.HlaDatabaseVersionToTest)
-                .ToList();
+                tceGroupsLookupResults = new Dpb1TceGroupsService(dataRepository)
+                    .GetDpb1TceGroupLookupResults(SharedTestDataCache.HlaDatabaseVersionToTest)
+                    .ToList();
+            });
         }
 
         [Test]

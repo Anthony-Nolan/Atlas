@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
 using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
@@ -23,9 +24,12 @@ namespace Atlas.MatchingAlgorithm.Test.HlaMetadataDictionary.Services.AlleleName
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            lookupRepository = Substitute.For<IAlleleNamesLookupRepository>();
-            hlaCategorisationService = Substitute.For<IHlaCategorisationService>();
-            lookupService = new AlleleNamesLookupService(lookupRepository, hlaCategorisationService);
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                lookupRepository = Substitute.For<IAlleleNamesLookupRepository>();
+                hlaCategorisationService = Substitute.For<IHlaCategorisationService>();
+                lookupService = new AlleleNamesLookupService(lookupRepository, hlaCategorisationService);
+            });
         }
 
         [SetUp]
