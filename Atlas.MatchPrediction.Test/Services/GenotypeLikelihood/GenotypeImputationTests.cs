@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
@@ -33,7 +32,13 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             };
 
             var diplotypesFromGenotype = genotypeImputation.GetPossibleDiplotypes(genotype);
+            
+            var actual = new DiplotypeInfo<string>();
+            
+            var expected = new DiplotypeInfo<string> {Haplotype1 = new LociInfo<string>("hla"), Haplotype2 = new LociInfo<string>("hla")};
 
+            expected.Haplotypes.Should().BeEquivalentTo(actual.Haplotypes);
+            
             var diplotypes = new List<PhenotypeInfo<string>>()
             {
                 new PhenotypeInfo<string>

@@ -8,12 +8,12 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
     public interface IGenotypeImputation
     {
-        public List<PhenotypeInfo<string>> GetPossibleDiplotypes(PhenotypeInfo<string> genotype);
+        public List<DiplotypeInfo<string>> GetPossibleDiplotypes(PhenotypeInfo<string> genotype);
     }
 
     public class GenotypeImputation : IGenotypeImputation
     {
-        public List<PhenotypeInfo<string>> GetPossibleDiplotypes(PhenotypeInfo<string> genotype)
+        public List<DiplotypeInfo<string>> GetPossibleDiplotypes(PhenotypeInfo<string> genotype)
         {
             var diplotypes = new List<PhenotypeInfo<string>>();
 
