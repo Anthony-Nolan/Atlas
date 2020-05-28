@@ -11,8 +11,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
         public Locus Locus { get; }
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
-        public object HlaInfoToSerialise { get; }
-        public IEnumerable<string> CurrentAlleleNames { get; }
+        public object HlaInfoToSerialise => CurrentAlleleNames;
+        public List<string> CurrentAlleleNames { get; }
 
         public FileBackedAlleleNameLookupResult(
             Locus locus,
@@ -23,7 +23,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
             Locus = locus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
-            HlaInfoToSerialise = currentAlleleNames;
             CurrentAlleleNames = currentAlleleNames;
         }
     }

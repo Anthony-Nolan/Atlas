@@ -65,7 +65,7 @@ namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
             var typeName = typeof(T).GetNeatCSharpName();
             if (typeName != infoTypeString)
             {
-                throw new InvalidOperationException($"Expected to find '{typeName}' data to be deserialised. But actually the data is labeled as '{SerialisedHlaInfoType}'. Unable to proceed.");
+                throw new InvalidOperationException($"Expected to find '{typeName}' data to be deserialised. But actually the data is labeled as '{infoTypeString}'. Unable to proceed.");
             }
             return JsonConvert.DeserializeObject<T>(SerialisedHlaInfo);
         }
