@@ -1,28 +1,28 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Atlas.MultipleAlleleCodeDictionary.utils;
 
 namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
 {
     public interface IMacImporter
     {
-        public void ImportLatestMultipleAlleleCodes();
+        public Task ImportLatestMultipleAlleleCodes();
     }
     public class MacImporter : IMacImporter
     {
+        private readonly IMacRepository macRepository;
+        private readonly IMacParser macCodeParser;
         
-        private IMacRepository MacRepository { get; set; }
-        private IMacParser MacCodeParser { get; set; }
-        
-        public MacImporter()
         {
-            MacRepository = new MacRepository();
-            MacCodeParser = new MacLineParser();
+            this.macRepository = macRepository;
+            macCodeParser = macParser;
         }
-        public void ImportLatestMultipleAlleleCodes()
+        
+        public async Task ImportLatestMultipleAlleleCodes()
         {
-            var lastEntryBeforeInsert = MacRepository.GetLastMacEntry();
-            var newMacs = MacCodeParser.GetMacsSinceLastEntry(lastEntryBeforeInsert);
-            MacRepository.InsertMacs(newMacs);
+            var lastEntryBeforeInsert = macRepository.GetLastMacEntry();
+            var newMacs = macCodeParser.GetMacsSinceLastEntry(lastEntryBeforeInsert);
+            await macRepository.InsertMacs(newMacs);
         }
     }
 }

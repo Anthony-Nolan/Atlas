@@ -1,13 +1,15 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace Atlas.MultipleAlleleCodeDictionary.utils
 {
     public interface IStreamProcessor
     {
-        Stream DownloadAndUnzipStream();
+        public Stream DownloadAndUnzipStream();
     }
 
     public class StreamProcessor : IStreamProcessor
@@ -22,21 +24,26 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
 
         public Stream DownloadAndUnzipStream()
         {
-            var stream = DownloadStream();
-            var unzippedStream = UnzipStream(stream);
-            return unzippedStream;
+            var stream = DownloadToMemoryStream();
+            return UnzipStream(stream);
         }
 
-        private Stream DownloadStream()
+        private Stream DownloadToMemoryStream()
         {
-            var stream = new MemoryStream(webClient.DownloadData(url));
+            var data = webClient.DownloadDataTaskAsync(url).Result;
+            var stream = new MemoryStream(data);
             return stream;
         }
 
         private static Stream UnzipStream(Stream stream)
         {
             var zipArchive = new ZipArchive(stream);
-            var fileName = zipArchive.Entries.Select(e => e.FullName).Single();
+            if (zipArchive.Entries.Count > 1)
+            {
+                throw new InvalidOperationException("NMDP zip archive contained more than one file");
+            }
+
+            var fileName = zipArchive.Entries.Single().FullName;
             var entry = zipArchive.GetEntry(fileName);
             var unzippedStream = entry?.Open();
             return unzippedStream;
