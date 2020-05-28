@@ -8,7 +8,7 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers
     internal static class DatabaseManager
     {
         /// <summary>
-        /// Creates if necessary, and runs migrations on both a transient and persistent database
+        /// Creates if necessary, and runs migrations
         /// </summary>
         public static void SetupDatabase()
         {
