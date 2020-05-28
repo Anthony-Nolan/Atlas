@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Atlas.MultipleAlleleCodeDictionary.Models;
+using Atlas.MultipleAlleleCodeDictionary.Settings.MacImport;
+using Microsoft.Extensions.Options;
+using Polly;
 
 namespace Atlas.MultipleAlleleCodeDictionary.utils
 {
@@ -15,10 +19,9 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
     {
         private readonly IStreamProcessor streamProcessor;
 
-        public MacLineParser()
+        public MacLineParser(IOptions<MacImportSettings> macImportSettings)
         {
-            const string url = "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip";
-            streamProcessor = new StreamProcessor(url);
+            streamProcessor = new StreamProcessor(macImportSettings.Value.NmdpUrl);
         }
 
         public List<MultipleAlleleCodeEntity> GetMacsSinceLastEntry(string lastMacEntry)
@@ -37,8 +40,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
                 {
                     continue;
                 }
-                
-                macCodes.Add(ParseMac(macLine)); 
+
+                macCodes.Add(ParseMac(macLine));
             }
 
             return macCodes;
@@ -49,32 +52,16 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
             var substrings = macString.Split('\t');
             var isGeneric = substrings[0] != "*";
             return new MultipleAlleleCodeEntity(substrings[1], substrings[2], isGeneric);
-
         }
 
         private Stream GetStream()
         {
-            const int maxRetries = 3;
-            var retries = 0;
-
-            while (true)
-            {
-                try
-                {
-                    var stream = streamProcessor.DownloadAndUnzipStream();
-                    return stream;
-                }
-                catch (Exception e)
-                {
-                    if (retries >= maxRetries)
-                    {
-                        throw;
-                    }
-                    retries++;
-                }
-            }
+            var retryPolicy = Policy.Handle<Exception>()
+                .Retry(3);
+            
+            return retryPolicy.Execute(() => streamProcessor.DownloadAndUnzipStream());
         }
-        
+
         private static void ReadToEntry(StreamReader reader, string entryToReadTo)
         {
             while (!reader.EndOfStream)
@@ -87,6 +74,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
                     return;
                 }
             }
+
             throw new Exception($"Reached end of file without finding entry {entryToReadTo}");
         }
     }

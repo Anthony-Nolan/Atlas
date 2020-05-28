@@ -7,15 +7,16 @@ namespace Atlas.MultipleAlleleCodeDictionary.Models
     {
         public MultipleAlleleCodeEntity()
         {
-            
         }
+
         public MultipleAlleleCodeEntity(string mac, string hla, bool isGeneric = false)
         {
             PartitionKey = "MAC";
             RowKey = mac;
             HLA = hla;
-            IsGeneric = isGeneric; 
+            IsGeneric = isGeneric;
         }
+
         public string HLA { get; set; }
         public bool IsGeneric { get; set; }
     }
