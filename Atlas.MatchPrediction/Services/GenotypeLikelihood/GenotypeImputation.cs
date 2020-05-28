@@ -5,26 +5,21 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
-    public interface ISplitGenotype
+    public interface IGenotypeImputation
     {
-        public List<PhenotypeInfo<string>> SplitIntoDiplotypes(PhenotypeInfo<string> genotype);
+        public List<PhenotypeInfo<string>> GetPossibleDiplotypes(PhenotypeInfo<string> genotype);
     }
 
-    public class SplitGenotype : ISplitGenotype
+    public class GenotypeImputation : IGenotypeImputation
     {
-        public List<PhenotypeInfo<string>> SplitIntoDiplotypes(PhenotypeInfo<string> genotype)
-        {
-            return CreateDiplotypes(genotype);
-        }
-
-        private static List<PhenotypeInfo<string>> CreateDiplotypes(PhenotypeInfo<string> genotype)
+        public List<PhenotypeInfo<string>> GetPossibleDiplotypes(PhenotypeInfo<string> genotype)
         {
             var diplotypes = new List<PhenotypeInfo<string>>();
 
-            const int n = 5;
-            for (var i = 16; i < Math.Pow(2, n); i++)
+            const int locusCount = 5;
+            for (var i = Math.Pow(2, locusCount - 1); i < Math.Pow(2, locusCount); i++)
             {
-                var flags = Convert.ToString(i, 2).Select(c => c == '1').ToArray();
+                var flags = Convert.ToString((int)i, 2).Select(c => c == '1').ToArray();
 
                 var diplotype = new PhenotypeInfo<string>
                 {
@@ -41,9 +36,9 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
             return diplotypes;
         }
 
-        private static LocusInfo<string> GetLocusType(LocusInfo<string> locus, bool stay)
+        private static LocusInfo<string> GetLocusType(LocusInfo<string> locus, bool shouldKeepPositions)
         {
-            return stay ? locus : new LocusInfo<string>() { Position1 = locus.Position2, Position2 = locus.Position1 };
+            return shouldKeepPositions ? locus : new LocusInfo<string>() { Position1 = locus.Position2, Position2 = locus.Position1 };
         }
     }
 }
