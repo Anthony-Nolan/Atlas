@@ -16,7 +16,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup
         public TypingMethod TypingMethod { get; }
         public IEnumerable<string> MatchingPGroups { get; }
         public bool IsNullExpressingTyping => TypingMethod == TypingMethod.Molecular && !MatchingPGroups.Any();
-        public object HlaInfoToSerialise => MatchingPGroups;
+        public object HlaInfoToSerialise => MatchingPGroups.ToList(); //Needs to be reified for deserialisation Type validation
 
         internal HlaMatchingLookupResult(
             Locus locus,

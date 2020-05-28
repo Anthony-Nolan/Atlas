@@ -11,7 +11,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
         public Locus Locus { get; }
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
-        public object HlaInfoToSerialise { get; }
+        public object HlaInfoToSerialise => MatchingPGroups;
         public IEnumerable<string> MatchingPGroups { get; }
         public bool IsNullExpressingTyping { get; }
 
@@ -25,7 +25,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Storage.FileBackedHlaLookupRe
             Locus = locus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
-            HlaInfoToSerialise = matchingPGroups;
             MatchingPGroups = matchingPGroups;
             IsNullExpressingTyping = isNullExpressingTyping;
         }

@@ -9,7 +9,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup
 {
     internal interface IAlleleNameLookupResult : ISerialisableHlaMetadata
     {
-        IEnumerable<string> CurrentAlleleNames { get; }
+        List<string> CurrentAlleleNames { get; }
     }
 
     internal class AlleleNameLookupResult : 
@@ -19,23 +19,24 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup
         public Locus Locus { get; }
         public string LookupName { get; }
         public TypingMethod TypingMethod => TypingMethod.Molecular;
-        public IEnumerable<string> CurrentAlleleNames { get; }
-        public object HlaInfoToSerialise => CurrentAlleleNames;
+        public List<string> CurrentAlleleNames { get; }
+        public object HlaInfoToSerialise => CurrentAlleleNames.ToList(); //Needs to be reified for deserialisation Type validation
 
         public AlleleNameLookupResult(Locus locus, string lookupName, IEnumerable<string> currentAlleleNames)
         {
             Locus = locus;
             LookupName = lookupName;
-            CurrentAlleleNames = currentAlleleNames;
+            CurrentAlleleNames = currentAlleleNames.ToList();
         }
 
         public AlleleNameLookupResult(string locus, string lookupName, string currentAlleleName)
         {
             Locus = HlaMetadataDictionaryLoci.GetLocusFromTypingLocusNameIfExists(TypingMethod.Molecular, locus);
             LookupName = lookupName;
-            CurrentAlleleNames = new[] {currentAlleleName};
+            CurrentAlleleNames = new List<string>{currentAlleleName};
         }
 
+        #region IEquatable
         public bool Equals(AlleleNameLookupResult other)
         {
             if (ReferenceEquals(null, other)) return false;
@@ -64,5 +65,6 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup
                 return hashCode;
             }
         }
+        #endregion
     }
 }
