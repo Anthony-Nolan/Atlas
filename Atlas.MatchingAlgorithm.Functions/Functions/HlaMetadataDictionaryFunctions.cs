@@ -30,6 +30,12 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
         }
 
+        /// <remarks>
+        /// Normally our client models live in a dedicated project ... but this isn't really a client model.
+        /// It only exists because Microsoft have provided nice model binding, even for primitives in Function declarations.
+        /// Further, this endpoint isn't going to be hit by an external integration - it's only ever going to be used by devs,
+        /// via Swagger or PostMan, or similar.
+        /// </remarks>
         public class VersionRequest
         {
             public string Version { get; set; }
