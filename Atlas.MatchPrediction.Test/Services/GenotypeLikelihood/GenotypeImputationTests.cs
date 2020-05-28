@@ -17,7 +17,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         }
 
         [Test]
-        public void GetListOfDiplotypes_WhenGenotypeHasAllLocusAndNoHomozygousCases_ReturnsListOf16Diplotypes()
+        public void GetPossibleDiplotypes_WhenGenotypeHasAllLociAndNoHomozygousCases_Returns16Diplotypes()
         {
             var genotype = new PhenotypeInfo<string>
             {
@@ -33,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         }
 
         [Test]
-        public void GetListOfDiplotypes_WhenGenotypeHasNoCLocusAndNoHomozygousCases_ReturnsListOf8Diplotypes()
+        public void GetPossibleDiplotypes_WhenGenotypeHasNoCLocusAndNoHomozygousCases_Returns8Diplotypes()
         {
             var genotype = new PhenotypeInfo<string>
             {
@@ -48,7 +48,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         }
 
         [Test]
-        public void GetListOfDiplotypes_WhenGenotypeHasAllLocusAndHomozygousCases_ReturnsListOf8Diplotypes()
+        public void GetPossibleDiplotypes_WhenGenotypeHasAllLociAndHomozygousCase_Returns8Diplotypes()
         {
             var genotype = new PhenotypeInfo<string>
             {
@@ -64,7 +64,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         }
 
         [Test]
-        public void GetListOfDiplotypes_WhenGenotypeHasNoCLocusAndHomozygousCases_ReturnsListOf4Diplotypes()
+        public void GetPossibleDiplotypes_WhenGenotypeHasNoCLocusAndHomozygousCases_Returns4Diplotypes()
         {
             var genotype = new PhenotypeInfo<string>
             {
