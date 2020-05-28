@@ -78,7 +78,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             diplotypes.Count.Should().Be(4);
         }
 
-        [Test, Repeat(10000), Ignore("Only used for manual benchmarking. Ran in ~533ms")]
+        [Test, Repeat(10000), Ignore("Only used for manual benchmarking. Ran in ~521ms")]
         public void PerformanceTest()
         {
             genotypeImputation.GetPossibleDiplotypes(new PhenotypeInfo<string>
