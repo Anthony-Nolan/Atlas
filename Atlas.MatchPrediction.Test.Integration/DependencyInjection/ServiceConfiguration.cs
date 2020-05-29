@@ -1,7 +1,10 @@
+using Atlas.Common.Notifications;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.DependencyInjection;
+using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using System;
 using System.IO;
 
@@ -14,10 +17,9 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             var services = new ServiceCollection();
             
             SetUpConfiguration(services);
-            
             services.RegisterMatchPredictionServices();
-
             RegisterIntegrationTestServices(services);
+            SetUpMockServices(services);
 
             return services.BuildServiceProvider();
         }
@@ -39,6 +41,15 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
                 var connectionString = GetSqlConnectionString(sp);
                 return new ContextFactory().Create(connectionString);
             });
+
+            services.AddSingleton< IHaplotypeFrequencyInspectionRepository >(sp =>
+                new HaplotypeFrequencyInspectionRepository(GetSqlConnectionString(sp))
+            );
+        }
+
+        private static void SetUpMockServices(IServiceCollection services)
+        {
+            services.AddScoped(sp => Substitute.For<INotificationsClient>());
         }
 
         private static string GetSqlConnectionString(IServiceProvider serviceProvider)
