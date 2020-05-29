@@ -25,7 +25,6 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         // * ave. 90 chars per info
         // and
         // * ave. 130 chars per info
-        // QQ Create a test for this.
 
         [JsonProperty("name")]
         public string AlleleName { get; }
@@ -90,6 +89,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
             );
         }
 
+        public bool IsConvertibleToSingleAllelesInfos { get; }
         public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo() => new List<SingleAlleleScoringInfo>{this};
 
         public AlleleTyping GenerateTypingAtLocus(Locus locus)
