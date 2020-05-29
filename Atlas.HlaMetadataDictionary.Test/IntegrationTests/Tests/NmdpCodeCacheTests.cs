@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
 
-//TODO: ATLAS-QQQ Move to MAC dict. tests
+//TODO: ATLAS-320 Move to MAC dict. tests
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 {
     [TestFixture]
