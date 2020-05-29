@@ -5,6 +5,8 @@ using Atlas.MultipleAlleleCodeDictionary.Models;
 using Microsoft.Azure.Cosmos.Table;
 using MoreLinq;
 using Atlas.Common.Utils.Extensions;
+using Atlas.MultipleAlleleCodeDictionary.Settings.MacImport;
+using Microsoft.Extensions.Options;
 
 namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
 {
