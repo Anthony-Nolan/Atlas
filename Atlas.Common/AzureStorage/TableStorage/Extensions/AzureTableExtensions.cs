@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos.Table;
 
-namespace Atlas.Common.Utils.Extensions
+namespace Atlas.Common.AzureStorage.TableStorage.Extensions
 {
     public static class AzureTableExtensions
     {
