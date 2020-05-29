@@ -12,17 +12,18 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
     public class MacImporter : IMacImporter
     {
         private readonly IMacRepository macRepository;
-        private readonly IMacParser macCodeParser;
-
+        private readonly IMacParser macParser;
+        
+        public MacImporter(IMacRepository macRepository, IMacParser macParser)
         {
             this.macRepository = macRepository;
-            macCodeParser = macParser;
+            this.macParser = macParser;
         }
 
         public async Task ImportLatestMultipleAlleleCodes()
         {
             var lastEntryBeforeInsert = await macRepository.GetLastMacEntry();
-            var newMacs = macCodeParser.GetMacsSinceLastEntry(lastEntryBeforeInsert);
+            var newMacs = macParser.GetMacsSinceLastEntry(lastEntryBeforeInsert);
             await macRepository.InsertMacs(newMacs);
         }
     }
