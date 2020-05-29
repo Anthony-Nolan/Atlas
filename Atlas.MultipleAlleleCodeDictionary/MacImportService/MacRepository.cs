@@ -4,13 +4,14 @@ using System.Threading.Tasks;
 using Atlas.MultipleAlleleCodeDictionary.Models;
 using Microsoft.Azure.Cosmos.Table;
 using MoreLinq;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
 {
     public interface IMacRepository
     {
-        public string GetLastMacEntry();
-        public Task InsertMacs(List<MultipleAlleleCodeEntity> macCodes);
+        public Task<string> GetLastMacEntry();
+        public Task InsertMacs(IEnumerable<MultipleAlleleCodeEntity> macCodes);
     }
 
     public class MacRepository : IMacRepository
@@ -26,15 +27,15 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
             table = tableClient.GetTableReference(tableName);
         }
 
-        public string GetLastMacEntry()
+        public async Task<string> GetLastMacEntry()
         {
             var query = new TableQuery<MultipleAlleleCodeEntity>();
-            var result = table.ExecuteQuery(query);
+            var result = await  table.ExecuteQueryAsync(query);
             // MACs are alphabetical - any new MACs are appended to the end of the list alphabetically.
             return result.OrderByDescending(x => x.PartitionKey).First().PartitionKey;
         }
 
-        public async Task InsertMacs(List<MultipleAlleleCodeEntity> macs)
+        public async Task InsertMacs(IEnumerable<MultipleAlleleCodeEntity> macs)
         {
             foreach (var macBatch in macs.Batch(100))
             {
