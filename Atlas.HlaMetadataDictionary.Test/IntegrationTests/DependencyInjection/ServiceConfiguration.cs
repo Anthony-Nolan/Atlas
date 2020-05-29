@@ -17,7 +17,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
         public static IServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
-            services.RegisterFileBasedHlaMetadataDictionaryForTesting(sp => new ApplicationInsightsSettings { InstrumentationKey = "", LogLevel = "Info" });
+            services.RegisterFileBasedHlaMetadataDictionaryForTesting(sp => new ApplicationInsightsSettings { LogLevel = "Info" });
             return services.BuildServiceProvider();
         }
 

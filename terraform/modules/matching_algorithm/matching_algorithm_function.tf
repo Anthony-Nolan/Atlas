@@ -6,7 +6,6 @@ locals {
     //      Historically this codebase used 2 distinct Service Buses; however we don't think that's necessary in practice.
     //      We retain the ability to separate them again in the future, but in fact have them pointed at the same namespace
     //      (albeit with different permissions).
-    "ApplicationInsights:InstrumentationKey"                    = var.application_insights.instrumentation_key
     "APPINSIGHTS_INSTRUMENTATIONKEY"                            = var.application_insights.instrumentation_key
     "ApplicationInsights:LogLevel"                              = var.APPLICATION_INSIGHTS_LOG_LEVEL
     "AzureManagement:Authentication:ClientId"                   = var.AZURE_CLIENT_ID

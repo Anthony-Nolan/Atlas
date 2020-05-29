@@ -10,7 +10,6 @@ resource "azurerm_function_app" "atlas_donor_import_function" {
   tags = var.general.common_tags
 
   app_settings = {
-    "ApplicationInsights:InstrumentationKey"       = var.application_insights.instrumentation_key
     "APPINSIGHTS_INSTRUMENTATIONKEY"               = var.application_insights.instrumentation_key
     "ApplicationInsights:LogLevel"                 = var.APPLICATION_INSIGHTS_LOG_LEVEL
     "AzureStorage:ConnectionString"                = var.azure_storage.primary_connection_string,

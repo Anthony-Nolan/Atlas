@@ -1,7 +1,6 @@
 {
   "IsEncrypted": false,
   "Values": {
-    "ApplicationInsights:InstrumentationKey": "key",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:HaplotypeFrequencySetImportContainer": "haplotype-frequency-set-import",
