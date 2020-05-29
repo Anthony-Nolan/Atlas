@@ -3,7 +3,7 @@ locals {
 }
 
 resource "azurerm_sql_database" "atlas-donor-import" {
-  name                = lower("ATLAS-TEST-DONOR-IMPORT")
+  name                = "atlas-test-donor-import"
   resource_group_name = azurerm_resource_group.atlas_resource_group.name
   location            = local.location
   server_name         = azurerm_sql_server.atlas_sql_server.name
@@ -11,7 +11,7 @@ resource "azurerm_sql_database" "atlas-donor-import" {
 }
 
 resource "azurerm_sql_database" "atlas-matching" {
-  name                = lower("ATLAS-TEST-MATCHING-ALGORITHM")
+  name                = "atlas-test-matching-algorithm"
   resource_group_name = azurerm_resource_group.atlas_resource_group.name
   location            = local.location
   server_name         = azurerm_sql_server.atlas_sql_server.name
@@ -19,7 +19,7 @@ resource "azurerm_sql_database" "atlas-matching" {
 }
 
 resource "azurerm_sql_database" "atlas-match-prediction" {
-  name                = lower("ATLAS-TEST-MATCH-PREDICTION")
+  name                = "atlas-test-match-prediction"
   resource_group_name = azurerm_resource_group.atlas_resource_group.name
   location            = local.location
   server_name         = azurerm_sql_server.atlas_sql_server.name
