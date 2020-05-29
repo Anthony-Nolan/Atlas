@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 
@@ -13,12 +15,44 @@ namespace Atlas.HlaMetadataDictionary.Data
             this.wmdaFileUri = wmdaFileUri;
         }
         
-        public IEnumerable<string> GetFileContentsWithoutHeader(string hlaDatabaseVersion, string fileName)
+        public IEnumerable<string> GetFileContentsWithoutHeader(string nomenclatureVersion, string fileName)
         {
             return new WebClient()
-                .DownloadString($"{wmdaFileUri}{hlaDatabaseVersion}/{fileName}")
+                .DownloadString(GetFileAddress(nomenclatureVersion, fileName))
                 .Split('\n')
-                .SkipWhile(line => line.StartsWith("#"));
+                .SkipWhile(IsCommentLine);
+        }
+
+        public string GetFirstNonCommentLine(string nomenclatureVersion, string fileName)
+        {
+            var fileAddress = GetFileAddress(nomenclatureVersion, fileName);
+            var stream = new WebClient().OpenRead(fileAddress);
+            if (stream == null)
+            {
+                throw new Exception($"Null stream returned from WebClient when reading from: {fileAddress}");
+            }
+            using var reader = new StreamReader(stream);
+            string line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                if (IsCommentLine(line))
+                {
+                    continue;
+                }
+
+                return line;
+            }
+            throw new Exception($"No non comment lines found when reading: {fileAddress}");
+        }
+
+        private string GetFileAddress(string nomenclatureVersion, string fileName)
+        {
+            return $"{wmdaFileUri}{nomenclatureVersion}/{fileName}";
+        }
+
+        private static bool IsCommentLine(string line)
+        {
+            return line.StartsWith("#");
         }
     }
 }
