@@ -1,7 +1,6 @@
 using System;
-using System.Linq;
-using Atlas.HlaMetadataDictionary.Data;
 using Atlas.Common.Caching;
+using Atlas.HlaMetadataDictionary.Data;
 using LazyCache;
 
 namespace Atlas.HlaMetadataDictionary.Services
@@ -38,10 +37,13 @@ namespace Atlas.HlaMetadataDictionary.Services
                 const string versionId = "Latest";
                 const string fileName = "Allelelist_history.txt";
 
-                var versionReportAllLines = fileReader.GetFileContentsWithoutHeader(versionId, fileName);
-                var versionLine = versionReportAllLines.Single(line => line.StartsWith("HLA_ID"));
+                var versionLine = fileReader.GetFirstNonCommentLine(versionId, fileName);
+                if (!versionLine.StartsWith("HLA_ID"))
+                {
+                    throw new Exception($"Expected first non-comment line of {fileName} to begin with HLA_ID, but it did not.");
+                }
                 
-                // The first item in the header line is the name, "HLA_ID". Then the versions are listed in reverse chronological order.
+                // The first item in the header line is the name, "HLA_ID". Then the versions are listed in reverse chronological order, separated by ",".
                 // So the second item is the latest version
                 return versionLine.Split(",")[1];
             });
@@ -49,7 +51,7 @@ namespace Atlas.HlaMetadataDictionary.Services
             return version;
         }
 
-        private void ThrowIfNull(string wmdaDatabaseVersion, string key)
+        private static void ThrowIfNull(string wmdaDatabaseVersion, string key)
         {
             if (string.IsNullOrWhiteSpace(wmdaDatabaseVersion))
             {
