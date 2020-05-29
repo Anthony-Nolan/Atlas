@@ -38,7 +38,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             services.AddScoped<IDpb1TceGroupsLookupRepository, FileBackedTceLookupRepository>();
 
             // Mac Dictionary Stubs
-            // TODO: ATLAS-QQQ Move this to MacDictionary Tests, along with any tests that actually belong over there.
+            // TODO: ATLAS-320 Move this to MacDictionary Tests, along with any tests that actually belong over there.
             // After that migration, this may or may not still be needed in here, and/or in MatchingAlgorithm.Tests
             // If it is, expose this as a Test Registration in the MacDictionary project.
             var mockHlaServiceClient = Substitute.For<IHlaServiceClient>();
