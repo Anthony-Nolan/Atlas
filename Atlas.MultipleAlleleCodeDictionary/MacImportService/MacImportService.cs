@@ -23,7 +23,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
         public async Task ImportLatestMultipleAlleleCodes()
         {
             var lastEntryBeforeInsert = await macRepository.GetLastMacEntry();
-            var newMacs = macParser.GetMacsSinceLastEntry(lastEntryBeforeInsert);
+            var newMacs = await macParser.GetMacsSinceLastEntry(lastEntryBeforeInsert);
             await macRepository.InsertMacs(newMacs);
         }
     }

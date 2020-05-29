@@ -11,7 +11,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
 {
     public interface IMacCodeDownloader
     {
-        public Stream DownloadAndUnzipStream();
+        public Task<Stream> DownloadAndUnzipStream();
     }
 
     public class MacCodeDownloader : IMacCodeDownloader
@@ -24,15 +24,15 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
             this.url = macImportSettings.Value.MacSourceUrl;
         }
 
-        public Stream DownloadAndUnzipStream()
+        public async Task<Stream> DownloadAndUnzipStream()
         {
-            var stream = DownloadToMemoryStream();
+            var stream = await DownloadToMemoryStream();
             return UnzipStream(stream);
         }
 
-        private Stream DownloadToMemoryStream()
+        private async Task<Stream> DownloadToMemoryStream()
         {
-            var data = webClient.DownloadDataTaskAsync(url).Result;
+            var data = await webClient.DownloadDataTaskAsync(url);
             var stream = new MemoryStream(data);
             return stream;
         }

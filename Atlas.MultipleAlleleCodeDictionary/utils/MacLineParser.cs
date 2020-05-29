@@ -12,7 +12,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
 {
     public interface IMacParser
     {
-        public List<MultipleAlleleCodeEntity> GetMacsSinceLastEntry(string lastMacEntry);
+        public Task<List<MultipleAlleleCodeEntity>> GetMacsSinceLastEntry(string lastMacEntry);
     }
 
     public class MacLineParser : IMacParser
@@ -24,17 +24,17 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
             this.macCodeDownloader = macCodeDownloader;
         }
 
-        public List<MultipleAlleleCodeEntity> GetMacsSinceLastEntry(string lastMacEntry)
+        public async Task<List<MultipleAlleleCodeEntity>> GetMacsSinceLastEntry(string lastMacEntry)
         {
             var macCodes = new List<MultipleAlleleCodeEntity>();
 
-            using var stream = GetStream();
+            await using var stream = await GetStream();
             using var reader = new StreamReader(stream);
             ReadToEntry(reader, lastMacEntry);
 
             while (!reader.EndOfStream)
             {
-                var macLine = reader.ReadLine()?.TrimEnd();
+                var macLine = (await reader.ReadLineAsync())?.TrimEnd();
 
                 if (string.IsNullOrWhiteSpace(macLine))
                 {
@@ -54,12 +54,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
             return new MultipleAlleleCodeEntity(substrings[1], substrings[2], isGeneric);
         }
 
-        private Stream GetStream()
+        private async Task<Stream> GetStream()
         {
             var retryPolicy = Policy.Handle<Exception>()
                 .Retry(3);
             
-            return retryPolicy.Execute(() => macCodeDownloader.DownloadAndUnzipStream());
+            return await retryPolicy.Execute(async () => await macCodeDownloader.DownloadAndUnzipStream());
         }
 
         private static void ReadToEntry(StreamReader reader, string entryToReadTo)
