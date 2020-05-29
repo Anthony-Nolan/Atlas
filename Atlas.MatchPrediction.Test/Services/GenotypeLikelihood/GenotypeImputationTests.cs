@@ -1,38 +1,34 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using FluentAssertions;
 using NUnit.Framework;
+using static EnumStringValues.EnumExtensions;
 
 namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
 {
     [TestFixture]
     public class GenotypeImputationTests
     {
-        private IGenotypeImputation genotypeImputation;
+        private IGenotypeImputer genotypeImputer;
 
         [SetUp]
         public void SetUp()
         {
-            genotypeImputation = new GenotypeImputation();
+            genotypeImputer = new GenotypeImputer();
         }
 
         [Test]
         public void GetPossibleDiplotypes_WhenGenotypeHasAllLociAndNoHomozygousCases_Returns16Diplotypes()
         {
-            var genotype = new PhenotypeInfo<string>
-            {
-                A = {Position1 = "A-1", Position2 = "A-2" },
-                B = { Position1 = "B-1", Position2 = "B-2" },
-                C = { Position1 = "C-1", Position2 = "C-2" },
-                Dqb1 = { Position1 = "Dqb1-1", Position2 = "Dqb1-2" },
-                Drb1 = { Position1 = "Drb1-1", Position2 = "Drb1-2" }
-            };
+            var genotype = PhenotypeInfoBuilder.New.With(l => l.Dpb1, new LocusInfo<string>(null)).Build();
 
-            var diplotypesFromGenotype = genotypeImputation.GetPossibleDiplotypes(genotype);
+            var actualDiplotypes = genotypeImputer.GetPossibleDiplotypes(genotype);
 
-            var diplotypes = new List<DiplotypeInfo<string>>()
+            var expectedDiplotypes = new List<DiplotypeInfo<string>>()
             {
                 new DiplotypeInfo<string>
                 {
@@ -116,25 +112,17 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 }
             };
 
-            diplotypesFromGenotype.Should().BeEquivalentTo(diplotypes);
+            actualDiplotypes.Should().BeEquivalentTo(expectedDiplotypes);
         }
 
         [TestCase(Locus.C)]
         [TestCase(Locus.Dqb1)]
-        public void GetPossibleDiplotypes_WhenGenotypeHasEmptyLocus_ReturnsDiplotypes(Locus locusToIgnore)
+        public void GetPossibleDiplotypes_WhenGenotypeHasEmptyLocus_Returns8Diplotypes(Locus emptyLocus)
         {
-            var genotype = new PhenotypeInfo<string>
-            {
-                A = { Position1 = "A-1", Position2 = "A-2" },
-                B = { Position1 = "B-1", Position2 = "B-2" },
-                C = { Position1 = "C-1", Position2 = "C-2" },
-                Dqb1 = { Position1 = "Dqb1-1", Position2 = "Dqb1-2" },
-                Drb1 = { Position1 = "Drb1-1", Position2 = "Drb1-2" }
-            };
+            var genotype = PhenotypeInfoBuilder.New.Build();
+            genotype.SetLocus(emptyLocus, new LocusInfo<string>(null));
 
-            genotype.SetLocus(locusToIgnore, new LocusInfo<string> { Position1 = null, Position2 = null });
-
-            var diplotypes = genotypeImputation.GetPossibleDiplotypes(genotype);
+            var diplotypes = genotypeImputer.GetPossibleDiplotypes(genotype);
             diplotypes.Count.Should().Be(8);
         }
 
@@ -145,82 +133,73 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         [TestCase(5, 1)]
         public void GetPossibleDiplotypes_WhenGenotypeHasHomozygousCases_ReturnsDiplotypes(int numberOfHomozygousLoci, int expectedDiplotypeCount)
         {
-            var genotype = new PhenotypeInfo<string>
-            {
-                A = { Position1 = "A-1", Position2 = "A-2" },
-                B = { Position1 = "B-1", Position2 = "B-2" },
-                C = { Position1 = "C-1", Position2 = "C-2" },
-                Dqb1 = { Position1 = "Dqb1-1", Position2 = "Dqb1-2" },
-                Drb1 = { Position1 = "Drb1-1", Position2 = "Drb1-2" }
-            };
+            var genotype = PhenotypeInfoBuilder.New.Build();
+            
+            var lociToMakeHomozygous = EnumerateValues<Locus>().Except(new[] { Locus.Dpb1 }).Take(numberOfHomozygousLoci);
 
-            genotype.EachLocus((locus, locusInfo) =>
+            foreach (var locus in lociToMakeHomozygous)
             {
-                if (numberOfHomozygousLoci <= 0 || locus == Locus.Dpb1) return;
-                genotype.SetLocus(locus,
-                    new LocusInfo<string> {Position1 = "homozygous", Position2 = "homozygous"});
-                numberOfHomozygousLoci += -1;
-            });
+                genotype.SetLocus(locus, new LocusInfo<string>("homozygous"));
+            }
 
-            var diplotypes = genotypeImputation.GetPossibleDiplotypes(genotype);
+            var diplotypes = genotypeImputer.GetPossibleDiplotypes(genotype);
             diplotypes.Count.Should().Be(expectedDiplotypeCount);
         }
 
         [TestCase(Locus.A)]
-        [TestCase(Locus.C)]
         [TestCase(Locus.B)]
+        [TestCase(Locus.C)]
         [TestCase(Locus.Dqb1)]
         [TestCase(Locus.Drb1)]
-        public void GetPossibleDiplotypes_WhenGenotypeHasHomozygousCase_Returns4Diplotypes(Locus homozygousLocus)
+        public void GetPossibleDiplotypes_WhenGenotypeHasHomozygousCase_Returns8Diplotypes(Locus homozygousLocus)
         {
-            var genotype = new PhenotypeInfo<string>
-            {
-                A = { Position1 = "A-1", Position2 = "A-2" },
-                B = { Position1 = "B-1", Position2 = "B-2" },
-                C = { Position1 = "C-1", Position2 = "C-2" },
-                Dqb1 = { Position1 = "Dqb1-1", Position2 = "Dqb1-2" },
-                Drb1 = { Position1 = "Drb1-1", Position2 = "Drb1-2" }
-            };
+            var genotype = PhenotypeInfoBuilder.New.Build();
+            genotype.SetLocus(homozygousLocus, new LocusInfo<string>("homozygous"));
 
-            genotype.SetLocus(homozygousLocus, new LocusInfo<string> { Position1 = "homozygous", Position2 = "homozygous" });
-
-            var diplotypes = genotypeImputation.GetPossibleDiplotypes(genotype);
+            var diplotypes = genotypeImputer.GetPossibleDiplotypes(genotype);
             diplotypes.Count.Should().Be(8);
         }
 
-        [Test, Repeat(10000), Ignore("Only used for manual benchmarking. Ran in ~408ms")]
+        [Test, Repeat(10000), Ignore("Only used for manual benchmarking. Ran in ~400ms")]
         public void PerformanceTest()
         {
-            genotypeImputation.GetPossibleDiplotypes(new PhenotypeInfo<string>
+            var genotypeWithAllFields = new PhenotypeInfo<string>
             {
-                A = { Position1 = "A-1", Position2 = "A-2" },
-                B = { Position1 = "B-1", Position2 = "B-2" },
-                C = { Position1 = "C-1", Position2 = "C-2" },
-                Dqb1 = { Position1 = "Dqb1-1", Position2 = "Dqb1-2" },
-                Drb1 = { Position1 = "Drb1-1", Position2 = "Drb1-2" }
-            });
-            genotypeImputation.GetPossibleDiplotypes(new PhenotypeInfo<string>
+                A = {Position1 = "A-1", Position2 = "A-2"},
+                B = {Position1 = "B-1", Position2 = "B-2"},
+                C = {Position1 = "C-1", Position2 = "C-2"},
+                Dqb1 = {Position1 = "Dqb1-1", Position2 = "Dqb1-2"},
+                Drb1 = {Position1 = "Drb1-1", Position2 = "Drb1-2"}
+            };
+            genotypeImputer.GetPossibleDiplotypes(genotypeWithAllFields);
+
+            var genotypeWithMissingField = new PhenotypeInfo<string>
             {
-                A = { Position1 = "A-1", Position2 = "A-2" },
-                B = { Position1 = "B-1", Position2 = "B-2" },
-                Dqb1 = { Position1 = "Dqb1-1", Position2 = "Dqb1-2" },
-                Drb1 = { Position1 = "Drb1-1", Position2 = "Drb1-2" }
-            });
-            genotypeImputation.GetPossibleDiplotypes(new PhenotypeInfo<string>
+                A = {Position1 = "A-1", Position2 = "A-2"},
+                B = {Position1 = "B-1", Position2 = "B-2"},
+                Dqb1 = {Position1 = "Dqb1-1", Position2 = "Dqb1-2"},
+                Drb1 = {Position1 = "Drb1-1", Position2 = "Drb1-2"}
+            };
+            genotypeImputer.GetPossibleDiplotypes(genotypeWithMissingField);
+
+            var genotypeWithHomozygousType = new PhenotypeInfo<string>
             {
-                A = { Position1 = "homozygous", Position2 = "homozygous" },
-                B = { Position1 = "B-1", Position2 = "B-2" },
-                C = { Position1 = "C-1", Position2 = "C-2" },
-                Dqb1 = { Position1 = "Dqb1-1", Position2 = "Dqb1-2" },
-                Drb1 = { Position1 = "Drb1-1", Position2 = "Drb1-2" }
-            });
-            genotypeImputation.GetPossibleDiplotypes(new PhenotypeInfo<string>
+                A = {Position1 = "homozygous", Position2 = "homozygous"},
+                B = {Position1 = "B-1", Position2 = "B-2"},
+                C = {Position1 = "C-1", Position2 = "C-2"},
+                Dqb1 = {Position1 = "Dqb1-1", Position2 = "Dqb1-2"},
+                Drb1 = {Position1 = "Drb1-1", Position2 = "Drb1-2"}
+            };
+            genotypeImputer.GetPossibleDiplotypes(genotypeWithHomozygousType);
+
+            var genotypeWithHomozygousTypeAndMissingField = new PhenotypeInfo<string>
             {
-                A = { Position1 = "homozygous", Position2 = "homozygous" },
-                B = { Position1 = "B-1", Position2 = "B-2" },
-                Dqb1 = { Position1 = "Dqb1-1", Position2 = "Dqb1-2" },
-                Drb1 = { Position1 = "Drb1-1", Position2 = "Drb1-2" }
-            });
+                A = {Position1 = "homozygous", Position2 = "homozygous"},
+                B = {Position1 = "B-1", Position2 = "B-2"},
+                Dqb1 = {Position1 = "Dqb1-1", Position2 = "Dqb1-2"},
+                Drb1 = {Position1 = "Drb1-1", Position2 = "Drb1-2"}
+            };
+            genotypeImputer.GetPossibleDiplotypes(genotypeWithHomozygousTypeAndMissingField);
         }
     }
 }
