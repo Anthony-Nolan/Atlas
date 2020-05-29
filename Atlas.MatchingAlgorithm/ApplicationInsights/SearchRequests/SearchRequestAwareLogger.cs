@@ -32,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests
 
         public override void SendTrace(string message, LogLevel messageLogLevel, Dictionary<string, string> props)
         {
-            props = props ?? new Dictionary<string, string>();
+            props ??= new Dictionary<string, string>();
 
             var searchRequestId = context.SearchRequestId;
             if (!string.IsNullOrEmpty(searchRequestId))

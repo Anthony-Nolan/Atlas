@@ -78,7 +78,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IThreadSleeper, ThreadSleeper>();
 
             services.AddScoped<ISearchRequestContext, SearchRequestContext>();
-            services.AddApplicationInsightsTelemetry();
+            services.AddApplicationInsightsTelemetryWorkerService();
             services.AddScoped<ILogger>(sp => new SearchRequestAwareLogger(
                 sp.GetService<ISearchRequestContext>(),
                 sp.GetService<TelemetryClient>(),
