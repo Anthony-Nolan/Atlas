@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-using Atlas.MatchPrediction.Data.Models;
+﻿using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 {
@@ -28,9 +28,9 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             setRepository = Substitute.For<IHaplotypeFrequencySetRepository>();
             frequenciesRepository = Substitute.For<IHaplotypeFrequenciesRepository>();
 
-            frequenciesStreamReader.GetFrequencies(Arg.Any<Stream>()).Returns(new List<HaplotypeFrequency> {new HaplotypeFrequency()});
+            frequenciesStreamReader.GetFrequencies(Arg.Any<Stream>()).Returns(new List<HaplotypeFrequency> { new HaplotypeFrequency() });
 
-            setRepository.AddSet(Arg.Any<HaplotypeFrequencySet>()).Returns(new HaplotypeFrequencySet {Id = 1});
+            setRepository.AddSet(Arg.Any<HaplotypeFrequencySet>()).Returns(new HaplotypeFrequencySet { Id = 1 });
 
             importer = new FrequencySetImporter(
                 frequenciesStreamReader,
@@ -55,7 +55,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         [Test]
         public void Import_EthnicityProvidedWithoutRegistry_ThrowsException()
         {
-            var metaData = new HaplotypeFrequencySetMetadata {Ethnicity = "ethnicity"};
+            var metaData = new HaplotypeFrequencySetMetadata { Ethnicity = "ethnicity" };
 
             importer.Invoking(async service => await service.Import(metaData, Stream.Null))
                 .Should().Throw<Exception>();
@@ -91,7 +91,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         [Test]
         public async Task Import_StoresFrequenciesInRepository()
         {
-            var frequencies = new List<HaplotypeFrequency> {new HaplotypeFrequency()};
+            var frequencies = new List<HaplotypeFrequency> { new HaplotypeFrequency() };
             frequenciesStreamReader.GetFrequencies(Arg.Any<Stream>()).Returns(frequencies);
 
             await using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("test")))

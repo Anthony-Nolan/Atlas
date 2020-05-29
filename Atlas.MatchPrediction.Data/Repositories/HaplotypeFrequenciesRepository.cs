@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Atlas.MatchPrediction.Data.Models;
+using Microsoft.Data.SqlClient;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.Data.Models;
-using Microsoft.Data.SqlClient;
 
 namespace Atlas.MatchPrediction.Data.Repositories
 {
