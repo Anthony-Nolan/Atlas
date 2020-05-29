@@ -79,17 +79,11 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IThreadSleeper, ThreadSleeper>();
 
             services.AddScoped<ISearchRequestContext, SearchRequestContext>();
-            services.AddScoped<ILogger>(sp =>
-            {
-#pragma warning disable 618
-                // TODO: ATLAS-313: If this fixed telemetry info in AI, work out how to achieve this with the new constructor. Else, revert.
-                var telemetryClient = new TelemetryClient();
-#pragma warning restore 618
-                return new SearchRequestAwareLogger(
-                    sp.GetService<ISearchRequestContext>(),
-                    telemetryClient,
-                    sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel());
-            });
+            services.AddApplicationInsightsTelemetry();
+            services.AddScoped<ILogger>(sp => new SearchRequestAwareLogger(
+                sp.GetService<ISearchRequestContext>(),
+                sp.GetService<TelemetryClient>(),
+                sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel()));
 
             services.RegisterLifeTimeScopedCacheTypes();
 
