@@ -16,48 +16,49 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         public List<DiplotypeInfo<string>> GetPossibleDiplotypes(PhenotypeInfo<string> genotype)
         {
             var diplotypes = new List<DiplotypeInfo<string>>();
+            var genotypeLociInfo = genotype.ToEnumerableOfLoci().ToList();
 
-            var heterozygousLocus = GetHeterozygousLocusTypes(genotype);
-            if (!heterozygousLocus.Any())
+            // Removes Dpb1 from list of locus info
+            genotypeLociInfo.RemoveAt(3);
+
+            var heterozygousLoci = GetHeterozygousLoci(genotype);
+            if (!heterozygousLoci.Any())
             {
                 return new List<DiplotypeInfo<string>>{ new DiplotypeInfo<string>(genotype) };
             }
 
-            var locusCount = heterozygousLocus.Count();
-            for (var i = Math.Pow(2, locusCount - 1); i < Math.Pow(2, locusCount); i++)
+            for (var i = Math.Pow(2, heterozygousLoci.Count - 1); i < Math.Pow(2, heterozygousLoci.Count); i++)
             {
                 var flags = Convert.ToString((int)i, 2).Select(c => c == '0').ToArray();
-                var flagValue = 0;
+                var index = 0;
 
-                var sortedGenotype = new PhenotypeInfo<string>
+                var diplotype = new DiplotypeInfo<string>();
+
+                foreach (var locus in heterozygousLoci)
                 {
-                    A = heterozygousLocus.Contains(Locus.A) ? GetLocusInfo(genotype.A, flags[flagValue++]) : genotype.A,
-                    B = heterozygousLocus.Contains(Locus.B) ? GetLocusInfo(genotype.B, flags[flagValue++]) : genotype.B,
-                    C = heterozygousLocus.Contains(Locus.C) ? GetLocusInfo(genotype.C, flags[flagValue++]) : genotype.C,
-                    Dqb1 = heterozygousLocus.Contains(Locus.Dqb1)
-                        ? GetLocusInfo(genotype.Dqb1, flags[flagValue++])
-                        : genotype.Dqb1,
-                    Drb1 = heterozygousLocus.Contains(Locus.Drb1)
-                        ? GetLocusInfo(genotype.Drb1, flags[flagValue])
-                        : genotype.Drb1
-                };
+                    var locusInfo = GetLocusInfo(genotypeLociInfo[index], flags[index]);
+                    diplotype.SetAtLocus(locus, locusInfo);
+                    index++;
+                }
 
-                diplotypes.Add(new DiplotypeInfo<string>(sortedGenotype));
+                diplotypes.Add(diplotype);
             }
 
             return diplotypes;
         }
 
-        private static LocusInfo<string> GetLocusInfo(LocusInfo<string> locus, bool shouldSwapPositions)
+        private static LocusInfo<string> GetLocusInfo(LocusInfo<string> genotypeLocusInfo, bool shouldSwapPositions)
         {
-            return shouldSwapPositions ? locus : new LocusInfo<string>() { Position1 = locus.Position2, Position2 = locus.Position1 };
+            return shouldSwapPositions
+                ? new LocusInfo<string>() {Position1 = genotypeLocusInfo.Position2, Position2 = genotypeLocusInfo.Position1}
+                : genotypeLocusInfo;
         }
 
-        private static List<Locus> GetHeterozygousLocusTypes(PhenotypeInfo<string> genotype)
+        private static List<Locus> GetHeterozygousLoci(PhenotypeInfo<string> genotypeLociInfo)
         {
             var unusedLocus = new List<Locus>();
 
-            genotype.EachLocus((locus, locusInfo) =>
+            genotypeLociInfo.EachLocus((locus, locusInfo) =>
             {
                 if (locusInfo.Position1 != locusInfo.Position2)
                 {

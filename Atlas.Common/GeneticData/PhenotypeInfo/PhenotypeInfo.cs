@@ -236,6 +236,19 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
+        public IEnumerable<LocusInfo<T>> ToEnumerableOfLoci()
+        {
+            return new List<LocusInfo<T>>
+            {
+                A,
+                B,
+                C,
+                Dpb1,
+                Dqb1,
+                Drb1,
+            };
+        }
+
         private void Initialise()
         {
             A = new LocusInfo<T>();
