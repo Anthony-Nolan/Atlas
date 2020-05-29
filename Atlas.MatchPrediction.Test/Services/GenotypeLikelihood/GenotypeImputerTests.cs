@@ -11,24 +11,20 @@ using static EnumStringValues.EnumExtensions;
 namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
 {
     [TestFixture]
-    public class GenotypeImputationTests
+    public class GenotypeImputerTests
     {
+
+        private List<DiplotypeInfo<string>> listOfDiplotypes; 
+
+
         private IGenotypeImputer genotypeImputer;
 
         [SetUp]
         public void SetUp()
         {
             genotypeImputer = new GenotypeImputer();
-        }
 
-        [Test]
-        public void GetPossibleDiplotypes_WhenGenotypeHasAllLociAndNoHomozygousCases_Returns16Diplotypes()
-        {
-            var genotype = PhenotypeInfoBuilder.New.With(l => l.Dpb1, new LocusInfo<string>(null)).Build();
-
-            var actualDiplotypes = genotypeImputer.GetPossibleDiplotypes(genotype);
-
-            var expectedDiplotypes = new List<DiplotypeInfo<string>>()
+            listOfDiplotypes = new List<DiplotypeInfo<string>> 
             {
                 new DiplotypeInfo<string>
                 {
@@ -60,7 +56,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                     Haplotype1 = new LociInfo<string>() {A = "A-2", B = "B-1", C = "C-2", Dqb1 = "Dqb1-1", Drb1 = "Drb1-2"},
                     Haplotype2 = new LociInfo<string>() {A = "A-1", B = "B-2", C = "C-1", Dqb1 = "Dqb1-2", Drb1 = "Drb1-1"}
                 },
-                new DiplotypeInfo<string> 
+                new DiplotypeInfo<string>
                 {
                     Haplotype1 = new LociInfo<string>() {A = "A-2", B = "B-1", C = "C-2", Dqb1 = "Dqb1-2", Drb1 = "Drb1-1"},
                     Haplotype2 = new LociInfo<string>() {A = "A-1", B = "B-2", C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-2"}
@@ -111,53 +107,87 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                     Haplotype2 = new LociInfo<string>() {A = "A-1", B = "B-1", C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-1"}
                 }
             };
+        }
+
+        [Test]
+        public void GetPossibleDiplotypes_WhenGenotypeIsAllHeterozygous_ReturnsDiplotypes()
+        {
+            var genotype = PhenotypeInfoBuilder.New
+                .With(d => d.A, new LocusInfo<string>("homozygous"))
+                .With(d => d.B, new LocusInfo<string>("homozygous"))
+                .With(d => d.C, new LocusInfo<string>("homozygous"))
+                .With(d => d.Dpb1, new LocusInfo<string>("homozygous"))
+                .With(d => d.Dqb1, new LocusInfo<string>("homozygous"))
+                .With(d => d.Drb1, new LocusInfo<string>("homozygous"))
+                .Build();
+            var expectedDiplotypes = new DiplotypeInfo<string>(genotype);
+
+            var actualDiplotypes = genotypeImputer.GetPossibleDiplotypes(genotype);
 
             actualDiplotypes.Should().BeEquivalentTo(expectedDiplotypes);
         }
 
-        [TestCase(Locus.C)]
-        [TestCase(Locus.Dqb1)]
-        public void GetPossibleDiplotypes_WhenGenotypeHasEmptyLocus_Returns8Diplotypes(Locus emptyLocus)
+        [Test]
+        public void GetPossibleDiplotypes_WhenGenotypeIsAllHomozygous_ReturnsDiplotypes()
         {
             var genotype = PhenotypeInfoBuilder.New.Build();
-            genotype.SetLocus(emptyLocus, new LocusInfo<string>(null));
+            var expectedDiplotypes = listOfDiplotypes;
 
-            var diplotypes = genotypeImputer.GetPossibleDiplotypes(genotype);
-            diplotypes.Count.Should().Be(8);
+            var actualDiplotypes = genotypeImputer.GetPossibleDiplotypes(genotype);
+
+            actualDiplotypes.Should().BeEquivalentTo(expectedDiplotypes);
         }
 
         [TestCase(1, 8)]
         [TestCase(2, 4)]
         [TestCase(3, 2)]
         [TestCase(4, 1)]
-        [TestCase(5, 1)]
+        public void GetPossibleDiplotypes_WhenGenotypeHasEmptyLoci_ReturnsDiplotypes(int numberOfEmptyLoci, int expectedDiplotypeCount)
+        {
+            var lociToMakeHomozygous = EnumerateValues<Locus>().Except(new[] { Locus.A, Locus.Dpb1 }).Take(numberOfEmptyLoci);
+
+            var genotype = PhenotypeInfoBuilder.New.Build();
+            var expectedDiplotypes = listOfDiplotypes.GetRange(0, expectedDiplotypeCount);
+
+            foreach (var locus in lociToMakeHomozygous)
+            {
+                genotype.SetLocus(locus, new LocusInfo<string>(null));
+
+                foreach (var diplotype in expectedDiplotypes)
+                {
+                    diplotype.SetAtLocus(locus, new LocusInfo<string>(null));
+                }
+            }
+
+            var actualDiplotypes = genotypeImputer.GetPossibleDiplotypes(genotype);
+
+            actualDiplotypes.Should().BeEquivalentTo(expectedDiplotypes);
+        }
+
+        [TestCase(1, 8)]
+        [TestCase(2, 4)]
+        [TestCase(3, 2)]
+        [TestCase(4, 1)]
         public void GetPossibleDiplotypes_WhenGenotypeHasHomozygousCases_ReturnsDiplotypes(int numberOfHomozygousLoci, int expectedDiplotypeCount)
         {
+            var expectedDiplotypes = listOfDiplotypes.GetRange(0, expectedDiplotypeCount);
+            var lociToMakeHomozygous = EnumerateValues<Locus>().Except(new[] { Locus.A, Locus.Dpb1 }).Take(numberOfHomozygousLoci);
+
             var genotype = PhenotypeInfoBuilder.New.Build();
-            
-            var lociToMakeHomozygous = EnumerateValues<Locus>().Except(new[] { Locus.Dpb1 }).Take(numberOfHomozygousLoci);
 
             foreach (var locus in lociToMakeHomozygous)
             {
                 genotype.SetLocus(locus, new LocusInfo<string>("homozygous"));
+
+                foreach (var diplotype in expectedDiplotypes)
+                {
+                    diplotype.SetAtLocus(locus, new LocusInfo<string>("homozygous"));
+                }
             }
 
-            var diplotypes = genotypeImputer.GetPossibleDiplotypes(genotype);
-            diplotypes.Count.Should().Be(expectedDiplotypeCount);
-        }
+            var actualDiplotypes = genotypeImputer.GetPossibleDiplotypes(genotype);
 
-        [TestCase(Locus.A)]
-        [TestCase(Locus.B)]
-        [TestCase(Locus.C)]
-        [TestCase(Locus.Dqb1)]
-        [TestCase(Locus.Drb1)]
-        public void GetPossibleDiplotypes_WhenGenotypeHasHomozygousCase_Returns8Diplotypes(Locus homozygousLocus)
-        {
-            var genotype = PhenotypeInfoBuilder.New.Build();
-            genotype.SetLocus(homozygousLocus, new LocusInfo<string>("homozygous"));
-
-            var diplotypes = genotypeImputer.GetPossibleDiplotypes(genotype);
-            diplotypes.Count.Should().Be(8);
+            actualDiplotypes.Should().BeEquivalentTo(expectedDiplotypes);
         }
 
         [Test, Repeat(10000), Ignore("Only used for manual benchmarking. Ran in ~400ms")]
