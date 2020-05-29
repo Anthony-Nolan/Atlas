@@ -4,22 +4,24 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Atlas.MultipleAlleleCodeDictionary.Settings.MacImport;
+using Microsoft.Extensions.Options;
 
 namespace Atlas.MultipleAlleleCodeDictionary.utils
 {
-    public interface IStreamProcessor
+    public interface IMacCodeDownloader
     {
         public Stream DownloadAndUnzipStream();
     }
 
-    public class StreamProcessor : IStreamProcessor
+    public class MacCodeDownloader : IMacCodeDownloader
     {
         private readonly WebClient webClient = new WebClient();
         private readonly string url;
 
-        public StreamProcessor(string url)
+        public MacCodeDownloader(IOptions<MacImportSettings> macImportSettings)
         {
-            this.url = url;
+            this.url = macImportSettings.Value.MacSourceUrl;
         }
 
         public Stream DownloadAndUnzipStream()

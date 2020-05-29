@@ -17,11 +17,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
 
     public class MacLineParser : IMacParser
     {
-        private readonly IStreamProcessor streamProcessor;
+        private readonly IMacCodeDownloader macCodeDownloader;
 
-        public MacLineParser(IOptions<MacImportSettings> macImportSettings)
+        public MacLineParser(IMacCodeDownloader macCodeDownloader)
         {
-            streamProcessor = new StreamProcessor(macImportSettings.Value.NmdpUrl);
+            this.macCodeDownloader = macCodeDownloader;
         }
 
         public List<MultipleAlleleCodeEntity> GetMacsSinceLastEntry(string lastMacEntry)
@@ -59,7 +59,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
             var retryPolicy = Policy.Handle<Exception>()
                 .Retry(3);
             
-            return retryPolicy.Execute(() => streamProcessor.DownloadAndUnzipStream());
+            return retryPolicy.Execute(() => macCodeDownloader.DownloadAndUnzipStream());
         }
 
         private static void ReadToEntry(StreamReader reader, string entryToReadTo)
@@ -67,6 +67,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
             while (!reader.EndOfStream)
             {
                 var line = reader.ReadLine().TrimEnd();
+                // Regex checking can slow down performance, it might be worth using a different comparison method if this slows us down significantly
                 var match = Regex.IsMatch(line, $@"\b{entryToReadTo}\b");
 
                 if (match)
