@@ -20,7 +20,8 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         }
 
         /// <summary>
-        /// Runs a full data refresh, regardless of whether the existing database is using the latest version of the hla database
+        /// Runs a full data refresh, regardless of whether the existing metadata dictionary is using the latest version of hla nomenclature.
+        /// If the nomenclature is up to date, a metadata dictionary refresh will not be performed.
         /// </summary>
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(ForceDataRefresh))]

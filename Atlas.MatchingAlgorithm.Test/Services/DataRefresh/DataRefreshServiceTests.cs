@@ -110,6 +110,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         public async Task RefreshData_ReportsHlaMetadataWasRecreated_WithRefreshHlaDatabaseVersion()
         {
             const string hlaDatabaseVersion = "3390";
+            hlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion().Returns(true);
             hlaMetadataDictionary
                 .RecreateHlaMetadataDictionary(CreationBehaviour.Latest)
                 .Returns(hlaDatabaseVersion);
@@ -118,7 +119,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             returnedHlaVersion.Should().Be(hlaDatabaseVersion);
         }
-
 
         [Test]
         public async Task RefreshData_ImportsDonors()
@@ -132,6 +132,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         public async Task RefreshData_ProcessesDonorHla_WithRefreshHlaDatabaseVersion()
         {
             const string hlaDatabaseVersion = "3390";
+            hlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion().Returns(true);
             hlaMetadataDictionary
                 .RecreateHlaMetadataDictionary(CreationBehaviour.Latest)
                 .Returns(hlaDatabaseVersion);
@@ -139,6 +140,28 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             await dataRefreshService.RefreshData();
 
             await hlaProcessor.Received().UpdateDonorHla(hlaDatabaseVersion);
+        }
+
+        [Test]
+        public async Task RefreshData_WhenMetadataDictionaryAlreadyUpToDate_ProcessesDonorHla_WithActiveHlaDatabaseVersion()
+        {
+            const string hlaDatabaseVersion = "3390";
+            hlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion().Returns(false);
+            hlaMetadataDictionary.ActiveVersion().Returns(hlaDatabaseVersion);
+
+            await dataRefreshService.RefreshData();
+
+            await hlaProcessor.Received().UpdateDonorHla(hlaDatabaseVersion);
+        }
+
+        [Test]
+        public async Task RefreshData_WhenMetadataDictionaryAlreadyUpToDate_DoesNotRefreshMetadataDictionary()
+        {
+            hlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion().Returns(false);
+
+            await dataRefreshService.RefreshData();
+
+            await hlaMetadataDictionary.DidNotReceiveWithAnyArgs().RecreateHlaMetadataDictionary(null);
         }
 
         [Test]

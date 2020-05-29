@@ -4,7 +4,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
-using Atlas.MatchingAlgorithm.Extensions;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
@@ -68,14 +67,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
             settingsOptions = dataRefreshSettingsOptions;
 
-            this.activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(activeHlaVersionAccessor.GetActiveHlaDatabaseVersion());
+            activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(activeHlaVersionAccessor.GetActiveHlaDatabaseVersion());
         }
 
         public async Task<string> RefreshData()
         {
             try
             {
-                var newHlaDatabaseVersion = await RecreateHlaMetadataDictionary();
+                var newHlaDatabaseVersion = await RecreateHlaMetadataDictionaryIfNecessary();
                 await RemoveExistingDonorData();
                 await ScaleDatabase(settingsOptions.Value.RefreshDatabaseSize.ParseToEnum<AzureDatabaseSize>());
                 await ImportDonors();
@@ -106,12 +105,19 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             }
         }
 
-        private async Task<string> RecreateHlaMetadataDictionary()
+        private async Task<string> RecreateHlaMetadataDictionaryIfNecessary()
         {
-            logger.SendTrace($"DATA REFRESH: Recreating HLA Metadata dictionary from latest WMDA database version.", LogLevel.Info);
-            var wmdaDatabaseVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
-            logger.SendTrace($"DATA REFRESH: HLA Metadata dictionary recreated at version: {wmdaDatabaseVersion}", LogLevel.Info);
-            return wmdaDatabaseVersion;
+            var shouldRefresh = activeVersionHlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion();
+            if (shouldRefresh)
+            {
+                logger.SendTrace($"DATA REFRESH: Recreating HLA Metadata dictionary from latest WMDA database version.", LogLevel.Info);
+                var wmdaDatabaseVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
+                logger.SendTrace($"DATA REFRESH: HLA Metadata dictionary recreated at version: {wmdaDatabaseVersion}", LogLevel.Info);
+                return wmdaDatabaseVersion;
+            }
+
+            logger.SendTrace($"DATA REFRESH: HLA Metadata dictionary was already up to date with latest WMDA nomenclature version, so did not update.", LogLevel.Info);
+            return activeVersionHlaMetadataDictionary.ActiveVersion();
         }
 
         private async Task RemoveExistingDonorData()

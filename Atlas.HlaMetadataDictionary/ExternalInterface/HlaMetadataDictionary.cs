@@ -15,6 +15,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
     public interface IHlaMetadataDictionary
     {
+        string ActiveVersion();
         Task<string> RecreateHlaMetadataDictionary(CreationBehaviour wmdaHlaVersionToRecreate);
         Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName);
         Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName);
@@ -71,6 +72,11 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             var active = activeHlaNomenclatureVersion; 
             var latest = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
             return active != latest;
+        }
+
+        public string ActiveVersion()
+        {
+            return activeHlaNomenclatureVersion;
         }
 
         public async Task<string> RecreateHlaMetadataDictionary(CreationBehaviour creationConfig)
