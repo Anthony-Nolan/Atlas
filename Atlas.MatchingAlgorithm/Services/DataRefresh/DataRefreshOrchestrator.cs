@@ -5,7 +5,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using Atlas.MatchingAlgorithm.Extensions;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
@@ -74,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             var newWmdaVersionAvailable = activeVersionHlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion();
             if (!newWmdaVersionAvailable)
             {
-                var noNewData = "No new versions of the WMDA HLA nomenclature have been published.";
+                const string noNewData = "No new versions of the WMDA HLA nomenclature have been published.";
                 if (shouldForceRefresh)
                 {
                     logger.SendTrace(noNewData + " But the refresh was run in 'Forced' mode, so a Data Refresh will start anyway.", LogLevel.Info);
