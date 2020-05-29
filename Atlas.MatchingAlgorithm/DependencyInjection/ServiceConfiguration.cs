@@ -2,7 +2,6 @@ using System;
 using System.ComponentModel;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
-using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Notifications;
 using Atlas.Common.NovaHttpClient.Client;
 using Atlas.Common.ServiceBus.BatchReceiving;
