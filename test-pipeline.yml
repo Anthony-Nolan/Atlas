@@ -101,7 +101,7 @@ jobs:
       numberOfLevels: 2
       keyname1: AzureStorage
       keyname2: ConnectionString
-      valueToSet: 'DefaultEndpointsProtocol=https;AccountName=devnova;AccountKey=0ScCesQxSbzfPRxqoB/Qj9PDfJmfL5Rf1UZonRNN2Vw06HjHEdWwfnDCj/rgNGKXDN/FFi3t9wk9LMwNPr5pjw==;EndpointSuffix=core.windows.net'
+      valueToSet: '$(AZURE_STORAGE_CONNECTION_STRING)'
 
   - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
     displayName: 'Set Notification Service Bus ConnectionString'
