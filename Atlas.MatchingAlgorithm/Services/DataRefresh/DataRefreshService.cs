@@ -74,7 +74,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             try
             {
-                var newHlaDatabaseVersion = await RecreateHlaMetadataDictionaryIfNecessary();
+                var newHlaDatabaseVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
                 await RemoveExistingDonorData();
                 await ScaleDatabase(settingsOptions.Value.RefreshDatabaseSize.ParseToEnum<AzureDatabaseSize>());
                 await ImportDonors();
@@ -103,21 +103,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 await dataRefreshNotificationSender.SendTeardownFailureAlert();
                 throw;
             }
-        }
-
-        private async Task<string> RecreateHlaMetadataDictionaryIfNecessary()
-        {
-            var shouldRefresh = activeVersionHlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion();
-            if (shouldRefresh)
-            {
-                logger.SendTrace($"DATA REFRESH: Recreating HLA Metadata dictionary from latest WMDA database version.", LogLevel.Info);
-                var wmdaDatabaseVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
-                logger.SendTrace($"DATA REFRESH: HLA Metadata dictionary recreated at version: {wmdaDatabaseVersion}", LogLevel.Info);
-                return wmdaDatabaseVersion;
-            }
-
-            logger.SendTrace($"DATA REFRESH: HLA Metadata dictionary was already up to date with latest WMDA nomenclature version, so did not update.", LogLevel.Info);
-            return activeVersionHlaMetadataDictionary.ActiveVersion();
         }
 
         private async Task RemoveExistingDonorData()

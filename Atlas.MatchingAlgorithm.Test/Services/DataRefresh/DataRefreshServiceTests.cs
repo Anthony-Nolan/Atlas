@@ -143,28 +143,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task RefreshData_WhenMetadataDictionaryAlreadyUpToDate_ProcessesDonorHla_WithActiveHlaDatabaseVersion()
-        {
-            const string hlaDatabaseVersion = "3390";
-            hlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion().Returns(false);
-            hlaMetadataDictionary.ActiveVersion().Returns(hlaDatabaseVersion);
-
-            await dataRefreshService.RefreshData();
-
-            await hlaProcessor.Received().UpdateDonorHla(hlaDatabaseVersion);
-        }
-
-        [Test]
-        public async Task RefreshData_WhenMetadataDictionaryAlreadyUpToDate_DoesNotRefreshMetadataDictionary()
-        {
-            hlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion().Returns(false);
-
-            await dataRefreshService.RefreshData();
-
-            await hlaMetadataDictionary.DidNotReceiveWithAnyArgs().RecreateHlaMetadataDictionary(null);
-        }
-
-        [Test]
         public async Task RefreshData_ScalesRefreshDatabaseToActiveSize()
         {
             var settings = DataRefreshSettingsBuilder.New

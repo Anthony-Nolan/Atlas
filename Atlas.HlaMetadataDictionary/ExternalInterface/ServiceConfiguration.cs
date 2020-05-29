@@ -32,6 +32,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             services.RegisterStorageTypes(fetchAzureStorageConnectionString);
             services.RegisterTypesRelatedToDictionaryRecreation(fetchWmdaHlaNomenclatureFilesUri);
             services.RegisterServices();
+            services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
 
             services.RegisterMacDictionaryServices(
                 fetchHlaClientApiKey,
