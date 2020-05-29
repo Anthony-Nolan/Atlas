@@ -1,7 +1,6 @@
 {
   "IsEncrypted": false,
   "Values": {
-    "ApplicationInsights:InstrumentationKey": "dummy-key",
     "ApplicationInsights:LogLevel": "Info",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",

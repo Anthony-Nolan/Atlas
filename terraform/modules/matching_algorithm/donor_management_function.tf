@@ -2,7 +2,6 @@ locals {
   donor_func_app_settings = {
     // APPINSIGHTS_INSTRUMENTATIONKEY
     //      The azure functions dashboard requires the instrumentation key with this name to integrate with application insights.
-    "ApplicationInsights:InstrumentationKey"           = var.application_insights.instrumentation_key
     "APPINSIGHTS_INSTRUMENTATIONKEY"                   = var.application_insights.instrumentation_key
     "ApplicationInsights:LogLevel"                     = var.APPLICATION_INSIGHTS_LOG_LEVEL
     "AzureStorage:ConnectionString"                    = var.azure_storage.primary_connection_string
