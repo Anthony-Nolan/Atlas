@@ -13,6 +13,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Models
     internal class ScoringInfoTests
     {
         [Test]
+        [Ignore("TODO: ATLAS-326")]
         public void SingleAlleleScoringInfo_WhenSerialisedWithSerologies_ShouldBeSuitablySmall()
         {
             var info = new SingleAlleleScoringInfo(
@@ -43,6 +44,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Models
         }
 
         [Test]
+        [Ignore("TODO: ATLAS-326")]
         public void SingleAlleleScoringInfo_WhenSerialisedWithOutSerologies_ShouldBeSuitablySmall()
         {
             var info = new SingleAlleleScoringInfo(
