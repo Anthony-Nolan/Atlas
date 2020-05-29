@@ -5,7 +5,7 @@ using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.ScoringInfoBuilders
 {
-    public class SingleAlleleScoringInfoBuilder //QQ Convert to LochNess Builder
+    public class SingleAlleleScoringInfoBuilder
     {
         private SingleAlleleScoringInfo scoringInfo;
 
