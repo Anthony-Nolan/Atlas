@@ -3,11 +3,11 @@ using Microsoft.Azure.WebJobs;
 
 namespace Atlas.Functions.Functions
 {
-    internal class MacImport
+    internal class MacImportFunctions
     {
         public IMacImporter MacImporter { get; set; }
         
-        public MacImport(IMacImporter macImporter)
+        public MacImportFunctions(IMacImporter macImporter)
         {
             MacImporter = macImporter;
         }
