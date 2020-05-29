@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
@@ -15,7 +16,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
     public interface IHlaMetadataDictionary
     {
-        string ActiveVersion();
         Task<string> RecreateHlaMetadataDictionary(CreationBehaviour wmdaHlaVersionToRecreate);
         Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName);
         Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName);
@@ -33,7 +33,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         bool IsActiveVersionDifferentFromLatestVersion();
     }
 
-    internal class HlaMetadataDictionary: IHlaMetadataDictionary
+    internal class HlaMetadataDictionary : IHlaMetadataDictionary
     {
         private readonly string activeHlaNomenclatureVersion;
         private readonly IRecreateHlaMetadataService recreateMetadataService;
@@ -44,6 +44,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IHlaLookupResultsService hlaLookupResultsService;
         private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
         private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private readonly ILogger logger;
 
         public HlaMetadataDictionary(
             string activeHlaNomenclatureVersion,
@@ -54,7 +55,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IHlaScoringLookupService hlaScoringLookupService,
             IHlaLookupResultsService hlaLookupResultsService,
             IDpb1TceGroupLookupService dpb1TceGroupLookupService,
-            IWmdaHlaVersionProvider wmdaHlaVersionProvider)
+            IWmdaHlaVersionProvider wmdaHlaVersionProvider,
+            ILogger logger)
         {
             this.activeHlaNomenclatureVersion = activeHlaNomenclatureVersion;
             this.recreateMetadataService = recreateMetadataService;
@@ -65,40 +67,57 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.hlaLookupResultsService = hlaLookupResultsService;
             this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
             this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
+            this.logger = logger;
         }
 
         public bool IsActiveVersionDifferentFromLatestVersion()
         {
-            var active = activeHlaNomenclatureVersion; 
+            var active = activeHlaNomenclatureVersion;
             var latest = wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
             return active != latest;
-        }
-
-        public string ActiveVersion()
-        {
-            return activeHlaNomenclatureVersion;
         }
 
         public async Task<string> RecreateHlaMetadataDictionary(CreationBehaviour creationConfig)
         {
             var version = IdentifyVersionToRecreate(creationConfig);
-            await recreateMetadataService.RefreshAllHlaMetadata(version);
+
+            if (ShouldRecreate(creationConfig))
+            {
+                logger.SendTrace($"HLA-METADATA-DICTIONARY REFRESH: Recreating HLA Metadata dictionary for desired WMDA database version.",
+                    LogLevel.Info);
+                await recreateMetadataService.RefreshAllHlaMetadata(version);
+                logger.SendTrace($"HLA-METADATA-DICTIONARY REFRESH: HLA Metadata dictionary recreated at version: {version}", LogLevel.Info);
+            }
+            else
+            {
+                logger.SendTrace(
+                    $"HLA-METADATA-DICTIONARY REFRESH: HLA Metadata dictionary was already up to date with desired WMDA nomenclature version, so did not update.",
+                    LogLevel.Info);
+            }
+
             return version;
+        }
+
+        private bool ShouldRecreate(CreationBehaviour creationConfig)
+        {
+            return creationConfig.CreationMode switch
+            {
+                CreationBehaviour.Mode.Latest => IsActiveVersionDifferentFromLatestVersion() || creationConfig.ShouldForce,
+                CreationBehaviour.Mode.Active => creationConfig.ShouldForce ? true : throw new NotImplementedException(),
+                CreationBehaviour.Mode.Specific => creationConfig.ShouldForce ? true : throw new NotImplementedException(),
+                _ => throw new ArgumentOutOfRangeException(nameof(creationConfig.CreationMode), creationConfig.CreationMode, "Unexpected enum value")
+            };
         }
 
         private string IdentifyVersionToRecreate(CreationBehaviour creationConfig)
         {
-            switch (creationConfig.CreationMode)
+            return creationConfig.CreationMode switch
             {
-                case CreationBehaviour.Mode.Specific:
-                    return creationConfig.SpecificVersion;
-                case CreationBehaviour.Mode.Active:
-                    return activeHlaNomenclatureVersion;
-                case CreationBehaviour.Mode.Latest:
-                    return wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion();
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(creationConfig.CreationMode), creationConfig.CreationMode, "Unexpected enum value");
-            }
+                CreationBehaviour.Mode.Specific => creationConfig.SpecificVersion,
+                CreationBehaviour.Mode.Active => activeHlaNomenclatureVersion,
+                CreationBehaviour.Mode.Latest => wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion(),
+                _ => throw new ArgumentOutOfRangeException(nameof(creationConfig.CreationMode), creationConfig.CreationMode, "Unexpected enum value")
+            };
         }
 
         public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)

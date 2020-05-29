@@ -1,3 +1,4 @@
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 using Atlas.HlaMetadataDictionary.Services;
@@ -41,6 +42,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IHlaLookupResultsService hlaLookupResultsService;
         private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
         private readonly IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private readonly ILogger logger;
 
         //For CacheControl
         private readonly IAlleleNamesLookupRepository alleleNamesRepository;
@@ -61,6 +63,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IHlaLookupResultsService hlaLookupResultsService,
             IDpb1TceGroupLookupService dpb1TceGroupLookupService,
             IWmdaHlaVersionProvider wmdaHlaVersionProvider,
+            ILogger logger,
 
             //For CacheControl
             IAlleleNamesLookupRepository alleleNamesRepository,
@@ -80,6 +83,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.hlaLookupResultsService = hlaLookupResultsService;
             this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
             this.wmdaHlaVersionProvider = wmdaHlaVersionProvider;
+            this.logger = logger;
 
             //For CacheControl
             this.alleleNamesRepository = alleleNamesRepository;
@@ -133,7 +137,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 hlaScoringLookupService,
                 hlaLookupResultsService,
                 dpb1TceGroupLookupService,
-                wmdaHlaVersionProvider);
+                wmdaHlaVersionProvider,
+                logger);
         }
 
         private IHlaMetadataCacheControl BuildUncachedDictionaryCacheControl(string activeHlaNomenclatureVersion)
