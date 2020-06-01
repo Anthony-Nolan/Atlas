@@ -33,7 +33,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
                 return new ContextFactory().Create(connectionString);
             });
             
-            services.AddSingleton<IDonorInspectionRepository>(sp =>
+            services.AddScoped<IDonorInspectionRepository>(sp =>
                 new DonorInspectionRepository(GetSqlConnectionString(sp))
             );
         }
