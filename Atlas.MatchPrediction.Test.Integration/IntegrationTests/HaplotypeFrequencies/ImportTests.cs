@@ -37,7 +37,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         [TestCase("registry", "ethnicity")]
         public async Task Import_ImportsSetAsActive(string registryCode, string ethnicityCode)
         {
-            var file = FrequencyFileBuilder.Build(registryCode, ethnicityCode, 1);
+            var file = FrequencyFileBuilder.Build(registryCode, ethnicityCode);
 
             await using (var stream = GetHaplotypeFrequenciesStream(file.Contents))
             {
@@ -54,13 +54,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         [TestCase("registry", "ethnicity")]
         public async Task Import_DeactivatesPreviouslyActiveSet(string registryCode, string ethnicityCode)
         {
-            var oldFile = FrequencyFileBuilder.Build(registryCode, ethnicityCode, 1);
+            var oldFile = FrequencyFileBuilder.Build(registryCode, ethnicityCode);
             await using (var stream = GetHaplotypeFrequenciesStream(oldFile.Contents))
             {
                 await service.ImportFrequencySet(stream, oldFile.FullPath);
             }
 
-            var newFile = FrequencyFileBuilder.Build(registryCode, ethnicityCode, 1);
+            var newFile = FrequencyFileBuilder.Build(registryCode, ethnicityCode);
             await using (var stream = GetHaplotypeFrequenciesStream(newFile.Contents))
             {
                 await service.ImportFrequencySet(stream, newFile.FullPath);
@@ -92,39 +92,31 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
             count.Should().Be(frequencyCount);
         }
 
-        [TestCase(null, null)]
-        [TestCase("registry", null)]
-        [TestCase("registry", "ethnicity")]
-        public async Task Import_SoftDeletesFrequenciesOfDeactivatedSet(string registryCode, string ethnicityCode)
+        /// <summary>
+        /// Regression test for bug where frequency was being stored as 0.
+        /// </summary>
+        [Test]
+        public async Task Import_StoresFrequencyValueAsDecimalToRequiredNumberOfPlaces()
         {
-            const int oldExpectedFrequencyCount = 5;
-            var oldFile = FrequencyFileBuilder.Build(registryCode, ethnicityCode, oldExpectedFrequencyCount);
-            await using (var stream = GetHaplotypeFrequenciesStream(oldFile.Contents))
+            const decimal frequency = 1E-16m;
+            var file = FrequencyFileBuilder.Build(null, null, frequencyValue: frequency);
+
+            await using (var stream = GetHaplotypeFrequenciesStream(file.Contents))
             {
-                await service.ImportFrequencySet(stream, oldFile.FullPath);
+                await service.ImportFrequencySet(stream, file.FullPath);
             }
-            var oldSet = await setRepository.GetActiveSet(registryCode, ethnicityCode);
 
-            const int newExpectedFrequencyCount = 12;
-            var newFile = FrequencyFileBuilder.Build(registryCode, ethnicityCode, newExpectedFrequencyCount);
-            await using (var stream = GetHaplotypeFrequenciesStream(newFile.Contents))
-            {
-                await service.ImportFrequencySet(stream, newFile.FullPath);
-            }
-            var newSet = await setRepository.GetActiveSet(registryCode, ethnicityCode);
+            var activeSet = await setRepository.GetActiveSet(null, null);
+            var haplotypeFrequency = await inspectionRepository.GetFirstHaplotypeFrequency(activeSet.Id);
 
-            var oldCount = await inspectionRepository.HaplotypeFrequencyCount(oldSet.Id);
-            var newCount = await inspectionRepository.HaplotypeFrequencyCount(newSet.Id);
-
-            oldCount.Should().Be(oldExpectedFrequencyCount);
-            newCount.Should().Be(newExpectedFrequencyCount);
+            haplotypeFrequency.Frequency.Should().Be(frequency);
         }
 
         [TestCase("//ethnicity-only/file")]
         [TestCase("/too/many/subfolders/file")]
         public async Task Import_InvalidFilePath_ThrowsException(string invalidFileName)
         {
-            var fileWithValidContents = FrequencyFileBuilder.Build(null, null, 1);
+            var fileWithValidContents = FrequencyFileBuilder.Build(null, null);
             await using (var stream = GetHaplotypeFrequenciesStream(fileWithValidContents.Contents))
             {
                 service.Invoking(async importer =>
@@ -136,7 +128,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         [TestCase("/too/many/subfolders/file")]
         public async Task Import_InvalidFilePath_SendsAlert(string invalidFileName)
         {
-            var fileWithValidContents = FrequencyFileBuilder.Build(null, null, 1);
+            var fileWithValidContents = FrequencyFileBuilder.Build(null, null);
             await using (var stream = GetHaplotypeFrequenciesStream(fileWithValidContents.Contents))
             {
                 try
