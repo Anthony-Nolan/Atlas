@@ -10,7 +10,7 @@ namespace Atlas.Functions
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.Services.RegisterMatchingAlgorithm();
+            builder.Services.RegisterMatchingAlgorithmOrchestration();
         }
     }
 }
