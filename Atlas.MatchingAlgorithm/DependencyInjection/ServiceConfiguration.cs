@@ -240,7 +240,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static void RegisterSettingsForMatchingAlgorithm(this IServiceCollection services)
         {
             services.RegisterSharedSettings();
-            services.RegisterOptions<DonorServiceSettings>("Client:DonorService");
             services.RegisterOptions<WmdaSettings>("Wmda");
             services.RegisterOptions<AzureAuthenticationSettings>("AzureManagement:Authentication");
             services.RegisterOptions<AzureAppServiceManagementSettings>("AzureManagement:AppService");

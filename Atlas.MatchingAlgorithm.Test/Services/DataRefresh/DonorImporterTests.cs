@@ -7,7 +7,6 @@ using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
-using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
@@ -28,16 +27,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IDataRefreshRepository dataRefreshRepository;
         private IDonorImportRepository donorImportRepository;
         private IDormantRepositoryFactory repositoryFactory;
-        private IDonorServiceClient donorServiceClient;
         private IDonorInfoConverter donorInfoConverter;
         private IFailedDonorsNotificationSender failedDonorsNotificationSender;
         private ILogger logger;
         private IDonorReader donorReader;
-
-        private static readonly SearchableDonorInformationPage EmptyPage = new SearchableDonorInformationPage
-        {
-            DonorsInfo = new List<SearchableDonorInformation>()
-        };
 
         [SetUp]
         public void SetUp()
@@ -47,9 +40,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             repositoryFactory = Substitute.For<IDormantRepositoryFactory>();
             repositoryFactory.GetDataRefreshRepository().Returns(dataRefreshRepository);
             repositoryFactory.GetDonorImportRepository().Returns(donorImportRepository);
-
-            donorServiceClient = Substitute.For<IDonorServiceClient>();
-            donorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(EmptyPage);
 
             donorInfoConverter = Substitute.For<IDonorInfoConverter>();
             donorInfoConverter.ConvertDonorInfoAsync(Arg.Any<IEnumerable<SearchableDonorInformation>>(), Arg.Any<string>())
