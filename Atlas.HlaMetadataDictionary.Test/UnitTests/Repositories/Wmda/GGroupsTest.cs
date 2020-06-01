@@ -9,7 +9,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
     {
         protected override void SetupTestData()
         {
-            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaDatabaseVersionToTest).GGroups, MolecularLoci);
+            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaNomenclatureVersionToTest).GGroups, MolecularLoci);
         }
 
         [TestCase("C*", "02:14:01G", new[] { "02:14:01", "02:14:02" }, Description = "G group of alleles of same subtype")]

@@ -11,7 +11,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
 
         protected override void SetupTestData()
         {
-            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaDatabaseVersionToTest).AlleleToSerologyRelationships, MolecularLoci);
+            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaNomenclatureVersionToTest).AlleleToSerologyRelationships, MolecularLoci);
         }
 
         [TestCase(

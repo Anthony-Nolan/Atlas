@@ -12,7 +12,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
     {
         protected override void SetupTestData()
         {
-            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaDatabaseVersionToTest).Serologies, SerologyLoci);
+            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaNomenclatureVersionToTest).Serologies, SerologyLoci);
         }
 
         [TestCase("DQ", "1")]

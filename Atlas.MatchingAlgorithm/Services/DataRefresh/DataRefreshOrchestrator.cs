@@ -18,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
     public interface IDataRefreshOrchestrator
     {
         /// <param name="shouldForceRefresh">
-        /// If true, the refresh will occur regardless of whether a new hla database version has been published
+        /// If true, the refresh will occur regardless of whether a new HLA Nomenclature version has been published
         /// </param>
         Task RefreshDataIfNecessary(bool shouldForceRefresh = false);
     }
@@ -59,7 +59,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
 
-            this.activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(activeHlaVersionAccessor.GetActiveHlaDatabaseVersion());
+            this.activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(activeHlaVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
         public async Task RefreshDataIfNecessary(bool shouldForceRefresh)
@@ -70,8 +70,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 return;
             }
 
-            var newWmdaVersionAvailable = activeVersionHlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion();
-            if (!newWmdaVersionAvailable)
+            var newHlaNomenclatureAvailable = activeVersionHlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion();
+            if (!newHlaNomenclatureAvailable)
             {
                 const string noNewData = "No new versions of the WMDA HLA nomenclature have been published.";
                 if (shouldForceRefresh)
@@ -109,9 +109,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             try
             {
                 await AzureFunctionsSetUp();
-                var newWmdaDataVersion = await dataRefreshService.RefreshData();
+                var newWmdaHlaNomenclatureVersion = await dataRefreshService.RefreshData();
                 var previouslyActiveDatabase = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetActiveDatabase());
-                await MarkDataHistoryRecordAsComplete(recordId, true, newWmdaDataVersion);
+                await MarkDataHistoryRecordAsComplete(recordId, true, newWmdaHlaNomenclatureVersion);
                 await ScaleDownDatabaseToDormantLevel(previouslyActiveDatabase);
                 await dataRefreshNotificationSender.SendSuccessNotification();
                 logger.SendTrace("Data Refresh Succeeded.", LogLevel.Info);
@@ -151,9 +151,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             await azureDatabaseManager.UpdateDatabaseSize(databaseName, dormantSize);
         }
 
-        private async Task MarkDataHistoryRecordAsComplete(int recordId, bool wasSuccess, string wmdaDataVersion)
+        private async Task MarkDataHistoryRecordAsComplete(int recordId, bool wasSuccess, string wmdaHlaNomenclatureVersion)
         {
-            await dataRefreshHistoryRepository.UpdateExecutionDetails(recordId, wmdaDataVersion, DateTime.UtcNow);
+            await dataRefreshHistoryRepository.UpdateExecutionDetails(recordId, wmdaHlaNomenclatureVersion, DateTime.UtcNow);
             await dataRefreshHistoryRepository.UpdateSuccessFlag(recordId, wasSuccess);
         }
 

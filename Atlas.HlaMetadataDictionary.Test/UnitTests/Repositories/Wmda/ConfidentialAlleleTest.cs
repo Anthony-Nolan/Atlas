@@ -9,7 +9,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
     {
         protected override void SetupTestData()
         {
-            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaDatabaseVersionToTest).ConfidentialAlleles, MolecularLoci);
+            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaNomenclatureVersionToTest).ConfidentialAlleles, MolecularLoci);
         }
         
         [Test]

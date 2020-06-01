@@ -21,62 +21,62 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
             this.dataRepository = dataRepository;
         }
 
-        public IEnumerable<IAlleleInfoForMatching> GetAlleleInfoForMatching(string hlaDatabaseVersion)
+        public IEnumerable<IAlleleInfoForMatching> GetAlleleInfoForMatching(string hlaNomenclatureVersion)
         {
-            var alleles = dataRepository.GetWmdaDataset(hlaDatabaseVersion).Alleles;
+            var alleles = dataRepository.GetWmdaDataset(hlaNomenclatureVersion).Alleles;
 
-            var nonConfidentialAlleles = alleles.Where(a => AlleleIsNotConfidential(a, hlaDatabaseVersion));
+            var nonConfidentialAlleles = alleles.Where(a => AlleleIsNotConfidential(a, hlaNomenclatureVersion));
 
-            return nonConfidentialAlleles.AsParallel().Select(a => GetInfoForSingleAllele(a, hlaDatabaseVersion)).ToList();
+            return nonConfidentialAlleles.AsParallel().Select(a => GetInfoForSingleAllele(a, hlaNomenclatureVersion)).ToList();
         }
 
-        private bool AlleleIsNotConfidential(IWmdaHlaTyping allele, string hlaDatabaseVersion)
+        private bool AlleleIsNotConfidential(IWmdaHlaTyping allele, string hlaNomenclatureVersion)
         {
-            return !dataRepository.GetWmdaDataset(hlaDatabaseVersion).ConfidentialAlleles.Contains(allele);
+            return !dataRepository.GetWmdaDataset(hlaNomenclatureVersion).ConfidentialAlleles.Contains(allele);
         }
 
-        private IAlleleInfoForMatching GetInfoForSingleAllele(HlaNom allele, string hlaDatabaseVersion)
+        private IAlleleInfoForMatching GetInfoForSingleAllele(HlaNom allele, string hlaNomenclatureVersion)
         {
-            var alleleTyping = GetAlleleTyping(allele, hlaDatabaseVersion);
+            var alleleTyping = GetAlleleTyping(allele, hlaNomenclatureVersion);
 
             var usedInMatching = allele.IdenticalHla.Equals("")
                 ? alleleTyping
-                : GetAlleleTypingFromIdenticalHla(allele, hlaDatabaseVersion);
+                : GetAlleleTypingFromIdenticalHla(allele, hlaNomenclatureVersion);
 
-            var pGroup = GetPGroup(usedInMatching, hlaDatabaseVersion);
-            var gGroup = GetGGroup(usedInMatching, hlaDatabaseVersion);
+            var pGroup = GetPGroup(usedInMatching, hlaNomenclatureVersion);
+            var gGroup = GetGGroup(usedInMatching, hlaNomenclatureVersion);
 
             return new AlleleInfoForMatching(alleleTyping, usedInMatching, pGroup, gGroup);
         }
 
-        private AlleleTyping GetAlleleTypingFromIdenticalHla(HlaNom allele, string hlaDatabaseVersion)
+        private AlleleTyping GetAlleleTypingFromIdenticalHla(HlaNom allele, string hlaNomenclatureVersion)
         {
             var identicalHla = new HlaNom(TypingMethod.Molecular, allele.TypingLocus, allele.IdenticalHla);
-            return GetAlleleTyping(identicalHla, hlaDatabaseVersion);
+            return GetAlleleTyping(identicalHla, hlaNomenclatureVersion);
         }
 
-        private AlleleTyping GetAlleleTyping(HlaNom allele, string hlaDatabaseVersion)
+        private AlleleTyping GetAlleleTyping(HlaNom allele, string hlaNomenclatureVersion)
         {
-            var alleleStatus = GetAlleleTypingStatus(allele, hlaDatabaseVersion);
+            var alleleStatus = GetAlleleTypingStatus(allele, hlaNomenclatureVersion);
             return new AlleleTyping(allele.TypingLocus, allele.Name, alleleStatus, allele.IsDeleted);
         }
 
-        private AlleleTypingStatus GetAlleleTypingStatus(IWmdaHlaTyping allele, string hlaDatabaseVersion)
+        private AlleleTypingStatus GetAlleleTypingStatus(IWmdaHlaTyping allele, string hlaNomenclatureVersion)
         {
-            var alleleStatus = dataRepository.GetWmdaDataset(hlaDatabaseVersion).AlleleStatuses
+            var alleleStatus = dataRepository.GetWmdaDataset(hlaNomenclatureVersion).AlleleStatuses
                 .FirstOrDefault(status => status.TypingEquals(allele));
 
             return alleleStatus.ToAlleleTypingStatus();
         }
 
-        private IEnumerable<string> GetPGroup(IWmdaHlaTyping allele, string hlaDatabaseVersion)
+        private IEnumerable<string> GetPGroup(IWmdaHlaTyping allele, string hlaNomenclatureVersion)
         {
-            return GetAlleleGroup(dataRepository.GetWmdaDataset(hlaDatabaseVersion).PGroups, allele);
+            return GetAlleleGroup(dataRepository.GetWmdaDataset(hlaNomenclatureVersion).PGroups, allele);
         }
 
-        private IEnumerable<string> GetGGroup(IWmdaHlaTyping allele, string hlaDatabaseVersion)
+        private IEnumerable<string> GetGGroup(IWmdaHlaTyping allele, string hlaNomenclatureVersion)
         {
-            return GetAlleleGroup(dataRepository.GetWmdaDataset(hlaDatabaseVersion).GGroups, allele);
+            return GetAlleleGroup(dataRepository.GetWmdaDataset(hlaNomenclatureVersion).GGroups, allele);
         }
 
         private static IEnumerable<string> GetAlleleGroup(IEnumerable<IWmdaAlleleGroup> alleleGroups, IWmdaHlaTyping allele)

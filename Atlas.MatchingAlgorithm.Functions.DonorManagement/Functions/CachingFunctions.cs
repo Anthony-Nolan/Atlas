@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
         )
         {
             this.antigenCachingService = antigenCachingService;
-            hlaMetadataCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaVersionAccessor.GetActiveHlaDatabaseVersion());
+            hlaMetadataCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]

@@ -15,7 +15,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
     /// Donor HLA is the remainder of the p-group, with some caveats.
     /// (1) Alleles with the same first two fields as the patient allele have been removed, so as to avoid a better match
     /// (2) Alleles failing a HLA Metadata lookup have been commented out.
-    ///    - Presumably this is due to wmda version discrepancies with the deployed HLA Metadata Dictionary at time of writing
+    ///    - Presumably this is due to HLA version discrepancies with the deployed HLA Metadata Dictionary at time of writing
     ///    - TODO: NOVA-1539: Ensure we point at a consistent version (3330) of the HLA Metadata Dictionary to avoid more data becoming invalid over time
     /// </summary>
     public static class PGroupMatchingAlleles

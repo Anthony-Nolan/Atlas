@@ -69,10 +69,10 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.AlleleNames
         {
             hlaCategorisationService.GetHlaTypingCategory(Arg.Any<string>()).Returns(HlaTypingCategory.Allele);
 
-            const string hlaDatabaseVersion = "3333";
-            await lookupService.GetCurrentAlleleNames(MatchedLocus, submittedLookupName, hlaDatabaseVersion);
+            const string hlaNomenclatureVersion = "3333";
+            await lookupService.GetCurrentAlleleNames(MatchedLocus, submittedLookupName, hlaNomenclatureVersion);
 
-            await lookupRepository.Received().GetAlleleNameIfExists(MatchedLocus, trimmedLookupName, hlaDatabaseVersion);
+            await lookupRepository.Received().GetAlleleNameIfExists(MatchedLocus, trimmedLookupName, hlaNomenclatureVersion);
         }
     }
 }

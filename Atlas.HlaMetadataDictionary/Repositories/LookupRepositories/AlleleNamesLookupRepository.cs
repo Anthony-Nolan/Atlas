@@ -10,7 +10,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {
     internal interface IAlleleNamesLookupRepository : IHlaLookupRepository
     {
-        Task<IAlleleNameLookupResult> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaDatabaseVersion);
+        Task<IAlleleNameLookupResult> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion);
     }
 
     internal class AlleleNamesLookupRepository : 
@@ -28,9 +28,9 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
         {
         }
 
-        public async Task<IAlleleNameLookupResult> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaDatabaseVersion)
+        public async Task<IAlleleNameLookupResult> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            var entity = await GetHlaLookupTableEntityIfExists(locus, lookupName, TypingMethod.Molecular, hlaDatabaseVersion);
+            var entity = await GetHlaLookupTableEntityIfExists(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
 
             return entity?.ToAlleleNameLookupResult();
         }

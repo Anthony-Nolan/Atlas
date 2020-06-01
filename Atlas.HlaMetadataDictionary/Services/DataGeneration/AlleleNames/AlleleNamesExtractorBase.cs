@@ -16,24 +16,24 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
             this.dataRepository = dataRepository;
         }
 
-        protected IEnumerable<HlaNom> AllelesInVersionOfHlaNom(string hlaDatabaseVersion)
+        protected IEnumerable<HlaNom> AllelesInVersionOfHlaNom(string hlaNomenclatureVersion)
         {
-            return dataRepository.GetWmdaDataset(hlaDatabaseVersion).Alleles;
+            return dataRepository.GetWmdaDataset(hlaNomenclatureVersion).Alleles;
         }
 
-        protected bool AlleleNameIsNotInHistories(string locus, string alleleName, string hlaDatabaseVersion)
+        protected bool AlleleNameIsNotInHistories(string locus, string alleleName, string hlaNomenclatureVersion)
         {
-            return !GetHistoricNamesAsTypings(hlaDatabaseVersion).Any(historicalTyping =>
+            return !GetHistoricNamesAsTypings(hlaNomenclatureVersion).Any(historicalTyping =>
                 historicalTyping.TypingLocus.Equals(locus) &&
                 historicalTyping.Name.Equals(alleleName)
             );
         }
 
-        private IList<HlaNom> GetHistoricNamesAsTypings(string hlaDatabaseVersion)
+        private IList<HlaNom> GetHistoricNamesAsTypings(string hlaNomenclatureVersion)
         {
-            if (!historicAlleleNamesCache.TryGetValue(hlaDatabaseVersion, out var data))
+            if (!historicAlleleNamesCache.TryGetValue(hlaNomenclatureVersion, out var data))
             {
-                var dataset = dataRepository.GetWmdaDataset(hlaDatabaseVersion);
+                var dataset = dataRepository.GetWmdaDataset(hlaNomenclatureVersion);
                 data = dataset
                     .AlleleNameHistories
                     .SelectMany(history =>
@@ -41,7 +41,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
                         new HlaNom(TypingMethod.Molecular, history.TypingLocus, historicalName))
                     .Distinct()
                     .ToList();
-                historicAlleleNamesCache.Add(hlaDatabaseVersion, data);
+                historicAlleleNamesCache.Add(hlaNomenclatureVersion, data);
             }
 
             return data;

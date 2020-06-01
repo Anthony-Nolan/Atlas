@@ -16,9 +16,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors
             this.fileName = fileName;
         }
 
-        public IEnumerable<TWmdaHlaTyping> GetWmdaHlaTypingsForHlaMetadataDictionaryLoci(IWmdaFileReader fileReader, string hlaDatabaseVersion)
+        public IEnumerable<TWmdaHlaTyping> GetWmdaHlaTypingsForHlaMetadataDictionaryLoci(IWmdaFileReader fileReader, string hlaNomenclatureVersion)
         {
-            var fileContents = fileReader.GetFileContentsWithoutHeader(hlaDatabaseVersion, fileName).ToList();
+            var fileContents = fileReader.GetFileContentsWithoutHeader(hlaNomenclatureVersion, fileName).ToList();
             ExtractHeaders(fileContents.First());
             return ExtractWmdaHlaTypingsForHlaMetadataDictionaryLoci(fileContents);
         }

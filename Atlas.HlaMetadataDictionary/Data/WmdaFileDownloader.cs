@@ -15,10 +15,10 @@ namespace Atlas.HlaMetadataDictionary.Data
             this.wmdaFileUri = wmdaFileUri;
         }
         
-        public IEnumerable<string> GetFileContentsWithoutHeader(string nomenclatureVersion, string fileName)
+        public IEnumerable<string> GetFileContentsWithoutHeader(string hlaNomenclatureVersion, string fileName)
         {
             return new WebClient()
-                .DownloadString(GetFileAddress(nomenclatureVersion, fileName))
+                .DownloadString(GetFileAddress(hlaNomenclatureVersion, fileName))
                 .Split('\n')
                 .SkipWhile(IsCommentLine);
         }
@@ -45,9 +45,9 @@ namespace Atlas.HlaMetadataDictionary.Data
             throw new Exception($"No non comment lines found when reading: {fileAddress}");
         }
 
-        private string GetFileAddress(string nomenclatureVersion, string fileName)
+        private string GetFileAddress(string hlaNomenclatureVersion, string fileName)
         {
-            return $"{wmdaFileUri}{nomenclatureVersion}/{fileName}";
+            return $"{wmdaFileUri}{hlaNomenclatureVersion}/{fileName}";
         }
 
         private static bool IsCommentLine(string line)

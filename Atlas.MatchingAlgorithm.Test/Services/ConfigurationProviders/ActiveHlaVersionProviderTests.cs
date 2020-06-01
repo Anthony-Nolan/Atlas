@@ -9,12 +9,12 @@ using NUnit.Framework;
 namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
 {
     [TestFixture]
-    public class WmdaHlaVersionProviderTests
+    public class ActiveHlaVersionProviderTests
     {
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private ITransientCacheProvider transientCacheProvider;
         
-        private IActiveHlaVersionAccessor wmdaHlaVersionProvider;
+        private IActiveHlaVersionAccessor activeHlaVersionAccessor;
         
         [SetUp]
         public void SetUp()
@@ -22,15 +22,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
             transientCacheProvider = Substitute.For<ITransientCacheProvider>();
             
-            wmdaHlaVersionProvider = new ActiveHlaVersionAccessor(dataRefreshHistoryRepository, transientCacheProvider);
+            activeHlaVersionAccessor = new ActiveHlaVersionAccessor(dataRefreshHistoryRepository, transientCacheProvider);
         }
 
         [Test]
-        public void GetActiveHlaDatabaseVersion_WhenActiveVersionIsNull_ThrowsException()
+        public void GetActiveHlaNomenclatureVersion_WhenActiveVersionIsNull_ThrowsException()
         {
-            dataRefreshHistoryRepository.GetActiveWmdaDataVersion().Returns(null as string);
+            dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion().Returns(null as string);
 
-            wmdaHlaVersionProvider.Invoking(provider => provider.GetActiveHlaDatabaseVersion()).Should().Throw<ArgumentNullException>();
+            activeHlaVersionAccessor.Invoking(provider => provider.GetActiveHlaNomenclatureVersion()).Should().Throw<ArgumentNullException>();
         }
     }
 }

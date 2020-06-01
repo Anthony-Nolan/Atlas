@@ -14,7 +14,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
     /// </summary>
     internal interface IDpb1TceGroupsService
     {
-        IEnumerable<IDpb1TceGroupsLookupResult> GetDpb1TceGroupLookupResults(string hlaDatabaseVersion);
+        IEnumerable<IDpb1TceGroupsLookupResult> GetDpb1TceGroupLookupResults(string hlaNomenclatureVersion);
     }
 
     /// <inheritdoc />
@@ -30,10 +30,10 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             this.wmdaDataRepository = wmdaDataRepository;
         }
 
-        public IEnumerable<IDpb1TceGroupsLookupResult> GetDpb1TceGroupLookupResults(string hlaDatabaseVersion)
+        public IEnumerable<IDpb1TceGroupsLookupResult> GetDpb1TceGroupLookupResults(string hlaNomenclatureVersion)
         {
             var allResults = wmdaDataRepository
-                .GetWmdaDataset(hlaDatabaseVersion)
+                .GetWmdaDataset(hlaNomenclatureVersion)
                 .Dpb1TceGroupAssignments
                 .SelectMany(GetLookupResultPerDpb1LookupName);
 

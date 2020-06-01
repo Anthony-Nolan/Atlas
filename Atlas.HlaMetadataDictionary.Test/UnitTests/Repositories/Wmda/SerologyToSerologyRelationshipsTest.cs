@@ -7,7 +7,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
     {
         protected override void SetupTestData()
         {
-            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaDatabaseVersionToTest).SerologyToSerologyRelationships, SerologyLoci);
+            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaNomenclatureVersionToTest).SerologyToSerologyRelationships, SerologyLoci);
         }
 
         [TestCase("A", "9", new[] { "23", "24" }, new string[] { }, Description = "Broad serology with splits, but no associated")]

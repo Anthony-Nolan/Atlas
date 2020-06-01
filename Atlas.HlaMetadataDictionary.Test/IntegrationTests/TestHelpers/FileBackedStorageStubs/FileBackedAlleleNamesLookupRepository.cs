@@ -16,7 +16,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
             return resultCollections.AlleleNameLookupResults;
         }
 
-        public Task<IAlleleNameLookupResult> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaDatabaseVersion)
+        public Task<IAlleleNameLookupResult> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
             return Task.FromResult(HlaLookupResults
                 .SingleOrDefault(result => 
