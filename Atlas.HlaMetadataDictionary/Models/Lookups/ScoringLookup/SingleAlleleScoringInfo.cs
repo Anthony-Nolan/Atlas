@@ -89,7 +89,6 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
             );
         }
 
-        public bool IsConvertibleToSingleAllelesInfos { get; }
         public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo() => new List<SingleAlleleScoringInfo>{this};
 
         public AlleleTyping GenerateTypingAtLocus(Locus locus)
