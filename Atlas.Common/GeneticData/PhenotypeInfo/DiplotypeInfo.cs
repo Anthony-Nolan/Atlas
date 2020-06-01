@@ -4,6 +4,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
 {
     /// <summary>
     /// Data type to hold an instance of T as a pair of haplotypes for each of the supported HLA loci.
+    /// "Haplotype1" and "Haplotype2" are arbitrary, and diplotypes are considered identical if they contain the same two haplotypes in any order.
     /// 
     /// <see cref="LociInfo{T}"/> has a T at each locus.
     /// </summary>
@@ -13,12 +14,18 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         public LociInfo<T> Haplotype1 { get; set; }
         public LociInfo<T> Haplotype2 { get; set; }
 
+        /// <summary>
+        /// Creates a new DiplotypeInfo with no inner values for each haplotype.
+        /// </summary>
         public DiplotypeInfo()
         {
             Haplotype1 = new LociInfo<T>();
             Haplotype2 = new LociInfo<T>();
         }
 
+        /// <summary>
+        /// Creates a new DiplotypeInfo using the provided LociInfo to set values for Haplotype1 and Haplotype2.
+        /// </summary>
         public DiplotypeInfo(LociInfo<LocusInfo<T>> source)
         {
             Haplotype1 = new LociInfo<T>()

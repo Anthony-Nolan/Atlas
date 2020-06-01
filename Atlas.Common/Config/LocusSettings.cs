@@ -3,7 +3,7 @@ using System.Linq;
 using Atlas.Common.GeneticData;
 using static EnumStringValues.EnumExtensions;
 
-namespace Atlas.MatchingAlgorithm.Common.Config
+namespace Atlas.Common.Config
 {
     /// <summary>
     /// Central location from which locus-based functionality can be controlled.
@@ -14,6 +14,11 @@ namespace Atlas.MatchingAlgorithm.Common.Config
         /// Loci that are only considered during matching.
         /// </summary>
         public static IEnumerable<Locus> MatchingOnlyLoci => EnumerateValues<Locus>().Except(new[] {Locus.Dpb1});
+
+        /// <summary>
+        /// Loci that are only considered during match prediction.
+        /// </summary>
+        public static IEnumerable<Locus> MatchPredictionOnlyLoci => EnumerateValues<Locus>().Except(new[] {Locus.Dpb1});
 
         /// <summary>
         /// Only loci that are possible to match in Phase I of Matching.
