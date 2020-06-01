@@ -70,6 +70,16 @@ variable "LOCATION" {
   description = "GeoLocation of all Azure resources for this ATLAS installation."
 }
 
+variable "MAC_TABLE_CONNECTION_STRING" {
+  type        = string
+  description = "The connection string for the ATLAS table storage containing multiple allele codes"
+}
+
+variable "MAC_TABLE_NAME" n{
+  type = string
+  description = "The name of the table storage table containing multiple allele codes"
+}
+
 variable "MATCH_PREDICTION_DATABASE_PASSWORD" {
   type = string
 }
@@ -162,9 +172,4 @@ variable "WMDA_FILE_URL" {
 variable "WEBSITE_RUN_FROM_PACKAGE" {
   type    = string
   default = "1"
-}
-
-variable "MAC_TABLE_CONNECTION_STRING" {
-  type        = string
-  description = "The connection string for the ATLAS table storage containing multiple allele codes"
 }
