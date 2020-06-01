@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
+using Atlas.DonorImport.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
@@ -36,6 +37,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             // This call must be made after `RegisterMatchingAlgorithm()`, as it overrides the non-mock dictionary set up in that method
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value); //These configuration values won't be used, because all they are all (indirectly) overridden, below.
 
+            services.AddScoped(sp => Substitute.For<IDonorReader>());
+            
             services.AddScoped(sp =>
                 new ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"])
             );
@@ -49,7 +52,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 .Returns(Task.CompletedTask);
             services.AddScoped(sp => mockSearchServiceBusClient);
 
-            services.AddScoped(sp => Substitute.For<IDonorServiceClient>());
             services.AddScoped(sp => Substitute.For<INotificationsClient>());
 
             return services.BuildServiceProvider();

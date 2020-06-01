@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
+using Atlas.DonorImport.ExternalInterface;
+using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
-using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
@@ -11,6 +11,7 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using FluentAssertions;
+using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
@@ -20,138 +21,44 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
     public class DonorImportTests
     {
         private IDonorImporter donorImporter;
-        private IDonorImportRepository importRepo;
         private IDonorInspectionRepository inspectionRepo;
 
-        private IDonorServiceClient MockDonorServiceClient { get; set; }
+        private IDonorReader MockDonorReader { get; set; }
 
+        private Builder<Donor> IncrementingDonorBuilder => DonorBuilder.New.With(d => d.DonorId, DonorIdGenerator.NextId().ToString());
+        
         [SetUp]
         public void SetUp()
         {
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IDormantRepositoryFactory>();
 
-            importRepo = repositoryFactory.GetDonorImportRepository();
             // We want to inspect the dormant database, as this is what the import will have run on
             inspectionRepo = repositoryFactory.GetDonorInspectionRepository();
             donorImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImporter>();
 
-            MockDonorServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IDonorServiceClient>();
+            MockDonorReader = DependencyInjection.DependencyInjection.Provider.GetService<IDonorReader>();
 
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
-            {
-                DonorsInfo = new List<SearchableDonorInformation>()
-            });
-        }
-
-        [Test]
-        public async Task DonorImport_FetchesDonorsWithIdsHigherThanMaxExistingDonor()
-        {
-            var lowerId = DonorIdGenerator.NextId();
-            var higherId = DonorIdGenerator.NextId();
-            await importRepo.InsertBatchOfDonors(new List<DonorInfo>
-            {
-                DonorWithId(higherId),
-                DonorWithId(lowerId),
-            });
-
-            await donorImporter.ImportDonors();
-
-            await MockDonorServiceClient.Received().GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), higherId);
+            MockDonorReader.GetAllDonors().Returns(new List<Donor>());
         }
 
         [Test]
         public async Task DonorImport_AddsNewDonorsToDatabase()
         {
-            var donorInfo = SearchableDonorInformationBuilder.New.Build();
+            var donorInfo = IncrementingDonorBuilder.With(d => d.DonorId, DonorIdGenerator.NextId().ToString()).Build();
 
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
-            {
-                DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
-            },
-                new SearchableDonorInformationPage
-                {
-                    DonorsInfo = new List<SearchableDonorInformation>()
-                });
+            MockDonorReader.GetAllDonors().Returns(new List<Donor> {donorInfo});
 
             await donorImporter.ImportDonors();
-            var donor = await inspectionRepo.GetDonor(donorInfo.DonorId);
+            var donor = await inspectionRepo.GetDonor(donorInfo.DonorIdInt());
 
             donor.Should().NotBeNull();
-        }
-
-        [TestCase("Adult", DonorType.Adult)]
-        [TestCase("Cord", DonorType.Cord)]
-        [TestCase("A", DonorType.Adult)]
-        [TestCase("C", DonorType.Cord)]
-        public async Task DonorImport_ParsesDonorTypeCorrectly(string rawDonorType, DonorType expectedDonorType)
-        {
-            var donorInfo = SearchableDonorInformationBuilder.New
-                .With(x => x.DonorType, rawDonorType)
-                .Build();
-
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
-            {
-                DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
-            },
-                new SearchableDonorInformationPage
-                {
-                    DonorsInfo = new List<SearchableDonorInformation>()
-                });
-
-            await donorImporter.ImportDonors();
-            var donor = await inspectionRepo.GetDonor(donorInfo.DonorId);
-
-            donor.DonorType.Should().Be(expectedDonorType);
-        }
-
-        [Test]
-        public async Task DonorImport_WhenDonorHasInvalidDonorType_DoesNotImportDonor()
-        {
-            const string donorType = "invalid";
-            var donorInfo = SearchableDonorInformationBuilder.New
-                .With(x => x.DonorType, donorType)
-                .Build();
-
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
-            {
-                DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
-            },
-                new SearchableDonorInformationPage
-                {
-                    DonorsInfo = new List<SearchableDonorInformation>()
-                });
-
-            await donorImporter.ImportDonors();
-            var donor = await inspectionRepo.GetDonor(donorInfo.DonorId);
-
-            donor.Should().BeNull();
-        }
-
-        [Test]
-        public void DonorImport_WhenDonorHasInvalidDonorType_DoesNotThrowException()
-        {
-            const string donorType = "invalid";
-            var donorInfo = SearchableDonorInformationBuilder.New
-                .With(x => x.DonorType, donorType)
-                .Build();
-
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
-            {
-                DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
-            },
-                new SearchableDonorInformationPage
-                {
-                    DonorsInfo = new List<SearchableDonorInformation>()
-                });
-
-            Assert.DoesNotThrowAsync(async () => await donorImporter.ImportDonors());
         }
 
         [TestCase("")]
         [TestCase(null)]
         public async Task DonorImport_WhenDonorHasMissingRequiredHla_DoesNotImportDonor(string missingHla)
         {
-            var donorInfo = SearchableDonorInformationBuilder.New
+            var donorInfo = IncrementingDonorBuilder
                 .With(x => x.A_1, missingHla)
                 .With(x => x.A_2, missingHla)
                 .With(x => x.B_1, missingHla)
@@ -160,17 +67,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 .With(x => x.DRB1_2, missingHla)
                 .Build();
 
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
-                {
-                    DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
-                },
-                new SearchableDonorInformationPage
-                {
-                    DonorsInfo = new List<SearchableDonorInformation>()
-                });
+            MockDonorReader.GetAllDonors().Returns(new List<Donor> {donorInfo});
 
             await donorImporter.ImportDonors();
-            var donor = await inspectionRepo.GetDonor(donorInfo.DonorId);
+            var donor = await inspectionRepo.GetDonor(donorInfo.DonorIdInt());
 
             donor.Should().BeNull();
         }
@@ -179,7 +79,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         [TestCase(null)]
         public void DonorImport_WhenDonorHasMissingRequiredHla_DoesNotThrowException(string missingHla)
         {
-            var donorInfo = SearchableDonorInformationBuilder.New
+            var donorInfo = IncrementingDonorBuilder
                 .With(x => x.A_1, missingHla)
                 .With(x => x.A_2, missingHla)
                 .With(x => x.B_1, missingHla)
@@ -188,14 +88,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 .With(x => x.DRB1_2, missingHla)
                 .Build();
 
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
-                {
-                    DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
-                },
-                new SearchableDonorInformationPage
-                {
-                    DonorsInfo = new List<SearchableDonorInformation>()
-                });
+            MockDonorReader.GetAllDonors().Returns(new List<Donor> {donorInfo});
 
             Assert.DoesNotThrowAsync(async () => await donorImporter.ImportDonors());
         }
@@ -204,7 +97,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         [TestCase(null)]
         public async Task DonorImport_WhenDonorHasMissingOptionalHla_ImportsDonor(string missingHla)
         {
-            var donorInfo = SearchableDonorInformationBuilder.New
+            var donorInfo = IncrementingDonorBuilder
                 .With(x => x.C_1, missingHla)
                 .With(x => x.C_2, missingHla)
                 .With(x => x.DPB1_1, missingHla)
@@ -213,34 +106,21 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 .With(x => x.DQB1_2, missingHla)
                 .Build();
 
-            MockDonorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(new SearchableDonorInformationPage
-                {
-                    DonorsInfo = new List<SearchableDonorInformation> { donorInfo }
-                },
-                new SearchableDonorInformationPage
-                {
-                    DonorsInfo = new List<SearchableDonorInformation>()
-                });
+            MockDonorReader.GetAllDonors().Returns(new List<Donor> {donorInfo});
 
             await donorImporter.ImportDonors();
-            var donor = await inspectionRepo.GetDonor(donorInfo.DonorId);
+            var donor = await inspectionRepo.GetDonor(donorInfo.DonorIdInt());
 
             donor.Should().NotBeNull();
         }
+    }
 
-        private static DonorInfo DonorWithId(int id)
+    // TODO: ATLAS-294: Remove the need for this. 
+    internal static class DonorExtensions
+    {
+        public static int DonorIdInt(this Donor donor)
         {
-            return new DonorInfo
-            {
-                DonorType = DonorType.Cord,
-                DonorId = id,
-                HlaNames = new PhenotypeInfo<string>
-                {
-                    A = { Position1 = "01:01", Position2 = "30:02:01:01" },
-                    B = { Position1 = "07:02", Position2 = "08:01" },
-                    Drb1 = { Position1 = "01:11", Position2 = "03:41" },
-                }
-            };
+            return int.Parse(donor.DonorId);
         }
     }
 }

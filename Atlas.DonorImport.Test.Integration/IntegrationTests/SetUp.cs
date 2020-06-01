@@ -11,6 +11,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests
         [OneTimeSetUp]
         public void Setup()
         {
+            // TODO: ATLAS-186: Re-add donor type parsing tests to this suite from matching.
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
                 DependencyInjection.DependencyInjection.Provider = ServiceConfiguration.CreateProvider();
