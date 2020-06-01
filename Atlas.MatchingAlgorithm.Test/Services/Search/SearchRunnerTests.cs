@@ -86,7 +86,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = "id" });
 
             await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
-                r.WmdaHlaDatabaseVersion == hlaNomenclatureVersion
+                r.HlaNomenclatureVersion == hlaNomenclatureVersion
             ));
         }
 
