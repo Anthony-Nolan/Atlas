@@ -3,6 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
+using Atlas.DonorImport.ExternalInterface;
+using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -29,6 +32,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IDonorInfoConverter donorInfoConverter;
         private IFailedDonorsNotificationSender failedDonorsNotificationSender;
         private ILogger logger;
+        private IDonorReader donorReader;
 
         private static readonly SearchableDonorInformationPage EmptyPage = new SearchableDonorInformationPage
         {
@@ -45,7 +49,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             repositoryFactory.GetDonorImportRepository().Returns(donorImportRepository);
 
             donorServiceClient = Substitute.For<IDonorServiceClient>();
-            donorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>())                .Returns(EmptyPage);
+            donorServiceClient.GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>()).Returns(EmptyPage);
 
             donorInfoConverter = Substitute.For<IDonorInfoConverter>();
             donorInfoConverter.ConvertDonorInfoAsync(Arg.Any<IEnumerable<SearchableDonorInformation>>(), Arg.Any<string>())
@@ -53,105 +57,51 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             failedDonorsNotificationSender = Substitute.For<IFailedDonorsNotificationSender>();
             logger = Substitute.For<ILogger>();
+            donorReader = Substitute.For<IDonorReader>();
 
-            donorImporter = new DonorImporter(repositoryFactory, donorServiceClient, donorInfoConverter, failedDonorsNotificationSender, logger);
+            donorImporter = new DonorImporter(repositoryFactory, donorInfoConverter, failedDonorsNotificationSender, logger, donorReader);
         }
 
         [Test]
-        public async Task ImportDonors_GetsHighestDonorIdFromDataRefreshRepo()
+        public async Task ImportDonors_WhenNoDonorsExistInSource_DoesNotInsertDonors()
         {
             await donorImporter.ImportDonors();
 
-            await dataRefreshRepository.Received().HighestDonorId();
+            await donorImportRepository.DidNotReceive().InsertBatchOfDonors(Arg.Any<IEnumerable<DonorInfo>>());
         }
 
         [Test]
-        public async Task ImportDonors_FetchesDonorPageWithHighestDonorId()
+        public async Task ImportDonors_ConvertsDonorInfo()
         {
-            const int donorId = 123;
-            dataRefreshRepository.HighestDonorId().Returns(donorId);
+            var donor = DonorBuilder.New.With(d => d.DonorId, "123").Build();
 
-            await donorImporter.ImportDonors();
-
-            await donorServiceClient.Received()
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), donorId);
-        }
-
-        [Test]
-        public async Task ImportDonors_EmptyPage_DoesNotConvertDonorInfo()
-        {
-            await donorImporter.ImportDonors();
-
-            await donorInfoConverter.DidNotReceive().ConvertDonorInfoAsync(
-                Arg.Any<IEnumerable<SearchableDonorInformation>>(), Arg.Any<string>());
-        }
-
-        [Test]
-        public async Task ImportDonors_EmptyPage_DoesNotInsertDonors()
-        {
-            await donorImporter.ImportDonors();
-
-            await donorImportRepository.DidNotReceive().InsertBatchOfDonors(
-                Arg.Any<IEnumerable<DonorInfo>>());
-        }
-
-        [Test]
-        public async Task ImportDonors_PageWithDonors_ConvertsDonorInfo()
-        {
-            const int donorId = 123;
-            var pageWithDonor = new SearchableDonorInformationPage
-            {
-                DonorsInfo = new List<SearchableDonorInformation>
-                {
-                    new SearchableDonorInformation
-                    {
-                        DonorId = donorId
-                    }
-                }
-            };
-
-            // return empty page last to stop pagination loop
-            donorServiceClient
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(pageWithDonor, EmptyPage);
+            donorReader.GetAllDonors().Returns(new List<Donor> {donor});
 
             await donorImporter.ImportDonors();
 
             await donorInfoConverter.Received(1).ConvertDonorInfoAsync(
-                    Arg.Is<IEnumerable<SearchableDonorInformation>>(x => x.Single().DonorId == donorId), 
-                    Arg.Any<string>());
+                Arg.Is<IEnumerable<SearchableDonorInformation>>(x => x.Single().DonorId.ToString() == donor.DonorId),
+                Arg.Any<string>());
         }
 
         [Test]
-        public async Task ImportDonors_PageWithDonors_InsertsDonors()
+        public async Task ImportDonors_InsertsDonors()
         {
-            const int donorId = 123;
+            // TODO: ATLAS-294: Use string instead of int
+            const int donorIdAsInt = 123;
+            var donor = DonorBuilder.New.With(d => d.DonorId, donorIdAsInt.ToString()).Build();
 
-            var pageWithDonor = new SearchableDonorInformationPage
-            {
-                DonorsInfo = new List<SearchableDonorInformation>
-                {
-                    new SearchableDonorInformation
-                    {
-                        DonorId = donorId
-                    }
-                }
-            };
-
-            // return empty page last to stop pagination loop
-            donorServiceClient
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(pageWithDonor, EmptyPage);
+            donorReader.GetAllDonors().Returns(new List<Donor> {donor});
 
             donorInfoConverter
-                .ConvertDonorInfoAsync(pageWithDonor.DonorsInfo, Arg.Any<string>())
-                .Returns(new DonorBatchProcessingResult<DonorInfo>
+                .ConvertDonorInfoAsync(null, null)
+                .ReturnsForAnyArgs(new DonorBatchProcessingResult<DonorInfo>
                 {
                     ProcessingResults = new List<DonorInfo>
                     {
                         new DonorInfo
                         {
-                            DonorId = donorId
+                            DonorId = donorIdAsInt
                         }
                     }
                 });
@@ -159,154 +109,17 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             await donorImporter.ImportDonors();
 
             await donorImportRepository.Received(1).InsertBatchOfDonors(
-                Arg.Is<IEnumerable<DonorInfo>>(x => x.Single().DonorId == donorId));
+                Arg.Is<IEnumerable<DonorInfo>>(x => x.Single().DonorId == donorIdAsInt));
         }
 
         [Test]
-        public async Task ImportDonors_PageWithDonorsButNoLastId_GetHighestDonorIdFromRefreshRepo()
+        public async Task ImportDonors_WithFailedDonor_SendsFailedDonorsAlert()
         {
-            var pageWithDonor = new SearchableDonorInformationPage
-            {
-                DonorsInfo = new List<SearchableDonorInformation>
-                {
-                    new SearchableDonorInformation
-                    {
-                        DonorId = 1
-                    }
-                }
-            };
-
-            // return empty page last to stop pagination loop
-            donorServiceClient
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(pageWithDonor, EmptyPage);
-
-            await donorImporter.ImportDonors();
-
-            // Expect highest donor ID to be fetched twice:
-            // before pagination loop and for the first page
-            await dataRefreshRepository.Received(2).HighestDonorId();
-        }
-
-        [Test]
-        public async Task ImportDonors_PageWithDonorsButNoLastId_FetchesDonorPageWithHighestDonorId()
-        {
-            const int firstId = 1;
-            const int secondId = 2;
-
-            var pageWithDonor = new SearchableDonorInformationPage
-            {
-                DonorsInfo = new List<SearchableDonorInformation>
-                {
-                    new SearchableDonorInformation
-                    {
-                        DonorId = 1
-                    }
-                }
-            };
-
-            // return empty page last to stop pagination loop
-            donorServiceClient
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(pageWithDonor, EmptyPage);
-
-            // first id returned before pagination loop; second when the page is processed
-            dataRefreshRepository.HighestDonorId().Returns(firstId, secondId);
-
-            await donorImporter.ImportDonors();
-
-            await donorServiceClient.Received(1)
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), secondId);
-        }
-
-        [Test]
-        public async Task ImportDonors_PageWithDonorsAndLastId_DoesNotGetHighestDonorIdFromRefreshRepo()
-        {
-            const int lastId = 1;
-
-            var firstPageWithDonor = new SearchableDonorInformationPage
-            {
-                DonorsInfo = new List<SearchableDonorInformation>
-                {
-                    new SearchableDonorInformation
-                    {
-                        DonorId = 1
-                    }
-                }
-            };
-
-            var secondPageWithDonorAndLastId = new SearchableDonorInformationPage
-            {
-                DonorsInfo = new List<SearchableDonorInformation>
-                {
-                    new SearchableDonorInformation
-                    {
-                        DonorId = 2
-                    }
-                },
-                LastId = lastId
-            };
-
-            // return empty page last to stop pagination loop
-            donorServiceClient
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(
-                    firstPageWithDonor,
-                    secondPageWithDonorAndLastId,
-                    EmptyPage);
-
-            await donorImporter.ImportDonors();
-
-            // Expect highest donor ID to only be fetched twice:
-            // before pagination loop, for the first page, but not for the second page.
-            await dataRefreshRepository.Received(2).HighestDonorId();
-        }
-
-        [Test]
-        public async Task ImportDonors_PageWithDonorsAndLastId_FetchesDonorPageWithLastId()
-        {
-            const int donorId = 123;
-            const int lastId = 1;
-
-            var pageWithDonor = new SearchableDonorInformationPage
-            {
-                DonorsInfo = new List<SearchableDonorInformation>
-                {
-                    new SearchableDonorInformation
-                    {
-                        DonorId = donorId
-                    }
-                },
-                LastId = lastId
-            };
-
-            // return empty page last to stop pagination loop
-            donorServiceClient
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(pageWithDonor, EmptyPage);
-
-            await donorImporter.ImportDonors();
-
-            await donorServiceClient.Received(1)
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), lastId);
-        }
-
-        [Test]
-        public async Task ImportDonors_PageWithFailedDonor_SendsFailedDonorsAlert()
-        {
-            const string failedDonorId = "donor-id";
-
-            var pageWithDonor = new SearchableDonorInformationPage
-            {
-                DonorsInfo = new List<SearchableDonorInformation>
-                {
-                    new SearchableDonorInformation()
-                }
-            };
+            const string failedDonorId = "1";
 
             donorInfoConverter
-                .ConvertDonorInfoAsync(pageWithDonor.DonorsInfo, Arg.Any<string>())
-                .Returns(new DonorBatchProcessingResult<DonorInfo>
+                .ConvertDonorInfoAsync(null, null)
+                .ReturnsForAnyArgs(new DonorBatchProcessingResult<DonorInfo>
                 {
                     FailedDonors = new List<FailedDonorInfo>
                     {
@@ -316,11 +129,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                         }
                     }
                 });
+            
+            var donor = DonorBuilder.New.With(d => d.DonorId, failedDonorId).Build();
 
-            // return empty page last to stop pagination loop
-            donorServiceClient
-                .GetDonorsInfoForSearchAlgorithm(Arg.Any<int>(), Arg.Any<int>())
-                .Returns(pageWithDonor, EmptyPage);
+            donorReader.GetAllDonors().Returns(new List<Donor> {donor});
 
             await donorImporter.ImportDonors();
 
