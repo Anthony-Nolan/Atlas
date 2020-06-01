@@ -1,10 +1,11 @@
 using System;
-using System.ComponentModel;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
 using Atlas.Common.NovaHttpClient.Client;
 using Atlas.Common.ServiceBus.BatchReceiving;
+using Atlas.Common.Utils.Extensions;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
@@ -45,24 +46,53 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 {
     public static class ServiceConfiguration
     {
-        public static void RegisterSettings(this IServiceCollection services, IConfiguration configuration)
+        public static void RegisterCombinedMatchingAlgorithmAndDonorManagement(this IServiceCollection services)
         {
-            services.AddOptions();
-            services.Configure<HlaServiceSettings>(configuration.GetSection("Client:HlaService"));
-            services.Configure<DonorServiceSettings>(configuration.GetSection("Client:DonorService"));
-            services.Configure<ApplicationInsightsSettings>(configuration.GetSection("ApplicationInsights"));
-            services.Configure<AzureStorageSettings>(configuration.GetSection("AzureStorage"));
-            services.Configure<WmdaSettings>(configuration.GetSection("Wmda"));
-            services.Configure<MessagingServiceBusSettings>(configuration.GetSection("MessagingServiceBus"));
-            services.Configure<AzureAuthenticationSettings>(configuration.GetSection("AzureManagement.Authentication"));
-            services.Configure<AzureAppServiceManagementSettings>(configuration.GetSection("AzureManagement.AppService"));
-            services.Configure<AzureDatabaseManagementSettings>(configuration.GetSection("AzureManagement.Database"));
-            services.Configure<DataRefreshSettings>(configuration.GetSection("DataRefresh"));
-            services.Configure<NotificationsServiceBusSettings>(configuration.GetSection("NotificationsServiceBus"));
-            services.Configure<DonorManagementSettings>(configuration.GetSection("MessagingServiceBus.DonorManagement"));
+            services.RegisterAllMatchingSettings();
+            services.RegisterMatchingAlgorithmServices();
+            services.RegisterDataServices();
+            services.RegisterDonorClient();
+            services.RegisterDonorManagementServices();
+            services.RegisterHlaMetadataDictionary(
+                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
+                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
+                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
+                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
+                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value
+            );
+        } 
+        
+        public static void RegisterMatchingAlgorithm(this IServiceCollection services)
+        {
+            services.RegisterSettingsForMatching();
+            services.RegisterMatchingAlgorithmServices();
+            services.RegisterDataServices();
+            services.RegisterDonorClient();
+            services.RegisterHlaMetadataDictionary(
+                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
+                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
+                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
+                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
+                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value
+            );
         }
 
-        public static void RegisterSearchAlgorithmTypes(this IServiceCollection services)
+        public static void RegisterMatchingAlgorithmDonorManagement(this IServiceCollection services)
+        {
+            services.RegisterSettingsForMatchingDonorManagement();
+            services.RegisterMatchingAlgorithmServices();
+            services.RegisterDataServices();
+            services.RegisterDonorManagementServices();
+            services.RegisterHlaMetadataDictionary(
+                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
+                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
+                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
+                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
+                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value
+            );
+        }
+
+        private static void RegisterMatchingAlgorithmServices(this IServiceCollection services)
         {
             services.AddScoped(sp => new ConnectionStrings
             {
@@ -157,7 +187,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IScoringCache, ScoringCache>();
         }
 
-        public static void RegisterDataServices(this IServiceCollection services)
+        private static void RegisterDataServices(this IServiceCollection services)
         {
             services.AddScoped<IActiveRepositoryFactory, ActiveRepositoryFactory>();
             services.AddScoped<IDormantRepositoryFactory, DormantRepositoryFactory>();
@@ -171,10 +201,49 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
         }
 
-        public static void RegisterDonorClient(this IServiceCollection services)
+        private static void RegisterDonorClient(this IServiceCollection services)
         {
             services.RegisterAtlasLogger(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value);
             services.AddSingleton(GetDonorServiceClient);
+        }
+
+        private static void RegisterDonorManagementServices(this IServiceCollection services)
+        {
+            services.AddScoped<IDonorManagementService, DonorManagementService>();
+            services.AddScoped<ISearchableDonorUpdateConverter, SearchableDonorUpdateConverter>();
+
+            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
+                new MessageReceiverFactory(sp.GetService<IOptions<MessagingServiceBusSettings>>().Value.ConnectionString)
+            );
+
+            services.AddScoped<IServiceBusMessageReceiver<SearchableDonorUpdate>, ServiceBusMessageReceiver<SearchableDonorUpdate>>(sp =>
+            {
+                var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
+                var factory = sp.GetService<IMessageReceiverFactory>();
+                return new ServiceBusMessageReceiver<SearchableDonorUpdate>(factory, settings.Topic, settings.Subscription);
+            });
+
+            services.AddScoped<IMessageProcessor<SearchableDonorUpdate>, MessageProcessor<SearchableDonorUpdate>>(sp =>
+            {
+                var messageReceiver = sp.GetService<IServiceBusMessageReceiver<SearchableDonorUpdate>>();
+                return new MessageProcessor<SearchableDonorUpdate>(messageReceiver);
+            });
+
+            services.AddScoped<IDonorUpdateProcessor, DonorUpdateProcessor>(sp =>
+            {
+                var messageReceiverService = sp.GetService<IMessageProcessor<SearchableDonorUpdate>>();
+                var managementService = sp.GetService<IDonorManagementService>();
+                var updateConverter = sp.GetService<ISearchableDonorUpdateConverter>();
+                var logger = sp.GetService<ILogger>();
+                var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
+
+                return new DonorUpdateProcessor(
+                    messageReceiverService,
+                    managementService,
+                    updateConverter,
+                    logger,
+                    int.Parse(settings.BatchSize));
+            });
         }
 
         private static IDonorServiceClient GetDonorServiceClient(IServiceProvider sp)
@@ -219,106 +288,36 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             return new FileBasedDonorServiceClient(logger);
         }
 
-        public static void RegisterDonorManagementServices(this IServiceCollection services)
+        private static void RegisterAllMatchingSettings(this IServiceCollection services)
         {
-            services.AddScoped<IDonorManagementService, DonorManagementService>();
-            services.AddScoped<ISearchableDonorUpdateConverter, SearchableDonorUpdateConverter>();
-
-            services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
-                new MessageReceiverFactory(sp.GetService<IOptions<MessagingServiceBusSettings>>().Value.ConnectionString)
-            );
-
-            services.AddScoped<IServiceBusMessageReceiver<SearchableDonorUpdate>, ServiceBusMessageReceiver<SearchableDonorUpdate>>(sp =>
-            {
-                var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
-                var factory = sp.GetService<IMessageReceiverFactory>();
-                return new ServiceBusMessageReceiver<SearchableDonorUpdate>(factory, settings.Topic, settings.Subscription);
-            });
-
-            services.AddScoped<IMessageProcessor<SearchableDonorUpdate>, MessageProcessor<SearchableDonorUpdate>>(sp =>
-            {
-                var messageReceiver = sp.GetService<IServiceBusMessageReceiver<SearchableDonorUpdate>>();
-                return new MessageProcessor<SearchableDonorUpdate>(messageReceiver);
-            });
-
-            services.AddScoped<IDonorUpdateProcessor, DonorUpdateProcessor>(sp =>
-            {
-                var messageReceiverService = sp.GetService<IMessageProcessor<SearchableDonorUpdate>>();
-                var managementService = sp.GetService<IDonorManagementService>();
-                var updateConverter = sp.GetService<ISearchableDonorUpdateConverter>();
-                var logger = sp.GetService<ILogger>();
-                var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
-
-                return new DonorUpdateProcessor(
-                    messageReceiverService,
-                    managementService,
-                    updateConverter,
-                    logger,
-                    int.Parse(settings.BatchSize));
-            });
+            services.RegisterSharedSettings();
+            services.RegisterSettingsForMatchingDonorManagement();
+            services.RegisterSettingsForMatching();
+        }
+        private static void RegisterSharedSettings(this IServiceCollection services)
+        {
+            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterOptions<AzureStorageSettings>("AzureStorage");
+            services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+            services.RegisterOptions<HlaServiceSettings>("Client:HlaService");
+            services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
 
-        public static void RegisterSettingsForDonorManagementFunctionsApp(this IServiceCollection services)
+        private static void RegisterSettingsForMatchingDonorManagement(this IServiceCollection services)
         {
-            services.ManuallyRegisterSettings<ApplicationInsightsSettings>("ApplicationInsights");
-            services.ManuallyRegisterSettings<AzureStorageSettings>("AzureStorage");
-            services.ManuallyRegisterSettings<MessagingServiceBusSettings>("MessagingServiceBus");
-            services.ManuallyRegisterSettings<HlaServiceSettings>("Client:HlaService");
-            services.ManuallyRegisterSettings<DonorManagementSettings>("MessagingServiceBus:DonorManagement");
-            services.ManuallyRegisterSettings<NotificationsServiceBusSettings>("NotificationsServiceBus");
+            services.RegisterSharedSettings();
+            services.RegisterOptions<DonorManagementSettings>("MessagingServiceBus:DonorManagement");
         }
 
-        public static void RegisterSettingsForFunctionsApp(this IServiceCollection services)
+        private static void RegisterSettingsForMatching(this IServiceCollection services)
         {
-            services.ManuallyRegisterSettings<ApplicationInsightsSettings>("ApplicationInsights");
-            services.ManuallyRegisterSettings<AzureStorageSettings>("AzureStorage");
-            services.ManuallyRegisterSettings<DonorServiceSettings>("Client:DonorService");
-            services.ManuallyRegisterSettings<HlaServiceSettings>("Client:HlaService");
-            services.ManuallyRegisterSettings<WmdaSettings>("Wmda");
-            services.ManuallyRegisterSettings<MessagingServiceBusSettings>("MessagingServiceBus");
-            services.ManuallyRegisterSettings<AzureAuthenticationSettings>("AzureManagement:Authentication");
-            services.ManuallyRegisterSettings<AzureAppServiceManagementSettings>("AzureManagement:AppService");
-            services.ManuallyRegisterSettings<AzureDatabaseManagementSettings>("AzureManagement:Database");
-            services.ManuallyRegisterSettings<DataRefreshSettings>("DataRefresh");
-            services.ManuallyRegisterSettings<NotificationsServiceBusSettings>("NotificationsServiceBus");
-        }
-
-        /// <summary>
-        /// The common search algorithm project relies on the same app settings regardless of whether it is called by the azure function, or the web api.
-        /// Both frameworks use different configuration patterns:
-        /// - ASP.NET Core uses the Options pattern with nested settings in appsettings.json
-        /// - Functions v2 uses a flat collections of string app settings in the "Values" object of local.settings.json
-        ///
-        /// This method explicitly sets up the IOptions classes that would be set up by "services.Configure".
-        /// All further DI can assume these IOptions are present in either scenario.
-        ///
-        /// This method has been moved from the functions app to the shared app to ensure the version of the package that provides IConfiguration
-        /// is the same for both this set up, and any other DI set up involving IConfiguration (e.g. database connection strings) 
-        /// </summary>
-        private static void ManuallyRegisterSettings<TSettings>(this IServiceCollection services, string configPrefix = "")
-            where TSettings : class, new()
-        {
-            services.AddSingleton<IOptions<TSettings>>(sp =>
-            {
-                var config = sp.GetService<IConfiguration>();
-                return new OptionsWrapper<TSettings>(BuildSettings<TSettings>(config, configPrefix));
-            });
-        }
-
-        private static TSettings BuildSettings<TSettings>(IConfiguration config, string configPrefix) where TSettings : class, new()
-        {
-            var settings = new TSettings();
-
-            var properties = typeof(TSettings).GetProperties();
-            foreach (var property in properties)
-            {
-                var stringValue = config.GetSection($"{configPrefix}:{property.Name}")?.Value;
-                var converterForPropertyType = TypeDescriptor.GetConverter(property.PropertyType);
-                var typedValue = converterForPropertyType.ConvertFrom(stringValue);
-                property.SetValue(settings, typedValue);
-            }
-
-            return settings;
+            services.RegisterSharedSettings();
+            services.RegisterOptions<DonorServiceSettings>("Client:DonorService");
+            services.RegisterOptions<WmdaSettings>("Wmda");
+            services.RegisterOptions<AzureAuthenticationSettings>("AzureManagement:Authentication");
+            services.RegisterOptions<AzureAppServiceManagementSettings>("AzureManagement:AppService");
+            services.RegisterOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");
+            services.RegisterOptions<DataRefreshSettings>("DataRefresh");
         }
     }
 }
