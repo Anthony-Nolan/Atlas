@@ -12,7 +12,7 @@ namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults
         /// <summary>
         /// The version of the HLA Nomenclature used to run the search request - used for analysing both donor and patient hla.
         /// </summary>
-        public string WmdaHlaDatabaseVersion { get; set; }// QQ Rename External?
+        public string HlaNomenclatureVersion { get; set; }
         public string BlobStorageContainerName { get; set; }
         public long SearchTimeInMilliseconds { get; set; }
     }
