@@ -3,6 +3,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.DonorImport.Data.Models;
+using Dapper;
 using Microsoft.Data.SqlClient;
 
 namespace Atlas.DonorImport.Data.Repositories
@@ -10,6 +11,8 @@ namespace Atlas.DonorImport.Data.Repositories
     public interface IDonorRepository
     {
         public Task InsertDonorBatch(IEnumerable<Donor> donors);
+
+        public IEnumerable<Donor> GetAllDonors();
     }
 
     public class DonorRepository : IDonorRepository
@@ -55,6 +58,16 @@ namespace Atlas.DonorImport.Data.Repositories
 
             using var sqlBulk = BuildDonorSqlBulkCopy();
             await sqlBulk.WriteToServerAsync(dataTable);
+        }
+
+        public IEnumerable<Donor> GetAllDonors()
+        {
+            var sql = $"SELECT {string.Join(", ", donorInsertDataTableColumnNames)} FROM Donors";
+            using var connection = new SqlConnection(connectionString);
+            // TODO: ATLAS-186: Determine whether it would be better to switch off "buffered" here, essentially streaming the data. 
+            // Pro: Smaller memory footprint.
+            // Con: Longer open connection, consumer can cause timeouts by not fully enumerating.
+            return connection.Query<Donor>(sql, buffered: true);
         }
 
         private SqlBulkCopy BuildDonorSqlBulkCopy()
