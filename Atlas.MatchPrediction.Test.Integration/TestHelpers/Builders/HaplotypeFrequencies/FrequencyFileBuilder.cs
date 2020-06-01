@@ -6,17 +6,15 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.HaplotypeF
 {
     internal static class FrequencyFileBuilder
     {
-        public static FrequencyFile Build(string registryCode, string ethnicityCode, int frequencyCount)
+        public static FrequencyFile Build(string registryCode, string ethnicityCode, int haplotypeCount = 1, decimal frequencyValue = 0.00001m)
         {
             var uniqueFileName = $"file-{DateTime.Now:HHmmssffff}.csv";
 
-            var file = new FrequencyFile(uniqueFileName)
+            return new FrequencyFile(uniqueFileName)
             {
                 FullPath = BuildFilePath(uniqueFileName, registryCode, ethnicityCode),
-                Contents = BuildCsvFile(frequencyCount)
+                Contents = BuildCsvFile(haplotypeCount, frequencyValue)
             };
-
-            return file;
         }
 
         /// <param name="registryCode">Path will only contain file name if this is null.</param>
@@ -40,10 +38,10 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.HaplotypeF
             return path.ToString();
         }
 
-        private static string BuildCsvFile(int frequencyCount)
+        private static string BuildCsvFile(int frequencyCount, decimal frequencyValue)
         {
             const string csvHeader = "a;b;c;drb1;dqb1;freq";
-            const string csvFileBodySingleFrequency = "A-HLA;B-HLA;C-HLA;DRB1-HLA;DQB1-HLA;0.00001";
+            var csvFileBodySingleFrequency = $"A-HLA;B-HLA;C-HLA;DRB1-HLA;DQB1-HLA;{frequencyValue}";
 
             var file = new StringBuilder(csvHeader + Environment.NewLine);
 
