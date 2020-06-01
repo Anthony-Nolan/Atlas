@@ -13,7 +13,7 @@ using NUnit.Framework;
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 {
     /// <summary>
-    /// Fixture testing the base functionality of HlaSearchingLookupService via an arbitrarily chosen base class.
+    /// Fixture testing the base functionality of HlaSearchingMetadataService via an arbitrarily chosen base class.
     /// Fixture relies on a file-backed HlaMetadataDictionary - tests may break if underlying data is changed.
     /// </summary>
     [TestFixture]
@@ -22,7 +22,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         private const Locus DefaultLocus = Locus.A;
         private const string CacheKey = "NmdpCodeLookup_A";
 
-        private IHlaMatchingLookupService lookupService;
+        private IHlaMatchingMetadataService metadataService;
         private IHlaServiceClient hlaServiceClient;
         private IAppCache appCache;
 
@@ -31,7 +31,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                lookupService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMatchingLookupService>();
+                metadataService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMatchingMetadataService>();
                 hlaServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IHlaServiceClient>();
                 appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
             });
@@ -49,16 +49,16 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
-        public void GetHlaLookupResult_WhenInvalidHlaTyping_ThrowsException()
+        public void GetHlaMetadata_WhenInvalidHlaTyping_ThrowsException()
         {
             const string hlaName = "XYZ:123:INVALID";
 
             Assert.ThrowsAsync<HlaMetadataDictionaryException>(
-                async () => await lookupService.GetHlaLookupResult(DefaultLocus, hlaName, null));
+                async () => await metadataService.GetHlaMetadata(DefaultLocus, hlaName, null));
         }
 
         [Test]
-        public void GetHlaLookupResult_WhenNmdpCodeContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
+        public void GetHlaMetadata_WhenNmdpCodeContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
         {
             const string missingAllele = "9999:9999";
 
@@ -69,27 +69,27 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
                 .Returns(new List<string> { missingAllele });
 
             Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () => 
-                await lookupService.GetHlaLookupResult(DefaultLocus, nmdpCode, null));
+                await metadataService.GetHlaMetadata(DefaultLocus, nmdpCode, null));
         }
 
         [Test]
-        public void GetHlaLookupResult_WhenAlleleStringOfNamesContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
+        public void GetHlaMetadata_WhenAlleleStringOfNamesContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
         {
             const string existingAllele = "01:133";
             const string missingAllele = "9999:9999";
             const string alleleString = existingAllele + "/" + missingAllele;
 
             Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () =>
-                await lookupService.GetHlaLookupResult(DefaultLocus, alleleString, null));
+                await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null));
         }
 
         [Test]
-        public void GetHlaLookupResult_WhenAlleleStringOfSubtypesContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
+        public void GetHlaMetadata_WhenAlleleStringOfSubtypesContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
         {
             const string alleleString = "01:133/9999";
 
             Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () =>
-                await lookupService.GetHlaLookupResult(DefaultLocus, alleleString, null));
+                await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null));
         }
     }
 }

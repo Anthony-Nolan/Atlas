@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="IntegrationTests\Resources\all_hla_lookup_results.json" />
+    <None Remove="IntegrationTests\Resources\all_hla_metadata.json" />
     <None Remove="UnitTests\Data\wmda-v3330\Allelelist_history.txt" />
     <None Remove="UnitTests\Data\wmda-v3330\Allele_status.txt" />
     <None Remove="UnitTests\Data\wmda-v3330\version_report.txt" />
@@ -114,7 +114,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="IntegrationTests\Resources\all_hla_lookup_results.json" />
+    <EmbeddedResource Include="IntegrationTests\Resources\all_hla_metadata.json" />
   </ItemGroup>
 
   <ItemGroup>

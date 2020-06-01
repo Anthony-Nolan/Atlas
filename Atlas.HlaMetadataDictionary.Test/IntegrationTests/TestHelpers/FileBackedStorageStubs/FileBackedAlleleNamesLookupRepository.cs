@@ -7,18 +7,18 @@ using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs
 {
-    internal class FileBackedAlleleNamesLookupRepository :
-        FileBackedHlaLookupRepositoryBase<IAlleleNameLookupResult>,
-        IAlleleNamesLookupRepository
+    internal class FileBackedAlleleNamesMetadataRepository :
+        FileBackedHlaMetadataRepositoryBase<IAlleleNameMetadata>,
+        IAlleleNamesMetadataRepository
     {
-        protected override IEnumerable<IAlleleNameLookupResult> GetHlaLookupResults(FileBackedHlaLookupResultCollections resultCollections)
+        protected override IEnumerable<IAlleleNameMetadata> GetHlaMetadata(FileBackedHlaMetadataCollection metadataCollection)
         {
-            return resultCollections.AlleleNameLookupResults;
+            return metadataCollection.AlleleNameMetadata;
         }
 
-        public Task<IAlleleNameLookupResult> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
+        public Task<IAlleleNameMetadata> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            return Task.FromResult(HlaLookupResults
+            return Task.FromResult(HlaMetadata
                 .SingleOrDefault(result => 
                     result.Locus == locus && 
                     result.LookupName.Equals(lookupName)));

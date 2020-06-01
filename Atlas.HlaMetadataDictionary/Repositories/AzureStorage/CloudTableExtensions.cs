@@ -12,12 +12,12 @@ namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
     {
         private const int BatchSize = 100; //ExecuteBatchAsync is limited to 100 operations per batch. :(
 
-        public static async Task<TEntity> GetEntityByPartitionAndRowKey<TEntity>(this CloudTable table, string partition, string rowKey)
-            where TEntity : TableEntity
+        public static async Task<TRow> GetRowByPartitionAndRowKey<TRow>(this CloudTable table, string partition, string rowKey)
+            where TRow : TableEntity
         {
-            var retrieveOperation = TableOperation.Retrieve<TEntity>(partition, rowKey);
+            var retrieveOperation = TableOperation.Retrieve<TRow>(partition, rowKey);
             var tableResult = await table.ExecuteAsync(retrieveOperation);
-            return (TEntity)tableResult.Result;
+            return (TRow)tableResult.Result;
         }
 
         public static async Task BatchInsert<TEntity>(this CloudTable table, IEnumerable<TEntity> entities)

@@ -20,58 +20,58 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
         MatchedHlaDataConverterBase,
         IHlaMatchingDataConverter
     {
-        protected override ISerialisableHlaMetadata GetSerologyLookupResult(IHlaLookupResultSource<SerologyTyping> lookupResultSource)
+        protected override ISerialisableHlaMetadata GetSerologyMetadata(IHlaMetadataSource<SerologyTyping> metadataSource)
         {
-            return new HlaMatchingLookupResult(
-                    lookupResultSource.TypingForHlaLookupResult.Locus,
-                    lookupResultSource.TypingForHlaLookupResult.Name,
+            return new HlaMatchingMetadata(
+                    metadataSource.TypingForHlaMetadata.Locus,
+                    metadataSource.TypingForHlaMetadata.Name,
                     TypingMethod.Serology,
-                    lookupResultSource.MatchingPGroups);
+                    metadataSource.MatchingPGroups);
         }
 
-        protected override ISerialisableHlaMetadata GetSingleAlleleLookupResult(
-            IHlaLookupResultSource<AlleleTyping> lookupResultSource)
+        protected override ISerialisableHlaMetadata GetSingleAlleleMetadata(
+            IHlaMetadataSource<AlleleTyping> metadataSource)
         {
-            return GetMolecularLookupResult(
-                new[] { lookupResultSource },
+            return GetMolecularMetadata(
+                new[] { metadataSource },
                 allele => allele.Name
             );
         }
 
-        protected override ISerialisableHlaMetadata GetNmdpCodeAlleleLookupResult(
-            IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources,
+        protected override ISerialisableHlaMetadata GetNmdpCodeAlleleMetadata(
+            IEnumerable<IHlaMetadataSource<AlleleTyping>> metadataSources,
             string nmdpLookupName)
         {
-            return GetMolecularLookupResult(
-                lookupResultSources,
+            return GetMolecularMetadata(
+                metadataSources,
                 allele => nmdpLookupName
             );
         }
 
-        protected override ISerialisableHlaMetadata GetXxCodeLookupResult(
-            IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources)
+        protected override ISerialisableHlaMetadata GetXxCodeMetadata(
+            IEnumerable<IHlaMetadataSource<AlleleTyping>> metadataSources)
         {
-            return GetMolecularLookupResult(
-                lookupResultSources,
+            return GetMolecularMetadata(
+                metadataSources,
                 allele => allele.ToXxCodeLookupName()
             );
         }
         
-        private static ISerialisableHlaMetadata GetMolecularLookupResult(
-            IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources,
+        private static ISerialisableHlaMetadata GetMolecularMetadata(
+            IEnumerable<IHlaMetadataSource<AlleleTyping>> metadataSources,
             Func<AlleleTyping, string> getLookupName)
         {
-            var sources = lookupResultSources.ToList();
+            var sources = metadataSources.ToList();
 
             var firstAllele = sources
                 .First()
-                .TypingForHlaLookupResult;
+                .TypingForHlaMetadata;
 
             var pGroups = sources
                 .SelectMany(resultSource => resultSource.MatchingPGroups)
                 .Distinct();
 
-            return new HlaMatchingLookupResult(
+            return new HlaMatchingMetadata(
                 firstAllele.Locus,
                 getLookupName(firstAllele),
                 TypingMethod.Molecular,

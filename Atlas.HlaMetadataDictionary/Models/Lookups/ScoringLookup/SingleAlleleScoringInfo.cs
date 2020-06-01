@@ -67,11 +67,11 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         }
 
         internal static SingleAlleleScoringInfo GetScoringInfoWithMatchingSerologies(
-            IHlaLookupResultSource<AlleleTyping> alleleSource)
+            IHlaMetadataSource<AlleleTyping> alleleSource)
         {
             return new SingleAlleleScoringInfo(
-                alleleSource.TypingForHlaLookupResult.Name,
-                alleleSource.TypingForHlaLookupResult.Status,
+                alleleSource.TypingForHlaMetadata.Name,
+                alleleSource.TypingForHlaMetadata.Status,
                 alleleSource.MatchingPGroups.SingleOrDefault(),
                 alleleSource.MatchingGGroups.SingleOrDefault(),
                 alleleSource.MatchingSerologies.Select(m => m.ToSerologyEntry())
@@ -79,11 +79,11 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         }
 
         internal static SingleAlleleScoringInfo GetScoringInfoExcludingMatchingSerologies(
-            IHlaLookupResultSource<AlleleTyping> alleleSource)
+            IHlaMetadataSource<AlleleTyping> alleleSource)
         {
             return new SingleAlleleScoringInfo(
-                alleleSource.TypingForHlaLookupResult.Name,
-                alleleSource.TypingForHlaLookupResult.Status,
+                alleleSource.TypingForHlaMetadata.Name,
+                alleleSource.TypingForHlaMetadata.Status,
                 alleleSource.MatchingPGroups.SingleOrDefault(),
                 alleleSource.MatchingGGroups.SingleOrDefault()
             );

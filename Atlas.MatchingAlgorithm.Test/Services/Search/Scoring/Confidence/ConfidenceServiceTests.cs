@@ -53,13 +53,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
             const Locus locus1 = Locus.B;
             const Locus locus2 = Locus.Drb1;
 
-            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            var patientLookupResultAtLocus1 = new HlaScoringLookupResultBuilder().Build();
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
+            var patientLookupResultAtLocus1 = new HlaScoringMetadataBuilder().Build();
             patientLookupResults.SetPosition(locus1, Position, patientLookupResultAtLocus1);
             patientLookupResults.SetPosition(locus2, Position, null);
 
-            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            var donorLookupResultAtLocus1 = new HlaScoringLookupResultBuilder().Build();
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
+            var donorLookupResultAtLocus1 = new HlaScoringMetadataBuilder().Build();
             donorLookupResults.SetPosition(locus1, Position, donorLookupResultAtLocus1);
             donorLookupResults.SetPosition(locus2, Position, null);
 
@@ -77,19 +77,19 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
         {
             var matchingSerologies = new List<SerologyEntry> {new SerologyEntry("serology", SerologySubtype.Associated, true)};
 
-            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            var patientLookupResultSingleAllele1 = new HlaScoringLookupResultBuilder()
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
+            var patientLookupResultSingleAllele1 = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
-            var patientLookupResultSingleAllele2 = new HlaScoringLookupResultBuilder()
+            var patientLookupResultSingleAllele2 = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 
-            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            var donorLookupResultSerology = new HlaScoringLookupResultBuilder()
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
+            var donorLookupResultSerology = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
-            var donorLookupResultSingleAllele = new HlaScoringLookupResultBuilder()
+            var donorLookupResultSingleAllele = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 
@@ -115,19 +115,19 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
         {
             var matchingSerologies = new List<SerologyEntry> {new SerologyEntry("serology", SerologySubtype.Associated, true)};
 
-            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            var patientLookupResultSingleAllele1 = new HlaScoringLookupResultBuilder()
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
+            var patientLookupResultSingleAllele1 = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
-            var patientLookupResultSingleAllele2 = new HlaScoringLookupResultBuilder()
+            var patientLookupResultSingleAllele2 = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 
-            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            var donorLookupResultSerology = new HlaScoringLookupResultBuilder()
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
+            var donorLookupResultSerology = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
-            var donorLookupResultSingleAllele = new HlaScoringLookupResultBuilder()
+            var donorLookupResultSingleAllele = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 
@@ -154,19 +154,19 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
         {
             var matchingSerologies = new List<SerologyEntry> {new SerologyEntry("serology", SerologySubtype.Associated, true)};
 
-            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            var patientLookupResultSingleAllele1 = new HlaScoringLookupResultBuilder()
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
+            var patientLookupResultSingleAllele1 = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
-            var patientLookupResultSingleAllele2 = new HlaScoringLookupResultBuilder()
+            var patientLookupResultSingleAllele2 = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 
-            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            var donorLookupResultSerology = new HlaScoringLookupResultBuilder()
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
+            var donorLookupResultSerology = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
-            var donorLookupResultSingleAllele = new HlaScoringLookupResultBuilder()
+            var donorLookupResultSingleAllele = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 
@@ -201,19 +201,19 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
         {
             var matchingSerologies = new List<SerologyEntry> {new SerologyEntry("serology", SerologySubtype.Associated, true)};
 
-            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            var patientLookupResultSingleAllele = new HlaScoringLookupResultBuilder()
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
+            var patientLookupResultSingleAllele = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
-            var patientLookupResultSerology = new HlaScoringLookupResultBuilder()
+            var patientLookupResultSerology = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 
-            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
-            var donorLookupResultSerology = new HlaScoringLookupResultBuilder()
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
+            var donorLookupResultSerology = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
-            var donorLookupResultSingleAllele = new HlaScoringLookupResultBuilder()
+            var donorLookupResultSingleAllele = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 

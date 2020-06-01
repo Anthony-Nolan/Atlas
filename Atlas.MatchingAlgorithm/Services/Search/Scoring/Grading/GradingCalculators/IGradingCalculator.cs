@@ -6,7 +6,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
     public interface IGradingCalculator
     {
         MatchGrade CalculateGrade(
-            IHlaScoringLookupResult patientLookupResult,
-            IHlaScoringLookupResult donorLookupResult);
+            IHlaScoringMetadata patientMetadata,
+            IHlaScoringMetadata donorMetadata);
     }
 }

@@ -22,7 +22,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         private const Locus Dpb1MolecularLocusType = Locus.Dpb1;
         private const string CacheKey = "NmdpCodeLookup_Dpb1";
 
-        private IDpb1TceGroupLookupService lookupService;
+        private IDpb1TceGroupMetadataService metadataService;
         private IHlaServiceClient hlaServiceClient;
         private IAppCache appCache;
 
@@ -31,7 +31,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                lookupService = DependencyInjection.DependencyInjection.Provider.GetService<IDpb1TceGroupLookupService>();
+                metadataService = DependencyInjection.DependencyInjection.Provider.GetService<IDpb1TceGroupMetadataService>();
                 hlaServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IHlaServiceClient>();
                 appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
             });
@@ -62,7 +62,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
                 .GetAllelesForDefinedNmdpCode(Dpb1MolecularLocusType, nmdpCode)
                 .Returns(new List<string> { firstAllele, secondAllele });
 
-            var result = await lookupService.GetDpb1TceGroup(nmdpCode, null);
+            var result = await metadataService.GetDpb1TceGroup(nmdpCode, null);
 
             result.Should().Be(tceGroup);
         }
@@ -80,7 +80,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
                 .GetAllelesForDefinedNmdpCode(Dpb1MolecularLocusType, nmdpCode)
                 .Returns(new List<string> { firstAllele, secondAllele });
 
-            var result = await lookupService.GetDpb1TceGroup(nmdpCode, null);
+            var result = await metadataService.GetDpb1TceGroup(nmdpCode, null);
 
             result.Should().BeNullOrEmpty();
         }
@@ -94,7 +94,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string tceGroup = "3";
             const string alleleString = firstAllele + "/" + secondAllele;
 
-            var result = await lookupService.GetDpb1TceGroup(alleleString, null);
+            var result = await metadataService.GetDpb1TceGroup(alleleString, null);
 
             result.Should().Be(tceGroup);
         }
@@ -106,7 +106,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string tceGroup = "3";
             const string alleleString = "02:01/02";
 
-            var result = await lookupService.GetDpb1TceGroup(alleleString, null);
+            var result = await metadataService.GetDpb1TceGroup(alleleString, null);
 
             result.Should().Be(tceGroup);
         }
@@ -119,7 +119,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string secondAllele = "03:01";
             const string alleleString = firstAllele + "/" + secondAllele;
 
-            var result = await lookupService.GetDpb1TceGroup(alleleString, null);
+            var result = await metadataService.GetDpb1TceGroup(alleleString, null);
 
             result.Should().BeNullOrEmpty();
         }

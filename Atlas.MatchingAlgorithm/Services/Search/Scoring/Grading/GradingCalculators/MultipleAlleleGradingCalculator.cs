@@ -50,11 +50,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
         /// Returns the maximum grade possible after grading every combination of patient and donor allele.
         /// </summary>
         protected override MatchGrade GetMatchGrade(
-            IHlaScoringLookupResult patientLookupResult,
-            IHlaScoringLookupResult donorLookupResult)
+            IHlaScoringMetadata patientMetadata,
+            IHlaScoringMetadata donorMetadata)
         {
-            var patientAlleles = patientLookupResult.GetInTermsOfSingleAlleleScoringMetadata();
-            var donorAlleles = donorLookupResult.GetInTermsOfSingleAlleleScoringMetadata();
+            var patientAlleles = patientMetadata.GetInTermsOfSingleAlleleScoringMetadata();
+            var donorAlleles = donorMetadata.GetInTermsOfSingleAlleleScoringMetadata();
 
             var allGrades = patientAlleles.SelectMany(patientAllele => donorAlleles, GetSingleAlleleMatchGrade);
 
@@ -62,15 +62,15 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
         }
 
         private MatchGrade GetSingleAlleleMatchGrade(
-            IHlaScoringLookupResult patientLookupResult,
-            IHlaScoringLookupResult donorLookupResult)
+            IHlaScoringMetadata patientMetadata,
+            IHlaScoringMetadata donorMetadata)
         {
             var calculator = GradingCalculatorFactory.GetGradingCalculator(
                 permissiveMismatchCalculator,
-                patientLookupResult.HlaScoringInfo,
-                donorLookupResult.HlaScoringInfo);
+                patientMetadata.HlaScoringInfo,
+                donorMetadata.HlaScoringInfo);
 
-            return calculator.CalculateGrade(patientLookupResult, donorLookupResult);
+            return calculator.CalculateGrade(patientMetadata, donorMetadata);
         }
     }
 }

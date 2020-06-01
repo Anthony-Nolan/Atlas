@@ -31,16 +31,16 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         private const string PGroupDrb1 = "pgDRB1";
 
         private readonly DonorInfoWithExpandedHla donor_ExactMatch_AtLocusA =
-            new DonorInfoWithExpandedHla {DonorId = 1, MatchingHla = new PhenotypeInfo<IHlaMatchingLookupResult>(), HlaNames = new PhenotypeInfo<string>()};
+            new DonorInfoWithExpandedHla {DonorId = 1, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>()};
 
         private readonly DonorInfoWithExpandedHla donor_BothPositionsMatchPatientPositionOne_AtLocusA =
-            new DonorInfoWithExpandedHla {DonorId = 2, MatchingHla = new PhenotypeInfo<IHlaMatchingLookupResult>(), HlaNames = new PhenotypeInfo<string>()};
+            new DonorInfoWithExpandedHla {DonorId = 2, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>()};
 
         private readonly DonorInfoWithExpandedHla donor_OnePositionMatchesBothPatientPositions_AtLocusA =
-            new DonorInfoWithExpandedHla {DonorId = 3, MatchingHla = new PhenotypeInfo<IHlaMatchingLookupResult>(), HlaNames = new PhenotypeInfo<string>()};
+            new DonorInfoWithExpandedHla {DonorId = 3, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>()};
 
         private readonly DonorInfoWithExpandedHla donor_NoMatch_AtLocusA =
-            new DonorInfoWithExpandedHla {DonorId = 4, MatchingHla = new PhenotypeInfo<IHlaMatchingLookupResult>(), HlaNames = new PhenotypeInfo<string>()};
+            new DonorInfoWithExpandedHla {DonorId = 4, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>()};
 
         private IDatabaseDonorMatchingService donorMatchingService;
 

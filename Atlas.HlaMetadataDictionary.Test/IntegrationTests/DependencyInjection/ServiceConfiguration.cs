@@ -32,10 +32,10 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
                 fetchApplicationInsightsSettings); //This is actually used.
 
             // Replace Repositories with File-Backed equivalents.
-            services.AddScoped<IHlaScoringLookupRepository, FileBackedHlaScoringLookupRepository>();
-            services.AddScoped<IHlaMatchingLookupRepository, FileBackedHlaMatchingLookupRepository>();
-            services.AddScoped<IAlleleNamesLookupRepository, FileBackedAlleleNamesLookupRepository>();
-            services.AddScoped<IDpb1TceGroupsLookupRepository, FileBackedTceLookupRepository>();
+            services.AddScoped<IHlaScoringMetadataRepository, FileBackedHlaScoringMetadataRepository>();
+            services.AddScoped<IHlaMatchingMetadataRepository, FileBackedHlaMatchingMetadataRepository>();
+            services.AddScoped<IAlleleNamesMetadataRepository, FileBackedAlleleNamesMetadataRepository>();
+            services.AddScoped<IDpb1TceGroupsMetadataRepository, FileBackedTceMetadataRepository>();
 
             // Mac Dictionary Stubs
             // TODO: ATLAS-320 Move this to MacDictionary Tests, along with any tests that actually belong over there.

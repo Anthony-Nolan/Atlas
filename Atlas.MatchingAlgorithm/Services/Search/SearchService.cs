@@ -114,7 +114,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             var searchTerm = new LocusInfo<string>(searchHla.SearchHla1, searchHla.SearchHla2);
 
-            var lookupResult = await hlaMetadataDictionary.GetLocusHlaMatchingLookupResults(
+            var lookupResult = await hlaMetadataDictionary.GetLocusHlaMatchingMetadata(
                 locus,
                 searchTerm
             );

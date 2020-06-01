@@ -4,13 +4,13 @@ using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs
 {
-    internal class FileBackedTceLookupRepository :
-        FileBackedHlaLookupRepositoryBase<IDpb1TceGroupsLookupResult>,
-        IDpb1TceGroupsLookupRepository
+    internal class FileBackedTceMetadataRepository :
+        FileBackedHlaMetadataRepositoryBase<IDpb1TceGroupsMetadata>,
+        IDpb1TceGroupsMetadataRepository
     {
-        protected override IEnumerable<IDpb1TceGroupsLookupResult> GetHlaLookupResults(FileBackedHlaLookupResultCollections resultCollections)
+        protected override IEnumerable<IDpb1TceGroupsMetadata> GetHlaMetadata(FileBackedHlaMetadataCollection metadataCollection)
         {
-            return resultCollections.Dpb1TceGroupLookupResults;
+            return metadataCollection.Dpb1TceGroupMetadata;
         }
     }
 }

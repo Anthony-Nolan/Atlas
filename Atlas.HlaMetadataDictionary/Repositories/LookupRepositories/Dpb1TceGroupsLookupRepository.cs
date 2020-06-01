@@ -3,16 +3,16 @@ using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {
-    internal interface IDpb1TceGroupsLookupRepository : IHlaLookupRepository
+    internal interface IDpb1TceGroupsMetadataRepository : IHlaMetadataRepository
     {
     }
 
-    internal class Dpb1TceGroupsLookupRepository : HlaLookupRepositoryBase, IDpb1TceGroupsLookupRepository
+    internal class Dpb1TceGroupsMetadataRepository : HlaMetadataRepositoryBase, IDpb1TceGroupsMetadataRepository
     {
         private const string DataTableReferencePrefix = "Dpb1TceGroupsLookupData";
         private const string CacheKey = "Dpb1TceGroupsLookup";
 
-        public Dpb1TceGroupsLookupRepository(
+        public Dpb1TceGroupsMetadataRepository(
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             IPersistentCacheProvider cacheProvider)

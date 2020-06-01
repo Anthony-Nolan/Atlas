@@ -30,7 +30,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         }
 
         internal static ConsolidatedMolecularScoringInfo GetScoringInfo(
-            IEnumerable<IHlaLookupResultSource<AlleleTyping>> allelesSource)
+            IEnumerable<IHlaMetadataSource<AlleleTyping>> allelesSource)
         {
             var alleles = allelesSource.ToList();
 

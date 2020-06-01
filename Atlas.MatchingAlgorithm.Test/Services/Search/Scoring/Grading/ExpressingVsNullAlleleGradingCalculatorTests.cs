@@ -28,11 +28,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             Type donorScoringInfoType
             )
         {
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(patientScoringInfoType))
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(donorScoringInfoType))
                 .Build();
 
@@ -50,13 +50,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             string patientAlleleName,
             string donorAlleleName)
         {
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .Build())

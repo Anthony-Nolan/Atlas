@@ -8,17 +8,17 @@ using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {
-    internal interface IHlaMatchingLookupRepository : IHlaLookupRepository
+    internal interface IHlaMatchingMetadataRepository : IHlaMetadataRepository
     {
         IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion);
     }
 
-    internal class HlaMatchingLookupRepository : HlaLookupRepositoryBase, IHlaMatchingLookupRepository
+    internal class HlaMatchingMetadataRepository : HlaMetadataRepositoryBase, IHlaMatchingMetadataRepository
     {
         private const string DataTableReferencePrefix = "HlaMatchingLookupData";
         private const string CacheKey = "HlaMatchingLookup";
 
-        public HlaMatchingLookupRepository(
+        public HlaMatchingMetadataRepository(
             ICloudTableFactory factory, 
             ITableReferenceRepository tableReferenceRepository,
             IPersistentCacheProvider cacheProvider)
@@ -29,10 +29,10 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
         public IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion)
         {
             var versionedCacheKey = VersionedCacheKey(hlaNomenclatureVersion);
-            var metadataDictionary = cache.Get<Dictionary<string, HlaLookupTableEntity>>(versionedCacheKey);
+            var metadataDictionary = cache.Get<Dictionary<string, HlaMetadataTableRow>>(versionedCacheKey);
             if (metadataDictionary != null)
             {
-                return metadataDictionary.Values.SelectMany(v => v.ToHlaMatchingLookupResult()?.MatchingPGroups);
+                return metadataDictionary.Values.SelectMany(v => v.ToHlaMatchingMetadata()?.MatchingPGroups);
             }
             throw new MemoryCacheException($"{versionedCacheKey} table not cached!");
         }            

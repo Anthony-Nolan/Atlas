@@ -49,9 +49,9 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         }
 
         internal static MultipleAlleleScoringInfo GetScoringInfo(
-            IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources)
+            IEnumerable<IHlaMetadataSource<AlleleTyping>> metadataSources)
         {
-            var sources = lookupResultSources.ToList();
+            var sources = metadataSources.ToList();
 
             var alleleScoringInfos = sources
                 .Select(SingleAlleleScoringInfo.GetScoringInfoExcludingMatchingSerologies);

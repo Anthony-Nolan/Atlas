@@ -53,20 +53,20 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
 
         [HttpGet]
         [Route("matching-lookup")]
-        public async Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(
+        public async Task<IHlaMatchingMetadata> GetHlaMatchingMetadata(
             Locus locus,
             string hlaName)
         {
-            return await hlaMetadataDictionary.GetHlaMatchingLookupResult(locus, hlaName);
+            return await hlaMetadataDictionary.GetHlaMatchingMetadata(locus, hlaName);
         }
 
         [HttpGet]
         [Route("scoring-lookup")]
-        public async Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(
+        public async Task<IHlaScoringMetadata> GetHlaScoringMetadata(
             Locus locus,
             string hlaName)
         {
-            return await hlaMetadataDictionary.GetHlaScoringLookupResult(locus, hlaName);
+            return await hlaMetadataDictionary.GetHlaScoringMetadata(locus, hlaName);
         }
 
         [HttpGet]
@@ -78,9 +78,9 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
 
         [HttpGet]
         [Route("all-results")]
-        public HlaLookupResultCollections GetAllHlaLookupResults()
+        public HlaMetadataCollection GetAllHlaMetadata()
         {
-            return hlaMetadataDictionary.GetAllHlaLookupResults();
+            return hlaMetadataDictionary.GetAllHlaMetadata();
         }
     }
 }

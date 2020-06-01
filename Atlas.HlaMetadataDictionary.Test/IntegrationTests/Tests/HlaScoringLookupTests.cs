@@ -24,7 +24,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         private const Locus DefaultLocus = Locus.A;
         private const string CacheKey = "NmdpCodeLookup_A";
 
-        private IHlaScoringLookupService lookupService;
+        private IHlaScoringMetadataService metadataService;
         private IHlaServiceClient hlaServiceClient;
         private IAppCache appCache;
 
@@ -33,7 +33,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                lookupService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaScoringLookupService>();
+                metadataService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaScoringMetadataService>();
                 hlaServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IHlaServiceClient>();
                 appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
             });
@@ -51,13 +51,13 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
-        public async Task GetHlaLookupResult_WhenAlleleNameMapsToMultipleAlleles_ReturnsScoringInfoForEachAllele()
+        public async Task GetHlaMetadata_WhenAlleleNameMapsToMultipleAlleles_ReturnsScoringInfoForEachAllele()
         {
             // Allele name truncated to its 2-field variant
             const string truncatedAlleleName = "01:03";
             const int expectedAlleleCount = 2;
 
-            var result = await lookupService.GetHlaLookupResult(DefaultLocus, truncatedAlleleName, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, truncatedAlleleName, null);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<MultipleAlleleScoringInfo>();
@@ -65,7 +65,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
-        public async Task GetHlaLookupResult_WhenNmdpCode_ReturnsConsolidatedScoringInfo()
+        public async Task GetHlaMetadata_WhenNmdpCode_ReturnsConsolidatedScoringInfo()
         {
             // each allele maps to a G and P group of the same name
             const string firstAllele = "01:133";
@@ -78,7 +78,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
                 .GetAllelesForDefinedNmdpCode(DefaultLocus, nmdpCode)
                 .Returns(alleles.ToList());
 
-            var result = await lookupService.GetHlaLookupResult(DefaultLocus, nmdpCode, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, nmdpCode, null);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
@@ -87,7 +87,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
-        public async Task GetHlaLookupResult_WhenNmdpCodeIncludesNullAllele_OnlyReturnsScoringInfoForExpressingAlleles()
+        public async Task GetHlaMetadata_WhenNmdpCodeIncludesNullAllele_OnlyReturnsScoringInfoForExpressingAlleles()
         {
             // expressing alleles maps to a G and P group of the same name
             const string firstAllele = "01:133";
@@ -103,7 +103,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
                 .GetAllelesForDefinedNmdpCode(DefaultLocus, nmdpCode)
                 .Returns(allAlleles);
 
-            var result = await lookupService.GetHlaLookupResult(DefaultLocus, nmdpCode, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, nmdpCode, null);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
@@ -112,7 +112,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
-        public async Task GetHlaLookupResult_WhenAlleleStringOfNames_ReturnsConsolidatedScoringInfo()
+        public async Task GetHlaMetadata_WhenAlleleStringOfNames_ReturnsConsolidatedScoringInfo()
         {
             // each allele maps to a G and P group of the same name
             const string firstAllele = "01:133";
@@ -120,7 +120,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string alleleString = firstAllele + "/" + secondAllele;
             var alleles = new[] { firstAllele, secondAllele };
 
-            var result = await lookupService.GetHlaLookupResult(DefaultLocus, alleleString, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
@@ -129,7 +129,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
-        public async Task GetHlaLookupResult_WhenAlleleStringOfSubtypes_ReturnsConsolidatedScoringInfo()
+        public async Task GetHlaMetadata_WhenAlleleStringOfSubtypes_ReturnsConsolidatedScoringInfo()
         {
             // each allele maps to a G and P group of the same name
             const string firstAllele = "01:133";
@@ -137,7 +137,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string alleleString = "01:133/158";
             var alleles = new[] { firstAllele, secondAllele };
 
-            var result = await lookupService.GetHlaLookupResult(DefaultLocus, alleleString, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
@@ -146,7 +146,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
-        public async Task GetHlaLookupResult_WhenAlleleStringIncludesNullAllele_OnlyReturnsScoringInfoForExpressingAlleles()
+        public async Task GetHlaMetadata_WhenAlleleStringIncludesNullAllele_OnlyReturnsScoringInfoForExpressingAlleles()
         {
             // expressing alleles maps to a G and P group of the same name
             const string firstAllele = "01:133";
@@ -155,7 +155,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string alleleString = firstAllele + "/" + secondAllele + "/" + nullAllele;
             var expressingAlleles = new[] { firstAllele, secondAllele };
 
-            var result = await lookupService.GetHlaLookupResult(DefaultLocus, alleleString, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();

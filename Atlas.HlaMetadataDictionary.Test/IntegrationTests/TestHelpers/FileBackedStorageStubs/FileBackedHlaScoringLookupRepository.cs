@@ -4,13 +4,13 @@ using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs
 {
-    internal class FileBackedHlaScoringLookupRepository :
-        FileBackedHlaLookupRepositoryBase<IHlaScoringLookupResult>,
-        IHlaScoringLookupRepository
+    internal class FileBackedHlaScoringMetadataRepository :
+        FileBackedHlaMetadataRepositoryBase<IHlaScoringMetadata>,
+        IHlaScoringMetadataRepository
     {
-        protected override IEnumerable<IHlaScoringLookupResult> GetHlaLookupResults(FileBackedHlaLookupResultCollections resultCollections)
+        protected override IEnumerable<IHlaScoringMetadata> GetHlaMetadata(FileBackedHlaMetadataCollection metadataCollection)
         {
-            return resultCollections.HlaScoringLookupResults;
+            return metadataCollection.HlaScoringMetadata;
         }
     }
 }

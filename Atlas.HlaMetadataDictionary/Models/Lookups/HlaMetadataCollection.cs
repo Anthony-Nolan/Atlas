@@ -1,0 +1,12 @@
+﻿using System.Collections.Generic;
+
+namespace Atlas.HlaMetadataDictionary.Models.Lookups
+{
+    public class HlaMetadataCollection
+    {
+        public IEnumerable<ISerialisableHlaMetadata> AlleleNameMetadata { get; set; }
+        public IEnumerable<ISerialisableHlaMetadata> HlaMatchingMetadata { get; set; }
+        public IEnumerable<ISerialisableHlaMetadata> HlaScoringMetadata { get; set; }
+        public IEnumerable<ISerialisableHlaMetadata> Dpb1TceGroupMetadata { get; set; }
+    }
+}

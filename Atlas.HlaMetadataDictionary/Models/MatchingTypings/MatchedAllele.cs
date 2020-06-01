@@ -4,14 +4,14 @@ using System.Collections.Generic;
 
 namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
-    internal class MatchedAllele : IMatchedHla, IHlaLookupResultSource<AlleleTyping>
+    internal class MatchedAllele : IMatchedHla, IHlaMetadataSource<AlleleTyping>
     {
         public HlaTyping HlaTyping { get; }
         public HlaTyping TypingUsedInMatching { get; }
         public IEnumerable<string> MatchingPGroups { get; }
         public IEnumerable<string> MatchingGGroups { get; }
         public IEnumerable<MatchingSerology> MatchingSerologies { get; }
-        public AlleleTyping TypingForHlaLookupResult => (AlleleTyping) HlaTyping;
+        public AlleleTyping TypingForHlaMetadata => (AlleleTyping) HlaTyping;
 
         public MatchedAllele(IAlleleInfoForMatching matchedAllele, IEnumerable<MatchingSerology> matchingSerologies)
         {

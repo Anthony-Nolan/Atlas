@@ -51,10 +51,10 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             });
             services.AddSingleton<ITableReferenceRepository, TableReferenceRepository>();
 
-            services.AddScoped<IHlaMatchingLookupRepository, HlaMatchingLookupRepository>();
-            services.AddScoped<IHlaScoringLookupRepository, HlaScoringLookupRepository>();
-            services.AddScoped<IAlleleNamesLookupRepository, AlleleNamesLookupRepository>();
-            services.AddScoped<IDpb1TceGroupsLookupRepository, Dpb1TceGroupsLookupRepository>();
+            services.AddScoped<IHlaMatchingMetadataRepository, HlaMatchingMetadataRepository>();
+            services.AddScoped<IHlaScoringMetadataRepository, HlaScoringMetadataRepository>();
+            services.AddScoped<IAlleleNamesMetadataRepository, AlleleNamesMetadataRepository>();
+            services.AddScoped<IDpb1TceGroupsMetadataRepository, Dpb1TceGroupsMetadataRepository>();
         }
 
         private static void RegisterTypesRelatedToDictionaryRecreation(this IServiceCollection services, Func<IServiceProvider, string> fetchWmdaHlaNomenclatureFilesUri)
@@ -84,12 +84,12 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         private static void RegisterServices(this IServiceCollection services)
         {
-            services.AddScoped<IAlleleNamesLookupService, AlleleNamesLookupService>();
-            services.AddScoped<IHlaLookupResultsService, HlaLookupResultsService>();
-            services.AddScoped<ILocusHlaMatchingLookupService, LocusHlaMatchingLookupService>();
-            services.AddScoped<IHlaMatchingLookupService, HlaMatchingLookupService>();
-            services.AddScoped<IHlaScoringLookupService, HlaScoringLookupService>();
-            services.AddScoped<IDpb1TceGroupLookupService, Dpb1TceGroupLookupService>();
+            services.AddScoped<IAlleleNamesMetadataService, AlleleNamesMetadataService>();
+            services.AddScoped<IHlaMetadataService, HlaMetadataService>();
+            services.AddScoped<ILocusHlaMatchingMetadataService, LocusHlaMatchingMetadataService>();
+            services.AddScoped<IHlaMatchingMetadataService, HlaMatchingMetadataService>();
+            services.AddScoped<IHlaScoringMetadataService, HlaScoringMetadataService>();
+            services.AddScoped<IDpb1TceGroupMetadataService, Dpb1TceGroupMetadataService>();
         }
     }
 }

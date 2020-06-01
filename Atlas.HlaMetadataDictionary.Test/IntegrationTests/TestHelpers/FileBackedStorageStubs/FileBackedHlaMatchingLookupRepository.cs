@@ -5,13 +5,13 @@ using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs
 {
-    internal class FileBackedHlaMatchingLookupRepository :
-        FileBackedHlaLookupRepositoryBase<IHlaMatchingLookupResult>,
-        IHlaMatchingLookupRepository
+    internal class FileBackedHlaMatchingMetadataRepository :
+        FileBackedHlaMetadataRepositoryBase<IHlaMatchingMetadata>,
+        IHlaMatchingMetadataRepository
     {
-        protected override IEnumerable<IHlaMatchingLookupResult> GetHlaLookupResults(FileBackedHlaLookupResultCollections resultCollections)
+        protected override IEnumerable<IHlaMatchingMetadata> GetHlaMetadata(FileBackedHlaMetadataCollection metadataCollection)
         {
-            return resultCollections.HlaMatchingLookupResults;
+            return metadataCollection.HlaMatchingMetadata;
         }
 
         /// <param name="hlaNomenclatureVersion">
@@ -20,7 +20,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         /// </param>
         public IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion)
         {
-            return HlaLookupResults.SelectMany(hla => hla.MatchingPGroups);
+            return HlaMetadata.SelectMany(hla => hla.MatchingPGroups);
         }
     }
 }

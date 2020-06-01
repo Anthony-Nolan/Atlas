@@ -33,11 +33,11 @@ namespace Atlas.HlaMetadataDictionary.Repositories
         
         public async Task<string> GetCurrentTableReference(string tablePrefix)
         {
-            var entity = await GetExistingTableEntity(tablePrefix);
+            var tableReferenceRow = await GetExistingTableReferenceRow(tablePrefix);
 
-            return entity != null 
-                ? entity.TableReference
-                : await InsertEntityAndReturnNewTableReference(tablePrefix);
+            return tableReferenceRow != null 
+                ? tableReferenceRow.TableReference
+                : await InsertAndReturnNewTableReference(tablePrefix);
         }
 
         public string GetNewTableReference(string tablePrefix)
@@ -48,7 +48,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories
 
         public async Task UpdateTableReference(string tablePrefix, string tableReference)
         {
-            var insertOrReplaceOperation = TableOperation.InsertOrReplace(new TableReferenceTableEntity(tablePrefix, tableReference));
+            var insertOrReplaceOperation = TableOperation.InsertOrReplace(new TableReferenceRow(tablePrefix, tableReference));
             await (await GetTable()).ExecuteAsync(insertOrReplaceOperation);
         }
 
@@ -57,15 +57,15 @@ namespace Atlas.HlaMetadataDictionary.Repositories
             return table ?? (table = await factory.GetTable(CloudTableReference));
         }
 
-        private async Task<TableReferenceTableEntity> GetExistingTableEntity(string tablePrefix)
+        private async Task<TableReferenceRow> GetExistingTableReferenceRow(string tablePrefix)
         {
-            var partition = TableReferenceTableEntity.GetPartition();
+            var partition = TableReferenceRow.GetPartition();
             var rowKey = tablePrefix;
-            var entity = await (await GetTable()).GetEntityByPartitionAndRowKey<TableReferenceTableEntity>(partition, rowKey);
-            return entity;
+            var row = await (await GetTable()).GetRowByPartitionAndRowKey<TableReferenceRow>(partition, rowKey);
+            return row;
         }
 
-        private async Task<string> InsertEntityAndReturnNewTableReference(string tablePrefix)
+        private async Task<string> InsertAndReturnNewTableReference(string tablePrefix)
         {           
             var newReference = GetNewTableReference(tablePrefix);
             await UpdateTableReference(tablePrefix, newReference);

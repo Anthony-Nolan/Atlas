@@ -13,8 +13,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
     public interface IGradingService
     {
         PhenotypeInfo<MatchGradeResult> CalculateGrades(
-            PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
-            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults);
+            PhenotypeInfo<IHlaScoringMetadata> patientLookupResults,
+            PhenotypeInfo<IHlaScoringMetadata> donorLookupResults);
     }
 
     public class GradingService : IGradingService
@@ -55,8 +55,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         }
 
         public PhenotypeInfo<MatchGradeResult> CalculateGrades(
-            PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
-            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
+            PhenotypeInfo<IHlaScoringMetadata> patientLookupResults,
+            PhenotypeInfo<IHlaScoringMetadata> donorLookupResults)
         {
             if (patientLookupResults == null || donorLookupResults == null)
             {
@@ -67,8 +67,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         }
 
         private PhenotypeInfo<MatchGradeResult> GetPhenotypeGradingResults(
-            PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
-            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
+            PhenotypeInfo<IHlaScoringMetadata> patientLookupResults,
+            PhenotypeInfo<IHlaScoringMetadata> donorLookupResults)
         {
             var gradeResults = new PhenotypeInfo<MatchGradeResult>();
 
@@ -86,8 +86,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         }
 
         private LocusMatchGradeResults GetLocusGradeResults(
-            LocusInfo<IHlaScoringLookupResult> patientLookupResults,
-            LocusInfo<IHlaScoringLookupResult> donorLookupResults)
+            LocusInfo<IHlaScoringMetadata> patientLookupResults,
+            LocusInfo<IHlaScoringMetadata> donorLookupResults)
         {
             var directGrades = GetMatchGradesForDirectOrientation(patientLookupResults, donorLookupResults);
             var crossGrades = GetMatchGradesForCrossOrientation(patientLookupResults, donorLookupResults);
@@ -96,8 +96,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         }
 
         private LocusMatchGrades GetMatchGradesForDirectOrientation(
-            LocusInfo<IHlaScoringLookupResult> patientLookupResults,
-            LocusInfo<IHlaScoringLookupResult> donorLookupResults)
+            LocusInfo<IHlaScoringMetadata> patientLookupResults,
+            LocusInfo<IHlaScoringMetadata> donorLookupResults)
         {
             var grade1 = CalculateMatchGrade(patientLookupResults.Position1, donorLookupResults.Position1);
             var grade2 = CalculateMatchGrade(patientLookupResults.Position2, donorLookupResults.Position2);
@@ -106,8 +106,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         }
 
         private LocusMatchGrades GetMatchGradesForCrossOrientation(
-            LocusInfo<IHlaScoringLookupResult> patientLookupResults,
-            LocusInfo<IHlaScoringLookupResult> donorLookupResults)
+            LocusInfo<IHlaScoringMetadata> patientLookupResults,
+            LocusInfo<IHlaScoringMetadata> donorLookupResults)
         {
             var grade1 = CalculateMatchGrade(patientLookupResults.Position1, donorLookupResults.Position2);
             var grade2 = CalculateMatchGrade(patientLookupResults.Position2, donorLookupResults.Position1);
@@ -116,22 +116,22 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
         }
 
         private MatchGrade CalculateMatchGrade(
-            IHlaScoringLookupResult patientLookupResult,
-            IHlaScoringLookupResult donorLookupResult)
+            IHlaScoringMetadata patientMetadata,
+            IHlaScoringMetadata donorMetadata)
         {
-            if (patientLookupResult == null || donorLookupResult == null)
+            if (patientMetadata == null || donorMetadata == null)
             {
                 return DefaultMatchGradeForUntypedLocus;
             }
 
-            return scoringCache.GetOrAddMatchGrade(patientLookupResult.Locus, patientLookupResult.LookupName, donorLookupResult.LookupName,
+            return scoringCache.GetOrAddMatchGrade(patientMetadata.Locus, patientMetadata.LookupName, donorMetadata.LookupName,
                 c =>
                 {
                     var calculator = GradingCalculatorFactory.GetGradingCalculator(
                         permissiveMismatchCalculator,
-                        patientLookupResult.HlaScoringInfo,
-                        donorLookupResult.HlaScoringInfo);
-                    var grade = calculator.CalculateGrade(patientLookupResult, donorLookupResult);
+                        patientMetadata.HlaScoringInfo,
+                        donorMetadata.HlaScoringInfo);
+                    var grade = calculator.CalculateGrade(patientMetadata, donorMetadata);
                     return grade;
                 });
         }

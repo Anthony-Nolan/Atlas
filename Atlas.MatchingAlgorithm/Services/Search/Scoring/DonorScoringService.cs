@@ -97,8 +97,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         }
 
         private ScoreResult ScoreDonorAndPatient(
-            PhenotypeInfo<IHlaScoringLookupResult> donorScoringLookupResult,
-            PhenotypeInfo<IHlaScoringLookupResult> patientScoringLookupResult,
+            PhenotypeInfo<IHlaScoringMetadata> donorScoringLookupResult,
+            PhenotypeInfo<IHlaScoringMetadata> patientScoringLookupResult,
             IReadOnlyCollection<Locus> lociToExcludeFromAggregateScoring)
         {
             var grades = gradingService.CalculateGrades(patientScoringLookupResult, donorScoringLookupResult);
@@ -151,17 +151,17 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             };
         }
 
-        private async Task<PhenotypeInfo<IHlaScoringLookupResult>> GetHlaScoringResults(PhenotypeInfo<string> hlaNames)
+        private async Task<PhenotypeInfo<IHlaScoringMetadata>> GetHlaScoringResults(PhenotypeInfo<string> hlaNames)
         {
             return await hlaNames.MapAsync(
                 async (locus, position, hla) => await GetHlaScoringResultsForLocus(locus, hla)
             );
         }
 
-        private async Task<IHlaScoringLookupResult> GetHlaScoringResultsForLocus(Locus locus, string hla)
+        private async Task<IHlaScoringMetadata> GetHlaScoringResultsForLocus(Locus locus, string hla)
         {
             return hla != null
-                ? await hlaMetadataDictionary.GetHlaScoringLookupResult(locus, hla)
+                ? await hlaMetadataDictionary.GetHlaScoringMetadata(locus, hla)
                 : null;
         }
     }

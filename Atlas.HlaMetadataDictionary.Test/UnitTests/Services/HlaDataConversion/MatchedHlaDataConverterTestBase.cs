@@ -11,10 +11,10 @@ using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaDataConversion
 {
-    internal abstract class MatchedHlaDataConverterTestBase<TGenerator>
-        where TGenerator : IMatchedHlaDataConverterBase, new()
+    internal abstract class MatchedHlaDataConverterTestBase<THlaDataConverter>
+        where THlaDataConverter : IMatchedHlaDataConverterBase, new()
     {
-        protected TGenerator LookupResultGenerator;
+        protected THlaDataConverter MetadataConverter;
         protected const Locus MatchedLocus = Locus.A;
         protected const SerologySubtype SeroSubtype = SerologySubtype.Broad;
         protected const string SerologyName = "999";
@@ -27,12 +27,12 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaDataConversion
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                LookupResultGenerator = new TGenerator();
+                MetadataConverter = new THlaDataConverter();
             });
         }
 
         [Test]
-        public void ConvertToHlaLookupResults_WhenSerology_OneLookupResultGenerated()
+        public void ConvertToHlaMetadata_WhenSerology_OneMetadatumGenerated()
         {
             var serologyTyping = new SerologyTyping(MatchedLocus.ToString(), SerologyName, SeroSubtype);
 
@@ -45,33 +45,33 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaDataConversion
                 new List<string> { PGroupName },
                 new List<string> { GGroupName });
 
-            var actualLookupResults = LookupResultGenerator.ConvertToHlaLookupResults(new[] { matchedSerology });
+            var actualMetadata = MetadataConverter.ConvertToHlaMetadata(new[] { matchedSerology });
 
-            var expectedLookupResults = new List<IHlaLookupResult>
+            var expectedMetadata = new List<IHlaMetadata>
             {
-                BuildSerologyHlaLookupResult()
+                BuildSerologyHlaMetadata()
             };
 
-            actualLookupResults.Should().BeEquivalentTo(expectedLookupResults);
+            actualMetadata.Should().BeEquivalentTo(expectedMetadata);
         }
 
         #region Tests To Implement
 
-        public abstract void ConvertToHlaLookupResults_WhenTwoFieldExpressingAllele_GeneratesLookupResults_ForOriginalNameAndXxCode(
+        public abstract void ConvertToHlaMetadata_WhenTwoFieldExpressingAllele_GeneratesMetadata_ForOriginalNameAndXxCode(
             string alleleName, string xxCodeLookupName);
 
-        public abstract void ConvertToHlaLookupResults_WhenThreeOrFourFieldExpressingAllele_GeneratesLookupResults_ForOriginalNameAndNmdpCodeAndXxCode(
+        public abstract void ConvertToHlaMetadata_WhenThreeOrFourFieldExpressingAllele_GeneratesMetadata_ForOriginalNameAndNmdpCodeAndXxCode(
             string alleleName, string expressionSuffix, string nmdpCodeLookupName, string xxCodeLookupName);
 
-        public abstract void ConvertToHlaLookupResults_WhenNullAllele_GeneratesLookupResults_ForOriginalNameOnly(string alleleName);
+        public abstract void ConvertToHlaMetadata_WhenNullAllele_GeneratesMetadata_ForOriginalNameOnly(string alleleName);
 
-        public abstract void ConvertToHlaLookupResults_WhenAllelesHaveSameTruncatedNameVariant_GeneratesLookupResult_ForEachUniqueLookupName();
+        public abstract void ConvertToHlaMetadata_WhenAllelesHaveSameTruncatedNameVariant_GeneratesMetadata_ForEachUniqueLookupName();
 
         #endregion
 
         #region Methods to Implement
 
-        protected abstract IHlaLookupResult BuildSerologyHlaLookupResult();
+        protected abstract IHlaMetadata BuildSerologyHlaMetadata();
 
         #endregion
 

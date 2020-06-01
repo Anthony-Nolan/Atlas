@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
     [TestFixture]
     public class DonorScoringServiceTests
     {
-        private IHlaScoringLookupService scoringLookupService;
+        private IHlaScoringMetadataService scoringMetadataService;
         private IGradingService gradingService;
         private IConfidenceService confidenceService;
         private IRankingService rankingService;
@@ -47,7 +47,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
         [SetUp]
         public void SetUp()
         {
-            scoringLookupService = Substitute.For<IHlaScoringLookupService>();
+            scoringMetadataService = Substitute.For<IHlaScoringMetadataService>();
             gradingService = Substitute.For<IGradingService>();
             confidenceService = Substitute.For<IConfidenceService>();
             rankingService = Substitute.For<IRankingService>();
@@ -60,7 +60,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
             gradingService.CalculateGrades(null, null).ReturnsForAnyArgs(defaultMatchGradeResults);
             confidenceService.CalculateMatchConfidences(null, null, null).ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>());
 
-            var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(scoringLookupService);
+            var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(scoringMetadataService);
 
             donorScoringService = new DonorScoringService(
                 hlaMetadataDictionaryBuilder,
@@ -85,7 +85,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 
             await donorScoringService.ScoreMatchesAgainstHla(new[] {result1, result2}, patientHla);
 
-            await scoringLookupService.Received(expectedNumberOfFetches).GetHlaLookupResult(Arg.Any<Locus>(), Arg.Any<string>(), Arg.Any<string>());
+            await scoringMetadataService.Received(expectedNumberOfFetches).GetHlaMetadata(Arg.Any<Locus>(), Arg.Any<string>(), Arg.Any<string>());
         }
 
         [Test]
@@ -101,7 +101,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 
             await donorScoringService.ScoreMatchesAgainstHla(new[] {result1}, patientHla);
 
-            await scoringLookupService.DidNotReceive().GetHlaLookupResult(locus, Arg.Is<string>(s => s != patientHlaAtLocus), Arg.Any<string>());
+            await scoringMetadataService.DidNotReceive().GetHlaMetadata(locus, Arg.Is<string>(s => s != patientHlaAtLocus), Arg.Any<string>());
         }
 
         [Test]
@@ -122,7 +122,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 
             await donorScoringService.ScoreMatchesAgainstHla(new List<MatchResult>(), patientHla);
 
-            await scoringLookupService.Received(expectedNumberOfFetches).GetHlaLookupResult(Arg.Any<Locus>(), Arg.Any<string>(), Arg.Any<string>());
+            await scoringMetadataService.Received(expectedNumberOfFetches).GetHlaMetadata(Arg.Any<Locus>(), Arg.Any<string>(), Arg.Any<string>());
         }
 
         [Test]
@@ -135,7 +135,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 
             await donorScoringService.ScoreMatchesAgainstHla(new List<MatchResult>(), patientHla);
 
-            await scoringLookupService.DidNotReceive().GetHlaLookupResult(Locus.B, Arg.Any<string>(), Arg.Any<string>());
+            await scoringMetadataService.DidNotReceive().GetHlaMetadata(Locus.B, Arg.Any<string>(), Arg.Any<string>());
         }
 
         [Test]

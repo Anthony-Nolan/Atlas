@@ -5,6 +5,6 @@ namespace Atlas.MatchingAlgorithm.Data.Models.DonorInfo
 {
     public class DonorInfoWithExpandedHla : DonorInfo
     {
-        public PhenotypeInfo<IHlaMatchingLookupResult> MatchingHla { get; set; }
+        public PhenotypeInfo<IHlaMatchingMetadata> MatchingHla { get; set; }
     }
 }

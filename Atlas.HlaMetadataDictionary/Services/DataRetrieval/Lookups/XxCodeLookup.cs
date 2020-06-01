@@ -9,15 +9,15 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 {
     internal class XxCodeLookup : HlaLookupBase
     {
-        public XxCodeLookup(IHlaLookupRepository hlaLookupRepository) : 
-            base(hlaLookupRepository)
+        public XxCodeLookup(IHlaMetadataRepository hlaMetadataRepository) : 
+            base(hlaMetadataRepository)
         {
         }
 
-        public override async Task<IEnumerable<HlaLookupTableEntity>> PerformLookupAsync(Locus locus, string lookupName, string hlaNomenclatureVersion)
+        public override async Task<IEnumerable<HlaMetadataTableRow>> PerformLookupAsync(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            var entity = await GetHlaLookupTableEntityIfExists(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
-            return new List<HlaLookupTableEntity> { entity };
+            var row = await GetHlaMetadataRowIfExists(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
+            return new List<HlaMetadataTableRow> { row };
         }
     }
 }

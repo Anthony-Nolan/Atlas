@@ -3,16 +3,16 @@ using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {
-    internal interface IHlaScoringLookupRepository : IHlaLookupRepository
+    internal interface IHlaScoringMetadataRepository : IHlaMetadataRepository
     {
     }
 
-    internal class HlaScoringLookupRepository : HlaLookupRepositoryBase, IHlaScoringLookupRepository
+    internal class HlaScoringMetadataRepository : HlaMetadataRepositoryBase, IHlaScoringMetadataRepository
     {
         private const string DataTableReferencePrefix = "HlaScoringLookupData";
         private const string CacheKey = "HlaScoringLookup";
 
-        public HlaScoringLookupRepository(
+        public HlaScoringMetadataRepository(
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             IPersistentCacheProvider cacheProvider)

@@ -16,16 +16,16 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
     /// An implementation of a HLA lookup repository which loads the data from a file,
     /// necessary for testing without an internet dependency.
     /// </summary>
-    internal abstract class FileBackedHlaLookupRepositoryBase<THlaLookupResult> :
+    internal abstract class FileBackedHlaMetadataRepositoryBase<TSerialisableHlaMetadata> :
         FileBackedHlaLookupRepositoryBaseReader,
-        IHlaLookupRepository
-        where THlaLookupResult : ISerialisableHlaMetadata
+        IHlaMetadataRepository
+        where TSerialisableHlaMetadata : ISerialisableHlaMetadata
     {
-        protected IEnumerable<THlaLookupResult> HlaLookupResults;
+        protected IEnumerable<TSerialisableHlaMetadata> HlaMetadata;
 
-        protected FileBackedHlaLookupRepositoryBase()
+        protected FileBackedHlaMetadataRepositoryBase()
         {
-            PopulateHlaLookupResults();
+            PopulateHlaMetadata();
         }
 
         public Task LoadDataIntoMemory(string hlaNomenclatureVersion)
@@ -34,32 +34,32 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
             return Task.CompletedTask;
         }
 
-        public Task RecreateHlaLookupTable(IEnumerable<ISerialisableHlaMetadata> lookupResults, string hlaNomenclatureVersion)
+        public Task RecreateHlaMetadataTable(IEnumerable<ISerialisableHlaMetadata> metadata, string hlaNomenclatureVersion)
         {
             // No operation needed
             return Task.CompletedTask;
         }
 
-        public Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(
+        public Task<HlaMetadataTableRow> GetHlaMetadataRowIfExists(
             Locus locus,
             string lookupName,
             TypingMethod typingMethod,
             string hlaNomenclatureVersion)
         {
-            var lookupResult = HlaLookupResults.FirstOrDefault(hla =>
+            var metadata = HlaMetadata.FirstOrDefault(hla =>
                 hla.Locus.Equals(locus) && hla.LookupName == lookupName);
 
-            var entity = lookupResult == null ? null : new HlaLookupTableEntity(lookupResult);
+            var entity = metadata == null ? null : new HlaMetadataTableRow(metadata);
             return Task.FromResult(entity);
         }
 
-        private void PopulateHlaLookupResults()
+        private void PopulateHlaMetadata()
         {
-            var resultCollections = GetLookupResultsFromJsonFile();
-            HlaLookupResults = GetHlaLookupResults(resultCollections);
+            var metadataCollection = GetMetadataFromJsonFile();
+            HlaMetadata = GetHlaMetadata(metadataCollection);
         }
 
-        protected abstract IEnumerable<THlaLookupResult> GetHlaLookupResults(FileBackedHlaLookupResultCollections resultCollections);
+        protected abstract IEnumerable<TSerialisableHlaMetadata> GetHlaMetadata(FileBackedHlaMetadataCollection metadataCollection);
     }
 
     /// <summary>
@@ -69,21 +69,21 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
     /// </summary>
     public abstract class FileBackedHlaLookupRepositoryBaseReader
     {
-        private static FileBackedHlaLookupResultCollections loadedFile = null;
-        protected static FileBackedHlaLookupResultCollections GetLookupResultsFromJsonFile()
+        private static FileBackedHlaMetadataCollection loadedFile = null;
+        protected static FileBackedHlaMetadataCollection GetMetadataFromJsonFile()
         {
             if (loadedFile != null) { return loadedFile; }
 
             var assem = Assembly.GetExecutingAssembly();
-            using (var stream = assem.GetManifestResourceStream("Atlas.HlaMetadataDictionary.Test.IntegrationTests.Resources.all_hla_lookup_results.json"))
+            using (var stream = assem.GetManifestResourceStream("Atlas.HlaMetadataDictionary.Test.IntegrationTests.Resources.all_hla_metadata.json"))
             {
                 using (var reader = new StreamReader(stream))
                 {
-                    loadedFile = JsonConvert.DeserializeObject<FileBackedHlaLookupResultCollections>(reader.ReadToEnd());
+                    loadedFile = JsonConvert.DeserializeObject<FileBackedHlaMetadataCollection>(reader.ReadToEnd());
                 }
             }
 
-            var forceEvaluation = loadedFile.AlleleNameLookupResults.Count(); //Forces population of all the IEnumerables.
+            var forceEvaluation = loadedFile.AlleleNameMetadata.Count(); //Forces population of all the IEnumerables.
             return loadedFile;
         }
     }

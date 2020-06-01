@@ -1,0 +1,78 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.HlaMetadataDictionary.Extensions;
+using Atlas.HlaMetadataDictionary.Models.LookupEntities;
+using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
+using Atlas.MultipleAlleleCodeDictionary;
+
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
+{
+    /// <summary>
+    ///  Consolidates HLA info used in matching for all alleles that map to the hla name.
+    /// </summary>
+    internal interface IHlaMatchingMetadataService : IHlaSearchingMetadataService<IHlaMatchingMetadata>
+    {
+        IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion);
+    }
+
+    internal class HlaMatchingMetadataService : 
+        HlaSearchingMetadataServiceBase<IHlaMatchingMetadata>, 
+        IHlaMatchingMetadataService
+    {
+        private readonly IHlaMatchingMetadataRepository typedMatchingRepository;
+
+        public HlaMatchingMetadataService(
+            IHlaMatchingMetadataRepository hlaMatchingMetadataRepository,
+            IAlleleNamesMetadataService alleleNamesMetadataService,
+            IHlaCategorisationService hlaCategorisationService,
+            IAlleleStringSplitterService alleleSplitter,
+            INmdpCodeCache cache
+        ) : base(
+            hlaMatchingMetadataRepository,
+            alleleNamesMetadataService,
+            hlaCategorisationService,
+            alleleSplitter,
+            cache
+            )
+        {
+            typedMatchingRepository = hlaMatchingMetadataRepository;
+        }
+
+        protected override IEnumerable<IHlaMatchingMetadata> ConvertMetadataRowsToMetadata(
+            IEnumerable<HlaMetadataTableRow> rows)
+        {
+            return rows.Select(row => row.ToHlaMatchingMetadata());
+        }
+
+        protected override IHlaMatchingMetadata ConsolidateHlaMetadata(
+            Locus locus, 
+            string lookupName,
+            IEnumerable<IHlaMatchingMetadata> metadata)
+        {
+            var results = metadata.ToList();
+
+            var typingMethod = results
+                .First()
+                .TypingMethod;
+
+            var pGroups = results
+                .SelectMany(lookupResult => lookupResult.MatchingPGroups)
+                .Distinct();
+
+            return new HlaMatchingMetadata(
+                locus,
+                lookupName,
+                typingMethod,
+                pGroups);
+        }
+
+        public IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion)
+        {
+            return typedMatchingRepository.GetAllPGroups(hlaNomenclatureVersion);
+        }
+
+    }
+}

@@ -22,7 +22,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         private const Locus DefaultLocus = Locus.A;
         private const string CacheKey = "NmdpCodeLookup_A";
 
-        private IHlaMatchingLookupService lookupService;
+        private IHlaMatchingMetadataService metadataService;
         private IHlaServiceClient hlaServiceClient;
         private IAppCache appCache;
 
@@ -31,7 +31,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                lookupService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMatchingLookupService>();
+                metadataService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMatchingMetadataService>();
                 hlaServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IHlaServiceClient>();
                 appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
             });
@@ -49,7 +49,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
-        public async Task GetHlaLookupResult_WhenNmdpCode_ReturnsMatchingHlaForAllAlleles()
+        public async Task GetHlaMetadata_WhenNmdpCode_ReturnsMatchingHlaForAllAlleles()
         {
             // each allele maps to a P group of the same name
             const string firstAllele = "01:133";
@@ -61,33 +61,33 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
                 .GetAllelesForDefinedNmdpCode(DefaultLocus, nmdpCode)
                 .Returns(new List<string> { firstAllele, secondAllele });
 
-            var result = await lookupService.GetHlaLookupResult(DefaultLocus, nmdpCode, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, nmdpCode, null);
 
             result.MatchingPGroups.Should().BeEquivalentTo(new[] { firstAllele, secondAllele });
         }
 
         [Test]
-        public async Task GetHlaLookupResult_WhenAlleleStringOfNames_ReturnsMatchingHlaForAllAlleles()
+        public async Task GetHlaMetadata_WhenAlleleStringOfNames_ReturnsMatchingHlaForAllAlleles()
         {
             // each allele maps to a P group of the same name
             const string firstAllele = "01:133";
             const string secondAllele = "01:158";
             const string alleleString = firstAllele + "/" + secondAllele;
 
-            var result = await lookupService.GetHlaLookupResult(DefaultLocus, alleleString, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null);
 
             result.MatchingPGroups.Should().BeEquivalentTo(new[] { firstAllele, secondAllele });
         }
 
         [Test]
-        public async Task GetHlaLookupResult_WhenAlleleStringOfSubtypes_ReturnsMatchingHlaForAllAlleles()
+        public async Task GetHlaMetadata_WhenAlleleStringOfSubtypes_ReturnsMatchingHlaForAllAlleles()
         {
             // each allele maps to a P group of the same name
             const string firstAllele = "01:133";
             const string secondAllele = "01:158";
             const string alleleString = "01:133/158";
 
-            var result = await lookupService.GetHlaLookupResult(DefaultLocus, alleleString, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null);
 
             result.MatchingPGroups.Should().BeEquivalentTo(new[] { firstAllele, secondAllele });
         }

@@ -11,8 +11,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
     public interface IConfidenceService
     {
         PhenotypeInfo<MatchConfidence> CalculateMatchConfidences(
-            PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
-            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults,
+            PhenotypeInfo<IHlaScoringMetadata> patientLookupResults,
+            PhenotypeInfo<IHlaScoringMetadata> donorLookupResults,
             PhenotypeInfo<MatchGradeResult> matchGrades);
     }
 
@@ -28,8 +28,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
         }
 
         public PhenotypeInfo<MatchConfidence> CalculateMatchConfidences(
-            PhenotypeInfo<IHlaScoringLookupResult> patientLookupResults,
-            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults,
+            PhenotypeInfo<IHlaScoringMetadata> patientLookupResults,
+            PhenotypeInfo<IHlaScoringMetadata> donorLookupResults,
             PhenotypeInfo<MatchGradeResult> matchGrades)
         {
             var confidenceResults = new PhenotypeInfo<MatchConfidence>();
@@ -60,14 +60,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
         private MatchConfidence CalculateConfidenceForOrientation(
             Locus locus,
             LocusPosition position,
-            IHlaScoringLookupResult patientLookupResult,
-            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults,
+            IHlaScoringMetadata patientMetadata,
+            PhenotypeInfo<IHlaScoringMetadata> donorLookupResults,
             MatchOrientation matchOrientation)
         {
             return matchOrientation switch
             {
-                MatchOrientation.Direct => CalculateConfidenceForDirectMatch(locus, position, patientLookupResult, donorLookupResults),
-                MatchOrientation.Cross => CalculateConfidenceForCrossMatch(locus, position, patientLookupResult, donorLookupResults),
+                MatchOrientation.Direct => CalculateConfidenceForDirectMatch(locus, position, patientMetadata, donorLookupResults),
+                MatchOrientation.Cross => CalculateConfidenceForCrossMatch(locus, position, patientMetadata, donorLookupResults),
                 _ => throw new ArgumentOutOfRangeException(nameof(matchOrientation), matchOrientation, null)
             };
         }
@@ -75,33 +75,33 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
         private MatchConfidence CalculateConfidenceForDirectMatch(
             Locus locus,
             LocusPosition position,
-            IHlaScoringLookupResult patientLookupResult,
-            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
+            IHlaScoringMetadata patientMetadata,
+            PhenotypeInfo<IHlaScoringMetadata> donorLookupResults)
         {
-            return GetConfidence(patientLookupResult, donorLookupResults.GetPosition(locus, position));
+            return GetConfidence(patientMetadata, donorLookupResults.GetPosition(locus, position));
         }
 
         private MatchConfidence CalculateConfidenceForCrossMatch(
             Locus locus,
             LocusPosition position,
-            IHlaScoringLookupResult patientLookupResult,
-            PhenotypeInfo<IHlaScoringLookupResult> donorLookupResults)
+            IHlaScoringMetadata patientMetadata,
+            PhenotypeInfo<IHlaScoringMetadata> donorLookupResults)
         {
             return position switch
             {
-                LocusPosition.One => GetConfidence(patientLookupResult, donorLookupResults.GetPosition(locus, LocusPosition.Two)),
-                LocusPosition.Two => GetConfidence(patientLookupResult, donorLookupResults.GetPosition(locus, LocusPosition.One)),
+                LocusPosition.One => GetConfidence(patientMetadata, donorLookupResults.GetPosition(locus, LocusPosition.Two)),
+                LocusPosition.Two => GetConfidence(patientMetadata, donorLookupResults.GetPosition(locus, LocusPosition.One)),
                 _ => throw new ArgumentOutOfRangeException(nameof(position), position, null)
             };
         }
 
-        private MatchConfidence GetConfidence(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResults)
+        private MatchConfidence GetConfidence(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadatas)
         {
             return scoringCache.GetOrAddMatchConfidence(
-                patientLookupResult?.Locus,
-                patientLookupResult?.LookupName,
-                donorLookupResults?.LookupName,
-                c => confidenceCalculator.CalculateConfidence(patientLookupResult, donorLookupResults));
+                patientMetadata?.Locus,
+                patientMetadata?.LookupName,
+                donorMetadatas?.LookupName,
+                c => confidenceCalculator.CalculateConfidence(patientMetadata, donorMetadatas));
         }
     }
 }

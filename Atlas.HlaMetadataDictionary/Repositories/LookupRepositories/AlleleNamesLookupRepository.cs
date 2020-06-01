@@ -8,19 +8,19 @@ using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {
-    internal interface IAlleleNamesLookupRepository : IHlaLookupRepository
+    internal interface IAlleleNamesMetadataRepository : IHlaMetadataRepository
     {
-        Task<IAlleleNameLookupResult> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion);
+        Task<IAlleleNameMetadata> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion);
     }
 
-    internal class AlleleNamesLookupRepository : 
-        HlaLookupRepositoryBase,
-        IAlleleNamesLookupRepository
+    internal class AlleleNamesMetadataRepository : 
+        HlaMetadataRepositoryBase,
+        IAlleleNamesMetadataRepository
     {
         private const string DataTableReferencePrefix = "AlleleNamesData";
         private const string CacheKeyAlleleNames = "AlleleNames";
 
-        public AlleleNamesLookupRepository(
+        public AlleleNamesMetadataRepository(
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             IPersistentCacheProvider cacheProvider)
@@ -28,11 +28,11 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
         {
         }
 
-        public async Task<IAlleleNameLookupResult> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
+        public async Task<IAlleleNameMetadata> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            var entity = await GetHlaLookupTableEntityIfExists(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
+            var row = await GetHlaMetadataRowIfExists(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
 
-            return entity?.ToAlleleNameLookupResult();
+            return row?.ToAlleleNameMetadata();
         }
     }
 }

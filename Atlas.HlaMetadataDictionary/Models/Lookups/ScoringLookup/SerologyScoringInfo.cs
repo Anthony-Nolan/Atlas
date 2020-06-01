@@ -26,10 +26,10 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
         }
 
         internal static SerologyScoringInfo GetScoringInfo(
-            IHlaLookupResultSource<SerologyTyping> lookupResultSource)
+            IHlaMetadataSource<SerologyTyping> metadataSource)
         {
             return new SerologyScoringInfo(
-                lookupResultSource.MatchingSerologies.Select(m => m.ToSerologyEntry()));
+                metadataSource.MatchingSerologies.Select(m => m.ToSerologyEntry()));
         }
 
         public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo()

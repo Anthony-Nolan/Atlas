@@ -10,22 +10,22 @@ using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {
-    internal interface IHlaLookupRepository : ILookupRepository
+    internal interface IHlaMetadataRepository : IWarmableRepository
     {
-        Task RecreateHlaLookupTable(IEnumerable<ISerialisableHlaMetadata> lookupResults, string hlaNomenclatureVersion);
+        Task RecreateHlaMetadataTable(IEnumerable<ISerialisableHlaMetadata> metadata, string hlaNomenclatureVersion);
 
-        Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(
+        Task<HlaMetadataTableRow> GetHlaMetadataRowIfExists(
             Locus locus,
             string lookupName,
             TypingMethod typingMethod,
             string hlaNomenclatureVersion);
     }
 
-    internal abstract class HlaLookupRepositoryBase :
-        LookupRepositoryBase<ISerialisableHlaMetadata, HlaLookupTableEntity>,
-        IHlaLookupRepository
+    internal abstract class HlaMetadataRepositoryBase :
+        CloudTableRepositoryBase<ISerialisableHlaMetadata, HlaMetadataTableRow>,
+        IHlaMetadataRepository
     {
-        protected HlaLookupRepositoryBase(
+        protected HlaMetadataRepositoryBase(
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             string dataFunctionalTableReferencePrefix,
@@ -35,21 +35,21 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
         {
         }
 
-        public async Task RecreateHlaLookupTable(IEnumerable<ISerialisableHlaMetadata> lookupResults, string hlaNomenclatureVersion)
+        public async Task RecreateHlaMetadataTable(IEnumerable<ISerialisableHlaMetadata> metadata, string hlaNomenclatureVersion)
         {
-            await RecreateDataTable(lookupResults, hlaNomenclatureVersion);
+            await RecreateDataTable(metadata, hlaNomenclatureVersion);
         }
 
-        public async Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(
+        public async Task<HlaMetadataTableRow> GetHlaMetadataRowIfExists(
             Locus locus,
             string lookupName,
             TypingMethod typingMethod,
             string hlaNomenclatureVersion)
         {
-            var partition = HlaLookupTableKeyManager.GetEntityPartitionKey(locus);
-            var rowKey = HlaLookupTableKeyManager.GetEntityRowKey(lookupName, typingMethod);
+            var partition = HlaMetadataTableKeyManager.GetPartitionKey(locus);
+            var rowKey = HlaMetadataTableKeyManager.GetRowKey(lookupName, typingMethod);
 
-            return await GetDataIfExists(partition, rowKey, hlaNomenclatureVersion);
+            return await GetDataRowIfExists(partition, rowKey, hlaNomenclatureVersion);
         }
     }
 }
