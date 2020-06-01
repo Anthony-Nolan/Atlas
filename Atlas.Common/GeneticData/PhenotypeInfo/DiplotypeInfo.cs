@@ -4,6 +4,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
 {
     /// <summary>
     /// Data type to hold an instance of T as a pair of haplotypes for each of the supported HLA loci.
+    /// "Haplotype1" and "Haplotype2" are arbitrary, and diplotypes are considered identical if they contain the same two haplotypes in any order.
     /// 
     /// <see cref="LociInfo{T}"/> has a T at each locus.
     /// </summary>
