@@ -131,7 +131,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             wmdaHlaVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(newHlaVersion);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
-            await dataRefreshHistoryRepository.Received().Create(Arg.Is<DataRefreshRecord>(r => string.IsNullOrWhiteSpace(r.WmdaDatabaseVersion)));
+            await dataRefreshHistoryRepository.Received().Create(Arg.Is<DataRefreshRecord>(r => string.IsNullOrWhiteSpace(r.HlaNomenclatureVersion)));
         }
 
         [Test]
