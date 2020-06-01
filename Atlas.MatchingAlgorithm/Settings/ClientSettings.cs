@@ -6,11 +6,6 @@ namespace Atlas.MatchingAlgorithm.Settings
         public string BaseUrl { get; set; }
     }
 
-    public class DonorServiceSettings : ClientSettings
-    {
-        public bool? ReadDonorsFromFile { get; set; }
-    }
-
     public class HlaServiceSettings : ClientSettings
     {
     }
