@@ -1,5 +1,4 @@
 ﻿using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Common.Repositories;
 using Atlas.MatchingAlgorithm.Data.Extensions;
 using Atlas.MatchingAlgorithm.Data.Helpers;
@@ -13,6 +12,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Common.Config;
 
 // ReSharper disable InconsistentNaming
 
