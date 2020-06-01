@@ -46,25 +46,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 {
     public static class ServiceConfiguration
     {
-        public static void RegisterCombinedMatchingAlgorithmAndDonorManagement(this IServiceCollection services)
-        {
-            services.RegisterAllMatchingSettings();
-            services.RegisterMatchingAlgorithmServices();
-            services.RegisterDataServices();
-            services.RegisterDonorClient();
-            services.RegisterDonorManagementServices();
-            services.RegisterHlaMetadataDictionary(
-                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
-                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
-                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
-                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
-                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value
-            );
-        } 
-        
         public static void RegisterMatchingAlgorithm(this IServiceCollection services)
         {
-            services.RegisterSettingsForMatching();
+            services.RegisterSettingsForMatchingAlgorithm();
             services.RegisterMatchingAlgorithmServices();
             services.RegisterDataServices();
             services.RegisterDonorClient();
@@ -288,12 +272,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             return new FileBasedDonorServiceClient(logger);
         }
 
-        private static void RegisterAllMatchingSettings(this IServiceCollection services)
-        {
-            services.RegisterSharedSettings();
-            services.RegisterSettingsForMatchingDonorManagement();
-            services.RegisterSettingsForMatching();
-        }
         private static void RegisterSharedSettings(this IServiceCollection services)
         {
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
@@ -309,7 +287,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterOptions<DonorManagementSettings>("MessagingServiceBus:DonorManagement");
         }
 
-        private static void RegisterSettingsForMatching(this IServiceCollection services)
+        private static void RegisterSettingsForMatchingAlgorithm(this IServiceCollection services)
         {
             services.RegisterSharedSettings();
             services.RegisterOptions<DonorServiceSettings>("Client:DonorService");

@@ -33,7 +33,8 @@ namespace Atlas.MatchingAlgorithm.Api
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.RegisterCombinedMatchingAlgorithmAndDonorManagement();
+            // TODO: ATLAS-327: Inject settings
+            services.RegisterMatchingAlgorithm();
 
             services.ConfigureSwaggerService();
 
