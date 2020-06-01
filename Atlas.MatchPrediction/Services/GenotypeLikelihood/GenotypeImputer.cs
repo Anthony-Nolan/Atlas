@@ -16,34 +16,34 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         public List<DiplotypeInfo<string>> GetPossibleDiplotypes(PhenotypeInfo<string> genotype)
         {
             var diplotypes = new List<DiplotypeInfo<string>>();
-            var genotypeLociInfo = new List<LocusInfo<string>>
-            {
-                genotype.A,
-                genotype.B,
-                genotype.C,
-                genotype.Dqb1,
-                genotype.Drb1
-            };
 
             var heterozygousLoci = GetHeterozygousLoci(genotype);
             if (!heterozygousLoci.Any())
             {
-                return new List<DiplotypeInfo<string>>{ new DiplotypeInfo<string>(genotype) };
+                return new List<DiplotypeInfo<string>> {new DiplotypeInfo<string>(genotype)};
             }
 
             // This method uses binary representations of i to indicate whether a particular locus should be swapped.
             // Each locus is assigned a bit, and the range of i guarantees that all permutations are considered.
-            // Note that due to the symmetric nature of diplotypes (see DiplotypeInfo for further information), there are 2n-1 permutations, not 2n.
-            for (var i = Math.Pow(2, heterozygousLoci.Count - 1); i < Math.Pow(2, heterozygousLoci.Count); i++)
+            // Note that due to the symmetric nature of diplotypes (see DiplotypeInfo for further information), there are 2^(n-1) permutations, not 2n.
+            for (var decimalRepresentationOfBinaryFlags = Math.Pow(2, heterozygousLoci.Count - 1);
+                decimalRepresentationOfBinaryFlags < Math.Pow(2, heterozygousLoci.Count);
+                decimalRepresentationOfBinaryFlags++)
             {
-                var flags = Convert.ToString((int)i, 2).Select(c => c == '0').ToArray();
+                var flags = Convert.ToString((int) decimalRepresentationOfBinaryFlags, 2)
+                    .Select(c => c == '0').ToArray();
 
-                var diplotype = new DiplotypeInfo<string>();
+                var diplotype = new DiplotypeInfo<string>(genotype);
 
-                for (var index = 0; index < heterozygousLoci.Count; index++)
+                for (var i = 0; i < heterozygousLoci.Count; i++)
                 {
-                    var locusInfo = GetLocusInfo(genotypeLociInfo[index], flags[index]);
-                    diplotype.SetAtLocus(heterozygousLoci[index], locusInfo);
+                    var shouldSwapPositions = flags[i];
+                    if (shouldSwapPositions)
+                    {
+                        var locus = heterozygousLoci[i];
+                        var locusInfo = SwapLocus(genotype.GetLocus(locus));
+                        diplotype.SetAtLocus(locus, locusInfo);
+                    }
                 }
 
                 diplotypes.Add(diplotype);
@@ -52,11 +52,10 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
             return diplotypes;
         }
 
-        private static LocusInfo<string> GetLocusInfo(LocusInfo<string> genotypeLocusInfo, bool shouldSwapPositions)
+        private static LocusInfo<string> SwapLocus(LocusInfo<string> genotypeLocusInfo)
         {
-            return shouldSwapPositions
-                ? new LocusInfo<string> {Position1 = genotypeLocusInfo.Position2, Position2 = genotypeLocusInfo.Position1}
-                : genotypeLocusInfo;
+            return new LocusInfo<string>
+                {Position1 = genotypeLocusInfo.Position2, Position2 = genotypeLocusInfo.Position1};
         }
 
         private static List<Locus> GetHeterozygousLoci(PhenotypeInfo<string> genotype)
