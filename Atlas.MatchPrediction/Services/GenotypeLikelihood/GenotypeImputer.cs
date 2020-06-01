@@ -4,24 +4,25 @@ using System.Linq;
 using Atlas.MatchPrediction.Config;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
     public interface IGenotypeImputer
     {
-        public List<DiplotypeInfo<string>> GetPossibleDiplotypes(PhenotypeInfo<string> genotype);
+        public List<Diplotype> GetPossibleDiplotypes(PhenotypeInfo<string> genotype);
     }
 
     public class GenotypeImputer : IGenotypeImputer
     {
-        public List<DiplotypeInfo<string>> GetPossibleDiplotypes(PhenotypeInfo<string> genotype)
+        public List<Diplotype> GetPossibleDiplotypes(PhenotypeInfo<string> genotype)
         {
-            var diplotypes = new List<DiplotypeInfo<string>>();
+            var diplotypes = new List<Diplotype>();
 
             var heterozygousLoci = GetHeterozygousLoci(genotype);
             if (!heterozygousLoci.Any())
             {
-                return new List<DiplotypeInfo<string>> {new DiplotypeInfo<string>(genotype)};
+                return new List<Diplotype> {new Diplotype(genotype)};
             }
 
             // This method uses binary representations of i to indicate whether the alleles of a particular locus should be swapped.
@@ -34,7 +35,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
                 var flags = Convert.ToString((int) decimalRepresentationOfBinaryFlags, 2)
                     .Select(c => c == '0').ToArray();
 
-                var diplotype = new DiplotypeInfo<string>(genotype);
+                var diplotype = new Diplotype(genotype);
 
                 for (var i = 0; i < heterozygousLoci.Count; i++)
                 {
