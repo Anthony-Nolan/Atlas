@@ -17,7 +17,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         private IHlaScoringLookupService scoring;
         private IHlaLookupResultsService all;
         private IDpb1TceGroupLookupService dpb1;
-        private IWmdaHlaVersionProvider wmdaVersion;
+        private IWmdaHlaVersionAccessor wmdaVersion;
         private ILogger logger;
         private IHlaMetadataDictionary cannedResponse = null;
 
@@ -35,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             scoring = Substitute.For<IHlaScoringLookupService>();
             all = Substitute.For<IHlaLookupResultsService>();
             dpb1 = Substitute.For<IDpb1TceGroupLookupService>();
-            wmdaVersion = Substitute.For<IWmdaHlaVersionProvider>();
+            wmdaVersion = Substitute.For<IWmdaHlaVersionAccessor>();
             logger = Substitute.For<ILogger>();
         }
 
@@ -70,7 +70,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 case IDpb1TceGroupLookupService typedDependency:
                     dpb1 = typedDependency;
                     break;
-                case IWmdaHlaVersionProvider typedDependency:
+                case IWmdaHlaVersionAccessor typedDependency:
                     wmdaVersion = typedDependency;
                     break;
                 default:

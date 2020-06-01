@@ -15,7 +15,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// </summary>
     internal interface IHlaMatchingLookupService : IHlaSearchingLookupService<IHlaMatchingLookupResult>
     {
-        IEnumerable<string> GetAllPGroups(string hlaDatabaseVersion);
+        IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion);
     }
 
     internal class HlaMatchingLookupService : 
@@ -69,9 +69,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 pGroups);
         }
 
-        public IEnumerable<string> GetAllPGroups(string hlaDatabaseVersion)
+        public IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion)
         {
-            return typedMatchingRepository.GetAllPGroups(hlaDatabaseVersion);
+            return typedMatchingRepository.GetAllPGroups(hlaNomenclatureVersion);
         }
 
     }

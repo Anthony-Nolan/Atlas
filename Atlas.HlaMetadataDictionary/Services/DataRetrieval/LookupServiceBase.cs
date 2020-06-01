@@ -7,7 +7,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
     internal abstract class LookupServiceBase<T>
     {
-        protected async Task<T> GetLookupResults(Locus locus, string lookupName, string hlaDatabaseVersion)
+        protected async Task<T> GetLookupResults(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
             try
             {
@@ -18,7 +18,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
                 var formattedLookupName = FormatLookupName(lookupName);
 
-                return await PerformLookup(locus, formattedLookupName, hlaDatabaseVersion);
+                return await PerformLookup(locus, formattedLookupName, hlaNomenclatureVersion);
             }
             catch (Exception ex)
             {
@@ -29,7 +29,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
         protected abstract bool LookupNameIsValid(string lookupName);
 
-        protected abstract Task<T> PerformLookup(Locus locus, string lookupName, string hlaDatabaseVersion);
+        protected abstract Task<T> PerformLookup(Locus locus, string lookupName, string hlaNomenclatureVersion);
 
         private static string FormatLookupName(string lookupName)
         {

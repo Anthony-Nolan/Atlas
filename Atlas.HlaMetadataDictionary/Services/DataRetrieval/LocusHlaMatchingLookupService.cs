@@ -16,7 +16,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         Task<LocusInfo<IHlaMatchingLookupResult>> GetHlaMatchingLookupResults(
             Locus locus,
             LocusInfo<string> locusTyping,
-            string hlaDatabaseVersion);
+            string hlaNomenclatureVersion);
     }
 
     /// <inheritdoc />
@@ -32,9 +32,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         public async Task<LocusInfo<IHlaMatchingLookupResult>> GetHlaMatchingLookupResults(
             Locus locus,
             LocusInfo<string> locusTyping,
-            string hlaDatabaseVersion)
+            string hlaNomenclatureVersion)
         {
-            var locusLookupResults = await GetLocusLookupResults(locus, locusTyping, hlaDatabaseVersion);
+            var locusLookupResults = await GetLocusLookupResults(locus, locusTyping, hlaNomenclatureVersion);
 
             var result1 = HandleNullAlleles(locusLookupResults[0], locusLookupResults[1]);
             var result2 = HandleNullAlleles(locusLookupResults[1], locusLookupResults[0]);
@@ -45,11 +45,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         private async Task<IHlaMatchingLookupResult[]> GetLocusLookupResults(
             Locus locus,
             LocusInfo<string> locusHlaTyping,
-            string hlaDatabaseVersion)
+            string hlaNomenclatureVersion)
         {
             return await Task.WhenAll(
-                singleHlaLookupService.GetHlaLookupResult(locus, locusHlaTyping.Position1, hlaDatabaseVersion),
-                singleHlaLookupService.GetHlaLookupResult(locus, locusHlaTyping.Position2, hlaDatabaseVersion));
+                singleHlaLookupService.GetHlaLookupResult(locus, locusHlaTyping.Position1, hlaNomenclatureVersion),
+                singleHlaLookupService.GetHlaLookupResult(locus, locusHlaTyping.Position2, hlaNomenclatureVersion));
         }
 
         private static IHlaMatchingLookupResult HandleNullAlleles(

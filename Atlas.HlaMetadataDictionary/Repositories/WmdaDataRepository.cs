@@ -11,7 +11,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories
 {
     internal interface IWmdaDataRepository
     {
-        WmdaDataset GetWmdaDataset(string hlaDatabaseVersion);
+        WmdaDataset GetWmdaDataset(string hlaNomenclatureVersion);
     }
 
     internal class WmdaDataRepository : IWmdaDataRepository
@@ -25,39 +25,39 @@ namespace Atlas.HlaMetadataDictionary.Repositories
             this.wmdaFileReader = wmdaFileReader;
         }
 
-        public WmdaDataset GetWmdaDataset(string hlaDatabaseVersion)
+        public WmdaDataset GetWmdaDataset(string hlaNomenclatureVersion)
         {
-            if (!wmdaDatasets.TryGetValue(hlaDatabaseVersion, out var dataset))
+            if (!wmdaDatasets.TryGetValue(hlaNomenclatureVersion, out var dataset))
             {
-                dataset = FetchWmdaDataCollections(hlaDatabaseVersion);
-                wmdaDatasets.Add(hlaDatabaseVersion, dataset);
+                dataset = FetchWmdaDataCollections(hlaNomenclatureVersion);
+                wmdaDatasets.Add(hlaNomenclatureVersion, dataset);
             }
 
             return dataset;
         }
 
-        private WmdaDataset FetchWmdaDataCollections(string hlaDatabaseVersion)
+        private WmdaDataset FetchWmdaDataCollections(string hlaNomenclatureVersion)
         {
             return new WmdaDataset
             {
-                HlaDatabaseVersion = hlaDatabaseVersion,
-                Serologies = GetWmdaData(new SerologyExtractor(), hlaDatabaseVersion).ToList(),
-                Alleles = GetWmdaData(new AlleleExtractor(), hlaDatabaseVersion).ToList(),
-                PGroups = GetWmdaData(new PGroupExtractor(), hlaDatabaseVersion).ToList(),
-                GGroups = GetWmdaData(new GGroupExtractor(), hlaDatabaseVersion).ToList(),
-                SerologyToSerologyRelationships = GetWmdaData(new SerologyToSerologyRelationshipExtractor(), hlaDatabaseVersion).ToList(),
-                AlleleToSerologyRelationships = GetWmdaData(new AlleleToSerologyRelationshipExtractor(), hlaDatabaseVersion).ToList(),
-                ConfidentialAlleles = GetWmdaData(new ConfidentialAlleleExtractor(), hlaDatabaseVersion).ToList(),
-                AlleleStatuses = GetWmdaData(new AlleleStatusExtractor(), hlaDatabaseVersion).ToList(),
-                AlleleNameHistories = GetWmdaData(new AlleleHistoryExtractor(), hlaDatabaseVersion).ToList(),
-                Dpb1TceGroupAssignments = GetWmdaData(new Dpb1TceGroupAssignmentExtractor(), hlaDatabaseVersion).ToList(),
+                HlaDatabaseVersion = hlaNomenclatureVersion,
+                Serologies = GetWmdaData(new SerologyExtractor(), hlaNomenclatureVersion).ToList(),
+                Alleles = GetWmdaData(new AlleleExtractor(), hlaNomenclatureVersion).ToList(),
+                PGroups = GetWmdaData(new PGroupExtractor(), hlaNomenclatureVersion).ToList(),
+                GGroups = GetWmdaData(new GGroupExtractor(), hlaNomenclatureVersion).ToList(),
+                SerologyToSerologyRelationships = GetWmdaData(new SerologyToSerologyRelationshipExtractor(), hlaNomenclatureVersion).ToList(),
+                AlleleToSerologyRelationships = GetWmdaData(new AlleleToSerologyRelationshipExtractor(), hlaNomenclatureVersion).ToList(),
+                ConfidentialAlleles = GetWmdaData(new ConfidentialAlleleExtractor(), hlaNomenclatureVersion).ToList(),
+                AlleleStatuses = GetWmdaData(new AlleleStatusExtractor(), hlaNomenclatureVersion).ToList(),
+                AlleleNameHistories = GetWmdaData(new AlleleHistoryExtractor(), hlaNomenclatureVersion).ToList(),
+                Dpb1TceGroupAssignments = GetWmdaData(new Dpb1TceGroupAssignmentExtractor(), hlaNomenclatureVersion).ToList(),
             };
         }
 
-        private IEnumerable<TWmdaHlaTyping> GetWmdaData<TWmdaHlaTyping>(WmdaDataExtractor<TWmdaHlaTyping> extractor, string hlaDatabaseVersion)
+        private IEnumerable<TWmdaHlaTyping> GetWmdaData<TWmdaHlaTyping>(WmdaDataExtractor<TWmdaHlaTyping> extractor, string hlaNomenclatureVersion)
             where TWmdaHlaTyping : IWmdaHlaTyping
         {
-            return extractor.GetWmdaHlaTypingsForHlaMetadataDictionaryLoci(wmdaFileReader, hlaDatabaseVersion);
+            return extractor.GetWmdaHlaTypingsForHlaMetadataDictionaryLoci(wmdaFileReader, hlaNomenclatureVersion);
         }
     }
 }

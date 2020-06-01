@@ -10,16 +10,16 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 {
     internal interface IAlleleNamesFromHistoriesExtractor
     {
-        IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaDatabaseVersion);
+        IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaNomenclatureVersion);
     }
 
     internal class AlleleNamesFromHistoriesExtractor : AlleleNamesExtractorBase, IAlleleNamesFromHistoriesExtractor
     {
         private readonly IAlleleNameHistoriesConsolidator historiesConsolidator;
 
-        private IEnumerable<AlleleNameHistory> ConsolidatedAlleleNameHistories(string hlaDatabaseVersion)
+        private IEnumerable<AlleleNameHistory> ConsolidatedAlleleNameHistories(string hlaNomenclatureVersion)
         {
-            return historiesConsolidator.GetConsolidatedAlleleNameHistories(hlaDatabaseVersion).ToList();
+            return historiesConsolidator.GetConsolidatedAlleleNameHistories(hlaNomenclatureVersion).ToList();
         }
 
         public AlleleNamesFromHistoriesExtractor(
@@ -30,32 +30,32 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
             this.historiesConsolidator = historiesConsolidator;
         }
 
-        public IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaDatabaseVersion)
+        public IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaNomenclatureVersion)
         {
-            return ConsolidatedAlleleNameHistories(hlaDatabaseVersion)
-                .SelectMany(h => GetAlleleNamesFromSingleHistory(h, hlaDatabaseVersion));
+            return ConsolidatedAlleleNameHistories(hlaNomenclatureVersion)
+                .SelectMany(h => GetAlleleNamesFromSingleHistory(h, hlaNomenclatureVersion));
         }
 
-        private IEnumerable<AlleleNameLookupResult> GetAlleleNamesFromSingleHistory(AlleleNameHistory history, string hlaDatabaseVersion)
+        private IEnumerable<AlleleNameLookupResult> GetAlleleNamesFromSingleHistory(AlleleNameHistory history, string hlaNomenclatureVersion)
         {
-            var currentAlleleName = GetCurrentAlleleName(history, hlaDatabaseVersion);
+            var currentAlleleName = GetCurrentAlleleName(history, hlaNomenclatureVersion);
 
             return !string.IsNullOrEmpty(currentAlleleName)
                 ? history.ToAlleleNameLookupResults(currentAlleleName)
                 : new List<AlleleNameLookupResult>();
         }
 
-        private string GetCurrentAlleleName(AlleleNameHistory history, string hlaDatabaseVersion)
+        private string GetCurrentAlleleName(AlleleNameHistory history, string hlaNomenclatureVersion)
         {
-            return history.CurrentAlleleName ?? GetIdenticalToAlleleName(history, hlaDatabaseVersion);
+            return history.CurrentAlleleName ?? GetIdenticalToAlleleName(history, hlaNomenclatureVersion);
         }
 
-        private string GetIdenticalToAlleleName(AlleleNameHistory history, string hlaDatabaseVersion)
+        private string GetIdenticalToAlleleName(AlleleNameHistory history, string hlaNomenclatureVersion)
         {
             var mostRecentNameAsTyping = new HlaNom(
                 TypingMethod.Molecular, history.TypingLocus, history.MostRecentAlleleName);
 
-            var identicalToAlleleName = AllelesInVersionOfHlaNom(hlaDatabaseVersion)
+            var identicalToAlleleName = AllelesInVersionOfHlaNom(hlaNomenclatureVersion)
                 .First(allele => allele.TypingEquals(mostRecentNameAsTyping))
                 .IdenticalHla;
 

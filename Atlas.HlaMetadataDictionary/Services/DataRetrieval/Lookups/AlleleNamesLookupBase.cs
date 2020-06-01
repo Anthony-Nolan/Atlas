@@ -24,10 +24,10 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
             this.alleleNamesLookupService = alleleNamesLookupService;
         }
 
-        public override async Task<IEnumerable<HlaLookupTableEntity>> PerformLookupAsync(Locus locus, string lookupName, string hlaDatabaseVersion)
+        public override async Task<IEnumerable<HlaLookupTableEntity>> PerformLookupAsync(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
             var alleleNamesToLookup = await GetAlleleLookupNames(locus, lookupName);
-            return await GetHlaLookupTableEntities(locus, alleleNamesToLookup, hlaDatabaseVersion);
+            return await GetHlaLookupTableEntities(locus, alleleNamesToLookup, hlaNomenclatureVersion);
         }
 
         protected abstract Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName);
@@ -35,10 +35,10 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
         private async Task<IEnumerable<HlaLookupTableEntity>> GetHlaLookupTableEntities(
             Locus locus,
             IEnumerable<string> alleleNamesToLookup,
-            string hlaDatabaseVersion
+            string hlaNomenclatureVersion
         )
         {
-            var lookupTasks = alleleNamesToLookup.Select(name => GetHlaLookupTableEntitiesForAlleleNameIfExists(locus, name, hlaDatabaseVersion));
+            var lookupTasks = alleleNamesToLookup.Select(name => GetHlaLookupTableEntitiesForAlleleNameIfExists(locus, name, hlaNomenclatureVersion));
             var tableEntities = await Task.WhenAll(lookupTasks);
 
             return tableEntities.SelectMany(entities => entities);
@@ -52,30 +52,30 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
         private async Task<IEnumerable<HlaLookupTableEntity>> GetHlaLookupTableEntitiesForAlleleNameIfExists(
             Locus locus,
             string lookupName,
-            string hlaDatabaseVersion)
+            string hlaNomenclatureVersion)
         {
-            var lookupResult = await TryGetHlaLookupTableEntityByAlleleLookupName(locus, lookupName, hlaDatabaseVersion);
+            var lookupResult = await TryGetHlaLookupTableEntityByAlleleLookupName(locus, lookupName, hlaNomenclatureVersion);
             if (lookupResult != null)
             {
                 return new List<HlaLookupTableEntity> {lookupResult};
             }
 
-            return await GetHlaLookupTableEntitiesByCurrentAlleleNamesIfExists(locus, lookupName, hlaDatabaseVersion);
+            return await GetHlaLookupTableEntitiesByCurrentAlleleNamesIfExists(locus, lookupName, hlaNomenclatureVersion);
         }
 
-        private async Task<HlaLookupTableEntity> TryGetHlaLookupTableEntityByAlleleLookupName(Locus locus, string lookupName, string hlaDatabaseVersion)
+        private async Task<HlaLookupTableEntity> TryGetHlaLookupTableEntityByAlleleLookupName(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            return await TryGetHlaLookupTableEntity(locus, lookupName, TypingMethod.Molecular, hlaDatabaseVersion);
+            return await TryGetHlaLookupTableEntity(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
         }
 
         private async Task<IEnumerable<HlaLookupTableEntity>> GetHlaLookupTableEntitiesByCurrentAlleleNamesIfExists(
             Locus locus,
             string lookupName,
-            string hlaDatabaseVersion
+            string hlaNomenclatureVersion
         )
         {
-            var currentNames = await alleleNamesLookupService.GetCurrentAlleleNames(locus, lookupName, hlaDatabaseVersion);
-            var lookupTasks = currentNames.Select(name => GetHlaLookupTableEntityIfExists(locus, name, TypingMethod.Molecular, hlaDatabaseVersion));
+            var currentNames = await alleleNamesLookupService.GetCurrentAlleleNames(locus, lookupName, hlaNomenclatureVersion);
+            var lookupTasks = currentNames.Select(name => GetHlaLookupTableEntityIfExists(locus, name, TypingMethod.Molecular, hlaNomenclatureVersion));
             return await Task.WhenAll(lookupTasks);
         }
     }

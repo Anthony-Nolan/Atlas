@@ -8,7 +8,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 {
     internal interface IAlleleNameHistoriesConsolidator
     {
-        IEnumerable<AlleleNameHistory> GetConsolidatedAlleleNameHistories(string hlaDatabaseVersion);
+        IEnumerable<AlleleNameHistory> GetConsolidatedAlleleNameHistories(string hlaNomenclatureVersion);
     }
 
     internal class AlleleNameHistoriesConsolidator : IAlleleNameHistoriesConsolidator
@@ -20,9 +20,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
             this.dataRepository = dataRepository;
         }
 
-        public IEnumerable<AlleleNameHistory> GetConsolidatedAlleleNameHistories(string hlaDatabaseVersion)
+        public IEnumerable<AlleleNameHistory> GetConsolidatedAlleleNameHistories(string hlaNomenclatureVersion)
         {
-            var alleleNameHistories = dataRepository.GetWmdaDataset(hlaDatabaseVersion).AlleleNameHistories;
+            var alleleNameHistories = dataRepository.GetWmdaDataset(hlaNomenclatureVersion).AlleleNameHistories;
             return ConsolidateAlleleNameHistories(alleleNameHistories);
         }
 

@@ -11,8 +11,8 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
 {
     [DbContext(typeof(SearchAlgorithmPersistentContext))]
-    [Migration("20190715135434_AddWmdaDatabaseVersionToDataRefreshHistory")]
-    partial class AddWmdaDatabaseVersionToDataRefreshHistory
+    [Migration("20190715135434_AddWmdaDatabaseVersionToDataRefreshHistory")]  //QQ Rename? Historic
+    partial class AddWmdaDatabaseVersionToDataRefreshHistory //QQ Rename? Historic
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

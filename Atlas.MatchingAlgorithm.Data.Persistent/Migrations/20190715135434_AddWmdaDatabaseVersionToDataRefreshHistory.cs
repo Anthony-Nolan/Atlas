@@ -2,7 +2,7 @@
 
 namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
 {
-    public partial class AddWmdaDatabaseVersionToDataRefreshHistory : Migration
+    public partial class AddWmdaDatabaseVersionToDataRefreshHistory : Migration //QQ Rename? Historic
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
