@@ -70,17 +70,6 @@ variable "LOCATION" {
   description = "GeoLocation of all Azure resources for this ATLAS installation."
 }
 
-variable "MAC_TABLE_CONNECTION_STRING" {
-  type        = string
-  description = "The connection string for the ATLAS table storage containing multiple allele codes"
-}
-
-variable "MAC_TABLE_NAME" {
-  type        = string
-  default     = "AtlasMultipleAlleleCodes"
-  description = "The name of the table storage table containing multiple allele codes"
-}
-
 variable "MATCH_PREDICTION_DATABASE_PASSWORD" {
   type = string
 }
