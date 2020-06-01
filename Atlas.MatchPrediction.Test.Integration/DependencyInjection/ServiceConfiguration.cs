@@ -15,7 +15,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
         public static IServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
-            
+
             SetUpConfiguration(services);
             services.RegisterMatchPredictionServices();
             RegisterIntegrationTestServices(services);
@@ -42,8 +42,8 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
                 return new ContextFactory().Create(connectionString);
             });
 
-            services.AddSingleton< IHaplotypeFrequencyInspectionRepository >(sp =>
-                new HaplotypeFrequencyInspectionRepository(GetSqlConnectionString(sp))
+            services.AddScoped<IHaplotypeFrequencyInspectionRepository>(sp =>
+              new HaplotypeFrequencyInspectionRepository(GetSqlConnectionString(sp))
             );
         }
 
