@@ -75,8 +75,9 @@ variable "MAC_TABLE_CONNECTION_STRING" {
   description = "The connection string for the ATLAS table storage containing multiple allele codes"
 }
 
-variable "MAC_TABLE_NAME" n{
-  type = string
+variable "MAC_TABLE_NAME" {
+  type        = string
+  default     = "AtlasMultipleAlleleCodes"
   description = "The name of the table storage table containing multiple allele codes"
 }
 
