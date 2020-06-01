@@ -101,7 +101,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             {
                 Database = activeDatabaseProvider.GetDormantDatabase().ToString(),
                 RefreshBeginUtc = DateTime.UtcNow,
-                WmdaDatabaseVersion = null, //We don't know the version when initially creating the record.
+                HlaNomenclatureVersion = null, //We don't know the version when initially creating the record.
             };
 
             var recordId = await dataRefreshHistoryRepository.Create(dataRefreshRecord);
