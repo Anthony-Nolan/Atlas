@@ -4,7 +4,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchPrediction.Models
 {
-    public class Diplotype : UnorderedPair<Haplotype, Haplotype>
+    public class Diplotype : UnorderedPair<Haplotype>
     {
         /// <summary>
         /// Creates a new Diplotype with no inner values for each haplotype.
