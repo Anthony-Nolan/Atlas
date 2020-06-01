@@ -46,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
                     RefreshBeginUtc = DateTime.UtcNow,
                     RefreshEndUtc = DateTime.UtcNow,
                     // Hardcoded HLA Nomenclature version, as all test data sources were manually generated using this specific nomenclature version - 3330
-                    WmdaDatabaseVersion = "3330"
+                    HlaNomenclatureVersion = "3330"
                 });
                 persistentContext.SaveChanges();
             }
