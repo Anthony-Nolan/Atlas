@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Config;
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
-using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
