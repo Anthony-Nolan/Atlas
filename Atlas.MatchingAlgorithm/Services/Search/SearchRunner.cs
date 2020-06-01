@@ -66,7 +66,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 {
                     SearchRequestId = searchRequestId,
                     SearchAlgorithmServiceVersion = searchAlgorithmServiceVersion,
-                    WmdaHlaDatabaseVersion = hlaNomenclatureVersion,
+                    HlaNomenclatureVersion = hlaNomenclatureVersion,
                     WasSuccessful = true,
                     NumberOfResults = results.Count,
                     BlobStorageContainerName = resultsBlobStorageClient.GetResultsContainerName(),
@@ -82,7 +82,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     WasSuccessful = false,
                     SearchRequestId = searchRequestId,
                     SearchAlgorithmServiceVersion = searchAlgorithmServiceVersion,
-                    WmdaHlaDatabaseVersion = hlaNomenclatureVersion
+                    HlaNomenclatureVersion = hlaNomenclatureVersion
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
             }

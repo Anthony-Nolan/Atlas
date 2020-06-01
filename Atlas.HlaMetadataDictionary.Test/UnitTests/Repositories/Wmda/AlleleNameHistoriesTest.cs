@@ -46,7 +46,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
             var actualVersionedAlleleNames = actualAlleleNameHistory
                 .VersionedAlleleNames
                 .Select(versionedAlleleName =>
-                    new[] { versionedAlleleName.HlaDatabaseVersion, versionedAlleleName.AlleleName })
+                    new[] { versionedAlleleName.HlaNomenclatureVersion, versionedAlleleName.AlleleName })
                 .ToArray();
 
             actualVersionedAlleleNames.Should().BeEquivalentTo(expectedVersionedAlleleNames);
