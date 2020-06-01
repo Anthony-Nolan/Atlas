@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleToSuffix Include=".Test" />
+    <InternalsVisibleTo Include="Atlas.Common.Test" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 

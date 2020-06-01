@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <InternalsVisibleToSuffix Include=".Test" />
+        <InternalsVisibleTo Include="Atlas.HlaMetadataDictionary.Test" />
         <InternalsVisibleTo Include="Atlas.MatchingAlgorithm.Test" />
         <InternalsVisibleTo Include="Atlas.MatchingAlgorithm.Test.Integration" />
         <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
