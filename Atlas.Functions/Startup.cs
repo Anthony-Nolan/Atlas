@@ -12,7 +12,7 @@ namespace Atlas.Functions
         public override void Configure(IFunctionsHostBuilder builder)
         {
             builder.Services.RegisterMatchingAlgorithmOrchestration();
-            builder.Services.RegisterMultipleAlleleCodeDictionaryTypes();
+            builder.Services.RegisterMacDictionaryImportTypes();
         }
     }
 }

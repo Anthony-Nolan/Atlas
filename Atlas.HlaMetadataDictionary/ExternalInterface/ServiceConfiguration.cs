@@ -12,6 +12,7 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion;
 using Atlas.MultipleAlleleCodeDictionary;
+using Atlas.MultipleAlleleCodeDictionary.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
@@ -34,7 +35,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             services.RegisterServices();
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
 
-            services.RegisterMacDictionaryServices(
+            services.RegisterMacDictionaryUsageServices(
                 fetchHlaClientApiKey,
                 fetchHlaClientBaseUrl,
                 fetchApplicationInsightsSettings
