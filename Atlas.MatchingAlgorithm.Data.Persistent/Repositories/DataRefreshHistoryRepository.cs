@@ -42,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         public string GetActiveHlaNomenclatureVersion()
         {
             var lastCompletedRecord = GetLastSuccessfulRecord();
-            return lastCompletedRecord?.WmdaDatabaseVersion;
+            return lastCompletedRecord?.HlaNomenclatureVersion;
         }
 
         public IEnumerable<DataRefreshRecord> GetInProgressJobs()
@@ -60,7 +60,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         public async Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion, DateTime? finishTimeUtc)
         {
             var record = await context.DataRefreshRecords.SingleAsync(r => r.Id == recordId);
-            record.WmdaDatabaseVersion = wmdaHlaNomenclatureVersion;
+            record.HlaNomenclatureVersion = wmdaHlaNomenclatureVersion;
             record.RefreshEndUtc = finishTimeUtc.Value;
             await context.SaveChangesAsync();
         }
