@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         ///  - Fetches p-groups for all donor's hla
         ///  - Stores the pre-processed p-groups for use in matching
         /// </summary>
-        Task UpdateDonorHla(string hlaDatabaseVersion);
+        Task UpdateDonorHla(string hlaNomenclatureVersion);
     }
 
     public class HlaProcessor : IHlaProcessor
@@ -60,13 +60,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             pGroupRepository = repositoryFactory.GetPGroupRepository();
         }
 
-        public async Task UpdateDonorHla(string hlaDatabaseVersion)
+        public async Task UpdateDonorHla(string hlaNomenclatureVersion)
         {
-            await PerformUpfrontSetup(hlaDatabaseVersion);
+            await PerformUpfrontSetup(hlaNomenclatureVersion);
 
             try
             {
-                await PerformHlaUpdate(hlaDatabaseVersion);
+                await PerformHlaUpdate(hlaNomenclatureVersion);
             }
             catch (Exception e)
             {
@@ -79,7 +79,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             }
         }
 
-        private async Task PerformHlaUpdate(string hlaDatabaseVersion)
+        private async Task PerformHlaUpdate(string hlaNomenclatureVersion)
         {
             var totalDonorCount = await dataRefreshRepository.GetDonorCount();
             var batchedQuery = await dataRefreshRepository.DonorsAddedSinceLastHlaUpdate(BatchSize);
@@ -96,7 +96,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 // We do not want to attempt to remove p-groups for all batches as it would be detrimental to performance, so we limit it to the first two batches
                 var shouldRemovePGroups = donorsProcessed < DataRefreshRepository.NumberOfBatchesOverlapOnRestart * BatchSize;
 
-                var failedDonorsFromBatch = await UpdateDonorBatch(donorBatch, hlaDatabaseVersion, shouldRemovePGroups);
+                var failedDonorsFromBatch = await UpdateDonorBatch(donorBatch, hlaNomenclatureVersion, shouldRemovePGroups);
                 failedDonors.AddRange(failedDonorsFromBatch);
 
                 donorsProcessed += BatchSize;
@@ -113,12 +113,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// Fetches Expanded HLA information for all donors in a batch, and stores the processed  information in the database.
         /// </summary>
         /// <param name="donorBatch">The collection of donors to update</param>
-        /// <param name="hlaDatabaseVersion">The version of the HLA database to use to fetch expanded HLA information</param>
+        /// <param name="hlaNomenclatureVersion">The version of the HLA Nomenclature to use to fetch expanded HLA information</param>
         /// <param name="shouldRemovePGroups">If set, existing p-groups will be removed before adding new ones.</param>
         /// <returns>A collection of donors that failed the import process.</returns>
         private async Task<IEnumerable<FailedDonorInfo>> UpdateDonorBatch(
             IEnumerable<DonorInfo> donorBatch,
-            string hlaDatabaseVersion,
+            string hlaNomenclatureVersion,
             bool shouldRemovePGroups)
         {
             donorBatch = donorBatch.ToList();
@@ -130,7 +130,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 await donorImportRepository.RemovePGroupsForDonorBatch(donorBatch.Select(d => d.DonorId));
             }
 
-            var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaDatabaseVersion);
+            var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersion);
             var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName);
             await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(hlaExpansionResults.ProcessingResults);
 
@@ -144,14 +144,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             return hlaExpansionResults.FailedDonors;
         }
 
-        private async Task PerformUpfrontSetup(string hlaDatabaseVersion)
+        private async Task PerformUpfrontSetup(string hlaNomenclatureVersion)
         {
             try
             {
 
                 logger.SendTrace("HLA PROCESSOR: caching HlaMetadataDictionary tables", LogLevel.Info);
                 // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
-                var dictionaryCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaDatabaseVersion);
+                var dictionaryCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaNomenclatureVersion);
                 await dictionaryCacheControl.PreWarmAllCaches();
 
                 logger.SendTrace("HLA PROCESSOR: caching antigens from hla service", LogLevel.Info);
@@ -160,7 +160,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
                 logger.SendTrace("HLA PROCESSOR: inserting new p groups to database", LogLevel.Info);
                 // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the HlaMetadataDictionary, and new ones added to the SQL database
-                var hlaDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaDatabaseVersion);
+                var hlaDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
                 var pGroups = hlaDictionary.GetAllPGroups();
                 pGroupRepository.InsertPGroups(pGroups);
 

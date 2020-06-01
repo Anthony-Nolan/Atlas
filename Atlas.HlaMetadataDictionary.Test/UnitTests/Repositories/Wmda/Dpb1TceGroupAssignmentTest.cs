@@ -7,7 +7,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
     {
         protected override void SetupTestData()
         {
-            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaDatabaseVersionToTest).Dpb1TceGroupAssignments, MolecularLoci);
+            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaNomenclatureVersionToTest).Dpb1TceGroupAssignments, MolecularLoci);
         }
 
         [TestCase("17:01:01:01", "1", "1",

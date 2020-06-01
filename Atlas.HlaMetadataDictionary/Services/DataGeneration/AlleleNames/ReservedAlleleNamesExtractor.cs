@@ -8,7 +8,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 {
     internal interface IReservedAlleleNamesExtractor
     {
-        IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaDatabaseVersion);
+        IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaNomenclatureVersion);
     }
 
     internal class ReservedAlleleNamesExtractor : AlleleNamesExtractorBase, IReservedAlleleNamesExtractor
@@ -18,16 +18,16 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
         {
         }
 
-        public IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaDatabaseVersion)
+        public IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaNomenclatureVersion)
         {
-            return AllelesInVersionOfHlaNom(hlaDatabaseVersion)
-                .Where(a => AlleleNameIsReserved(a, hlaDatabaseVersion))
+            return AllelesInVersionOfHlaNom(hlaNomenclatureVersion)
+                .Where(a => AlleleNameIsReserved(a, hlaNomenclatureVersion))
                 .Select(allele => new AlleleNameLookupResult(allele.TypingLocus, allele.Name, allele.Name));
         }
 
-        private bool AlleleNameIsReserved(HlaNom allele, string hlaDatabaseVersion)
+        private bool AlleleNameIsReserved(HlaNom allele, string hlaNomenclatureVersion)
         {
-            return allele.IsDeleted && AlleleNameIsNotInHistories(allele.TypingLocus, allele.Name, hlaDatabaseVersion);
+            return allele.IsDeleted && AlleleNameIsNotInHistories(allele.TypingLocus, allele.Name, hlaNomenclatureVersion);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
     {
         private ILogger logger;
         private IOptions<DataRefreshSettings> settingsOptions;
-        private IWmdaHlaVersionProvider wmdaHlaVersionProvider;
+        private IWmdaHlaVersionAccessor wmdaHlaVersionAccessor;
         private IActiveDatabaseProvider activeDatabaseProvider;
         private IDataRefreshService dataRefreshService;
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
@@ -45,11 +45,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             settingsOptions = Substitute.For<IOptions<DataRefreshSettings>>();
             settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
 
-            wmdaHlaVersionProvider = Substitute.For<IWmdaHlaVersionProvider>();
-            var activeHlaVersionProvider = Substitute.For<IActiveHlaVersionAccessor>();
-            activeHlaVersionProvider.GetActiveHlaDatabaseVersion().Returns(existingHlaVersion);
+            wmdaHlaVersionAccessor = Substitute.For<IWmdaHlaVersionAccessor>();
+            var activeHlaVersionAccessor = Substitute.For<IActiveHlaVersionAccessor>();
+            activeHlaVersionAccessor.GetActiveHlaNomenclatureVersion().Returns(existingHlaVersion);
 
-            var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(wmdaHlaVersionProvider);
+            var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(wmdaHlaVersionAccessor);
 
             logger = Substitute.For<ILogger>();
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
@@ -63,7 +63,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 logger,
                 settingsOptions,
                 hlaMetadataDictionaryBuilder,
-                activeHlaVersionProvider,
+                activeHlaVersionAccessor,
                 activeDatabaseProvider,
                 dataRefreshService,
                 dataRefreshHistoryRepository,
@@ -75,9 +75,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task RefreshDataIfNecessary_WhenCurrentWmdaVersionMatchesLatest_DoesNotTriggerDataRefresh()
+        public async Task RefreshDataIfNecessary_WhenActiveHlaVersionMatchesLatest_DoesNotTriggerDataRefresh()
         {
-            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().ReturnsForAnyArgs(existingHlaVersion);
+            wmdaHlaVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(existingHlaVersion);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -85,9 +85,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
         
         [Test]
-        public async Task RefreshDataIfNecessary_WhenCurrentWmdaVersionMatchesLatest_AndShouldForceRefresh_TriggersDataRefresh()
+        public async Task RefreshDataIfNecessary_WhenActiveHlaVersionMatchesLatest_AndShouldForceRefresh_TriggersDataRefresh()
         {
-            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().ReturnsForAnyArgs(existingHlaVersion);
+            wmdaHlaVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(existingHlaVersion);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary(shouldForceRefresh: true);
 
@@ -95,9 +95,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task RefreshDataIfNecessary_WhenLatestWmdaVersionHigherThanCurrent_TriggersDataRefresh()
+        public async Task RefreshDataIfNecessary_WhenLatestHlaVersionHigherThanCurrent_TriggersDataRefresh()
         {
-            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().ReturnsForAnyArgs(newHlaVersion);
+            wmdaHlaVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(newHlaVersion);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -105,9 +105,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task RefreshDataIfNecessary_WhenLatestWmdaVersionHigherThanCurrent_AndJobAlreadyInProgress_DoesNotTriggerDataRefresh()
+        public async Task RefreshDataIfNecessary_WhenLatestHlaVersionHigherThanCurrent_AndJobAlreadyInProgress_DoesNotTriggerDataRefresh()
         {
-            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().ReturnsForAnyArgs(newHlaVersion);
+            wmdaHlaVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(newHlaVersion);
             dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
@@ -128,7 +128,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task RefreshDataIfNecessary_RecordsInitialDataRefreshWithNoWmdaVersion()
         {
-            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().ReturnsForAnyArgs(newHlaVersion);
+            wmdaHlaVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(newHlaVersion);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
             await dataRefreshHistoryRepository.Received().Create(Arg.Is<DataRefreshRecord>(r => string.IsNullOrWhiteSpace(r.WmdaDatabaseVersion)));
@@ -137,7 +137,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task RefreshDataIfNecessary_EventuallyRecordsDataRefreshOccurredWithLatestWmdaVersion()
         {
-            wmdaHlaVersionProvider.GetLatestStableHlaDatabaseVersion().ReturnsForAnyArgs(newHlaVersion);
+            wmdaHlaVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(newHlaVersion);
             dataRefreshService.RefreshData().Returns(newHlaVersion);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();

@@ -14,12 +14,12 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         /// <returns>The transient database for which the refresh job was most recently completed</returns>
         TransientDatabase? GetActiveDatabase();
         
-        /// <returns>The wmda database version used in the most recently completed refresh job</returns>
-        string GetActiveWmdaDataVersion();
+        /// <returns>The HLA nomenclature version used in the most recently completed refresh job</returns>
+        string GetActiveHlaNomenclatureVersion();
 
         IEnumerable<DataRefreshRecord> GetInProgressJobs();
         Task<int> Create(DataRefreshRecord dataRefreshRecord);
-        Task UpdateExecutionDetails(int recordId, string wmdaDataVersion, DateTime? finishTimeUtc);
+        Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion, DateTime? finishTimeUtc);
         Task UpdateSuccessFlag(int recordId, bool wasSuccess);
     }
     
@@ -39,7 +39,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
             return lastCompletedRecord?.Database.ParseToEnum<TransientDatabase>();
         }
 
-        public string GetActiveWmdaDataVersion()
+        public string GetActiveHlaNomenclatureVersion()
         {
             var lastCompletedRecord = GetLastSuccessfulRecord();
             return lastCompletedRecord?.WmdaDatabaseVersion;
@@ -57,10 +57,10 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
             return dataRefreshRecord.Id;
         }
 
-        public async Task UpdateExecutionDetails(int recordId, string wmdaDataVersion, DateTime? finishTimeUtc)
+        public async Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion, DateTime? finishTimeUtc)
         {
             var record = await context.DataRefreshRecords.SingleAsync(r => r.Id == recordId);
-            record.WmdaDatabaseVersion = wmdaDataVersion;
+            record.WmdaDatabaseVersion = wmdaHlaNomenclatureVersion;
             record.RefreshEndUtc = finishTimeUtc.Value;
             await context.SaveChangesAsync();
         }

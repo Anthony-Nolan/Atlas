@@ -53,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
             rankingService = Substitute.For<IRankingService>();
             matchScoreCalculator = Substitute.For<IMatchScoreCalculator>();
             scoreResultAggregator = Substitute.For<IScoreResultAggregator>();
-            var hlaVersionProvider = Substitute.For<IActiveHlaVersionAccessor>();
+            var hlaVersionAccessor = Substitute.For<IActiveHlaVersionAccessor>();
 
             rankingService.RankSearchResults(Arg.Any<IEnumerable<MatchAndScoreResult>>())
                 .Returns(callInfo => (IEnumerable<MatchAndScoreResult>) callInfo.Args().First());
@@ -64,7 +64,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 
             donorScoringService = new DonorScoringService(
                 hlaMetadataDictionaryBuilder,
-                hlaVersionProvider,
+                hlaVersionAccessor,
                 gradingService,
                 confidenceService,
                 rankingService,

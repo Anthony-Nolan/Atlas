@@ -22,7 +22,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
             IHlaMetadataDictionaryFactory factory,
             IActiveHlaVersionAccessor hlaVersionAccessor)
         {
-            this.hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaDatabaseVersion());
+            this.hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
         public bool IsPermissiveMismatch(Locus locus, string patientHlaName, string donorHlaName)

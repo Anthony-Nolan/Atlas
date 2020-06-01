@@ -11,10 +11,10 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Data
         private static readonly string TestDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         private const string FilePath = "/UnitTests/Data/wmda-v";
 
-        public IEnumerable<string> GetFileContentsWithoutHeader(string nomenclatureVersion, string fileName)
+        public IEnumerable<string> GetFileContentsWithoutHeader(string hlaNomenclatureVersion, string fileName)
         {
             return File
-                .ReadAllLines(FullFilePath(nomenclatureVersion, fileName))
+                .ReadAllLines(FullFilePath(hlaNomenclatureVersion, fileName))
                 .SkipWhile(IsCommentLine);
         }
 
@@ -26,9 +26,9 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Data
                 .First();
         }
 
-        private static string FullFilePath(string nomenclatureVersion, string fileName)
+        private static string FullFilePath(string hlaNomenclatureVersion, string fileName)
         {
-            return $"{TestDir}{FilePath}{nomenclatureVersion}/{fileName}";
+            return $"{TestDir}{FilePath}{hlaNomenclatureVersion}/{fileName}";
         }
 
         private static bool IsCommentLine(string line)

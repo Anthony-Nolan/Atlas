@@ -10,17 +10,17 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors
     {
         private const string FileName = "Allelelist_history.txt";
         private const string ColumnDelimiter = ",";
-        private const string OldestHlaDatabaseVersionToImport = "3000";
+        private const string OldestHlaNomenclatureVersionToImport = "3000";
 
         private static readonly Regex ColumnNamesRegex =
-            new Regex("^HLA_ID" + ColumnDelimiter + @"(?:\d+" + ColumnDelimiter + "){1,}" + OldestHlaDatabaseVersionToImport);
+            new Regex("^HLA_ID" + ColumnDelimiter + @"(?:\d+" + ColumnDelimiter + "){1,}" + OldestHlaNomenclatureVersionToImport);
 
         private static readonly Regex AlleleHistoryRegex = new Regex(@"^HLA\d+,.+$");
         private static readonly Regex AlleleNameRegex = new Regex(@"\" + MolecularPrefix + @"([\w:]+)");
         private const string NoAlleleNamePlaceHolder = "NA";
         private const string MolecularPrefix = "*";
 
-        private IEnumerable<string> hlaDatabaseVersions;
+        private IEnumerable<string> hlaNomenclatureVersions;
 
         public AlleleHistoryExtractor() : base(FileName)
         {
@@ -28,8 +28,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors
 
         protected override void ExtractHeaders(string headersLine)
         {
-            // HLA database versions are listed as column names in first line of file contents
-            hlaDatabaseVersions = ExtractHlaDatabaseVersionsFromLine(headersLine);
+            // HLA Nomenclature versions are listed as column names in first line of file contents
+            hlaNomenclatureVersions = ExtractHlaNomenclatureVersionsFromLine(headersLine);
         }
 
         protected override AlleleNameHistory MapLineOfFileContentsToWmdaHlaTyping(string line)
@@ -89,7 +89,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors
 
             if (!alleleNames.All(string.IsNullOrEmpty))
             {
-                versionedAlleleNames = hlaDatabaseVersions
+                versionedAlleleNames = hlaNomenclatureVersions
                     .Zip(alleleNames, (version, alleleName)
                         => new VersionedAlleleName(version, alleleName))
                     .ToList();
@@ -102,7 +102,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors
         {
             return lineSplitByColumnDelimiter
                 .Skip(1)
-                .Take(hlaDatabaseVersions.Count())
+                .Take(hlaNomenclatureVersions.Count())
                 .Select(GetAlleleNameWithoutLocus);
         }
 
@@ -116,25 +116,25 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors
             return AlleleNameRegex.Match(input).Groups[1].Value;
         }
 
-        private static IEnumerable<string> ExtractHlaDatabaseVersionsFromLine(string line)
+        private static IEnumerable<string> ExtractHlaNomenclatureVersionsFromLine(string line)
         {
-            if (!TryExtractHlaDatabaseVersions(line, out var databaseVersions))
+            if (!TryExtractHlaNomenclatureVersions(line, out var hlaNomenclatureVersions))
             {
-                throw new ArgumentException($"Could not extract HLA database versions from {FileName} file.");
+                throw new ArgumentException($"Could not extract HLA Nomenclature versions from {FileName} file.");
             }
 
-            return databaseVersions;
+            return hlaNomenclatureVersions;
         }
 
-        private static bool TryExtractHlaDatabaseVersions(string line, out IEnumerable<string> hlaDatabaseVersions)
+        private static bool TryExtractHlaNomenclatureVersions(string line, out IEnumerable<string> hlaNomenclatureVersions)
         {
-            hlaDatabaseVersions = ColumnNamesRegex
+            hlaNomenclatureVersions = ColumnNamesRegex
                 .Match(line)
                 .Value
                 .Split(ColumnDelimiter.ToCharArray())
                 .Skip(1);
 
-            return hlaDatabaseVersions.Any();
+            return hlaNomenclatureVersions.Any();
         }
     }
 }

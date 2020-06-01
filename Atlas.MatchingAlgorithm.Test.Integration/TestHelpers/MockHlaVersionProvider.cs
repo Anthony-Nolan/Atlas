@@ -6,6 +6,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
     // So provide a trivial stubbed version of this class for tests.
     public class MockHlaVersionProvider : IActiveHlaVersionAccessor
     {
-        public string GetActiveHlaDatabaseVersion() => null;
+        public string GetActiveHlaNomenclatureVersion() => null;
     }
 }

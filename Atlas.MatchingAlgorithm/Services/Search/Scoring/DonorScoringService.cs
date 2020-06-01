@@ -48,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             IMatchScoreCalculator matchScoreCalculator,
             IScoreResultAggregator scoreResultAggregator)
         {
-            this.hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaDatabaseVersion());
+            this.hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaNomenclatureVersion());
             this.gradingService = gradingService;
             this.confidenceService = confidenceService;
             this.rankingService = rankingService;

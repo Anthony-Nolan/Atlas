@@ -56,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         }
 
         [Test]
-        public async Task ExpandDonorHlaBatchAsync_HlaDatabaseVersionProvidedToFactory_ExpandsDonorHlaWithAppropriateDictionary()
+        public async Task ExpandDonorHlaBatchAsync_HlaNomenclatureVersionProvidedToFactory_ExpandsDonorHlaWithAppropriateDictionary()
         {
             var dictionaryBuilder = new HlaMetadataDictionaryBuilder().Returning(hlaMetadataDictionary);
 

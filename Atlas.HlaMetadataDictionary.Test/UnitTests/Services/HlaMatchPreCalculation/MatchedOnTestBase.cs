@@ -9,8 +9,6 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaMatchPreCalcula
 {
     internal abstract class MatchedOnTestBase<TMatchedOn> where TMatchedOn : IMatchedOn
     {
-        protected const string HlaDatabaseVersionToTest = "3330";
-
         protected List<TMatchedOn> MatchedHla { get; set; }
 
         protected TMatchedOn GetSingleMatchingTyping(Locus locus, string hlaName)

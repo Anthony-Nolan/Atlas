@@ -4,12 +4,12 @@ namespace Atlas.HlaMetadataDictionary.Models.Wmda
 {
     internal class VersionedAlleleName : IEquatable<VersionedAlleleName>
     {
-        public string HlaDatabaseVersion { get; }
+        public string HlaDatabaseVersion { get; } //QQ Rename. DB?
         public string AlleleName { get; }
 
-        public VersionedAlleleName(string hlaDatabaseVersion, string alleleName)
+        public VersionedAlleleName(string hlaNomenclatureVersion, string alleleName)
         {
-            HlaDatabaseVersion = hlaDatabaseVersion;
+            HlaDatabaseVersion = hlaNomenclatureVersion;
             AlleleName = alleleName;
         }
 
@@ -18,6 +18,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Wmda
             return $"v{HlaDatabaseVersion}: {AlleleName}";
         }
 
+        #region IEquatable
         public bool Equals(VersionedAlleleName other)
         {
             if (ReferenceEquals(null, other)) return false;
@@ -42,5 +43,6 @@ namespace Atlas.HlaMetadataDictionary.Models.Wmda
                 return (HlaDatabaseVersion.GetHashCode() * 397) ^ AlleleName.GetHashCode();
             }
         }
+        #endregion
     }
 }

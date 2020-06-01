@@ -16,7 +16,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// </summary>
     internal interface IDpb1TceGroupLookupService : IHlaSearchingLookupService<IDpb1TceGroupsLookupResult>
     {
-        Task<string> GetDpb1TceGroup(string dpb1HlaName, string hlaDatabaseVersion);
+        Task<string> GetDpb1TceGroup(string dpb1HlaName, string hlaNomenclatureVersion);
     }
 
     internal class Dpb1TceGroupLookupService : 
@@ -41,9 +41,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         {
         }
 
-        public async Task<string> GetDpb1TceGroup(string dpb1HlaName, string hlaDatabaseVersion)
+        public async Task<string> GetDpb1TceGroup(string dpb1HlaName, string hlaNomenclatureVersion)
         {
-            var lookupResult = await GetHlaLookupResult(Locus.Dpb1, dpb1HlaName, hlaDatabaseVersion);
+            var lookupResult = await GetHlaLookupResult(Locus.Dpb1, dpb1HlaName, hlaNomenclatureVersion);
             return lookupResult.TceGroup;
         }
 

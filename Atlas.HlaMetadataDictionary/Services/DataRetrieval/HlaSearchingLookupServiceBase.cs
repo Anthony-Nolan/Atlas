@@ -13,7 +13,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     internal interface IHlaSearchingLookupService<THlaLookupResult>
         where THlaLookupResult : IHlaLookupResult
     {
-        Task<THlaLookupResult> GetHlaLookupResult(Locus locus, string hlaName, string hlaDatabaseVersion);
+        Task<THlaLookupResult> GetHlaLookupResult(Locus locus, string hlaName, string hlaNomenclatureVersion);
     }
 
     /// <summary>
@@ -47,9 +47,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             this.cache = cache;
         }
 
-        public async Task<THlaLookupResult> GetHlaLookupResult(Locus locus, string hlaName, string hlaDatabaseVersion)
+        public async Task<THlaLookupResult> GetHlaLookupResult(Locus locus, string hlaName, string hlaNomenclatureVersion)
         {
-            return await GetLookupResults(locus, hlaName, hlaDatabaseVersion);
+            return await GetLookupResults(locus, hlaName, hlaNomenclatureVersion);
         }
 
         protected override bool LookupNameIsValid(string lookupName)
@@ -57,15 +57,15 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             return !string.IsNullOrEmpty(lookupName);
         }
 
-        protected override async Task<THlaLookupResult> PerformLookup(Locus locus, string lookupName, string hlaDatabaseVersion)
+        protected override async Task<THlaLookupResult> PerformLookup(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            return await GetSingleHlaLookupResult(locus, lookupName, hlaDatabaseVersion);
+            return await GetSingleHlaLookupResult(locus, lookupName, hlaNomenclatureVersion);
         }
 
-        private async Task<THlaLookupResult> GetSingleHlaLookupResult(Locus locus, string lookupName, string hlaDatabaseVersion)
+        private async Task<THlaLookupResult> GetSingleHlaLookupResult(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
             var dictionaryLookup = GetHlaLookup(lookupName);
-            var lookupTableEntities = await dictionaryLookup.PerformLookupAsync(locus, lookupName, hlaDatabaseVersion);
+            var lookupTableEntities = await dictionaryLookup.PerformLookupAsync(locus, lookupName, hlaNomenclatureVersion);
             var lookupResults = ConvertTableEntitiesToLookupResults(lookupTableEntities);
 
             return ConsolidateHlaLookupResults(locus, lookupName, lookupResults);

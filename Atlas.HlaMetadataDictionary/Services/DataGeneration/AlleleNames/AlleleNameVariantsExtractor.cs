@@ -8,7 +8,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 {
     internal interface IAlleleNameVariantsExtractor
     {
-        IEnumerable<IAlleleNameLookupResult> GetAlleleNames(IEnumerable<IAlleleNameLookupResult> originalAlleleNames, string hlaDatabaseVersion);
+        IEnumerable<IAlleleNameLookupResult> GetAlleleNames(IEnumerable<IAlleleNameLookupResult> originalAlleleNames, string hlaNomenclatureVersion);
     }
 
     internal class AlleleNameVariantsExtractor : AlleleNamesExtractorBase, IAlleleNameVariantsExtractor
@@ -18,13 +18,13 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
         {
         }
 
-        public IEnumerable<IAlleleNameLookupResult> GetAlleleNames(IEnumerable<IAlleleNameLookupResult> originalAlleleNames, string hlaDatabaseVersion)
+        public IEnumerable<IAlleleNameLookupResult> GetAlleleNames(IEnumerable<IAlleleNameLookupResult> originalAlleleNames, string hlaNomenclatureVersion)
         {
-            var variantsNotFoundInHistories = originalAlleleNames.SelectMany(n => GetAlleleNameVariantsNotFoundInHistories(n, hlaDatabaseVersion)).ToList();
+            var variantsNotFoundInHistories = originalAlleleNames.SelectMany(n => GetAlleleNameVariantsNotFoundInHistories(n, hlaNomenclatureVersion)).ToList();
             return GroupAlleleNamesByLocusAndLookupName(variantsNotFoundInHistories);
         }
 
-        private IEnumerable<IAlleleNameLookupResult> GetAlleleNameVariantsNotFoundInHistories(IAlleleNameLookupResult alleleName, string hlaDatabaseVersion)
+        private IEnumerable<IAlleleNameLookupResult> GetAlleleNameVariantsNotFoundInHistories(IAlleleNameLookupResult alleleName, string hlaNomenclatureVersion)
         {
             var typingFromCurrentName = new AlleleTyping(
                 alleleName.Locus,
@@ -32,7 +32,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 
             return typingFromCurrentName
                 .NameVariantsTruncatedByFieldAndOrExpressionSuffix
-                .Where(nameVariant => AlleleNameIsNotInHistories(typingFromCurrentName.TypingLocus, nameVariant, hlaDatabaseVersion))
+                .Where(nameVariant => AlleleNameIsNotInHistories(typingFromCurrentName.TypingLocus, nameVariant, hlaNomenclatureVersion))
                 .Select(nameVariant => new AlleleNameLookupResult(
                     alleleName.Locus,
                     nameVariant,

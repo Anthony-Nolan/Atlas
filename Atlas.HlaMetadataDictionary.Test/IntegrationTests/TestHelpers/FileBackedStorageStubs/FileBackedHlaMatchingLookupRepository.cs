@@ -14,9 +14,11 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
             return resultCollections.HlaMatchingLookupResults;
         }
 
-        /// <param name="hlaDatabaseVersion">The file backed version of the matching dictionary used for integration tests does not
-        /// support multiple versions of the hla database, so this parameter is ignored</param>
-        public IEnumerable<string> GetAllPGroups(string hlaDatabaseVersion)
+        /// <param name="hlaNomenclatureVersion">
+        /// The file backed version of the matching dictionary used for integration tests is locked
+        /// to a single version of the HLA Nomenclature ("3330"), so this parameter is ignored.
+        /// </param>
+        public IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion)
         {
             return HlaLookupResults.SelectMany(hla => hla.MatchingPGroups);
         }
