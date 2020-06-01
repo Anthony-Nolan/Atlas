@@ -18,7 +18,7 @@ resource "azurerm_function_app" "atlas_function" {
     "MessagingServiceBus:SearchResultsTopic"    = module.matching_algorithm.general.search_results_topic
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "1"
     "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
-    "MacImport:ConnectionString"                = var.MAC_TABLE_CONNECTION_STRING
-    "MacImport:TableName"                       = var.MAC_TABLE_NAME
+    "MacImport:ConnectionString"                = azurerm_storage_account.azure_storage.primary_connection_string
+    "MacImport:TableName"                       = module.multiple_allele_code_lookup.general.storage_table_name
   }
 }
