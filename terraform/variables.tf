@@ -163,3 +163,8 @@ variable "WEBSITE_RUN_FROM_PACKAGE" {
   type    = string
   default = "1"
 }
+
+variable "MAC_TABLE_CONNECTION_STRING" {
+  type        = string
+  description = "The connection string for the ATLAS table storage containing multiple allele codes"
+}
