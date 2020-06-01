@@ -1,10 +1,10 @@
 resource "azurerm_function_app" "atlas_function" {
-  name                       = "${local.environment}-ATLAS-FUNCTION"
-  resource_group_name        = azurerm_resource_group.atlas_resource_group.name
-  location                   = local.location
-  app_service_plan_id        = azurerm_app_service_plan.atlas.id
-  https_only                 = true
-  version                    = "~3"
+  name                      = "${local.environment}-ATLAS-FUNCTION"
+  resource_group_name       = azurerm_resource_group.atlas_resource_group.name
+  location                  = local.location
+  app_service_plan_id       = azurerm_app_service_plan.atlas.id
+  https_only                = true
+  version                   = "~3"
   storage_connection_string = azurerm_storage_account.function_storage.primary_connection_string
 
   tags = local.common_tags
@@ -19,5 +19,6 @@ resource "azurerm_function_app" "atlas_function" {
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "1"
     "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
     "MacImport:ConnectionString"                = var.MAC_TABLE_CONNECTION_STRING
+    "MacImport:TableName"                       = var.MAC_TABLE_NAME
   }
 }
