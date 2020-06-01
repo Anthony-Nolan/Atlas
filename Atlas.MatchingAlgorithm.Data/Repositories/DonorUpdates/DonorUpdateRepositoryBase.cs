@@ -1,4 +1,4 @@
-﻿using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Common.Repositories;
 using Atlas.MatchingAlgorithm.Data.Helpers;
