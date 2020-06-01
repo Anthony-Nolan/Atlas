@@ -32,6 +32,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
+      <ProjectReference Include="..\Atlas.DonorImport\Atlas.DonorImport.csproj" />
       <ProjectReference Include="..\Atlas.HlaMetadataDictionary\Atlas.HlaMetadataDictionary.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Client.Models\Atlas.MatchingAlgorithm.Client.Models.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Data\Atlas.MatchingAlgorithm.Data.csproj" />
