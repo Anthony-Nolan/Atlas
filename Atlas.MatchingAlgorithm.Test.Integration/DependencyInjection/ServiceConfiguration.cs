@@ -30,7 +30,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             
             services.AddSingleton<IConfiguration>(sp => configuration);
             
-            services.RegisterCombinedMatchingAlgorithmAndDonorManagement();
+            services.RegisterMatchingAlgorithm();
+            services.RegisterMatchingAlgorithmDonorManagement();
+            
+            // This call must be made after `RegisterMatchingAlgorithm()`, as it overrides the non-mock dictionary set up in that method
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value); //These configuration values won't be used, because all they are all (indirectly) overridden, below.
 
             services.AddScoped(sp =>
