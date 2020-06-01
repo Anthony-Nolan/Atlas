@@ -256,7 +256,7 @@ We only store as much information as is needed for a search - ID, Donor Type, an
 
 - Start the job by triggering the `RunDonorImport` function
 - The job is expected to take several hours to run
-- The job will only be re-run in full when WMDA data is updated (every 3 months).
+- The job will only be re-run in full when WMDA publish a new version of the HLA Nomenclature (every 3 months).
   - A smaller donor import of only new/changed donors should be configured to run overnight (NOVA-2131. At time of writing, 07/08/2018, this is yet to be implemented)
 
 ### (3) Hla Processing
@@ -265,7 +265,7 @@ For each donor, we expand all hla into corresponding p-groups, and store a relat
 
 - Start the job by triggering the `ProcessDonorHla` function
 - The job is expected to take multiple hours to run
-- The job will only be re-run in full when WMDA data is updated (every 3 months).
+- The job will only be re-run in full when WMDA publish a new version of the HLA Nomenclature (every 3 months).
   - New/changed donors should have these relations (re-)calculated as they change (NOVA-2131. At time of writing, 07/08/2018, this is yet to be implemented)
 
 ## Support
@@ -411,7 +411,7 @@ No external dependencies or storage, testing individual code units.
 
 ### **HlaMetadata Dictionary Tests**
 
-These tests use checked in versions of the allele data we fetch from WMDA. Originally they were directly copied from a version of the WMDA data, but to speed up testing, alleles unused in any unit test have been removed from some of the files - as such they should not be considered to be valid representations of the WMDA data.
+These tests use checked in versions of the allele data we fetch from WMDA. Originally they were directly copied from a full version of the WMDA data, but to speed up testing, alleles unused in any unit test have been removed from some of the files - as such they should not be considered to be valid representations of the WMDA data.
 
 Any new alleles required in testing the HlaMetadata Dictionary should be added, and any no longer used can be removed.
 

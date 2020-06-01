@@ -10,7 +10,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
     /// </summary>
     internal interface IAlleleNamesService
     {
-        IEnumerable<IAlleleNameLookupResult> GetAlleleNamesAndTheirVariants(string hlaDatabaseVersion);
+        IEnumerable<IAlleleNameLookupResult> GetAlleleNamesAndTheirVariants(string hlaNomenclatureVersion);
     }
 
     /// <inheritdoc />
@@ -33,11 +33,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             this.reservedAlleleNamesExtractor = reservedAlleleNamesExtractor;
         }
 
-        public IEnumerable<IAlleleNameLookupResult> GetAlleleNamesAndTheirVariants(string hlaDatabaseVersion)
+        public IEnumerable<IAlleleNameLookupResult> GetAlleleNamesAndTheirVariants(string hlaNomenclatureVersion)
         {
-            var alleleNamesFromHistories = GetAlleleNamesFromHistories(hlaDatabaseVersion).ToList();
-            var nameVariants = GetAlleleNameVariants(alleleNamesFromHistories, hlaDatabaseVersion).ToList();
-            var reservedNames = GetReservedAlleleNames(hlaDatabaseVersion).ToList();
+            var alleleNamesFromHistories = GetAlleleNamesFromHistories(hlaNomenclatureVersion).ToList();
+            var nameVariants = GetAlleleNameVariants(alleleNamesFromHistories, hlaNomenclatureVersion).ToList();
+            var reservedNames = GetReservedAlleleNames(hlaNomenclatureVersion).ToList();
 
             var mergedCollectionOfAlleleNames = alleleNamesFromHistories
                 .Concat(nameVariants)
@@ -47,19 +47,19 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             return mergedCollectionOfAlleleNames;
         }
 
-        private IEnumerable<IAlleleNameLookupResult> GetAlleleNamesFromHistories(string hlaDatabaseVersion)
+        private IEnumerable<IAlleleNameLookupResult> GetAlleleNamesFromHistories(string hlaNomenclatureVersion)
         {
-            return alleleNamesFromHistoriesExtractor.GetAlleleNames(hlaDatabaseVersion);
+            return alleleNamesFromHistoriesExtractor.GetAlleleNames(hlaNomenclatureVersion);
         }
 
-        private IEnumerable<IAlleleNameLookupResult> GetAlleleNameVariants(IEnumerable<IAlleleNameLookupResult> originalAlleleNames, string hlaDatabaseVersion)
+        private IEnumerable<IAlleleNameLookupResult> GetAlleleNameVariants(IEnumerable<IAlleleNameLookupResult> originalAlleleNames, string hlaNomenclatureVersion)
         {
-            return alleleNameVariantsExtractor.GetAlleleNames(originalAlleleNames, hlaDatabaseVersion);
+            return alleleNameVariantsExtractor.GetAlleleNames(originalAlleleNames, hlaNomenclatureVersion);
         }
 
-        private IEnumerable<IAlleleNameLookupResult> GetReservedAlleleNames(string hlaDatabaseVersion)
+        private IEnumerable<IAlleleNameLookupResult> GetReservedAlleleNames(string hlaNomenclatureVersion)
         {
-            return reservedAlleleNamesExtractor.GetAlleleNames(hlaDatabaseVersion);
+            return reservedAlleleNamesExtractor.GetAlleleNames(hlaNomenclatureVersion);
         }
     }
 }

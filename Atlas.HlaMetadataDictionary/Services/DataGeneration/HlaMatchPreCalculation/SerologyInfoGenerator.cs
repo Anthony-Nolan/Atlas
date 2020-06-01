@@ -22,16 +22,16 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
             this.dataRepository = dataRepository;
         }
 
-        public IEnumerable<ISerologyInfoForMatching> GetSerologyInfoForMatching(string hlaDatabaseVersion)
+        public IEnumerable<ISerologyInfoForMatching> GetSerologyInfoForMatching(string hlaNomenclatureVersion)
         {
-            return dataRepository.GetWmdaDataset(hlaDatabaseVersion).Serologies.Select(s => GetInfoForSingleSerology(s, hlaDatabaseVersion));
+            return dataRepository.GetWmdaDataset(hlaNomenclatureVersion).Serologies.Select(s => GetInfoForSingleSerology(s, hlaNomenclatureVersion));
         }
 
-        private ISerologyInfoForMatching GetInfoForSingleSerology(HlaNom serology, string hlaDatabaseVersion)
+        private ISerologyInfoForMatching GetInfoForSingleSerology(HlaNom serology, string hlaNomenclatureVersion)
         {
-            var serologyTyping = GetSerologyTyping(serology, hlaDatabaseVersion);
-            var usedInMatching = GetTypingUsedInMatching(serology, serologyTyping, hlaDatabaseVersion);
-            var matchingSerologies = GetAllMatchingSerologies(serologyTyping, usedInMatching, hlaDatabaseVersion);
+            var serologyTyping = GetSerologyTyping(serology, hlaNomenclatureVersion);
+            var usedInMatching = GetTypingUsedInMatching(serology, serologyTyping, hlaNomenclatureVersion);
+            var matchingSerologies = GetAllMatchingSerologies(serologyTyping, usedInMatching, hlaNomenclatureVersion);
 
             return new SerologyInfoForMatching(
                 serologyTyping,
@@ -39,14 +39,14 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
                 matchingSerologies);
         }
 
-        private SerologyTyping GetSerologyTyping(HlaNom serology, string hlaDatabaseVersion)
+        private SerologyTyping GetSerologyTyping(HlaNom serology, string hlaNomenclatureVersion)
         {
-            var serologyRelationships = dataRepository.GetWmdaDataset(hlaDatabaseVersion).SerologyToSerologyRelationships;
+            var serologyRelationships = dataRepository.GetWmdaDataset(hlaNomenclatureVersion).SerologyToSerologyRelationships;
             var family = new SerologyFamily(serologyRelationships, serology, serology.IsDeleted);
             return family.SerologyTyping;
         }
 
-        private SerologyTyping GetTypingUsedInMatching(HlaNom serology, SerologyTyping serologyTyping, string hlaDatabaseVersion)
+        private SerologyTyping GetTypingUsedInMatching(HlaNom serology, SerologyTyping serologyTyping, string hlaNomenclatureVersion)
         {
             if (string.IsNullOrEmpty(serology.IdenticalHla))
             {
@@ -54,23 +54,23 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
             }
 
             var identicalSerology = new HlaNom(TypingMethod.Serology, serology.TypingLocus, serology.IdenticalHla);
-            return GetSerologyTyping(identicalSerology, hlaDatabaseVersion);
+            return GetSerologyTyping(identicalSerology, hlaNomenclatureVersion);
         }
 
         private IEnumerable<MatchingSerology> GetAllMatchingSerologies(
             SerologyTyping serologyTyping,
             SerologyTyping usedInMatching,
-            string hlaDatabaseVersion)
+            string hlaNomenclatureVersion)
         {
-            var matchedToSerologyTyping = GetMatchingSerologies(serologyTyping, hlaDatabaseVersion);
-            var matchedToUsedInMatching = GetMatchingSerologies(usedInMatching, hlaDatabaseVersion);
+            var matchedToSerologyTyping = GetMatchingSerologies(serologyTyping, hlaNomenclatureVersion);
+            var matchedToUsedInMatching = GetMatchingSerologies(usedInMatching, hlaNomenclatureVersion);
 
             return matchedToSerologyTyping.Union(matchedToUsedInMatching);
         }
 
-        private IEnumerable<MatchingSerology> GetMatchingSerologies(SerologyTyping serology, string hlaDatabaseVersion)
+        private IEnumerable<MatchingSerology> GetMatchingSerologies(SerologyTyping serology, string hlaNomenclatureVersion)
         {
-            var serologyRelationships = dataRepository.GetWmdaDataset(hlaDatabaseVersion).SerologyToSerologyRelationships;
+            var serologyRelationships = dataRepository.GetWmdaDataset(hlaNomenclatureVersion).SerologyToSerologyRelationships;
 
             var calculator = new MatchingSerologyCalculatorFactory()
                 .GetMatchingSerologyCalculator(serology.SerologySubtype, serologyRelationships);

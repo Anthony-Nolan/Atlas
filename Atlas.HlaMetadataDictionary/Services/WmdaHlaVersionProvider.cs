@@ -5,21 +5,21 @@ using LazyCache;
 
 namespace Atlas.HlaMetadataDictionary.Services
 {
-    internal interface IWmdaHlaVersionProvider
+    internal interface IWmdaHlaVersionAccessor
     {
         /// <summary>
-        /// Fetches the last stable hla database version.
+        /// Fetches the last stable HLA Nomenclature version.
         /// </summary>
         /// <returns>The latest stable database version, in the format "3370" (i.e. major & minor versions only, no dots)</returns>
-        string GetLatestStableHlaDatabaseVersion();
+        string GetLatestStableHlaNomenclatureVersion();
     }
 
-    internal class WmdaHlaVersionProvider : IWmdaHlaVersionProvider
+    internal class WmdaHlaVersionAccessor : IWmdaHlaVersionAccessor
     {
         private readonly IWmdaFileReader fileReader;
         private readonly IAppCache cache;
 
-        public WmdaHlaVersionProvider(
+        public WmdaHlaVersionAccessor(
             IWmdaFileReader fileReader,
             ITransientCacheProvider cacheProvider)
         {
@@ -27,7 +27,7 @@ namespace Atlas.HlaMetadataDictionary.Services
             this.cache = cacheProvider.Cache;
         }
 
-        public string GetLatestStableHlaDatabaseVersion()
+        public string GetLatestStableHlaNomenclatureVersion()
         {
             const string key = "latestWmdaVersion";
             var version = cache.GetOrAdd(key, () =>

@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             IHlaMetadataDictionaryFactory factory,
             IActiveHlaVersionAccessor hlaVersionAccessor)
         {
-            hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaDatabaseVersion());
+            hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]

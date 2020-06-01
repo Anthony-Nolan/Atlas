@@ -18,7 +18,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// </summary>
     internal interface IHlaLookupResultsService
     {
-        HlaLookupResultCollections GetAllHlaLookupResults(string hlaDatabaseVersion);
+        HlaLookupResultCollections GetAllHlaLookupResults(string hlaNomenclatureVersion);
     }
 
     internal class HlaLookupResultsService : IHlaLookupResultsService
@@ -46,15 +46,15 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             this.logger = logger;
         }
 
-        public HlaLookupResultCollections GetAllHlaLookupResults(string hlaDatabaseVersion)
+        public HlaLookupResultCollections GetAllHlaLookupResults(string hlaNomenclatureVersion)
         {
             try
             {
                 logger.SendTrace("HlaMetadataDictionary: Processing Allele Names", LogLevel.Info);
-                var alleleNameLookupResults = GetAlleleNamesAndTheirVariants(hlaDatabaseVersion);
+                var alleleNameLookupResults = GetAlleleNamesAndTheirVariants(hlaNomenclatureVersion);
                 
                 logger.SendTrace("HlaMetadataDictionary: Processing Pre-calculated match hla", LogLevel.Info);
-                var preCalculatedMatchedHla = GetPreCalculatedMatchedHla(hlaDatabaseVersion).ToList();
+                var preCalculatedMatchedHla = GetPreCalculatedMatchedHla(hlaNomenclatureVersion).ToList();
                 
                 logger.SendTrace("HlaMetadataDictionary: Processing Matching lookup", LogLevel.Info);
                 var matchingLookupResults = GetMatchingLookupResults(preCalculatedMatchedHla);
@@ -63,7 +63,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 var scoringLookupResults = GetScoringLookupResults(preCalculatedMatchedHla);
 
                 logger.SendTrace("HlaMetadataDictionary: Processing TCE group lookup", LogLevel.Info);
-                var dpb1TceGroupLookupResults = GetDpb1TceGroupLookupResults(hlaDatabaseVersion);
+                var dpb1TceGroupLookupResults = GetDpb1TceGroupLookupResults(hlaNomenclatureVersion);
 
                 return new HlaLookupResultCollections
                 {
@@ -79,14 +79,14 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             }
         }
 
-        private IEnumerable<IMatchedHla> GetPreCalculatedMatchedHla(string hlaDatabaseVersion)
+        private IEnumerable<IMatchedHla> GetPreCalculatedMatchedHla(string hlaNomenclatureVersion)
         {
-            return matchPreCalculationService.GetMatchedHla(hlaDatabaseVersion);
+            return matchPreCalculationService.GetMatchedHla(hlaNomenclatureVersion);
         }
 
-        private IEnumerable<IAlleleNameLookupResult> GetAlleleNamesAndTheirVariants(string hlaDatabaseVersion)
+        private IEnumerable<IAlleleNameLookupResult> GetAlleleNamesAndTheirVariants(string hlaNomenclatureVersion)
         {
-            return alleleNamesService.GetAlleleNamesAndTheirVariants(hlaDatabaseVersion);
+            return alleleNamesService.GetAlleleNamesAndTheirVariants(hlaNomenclatureVersion);
         }
 
         private IEnumerable<ISerialisableHlaMetadata> GetMatchingLookupResults(IEnumerable<IMatchedHla> matchedHla)
@@ -99,9 +99,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             return hlaScoringDataConverter.ConvertToHlaLookupResults(matchedHla);
         }
 
-        private IEnumerable<ISerialisableHlaMetadata> GetDpb1TceGroupLookupResults(string hlaDatabaseVersion)
+        private IEnumerable<ISerialisableHlaMetadata> GetDpb1TceGroupLookupResults(string hlaNomenclatureVersion)
         {
-            return dpb1TceGroupsService.GetDpb1TceGroupLookupResults(hlaDatabaseVersion);
+            return dpb1TceGroupsService.GetDpb1TceGroupLookupResults(hlaNomenclatureVersion);
         }
     }
 }

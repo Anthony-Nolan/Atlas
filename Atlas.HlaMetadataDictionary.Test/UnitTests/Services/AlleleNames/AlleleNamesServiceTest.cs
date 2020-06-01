@@ -26,7 +26,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.AlleleNames
                 var reservedNamesExtractor = new ReservedAlleleNamesExtractor(dataRepository);
 
                 alleleNameLookupResults = new AlleleNamesService(fromExtractorExtractor, variantsExtractor, reservedNamesExtractor)
-                    .GetAlleleNamesAndTheirVariants(SharedTestDataCache.HlaDatabaseVersionToTest)
+                    .GetAlleleNamesAndTheirVariants(SharedTestDataCache.HlaNomenclatureVersionToTest)
                     .ToList();
             });
         }

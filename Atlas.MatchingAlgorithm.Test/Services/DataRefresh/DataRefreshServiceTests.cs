@@ -107,17 +107,17 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task RefreshData_ReportsHlaMetadataWasRecreated_WithRefreshHlaDatabaseVersion()
+        public async Task RefreshData_ReportsHlaMetadataWasRecreated_WithRefreshHlaNomenclatureVersion()
         {
-            const string hlaDatabaseVersion = "3390";
+            const string hlaNomenclatureVersion = "3390";
             hlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion().Returns(true);
             hlaMetadataDictionary
                 .RecreateHlaMetadataDictionary(CreationBehaviour.Latest)
-                .Returns(hlaDatabaseVersion);
+                .Returns(hlaNomenclatureVersion);
 
             var returnedHlaVersion = await dataRefreshService.RefreshData();
 
-            returnedHlaVersion.Should().Be(hlaDatabaseVersion);
+            returnedHlaVersion.Should().Be(hlaNomenclatureVersion);
         }
 
         [Test]
@@ -129,17 +129,17 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task RefreshData_ProcessesDonorHla_WithRefreshHlaDatabaseVersion()
+        public async Task RefreshData_ProcessesDonorHla_WithRefreshHlaNomenclatureVersion()
         {
-            const string hlaDatabaseVersion = "3390";
+            const string hlaNomenclatureVersion = "3390";
             hlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion().Returns(true);
             hlaMetadataDictionary
                 .RecreateHlaMetadataDictionary(CreationBehaviour.Latest)
-                .Returns(hlaDatabaseVersion);
+                .Returns(hlaNomenclatureVersion);
 
             await dataRefreshService.RefreshData();
 
-            await hlaProcessor.Received().UpdateDonorHla(hlaDatabaseVersion);
+            await hlaProcessor.Received().UpdateDonorHla(hlaNomenclatureVersion);
         }
 
         [Test]

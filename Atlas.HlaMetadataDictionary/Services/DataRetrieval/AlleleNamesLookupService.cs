@@ -10,7 +10,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
     internal interface IAlleleNamesLookupService
     {
-        Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName, string hlaDatabaseVersion);
+        Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName, string hlaNomenclatureVersion);
     }
 
     internal class AlleleNamesLookupService : LookupServiceBase<IEnumerable<string>>, IAlleleNamesLookupService
@@ -26,9 +26,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             this.hlaCategorisationService = hlaCategorisationService;
         }
 
-        public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName, string hlaDatabaseVersion)
+        public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName, string hlaNomenclatureVersion)
         {
-            return await GetLookupResults(locus, alleleLookupName, hlaDatabaseVersion);
+            return await GetLookupResults(locus, alleleLookupName, hlaNomenclatureVersion);
         }
 
         protected override bool LookupNameIsValid(string lookupName)
@@ -37,9 +37,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                    hlaCategorisationService.GetHlaTypingCategory(lookupName) == HlaTypingCategory.Allele;
         }
 
-        protected override async Task<IEnumerable<string>> PerformLookup(Locus locus, string lookupName, string hlaDatabaseVersion)
+        protected override async Task<IEnumerable<string>> PerformLookup(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            var alleleNameLookupResult = await alleleNamesLookupRepository.GetAlleleNameIfExists(locus, lookupName, hlaDatabaseVersion);
+            var alleleNameLookupResult = await alleleNamesLookupRepository.GetAlleleNameIfExists(locus, lookupName, hlaNomenclatureVersion);
 
             if (alleleNameLookupResult == null)
             {

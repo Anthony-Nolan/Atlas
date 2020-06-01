@@ -6,7 +6,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 {
     public interface IDonorHlaExpanderFactory
     {
-        IDonorHlaExpander BuildForSpecifiedHlaNomenclatureVersion(string hlaDatabaseVersion);
+        IDonorHlaExpander BuildForSpecifiedHlaNomenclatureVersion(string hlaNomenclatureVersion);
         IDonorHlaExpander BuildForActiveHlaNomenclatureVersion();
     }
 
@@ -28,12 +28,12 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 
         public IDonorHlaExpander BuildForActiveHlaNomenclatureVersion()
         {
-            return BuildForSpecifiedHlaNomenclatureVersion(versionAccessor.GetActiveHlaDatabaseVersion());
+            return BuildForSpecifiedHlaNomenclatureVersion(versionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
-        public IDonorHlaExpander BuildForSpecifiedHlaNomenclatureVersion(string hlaDatabaseVersion)
+        public IDonorHlaExpander BuildForSpecifiedHlaNomenclatureVersion(string hlaNomenclatureVersion)
         {
-            var specifiedVersionDictionary = dictionaryFactory.BuildDictionary(hlaDatabaseVersion);
+            var specifiedVersionDictionary = dictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
             return new DonorHlaExpander(specifiedVersionDictionary, logger);
         }
     }

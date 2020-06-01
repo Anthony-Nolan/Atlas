@@ -18,7 +18,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
     /// </summary>
     internal interface ILookupRepository
     {
-        Task LoadDataIntoMemory(string hlaDatabaseVersion);
+        Task LoadDataIntoMemory(string hlaNomenclatureVersion);
     }
 
     internal abstract class LookupRepositoryBase<TStorable, TTableEntity> :
@@ -51,26 +51,26 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
         /// <summary>
         /// If you plan to use this repository with multiple async operations, this method should be called first
         /// </summary>
-        public async Task LoadDataIntoMemory(string hlaDatabaseVersion)
+        public async Task LoadDataIntoMemory(string hlaNomenclatureVersion)
         {
-            var data = await FetchTableData(hlaDatabaseVersion);
-            cache.Add(VersionedCacheKey(hlaDatabaseVersion), data);
+            var data = await FetchTableData(hlaNomenclatureVersion);
+            cache.Add(VersionedCacheKey(hlaNomenclatureVersion), data);
         }
 
-        protected async Task RecreateDataTable(IEnumerable<TStorable> tableContents, string hlaDatabaseVersion)
+        protected async Task RecreateDataTable(IEnumerable<TStorable> tableContents, string hlaNomenclatureVersion)
         {
-            var tablePrefix = VersionedTableReferencePrefix(hlaDatabaseVersion);
+            var tablePrefix = VersionedTableReferencePrefix(hlaNomenclatureVersion);
             var newDataTable = await CreateNewDataTable(tablePrefix);
             await InsertIntoDataTable(tableContents, newDataTable);
             await tableReferenceRepository.UpdateTableReference(tablePrefix, newDataTable.Name);
             cloudTable = null;
         }
 
-        protected async Task<TTableEntity> GetDataIfExists(string partition, string rowKey, string hlaDatabaseVersion)
+        protected async Task<TTableEntity> GetDataIfExists(string partition, string rowKey, string hlaNomenclatureVersion)
         {
-            var versionedCacheKey = VersionedCacheKey(hlaDatabaseVersion);
+            var versionedCacheKey = VersionedCacheKey(hlaNomenclatureVersion);
 
-            var tableData = await cache.GetOrAddAsync(versionedCacheKey, () => FetchTableData(hlaDatabaseVersion));
+            var tableData = await cache.GetOrAddAsync(versionedCacheKey, () => FetchTableData(hlaNomenclatureVersion));
 
             if (tableData == null)
             {
@@ -80,14 +80,14 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
             return GetDataFromCache(partition, rowKey, tableData);
         }
 
-        protected string VersionedCacheKey(string hlaDatabaseVersion)
+        protected string VersionedCacheKey(string hlaNomenclatureVersion)
         {
-            return $"{cacheKey}:{hlaDatabaseVersion}";
+            return $"{cacheKey}:{hlaNomenclatureVersion}";
         }
 
-        private async Task<Dictionary<string, TTableEntity>> FetchTableData(string hlaDatabaseVersion)
+        private async Task<Dictionary<string, TTableEntity>> FetchTableData(string hlaNomenclatureVersion)
         {
-            var currentDataTable = await GetCurrentDataTable(hlaDatabaseVersion);
+            var currentDataTable = await GetCurrentDataTable(hlaNomenclatureVersion);
             var tableResults = new CloudTableBatchQueryAsync<TTableEntity>(currentDataTable);
             var dataToLoad = new Dictionary<string, TTableEntity>();
 
@@ -103,19 +103,19 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
             return dataToLoad;
         }
 
-        private string VersionedTableReferencePrefix(string hlaDatabaseVersion)
+        private string VersionedTableReferencePrefix(string hlaNomenclatureVersion)
         {
-            return $"{functionalTableReferencePrefix}{hlaDatabaseVersion}";
+            return $"{functionalTableReferencePrefix}{hlaNomenclatureVersion}";
         }
 
         /// <summary>
         /// The connection to the current data table is cached so we don't open unnecessary connections
         /// </summary>
-        private async Task<CloudTable> GetCurrentDataTable(string hlaDatabaseVersion)
+        private async Task<CloudTable> GetCurrentDataTable(string hlaNomenclatureVersion)
         {
             if (cloudTable == null)
             {
-                var dataTableReference = await tableReferenceRepository.GetCurrentTableReference(VersionedTableReferencePrefix(hlaDatabaseVersion));
+                var dataTableReference = await tableReferenceRepository.GetCurrentTableReference(VersionedTableReferencePrefix(hlaNomenclatureVersion));
                 cloudTable = await tableFactory.GetTable(dataTableReference);
             }
             return cloudTable;

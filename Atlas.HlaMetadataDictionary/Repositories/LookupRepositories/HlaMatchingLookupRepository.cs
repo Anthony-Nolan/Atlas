@@ -10,7 +10,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
 {
     internal interface IHlaMatchingLookupRepository : IHlaLookupRepository
     {
-        IEnumerable<string> GetAllPGroups(string hlaDatabaseVersion);
+        IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion);
     }
 
     internal class HlaMatchingLookupRepository : HlaLookupRepositoryBase, IHlaMatchingLookupRepository
@@ -26,9 +26,9 @@ namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
         {
         }
 
-        public IEnumerable<string> GetAllPGroups(string hlaDatabaseVersion)
+        public IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion)
         {
-            var versionedCacheKey = VersionedCacheKey(hlaDatabaseVersion);
+            var versionedCacheKey = VersionedCacheKey(hlaNomenclatureVersion);
             var metadataDictionary = cache.Get<Dictionary<string, HlaLookupTableEntity>>(versionedCacheKey);
             if (metadataDictionary != null)
             {

@@ -80,13 +80,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_PublishesWmdaVersionInNotification()
         {
-            const string wmdaVersion = "wmda-version";
-            hlaVersionAccessor.GetActiveHlaDatabaseVersion().Returns(wmdaVersion);
+            const string hlaNomenclatureVersion = "hla-nomenclature-version";
+            hlaVersionAccessor.GetActiveHlaNomenclatureVersion().Returns(hlaNomenclatureVersion);
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = "id" });
 
             await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
-                r.WmdaHlaDatabaseVersion == wmdaVersion
+                r.WmdaHlaDatabaseVersion == hlaNomenclatureVersion
             ));
         }
 

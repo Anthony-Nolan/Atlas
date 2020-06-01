@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// - Processes HLA for imported donors
         /// - Scales down target database
         /// </summary>
-        /// <returns>The version of the Wmda database used</returns>
+        /// <returns>The version of the HLA Nomenclature used for the new data</returns>
         Task<string> RefreshData();
     }
 
@@ -67,21 +67,21 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
             settingsOptions = dataRefreshSettingsOptions;
 
-            activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(activeHlaVersionAccessor.GetActiveHlaDatabaseVersion());
+            activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(activeHlaVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
         public async Task<string> RefreshData()
         {
             try
             {
-                var newHlaDatabaseVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
+                var newHlaNomenclatureVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
                 await RemoveExistingDonorData();
                 await ScaleDatabase(settingsOptions.Value.RefreshDatabaseSize.ParseToEnum<AzureDatabaseSize>());
                 await ImportDonors();
-                await ProcessDonorHla(newHlaDatabaseVersion);
+                await ProcessDonorHla(newHlaNomenclatureVersion);
                 await ScaleDatabase(settingsOptions.Value.ActiveDatabaseSize.ParseToEnum<AzureDatabaseSize>());
 
-                return newHlaDatabaseVersion;
+                return newHlaNomenclatureVersion;
             }
             catch (Exception ex)
             {
@@ -117,10 +117,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             await donorImporter.ImportDonors();
         }
 
-        private async Task ProcessDonorHla(string wmdaDatabaseVersion)
+        private async Task ProcessDonorHla(string hlaNomenclatureVersion)
         {
-            logger.SendTrace($"DATA REFRESH: Processing Donor hla using hla database version: {wmdaDatabaseVersion}", LogLevel.Info);
-            await hlaProcessor.UpdateDonorHla(wmdaDatabaseVersion);
+            logger.SendTrace($"DATA REFRESH: Processing Donor hla using HLA Nomenclature version: {hlaNomenclatureVersion}", LogLevel.Info);
+            await hlaProcessor.UpdateDonorHla(hlaNomenclatureVersion);
         }
 
         private async Task ScaleDatabase(AzureDatabaseSize targetSize)

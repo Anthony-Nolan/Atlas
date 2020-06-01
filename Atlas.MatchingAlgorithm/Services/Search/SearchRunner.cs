@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly IResultsBlobStorageClient resultsBlobStorageClient;
         private readonly ILogger logger;
         private readonly ISearchRequestContext searchRequestContext;
-        private readonly IActiveHlaVersionAccessor hlaVersionProvider;
+        private readonly IActiveHlaVersionAccessor hlaVersionAccessor;
 
         public SearchRunner(
             ISearchServiceBusClient searchServiceBusClient,
@@ -33,14 +33,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             IResultsBlobStorageClient resultsBlobStorageClient,
             ILogger logger,
             ISearchRequestContext searchRequestContext,
-            IActiveHlaVersionAccessor hlaVersionProvider)
+            IActiveHlaVersionAccessor hlaVersionAccessor)
         {
             this.searchServiceBusClient = searchServiceBusClient;
             this.searchService = searchService;
             this.resultsBlobStorageClient = resultsBlobStorageClient;
             this.logger = logger;
             this.searchRequestContext = searchRequestContext;
-            this.hlaVersionProvider = hlaVersionProvider;
+            this.hlaVersionAccessor = hlaVersionAccessor;
         }
 
         public async Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
@@ -48,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var searchRequestId = identifiedSearchRequest.Id;
             searchRequestContext.SearchRequestId = searchRequestId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            var hlaDatabaseVersion = hlaVersionProvider.GetActiveHlaDatabaseVersion();
+            var hlaNomenclatureVersion = hlaVersionAccessor.GetActiveHlaNomenclatureVersion();
 
             try
             {
@@ -66,7 +66,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 {
                     SearchRequestId = searchRequestId,
                     SearchAlgorithmServiceVersion = searchAlgorithmServiceVersion,
-                    WmdaHlaDatabaseVersion = hlaDatabaseVersion,
+                    WmdaHlaDatabaseVersion = hlaNomenclatureVersion,
                     WasSuccessful = true,
                     NumberOfResults = results.Count,
                     BlobStorageContainerName = resultsBlobStorageClient.GetResultsContainerName(),
@@ -82,7 +82,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     WasSuccessful = false,
                     SearchRequestId = searchRequestId,
                     SearchAlgorithmServiceVersion = searchAlgorithmServiceVersion,
-                    WmdaHlaDatabaseVersion = hlaDatabaseVersion
+                    WmdaHlaDatabaseVersion = hlaNomenclatureVersion
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
             }

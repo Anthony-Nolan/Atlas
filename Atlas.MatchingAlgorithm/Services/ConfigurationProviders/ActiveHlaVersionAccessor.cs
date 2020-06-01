@@ -7,8 +7,8 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 {
     public interface IActiveHlaVersionAccessor
     {
-        /// <returns>The version of the wmda hla data used to populate the current Transient donor database</returns>
-        string GetActiveHlaDatabaseVersion();
+        /// <returns>The version of the HLA Nomenclature used to populate the current Transient donor database</returns>
+        string GetActiveHlaNomenclatureVersion();
     }
 
     public class ActiveHlaVersionAccessor : IActiveHlaVersionAccessor
@@ -24,10 +24,10 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
             cache = cacheProvider.Cache;
         }
 
-        public string GetActiveHlaDatabaseVersion()
+        public string GetActiveHlaNomenclatureVersion()
         {
             const string key = "activeWmdaVersion";
-            var version = cache.GetOrAdd(key, () => dataRefreshHistoryRepository.GetActiveWmdaDataVersion());
+            var version = cache.GetOrAdd(key, () => dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion());
             ThrowIfNull(version, key);
             return version;
         }

@@ -28,19 +28,13 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
             PopulateHlaLookupResults();
         }
 
-        public Task RecreateDataTable(IEnumerable<IHlaLookupResult> tableContents, string hlaDatabaseVersion)
+        public Task LoadDataIntoMemory(string hlaNomenclatureVersion)
         {
             // No operation needed
             return Task.CompletedTask;
         }
 
-        public Task LoadDataIntoMemory(string hlaDatabaseVersion)
-        {
-            // No operation needed
-            return Task.CompletedTask;
-        }
-
-        public Task RecreateHlaLookupTable(IEnumerable<ISerialisableHlaMetadata> lookupResults, string hlaDatabaseVersion)
+        public Task RecreateHlaLookupTable(IEnumerable<ISerialisableHlaMetadata> lookupResults, string hlaNomenclatureVersion)
         {
             // No operation needed
             return Task.CompletedTask;
@@ -50,7 +44,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
             Locus locus,
             string lookupName,
             TypingMethod typingMethod,
-            string hlaDatabaseVersion)
+            string hlaNomenclatureVersion)
         {
             var lookupResult = HlaLookupResults.FirstOrDefault(hla =>
                 hla.Locus.Equals(locus) && hla.LookupName == lookupName);

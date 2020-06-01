@@ -32,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
         [Route("trigger-donor-hla-update")]
         public async Task TriggerSingleImport()
         {
-            await hlaProcessor.UpdateDonorHla(hlaVersionAccessor.GetActiveHlaDatabaseVersion());
+            await hlaProcessor.UpdateDonorHla(hlaVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
     }
 }
