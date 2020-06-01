@@ -48,10 +48,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Clients\Http" />
-    </ItemGroup>
-
-    <ItemGroup>
         <InternalsVisibleTo Include="Atlas.MatchingAlgorithm.Test" />
         <InternalsVisibleTo Include="Atlas.MatchingAlgorithm.Test.Integration" />
         <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />

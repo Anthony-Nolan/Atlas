@@ -27,20 +27,6 @@ namespace Atlas.MatchingAlgorithm.Client.Models.Donors
         public string DRB1_2 { get; set; }
     }
 
-    /// <summary>
-    /// A page of donor info containing only the information required by the search-algorithm.
-    /// </summary>
-    public class SearchableDonorInformationPage
-    {
-        //TODO: ATLAS-186 If we use this class at all, then Clean it class up.
-        // "ResultsPerPage" => "RequestedResultsPerPage".
-        // Add "NextId" (nullable), and use that to indicate whether more should be fetched.
-        // ??Drop LastId??
-        public int ResultsPerPage { get; set; }
-        public int? LastId { get; set; }
-        public IEnumerable<SearchableDonorInformation> DonorsInfo { get; set; }
-    }
-
     public class SearchableDonorUpdate
     {
         /// <summary>
