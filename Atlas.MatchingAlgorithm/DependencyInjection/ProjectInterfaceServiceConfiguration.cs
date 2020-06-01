@@ -13,14 +13,18 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
     /// </summary>
     public static class ProjectInterfaceServiceConfiguration
     {
-        
-        public static void RegisterMatchingAlgorithm(this IServiceCollection services)
+        public static void RegisterMatchingAlgorithmOrchestration(this IServiceCollection services)
         {
-            services.RegisterMatchingAlgorithmSettings();
-            services.RegisterMatchingAlgorithmServices();
+            services.RegisterSettings();
+            services.RegisterServices();
         }
-        
-        private static void RegisterMatchingAlgorithmServices(this IServiceCollection services)
+
+        private static void RegisterSettings(this IServiceCollection services)
+        {
+            services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+        }
+
+        private static void RegisterServices(this IServiceCollection services)
         {
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>(sp =>
             {
@@ -33,11 +37,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             });
 
             services.AddScoped<ISearchDispatcher, SearchDispatcher>();
-        }
-        
-        private static void RegisterMatchingAlgorithmSettings(this IServiceCollection services)
-        {
-            services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
         }
     }
 }

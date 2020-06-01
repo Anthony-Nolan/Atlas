@@ -15,17 +15,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.Services.RegisterSettingsForDonorManagementFunctionsApp();
-            builder.Services.RegisterDataServices();
-            builder.Services.RegisterHlaMetadataDictionary(
-                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
-                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
-                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
-                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
-                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value
-                );
-            builder.Services.RegisterSearchAlgorithmTypes();
-            builder.Services.RegisterDonorManagementServices();
+            builder.Services.RegisterMatchingAlgorithmDonorManagement();
         }
     }
 }
