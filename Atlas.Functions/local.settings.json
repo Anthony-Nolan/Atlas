@@ -5,6 +5,8 @@
         "MessagingServiceBus:ConnectionString": "override-this",
         "MessagingServiceBus:SearchRequestsQueue": "matching-requests",
         "MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
-        "FUNCTIONS_WORKER_RUNTIME": "dotnet"
+        "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+        "MacImport:ConnectionString":  "override-this",
+        "MacImport:TableName": "AtlasMultipleAlleleCode"
     }
 }

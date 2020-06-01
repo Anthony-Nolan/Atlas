@@ -18,5 +18,6 @@ resource "azurerm_function_app" "atlas_function" {
     "MessagingServiceBus:SearchResultsTopic"    = module.matching_algorithm.general.search_results_topic
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "1"
     "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
+    "MacImport:ConnectionString"                = var.MAC_TABLE_CONNECTION_STRING
   }
 }
