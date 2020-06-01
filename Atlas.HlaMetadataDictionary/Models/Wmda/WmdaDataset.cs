@@ -9,7 +9,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Wmda
     /// </summary>
     internal class WmdaDataset
     {
-        public string HlaDatabaseVersion { get; set; } //QQ Rename External?
+        public string HlaNomenclatureVersion { get; set; }
         public IList<HlaNom> Serologies { get; set; }
         public IList<HlaNom> Alleles { get; set; }
         public IList<HlaNomP> PGroups { get; set; }

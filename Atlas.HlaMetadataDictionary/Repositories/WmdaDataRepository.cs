@@ -40,7 +40,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories
         {
             return new WmdaDataset
             {
-                HlaDatabaseVersion = hlaNomenclatureVersion,
+                HlaNomenclatureVersion = hlaNomenclatureVersion,
                 Serologies = GetWmdaData(new SerologyExtractor(), hlaNomenclatureVersion).ToList(),
                 Alleles = GetWmdaData(new AlleleExtractor(), hlaNomenclatureVersion).ToList(),
                 PGroups = GetWmdaData(new PGroupExtractor(), hlaNomenclatureVersion).ToList(),
