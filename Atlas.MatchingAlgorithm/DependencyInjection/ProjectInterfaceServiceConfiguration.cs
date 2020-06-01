@@ -24,6 +24,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
         }
 
+        // TODO: ATLAS-327: Inject settings from top level apps
         private static void RegisterServices(this IServiceCollection services)
         {
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>(sp =>

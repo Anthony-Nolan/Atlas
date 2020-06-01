@@ -9,6 +9,7 @@ namespace Atlas.MatchingAlgorithm.Functions
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            // TODO: ATLAS-327: Inject settings
             builder.Services.RegisterMatchingAlgorithm();
         }
     }
