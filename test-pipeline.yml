@@ -137,3 +137,26 @@ jobs:
         projects: '$(System.DefaultWorkingDirectory)/Atlas.DonorImport.Test.Integration/Atlas.DonorImport.Test.Integration.csproj'
         arguments: '--no-restore -v d'
 
+
+- job: Match_Prediction_Integration_Tests
+  pool:
+    name: Hosted Ubuntu 1604
+  steps:
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'restore'
+        feedsToUse: 'select'
+    - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
+      displayName: 'Update Sql connection string' 
+      inputs:
+        filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Test.Integration/appsettings.json'
+        keyname: Sql
+        connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-match-prediction;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet test'
+      inputs:
+        command: test
+        projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Test.Integration/Atlas.MatchPrediction.Test.Integration.csproj'
+        arguments: '--no-restore -v d'
+
