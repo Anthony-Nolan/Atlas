@@ -1,17 +1,15 @@
-using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Notifications;
-using Atlas.Common.NovaHttpClient.Client;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.Utils.Extensions;
+using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
-using Atlas.MatchingAlgorithm.Clients.Http.DonorService;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Config;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
@@ -41,7 +39,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.DependencyInjection
 {
@@ -52,7 +49,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterSettingsForMatchingAlgorithm();
             services.RegisterMatchingAlgorithmServices();
             services.RegisterDataServices();
-            services.RegisterDonorClient();
             services.RegisterHlaMetadataDictionary(
                 sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
                 sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
@@ -60,6 +56,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
                 sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value
             );
+            services.RegisterDonorReader(sp => sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["DonorImportSql"]);
         }
 
         public static void RegisterMatchingAlgorithmDonorManagement(this IServiceCollection services)
@@ -186,12 +183,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
         }
 
-        private static void RegisterDonorClient(this IServiceCollection services)
-        {
-            services.RegisterAtlasLogger(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value);
-            services.AddSingleton(GetDonorServiceClient);
-        }
-
         private static void RegisterDonorManagementServices(this IServiceCollection services)
         {
             services.AddScoped<IDonorManagementService, DonorManagementService>();
@@ -229,48 +220,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                     logger,
                     int.Parse(settings.BatchSize));
             });
-        }
-
-        private static IDonorServiceClient GetDonorServiceClient(IServiceProvider sp)
-        {
-            var donorServiceSettings = sp.GetService<IOptions<DonorServiceSettings>>().Value;
-            var readDonorsFromFile = donorServiceSettings.ReadDonorsFromFile ?? false;
-            var apiKeyProvided = !string.IsNullOrWhiteSpace(donorServiceSettings.ApiKey);
-
-            if (readDonorsFromFile)
-            {
-                return GetFileBasedDonorServiceClient(sp);
-            }
-
-            if (apiKeyProvided)
-            {
-                return GetRemoteDonorServiceClient(sp);
-            }
-
-            throw new InvalidOperationException(
-                $"Unable to create a functional {nameof(IDonorServiceClient)} as {nameof(readDonorsFromFile)} was set to false, but no ApiKey was provided for the DonorService.");
-        }
-
-        private static IDonorServiceClient GetRemoteDonorServiceClient(IServiceProvider sp)
-        {
-            var donorServiceSettings = sp.GetService<IOptions<DonorServiceSettings>>().Value;
-            var clientSettings = new HttpClientSettings
-            {
-                ApiKey = donorServiceSettings.ApiKey,
-                BaseUrl = donorServiceSettings.BaseUrl,
-                ClientName = "donor_service_algorithm_client",
-                JsonSettings = new JsonSerializerSettings()
-            };
-            var logger = sp.GetService<ILogger>();
-
-            return new DonorServiceClient(clientSettings, logger);
-        }
-
-        private static IDonorServiceClient GetFileBasedDonorServiceClient(IServiceProvider sp)
-        {
-            var logger = sp.GetService<ILogger>();
-
-            return new FileBasedDonorServiceClient(logger);
         }
 
         private static void RegisterSharedSettings(this IServiceCollection services)
