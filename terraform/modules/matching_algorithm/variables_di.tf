@@ -7,6 +7,12 @@ variable "app_service_plan" {
   })
 }
 
+variable "donor_import_sql_database" {
+  type = object({
+    name = string
+  })
+}
+
 variable "sql_server" {
   type = object({
     name                        = string
