@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using Newtonsoft.Json;
+
 // ReSharper disable InconsistentNaming
 
 namespace Atlas.MatchingAlgorithm.Client.Models.Donors
@@ -12,7 +12,7 @@ namespace Atlas.MatchingAlgorithm.Client.Models.Donors
     public class SearchableDonorInformation
     {
         public int DonorId { get; set; }
-        public string DonorType { get; set; }
+        public DonorType DonorType { get; set; }
         public string A_1 { get; set; }
         public string A_2 { get; set; }
         public string B_1 { get; set; }
