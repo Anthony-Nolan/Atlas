@@ -8,7 +8,7 @@ namespace Atlas.DonorImport.Models.Mapping
         {
             return new Donor
             {
-                DonorId = donor.DonorId,
+                AtlasDonorId = donor.AtlasId,
                 DonorType = donor.DonorType.ToMatchingAlgorithmType(),
                 EthnicityCode = donor.EthnicityCode,
                 RegistryCode = donor.RegistryCode,
