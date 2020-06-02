@@ -10,25 +10,26 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
     public interface IGenotypeLikelihoodService
     {
-        public GenotypeLikelihoodResponse CalculateLikelihood(GenotypeLikelihoodInput genotypeLikelihood);
+        public Task<GenotypeLikelihoodResponse> CalculateLikelihood(GenotypeLikelihoodInput genotypeLikelihood);
     }
 
     public class GenotypeLikelihoodService : IGenotypeLikelihoodService
     {
+        private readonly IHaplotypeFrequenciesRepository haplotypeFrequenciesRepository;
         private readonly IGenotypeImputer genotypeImputer;
 
-        public GenotypeLikelihoodService(IGenotypeImputer genotypeImputer)
+        public GenotypeLikelihoodService(IHaplotypeFrequenciesRepository haplotypeFrequenciesRepository,
+            IGenotypeImputer genotypeImputer)
         {
+            this.haplotypeFrequenciesRepository = haplotypeFrequenciesRepository;
             this.genotypeImputer = genotypeImputer;
         }
 
-        public GenotypeLikelihoodResponse CalculateLikelihood(GenotypeLikelihoodInput genotypeLikelihood)
+        public async Task<GenotypeLikelihoodResponse> CalculateLikelihood(GenotypeLikelihoodInput genotypeLikelihood)
         {
             var diplotypes = genotypeImputer.GetPossibleDiplotypes(genotypeLikelihood.Genotype);
             var haplotypes = GetHaplotypes(diplotypes).ToList();
-            var haplotypesWithFrequencies = await haplotypeFrequencies.GetDiplotypeFrequencies(haplotypes);
-
-            GetFrequenciesForDiplotype(haplotypesWithFrequencies, diplotypes);
+            var haplotypesWithFrequencies = await haplotypeFrequenciesRepository.GetDiplotypeFrequencies(haplotypes);
 
             return new GenotypeLikelihoodResponse() {Likelihood = 1};
         }
@@ -37,16 +38,6 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         {
             return diplotypes.SelectMany(diplotype => new List<LociInfo<string>>
                 {diplotype.Item1.Hla, diplotype.Item2.Hla});
-        }
-
-        private static void GetFrequenciesForDiplotype(
-            Dictionary<LociInfo<string>, decimal> haplotypesWithFrequencies, IEnumerable<Diplotype> diplotypes)
-        {
-            foreach (var diplotype in diplotypes)
-            {
-                diplotype.Item1.Frequency = haplotypesWithFrequencies[diplotype.Item1.Hla];
-                diplotype.Item2.Frequency = haplotypesWithFrequencies[diplotype.Item2.Hla];
-            }
         }
     }
 }

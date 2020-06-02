@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Dapper;
 
 namespace Atlas.MatchPrediction.Data.Repositories
 {
@@ -84,28 +86,29 @@ namespace Atlas.MatchPrediction.Data.Repositories
         public async Task<Dictionary<LociInfo<string>, decimal>> GetDiplotypeFrequencies(IEnumerable<LociInfo<string>> haplotypes)
         {
             var haplotypeInfo = new Dictionary<LociInfo<string>, decimal>();
+            var distinctHaplotypes = haplotypes.ToList().Distinct();
+
+            const string sql = @"
+                SELECT f.Frequency 
+                FROM HaplotypeFrequencies f
+                INNER JOIN HaplotypeFrequencySets s ON f.Set_Id = s.Id
+                WHERE 
+                    f.A = @A AND
+                    f.B = @B AND
+                    f.C = @C AND
+                    f.DQB1 = @DQB1 AND
+                    f.DRB1 = @DRB1 AND
+                    s.Registry IS NULL AND
+                    s.Ethnicity IS NULL AND
+                    s.Active = 'true'
+                ";
 
             using (var conn = new SqlConnection(connectionString))
             {
-                foreach (var haplotype in haplotypes)
+                foreach (var haplotype in distinctHaplotypes)
                 {
-                    const string sql = @"
-                    SELECT f.Frequency 
-                    FROM HaplotypeFrequencies f
-                    INNER JOIN HaplotypeFrequencySets s ON f.Set_Id = s.Id
-                    WHERE 
-                        f.A = @A AND
-                        f.B = @B AND
-                        f.C = @C AND
-                        f.DQB1 = @DQB1 AND
-                        f.DRB1 = @DRB1 AND
-                        s.Registry IS NULL AND
-                        s.Ethnicity IS NULL AND
-                        s.Active = 'true'
-                    ";
-
                     var frequency = await conn.QueryFirstOrDefaultAsync<decimal>(sql, haplotype, commandTimeout: 300);
-
+                    
                     haplotypeInfo.Add(haplotype, frequency);
                 }
             }

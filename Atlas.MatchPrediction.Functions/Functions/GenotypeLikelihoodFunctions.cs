@@ -30,7 +30,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
 
             try
             {
-                var likelihood = genotypeLikelihoodService.CalculateLikelihood(genotypeLikelihood);
+                var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotypeLikelihood);
                 return new JsonResult(likelihood);
             }
             catch (Exception)
