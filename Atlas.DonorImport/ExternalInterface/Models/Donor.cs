@@ -6,7 +6,7 @@ namespace Atlas.DonorImport.ExternalInterface.Models
 {
     public class Donor 
     {
-        public string DonorId { get; set; }
+        public int AtlasDonorId { get; set; }
 
         public DonorType DonorType { get; set; }
 

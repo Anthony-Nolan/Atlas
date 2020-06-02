@@ -11,7 +11,7 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels
         private const DonorType DefaultDonorType = DonorType.Adult;
 
         public static Builder<Donor> New => Builder<Donor>.New
-            .With(d => d.DonorId, "0")
+            .With(d => d.AtlasDonorId, 0)
             .With(d => d.A_1, DefaultHlaName)
             .With(d => d.A_2, DefaultHlaName)
             .With(d => d.B_1, DefaultHlaName)
