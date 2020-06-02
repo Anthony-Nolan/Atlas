@@ -40,7 +40,15 @@ variable "DATABASE_PASSWORD" {
   type = string
 }
 
+variable "DATABASE_PASSWORD_FOR_DONOR_IMPORT_DATABASE" {
+  type = string
+}
+
 variable "DATABASE_USERNAME" {
+  type = string
+}
+
+variable "DATABASE_USERNAME_FOR_DONOR_IMPORT_DATABASE" {
   type = string
 }
 

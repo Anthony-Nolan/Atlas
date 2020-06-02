@@ -518,6 +518,16 @@ Once terraform has created ATLAS resources for the first time, certain actions m
     -- uncomment this line for matching databases, where owner role is required
     -- ALTER ROLE db_owner ADD MEMBER [USERNAME]
     
+   Expected Access Requirements: 
+   
+   |Database             |User            |Permissions                 |
+   |---------------------|----------------|----------------------------|
+   |Matching - Transient |Matching        |db-owner/db-writer/db-reader| 
+   |Matching - Persistent|Matching        |db-owner/db-writer/db-reader|
+   |Match Prediction     |Match Prediction|db-writer/db-reader         | 
+   |Donor Import         |Donor Import    |db-writer/db-reader         | 
+   |Donor Import         |Matching        |db-reader                   | 
+    
   - Active Directory (Optional)
         - If you would like to be able to access the database server using Active Directory authentication, this should be manually configured
   - IP Whitelisting (Optional)
