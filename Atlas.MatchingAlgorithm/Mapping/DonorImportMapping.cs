@@ -10,8 +10,7 @@ namespace Atlas.MatchingAlgorithm.Mapping
             return new SearchableDonorInformation
             {
                 DonorId = donor.AtlasDonorId,
-                // TODO: ATLAS-294: Use enum here, don't parse to and from string when the types otherwise match!
-                DonorType = donor.DonorType.ToString(),
+                DonorType = donor.DonorType,
                 A_1 = donor.A_1,
                 A_2 = donor.A_2,
                 B_1 = donor.B_1,
