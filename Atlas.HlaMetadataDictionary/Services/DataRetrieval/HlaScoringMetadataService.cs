@@ -50,17 +50,16 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         protected override IHlaScoringMetadata ConsolidateHlaMetadata(
             Locus locus,
             string lookupName,
-            IEnumerable<IHlaScoringMetadata> metadata)
+            List<IHlaScoringMetadata> metadata)
         {
             var hlaTypingCategory = HlaCategorisationService.GetHlaTypingCategory(lookupName);
-            var results = metadata.ToList();
-            var scoringInfos = results.Select(result => result.HlaScoringInfo);
+            var scoringInfos = metadata.Select(result => result.HlaScoringInfo);
 
             switch (hlaTypingCategory)
             {
                 case HlaTypingCategory.Allele:
-                    return results.Count == 1
-                        ? results.Single()
+                    return metadata.Count == 1
+                        ? metadata.Single()
                         : GetMultipleAlleleMetadata(locus, lookupName, scoringInfos);
 
                 case HlaTypingCategory.AlleleStringOfNames:
@@ -70,7 +69,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
                 case HlaTypingCategory.XxCode:
                 case HlaTypingCategory.Serology:
-                    return results.Single();
+                    return metadata.Single();
 
                 default:
                     throw new ArgumentOutOfRangeException();

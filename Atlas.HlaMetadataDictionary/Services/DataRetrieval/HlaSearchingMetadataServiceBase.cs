@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
@@ -61,7 +62,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         {
             var dictionaryLookup = GetHlaLookup(lookupName);
             var metadataRows = await dictionaryLookup.PerformLookupAsync(locus, lookupName, hlaNomenclatureVersion);
-            var metadata = ConvertMetadataRowsToMetadata(metadataRows);
+            var metadata = ConvertMetadataRowsToMetadata(metadataRows).ToList();
 
             return ConsolidateHlaMetadata(locus, lookupName, metadata);
         }
@@ -85,6 +86,6 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         protected abstract THlaMetadata ConsolidateHlaMetadata(
             Locus locus,
             string lookupName,
-            IEnumerable<THlaMetadata> metadata);
+            List<THlaMetadata> metadata);
     }
 }

@@ -54,14 +54,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         }
 
         protected override IDpb1TceGroupsMetadata ConsolidateHlaMetadata(
-            Locus locus, 
+            Locus locus,
             string lookupName,
-            IEnumerable<IDpb1TceGroupsMetadata> metadata)
+            List<IDpb1TceGroupsMetadata> metadata)
         {
-            var results = metadata.ToList();
-
-            var tceGroups = results
-                .Select(lookupResult => lookupResult.TceGroup)
+            var tceGroups = metadata
+                .Select(data => data.TceGroup)
                 .Distinct()
                 .ToList();
 

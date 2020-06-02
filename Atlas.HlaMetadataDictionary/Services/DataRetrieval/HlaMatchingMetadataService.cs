@@ -48,18 +48,16 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         }
 
         protected override IHlaMatchingMetadata ConsolidateHlaMetadata(
-            Locus locus, 
+            Locus locus,
             string lookupName,
-            IEnumerable<IHlaMatchingMetadata> metadata)
+            List<IHlaMatchingMetadata> metadata)
         {
-            var results = metadata.ToList();
-
-            var typingMethod = results
+            var typingMethod = metadata
                 .First()
                 .TypingMethod;
 
-            var pGroups = results
-                .SelectMany(lookupResult => lookupResult.MatchingPGroups)
+            var pGroups = metadata
+                .SelectMany(data => data.MatchingPGroups)
                 .Distinct();
 
             return new HlaMatchingMetadata(

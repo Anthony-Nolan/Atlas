@@ -17,7 +17,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
     /// Fixture relies on a file-backed HlaMetadataDictionary - tests may break if underlying data is changed.
     /// </summary>
     [TestFixture]
-    public class HlaMatchingLookupLookupTests
+    public class HlaMatchingLookupTests
     {
         private const Locus DefaultLocus = Locus.A;
         private const string CacheKey = "NmdpCodeLookup_A";
