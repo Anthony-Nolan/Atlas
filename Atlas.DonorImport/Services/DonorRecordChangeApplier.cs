@@ -106,7 +106,7 @@ namespace Atlas.DonorImport.Services
                 SearchableDonorInformation = new SearchableDonorInformation
                 {
                     DonorId = atlasId,
-                    DonorType = fileUpdate.DonorType.ToMatchingAlgorithmType().ToString(),
+                    DonorType = fileUpdate.DonorType.ToMatchingAlgorithmType(),
                     A_1 = fileUpdate.Hla.A.Field1,
                     A_2 = fileUpdate.Hla.A.Field2,
                     B_1 = fileUpdate.Hla.B.Field1,

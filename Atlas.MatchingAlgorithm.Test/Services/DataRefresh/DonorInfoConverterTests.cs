@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
-using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using FluentAssertions;
 using NSubstitute;
@@ -34,7 +33,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 new SearchableDonorInformation
                 {
                     DonorId = donorId,
-                    DonorType = $"{DonorType.Adult}",
+                    DonorType = DonorType.Adult,
                     A_1 = hlaName,
                     A_2 = hlaName,
                     B_1 = hlaName,
