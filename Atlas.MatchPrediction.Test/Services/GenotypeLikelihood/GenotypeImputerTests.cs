@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchPrediction.Config;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using FluentAssertions;
@@ -33,11 +33,11 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 .With(d => d.Dqb1, new LocusInfo<string>("homozygous"))
                 .With(d => d.Drb1, new LocusInfo<string>("homozygous"))
                 .Build();
-            var expectedDiplotypes = new Diplotype(genotype);
+            var expectedDiplotype = new Diplotype(genotype);
 
-            var actualDiplotypes = genotypeImputer.GetPossibleDiplotypes(genotype);
+            var actualDiplotypeHla = genotypeImputer.GetPossibleDiplotypes(genotype).Select(d => d.Map(h => h.Hla));
 
-            actualDiplotypes.Should().BeEquivalentTo(expectedDiplotypes);
+            actualDiplotypeHla.Should().BeEquivalentTo(expectedDiplotype.Map(h => h.Hla));
         }
 
         [Test]
@@ -45,9 +45,9 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         {
             var genotype = PhenotypeInfoBuilder.New.Build();
 
-            var actualDiplotypes = genotypeImputer.GetPossibleDiplotypes(genotype);
+            var actualDiplotypeHla = genotypeImputer.GetPossibleDiplotypes(genotype).Select(d => d.Map(h => h.Hla));
 
-            var expectedDiplotypes = new List<Diplotype>
+            var expectedDiplotypeHla = new List<Diplotype>
             {
                 new Diplotype
                 {
@@ -161,9 +161,9 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                     Item2 = new Haplotype
                         {Hla = new LociInfo<string> {A = "A-1", B = "B-1", C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-1"}}
                 }
-            };
+            }.Select(d => d.Map(h => h.Hla));
 
-            actualDiplotypes.Should().BeEquivalentTo(expectedDiplotypes);
+            actualDiplotypeHla.Should().BeEquivalentTo(expectedDiplotypeHla);
         }
 
         [TestCase("homozygous")]
@@ -172,9 +172,9 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         {
             var genotype = PhenotypeInfoBuilder.New.With(p => p.B, new LocusInfo<string>(locusValue)).Build();
 
-            var actualDiplotypes = genotypeImputer.GetPossibleDiplotypes(genotype);
+            var actualDiplotypeHla = genotypeImputer.GetPossibleDiplotypes(genotype).Select(d => d.Map(h => h.Hla));
 
-            var expectedDiplotypes = new List<Diplotype>
+            var expectedDiplotypeHla = new List<Diplotype>
             {
                 new Diplotype
                 {
@@ -232,9 +232,9 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                     Item2 = new Haplotype
                         {Hla = new LociInfo<string> {A = "A-1", B = locusValue, C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-1"}}
                 }
-            };
+            }.Select(d => d.Map(h => h.Hla));
 
-            actualDiplotypes.Should().BeEquivalentTo(expectedDiplotypes);
+            actualDiplotypeHla.Should().BeEquivalentTo(expectedDiplotypeHla);
         }
 
         [TestCase(Locus.C)]
