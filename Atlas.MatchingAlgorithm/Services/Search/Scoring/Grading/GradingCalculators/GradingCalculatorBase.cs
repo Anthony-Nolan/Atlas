@@ -12,7 +12,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
         {
             if (patientMetadata.Locus != donorMetadata.Locus)
             {
-                throw new ArgumentException("Lookup results do not belong to same locus.");
+                throw new ArgumentException("Metadata does not all belong to same locus.");
             }
 
             if (!ScoringInfosAreOfPermittedTypes(patientMetadata.HlaScoringInfo, donorMetadata.HlaScoringInfo))

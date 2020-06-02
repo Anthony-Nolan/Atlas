@@ -94,7 +94,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaDataConversion
         }
 
         /// <summary>
-        /// Builds a serology lookup result based on constant values.
+        /// Builds Serology Metadata based on constant values.
         /// </summary>
         protected override IHlaMetadata BuildSerologyHlaMetadata()
         {
@@ -107,7 +107,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaDataConversion
         }
 
         /// <summary>
-        /// Build a molecular lookup result with the allele name used as the Matching P Group by default,
+        /// Builds Molecular Metadata with the allele name used as the Matching P Group by default,
         /// unless a list of 1 or more P Groups is supplied.
         /// </summary>
         private static IHlaMetadata BuildMolecularHlaMetadata(string alleleName, IEnumerable<string> pGroups = null)

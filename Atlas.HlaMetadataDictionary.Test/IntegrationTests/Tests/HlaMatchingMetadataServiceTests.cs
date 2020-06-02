@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
-using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.MultipleAlleleCodeDictionary.HlaService;
+using FluentAssertions;
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -13,11 +14,10 @@ using NUnit.Framework;
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 {
     /// <summary>
-    /// Fixture testing the base functionality of HlaSearchingMetadataService via an arbitrarily chosen base class.
     /// Fixture relies on a file-backed HlaMetadataDictionary - tests may break if underlying data is changed.
     /// </summary>
     [TestFixture]
-    public class HlaSearchingLookupTests
+    public class HlaMatchingMetadataServiceTests
     {
         private const Locus DefaultLocus = Locus.A;
         private const string CacheKey = "NmdpCodeLookup_A";
@@ -43,53 +43,53 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             hlaServiceClient
                 .GetAllelesForDefinedNmdpCode(DefaultLocus, Arg.Any<string>())
                 .Returns(new List<string>());
-
+ 
             // clear NMDP code allele mappings between tests
             appCache.Remove(CacheKey);
         }
 
         [Test]
-        public void GetHlaMetadata_WhenInvalidHlaTyping_ThrowsException()
+        public async Task GetHlaMetadata_WhenNmdpCode_ReturnsMatchingHlaForAllAlleles()
         {
-            const string hlaName = "XYZ:123:INVALID";
-
-            Assert.ThrowsAsync<HlaMetadataDictionaryException>(
-                async () => await metadataService.GetHlaMetadata(DefaultLocus, hlaName, null));
-        }
-
-        [Test]
-        public void GetHlaMetadata_WhenNmdpCodeContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
-        {
-            const string missingAllele = "9999:9999";
+            // each allele maps to a P group of the same name
+            const string firstAllele = "01:133";
+            const string secondAllele = "01:158";
 
             // NMDP code value does not matter, but does need to conform to the expected pattern
             const string nmdpCode = "99:CODE";
             hlaServiceClient
                 .GetAllelesForDefinedNmdpCode(DefaultLocus, nmdpCode)
-                .Returns(new List<string> { missingAllele });
+                .Returns(new List<string> { firstAllele, secondAllele });
 
-            Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () => 
-                await metadataService.GetHlaMetadata(DefaultLocus, nmdpCode, null));
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, nmdpCode, null);
+
+            result.MatchingPGroups.Should().BeEquivalentTo(new[] { firstAllele, secondAllele });
         }
 
         [Test]
-        public void GetHlaMetadata_WhenAlleleStringOfNamesContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
+        public async Task GetHlaMetadata_WhenAlleleStringOfNames_ReturnsMatchingHlaForAllAlleles()
         {
-            const string existingAllele = "01:133";
-            const string missingAllele = "9999:9999";
-            const string alleleString = existingAllele + "/" + missingAllele;
+            // each allele maps to a P group of the same name
+            const string firstAllele = "01:133";
+            const string secondAllele = "01:158";
+            const string alleleString = firstAllele + "/" + secondAllele;
 
-            Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () =>
-                await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null));
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null);
+
+            result.MatchingPGroups.Should().BeEquivalentTo(new[] { firstAllele, secondAllele });
         }
 
         [Test]
-        public void GetHlaMetadata_WhenAlleleStringOfSubtypesContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
+        public async Task GetHlaMetadata_WhenAlleleStringOfSubtypes_ReturnsMatchingHlaForAllAlleles()
         {
-            const string alleleString = "01:133/9999";
+            // each allele maps to a P group of the same name
+            const string firstAllele = "01:133";
+            const string secondAllele = "01:158";
+            const string alleleString = "01:133/158";
 
-            Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () =>
-                await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null));
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null);
+
+            result.MatchingPGroups.Should().BeEquivalentTo(new[] { firstAllele, secondAllele });
         }
     }
 }

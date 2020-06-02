@@ -5,7 +5,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups
 {
     /// <summary>
     /// Identifies classes that can serve as a data source
-    /// for the creation of a HLA lookup result.
+    /// for the creation of a HLA Metadata.
     /// </summary>
     internal interface IHlaMetadataSource<out THlaTyping> : 
         IMatchingPGroups, IMatchingGGroups, IMatchingSerologies 

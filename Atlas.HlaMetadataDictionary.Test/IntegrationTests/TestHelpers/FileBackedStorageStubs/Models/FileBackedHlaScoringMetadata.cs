@@ -21,7 +21,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         /// The names of these parameters MUST stay in sync
         /// with the property names of the JSON objects found in
         /// the IntegrationTest MetadataDictionary test file.
-        /// i.e. `all_hla_lookup_results.json`.
+        /// i.e. `all_hla_metadata.json`.
         /// ********************* WARNING! *********************
         /// </remarks>
         public FileBackedHlaScoringMetadata(

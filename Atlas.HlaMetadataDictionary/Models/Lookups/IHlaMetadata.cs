@@ -4,7 +4,7 @@ using Atlas.Common.GeneticData.Hla.Models;
 namespace Atlas.HlaMetadataDictionary.Models.Lookups
 {
     /// <summary>
-    /// Data returned from a HLA lookup.
+    /// HLA Metadata. i.e. something with the key necessary to be looked up in our HLA Metadata Dictionary.
     /// </summary>
     public interface IHlaMetadata
     {

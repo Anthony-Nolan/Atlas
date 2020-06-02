@@ -3,7 +3,7 @@
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 {
     /// <summary>
-    /// Lookup result with data required to score HLA pairings.
+    /// Metadata required to score HLA pairings.
     /// </summary>
     public interface IHlaScoringMetadata : ISerialisableHlaMetadata
     {

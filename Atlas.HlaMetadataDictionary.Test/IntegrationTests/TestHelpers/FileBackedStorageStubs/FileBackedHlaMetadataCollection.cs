@@ -4,8 +4,7 @@ using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedSt
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs
 {
     /// <summary>
-    /// Holds collections of HLA lookup results that have been
-    /// imported from file.
+    /// Holds set of HLA Metadata that has been imported from file.
     /// </summary>
     public class FileBackedHlaMetadataCollection
     {

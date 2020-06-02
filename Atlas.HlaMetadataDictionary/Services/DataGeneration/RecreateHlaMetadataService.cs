@@ -11,7 +11,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 {
     /// <summary>
     /// Manages the contents of the matching dictionary
-    /// by orchestrating the generation and storage of the HLA Lookup Results dataset.
+    /// by orchestrating the generation and storage of the HLA Metadata dataset.
     /// </summary>
     internal interface IRecreateHlaMetadataService
     {
@@ -47,21 +47,21 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
         {
             try
             {
-                logger.SendTrace("HlaMetadataDictionary: Fetching all lookup results", LogLevel.Info);
+                logger.SendTrace("HlaMetadataDictionary: Fetching all Metadata", LogLevel.Info);
                 var allHlaMetadata = hlaMetadataService.GetAllHlaMetadata(hlaNomenclatureVersion);
                 
-                logger.SendTrace("HlaMetadataDictionary: Persisting lookup results", LogLevel.Info);
+                logger.SendTrace("HlaMetadataDictionary: Persisting all Metadata", LogLevel.Info);
                 await PersistHlaMetadataCollection(allHlaMetadata, hlaNomenclatureVersion);
             }
             catch (Exception ex)
             {
-                throw new HlaMetadataDictionaryHttpException("Could not recreate the matching dictionary.", ex);
+                throw new HlaMetadataDictionaryHttpException("Could not recreate the HLA Metadata Dictionary.", ex);
             }
         }
 
         private async Task PersistHlaMetadataCollection(HlaMetadataCollection metadataCollection, string hlaNomenclatureVersion)
         {
-            // Matching dictionary lookups require an up-to-date collection of allele names,
+            // Metadata Dictionary lookups require an up-to-date collection of allele names,
             // so all collections must be recreated together; the order of execution is not important.
             await Task.WhenAll(
                 PersistAlleleNamesMetadata(metadataCollection.AlleleNameMetadata, hlaNomenclatureVersion),

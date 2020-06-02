@@ -3,7 +3,7 @@
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup
 {
     /// <summary>
-    /// Lookup result with data required to match HLA pairings.
+    /// Metadata required to match HLA pairings.
     /// </summary>
     public interface IHlaMatchingMetadata : ISerialisableHlaMetadata, IMatchingPGroups
     {

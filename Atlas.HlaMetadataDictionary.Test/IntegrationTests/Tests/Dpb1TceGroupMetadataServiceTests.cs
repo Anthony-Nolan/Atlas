@@ -17,7 +17,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
     /// Fixture relies on a file-backed HlaMetadataDictionary - tests may break if underlying data is changed.
     /// </summary>
     [TestFixture]
-    public class Dpb1TceGroupLookupTests
+    public class Dpb1TceGroupMetadataServiceTests
     {
         private const Locus Dpb1MolecularLocusType = Locus.Dpb1;
         private const string CacheKey = "NmdpCodeLookup_Dpb1";

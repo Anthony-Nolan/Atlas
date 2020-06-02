@@ -17,7 +17,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
     /// necessary for testing without an internet dependency.
     /// </summary>
     internal abstract class FileBackedHlaMetadataRepositoryBase<TSerialisableHlaMetadata> :
-        FileBackedHlaLookupRepositoryBaseReader,
+        FileBackedHlaMetadataRepositoryBaseReader,
         IHlaMetadataRepository
         where TSerialisableHlaMetadata : ISerialisableHlaMetadata
     {
@@ -67,7 +67,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
     /// So this would read afresh for each distinct class, if it lived in the class above.
     /// Having this class allows us to read the file only once.
     /// </summary>
-    public abstract class FileBackedHlaLookupRepositoryBaseReader
+    public abstract class FileBackedHlaMetadataRepositoryBaseReader
     {
         private static FileBackedHlaMetadataCollection loadedFile = null;
         protected static FileBackedHlaMetadataCollection GetMetadataFromJsonFile()
