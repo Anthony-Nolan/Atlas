@@ -6,10 +6,10 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.Common.Utils;
 using Atlas.DonorImport.ExternalInterface;
-using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Exceptions;
+using Atlas.MatchingAlgorithm.Mapping;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Donors;
@@ -59,12 +59,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             try
             {
                 var allFailedDonors = new List<FailedDonorInfo>();
-                var donors = donorReader.GetAllDonors().Select(MapDonor);
+                var donors = donorReader.GetAllDonors().Select(d => d.MapImportDonorToMatchingUpdateDonor());
                 foreach (var donorBatch in donors.Batch(BatchSize))
                 {
                     var failedDonors = await InsertDonorBatch(donorBatch);
                     allFailedDonors.AddRange(failedDonors);
                 }
+
                 await failedDonorsNotificationSender.SendFailedDonorsAlert(allFailedDonors, ImportFailureEventName, Priority.Medium);
                 logger.SendTrace("Donor import is complete", LogLevel.Info);
             }
@@ -75,29 +76,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             }
         }
 
-        // TODO: QQ Move out of this file to appropriate location?
-        private static SearchableDonorInformation MapDonor(Donor donor)
-        {
-            return new SearchableDonorInformation
-            {
-                // TODO: ATLAS-294: Do not do this, no guarantee this will be parsable to an int
-                DonorId = int.Parse(donor.DonorId),
-                // TODO: ATLAS-294: Use enum here, don't parse to and from string when the types otherwise match!
-                DonorType = donor.DonorType.ToString(),
-                A_1 = donor.A_1,
-                A_2 = donor.A_2,
-                B_1 = donor.B_1,
-                B_2 = donor.B_2,
-                C_1 = donor.C_1,
-                C_2 = donor.C_2,
-                DPB1_1 = donor.DPB1_1,
-                DPB1_2 = donor.DPB1_2,
-                DQB1_2 = donor.DQB1_1,
-                DQB1_1 = donor.DQB1_2,
-                DRB1_1 = donor.DRB1_1,
-                DRB1_2 = donor.DRB1_2,
-            };
-        }
 
         /// <returns>Details of donors in the batch that failed import</returns>
         private async Task<IEnumerable<FailedDonorInfo>> InsertDonorBatch(IEnumerable<SearchableDonorInformation> donors)
