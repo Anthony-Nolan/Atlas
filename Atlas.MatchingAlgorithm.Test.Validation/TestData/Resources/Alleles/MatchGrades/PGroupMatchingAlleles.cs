@@ -9,14 +9,14 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
     /// It is used when we need to guarantee that a p-group level match grade is possible
     ///
     /// To ensure a p-group level match, and not a g-group level, we must ensure we choose alleles in the same p-group but not the same g-group
-    /// For some loci, only one allele exists with this relationship, hence we must explicitly set patient and donor alleles seperately
+    /// For some loci, only one allele exists with this relationship, hence we must explicitly set patient and donor alleles separately
     ///
     /// Patient HLA is chosen as the alleles that exist in a p-group, of which the rest of the alleles all share a g-group
     /// Donor HLA is the remainder of the p-group, with some caveats.
     /// (1) Alleles with the same first two fields as the patient allele have been removed, so as to avoid a better match
     /// (2) Alleles failing a HLA Metadata lookup have been commented out.
-    ///    - Presumably this is due to HLA Nomenclature version discrepancies with the deployed HLA Metadata Dictionary at time of writing
-    ///    - TODO: NOVA-1539: Ensure we point at a consistent version (3330) of the HLA Metadata Dictionary to avoid more data becoming invalid over time
+    ///    - Presumably this is due discrepancies between the version of the HLA Nomenclature used for selecting example alleles at the time of
+    ///      writing, and the v3.3.3.0 of the WMDA's HLA Nomenclature used in these tests.
     /// </summary>
     public static class PGroupMatchingAlleles
     {
