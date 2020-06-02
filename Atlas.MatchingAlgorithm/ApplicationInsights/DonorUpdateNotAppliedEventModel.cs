@@ -9,7 +9,7 @@ namespace Atlas.MatchingAlgorithm.ApplicationInsights
     {
         private const string EventName = "Donor update not applied";
 
-        public DonorUpdateNotAppliedEvensetModel(
+        internal DonorUpdateNotAppliedEventModel(
             DateTimeOffset lastUpdateDateTime,
             DonorAvailabilityUpdate update) : base(EventName)
         {
