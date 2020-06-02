@@ -8,7 +8,6 @@ using Atlas.Common.Utils;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
-using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Models;
@@ -90,6 +89,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 B_1 = donor.B_1,
                 B_2 = donor.B_2,
                 C_1 = donor.C_1,
+                C_2 = donor.C_2,
                 DPB1_1 = donor.DPB1_1,
                 DPB1_2 = donor.DPB1_2,
                 DQB1_2 = donor.DQB1_1,
