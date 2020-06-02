@@ -5,7 +5,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Models;
 
@@ -60,14 +60,14 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             };
         }
 
-        private async Task<LocusInfo<IHlaMatchingLookupResult>> GetExpandedHla(Locus locus, LocusInfo<string> hla)
+        private async Task<LocusInfo<IHlaMatchingMetadata>> GetExpandedHla(Locus locus, LocusInfo<string> hla)
         {
             if (string.IsNullOrEmpty(hla.Position1) || string.IsNullOrEmpty(hla.Position2))
             {
-                return new LocusInfo<IHlaMatchingLookupResult>(null, null);
+                return new LocusInfo<IHlaMatchingMetadata>(null, null);
             }
 
-            return await hlaMetadataDictionary.GetLocusHlaMatchingLookupResults(locus, hla);
+            return await hlaMetadataDictionary.GetLocusHlaMatchingMetadata(locus, hla);
         }
 
     }

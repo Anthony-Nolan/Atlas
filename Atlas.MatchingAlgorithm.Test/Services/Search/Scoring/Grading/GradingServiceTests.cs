@@ -2,9 +2,9 @@
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.ScoringInfoBuilders;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Common.Models.Scoring;
@@ -26,7 +26,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
     {
         private const Locus MatchedLocus = Locus.A;
         private IGradingService gradingService;
-        private IHlaScoringLookupResult defaultSerologyResult;
+        private IHlaScoringMetadata defaultSerologyResult;
 
         [SetUp]
         public void SetUpBeforeEachTest()
@@ -39,7 +39,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             gradingService = new GradingService(permissiveMismatchCalculator, scoringCache);
 
             defaultSerologyResult =
-                new HlaScoringLookupResultBuilder()
+                new HlaScoringMetadataBuilder()
                     .AtLocus(MatchedLocus)
                     .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                         .WithMatchingSerologies(new[]
@@ -55,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         [Test]
         public void CalculateGrades_PatientPhenotypeIsNull_ThrowsException()
         {
-            var donorPhenotype = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorPhenotype = new PhenotypeInfo<IHlaScoringMetadata>();
 
             Assert.Throws<ArgumentException>(() => gradingService.CalculateGrades(null, donorPhenotype));
         }
@@ -63,7 +63,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         [Test]
         public void CalculateGrades_DonorPhenotypeIsNull_ThrowsException()
         {
-            var patientPhenotype = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var patientPhenotype = new PhenotypeInfo<IHlaScoringMetadata>();
 
             Assert.Throws<ArgumentException>(() => gradingService.CalculateGrades(patientPhenotype, null));
         }
@@ -84,36 +84,36 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string sharedGGroup1 = "g-group-1";
             const string sharedGGroup2 = "g-group-2";
 
-            var patientResult1 = new HlaScoringLookupResultBuilder()
+            var patientResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingGGroup(sharedGGroup1)
                     .Build())
                 .Build();
 
-            var patientResult2 = new HlaScoringLookupResultBuilder()
+            var patientResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingGGroup(sharedGGroup2)
                     .Build())
                 .Build();
 
-            var donorResult1 = new HlaScoringLookupResultBuilder()
+            var donorResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingGGroup(sharedGGroup1)
                     .Build())
                 .Build();
 
-            var donorResult2 = new HlaScoringLookupResultBuilder()
+            var donorResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingGGroup(sharedGGroup2)
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult1, patientResult2);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedMatchOrientations = new[] {MatchOrientation.Direct};
@@ -135,7 +135,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var gDnaStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna);
             var cDnaStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.CDna);
 
-            var patientResult1 = new HlaScoringLookupResultBuilder()
+            var patientResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName1)
@@ -144,7 +144,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientResult2 = new HlaScoringLookupResultBuilder()
+            var patientResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName2)
@@ -153,7 +153,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult1 = new HlaScoringLookupResultBuilder()
+            var donorResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName1)
@@ -162,7 +162,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult2 = new HlaScoringLookupResultBuilder()
+            var donorResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName2)
@@ -171,8 +171,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult1, patientResult2);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedMatchOrientations = new[] {MatchOrientation.Direct};
@@ -196,28 +196,28 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry(matchingSplitName, SerologySubtype.Split, false)
             };
 
-            var patientResult1 = new HlaScoringLookupResultBuilder()
+            var patientResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(betterMatchingSerologies)
                     .Build())
                 .Build();
 
-            var patientResult2 = new HlaScoringLookupResultBuilder()
+            var patientResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] {new SerologyEntry("mismatched-not-split", SerologySubtype.NotSplit, true)})
                     .Build())
                 .Build();
 
-            var donorResult1 = new HlaScoringLookupResultBuilder()
+            var donorResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(betterMatchingSerologies)
                     .Build())
                 .Build();
 
-            var donorResult2 = new HlaScoringLookupResultBuilder()
+            var donorResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[]
@@ -228,8 +228,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult1, patientResult2);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedMatchOrientations = new[] {MatchOrientation.Direct};
@@ -248,36 +248,36 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string sharedGGroup1 = "g-group-1";
             const string sharedGGroup2 = "g-group-2";
 
-            var patientResult1 = new HlaScoringLookupResultBuilder()
+            var patientResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingGGroup(sharedGGroup1)
                     .Build())
                 .Build();
 
-            var patientResult2 = new HlaScoringLookupResultBuilder()
+            var patientResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingGGroup(sharedGGroup2)
                     .Build())
                 .Build();
 
-            var donorResult1 = new HlaScoringLookupResultBuilder()
+            var donorResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingGGroup(sharedGGroup2)
                     .Build())
                 .Build();
 
-            var donorResult2 = new HlaScoringLookupResultBuilder()
+            var donorResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingGGroup(sharedGGroup1)
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult1, patientResult2);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedMatchOrientations = new[] {MatchOrientation.Cross};
@@ -299,7 +299,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var gDnaStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.GDna);
             var cDnaStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.CDna);
 
-            var patientResult1 = new HlaScoringLookupResultBuilder()
+            var patientResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName1)
@@ -308,7 +308,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientResult2 = new HlaScoringLookupResultBuilder()
+            var patientResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName2)
@@ -317,7 +317,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult1 = new HlaScoringLookupResultBuilder()
+            var donorResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName2)
@@ -326,7 +326,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult2 = new HlaScoringLookupResultBuilder()
+            var donorResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedAlleleName1)
@@ -335,8 +335,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult1, patientResult2);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedMatchOrientations = new[] {MatchOrientation.Cross};
@@ -360,21 +360,21 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry(matchingSplitName, SerologySubtype.Split, false)
             };
 
-            var patientResult1 = new HlaScoringLookupResultBuilder()
+            var patientResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(betterMatchingSerologies)
                     .Build())
                 .Build();
 
-            var patientResult2 = new HlaScoringLookupResultBuilder()
+            var patientResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] {new SerologyEntry("mismatched-not-split", SerologySubtype.NotSplit, true)})
                     .Build())
                 .Build();
 
-            var donorResult1 = new HlaScoringLookupResultBuilder()
+            var donorResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[]
@@ -385,15 +385,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult2 = new HlaScoringLookupResultBuilder()
+            var donorResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(betterMatchingSerologies)
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult1, patientResult2);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedMatchOrientations = new[] {MatchOrientation.Cross};
@@ -412,7 +412,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string sharedFirstTwoFields = "999:999";
             var fullSequenceStatus = new AlleleTypingStatus(SequenceStatus.Full, DnaCategory.CDna);
 
-            var patientResult1 = new HlaScoringLookupResultBuilder()
+            var patientResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedFirstTwoFields + ":01")
@@ -420,7 +420,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientResult2 = new HlaScoringLookupResultBuilder()
+            var patientResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedFirstTwoFields + ":02")
@@ -428,7 +428,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult1 = new HlaScoringLookupResultBuilder()
+            var donorResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedFirstTwoFields + ":03")
@@ -436,7 +436,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult2 = new HlaScoringLookupResultBuilder()
+            var donorResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(sharedFirstTwoFields + ":04")
@@ -444,8 +444,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult1, patientResult2);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
@@ -463,36 +463,36 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var directMatchingSerology = new SerologyEntry("matching-split", SerologySubtype.Split, true);
 
-            var patientResult1 = new HlaScoringLookupResultBuilder()
+            var patientResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] {directMatchingSerology})
                     .Build())
                 .Build();
 
-            var patientResult2 = new HlaScoringLookupResultBuilder()
+            var patientResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] {directMatchingSerology})
                     .Build())
                 .Build();
 
-            var donorResult1 = new HlaScoringLookupResultBuilder()
+            var donorResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] {new SerologyEntry("mismatched-serology", SerologySubtype.NotSplit, true)})
                     .Build())
                 .Build();
 
-            var donorResult2 = new HlaScoringLookupResultBuilder()
+            var donorResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] {directMatchingSerology})
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult1, patientResult2);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
@@ -508,7 +508,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         [Test]
         public void CalculateGrades_TwoMismatchesInDirect_TwoMismatchesInCross_ReturnTwoMismatchesInBothOrientations()
         {
-            var patientResult1 = new HlaScoringLookupResultBuilder()
+            var patientResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingGGroup("patient-g-group-1")
@@ -516,7 +516,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientResult2 = new HlaScoringLookupResultBuilder()
+            var patientResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingGGroup("patient-g-group-2")
@@ -524,7 +524,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult1 = new HlaScoringLookupResultBuilder()
+            var donorResult1 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingGGroup("donor-g-group-1")
@@ -532,7 +532,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult2 = new HlaScoringLookupResultBuilder()
+            var donorResult2 = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingGGroup("donor-g-group-2")
@@ -540,8 +540,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult1, patientResult2);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult1, donorResult2);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult1, patientResult2);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult1, donorResult2);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedMatchOrientations = new[] {MatchOrientation.Direct, MatchOrientation.Cross};
@@ -561,13 +561,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         public void CalculateGrades_PatientIsMissingTheLocusTyping_ReturnsTwoPGroupMatchesInBothOrientations(
             Type donorScoringInfoType)
         {
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(null, null);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(null, null);
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(donorScoringInfoType))
                 .Build();
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, donorResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, donorResult);
 
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
@@ -586,13 +586,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         public void CalculateGrades_DonorIsMissingTheLocusTyping_ReturnsTwoPGroupMatchesInBothOrientations(
             Type patientScoringInfoType)
         {
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(patientScoringInfoType))
                 .Build();
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, patientResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, patientResult);
 
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(null, null);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(null, null);
 
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
@@ -607,9 +607,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         [Test]
         public void CalculateGrades_PatientAndDonorAreBothMissingTheLocusTyping_ReturnsTwoPGroupMatchesInBothOrientations()
         {
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(null, null);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(null, null);
 
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(null, null);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(null, null);
 
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
@@ -641,18 +641,18 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 })
                 .Build();
 
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(sharedSingleAlleleScoringInfo)
                 .Build();
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(sharedSingleAlleleScoringInfo)
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, defaultSerologyResult);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] {MatchOrientation.Direct});
@@ -676,20 +676,20 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 })
                 .Build();
 
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(sharedSingleAlleleScoringInfo)
                 .Build();
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[] {sharedSingleAlleleScoringInfo})
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, defaultSerologyResult);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] {MatchOrientation.Direct});
@@ -709,7 +709,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("shared-broad", SerologySubtype.Broad, true)
             };
 
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName("999:999")
@@ -720,7 +720,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] {sharedGGroup})
@@ -729,8 +729,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, defaultSerologyResult);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
@@ -748,7 +748,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("shared-broad", SerologySubtype.Broad, true)
             };
 
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName("999:999")
@@ -759,15 +759,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, defaultSerologyResult);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
@@ -791,20 +791,20 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 })
                 .Build();
 
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[] {sharedSingleAlleleScoringInfo})
                     .Build())
                 .Build();
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(sharedSingleAlleleScoringInfo)
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, defaultSerologyResult);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] {MatchOrientation.Direct});
@@ -828,22 +828,22 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 })
                 .Build();
 
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[] {sharedSingleAlleleScoringInfo})
                     .Build())
                 .Build();
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[] {sharedSingleAlleleScoringInfo})
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, defaultSerologyResult);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GDna, new[] {MatchOrientation.Direct});
@@ -863,7 +863,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("shared-broad", SerologySubtype.Broad, true)
             };
 
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[]
@@ -879,7 +879,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] {sharedGGroup})
@@ -888,8 +888,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, defaultSerologyResult);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
@@ -907,7 +907,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("shared-broad", SerologySubtype.Broad, true)
             };
 
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[]
@@ -923,15 +923,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, defaultSerologyResult);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
@@ -951,7 +951,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("shared-broad", SerologySubtype.Broad, true)
             };
 
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] {sharedGGroup})
@@ -960,7 +960,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName("999:999")
@@ -971,8 +971,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, defaultSerologyResult);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
@@ -992,7 +992,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("shared-broad", SerologySubtype.Broad, true)
             };
 
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] {sharedGGroup})
@@ -1001,7 +1001,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[]
@@ -1017,8 +1017,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, defaultSerologyResult);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
@@ -1038,7 +1038,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("shared-broad", SerologySubtype.Broad, true)
             };
 
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] {sharedGGroup})
@@ -1047,7 +1047,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] {sharedGGroup})
@@ -1056,8 +1056,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, defaultSerologyResult);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.GGroup, new[] {MatchOrientation.Direct});
@@ -1075,7 +1075,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("shared-broad", SerologySubtype.Broad, true)
             };
 
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] {"patient-g-group"})
@@ -1084,15 +1084,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, defaultSerologyResult);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
@@ -1110,14 +1110,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("shared-broad", SerologySubtype.Broad, true)
             };
 
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName("999:999")
@@ -1128,8 +1128,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, defaultSerologyResult);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
@@ -1147,14 +1147,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("shared-broad", SerologySubtype.Broad, true)
             };
 
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[]
@@ -1170,8 +1170,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, defaultSerologyResult);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
@@ -1189,14 +1189,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("shared-broad", SerologySubtype.Broad, true)
             };
 
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] {"patient-g-group"})
@@ -1205,8 +1205,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, defaultSerologyResult);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
@@ -1224,22 +1224,22 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("shared-broad", SerologySubtype.Broad, true)
             };
 
-            var patientResult = new HlaScoringLookupResultBuilder()
+            var patientResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
 
-            var donorResult = new HlaScoringLookupResultBuilder()
+            var donorResult = new HlaScoringMetadataBuilder()
                 .AtLocus(MatchedLocus)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(sharedMatchingSerologies)
                     .Build())
                 .Build();
 
-            var patientLookupResults = BuildLookupResultsAtMatchedLocus(patientResult, defaultSerologyResult);
-            var donorLookupResults = BuildLookupResultsAtMatchedLocus(donorResult, defaultSerologyResult);
+            var patientLookupResults = BuildMetadataAtMatchedLocus(patientResult, defaultSerologyResult);
+            var donorLookupResults = BuildMetadataAtMatchedLocus(donorResult, defaultSerologyResult);
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
             var expectedGradingResult = new MatchGradeResult(MatchGrade.Associated, new[] {MatchOrientation.Direct});
@@ -1252,7 +1252,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         [Test]
         public void CalculateGrades_CalculatesMatchesForMultipleLoci()
         {
-            var singleAlleleAtA = new HlaScoringLookupResultBuilder()
+            var singleAlleleAtA = new HlaScoringMetadataBuilder()
                 .AtLocus(Locus.A)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName("999:999")
@@ -1260,26 +1260,26 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var consolidatedMolecularAtB = new HlaScoringLookupResultBuilder()
+            var consolidatedMolecularAtB = new HlaScoringMetadataBuilder()
                 .AtLocus(Locus.B)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] {"shared-g-group"})
                     .Build())
                 .Build();
 
-            var serologyAtDrb1 = new HlaScoringLookupResultBuilder()
+            var serologyAtDrb1 = new HlaScoringMetadataBuilder()
                 .AtLocus(Locus.Drb1)
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] {new SerologyEntry("shared-not-split", SerologySubtype.NotSplit, true)})
                     .Build())
                 .Build();
 
-            var patientLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
             patientLookupResults.SetLocus(Locus.A, singleAlleleAtA);
             patientLookupResults.SetLocus(Locus.B, consolidatedMolecularAtB);
             patientLookupResults.SetLocus(Locus.Drb1, serologyAtDrb1);
 
-            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
             donorLookupResults.SetLocus(Locus.A, singleAlleleAtA);
             donorLookupResults.SetLocus(Locus.B, consolidatedMolecularAtB);
             donorLookupResults.SetLocus(Locus.Drb1, serologyAtDrb1);
@@ -1302,11 +1302,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             actualGradingResults.Drb1.Position2.Should().BeEquivalentTo(expectedGradingResultAtDrb1);
         }
 
-        private static PhenotypeInfo<IHlaScoringLookupResult> BuildLookupResultsAtMatchedLocus(
-            IHlaScoringLookupResult positionOneResult,
-            IHlaScoringLookupResult positionTwoResult)
+        private static PhenotypeInfo<IHlaScoringMetadata> BuildMetadataAtMatchedLocus(
+            IHlaScoringMetadata positionOneResult,
+            IHlaScoringMetadata positionTwoResult)
         {
-            var donorLookupResults = new PhenotypeInfo<IHlaScoringLookupResult>();
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
             donorLookupResults.SetPosition(MatchedLocus, LocusPosition.One, positionOneResult);
             donorLookupResults.SetPosition(MatchedLocus, LocusPosition.Two, positionTwoResult);
 

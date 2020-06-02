@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
+using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.ScoringInfoBuilders;
 using FluentAssertions;
@@ -17,22 +17,22 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services
         private const string ExpressingAlleleName = "01:01";
         private const string NullAlleleName = "01:01N";
 
-        private IHlaLookupResultSource<AlleleTyping> nullSource;
-        private IHlaLookupResultSource<AlleleTyping> expressingSource;
+        private IHlaMetadataSource<AlleleTyping> nullSource;
+        private IHlaMetadataSource<AlleleTyping> expressingSource;
         private SingleAlleleScoringInfo nullScoringInfo;
         private SingleAlleleScoringInfo expressingScoringInfo;
 
         [SetUp]
         public void SetUp()
         {
-            nullSource = Substitute.For<IHlaLookupResultSource<AlleleTyping>>();
-            expressingSource = Substitute.For<IHlaLookupResultSource<AlleleTyping>>();
+            nullSource = Substitute.For<IHlaMetadataSource<AlleleTyping>>();
+            expressingSource = Substitute.For<IHlaMetadataSource<AlleleTyping>>();
 
             nullScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(NullAlleleName).Build();
             expressingScoringInfo = new SingleAlleleScoringInfoBuilder().WithAlleleName(ExpressingAlleleName).Build();
 
-            nullSource.TypingForHlaLookupResult.Returns(new AlleleTyping(Locus.A, NullAlleleName));
-            expressingSource.TypingForHlaLookupResult.Returns(new AlleleTyping(Locus.A, ExpressingAlleleName));
+            nullSource.TypingForHlaMetadata.Returns(new AlleleTyping(Locus.A, NullAlleleName));
+            expressingSource.TypingForHlaMetadata.Returns(new AlleleTyping(Locus.A, ExpressingAlleleName));
         }
 
         [Test]

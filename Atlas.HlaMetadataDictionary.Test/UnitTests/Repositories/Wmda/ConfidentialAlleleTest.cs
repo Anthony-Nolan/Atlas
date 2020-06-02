@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Atlas.HlaMetadataDictionary.Models.Wmda;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 using FluentAssertions;
 using NUnit.Framework;
 

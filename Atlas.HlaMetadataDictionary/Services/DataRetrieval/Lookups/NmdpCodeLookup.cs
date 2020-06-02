@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
+using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.MultipleAlleleCodeDictionary;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
@@ -11,10 +11,10 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
         private readonly INmdpCodeCache nmdpCodeCache;
 
         public NmdpCodeLookup(
-            IHlaLookupRepository hlaLookupRepository,
-            IAlleleNamesLookupService alleleNamesLookupService,
+            IHlaMetadataRepository hlaMetadataRepository,
+            IAlleleNamesMetadataService alleleNamesMetadataService,
             INmdpCodeCache nmdpCodeCache)
-            : base(hlaLookupRepository, alleleNamesLookupService)
+            : base(hlaMetadataRepository, alleleNamesMetadataService)
         {
             this.nmdpCodeCache = nmdpCodeCache;
         }

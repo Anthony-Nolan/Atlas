@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
+using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
@@ -20,35 +20,35 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
     {
         private readonly string hlaNomenclatureVersion;
 
-        private readonly IAlleleNamesLookupRepository alleleNamesRepository;
-        private readonly IHlaMatchingLookupRepository matchingLookupRepository;
-        private readonly IHlaScoringLookupRepository scoringLookupRepository;
-        private readonly IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository;
+        private readonly IAlleleNamesMetadataRepository alleleNamesRepository;
+        private readonly IHlaMatchingMetadataRepository matchingMetadataRepository;
+        private readonly IHlaScoringMetadataRepository scoringMetadataRepository;
+        private readonly IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository;
 
         public HlaMetadataCacheControl(
             string hlaNomenclatureVersion,
 
-            IAlleleNamesLookupRepository alleleNamesRepository,
-            IHlaMatchingLookupRepository matchingLookupRepository,
-            IHlaScoringLookupRepository scoringLookupRepository,
-            IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository
+            IAlleleNamesMetadataRepository alleleNamesRepository,
+            IHlaMatchingMetadataRepository matchingMetadataRepository,
+            IHlaScoringMetadataRepository scoringMetadataRepository,
+            IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository
         )
         {
             this.hlaNomenclatureVersion = hlaNomenclatureVersion;
 
             this.alleleNamesRepository = alleleNamesRepository;
-            this.matchingLookupRepository = matchingLookupRepository;
-            this.scoringLookupRepository = scoringLookupRepository;
-            this.dpb1TceGroupsLookupRepository = dpb1TceGroupsLookupRepository;
+            this.matchingMetadataRepository = matchingMetadataRepository;
+            this.scoringMetadataRepository = scoringMetadataRepository;
+            this.dpb1TceGroupsMetadataRepository = dpb1TceGroupsMetadataRepository;
         }
 
         public async Task PreWarmAllCaches()
         {
             await PreWarmAlleleNameCache();
 
-            await matchingLookupRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
-            await scoringLookupRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
-            await dpb1TceGroupsLookupRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
+            await matchingMetadataRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
+            await scoringMetadataRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
+            await dpb1TceGroupsMetadataRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
         }
 
         public async Task PreWarmAlleleNameCache()

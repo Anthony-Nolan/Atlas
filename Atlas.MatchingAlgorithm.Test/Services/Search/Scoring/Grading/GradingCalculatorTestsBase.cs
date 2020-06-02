@@ -18,10 +18,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             Assert.Throws<ArgumentException>(() =>
                 GradingCalculator.CalculateGrade(
-                    new HlaScoringLookupResultBuilder()
+                    new HlaScoringMetadataBuilder()
                         .AtLocus(Locus.A)
                         .Build(),
-                    new HlaScoringLookupResultBuilder()
+                    new HlaScoringMetadataBuilder()
                         .AtLocus(Locus.B)
                         .Build()));
         }

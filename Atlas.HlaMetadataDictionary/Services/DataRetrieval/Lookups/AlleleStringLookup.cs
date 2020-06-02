@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
-using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
+using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 {
@@ -11,10 +11,10 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
         private readonly IAlleleStringSplitterService alleleSplitter;
         
         public AlleleStringLookup(
-            IHlaLookupRepository hlaLookupRepository,
-            IAlleleNamesLookupService alleleNamesLookupService,
+            IHlaMetadataRepository hlaMetadataRepository,
+            IAlleleNamesMetadataService alleleNamesMetadataService,
             IAlleleStringSplitterService alleleSplitter)
-            : base(hlaLookupRepository, alleleNamesLookupService)
+            : base(hlaMetadataRepository, alleleNamesMetadataService)
         {
             this.alleleSplitter = alleleSplitter;
         }

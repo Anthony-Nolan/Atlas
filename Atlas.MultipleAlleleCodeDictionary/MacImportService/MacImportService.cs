@@ -25,20 +25,21 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
 
         public async Task ImportLatestMultipleAlleleCodes()
         {
-            logger.SendTrace("Mac Import started", LogLevel.Info);
+            const string tracePrefix = "Mac Import: ";
+            logger.SendTrace($"{tracePrefix}Mac Import started", LogLevel.Info);
             try
             {
                 var lastEntryBeforeInsert = await macRepository.GetLastMacEntry();
-                logger.SendTrace($"The last MAC entry found was: {lastEntryBeforeInsert}", LogLevel.Info);
+                logger.SendTrace($"{tracePrefix}The last MAC entry found was: {lastEntryBeforeInsert}", LogLevel.Info);
                 var newMacs = await macParser.GetMacsSinceLastEntry(lastEntryBeforeInsert);
-                logger.SendTrace($"Attempting to insert {newMacs.Count} new MACs", LogLevel.Info);
+                logger.SendTrace($"{tracePrefix}Attempting to insert {newMacs.Count} new MACs", LogLevel.Info);
                 await macRepository.InsertMacs(newMacs);
             }
             catch (Exception e)
             {
-                logger.SendEvent(new ErrorEventModel("Failed to finish MAC Import", e));
+                logger.SendEvent(new ErrorEventModel($"{tracePrefix}Failed to finish MAC Import", e));
             }
-            logger.SendTrace("Successfully finished MAC Import", LogLevel.Info);
+            logger.SendTrace($"{tracePrefix}Successfully finished MAC Import", LogLevel.Info);
         }
     }
 }

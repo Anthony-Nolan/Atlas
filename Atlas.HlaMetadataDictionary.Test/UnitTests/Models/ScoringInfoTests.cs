@@ -1,8 +1,8 @@
 ﻿using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Models.LookupEntities;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
+using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using FluentAssertions;
 using Newtonsoft.Json;
 using NUnit.Framework;
@@ -29,8 +29,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Models
             );
 
             var infoAsString = JsonConvert.SerializeObject(info);
-            var result = new HlaScoringLookupResult(Locus.C, "03:212", info, Common.GeneticData.Hla.Models.TypingMethod.Molecular);
-            var entity = new HlaLookupTableEntity(result);
+            var result = new HlaScoringMetadata(Locus.C, "03:212", info, Common.GeneticData.Hla.Models.TypingMethod.Molecular);
+            var entity = new HlaMetadataTableRow(result);
 
             entity.SerialisedHlaInfoType.Should().Be("SingleAlleleScoringInfo");
             entity.SerialisedHlaInfo.Should().Contain(infoAsString);
@@ -54,8 +54,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Models
             );
 
             var infoAsString = JsonConvert.SerializeObject(info);
-            var result = new HlaScoringLookupResult(Locus.A, "02:01", info, Common.GeneticData.Hla.Models.TypingMethod.Molecular);
-            var entity = new HlaLookupTableEntity(result);
+            var result = new HlaScoringMetadata(Locus.A, "02:01", info, Common.GeneticData.Hla.Models.TypingMethod.Molecular);
+            var entity = new HlaMetadataTableRow(result);
 
             entity.SerialisedHlaInfoType.Should().Be("SingleAlleleScoringInfo");
             entity.SerialisedHlaInfo.Should().Contain(infoAsString);

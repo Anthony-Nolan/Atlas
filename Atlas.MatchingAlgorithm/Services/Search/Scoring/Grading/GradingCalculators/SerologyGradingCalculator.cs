@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators
@@ -31,11 +31,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
         }
 
         protected override MatchGrade GetMatchGrade(
-            IHlaScoringLookupResult patientLookupResult,
-            IHlaScoringLookupResult donorLookupResult)
+            IHlaScoringMetadata patientMetadata,
+            IHlaScoringMetadata donorMetadata)
         {
-            var patientSerologies = patientLookupResult.HlaScoringInfo.MatchingSerologies.ToList();
-            var donorSerologies = donorLookupResult.HlaScoringInfo.MatchingSerologies.ToList();
+            var patientSerologies = patientMetadata.HlaScoringInfo.MatchingSerologies.ToList();
+            var donorSerologies = donorMetadata.HlaScoringInfo.MatchingSerologies.ToList();
 
             // Order of the following checks is critical to the grade outcome
 

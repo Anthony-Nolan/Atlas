@@ -2,7 +2,7 @@
 using ApprovalTests;
 using ApprovalTests.Reporters;
 using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.HlaMetadataDictionary.Models.Wmda;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda

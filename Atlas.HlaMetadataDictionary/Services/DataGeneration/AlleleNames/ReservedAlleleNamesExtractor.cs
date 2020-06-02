@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
-using Atlas.HlaMetadataDictionary.Models.Wmda;
+using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 {
     internal interface IReservedAlleleNamesExtractor
     {
-        IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaNomenclatureVersion);
+        IEnumerable<AlleleNameMetadata> GetAlleleNames(string hlaNomenclatureVersion);
     }
 
     internal class ReservedAlleleNamesExtractor : AlleleNamesExtractorBase, IReservedAlleleNamesExtractor
@@ -18,11 +18,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
         {
         }
 
-        public IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaNomenclatureVersion)
+        public IEnumerable<AlleleNameMetadata> GetAlleleNames(string hlaNomenclatureVersion)
         {
             return AllelesInVersionOfHlaNom(hlaNomenclatureVersion)
                 .Where(a => AlleleNameIsReserved(a, hlaNomenclatureVersion))
-                .Select(allele => new AlleleNameLookupResult(allele.TypingLocus, allele.Name, allele.Name));
+                .Select(allele => new AlleleNameMetadata(allele.TypingLocus, allele.Name, allele.Name));
         }
 
         private bool AlleleNameIsReserved(HlaNom allele, string hlaNomenclatureVersion)

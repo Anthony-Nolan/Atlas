@@ -1,7 +1,7 @@
 ﻿using System;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
-using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
+using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.MultipleAlleleCodeDictionary;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
@@ -10,8 +10,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
     {
         public static HlaLookupBase GetLookupByHlaTypingCategory(
             HlaTypingCategory category,
-            IHlaLookupRepository hlaLookupRepository,
-            IAlleleNamesLookupService alleleNamesLookupService,
+            IHlaMetadataRepository hlaMetadataRepository,
+            IAlleleNamesMetadataService alleleNamesMetadataService,
             IAlleleStringSplitterService alleleSplitter,
             INmdpCodeCache cache)
         {
@@ -19,24 +19,24 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
             {
                 case HlaTypingCategory.Allele:
                     return new SingleAlleleLookup(
-                        hlaLookupRepository, 
-                        alleleNamesLookupService);
+                        hlaMetadataRepository, 
+                        alleleNamesMetadataService);
                 case HlaTypingCategory.XxCode:
                     return new XxCodeLookup(
-                        hlaLookupRepository);
+                        hlaMetadataRepository);
                 case HlaTypingCategory.Serology:
                     return new SerologyLookup(
-                        hlaLookupRepository);                   
+                        hlaMetadataRepository);                   
                 case HlaTypingCategory.NmdpCode:
                     return new NmdpCodeLookup(
-                        hlaLookupRepository,
-                        alleleNamesLookupService,
+                        hlaMetadataRepository,
+                        alleleNamesMetadataService,
                         cache);                    
                 case HlaTypingCategory.AlleleStringOfNames:
                 case HlaTypingCategory.AlleleStringOfSubtypes:
                     return new AlleleStringLookup(
-                        hlaLookupRepository, 
-                        alleleNamesLookupService, 
+                        hlaMetadataRepository, 
+                        alleleNamesMetadataService, 
                         alleleSplitter);                    
                 default:
                     throw new ArgumentException(

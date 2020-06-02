@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
-using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion;
 using FluentAssertions;
 using NUnit.Framework;
@@ -15,90 +14,90 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaDataConversion
     {
         [TestCase("999:999", "999:XX")]
         [TestCase("999:999Q", "999:XX")]
-        public override void ConvertToHlaLookupResults_WhenTwoFieldExpressingAllele_GeneratesLookupResults_ForOriginalNameAndXxCode(
+        public override void ConvertToHlaMetadata_WhenTwoFieldExpressingAllele_GeneratesMetadata_ForOriginalNameAndXxCode(
             string alleleName, string xxCodeLookupName)
         {
             var matchedAllele = BuildMatchedAllele(alleleName);
-            var actualLookupResults = LookupResultGenerator.ConvertToHlaLookupResults(new[] { matchedAllele });
+            var actualMetadata = MetadataConverter.ConvertToHlaMetadata(new[] { matchedAllele });
 
-            var expectedLookupResults = new List<IHlaLookupResult>
+            var expectedMetadata = new List<IHlaMetadata>
             {
-                BuildMolecularHlaLookupResult(alleleName),
-                BuildMolecularHlaLookupResult(xxCodeLookupName, new []{alleleName})
+                BuildMolecularHlaMetadata(alleleName),
+                BuildMolecularHlaMetadata(xxCodeLookupName, new []{alleleName})
             };
 
-            actualLookupResults.Should().BeEquivalentTo(expectedLookupResults);
+            actualMetadata.Should().BeEquivalentTo(expectedMetadata);
         }
 
         [TestCase("999:999:999", "", "999:999", "999:XX")]
         [TestCase("999:999:999:999", "", "999:999", "999:XX")]
         [TestCase("999:999:999L", "L", "999:999", "999:XX")]
-        public override void ConvertToHlaLookupResults_WhenThreeOrFourFieldExpressingAllele_GeneratesLookupResults_ForOriginalNameAndNmdpCodeAndXxCode(
+        public override void ConvertToHlaMetadata_WhenThreeOrFourFieldExpressingAllele_GeneratesMetadata_ForOriginalNameAndNmdpCodeAndXxCode(
             string alleleName, string expressionSuffix, string nmdpCodeLookupName, string xxCodeLookupName)
         {
             var matchedAllele = BuildMatchedAllele(alleleName);
-            var actualLookupResults = LookupResultGenerator.ConvertToHlaLookupResults(new[] { matchedAllele });
+            var actualMetadata = MetadataConverter.ConvertToHlaMetadata(new[] { matchedAllele });
 
-            var expectedLookupResults = new List<IHlaLookupResult>
+            var expectedMetadata = new List<IHlaMetadata>
             {
-                BuildMolecularHlaLookupResult(alleleName),
-                BuildMolecularHlaLookupResult(nmdpCodeLookupName, new []{alleleName}),
-                BuildMolecularHlaLookupResult(xxCodeLookupName, new[] {alleleName})
+                BuildMolecularHlaMetadata(alleleName),
+                BuildMolecularHlaMetadata(nmdpCodeLookupName, new []{alleleName}),
+                BuildMolecularHlaMetadata(xxCodeLookupName, new[] {alleleName})
             };
 
             if (!string.IsNullOrEmpty(expressionSuffix))
             {
-                expectedLookupResults.Add(
-                    BuildMolecularHlaLookupResult(nmdpCodeLookupName + expressionSuffix, new[] {alleleName}));
+                expectedMetadata.Add(
+                    BuildMolecularHlaMetadata(nmdpCodeLookupName + expressionSuffix, new[] {alleleName}));
             }
 
-            actualLookupResults.Should().BeEquivalentTo(expectedLookupResults);
+            actualMetadata.Should().BeEquivalentTo(expectedMetadata);
         }
 
         [TestCase("999:999N")]
         [TestCase("999:999:999N")]
         [TestCase("999:999:999:999N")]
-        public override void ConvertToHlaLookupResults_WhenNullAllele_GeneratesLookupResults_ForOriginalNameOnly(string alleleName)
+        public override void ConvertToHlaMetadata_WhenNullAllele_GeneratesMetadata_ForOriginalNameOnly(string alleleName)
         {
             var matchedAllele = BuildMatchedAllele(alleleName);
-            var actualLookupResults = LookupResultGenerator.ConvertToHlaLookupResults(new[] { matchedAllele });
+            var actualMetadata = MetadataConverter.ConvertToHlaMetadata(new[] { matchedAllele });
 
-            var expectedLookupResults = new List<IHlaLookupResult>
+            var expectedMetadata = new List<IHlaMetadata>
             {
-                BuildMolecularHlaLookupResult(alleleName)
+                BuildMolecularHlaMetadata(alleleName)
             };
 
-            actualLookupResults.Should().BeEquivalentTo(expectedLookupResults);
+            actualMetadata.Should().BeEquivalentTo(expectedMetadata);
         }
 
         [Test]
-        public override void ConvertToHlaLookupResults_WhenAllelesHaveSameTruncatedNameVariant_GeneratesLookupResult_ForEachUniqueLookupName()
+        public override void ConvertToHlaMetadata_WhenAllelesHaveSameTruncatedNameVariant_GeneratesMetadata_ForEachUniqueLookupName()
         {
             string[] alleles = { "999:999:998", "999:999:999:01", "999:999:999:02" };
             const string nmdpCodeLookupName = "999:999";
             const string xxCodeLookupName = "999:XX";
 
             var matchedAlleles = alleles.Select(BuildMatchedAllele).ToList();
-            var actualLookupResults = LookupResultGenerator.ConvertToHlaLookupResults(matchedAlleles);
+            var actualMetadata = MetadataConverter.ConvertToHlaMetadata(matchedAlleles);
 
-            var expectedLookupResults = new List<IHlaLookupResult>
+            var expectedMetadata = new List<IHlaMetadata>
             {
-                BuildMolecularHlaLookupResult(alleles[0]),
-                BuildMolecularHlaLookupResult(alleles[1]),
-                BuildMolecularHlaLookupResult(alleles[2]),
-                BuildMolecularHlaLookupResult(nmdpCodeLookupName, new[] {alleles[0], alleles[1], alleles[2]}),
-                BuildMolecularHlaLookupResult(xxCodeLookupName, alleles)
+                BuildMolecularHlaMetadata(alleles[0]),
+                BuildMolecularHlaMetadata(alleles[1]),
+                BuildMolecularHlaMetadata(alleles[2]),
+                BuildMolecularHlaMetadata(nmdpCodeLookupName, new[] {alleles[0], alleles[1], alleles[2]}),
+                BuildMolecularHlaMetadata(xxCodeLookupName, alleles)
             };
 
-            actualLookupResults.Should().BeEquivalentTo(expectedLookupResults);
+            actualMetadata.Should().BeEquivalentTo(expectedMetadata);
         }
 
         /// <summary>
-        /// Builds a serology lookup result based on constant values.
+        /// Builds Serology Metadata based on constant values.
         /// </summary>
-        protected override IHlaLookupResult BuildSerologyHlaLookupResult()
+        protected override IHlaMetadata BuildSerologyHlaMetadata()
         {
-            return new HlaMatchingLookupResult(
+            return new HlaMatchingMetadata(
                 MatchedLocus,
                 SerologyName,
                 TypingMethod.Serology,
@@ -107,12 +106,12 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaDataConversion
         }
 
         /// <summary>
-        /// Build a molecular lookup result with the allele name used as the Matching P Group by default,
+        /// Builds Molecular Metadata with the allele name used as the Matching P Group by default,
         /// unless a list of 1 or more P Groups is supplied.
         /// </summary>
-        private static IHlaLookupResult BuildMolecularHlaLookupResult(string alleleName, IEnumerable<string> pGroups = null)
+        private static IHlaMetadata BuildMolecularHlaMetadata(string alleleName, IEnumerable<string> pGroups = null)
         {
-            return new HlaMatchingLookupResult(
+            return new HlaMatchingMetadata(
                 MatchedLocus,
                 alleleName,
                 TypingMethod.Molecular,

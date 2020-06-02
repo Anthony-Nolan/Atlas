@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.HlaMetadataDictionary.Models.Wmda;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 using FluentAssertions;
 using NUnit.Framework;
 

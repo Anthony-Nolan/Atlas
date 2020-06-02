@@ -1,37 +1,37 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
 {
     public interface IConfidenceCalculator
     {
-        MatchConfidence CalculateConfidence(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult);
+        MatchConfidence CalculateConfidence(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata);
     }
 
     public class ConfidenceCalculator : IConfidenceCalculator
     {
-        public MatchConfidence CalculateConfidence(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
+        public MatchConfidence CalculateConfidence(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
         {
             // If either patient or donor is untyped, the match is potential
-            if (patientLookupResult == null || donorLookupResult == null)
+            if (patientMetadata == null || donorMetadata == null)
             {
                 return MatchConfidence.Potential;
             }
 
-            if (!IsMatch(patientLookupResult, donorLookupResult))
+            if (!IsMatch(patientMetadata, donorMetadata))
             {
                 return MatchConfidence.Mismatch;
             }
 
-            if (IsDefiniteMatch(patientLookupResult, donorLookupResult))
+            if (IsDefiniteMatch(patientMetadata, donorMetadata))
             {
                 return MatchConfidence.Definite;
             }
 
-            if (IsExactMatch(patientLookupResult, donorLookupResult))
+            if (IsExactMatch(patientMetadata, donorMetadata))
             {
                 return MatchConfidence.Exact;
             }
@@ -39,29 +39,29 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
             return MatchConfidence.Potential;
         }
 
-        private static bool IsMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
+        private static bool IsMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
         {
-            if (patientLookupResult.HlaScoringInfo is SerologyScoringInfo ||
-                donorLookupResult.HlaScoringInfo is SerologyScoringInfo)
+            if (patientMetadata.HlaScoringInfo is SerologyScoringInfo ||
+                donorMetadata.HlaScoringInfo is SerologyScoringInfo)
             {
-                return IsSerologyMatch(patientLookupResult, donorLookupResult);
+                return IsSerologyMatch(patientMetadata, donorMetadata);
             }
 
-            return IsMolecularMatch(patientLookupResult, donorLookupResult);
+            return IsMolecularMatch(patientMetadata, donorMetadata);
         }
 
-        private static bool IsMolecularMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
+        private static bool IsMolecularMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
         {
-            var patientPGroups = patientLookupResult.HlaScoringInfo.MatchingPGroups;
-            var donorPGroups = donorLookupResult.HlaScoringInfo.MatchingPGroups;
+            var patientPGroups = patientMetadata.HlaScoringInfo.MatchingPGroups;
+            var donorPGroups = donorMetadata.HlaScoringInfo.MatchingPGroups;
 
             return patientPGroups.Intersect(donorPGroups).Any();
         }
 
-        private static bool IsSerologyMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
+        private static bool IsSerologyMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
         {
-            var patientSerologies = patientLookupResult.HlaScoringInfo.MatchingSerologies.ToList();
-            var donorSerologies = donorLookupResult.HlaScoringInfo.MatchingSerologies.ToList();
+            var patientSerologies = patientMetadata.HlaScoringInfo.MatchingSerologies.ToList();
+            var donorSerologies = donorMetadata.HlaScoringInfo.MatchingSerologies.ToList();
 
             var isDirectMatch = AreSerologiesMatched(patientSerologies, true, donorSerologies, true);
             var isDonorIndirectMatch = AreSerologiesMatched(patientSerologies, true, donorSerologies, false);
@@ -85,18 +85,18 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
                     .Any();
         }
 
-        private static bool IsDefiniteMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
+        private static bool IsDefiniteMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
         {
-            return patientLookupResult.HlaScoringInfo is SingleAlleleScoringInfo
-                   && donorLookupResult.HlaScoringInfo is SingleAlleleScoringInfo;
+            return patientMetadata.HlaScoringInfo is SingleAlleleScoringInfo
+                   && donorMetadata.HlaScoringInfo is SingleAlleleScoringInfo;
         }
 
-        private static bool IsExactMatch(IHlaScoringLookupResult patientLookupResult, IHlaScoringLookupResult donorLookupResult)
+        private static bool IsExactMatch(IHlaScoringMetadata patientMetadata, IHlaScoringMetadata donorMetadata)
         {
-            return !(patientLookupResult.HlaScoringInfo is SerologyScoringInfo)
-                   && !(donorLookupResult.HlaScoringInfo is SerologyScoringInfo)
-                   && patientLookupResult.HlaScoringInfo.MatchingPGroups.Count() == 1
-                   && donorLookupResult.HlaScoringInfo.MatchingPGroups.Count() == 1;
+            return !(patientMetadata.HlaScoringInfo is SerologyScoringInfo)
+                   && !(donorMetadata.HlaScoringInfo is SerologyScoringInfo)
+                   && patientMetadata.HlaScoringInfo.MatchingPGroups.Count() == 1
+                   && donorMetadata.HlaScoringInfo.MatchingPGroups.Count() == 1;
         }
     }
 }

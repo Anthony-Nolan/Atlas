@@ -5,8 +5,9 @@ using ApprovalTests.Namers;
 using ApprovalTests.Reporters;
 using ApprovalTests.Reporters.TestFrameworks;
 using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
+using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using FluentAssertions;
 using NUnit.Framework;
 

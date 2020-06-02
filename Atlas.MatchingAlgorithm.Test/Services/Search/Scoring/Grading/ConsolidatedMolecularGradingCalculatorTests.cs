@@ -1,6 +1,6 @@
 ﻿using System;
 using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.ScoringInfoBuilders;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
@@ -40,11 +40,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             Type donorScoringInfoType
         )
         {
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(patientScoringInfoType))
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(donorScoringInfoType))
                 .Build();
 
@@ -61,12 +61,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             const string sharedConsolidatedMolecularName = "shared-hla-name";
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithLookupName(sharedConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder().Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithLookupName(sharedConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder().Build())
                 .Build();
@@ -83,7 +83,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             const string patientConsolidatedMolecularName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithLookupName(patientConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { sharedGGroup, patientGGroup })
@@ -92,7 +92,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             const string donorConsolidatedMolecularName = "donor-hla-name";
             const string donorGGroup = "donor-g-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithLookupName(donorConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { sharedGGroup, donorGGroup })
@@ -112,7 +112,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string patientConsolidatedMolecularName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithLookupName(patientConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new []{ patientGGroup })
@@ -123,7 +123,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string donorConsolidatedMolecularName = "donor-hla-name";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithLookupName(donorConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { donorGGroup })
@@ -142,7 +142,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string patientConsolidatedMolecularName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(patientConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
@@ -154,7 +154,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string donorConsolidatedMolecularName = "donor-hla-name";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(donorConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
@@ -178,7 +178,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string patientConsolidatedMolecularName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(patientConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
@@ -190,7 +190,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string donorConsolidatedMolecularName = "donor-hla-name";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(donorConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
@@ -214,7 +214,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string patientConsolidatedMolecularName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(NonDpb1Locus)
                 .WithLookupName(patientConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
@@ -226,7 +226,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string donorConsolidatedMolecularName = "donor-hla-name";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(NonDpb1Locus)
                 .WithLookupName(donorConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
@@ -250,14 +250,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string sharedGGroup = "shared-g-group";
 
             const string patientGGroup = "patient-g-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { sharedGGroup, patientGGroup })
                     .Build())
                 .Build();
 
             const string donorAlleleName = "999:999";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .WithMatchingGGroup(sharedGGroup)
@@ -276,7 +276,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { patientGGroup })
                     .WithMatchingPGroups(new[] { sharedPGroup, patientPGroup })
@@ -285,7 +285,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             const string donorAlleleName = "999:999";
             const string donorGGroup = "donor-g-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
                     .WithMatchingGGroup(donorGGroup)
@@ -304,7 +304,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string patientConsolidatedMolecularName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(patientConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
@@ -316,7 +316,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string donorAlleleName = "999:999";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(donorAlleleName)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
@@ -341,7 +341,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string patientConsolidatedMolecularName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(patientConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
@@ -353,7 +353,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string donorAlleleName = "999:999";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
@@ -376,7 +376,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { patientGGroup })
@@ -387,7 +387,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string donorAlleleName = "999:999";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
@@ -411,7 +411,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string sharedGGroup = "shared-g-group";
 
             const string patientAlleleName = "999:999";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .WithMatchingGGroup(sharedGGroup)
@@ -419,7 +419,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 .Build();
 
             const string donorGGroup = "donor-g-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { sharedGGroup, donorGGroup })
                     .Build())
@@ -437,7 +437,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             const string patientAlleleName = "999:999";
             const string patientGGroup = "patient-g-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
                     .WithMatchingGGroup(patientGGroup)
@@ -447,7 +447,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { donorGGroup })
                     .WithMatchingPGroups(new[] { sharedPGroup, donorPGroup })
@@ -465,7 +465,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string patientAlleleName = "999:999";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(patientAlleleName)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
@@ -478,7 +478,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string donorConsolidatedMolecularName = "donor-hla-name";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(donorConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
@@ -502,7 +502,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string patientAlleleName = "999:999";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(patientAlleleName)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
@@ -515,7 +515,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string donorConsolidatedMolecularName = "donor-hla-name";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(donorConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
@@ -539,7 +539,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string patientAlleleName = "999:999";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
@@ -550,7 +550,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { donorGGroup })
@@ -572,7 +572,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { patientGGroup })
@@ -583,7 +583,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string donorAlleleName = "999:999N";
             const string donorGGroup = null;
             const string donorPGroup = null;
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(donorAlleleName)
@@ -603,7 +603,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string patientConsolidatedMolecularName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(patientConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
@@ -615,7 +615,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string donorAlleleName = "999:999N";
             const string donorGGroup = null;
             const string donorPGroup = null;
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(donorAlleleName)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
@@ -640,7 +640,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string patientAlleleName = "999:999N";
             const string patientGGroup = null;
             const string patientPGroup = null;
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithAlleleName(patientAlleleName)
@@ -651,7 +651,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { donorGGroup })
@@ -670,7 +670,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string patientAlleleName = "999:999N";
             const string patientGGroup = null;
             const string patientPGroup = null;
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(patientAlleleName)
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
@@ -683,7 +683,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string donorConsolidatedMolecularName = "donor-hla-name";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(donorConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
@@ -711,14 +711,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string sharedGGroup = "shared-g-group";
 
             const string patientGGroup = "patient-g-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { sharedGGroup, patientGGroup })
                     .Build())
                 .Build();
 
             const string donorGGroup = "donor-g-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new []{
                         new SingleAlleleScoringInfoBuilder()
@@ -743,7 +743,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { patientGGroup })
                     .WithMatchingPGroups(new[] { sharedPGroup, patientPGroup })
@@ -752,7 +752,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[]{
                         new SingleAlleleScoringInfoBuilder()
@@ -778,7 +778,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string patientConsolidatedMolecularName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(patientConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
@@ -790,7 +790,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string donorMultipleAlleleName = "donor-hla-name";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(donorMultipleAlleleName)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
@@ -818,7 +818,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string patientConsolidatedMolecularName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(patientConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
@@ -830,7 +830,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string donorMultipleAlleleName = "donor-hla-name";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(donorMultipleAlleleName)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
@@ -857,7 +857,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { patientGGroup })
@@ -867,7 +867,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[]{
@@ -894,7 +894,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string sharedGGroup = "shared-g-group";
 
             const string patientGGroup = "patient-g-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[]{
                         new SingleAlleleScoringInfoBuilder()
@@ -908,7 +908,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 .Build();
 
             const string donorGGroup = "donor-g-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { sharedGGroup, donorGGroup })
                     .Build())
@@ -926,7 +926,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[]{
                         new SingleAlleleScoringInfoBuilder()
@@ -943,7 +943,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { donorGGroup })
                     .WithMatchingPGroups(new[] { sharedPGroup, donorPGroup })
@@ -961,7 +961,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string patientMultipleAlleleName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(patientMultipleAlleleName)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
@@ -977,7 +977,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string donorConsolidatedMolecularName = "donor-hla-name";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(donorConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
@@ -1001,7 +1001,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string patientMultipleAlleleName = "patient-hla-name";
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(patientMultipleAlleleName)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
@@ -1017,7 +1017,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             const string donorConsolidatedMolecularName = "donor-hla-name";
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(Dpb1Locus)
                 .WithLookupName(donorConsolidatedMolecularName)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
@@ -1040,7 +1040,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             const string patientGGroup = "patient-g-group";
             const string patientPGroup = "patient-p-group";
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithAlleleScoringInfos(new[]{
@@ -1054,7 +1054,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 
             const string donorGGroup = "donor-g-group";
             const string donorPGroup = "donor-p-group";
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .AtLocus(NonDpb1Locus)
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingGGroups(new[] { donorGGroup })

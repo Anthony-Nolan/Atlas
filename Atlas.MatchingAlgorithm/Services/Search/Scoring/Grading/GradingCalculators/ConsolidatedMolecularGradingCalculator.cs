@@ -1,6 +1,6 @@
 ﻿using System.Linq;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators
@@ -35,11 +35,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
         }
 
         protected override MatchGrade GetMatchGrade(
-            IHlaScoringLookupResult patientLookupResult, 
-            IHlaScoringLookupResult donorLookupResult)
+            IHlaScoringMetadata patientMetadata, 
+            IHlaScoringMetadata donorMetadata)
         {
-            var patientInfo = patientLookupResult.HlaScoringInfo;
-            var donorInfo = donorLookupResult.HlaScoringInfo;
+            var patientInfo = patientMetadata.HlaScoringInfo;
+            var donorInfo = donorMetadata.HlaScoringInfo;
 
             // Order of the following checks is critical to the grade outcome
 
@@ -55,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
             {
                 return MatchGrade.PGroup;
             }
-            else if (IsPermissiveMismatch(patientLookupResult, donorLookupResult))
+            else if (IsPermissiveMismatch(patientMetadata, donorMetadata))
             {
                 return MatchGrade.PermissiveMismatch;
             }
@@ -88,13 +88,13 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
         }
 
         private bool IsPermissiveMismatch(
-            IHlaLookupResult patientLookupResult,
-            IHlaLookupResult donorLookupResult)
+            IHlaMetadata patientMetadata,
+            IHlaMetadata donorMetadata)
         {
             return permissiveMismatchCalculator.IsPermissiveMismatch(
-                patientLookupResult.Locus,
-                patientLookupResult.LookupName,
-                donorLookupResult.LookupName);
+                patientMetadata.Locus,
+                patientMetadata.LookupName,
+                donorMetadata.LookupName);
         }
     }
 }

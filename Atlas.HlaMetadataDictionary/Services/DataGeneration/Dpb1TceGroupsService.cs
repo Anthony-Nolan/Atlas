@@ -2,19 +2,19 @@
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Extensions;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup;
-using Atlas.HlaMetadataDictionary.Models.Wmda;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Repositories;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 {
     /// <summary>
-    /// Generates a complete collection of DPB1 TCE Group lookup results.
+    /// Generates a complete collection of DPB1 TCE Group Metadata.
     /// </summary>
     internal interface IDpb1TceGroupsService
     {
-        IEnumerable<IDpb1TceGroupsLookupResult> GetDpb1TceGroupLookupResults(string hlaNomenclatureVersion);
+        IEnumerable<IDpb1TceGroupsMetadata> GetDpb1TceGroupMetadata(string hlaNomenclatureVersion);
     }
 
     /// <inheritdoc />
@@ -30,21 +30,21 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             this.wmdaDataRepository = wmdaDataRepository;
         }
 
-        public IEnumerable<IDpb1TceGroupsLookupResult> GetDpb1TceGroupLookupResults(string hlaNomenclatureVersion)
+        public IEnumerable<IDpb1TceGroupsMetadata> GetDpb1TceGroupMetadata(string hlaNomenclatureVersion)
         {
-            var allResults = wmdaDataRepository
+            var allMetadata = wmdaDataRepository
                 .GetWmdaDataset(hlaNomenclatureVersion)
                 .Dpb1TceGroupAssignments
-                .SelectMany(GetLookupResultPerDpb1LookupName);
+                .SelectMany(GetMetadataPerDpb1LookupName);
 
-            return GroupResultsByLookupName(allResults);
+            return GroupMetadataByLookupName(allMetadata);
         }
 
-        private static IEnumerable<IDpb1TceGroupsLookupResult> GetLookupResultPerDpb1LookupName(Dpb1TceGroupAssignment tceGroupAssignment)
+        private static IEnumerable<IDpb1TceGroupsMetadata> GetMetadataPerDpb1LookupName(Dpb1TceGroupAssignment tceGroupAssignment)
         {
             var lookupNames = GetLookupNames(tceGroupAssignment);
 
-            return lookupNames.Select(name => new Dpb1TceGroupsLookupResult(name, tceGroupAssignment.VersionTwoAssignment));
+            return lookupNames.Select(name => new Dpb1TceGroupsMetadata(name, tceGroupAssignment.VersionTwoAssignment));
         }
 
         private static IEnumerable<string> GetLookupNames(IWmdaHlaTyping tceGroup)
@@ -64,12 +64,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
         /// If a group of alleles with the same lookup name contains a null allele, the assignment
         /// of the expressing alleles should be preferred.
         /// </summary>
-        private static IEnumerable<IDpb1TceGroupsLookupResult> GroupResultsByLookupName(
-            IEnumerable<IDpb1TceGroupsLookupResult> results)
+        private static IEnumerable<IDpb1TceGroupsMetadata> GroupMetadataByLookupName(
+            IEnumerable<IDpb1TceGroupsMetadata> results)
         {
             return results
                 .GroupBy(result => result.LookupName)
-                .Select(grp => new Dpb1TceGroupsLookupResult(
+                .Select(grp => new Dpb1TceGroupsMetadata(
                     grp.Key,
                     grp.Select(lookup => lookup.TceGroup)
                         .Distinct()

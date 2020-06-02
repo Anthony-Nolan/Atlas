@@ -1,5 +1,5 @@
-﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+﻿using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators
@@ -17,16 +17,16 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
         }
 
         protected override MatchGrade GetMatchGrade(
-            IHlaScoringLookupResult patientLookupResult,
-            IHlaScoringLookupResult donorLookupResult)
+            IHlaScoringMetadata patientMetadata,
+            IHlaScoringMetadata donorMetadata)
         {
             var patientInfo = new AlleleGradingInfo(
-                patientLookupResult.Locus,
-                (SingleAlleleScoringInfo)patientLookupResult.HlaScoringInfo);
+                patientMetadata.Locus,
+                (SingleAlleleScoringInfo)patientMetadata.HlaScoringInfo);
 
             var donorInfo = new AlleleGradingInfo(
-                donorLookupResult.Locus,
-                (SingleAlleleScoringInfo)donorLookupResult.HlaScoringInfo);
+                donorMetadata.Locus,
+                (SingleAlleleScoringInfo)donorMetadata.HlaScoringInfo);
 
             return GetAlleleMatchGrade(patientInfo, donorInfo);
         }

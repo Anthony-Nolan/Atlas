@@ -1,13 +1,13 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 {
-    public class TestHla : IHlaMatchingLookupResult
+    public class TestHlaMetadata : IHlaMatchingMetadata
     {
         public string OriginalName { get; set; }
         public string LookupName { get; set; }
@@ -22,11 +22,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 
     public class TestHlaBuilder
     {
-        private readonly TestHla hla;
+        private readonly TestHlaMetadata hlaMetadata;
 
         public TestHlaBuilder()
         {
-            hla = new TestHla
+            hlaMetadata = new TestHlaMetadata
             {
                 Locus = Locus.A,
                 LookupName = "HLA",
@@ -37,13 +37,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 
         public TestHlaBuilder WithPGroups(params string[] pGroups)
         {
-            hla.MatchingPGroups = hla.MatchingPGroups.Concat(pGroups);
+            hlaMetadata.MatchingPGroups = hlaMetadata.MatchingPGroups.Concat(pGroups);
             return this;
         }
         
-        public TestHla Build()
+        public TestHlaMetadata Build()
         {
-            return hla;
+            return hlaMetadata;
         }
     }
 }
