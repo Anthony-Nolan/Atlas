@@ -80,7 +80,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
             var update = SearchableDonorUpdateBuilder.New
                 .With(x => x.SearchableDonorInformation, donorInfo)
-                .With(x => x.DonorId, donorInfo.DonorId.ToString());
+                .With(x => x.DonorId, donorInfo.DonorId);
 
             var message = SearchableDonorUpdateMessageBuilder.New
                 .With(x => x.DeserializedBody, update)
@@ -104,7 +104,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
             var update = SearchableDonorUpdateBuilder.New
                 .With(x => x.SearchableDonorInformation, donorInfo)
-                .With(x => x.DonorId, donorInfo.DonorId.ToString());
+                .With(x => x.DonorId, donorInfo.DonorId);
 
             var message = SearchableDonorUpdateMessageBuilder.New
                 .With(x => x.DeserializedBody, update)
@@ -131,7 +131,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
             var update = SearchableDonorUpdateBuilder.New
                 .With(x => x.SearchableDonorInformation, donorInfo)
-                .With(x => x.DonorId, donorInfo.DonorId.ToString());
+                .With(x => x.DonorId, donorInfo.DonorId);
 
             var message = SearchableDonorUpdateMessageBuilder.New
                 .With(x => x.DeserializedBody, update)
@@ -161,7 +161,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
             var update = SearchableDonorUpdateBuilder.New
                 .With(x => x.SearchableDonorInformation, donorInfo)
-                .With(x => x.DonorId, donorInfo.DonorId.ToString());
+                .With(x => x.DonorId, donorInfo.DonorId);
 
             var message = SearchableDonorUpdateMessageBuilder.New
                 .With(x => x.DeserializedBody, update)
@@ -188,7 +188,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
             var update = SearchableDonorUpdateBuilder.New
                 .With(x => x.SearchableDonorInformation, donorInfo)
-                .With(x => x.DonorId, donorInfo.DonorId.ToString());
+                .With(x => x.DonorId, donorInfo.DonorId);
 
             var message = SearchableDonorUpdateMessageBuilder.New
                 .With(x => x.DeserializedBody, update)
@@ -231,7 +231,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
             var invalidUpdate = SearchableDonorUpdateBuilder.New
                 .With(x => x.SearchableDonorInformation, invalidDonorInfo)
-                .With(x => x.DonorId, invalidDonorInfo.DonorId.ToString());
+                .With(x => x.DonorId, invalidDonorInfo.DonorId);
 
             var invalidMessage = SearchableDonorUpdateMessageBuilder.New
                 .With(x => x.DeserializedBody, invalidUpdate)

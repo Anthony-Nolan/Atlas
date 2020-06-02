@@ -50,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             {
                 UpdateSequenceNumber = update.SequenceNumber,
                 UpdateDateTime = body.PublishedDateTime.Value,
-                DonorId = int.Parse(body.DonorId),
+                DonorId = body.DonorId,
                 DonorInfo = body.SearchableDonorInformation?.ToDonorInfo(),
                 IsAvailableForSearch = body.IsAvailableForSearch
             };
