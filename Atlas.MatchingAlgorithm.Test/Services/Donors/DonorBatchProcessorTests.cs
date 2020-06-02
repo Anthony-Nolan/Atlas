@@ -22,19 +22,25 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 
         #region Function delegates to pass into service under test
 
-        private static string GetDonorIdFromDonorInfoFunc(ServiceBusMessage<SearchableDonorUpdate> donor)
+        private static int? GetDonorIdFromDonorInfoFunc(ServiceBusMessage<SearchableDonorUpdate> donor)
             => donor.DeserializedBody?.DonorId;
 
         private static FailedDonorInfo GetFailedDonorInfoFunc(ServiceBusMessage<SearchableDonorUpdate> donor)
-            => new FailedDonorInfo(donor) { DonorId = GetDonorIdFromDonorInfoFunc(donor) };
+        {
+            var donorIdFromDonorInfoFunc = GetDonorIdFromDonorInfoFunc(donor);
+            return new FailedDonorInfo(donor) {DonorId = donorIdFromDonorInfoFunc ?? default};
+        }
 
         private static Task<DonorAvailabilityUpdate> ProcessDonorFunc(ServiceBusMessage<SearchableDonorUpdate> donor)
-            => Task.FromResult(new DonorAvailabilityUpdate
+        {
+            var donorIdFromDonorInfoFunc = GetDonorIdFromDonorInfoFunc(donor);
+            return Task.FromResult(new DonorAvailabilityUpdate
             {
-                DonorId = donor.DeserializedBody == null
-                        ? default
-                        : int.Parse(GetDonorIdFromDonorInfoFunc(donor))
+                DonorId = donor.DeserializedBody == null || donorIdFromDonorInfoFunc == null
+                    ? default
+                    : donorIdFromDonorInfoFunc.Value
             });
+        }
 
         private class Anticipated : Exception { }
         private static Task<DonorAvailabilityUpdate> Throw<TException>(ServiceBusMessage<SearchableDonorUpdate> donor) where TException : Exception, new() => throw new TException();
@@ -96,7 +102,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         [Test]
         public async Task ProcessBatchAsync_AllDonorsFailProcessing_ReturnsFailedDonors()
         {
-            const string donorId = "donor-id";
+            const int donorId = 123;
 
             var result = await donorBatchProcessor.ProcessBatchAsyncWithAnticipatedExceptions<Anticipated>(
                 new List<ServiceBusMessage<SearchableDonorUpdate>>
@@ -157,7 +163,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 {
                     new ServiceBusMessage<SearchableDonorUpdate>
                     {
-                        DeserializedBody = new SearchableDonorUpdate { DonorId = donorId.ToString() }
+                        DeserializedBody = new SearchableDonorUpdate { DonorId = donorId }
                     }
                 },
                 ProcessDonorFunc,
@@ -172,7 +178,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         [Test]
         public async Task ProcessBatchAsync_AllDonorsProcessed_ReturnsEmptyFailedDonors()
         {
-            const string donorId = "123";
+            const int donorId = 123;
 
             var result = await donorBatchProcessor.ProcessBatchAsyncWithAnticipatedExceptions<Exception>(
                 new List<ServiceBusMessage<SearchableDonorUpdate>>
@@ -196,8 +202,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         [Test]
         public async Task ProcessBatchAsync_OneDonorProcessedAndOneFailed_LogsOneEvent()
         {
-            const string successfulDonor = "123";
-            const string failedDonor = "456";
+            const int successfulDonor = 123;
+            const int failedDonor = 456;
 
             await donorBatchProcessor.ProcessBatchAsyncWithAnticipatedExceptions<Anticipated>(
                 new List<ServiceBusMessage<SearchableDonorUpdate>>
@@ -231,14 +237,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 {
                     new ServiceBusMessage<SearchableDonorUpdate>
                     {
-                        DeserializedBody = new SearchableDonorUpdate{ DonorId = successfulDonor.ToString() }
+                        DeserializedBody = new SearchableDonorUpdate{ DonorId = successfulDonor }
                     },
                     new ServiceBusMessage<SearchableDonorUpdate>
                     {
-                        DeserializedBody = new SearchableDonorUpdate{ DonorId = "456" }
+                        DeserializedBody = new SearchableDonorUpdate{ DonorId = 456 }
                     }
                 },
-                async d => d.DeserializedBody.DonorId == successfulDonor.ToString()
+                async d => d.DeserializedBody.DonorId == successfulDonor
                     ? await ProcessDonorFunc(d)
                     : await Throw<Anticipated>(d),
                 GetFailedDonorInfoFunc,
@@ -252,14 +258,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         [Test]
         public async Task ProcessBatchAsync_OneDonorProcessedAndOneFailed_ReturnsFailedDonor()
         {
-            const string failedDonor = "123";
+            const int failedDonor = 123;
 
             var result = await donorBatchProcessor.ProcessBatchAsyncWithAnticipatedExceptions<Anticipated>(
                 new List<ServiceBusMessage<SearchableDonorUpdate>>
                 {
                     new ServiceBusMessage<SearchableDonorUpdate>
                     {
-                        DeserializedBody = new SearchableDonorUpdate{ DonorId = "456" }
+                        DeserializedBody = new SearchableDonorUpdate{ DonorId = 456 }
                     },
                     new ServiceBusMessage<SearchableDonorUpdate>
                     {

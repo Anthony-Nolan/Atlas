@@ -76,7 +76,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             },
                 "event-name");
 
-            result.FailedDonors.Should().OnlyContain(d => d.DonorId == donorId.ToString());
+            result.FailedDonors.Should().OnlyContain(d => d.DonorId == donorId);
         }
     }
 }
