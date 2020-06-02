@@ -1,4 +1,6 @@
-﻿namespace Atlas.Common.GeneticData
+﻿using System;
+
+namespace Atlas.Common.GeneticData
 {
     /// <summary>
     /// Data type to hold an instance of T as a pair of items.
@@ -11,6 +13,15 @@
         public T Item1 { get; set; }
         public T Item2 { get; set; }
 
+        public UnorderedPair<R> Map<R>(Func<T, R> mapping)
+        {
+            return new UnorderedPair<R>
+            {
+                Item1 = mapping(Item1),
+                Item2 = mapping(Item2)
+            };
+        }
+        
         #region Equality
 
         /// <summary>
