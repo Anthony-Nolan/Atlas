@@ -125,7 +125,16 @@ variable "MATCHING_DATABASE_PASSWORD" {
   type = string
 }
 
+variable "MATCHING_DATABASE_PASSWORD_FOR_DONOR_IMPORT_DATABASE" {
+  type = string
+}
+
 variable "MATCHING_DATABASE_USERNAME" {
+  type    = string
+  default = "matching"
+}
+
+variable "MATCHING_DATABASE_USERNAME_FOR_DONOR_IMPORT_DATABASE" {
   type    = string
   default = "matching"
 }
