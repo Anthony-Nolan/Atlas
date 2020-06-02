@@ -64,7 +64,8 @@ namespace Atlas.DonorImport.Data.Repositories
         {
             var sql = $"SELECT {string.Join(", ", donorInsertDataTableColumnNames)} FROM Donors";
             using var connection = new SqlConnection(connectionString);
-            // TODO: ATLAS-186: Determine whether it would be better to switch off "buffered" here, essentially streaming the data. 
+            // With "buffered: true" this will load all donors into memory before returning.
+            // We may want to consider streaming this if we have issues running out of memory in this approach.  
             // Pro: Smaller memory footprint.
             // Con: Longer open connection, consumer can cause timeouts by not fully enumerating.
             return connection.Query<Donor>(sql, buffered: true);

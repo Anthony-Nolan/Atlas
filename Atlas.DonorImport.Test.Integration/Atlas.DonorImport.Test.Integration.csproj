@@ -20,6 +20,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Atlas.Common.Test\Atlas.Common.Test.csproj" />
+      <ProjectReference Include="..\Atlas.DonorImport.Test\Atlas.DonorImport.Test.csproj" />
       <ProjectReference Include="..\Atlas.DonorImport\Atlas.DonorImport.csproj" />
     </ItemGroup>
 
@@ -30,6 +31,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <EmbeddedResource Include="IntegrationTests\DonorTypeParsing\bankedDonor.json" />
+      <EmbeddedResource Include="IntegrationTests\DonorTypeParsing\invalidDonorType.json" />
+      <EmbeddedResource Include="IntegrationTests\DonorTypeParsing\validDonorTypes.json" />
       <EmbeddedResource Include="IntegrationTests\InitialDataLoad\1000-initial-donors.json" />
     </ItemGroup>
 
