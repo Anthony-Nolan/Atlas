@@ -13,6 +13,8 @@ namespace Atlas.DonorImport.Data.Repositories
         public Task InsertDonorBatch(IEnumerable<Donor> donors);
 
         public IEnumerable<Donor> GetAllDonors();
+
+        public Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes);
     }
 
     public class DonorRepository : IDonorRepository
@@ -69,6 +71,17 @@ namespace Atlas.DonorImport.Data.Repositories
             // Pro: Smaller memory footprint.
             // Con: Longer open connection, consumer can cause timeouts by not fully enumerating.
             return connection.Query<Donor>(sql, buffered: true);
+        }
+
+        public async Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes)
+        {
+            var sql = @$"
+SELECT {string.Join(", ", donorInsertDataTableColumnNames)} FROM Donors
+WHERE ExternalDonorCode IN @codes
+";
+            await using var connection = new SqlConnection(connectionString);
+            var donors = await connection.QueryAsync<Donor>(sql, new {codes = externalDonorCodes});
+            return donors.ToDictionary(d => d.ExternalDonorCode, d => d);
         }
 
         private SqlBulkCopy BuildDonorSqlBulkCopy()
