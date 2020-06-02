@@ -1,16 +1,18 @@
-﻿using Atlas.MatchPrediction.Data.Models;
+using Atlas.MatchPrediction.Data.Models;
 using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Dapper;
 
 namespace Atlas.MatchPrediction.Data.Repositories
 {
     public interface IHaplotypeFrequenciesRepository
     {
         Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies);
-        Task<Dictionary<LociInfo<string>, decimal>> GetDiplotypeFrequencies(IEnumerable<LociInfo<string>> diplotypes);
+        Task<Dictionary<LociInfo<string>, decimal>> GetDiplotypeFrequencies(IEnumerable<LociInfo<string>> diplotypes, int setId);
     }
 
     public class HaplotypeFrequenciesRepository : IHaplotypeFrequenciesRepository
@@ -81,31 +83,32 @@ namespace Atlas.MatchPrediction.Data.Repositories
             return dataTable;
         }
 
-        public async Task<Dictionary<LociInfo<string>, decimal>> GetDiplotypeFrequencies(IEnumerable<LociInfo<string>> haplotypes)
+        public async Task<Dictionary<LociInfo<string>, decimal>> GetDiplotypeFrequencies(IEnumerable<LociInfo<string>> haplotypes, int setId)
         {
             var haplotypeInfo = new Dictionary<LociInfo<string>, decimal>();
+            var distinctHaplotypes = haplotypes.ToList().Distinct();
+
+            // TODO: ATLAS-2: Investigate if quicker to run multiple queries vs collated one to fetch everything in one go.
+            var sql = @$"
+                SELECT Frequency 
+                FROM HaplotypeFrequencies
+                WHERE 
+                    A = @A AND
+                    B = @B AND
+                    C = @C AND
+                    DQB1 = @Dqb1 AND
+                    DRB1 = @Drb1 AND
+                    Set_Id = @setId
+                ";
 
             using (var conn = new SqlConnection(connectionString))
             {
-                foreach (var haplotype in haplotypes)
+                foreach (var haplotype in distinctHaplotypes)
                 {
-                    const string sql = @"
-                    SELECT f.Frequency 
-                    FROM HaplotypeFrequencies f
-                    INNER JOIN HaplotypeFrequencySets s ON f.Set_Id = s.Id
-                    WHERE 
-                        f.A = @A AND
-                        f.B = @B AND
-                        f.C = @C AND
-                        f.DQB1 = @DQB1 AND
-                        f.DRB1 = @DRB1 AND
-                        s.Registry IS NULL AND
-                        s.Ethnicity IS NULL AND
-                        s.Active = 'true'
-                    ";
-
-                    var frequency = await conn.QueryFirstOrDefaultAsync<decimal>(sql, haplotype, commandTimeout: 300);
-
+                    var frequency = await conn.QueryFirstOrDefaultAsync<decimal>(
+                        sql,
+                        new {haplotype.A, haplotype.B, haplotype.C, haplotype.Dqb1, haplotype.Drb1, setId},
+                        commandTimeout: 300);
                     haplotypeInfo.Add(haplotype, frequency);
                 }
             }
