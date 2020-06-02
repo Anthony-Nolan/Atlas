@@ -35,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Client.Models.Donors
         [JsonIgnore]
         public int AuditId { get; set; }
 
-        public string DonorId { get; set; }
+        public int DonorId { get; set; }
         public bool IsAvailableForSearch { get; set; }
         public SearchableDonorInformation SearchableDonorInformation { get; set; }
         public DateTimeOffset? PublishedDateTime { get; set; }
