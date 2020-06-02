@@ -32,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
         public SearchService(
             IHlaMetadataDictionaryFactory factory,
-            IActiveHlaVersionAccessor hlaVersionAccessor,
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IDonorScoringService donorScoringService,
             IDonorMatchingService donorMatchingService,
             ILogger logger
@@ -41,7 +41,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.donorScoringService = donorScoringService;
             this.donorMatchingService = donorMatchingService;
             this.logger = logger;
-            this.hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaNomenclatureVersion());
+            this.hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
         public async Task<IEnumerable<SearchResult>> Search(SearchRequest searchRequest)

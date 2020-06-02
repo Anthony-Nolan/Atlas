@@ -21,19 +21,19 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
     public class ScoringCache : IScoringCache
     {
         private readonly IAppCache cache;
-        private readonly IActiveHlaVersionAccessor hlaVersionAccessor;
+        private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
 
         public ScoringCache(
             IPersistentCacheProvider cacheProvider,
-            IActiveHlaVersionAccessor hlaVersionAccessor)
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
         {
             this.cache = cacheProvider.Cache;
-            this.hlaVersionAccessor = hlaVersionAccessor;
+            this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
         }
 
         public MatchGrade GetOrAddMatchGrade(Locus locus, string patientHlaName, string donorHlaName, Func<ICacheEntry, MatchGrade> func)
         {
-            var cacheKey = $"MatchGrade:v{hlaVersionAccessor.GetActiveHlaNomenclatureVersion()};l{locus};d{donorHlaName};p{patientHlaName}";
+            var cacheKey = $"MatchGrade:v{hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion()};l{locus};d{donorHlaName};p{patientHlaName}";
             return cache.GetOrAdd(cacheKey, func);
         }
 
@@ -43,7 +43,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             string donorHlaName,
             Func<ICacheEntry, MatchConfidence> func)
         {
-            var cacheKey = $"MatchConfidence:v{hlaVersionAccessor.GetActiveHlaNomenclatureVersion()};l{locus};d{donorHlaName};p{patientHlaName}";
+            var cacheKey = $"MatchConfidence:v{hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion()};l{locus};d{donorHlaName};p{patientHlaName}";
             return cache.GetOrAdd(cacheKey, func);
         }
     }

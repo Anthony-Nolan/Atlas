@@ -17,7 +17,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         private IHlaScoringLookupService scoring;
         private IHlaLookupResultsService all;
         private IDpb1TceGroupLookupService dpb1;
-        private IWmdaHlaVersionAccessor wmdaVersion;
+        private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private ILogger logger;
         private IHlaMetadataDictionary cannedResponse = null;
 
@@ -35,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             scoring = Substitute.For<IHlaScoringLookupService>();
             all = Substitute.For<IHlaLookupResultsService>();
             dpb1 = Substitute.For<IDpb1TceGroupLookupService>();
-            wmdaVersion = Substitute.For<IWmdaHlaVersionAccessor>();
+            wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
             logger = Substitute.For<ILogger>();
         }
 
@@ -70,8 +70,8 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 case IDpb1TceGroupLookupService typedDependency:
                     dpb1 = typedDependency;
                     break;
-                case IWmdaHlaVersionAccessor typedDependency:
-                    wmdaVersion = typedDependency;
+                case IWmdaHlaNomenclatureVersionAccessor typedDependency:
+                    wmdaHlaNomenclatureVersionAccessor = typedDependency;
                     break;
                 default:
                     throw new InvalidOperationException($"Type '{typeof(T).FullName}' does not match any expected dependency");
@@ -96,7 +96,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 scoring,
                 all,
                 dpb1,
-                wmdaVersion,
+                wmdaHlaNomenclatureVersionAccessor,
                 logger
             );
         }

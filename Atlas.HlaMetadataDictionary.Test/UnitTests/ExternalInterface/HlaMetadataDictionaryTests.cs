@@ -23,7 +23,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         private IHlaScoringLookupService hlaScoringLookupService;
         private IHlaLookupResultsService hlaLookupResultsService;
         private IDpb1TceGroupLookupService dpb1TceGroupLookupService;
-        private IWmdaHlaVersionAccessor wmdaHlaVersionAccessor;
+        private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private ILogger logger;
 
         private IHlaMetadataDictionary hlaMetadataDictionary;
@@ -38,7 +38,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
             hlaScoringLookupService = Substitute.For<IHlaScoringLookupService>();
             hlaLookupResultsService = Substitute.For<IHlaLookupResultsService>();
             dpb1TceGroupLookupService = Substitute.For<IDpb1TceGroupLookupService>();
-            wmdaHlaVersionAccessor = Substitute.For<IWmdaHlaVersionAccessor>();
+            wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
             logger = Substitute.For<ILogger>();
 
             hlaMetadataDictionary =
@@ -51,14 +51,14 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
                     hlaScoringLookupService,
                     hlaLookupResultsService,
                     dpb1TceGroupLookupService,
-                    wmdaHlaVersionAccessor,
+                    wmdaHlaNomenclatureVersionAccessor,
                     logger);
         }
 
         [Test]
         public async Task RecreateHlaMetadataDictionaryIfNecessary_ForLatestVersion_WhenAlreadyUpToDate_DoesNotRecreateDictionary()
         {
-            wmdaHlaVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(DefaultVersion);
+            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(DefaultVersion);
 
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
 
@@ -68,7 +68,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         [Test]
         public async Task RecreateHlaMetadataDictionaryIfNecessary_ForLatestVersion_WhenNotUpToDate_RecreatesDictionary()
         {
-            wmdaHlaVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns("newer-version");
+            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns("newer-version");
 
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
 
@@ -78,7 +78,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         [Test]
         public async Task RecreateHlaMetadataDictionaryIfNecessary_ForActiveVersion_WhenAlreadyUpToDate_RecreatesDictionary()
         {
-            wmdaHlaVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(DefaultVersion);
+            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(DefaultVersion);
 
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Active);
 
@@ -88,7 +88,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         [Test]
         public async Task RecreateHlaMetadataDictionaryIfNecessary_ForSpecificVersion_WhenAlreadyUpToDate_RecreatesDictionary()
         {
-            wmdaHlaVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(DefaultVersion);
+            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(DefaultVersion);
 
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific("different-version"));
 

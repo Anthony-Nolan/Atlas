@@ -53,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
             rankingService = Substitute.For<IRankingService>();
             matchScoreCalculator = Substitute.For<IMatchScoreCalculator>();
             scoreResultAggregator = Substitute.For<IScoreResultAggregator>();
-            var hlaVersionAccessor = Substitute.For<IActiveHlaVersionAccessor>();
+            var hlaVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
 
             rankingService.RankSearchResults(Arg.Any<IEnumerable<MatchAndScoreResult>>())
                 .Returns(callInfo => (IEnumerable<MatchAndScoreResult>) callInfo.Args().First());

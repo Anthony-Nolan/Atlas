@@ -41,14 +41,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
         public DonorScoringService(
             IHlaMetadataDictionaryFactory factory,
-            IActiveHlaVersionAccessor hlaVersionAccessor,
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IGradingService gradingService,
             IConfidenceService confidenceService,
             IRankingService rankingService,
             IMatchScoreCalculator matchScoreCalculator,
             IScoreResultAggregator scoreResultAggregator)
         {
-            this.hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaNomenclatureVersion());
+            this.hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
             this.gradingService = gradingService;
             this.confidenceService = confidenceService;
             this.rankingService = rankingService;

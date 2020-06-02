@@ -41,7 +41,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IHlaScoringLookupService hlaScoringLookupService;
         private readonly IHlaLookupResultsService hlaLookupResultsService;
         private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
-        private readonly IWmdaHlaVersionAccessor wmdaHlaVersionAccessor;
+        private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
 
         //For CacheControl
@@ -62,7 +62,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IHlaScoringLookupService hlaScoringLookupService,
             IHlaLookupResultsService hlaLookupResultsService,
             IDpb1TceGroupLookupService dpb1TceGroupLookupService,
-            IWmdaHlaVersionAccessor wmdaHlaVersionAccessor,
+            IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger,
 
             //For CacheControl
@@ -82,7 +82,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.hlaScoringLookupService = hlaScoringLookupService;
             this.hlaLookupResultsService = hlaLookupResultsService;
             this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
-            this.wmdaHlaVersionAccessor = wmdaHlaVersionAccessor;
+            this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
 
             //For CacheControl
@@ -137,7 +137,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 hlaScoringLookupService,
                 hlaLookupResultsService,
                 dpb1TceGroupLookupService,
-                wmdaHlaVersionAccessor,
+                wmdaHlaNomenclatureVersionAccessor,
                 logger);
         }
 

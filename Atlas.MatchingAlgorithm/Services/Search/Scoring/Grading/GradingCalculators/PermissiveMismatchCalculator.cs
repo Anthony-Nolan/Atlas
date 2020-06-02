@@ -20,9 +20,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
 
         public PermissiveMismatchCalculator(
             IHlaMetadataDictionaryFactory factory,
-            IActiveHlaVersionAccessor hlaVersionAccessor)
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
         {
-            this.hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaNomenclatureVersion());
+            this.hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
         public bool IsPermissiveMismatch(Locus locus, string patientHlaName, string donorHlaName)

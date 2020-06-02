@@ -5,7 +5,7 @@ using LazyCache;
 
 namespace Atlas.HlaMetadataDictionary.Services
 {
-    internal interface IWmdaHlaVersionAccessor
+    internal interface IWmdaHlaNomenclatureVersionAccessor
     {
         /// <summary>
         /// Fetches the last stable HLA Nomenclature version.
@@ -14,12 +14,12 @@ namespace Atlas.HlaMetadataDictionary.Services
         string GetLatestStableHlaNomenclatureVersion();
     }
 
-    internal class WmdaHlaVersionAccessor : IWmdaHlaVersionAccessor
+    internal class WmdaHlaNomenclatureVersionAccessor : IWmdaHlaNomenclatureVersionAccessor
     {
         private readonly IWmdaFileReader fileReader;
         private readonly IAppCache cache;
 
-        public WmdaHlaVersionAccessor(
+        public WmdaHlaNomenclatureVersionAccessor(
             IWmdaFileReader fileReader,
             ITransientCacheProvider cacheProvider)
         {
@@ -29,7 +29,7 @@ namespace Atlas.HlaMetadataDictionary.Services
 
         public string GetLatestStableHlaNomenclatureVersion()
         {
-            const string key = "latestWmdaVersion";
+            const string key = "latestHlaNomenclatureVersionFromWmda";
             var version = cache.GetOrAdd(key, () =>
             {
                 // The currently recommended way of finding out the last version is from the header of the "Allelelist_history.txt" file, 

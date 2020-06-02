@@ -16,11 +16,11 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
         public CachingFunctions(
             IAntigenCachingService antigenCachingService,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
-            IActiveHlaVersionAccessor hlaVersionAccessor
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor
         )
         {
             this.antigenCachingService = antigenCachingService;
-            hlaMetadataCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaVersionAccessor.GetActiveHlaNomenclatureVersion());
+            hlaMetadataCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]

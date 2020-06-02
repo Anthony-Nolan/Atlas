@@ -18,9 +18,9 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
 
         public HlaMetadataDictionaryFunctions(
             IHlaMetadataDictionaryFactory factory,
-            IActiveHlaVersionAccessor hlaVersionAccessor)
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
         {
-            hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaNomenclatureVersion());
+            hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]

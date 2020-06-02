@@ -60,7 +60,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         {
             var dictionaryBuilder = new HlaMetadataDictionaryBuilder().Returning(hlaMetadataDictionary);
 
-            var constructedDonorExpander = new DonorHlaExpanderFactory(dictionaryBuilder, Substitute.For<IActiveHlaVersionAccessor>(), Substitute.For<ILogger>()).BuildForSpecifiedHlaNomenclatureVersion(null);
+            var constructedDonorExpander = new DonorHlaExpanderFactory(dictionaryBuilder, Substitute.For<IActiveHlaNomenclatureVersionAccessor>(), Substitute.For<ILogger>()).BuildForSpecifiedHlaNomenclatureVersion(null);
             
             await constructedDonorExpander.ExpandDonorHlaBatchAsync(new List<DonorInfo>
                 {

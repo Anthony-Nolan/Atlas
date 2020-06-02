@@ -65,7 +65,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 var wmdaHlaNomenclatureFilesUri = fetchWmdaHlaNomenclatureFilesUri(sp);
                 return new WmdaFileDownloader(wmdaHlaNomenclatureFilesUri);
             });
-            services.AddScoped<IWmdaHlaVersionAccessor, WmdaHlaVersionAccessor>();
+            services.AddScoped<IWmdaHlaNomenclatureVersionAccessor, WmdaHlaNomenclatureVersionAccessor>();
 
             services.AddScoped<IAlleleNameHistoriesConsolidator, AlleleNameHistoriesConsolidator>();
             services.AddScoped<IAlleleNamesFromHistoriesExtractor, AlleleNamesFromHistoriesExtractor>();
