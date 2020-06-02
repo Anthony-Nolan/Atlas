@@ -37,7 +37,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     LockToken = "token",
                     DeserializedBody = new SearchableDonorUpdate
                     {
-                        DonorId = donorId.ToString(),
+                        DonorId = donorId,
                         PublishedDateTime = DateTime.UtcNow,
                         IsAvailableForSearch = false
                     }
@@ -63,7 +63,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         [Test]
         public async Task ConvertSearchableDonorUpdatesAsync_InvalidUpdate_ReturnsFailedDonorInfo()
         {
-            const string donorId = "donor-id";
+            const int donorId = -1;
 
             var result = await converter.ConvertSearchableDonorUpdatesAsync(new List<ServiceBusMessage<SearchableDonorUpdate>>()
             {

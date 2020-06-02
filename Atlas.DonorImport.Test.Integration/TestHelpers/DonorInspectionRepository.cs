@@ -10,11 +10,11 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
     /// </summary>
     public interface IDonorInspectionRepository
     {
-        Task<Donor> GetDonor(string externalDonorId);
+        Task<Donor> GetDonor(string externalDonorCode);
         Task<int> DonorCount();
     }
-    
-    public class DonorInspectionRepository: IDonorInspectionRepository
+
+    public class DonorInspectionRepository : IDonorInspectionRepository
     {
         private readonly string connectionString;
 
@@ -22,17 +22,20 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
         {
             this.connectionString = connectionString;
         }
-    
-        public async Task<Donor> GetDonor(string externalDonorId)
+
+        public async Task<Donor> GetDonor(string externalDonorCode)
         {
             await using var conn = new SqlConnection(connectionString);
-            return await conn.QuerySingleOrDefaultAsync<Donor>($"SELECT * FROM Donors WHERE ExternalDonorCode = {externalDonorId}", commandTimeout: 300);
+            return await conn.QuerySingleOrDefaultAsync<Donor>(
+                "SELECT * FROM Donors WHERE ExternalDonorCode = @externalDonorCode",
+                new {externalDonorCode},
+                commandTimeout: 300);
         }
 
         public async Task<int> DonorCount()
         {
             await using var conn = new SqlConnection(connectionString);
-            return await conn.QuerySingleOrDefaultAsync<int>($"SELECT COUNT(*) FROM Donors", commandTimeout: 300);
+            return await conn.QuerySingleOrDefaultAsync<int>("SELECT COUNT(*) FROM Donors", commandTimeout: 300);
         }
     }
 }
