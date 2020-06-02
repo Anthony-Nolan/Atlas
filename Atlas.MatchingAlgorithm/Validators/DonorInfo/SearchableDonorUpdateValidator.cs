@@ -9,8 +9,7 @@ namespace Atlas.MatchingAlgorithm.Validators.DonorInfo
         public SearchableDonorUpdateValidator()
         {
             RuleFor(x => x.DonorId)
-                .NotEmpty()
-                .Must(x => int.TryParse(x, out var ignored));
+                .NotEmpty();
             
             RuleFor(x => x.IsAvailableForSearch)
                 .NotNull();
@@ -21,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Validators.DonorInfo
                 .SetValidator(new SearchableDonorInformationValidator());
 
             RuleFor(x => x.DonorId)
-                .Equal(x => x.SearchableDonorInformation.DonorId.ToString())
+                .Equal(x => x.SearchableDonorInformation.DonorId)
                 .When(x => x.SearchableDonorInformation != null);
 
             RuleFor(x => x.PublishedDateTime).NotNull();

@@ -36,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 async info => await ConvertDonorInfo(info),
                 info => new FailedDonorInfo(info)
                 {
-                    DonorId = info.DonorId.ToString()
+                    DonorId = info.DonorId
                 },
                 failureEventName);
         }

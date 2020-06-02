@@ -176,7 +176,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         [Test]
         public async Task CreateOrUpdateDonorBatch_WhenDonorFailsHlaExpansion_SendFailedDonorsAlert()
         {
-            const string donorId = "donor-id";
+            const int donorId = 21;
 
             donorHlaExpander
                 .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())

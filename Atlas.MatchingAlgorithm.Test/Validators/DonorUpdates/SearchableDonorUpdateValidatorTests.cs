@@ -12,7 +12,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
     public class SearchableDonorUpdateValidatorTests
     {
         private const int ValidDonorId = 123;
-        private static readonly string ValidDonorIdAsString = $"{ValidDonorId}";
         private SearchableDonorUpdateValidator validator;
 
         [SetUp]
@@ -21,23 +20,15 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
             validator = new SearchableDonorUpdateValidator();
         }
 
-        [TestCase("")]
-        [TestCase(null)]
-        public void Validator_WhenDonorIdIsMissing_ShouldHaveValidationError(string missingString)
+        public void Validator_WhenDonorIdIsMissing_ShouldHaveValidationError()
         {
-            validator.ShouldHaveValidationErrorFor(x => x.DonorId, missingString);
-        }
-
-        [Test]
-        public void Validator_WhenDonorIdCannotBeParsedToInteger_ShouldHaveValidationError()
-        {
-            validator.ShouldHaveValidationErrorFor(x => x.DonorId, "abc123");
+            validator.ShouldHaveValidationErrorFor(x => x.DonorId, null);
         }
 
         [Test]
         public void Validator_WhenDonorIdCanBeParsedToInteger_ShouldNotHaveValidationError()
         {
-            validator.ShouldNotHaveValidationErrorFor(x => x.DonorId, ValidDonorIdAsString);
+            validator.ShouldNotHaveValidationErrorFor(x => x.DonorId, ValidDonorId);
         }
 
         [Test]
@@ -45,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
         {
             var update = new SearchableDonorUpdate
             {
-                DonorId = ValidDonorIdAsString,
+                DonorId = ValidDonorId,
                 IsAvailableForSearch = true,
                 SearchableDonorInformation = null
             };
@@ -60,7 +51,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
         {
             var update = new SearchableDonorUpdate
             {
-                DonorId = ValidDonorIdAsString,
+                DonorId = ValidDonorId,
                 IsAvailableForSearch = false,
                 PublishedDateTime = DateTime.UtcNow,
                 SearchableDonorInformation = null
@@ -78,7 +69,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
 
             var update = new SearchableDonorUpdate
             {
-                DonorId = $"{ValidDonorId + 1}",
+                DonorId = ValidDonorId + 1,
                 SearchableDonorInformation = new SearchableDonorInformation
                 {
                     DonorId = ValidDonorId,
@@ -104,7 +95,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
 
             var update = new SearchableDonorUpdate
             {
-                DonorId = ValidDonorIdAsString,
+                DonorId = ValidDonorId,
                 PublishedDateTime = DateTime.UtcNow,
                 SearchableDonorInformation = new SearchableDonorInformation
                 {
