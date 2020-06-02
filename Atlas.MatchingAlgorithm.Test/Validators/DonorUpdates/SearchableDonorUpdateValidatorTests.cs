@@ -1,6 +1,5 @@
 ﻿using System;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
-using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
 using FluentAssertions;
 using FluentValidation.TestHelper;
@@ -73,7 +72,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
                 SearchableDonorInformation = new SearchableDonorInformation
                 {
                     DonorId = ValidDonorId,
-                    DonorType = $"{DonorType.Adult}",
+                    DonorType = DonorType.Adult,
                     A_1 = hlaName,
                     A_2 = hlaName,
                     B_1 = hlaName,
@@ -100,7 +99,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
                 SearchableDonorInformation = new SearchableDonorInformation
                 {
                     DonorId = ValidDonorId,
-                    DonorType = $"{DonorType.Adult}",
+                    DonorType = DonorType.Adult,
                     A_1 = hlaName,
                     A_2 = hlaName,
                     B_1 = hlaName,
