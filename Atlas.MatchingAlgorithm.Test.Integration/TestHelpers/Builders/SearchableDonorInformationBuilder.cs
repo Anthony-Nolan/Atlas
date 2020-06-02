@@ -1,5 +1,4 @@
 ﻿using Atlas.MatchingAlgorithm.Client.Models.Donors;
-using Atlas.MatchingAlgorithm.Models;
 using LochNessBuilder;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
@@ -8,7 +7,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
     public static class SearchableDonorInformationBuilder
     {
         private const string DefaultHlaName = "hla-name";
-        private static readonly string DefaultDonorType = $"{DonorType.Adult}";
+        private const DonorType DefaultDonorType = DonorType.Adult;
 
         public static Builder<SearchableDonorInformation> New =>
             Builder<SearchableDonorInformation>.New
