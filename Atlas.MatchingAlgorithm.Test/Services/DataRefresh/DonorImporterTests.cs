@@ -63,23 +63,22 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task ImportDonors_ConvertsDonorInfo()
         {
-            var donor = DonorBuilder.New.With(d => d.DonorId, "123").Build();
+            var donor = DonorBuilder.New.With(d => d.AtlasDonorId, 123).Build();
 
             donorReader.GetAllDonors().Returns(new List<Donor> {donor});
 
             await donorImporter.ImportDonors();
 
             await donorInfoConverter.Received(1).ConvertDonorInfoAsync(
-                Arg.Is<IEnumerable<SearchableDonorInformation>>(x => x.Single().DonorId.ToString() == donor.DonorId),
+                Arg.Is<IEnumerable<SearchableDonorInformation>>(x => x.Single().DonorId == donor.AtlasDonorId),
                 Arg.Any<string>());
         }
 
         [Test]
         public async Task ImportDonors_InsertsDonors()
         {
-            // TODO: ATLAS-294: Use string instead of int
-            const int donorIdAsInt = 123;
-            var donor = DonorBuilder.New.With(d => d.DonorId, donorIdAsInt.ToString()).Build();
+            const int donorId = 123;
+            var donor = DonorBuilder.New.With(d => d.AtlasDonorId, donorId).Build();
 
             donorReader.GetAllDonors().Returns(new List<Donor> {donor});
 
@@ -91,7 +90,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                     {
                         new DonorInfo
                         {
-                            DonorId = donorIdAsInt
+                            DonorId = donorId
                         }
                     }
                 });
@@ -99,13 +98,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             await donorImporter.ImportDonors();
 
             await donorImportRepository.Received(1).InsertBatchOfDonors(
-                Arg.Is<IEnumerable<DonorInfo>>(x => x.Single().DonorId == donorIdAsInt));
+                Arg.Is<IEnumerable<DonorInfo>>(x => x.Single().DonorId == donorId));
         }
 
         [Test]
         public async Task ImportDonors_WithFailedDonor_SendsFailedDonorsAlert()
         {
-            const string failedDonorId = "1";
+            const int failedDonorId = 1;
 
             donorInfoConverter
                 .ConvertDonorInfoAsync(null, null)
@@ -115,12 +114,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                     {
                         new FailedDonorInfo
                         {
-                            DonorId = failedDonorId
+                            DonorId = failedDonorId.ToString()
                         }
                     }
                 });
-            
-            var donor = DonorBuilder.New.With(d => d.DonorId, failedDonorId).Build();
+
+            var donor = DonorBuilder.New.With(d => d.AtlasDonorId, failedDonorId).Build();
 
             donorReader.GetAllDonors().Returns(new List<Donor> {donor});
 
@@ -128,7 +127,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await failedDonorsNotificationSender.Received(1)
                 .SendFailedDonorsAlert(
-                    Arg.Is<IEnumerable<FailedDonorInfo>>(x => x.Single().DonorId == failedDonorId),
+                    Arg.Is<IEnumerable<FailedDonorInfo>>(x => x.Single().DonorId == failedDonorId.ToString()),
                     Arg.Any<string>(),
                     Arg.Any<Priority>());
         }
