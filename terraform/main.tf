@@ -46,12 +46,13 @@ module "matching_algorithm" {
 
   default_servicebus_settings = local.service-bus
 
-  app_service_plan     = azurerm_app_service_plan.atlas
-  sql_server           = azurerm_sql_server.atlas_sql_server
-  function_storage     = azurerm_storage_account.function_storage
-  azure_storage        = azurerm_storage_account.azure_storage
-  application_insights = azurerm_application_insights.atlas
-  servicebus_namespace = azurerm_servicebus_namespace.general
+  app_service_plan          = azurerm_app_service_plan.atlas
+  donor_import_sql_database = module.donor_import.sql_database.name
+  sql_server                = azurerm_sql_server.atlas_sql_server
+  function_storage          = azurerm_storage_account.function_storage
+  azure_storage             = azurerm_storage_account.azure_storage
+  application_insights      = azurerm_application_insights.atlas
+  servicebus_namespace      = azurerm_servicebus_namespace.general
 
   servicebus_namespace_authorization_rules = {
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
@@ -75,7 +76,9 @@ module "matching_algorithm" {
   DATA_REFRESH_CRONTAB                             = var.MATCHING_DATA_REFRESH_CRONTAB
   DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS = var.MATCHING_DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS
   DATABASE_PASSWORD                                = var.MATCHING_DATABASE_PASSWORD
+  DATABASE_PASSWORD_FOR_DONOR_IMPORT_DATABASE      = var.MATCHING_DATABASE_PASSWORD_FOR_DONOR_IMPORT_DATABASE
   DATABASE_USERNAME                                = var.MATCHING_DATABASE_USERNAME
+  DATABASE_USERNAME_FOR_DONOR_IMPORT_DATABASE      = var.MATCHING_DATABASE_USERNAME_FOR_DONOR_IMPORT_DATABASE
   DONOR_SERVICE_APIKEY                             = var.DONOR_SERVICE_APIKEY
   DONOR_SERVICE_BASEURL                            = var.DONOR_SERVICE_BASEURL
   DONOR_SERVICE_READ_DONORS_FROM_FILE              = var.DONOR_SERVICE_READ_DONORS_FROM_FILE
@@ -111,10 +114,10 @@ module "match_prediction" {
   }
 
   servicebus_topics = {
-    alerts                    = module.support.general.alerts_servicebus_topic
-    notifications             = module.support.general.notifications_servicebus_topic
+    alerts        = module.support.general.alerts_servicebus_topic
+    notifications = module.support.general.notifications_servicebus_topic
   }
-  
+
   APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
   DATABASE_PASSWORD              = var.MATCH_PREDICTION_DATABASE_PASSWORD
   DATABASE_USERNAME              = var.MATCH_PREDICTION_DATABASE_USERNAME
