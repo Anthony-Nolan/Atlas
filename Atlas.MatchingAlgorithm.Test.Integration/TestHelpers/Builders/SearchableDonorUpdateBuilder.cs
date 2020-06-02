@@ -13,7 +13,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 
         public static Builder<SearchableDonorUpdate> New =>
             Builder<SearchableDonorUpdate>.New
-                .With(x => x.DonorId, DonorId.ToString())
+                .With(x => x.DonorId, DonorId)
                 .With(x => x.IsAvailableForSearch, DefaultIsAvailableForSearch)
                 .With(x => x.SearchableDonorInformation, 
                     SearchableDonorInformationBuilder.New.With(x => x.DonorId, DonorId))

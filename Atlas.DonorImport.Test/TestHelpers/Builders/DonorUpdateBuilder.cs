@@ -7,6 +7,7 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
     internal static class DonorUpdateBuilder
     {
         internal static Builder<DonorUpdate> New => Builder<DonorUpdate>.New
+            .With(d => d.RecordId, "donor-code")
             .With(d => d.Hla, HlaBuilder.New.Build())
             .With(d => d.UpdateMode, UpdateMode.Differential);
     }

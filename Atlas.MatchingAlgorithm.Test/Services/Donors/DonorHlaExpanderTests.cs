@@ -117,7 +117,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             },
                 "event-name");
 
-            result.FailedDonors.Should().OnlyContain(d => d.DonorId == donorId.ToString());
+            result.FailedDonors.Should().OnlyContain(d => d.DonorId == donorId);
         }
 
         [Test]

@@ -4,8 +4,7 @@ namespace Atlas.DonorImport.Models.FileSchema
 {
     internal class DonorUpdate
     {
-        // TODO: ATLAS-294: Convert to string
-        public int RecordId { get; set; }
+        public string RecordId { get; set; }
         public ImportDonorChangeType ChangeType { get; set; }
         public ImportDonorType DonorType { get; set; }
 
