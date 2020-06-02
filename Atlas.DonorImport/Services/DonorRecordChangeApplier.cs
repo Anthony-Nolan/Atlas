@@ -45,13 +45,26 @@ namespace Atlas.DonorImport.Services
                         throw new ArgumentOutOfRangeException();
                 }
 
+
+                var shouldFetchAtlasDonorIds = updatesOfSameOperationType.Key != ImportDonorChangeType.Delete &&
+                                               updatesOfSameOperationType.Any(u => u.UpdateMode != UpdateMode.Full);
+                var atlasDonors = shouldFetchAtlasDonorIds
+                    ? await donorRepository.GetDonorsByExternalDonorCodes(updatesOfSameOperationType.Select(u => u.RecordId))
+                    : new Dictionary<string, Donor>();
+
                 // The process of publishing and consuming update messages for the matching algorithm is very slow. 
                 // For an initial load, donors will be imported in bulk to the matching algorithm, via a manually triggered process 
                 foreach (var update in updatesOfSameOperationType)
                 {
                     if (update.UpdateMode != UpdateMode.Full)
                     {
-                        await messagingServiceBusClient.PublishDonorUpdateMessage(MapToMatchingUpdateMessage(update));
+                        var atlasDonor = atlasDonors[update.RecordId];
+                        if (atlasDonor == null)
+                        {
+                            throw new Exception($"Could not fnd created/updated donor in Atlas database: {update.RecordId}");
+                        }
+                        var atlasId = atlasDonor.AtlasId;
+                        await messagingServiceBusClient.PublishDonorUpdateMessage(MapToMatchingUpdateMessage(update, atlasId));
                     }
                 }
             }
@@ -61,7 +74,7 @@ namespace Atlas.DonorImport.Services
         {
             var donor = new Donor
             {
-                ExternalDonorCode = fileUpdate.RecordId.ToString(),
+                ExternalDonorCode = fileUpdate.RecordId,
                 DonorType = fileUpdate.DonorType.ToDatabaseType(),
                 EthnicityCode = fileUpdate.Ethnicity,
                 RegistryCode = fileUpdate.RegistryCode,
@@ -82,17 +95,17 @@ namespace Atlas.DonorImport.Services
             return donor;
         }
 
-        private static SearchableDonorUpdate MapToMatchingUpdateMessage(DonorUpdate fileUpdate)
+        private static SearchableDonorUpdate MapToMatchingUpdateMessage(DonorUpdate fileUpdate, int atlasId)
         {
             return new SearchableDonorUpdate
             {
                 AuditId = 0,
-                DonorId = fileUpdate.RecordId.ToString(),
+                DonorId = atlasId,
                 PublishedDateTime = DateTimeOffset.UtcNow,
                 IsAvailableForSearch = fileUpdate.ChangeType != ImportDonorChangeType.Delete,
                 SearchableDonorInformation = new SearchableDonorInformation
                 {
-                    DonorId = fileUpdate.RecordId,
+                    DonorId = atlasId,
                     DonorType = fileUpdate.DonorType.ToMatchingAlgorithmType().ToString(),
                     A_1 = fileUpdate.Hla.A.Field1,
                     A_2 = fileUpdate.Hla.A.Field2,

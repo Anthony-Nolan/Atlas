@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,6 +28,8 @@ namespace Atlas.DonorImport.Test.Services
             donorImportRepository = Substitute.For<IDonorImportRepository>();
             messagingServiceBusClient = Substitute.For<IMessagingServiceBusClient>();
 
+            donorRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>());
+
             donorOperationApplier = new DonorRecordChangeApplier(donorImportRepository, messagingServiceBusClient);
         }
 
@@ -35,9 +38,15 @@ namespace Atlas.DonorImport.Test.Services
         {
             var donorUpdates = new List<DonorUpdate>
             {
-                DonorUpdateBuilder.New.Build(),
-                DonorUpdateBuilder.New.Build()
+                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-1").With(d => d.UpdateMode, UpdateMode.Differential).Build(),
+                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-2").With(d => d.UpdateMode, UpdateMode.Differential).Build(),
             };
+
+            donorRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>
+            {
+                {donorUpdates[0].RecordId, new Donor {AtlasId = 1, ExternalDonorCode = donorUpdates[0].RegistryCode}},
+                {donorUpdates[1].RecordId, new Donor {AtlasId = 2, ExternalDonorCode = donorUpdates[1].RegistryCode}},
+            });
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates);
 
@@ -51,9 +60,11 @@ namespace Atlas.DonorImport.Test.Services
         {
             var donorUpdates = new List<DonorUpdate>
             {
-                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Differential).Build(),
-                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Differential).Build(),
+                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-1").With(d => d.UpdateMode, UpdateMode.Differential).Build(),
+                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-2").With(d => d.UpdateMode, UpdateMode.Differential).Build(),
             };
+
+            donorRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(donorUpdates.ToDictionary(d => d.RecordId, d => new Donor()));
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates);
 
@@ -61,13 +72,39 @@ namespace Atlas.DonorImport.Test.Services
         }
 
         [Test]
-        public async Task ApplyDonorOperationBatch_ForInitialUpdate_DoesNotPostMatchingUpdates()
+        public async Task ApplyDonorOperationBatch_ForDifferentialUpdate_IncludesNewlyAssignedAtlasIdInMatchingUpdate()
+        {
+            const int atlasId = 66;
+            var donorUpdates = new List<DonorUpdate>
+            {
+                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Differential).Build(),
+            };
+
+            donorRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(
+                donorUpdates.ToDictionary(d => d.RecordId, d => new Donor {AtlasId = atlasId})
+            );
+
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates);
+
+            await messagingServiceBusClient.Received(donorUpdates.Count).PublishDonorUpdateMessage(Arg.Is<SearchableDonorUpdate>(u =>
+                u.DonorId == atlasId
+            ));
+        }
+
+        [Test]
+        public async Task ApplyDonorOperationBatch_ForFullUpdate_DoesNotPostMatchingUpdates()
         {
             var donorUpdates = new List<DonorUpdate>
             {
-                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Full).Build(),
-                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Full).Build()
+                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-1").With(d => d.UpdateMode, UpdateMode.Full).Build(),
+                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-2").With(d => d.UpdateMode, UpdateMode.Full).Build(),
             };
+
+            donorRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>
+            {
+                {donorUpdates[0].RecordId, new Donor {AtlasId = 1, ExternalDonorCode = donorUpdates[0].RegistryCode}},
+                {donorUpdates[1].RecordId, new Donor {AtlasId = 2, ExternalDonorCode = donorUpdates[1].RegistryCode}},
+            });
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates);
 

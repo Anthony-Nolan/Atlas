@@ -114,7 +114,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                     {
                         new FailedDonorInfo
                         {
-                            DonorId = failedDonorId.ToString()
+                            DonorId = failedDonorId
                         }
                     }
                 });
@@ -127,7 +127,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await failedDonorsNotificationSender.Received(1)
                 .SendFailedDonorsAlert(
-                    Arg.Is<IEnumerable<FailedDonorInfo>>(x => x.Single().DonorId == failedDonorId.ToString()),
+                    Arg.Is<IEnumerable<FailedDonorInfo>>(x => x.Single().DonorId == failedDonorId),
                     Arg.Any<string>(),
                     Arg.Any<Priority>());
         }
