@@ -31,7 +31,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
     public class DonorImporter : IDonorImporter
     {
-        private const int BatchSize = 100;
+        private const int BatchSize = 10000;
         private const string ImportFailureEventName = "Donor Import Failure(s) in the Search Algorithm";
 
         private readonly IDonorImportRepository donorImportRepository;
