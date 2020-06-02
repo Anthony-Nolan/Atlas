@@ -41,11 +41,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 failureEventName);
         }
 
-        private static async Task<DonorInfo> ConvertDonorInfo(SearchableDonorInformation info)
+        private static async Task<DonorInfo> ConvertDonorInfo(SearchableDonorInformation donorInfo)
         {
-            await new SearchableDonorInformationValidator().ValidateAndThrowAsync(info);
-
-            return info.ToDonorInfo();
+            await new SearchableDonorInformationValidator().ValidateAndThrowAsync(donorInfo);
+            return donorInfo.ToDonorInfo();
         }
     }
 }
