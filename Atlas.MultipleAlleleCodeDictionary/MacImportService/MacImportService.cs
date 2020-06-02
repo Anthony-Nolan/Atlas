@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Atlas.MultipleAlleleCodeDictionary.utils;
 using Atlas.Common.ApplicationInsights;
-using Atlas.MultipleAlleleCodeDictionary.ApplicationInsights;
 
 namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
 {
@@ -26,20 +25,20 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
 
         public async Task ImportLatestMultipleAlleleCodes()
         {
-            logger.SendEvent(new MacImportEventModel("Mac Import started"));
+            logger.SendTrace("Mac Import started", LogLevel.Info);
             try
             {
                 var lastEntryBeforeInsert = await macRepository.GetLastMacEntry();
-                logger.SendEvent(new MacImportEventModel($"The last MAC entry found was: {lastEntryBeforeInsert}"));
+                logger.SendTrace($"The last MAC entry found was: {lastEntryBeforeInsert}", LogLevel.Info);
                 var newMacs = await macParser.GetMacsSinceLastEntry(lastEntryBeforeInsert);
-                logger.SendEvent(new MacImportEventModel($"Attempting to insert {newMacs.Count} new MACs"));
+                logger.SendTrace($"Attempting to insert {newMacs.Count} new MACs", LogLevel.Info);
                 await macRepository.InsertMacs(newMacs);
             }
             catch (Exception e)
             {
-                logger.SendEvent(new MacImportEventModel(e, "Failed to finish MAC Import"));
+                logger.SendEvent(new ErrorEventModel("Failed to finish MAC Import", e));
             }
-            logger.SendEvent(new MacImportEventModel("Successfully finished MAC Import"));
+            logger.SendTrace("Successfully finished MAC Import", LogLevel.Info);
         }
     }
 }
