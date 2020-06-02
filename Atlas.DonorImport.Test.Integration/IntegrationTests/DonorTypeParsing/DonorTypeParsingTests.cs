@@ -41,6 +41,12 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorTypeParsing
             });
         }
 
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(DatabaseManager.ClearDatabases);
+        }
+
         [Test]
         public async Task ImportDonors_ParsesAdultDonorTypeCorrectly()
         {

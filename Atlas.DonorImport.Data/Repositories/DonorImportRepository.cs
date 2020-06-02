@@ -58,7 +58,7 @@ namespace Atlas.DonorImport.Data.Repositories
             {
                 dataTable.Rows.Add(
                     0,
-                    donor.DonorId,
+                    donor.ExternalDonorCode,
                     (int) donor.DonorType,
                     donor.EthnicityCode,
                     donor.RegistryCode,
