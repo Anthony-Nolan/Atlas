@@ -22,7 +22,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         private ISearchServiceBusClient searchServiceBusClient;
         private ISearchService searchService;
         private IResultsBlobStorageClient resultsBlobStorageClient;
-        private IActiveHlaVersionAccessor hlaVersionAccessor;
+        private IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
 
         private ISearchRunner searchRunner;
 
@@ -32,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             searchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
             searchService = Substitute.For<ISearchService>();
             resultsBlobStorageClient = Substitute.For<IResultsBlobStorageClient>();
-            hlaVersionAccessor = Substitute.For<IActiveHlaVersionAccessor>();
+            hlaNomenclatureVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
             var logger = Substitute.For<ILogger>();
             var context = Substitute.For<ISearchRequestContext>();
 
@@ -42,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                 resultsBlobStorageClient,
                 logger,
                 context,
-                hlaVersionAccessor);
+                hlaNomenclatureVersionAccessor);
         }
 
         [Test]
@@ -81,7 +81,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         public async Task RunSearch_PublishesWmdaVersionInNotification()
         {
             const string hlaNomenclatureVersion = "hla-nomenclature-version";
-            hlaVersionAccessor.GetActiveHlaNomenclatureVersion().Returns(hlaNomenclatureVersion);
+            hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion().Returns(hlaNomenclatureVersion);
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = "id" });
 

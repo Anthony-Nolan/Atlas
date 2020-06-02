@@ -140,7 +140,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.RegisterCommonGeneticServices();
 
-            services.AddScoped<IActiveHlaVersionAccessor, ActiveHlaVersionAccessor>();
+            services.AddScoped<IActiveHlaNomenclatureVersionAccessor, ActiveHlaNomenclatureVersionAccessor>();
 
             services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>(sp =>
             {

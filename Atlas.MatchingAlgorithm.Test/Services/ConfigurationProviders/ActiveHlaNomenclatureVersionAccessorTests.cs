@@ -9,12 +9,12 @@ using NUnit.Framework;
 namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
 {
     [TestFixture]
-    public class ActiveHlaVersionProviderTests
+    public class ActiveHlaNomenclatureVersionAccessorTests
     {
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private ITransientCacheProvider transientCacheProvider;
         
-        private IActiveHlaVersionAccessor activeHlaVersionAccessor;
+        private IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
         
         [SetUp]
         public void SetUp()
@@ -22,7 +22,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
             transientCacheProvider = Substitute.For<ITransientCacheProvider>();
             
-            activeHlaVersionAccessor = new ActiveHlaVersionAccessor(dataRefreshHistoryRepository, transientCacheProvider);
+            hlaNomenclatureVersionAccessor = new ActiveHlaNomenclatureVersionAccessor(dataRefreshHistoryRepository, transientCacheProvider);
         }
 
         [Test]
@@ -30,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
         {
             dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion().Returns(null as string);
 
-            activeHlaVersionAccessor.Invoking(provider => provider.GetActiveHlaNomenclatureVersion()).Should().Throw<ArgumentNullException>();
+            hlaNomenclatureVersionAccessor.Invoking(provider => provider.GetActiveHlaNomenclatureVersion()).Should().Throw<ArgumentNullException>();
         }
     }
 }

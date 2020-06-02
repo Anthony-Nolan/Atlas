@@ -40,7 +40,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 new ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"])
             );
 
-            services.AddScoped<IActiveHlaVersionAccessor, MockHlaVersionProvider>();
+            services.AddScoped<IActiveHlaNomenclatureVersionAccessor, MockHlaNomenclatureVersionAccessor>();
 
             // Clients
             var mockSearchServiceBusClient = Substitute.For<ISearchServiceBusClient>();

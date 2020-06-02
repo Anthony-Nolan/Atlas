@@ -27,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             dpb1TceGroupLookupService = Substitute.For<IDpb1TceGroupLookupService>();
 
             var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(dpb1TceGroupLookupService);
-            var hlaVersionAccessor = Substitute.For<IActiveHlaVersionAccessor>();
+            var hlaVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
 
             permissiveMismatchCalculator = new PermissiveMismatchCalculator(hlaMetadataDictionaryBuilder, hlaVersionAccessor);
         }

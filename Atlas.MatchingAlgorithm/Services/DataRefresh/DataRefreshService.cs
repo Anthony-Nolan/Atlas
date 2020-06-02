@@ -51,7 +51,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IAzureDatabaseManager azureDatabaseManager,
             IDormantRepositoryFactory repositoryFactory,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
-            IActiveHlaVersionAccessor activeHlaVersionAccessor,
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IDonorImporter donorImporter,
             IHlaProcessor hlaProcessor,
             ILogger logger,
@@ -67,7 +67,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
             settingsOptions = dataRefreshSettingsOptions;
 
-            activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(activeHlaVersionAccessor.GetActiveHlaNomenclatureVersion());
+            activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
         public async Task<string> RefreshData()

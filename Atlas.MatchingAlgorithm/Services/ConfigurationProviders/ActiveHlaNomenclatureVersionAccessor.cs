@@ -5,18 +5,18 @@ using LazyCache;
 
 namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 {
-    public interface IActiveHlaVersionAccessor
+    public interface IActiveHlaNomenclatureVersionAccessor
     {
         /// <returns>The version of the HLA Nomenclature used to populate the current Transient donor database</returns>
         string GetActiveHlaNomenclatureVersion();
     }
 
-    public class ActiveHlaVersionAccessor : IActiveHlaVersionAccessor
+    public class ActiveHlaNomenclatureVersionAccessor : IActiveHlaNomenclatureVersionAccessor
     {
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private readonly IAppCache cache;
 
-        public ActiveHlaVersionAccessor(
+        public ActiveHlaNomenclatureVersionAccessor(
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
             ITransientCacheProvider cacheProvider)
         {

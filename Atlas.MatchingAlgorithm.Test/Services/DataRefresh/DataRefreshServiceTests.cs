@@ -62,7 +62,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 azureDatabaseManager,
                 transientRepositoryFactory,
                 new HlaMetadataDictionaryBuilder().Returning(hlaMetadataDictionary),
-                Substitute.For<IActiveHlaVersionAccessor>(),
+                Substitute.For<IActiveHlaNomenclatureVersionAccessor>(),
                 donorImporter,
                 hlaProcessor,
                 logger,

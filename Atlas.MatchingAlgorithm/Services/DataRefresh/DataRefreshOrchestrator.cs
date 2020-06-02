@@ -40,7 +40,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             ILogger logger,
             IOptions<DataRefreshSettings> settingsOptions,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
-            IActiveHlaVersionAccessor activeHlaVersionAccessor,
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IActiveDatabaseProvider activeDatabaseProvider,
             IDataRefreshService dataRefreshService,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
@@ -59,7 +59,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
 
-            this.activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(activeHlaVersionAccessor.GetActiveHlaNomenclatureVersion());
+            this.activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
         public async Task RefreshDataIfNecessary(bool shouldForceRefresh)

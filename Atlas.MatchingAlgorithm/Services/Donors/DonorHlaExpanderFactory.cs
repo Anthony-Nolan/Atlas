@@ -13,22 +13,22 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
     public class DonorHlaExpanderFactory : IDonorHlaExpanderFactory
     {
         private readonly IHlaMetadataDictionaryFactory dictionaryFactory;
-        private readonly IActiveHlaVersionAccessor versionAccessor;
+        private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
 
         public DonorHlaExpanderFactory(
             IHlaMetadataDictionaryFactory dictionaryFactory,
-            IActiveHlaVersionAccessor versionAccessor,
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             ILogger logger)
         {
             this.dictionaryFactory = dictionaryFactory;
-            this.versionAccessor = versionAccessor;
+            this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
             this.logger = logger;
         }
 
         public IDonorHlaExpander BuildForActiveHlaNomenclatureVersion()
         {
-            return BuildForSpecifiedHlaNomenclatureVersion(versionAccessor.GetActiveHlaNomenclatureVersion());
+            return BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
         public IDonorHlaExpander BuildForSpecifiedHlaNomenclatureVersion(string hlaNomenclatureVersion)

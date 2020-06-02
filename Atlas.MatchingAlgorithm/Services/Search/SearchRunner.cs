@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly IResultsBlobStorageClient resultsBlobStorageClient;
         private readonly ILogger logger;
         private readonly ISearchRequestContext searchRequestContext;
-        private readonly IActiveHlaVersionAccessor hlaVersionAccessor;
+        private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
 
         public SearchRunner(
             ISearchServiceBusClient searchServiceBusClient,
@@ -33,14 +33,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             IResultsBlobStorageClient resultsBlobStorageClient,
             ILogger logger,
             ISearchRequestContext searchRequestContext,
-            IActiveHlaVersionAccessor hlaVersionAccessor)
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
         {
             this.searchServiceBusClient = searchServiceBusClient;
             this.searchService = searchService;
             this.resultsBlobStorageClient = resultsBlobStorageClient;
             this.logger = logger;
             this.searchRequestContext = searchRequestContext;
-            this.hlaVersionAccessor = hlaVersionAccessor;
+            this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
         }
 
         public async Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
@@ -48,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var searchRequestId = identifiedSearchRequest.Id;
             searchRequestContext.SearchRequestId = searchRequestId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            var hlaNomenclatureVersion = hlaVersionAccessor.GetActiveHlaNomenclatureVersion();
+            var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
 
             try
             {

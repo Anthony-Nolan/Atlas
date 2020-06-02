@@ -43,7 +43,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IHlaScoringLookupService hlaScoringLookupService;
         private readonly IHlaLookupResultsService hlaLookupResultsService;
         private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
-        private readonly IWmdaHlaVersionAccessor wmdaHlaVersionAccessor;
+        private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
 
         public HlaMetadataDictionary(
@@ -55,7 +55,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IHlaScoringLookupService hlaScoringLookupService,
             IHlaLookupResultsService hlaLookupResultsService,
             IDpb1TceGroupLookupService dpb1TceGroupLookupService,
-            IWmdaHlaVersionAccessor wmdaHlaVersionAccessor,
+            IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger)
         {
             this.activeHlaNomenclatureVersion = activeHlaNomenclatureVersion;
@@ -66,14 +66,14 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.hlaScoringLookupService = hlaScoringLookupService;
             this.hlaLookupResultsService = hlaLookupResultsService;
             this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
-            this.wmdaHlaVersionAccessor = wmdaHlaVersionAccessor;
+            this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
         }
 
         public bool IsActiveVersionDifferentFromLatestVersion()
         {
             var active = activeHlaNomenclatureVersion;
-            var latest = wmdaHlaVersionAccessor.GetLatestStableHlaNomenclatureVersion();
+            var latest = wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion();
             return active != latest;
         }
 
@@ -112,7 +112,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             {
                 CreationBehaviour.Mode.Specific => creationConfig.SpecificVersion,
                 CreationBehaviour.Mode.Active => activeHlaNomenclatureVersion,
-                CreationBehaviour.Mode.Latest => wmdaHlaVersionAccessor.GetLatestStableHlaNomenclatureVersion(),
+                CreationBehaviour.Mode.Latest => wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion(),
                 _ => throw new ArgumentOutOfRangeException(nameof(creationConfig.CreationMode), creationConfig.CreationMode, "Unexpected enum value")
             };
         }

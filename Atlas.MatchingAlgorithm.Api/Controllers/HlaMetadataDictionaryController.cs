@@ -18,9 +18,9 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
 
         public HlaMetadataDictionaryController(
             IHlaMetadataDictionaryFactory factory,
-            IActiveHlaVersionAccessor hlaVersionAccessor)
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
         {
-            this.hlaMetadataDictionary = factory.BuildDictionary(hlaVersionAccessor.GetActiveHlaNomenclatureVersion());
+            this.hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
         [HttpPost]
