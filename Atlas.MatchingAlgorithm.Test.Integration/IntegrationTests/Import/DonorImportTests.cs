@@ -22,7 +22,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 
         private IDonorReader MockDonorReader { get; set; }
 
-        private Builder<Donor> IncrementingDonorBuilder => DonorBuilder.New.With(d => d.DonorId, DonorIdGenerator.NextId().ToString());
+        private Builder<Donor> IncrementingDonorBuilder => DonorBuilder.New.With(d => d.AtlasDonorId, DonorIdGenerator.NextId());
         
         [SetUp]
         public void SetUp()
@@ -46,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             MockDonorReader.GetAllDonors().Returns(new List<Donor> {donorInfo});
 
             await donorImporter.ImportDonors();
-            var donor = await inspectionRepo.GetDonor(donorInfo.DonorIdInt());
+            var donor = await inspectionRepo.GetDonor(donorInfo.AtlasDonorId);
 
             donor.Should().NotBeNull();
         }
@@ -67,7 +67,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             MockDonorReader.GetAllDonors().Returns(new List<Donor> {donorInfo});
 
             await donorImporter.ImportDonors();
-            var donor = await inspectionRepo.GetDonor(donorInfo.DonorIdInt());
+            var donor = await inspectionRepo.GetDonor(donorInfo.AtlasDonorId);
 
             donor.Should().BeNull();
         }
@@ -88,18 +88,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             MockDonorReader.GetAllDonors().Returns(new List<Donor> {donorInfo});
 
             await donorImporter.ImportDonors();
-            var donor = await inspectionRepo.GetDonor(donorInfo.DonorIdInt());
+            var donor = await inspectionRepo.GetDonor(donorInfo.AtlasDonorId);
 
             donor.Should().NotBeNull();
-        }
-    }
-
-    // TODO: ATLAS-294: Remove the need for this. 
-    internal static class DonorExtensions
-    {
-        public static int DonorIdInt(this Donor donor)
-        {
-            return int.Parse(donor.DonorId);
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Atlas.DonorImport.Test.Models.Database
         {
             var donor = new Donor
             {
-                DonorId = "donor-id",
+                ExternalDonorCode = "donor-id",
                 DonorType = DatabaseDonorType.Adult,
                 EthnicityCode = "ethnicity",
                 RegistryCode = "registry",
@@ -47,7 +47,7 @@ namespace Atlas.DonorImport.Test.Models.Database
         {
             var donor = new Donor
             {
-                DonorId = "donor-id",
+                ExternalDonorCode = "donor-id",
                 DonorType = DatabaseDonorType.Adult,
                 A_1 = "hla-a-1",
                 A_2 = "hla-a-2",
