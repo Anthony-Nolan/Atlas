@@ -35,6 +35,7 @@
       <EmbeddedResource Include="IntegrationTests\DonorTypeParsing\invalidDonorType.json" />
       <EmbeddedResource Include="IntegrationTests\DonorTypeParsing\validDonorTypes.json" />
       <EmbeddedResource Include="IntegrationTests\InitialDataLoad\1000-initial-donors.json" />
+      <EmbeddedResource Include="IntegrationTests\DifferentialDonorAdditions\test-data.json" />
     </ItemGroup>
 
 </Project>
