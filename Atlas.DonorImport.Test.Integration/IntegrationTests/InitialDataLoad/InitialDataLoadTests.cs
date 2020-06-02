@@ -13,9 +13,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.InitialDataLoad
     public class InitialDataLoadTests
     {
         private IDonorInspectionRepository donorRepository;
-        
+
         private IDonorFileImporter donorFileImporter;
-        
+
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
         {
@@ -26,6 +26,12 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.InitialDataLoad
                 // Run operation under test once for this fixture, to (a) improve performance (b) remove the need to clean up duplicate ids between runs
                 await ImportFile();
             });
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(DatabaseManager.ClearDatabases);
         }
 
         [Test]
@@ -44,10 +50,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.InitialDataLoad
         public async Task ImportDonors_NewDonor_IsAddedCorrectly()
         {
             const string selectedDonorId = "1";
-            const string expectedDonorHash = "MHH/OTtSeI96PClybhTF0g=="; 
+            const string expectedDonorHash = "MHH/OTtSeI96PClybhTF0g==";
 
             var actualDonor = await donorRepository.GetDonor(selectedDonorId);
-            
+
             actualDonor.Hash.Should().Be(expectedDonorHash);
             actualDonor.CalculateHash().Should().Be(expectedDonorHash);
         }

@@ -9,8 +9,7 @@ namespace Atlas.MatchingAlgorithm.Mapping
         {
             return new SearchableDonorInformation
             {
-                // TODO: ATLAS-294: Do not do this, no guarantee this will be parsable to an int
-                DonorId = int.Parse(donor.DonorId),
+                DonorId = donor.AtlasDonorId,
                 // TODO: ATLAS-294: Use enum here, don't parse to and from string when the types otherwise match!
                 DonorType = donor.DonorType.ToString(),
                 A_1 = donor.A_1,
