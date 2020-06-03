@@ -11,6 +11,7 @@ namespace Atlas.DonorImport.Data.Repositories
     public interface IDonorReadRepository
     {
         public IEnumerable<Donor> GetAllDonors();
+        public Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes);
     }
 
     public class DonorReadRepository : DonorRepositoryBase, IDonorReadRepository
@@ -30,11 +31,11 @@ namespace Atlas.DonorImport.Data.Repositories
             // Con: Longer open connection, consumer can cause timeouts by not fully enumerating.
             return connection.Query<Donor>(sql, buffered: true);
         }
-        
+
         public async Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes)
         {
             var sql = @$"
-SELECT {DonorInsertDataTableColumnNames.StringJoin()} FROM Donors
+SELECT {DonorInsertDataTableColumnNames.StringJoin(",")} FROM Donors
 WHERE ExternalDonorCode IN @codes
 ";
             await using var connection = new SqlConnection(ConnectionString);

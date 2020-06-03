@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
-using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using FluentAssertions;
 using NSubstitute;
@@ -79,7 +78,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 }
             });
 
-            result.FailedDonors.Should().OnlyContain(d => d.DonorId == donorId);
+            result.FailedDonors.Should().OnlyContain(d => d.AtlasDonorId == donorId);
         }
     }
 }

@@ -18,13 +18,18 @@ namespace Atlas.DonorImport.Services
 
     internal class DonorRecordChangeApplier : IDonorRecordChangeApplier
     {
-        private readonly IDonorImportRepository donorImportRepository;
         private readonly IMessagingServiceBusClient messagingServiceBusClient;
+        private readonly IDonorImportRepository donorImportRepository;
+        private readonly IDonorReadRepository donorInspectionRepository;
 
-        public DonorRecordChangeApplier(IDonorImportRepository donorImportRepository, IMessagingServiceBusClient messagingServiceBusClient)
+        public DonorRecordChangeApplier(
+            IMessagingServiceBusClient messagingServiceBusClient,
+            IDonorImportRepository donorImportRepository,
+            IDonorReadRepository donorInspectionRepository)
         {
             this.donorImportRepository = donorImportRepository;
             this.messagingServiceBusClient = messagingServiceBusClient;
+            this.donorInspectionRepository = donorInspectionRepository;
         }
 
         public async Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates)
@@ -45,11 +50,9 @@ namespace Atlas.DonorImport.Services
                         throw new ArgumentOutOfRangeException();
                 }
 
-
-                var shouldFetchAtlasDonorIds = updatesOfSameOperationType.Key != ImportDonorChangeType.Delete &&
-                                               updatesOfSameOperationType.Any(u => u.UpdateMode != UpdateMode.Full);
+                var shouldFetchAtlasDonorIds = updatesOfSameOperationType.Any(u => u.UpdateMode != UpdateMode.Full);
                 var atlasDonors = shouldFetchAtlasDonorIds
-                    ? await donorRepository.GetDonorsByExternalDonorCodes(updatesOfSameOperationType.Select(u => u.RecordId))
+                    ? await donorInspectionRepository.GetDonorsByExternalDonorCodes(updatesOfSameOperationType.Select(u => u.RecordId))
                     : new Dictionary<string, Donor>();
 
                 // The process of publishing and consuming update messages for the matching algorithm is very slow. 
@@ -63,6 +66,7 @@ namespace Atlas.DonorImport.Services
                         {
                             throw new Exception($"Could not fnd created/updated donor in Atlas database: {update.RecordId}");
                         }
+
                         var atlasId = atlasDonor.AtlasId;
                         await messagingServiceBusClient.PublishDonorUpdateMessage(MapToMatchingUpdateMessage(update, atlasId));
                     }
@@ -82,12 +86,12 @@ namespace Atlas.DonorImport.Services
                 A_2 = fileUpdate.Hla.A.Field2,
                 B_1 = fileUpdate.Hla.B.Field1,
                 B_2 = fileUpdate.Hla.B.Field2,
-                C_1 = fileUpdate.Hla.C.Field1,
-                C_2 = fileUpdate.Hla.C.Field2,
-                DPB1_1 = fileUpdate.Hla.DPB1.Field1,
-                DPB1_2 = fileUpdate.Hla.DPB1.Field2,
-                DQB1_1 = fileUpdate.Hla.DQB1.Field1,
-                DQB1_2 = fileUpdate.Hla.DQB1.Field2,
+                C_1 = fileUpdate.Hla.C?.Field1,
+                C_2 = fileUpdate.Hla.C?.Field2,
+                DPB1_1 = fileUpdate.Hla.DPB1?.Field1,
+                DPB1_2 = fileUpdate.Hla.DPB1?.Field2,
+                DQB1_1 = fileUpdate.Hla.DQB1?.Field1,
+                DQB1_2 = fileUpdate.Hla.DQB1?.Field2,
                 DRB1_1 = fileUpdate.Hla.DRB1.Field1,
                 DRB1_2 = fileUpdate.Hla.DRB1.Field2,
             };

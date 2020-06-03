@@ -18,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.ApplicationInsights.DonorProcessing
         {
             Level = LogLevel.Error;
             Properties.Add("Exception", exception.ToString());
-            Properties.Add("DonorId", failedDonorInfo.DonorId.ToString());
+            Properties.Add("AtlasDonorId", failedDonorInfo.AtlasDonorId.ToString());
             Properties.Add("DonorInfo", JsonConvert.SerializeObject(failedDonorInfo.DonorInfo));
         }
     }

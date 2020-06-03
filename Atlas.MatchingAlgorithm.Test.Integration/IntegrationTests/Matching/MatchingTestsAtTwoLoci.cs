@@ -153,7 +153,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeTearDown]
         public void TearDown()
         {
-            DatabaseManager.ClearDatabases();
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(DatabaseManager.ClearDatabases);
         }
         
         [Test]

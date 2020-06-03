@@ -18,7 +18,7 @@ namespace Atlas.DonorImport.Data.Models
 
         /// <summary>
         /// Donor identifier as provided by consumer of ATLAS.
-        /// Only this should be exposed to the consumer in e.g. search results.
+        /// This should be the only identifier exposed to the consumer in e.g. search results.
         /// </summary>
         [MaxLength(64)]
         public string ExternalDonorCode { get; set; }
