@@ -3,7 +3,7 @@ using Atlas.Common.GeneticData.Hla.Models;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup
 {
-    public interface IDpb1TceGroupsMetadata : ISerialisableHlaMetadata
+    internal interface IDpb1TceGroupsMetadata : ISerialisableHlaMetadata
     {
         string TceGroup { get; }
     }

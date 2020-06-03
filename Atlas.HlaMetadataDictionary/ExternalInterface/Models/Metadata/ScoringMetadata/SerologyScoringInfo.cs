@@ -29,7 +29,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
             IHlaMetadataSource<SerologyTyping> metadataSource)
         {
             return new SerologyScoringInfo(
-                metadataSource.MatchingSerologies.Select(m => m.ToSerologyEntry()));
+                metadataSource.MatchingSerologies.Select(m => new SerologyEntry(m)));
         }
 
         public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo()

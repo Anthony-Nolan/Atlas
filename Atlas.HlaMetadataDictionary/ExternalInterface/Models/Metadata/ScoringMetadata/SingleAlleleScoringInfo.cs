@@ -74,7 +74,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
                 alleleSource.TypingForHlaMetadata.Status,
                 alleleSource.MatchingPGroups.SingleOrDefault(),
                 alleleSource.MatchingGGroups.SingleOrDefault(),
-                alleleSource.MatchingSerologies.Select(m => m.ToSerologyEntry())
+                alleleSource.MatchingSerologies.Select(m => new SerologyEntry(m))
             );
         }
 

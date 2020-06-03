@@ -18,8 +18,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups
 
         TypingMethod TypingMethod { get; }
     }
-
-
+    
     public interface ISerialisableHlaMetadata : IHlaMetadata
     {
         /// <summary>

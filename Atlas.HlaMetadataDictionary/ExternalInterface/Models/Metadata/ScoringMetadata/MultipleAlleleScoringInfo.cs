@@ -58,7 +58,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
 
             var matchingSerologies = sources
                 .SelectMany(source => source.MatchingSerologies)
-                .Select(matchingSerology => matchingSerology.ToSerologyEntry())
+                .Select(matchingSerology => new SerologyEntry(matchingSerology))
                 .Distinct();
 
             return new MultipleAlleleScoringInfo(

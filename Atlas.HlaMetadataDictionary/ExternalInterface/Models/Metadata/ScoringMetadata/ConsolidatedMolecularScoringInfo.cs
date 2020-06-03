@@ -37,7 +37,7 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
             return new ConsolidatedMolecularScoringInfo(
                 alleles.SelectMany(allele => allele.MatchingPGroups).Distinct(),
                 alleles.SelectMany(allele => allele.MatchingGGroups).Distinct(),
-                alleles.SelectMany(allele => allele.MatchingSerologies.Select(m => m.ToSerologyEntry())).Distinct()
+                alleles.SelectMany(allele => allele.MatchingSerologies.Select(m => new SerologyEntry(m))).Distinct()
                 );
         }
 

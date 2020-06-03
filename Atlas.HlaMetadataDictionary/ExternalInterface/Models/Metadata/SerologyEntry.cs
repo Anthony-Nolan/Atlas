@@ -1,6 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups
 {
@@ -23,6 +24,13 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups
             Name = name;
             SerologySubtype = serologySubtype;
             IsDirectMapping = isDirectMapping;
+        }
+
+        internal SerologyEntry(MatchingSerology matchingSerology)
+        {
+            Name = matchingSerology.SerologyTyping.Name;
+            SerologySubtype = matchingSerology.SerologyTyping.SerologySubtype;
+            IsDirectMapping = matchingSerology.IsDirectMapping;
         }
 
         #region IEquatable
