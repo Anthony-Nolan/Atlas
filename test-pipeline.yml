@@ -107,7 +107,8 @@ jobs:
       numberOfLevels: 2
       keyname1: NotificationsServiceBus
       keyname2: ConnectionString
-      valueToSet: 'Endpoint=sb://dev-support-notification.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=i7K67/T0V6Qy7yD2SNTlcu6gfeRRMAgv38bj+Msty0 4='
+#     ServiceBus is not used directly in tests, but DI will fail without a valid service bus connection string. 
+      valueToSet: '$(SERVICE_BUS_CONNECTION_STRING)'
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet test'
