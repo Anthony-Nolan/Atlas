@@ -1,9 +1,11 @@
-﻿using Atlas.Common.Notifications;
+﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Notifications;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MultipleAlleleCodeDictionary.MacImportService;
 using Atlas.MultipleAlleleCodeDictionary.Settings.MacImport;
 using Atlas.MultipleAlleleCodeDictionary.utils;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Atlas.MultipleAlleleCodeDictionary.DependencyInjection
 {
@@ -18,6 +20,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.DependencyInjection
         private static void RegisterSettings(this IServiceCollection services)
         {
             services.RegisterOptions<MacImportSettings>("MacImport");
+            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
         }
 
 
@@ -27,6 +30,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.DependencyInjection
             services.AddScoped<IMacParser, MacLineParser>();
             services.AddScoped<IMacImporter, MacImporter>();
             services.AddScoped<IMacCodeDownloader, MacCodeDownloader>();
+            services.RegisterAtlasLogger(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value);
         }
     }
 }

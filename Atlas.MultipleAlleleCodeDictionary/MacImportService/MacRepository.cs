@@ -34,7 +34,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
             var query = new TableQuery<MultipleAlleleCodeEntity>();
             var result = await  table.ExecuteQueryAsync(query);
             // MACs are alphabetical - any new MACs are appended to the end of the list alphabetically.
-            return result.OrderByDescending(x => x.PartitionKey).First().PartitionKey;
+            return result.Count == 0 ? "" : result.OrderByDescending(x => x.RowKey).First().RowKey;
+            
         }
 
         public async Task InsertMacs(IEnumerable<MultipleAlleleCodeEntity> macs)

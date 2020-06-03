@@ -1,5 +1,9 @@
-﻿using Atlas.MultipleAlleleCodeDictionary.MacImportService;
+﻿using System;
+using System.Net.Http;
+using Atlas.MultipleAlleleCodeDictionary.MacImportService;
 using Microsoft.Azure.WebJobs;
+using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 
 namespace Atlas.Functions.Functions
 {
@@ -13,9 +17,15 @@ namespace Atlas.Functions.Functions
         }
 
         [FunctionName(nameof(ImportMacs))]
-        public void ImportMacs([TimerTrigger("0 0 2 * * *")]TimerInfo myTimer)
+        public async Task ImportMacs([TimerTrigger("0 12 11 * * *")] TimerInfo myTimer)
         {
-            MacImporter.ImportLatestMultipleAlleleCodes();
+            await MacImporter.ImportLatestMultipleAlleleCodes();
+        }
+        
+        [FunctionName(nameof(ImportMacsManual))]
+        public async Task ImportMacsManual([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestMessage request)
+        {
+            await MacImporter.ImportLatestMultipleAlleleCodes();
         }
     }
 }
