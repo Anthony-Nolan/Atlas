@@ -149,7 +149,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         public HlaMetadataCollection GetAllHlaMetadata()
         {
-            return hlaMetadataService.GetAllHlaMetadata(activeHlaNomenclatureVersion);
+            return hlaMetadataService.GetAllHlaMetadata(activeHlaNomenclatureVersion).ToExternalCollection();
         }
     }
 }
