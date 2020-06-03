@@ -85,7 +85,6 @@ module "matching_algorithm" {
   MESSAGING_BUS_DONOR_BATCH_SIZE                   = var.MATCHING_MESSAGING_BUS_DONOR_BATCH_SIZE
   MESSAGING_BUS_DONOR_CRON_SCHEDULE                = var.MATCHING_MESSAGING_BUS_DONOR_CRON_SCHEDULE
   WEBSITE_RUN_FROM_PACKAGE                         = var.WEBSITE_RUN_FROM_PACKAGE
-  WMDA_FILE_URL                                    = var.WMDA_FILE_URL
 }
 
 module "match_prediction" {
@@ -111,10 +110,10 @@ module "match_prediction" {
   }
 
   servicebus_topics = {
-    alerts                    = module.support.general.alerts_servicebus_topic
-    notifications             = module.support.general.notifications_servicebus_topic
+    alerts        = module.support.general.alerts_servicebus_topic
+    notifications = module.support.general.notifications_servicebus_topic
   }
-  
+
   APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
   DATABASE_PASSWORD              = var.MATCH_PREDICTION_DATABASE_PASSWORD
   DATABASE_USERNAME              = var.MATCH_PREDICTION_DATABASE_USERNAME

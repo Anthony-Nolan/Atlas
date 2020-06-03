@@ -17,17 +17,22 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
         public static IServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
-            services.RegisterFileBasedHlaMetadataDictionaryForTesting(sp => new ApplicationInsightsSettings { LogLevel = "Info" });
+            services.RegisterFileBasedHlaMetadataDictionaryForTesting(sp => new ApplicationInsightsSettings {LogLevel = "Info"});
             return services.BuildServiceProvider();
         }
 
-        public static void RegisterFileBasedHlaMetadataDictionaryForTesting(this IServiceCollection services, Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
+        public static void RegisterFileBasedHlaMetadataDictionaryForTesting(
+            this IServiceCollection services,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
         {
             Func<IServiceProvider, string> blank = _ => "";
-            services.RegisterHlaMetadataDictionary(
+            services.RegisterHlaMetadataDictionaryForRecreation(
                 blank, //These blank config values won't be used, because all they are all (indirectly) overridden, below.
-                blank, 
-                blank, 
+                blank,
+                fetchApplicationInsightsSettings); //This is actually used.
+            services.RegisterHlaMetadataDictionaryAsReader(
+                blank, //These blank config values won't be used, because all they are all (indirectly) overridden, below.
+                blank,
                 blank,
                 fetchApplicationInsightsSettings); //This is actually used.
 

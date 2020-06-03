@@ -1,8 +1,9 @@
+using Atlas.Common.AzureStorage;
+
 namespace Atlas.MatchingAlgorithm.Settings.Azure
 {
-    public class AzureStorageSettings
+    public class MatchingAzureStorageSettings : AzureStorageSettings
     {
-        public string ConnectionString { get; set; }
         public string SearchResultsBlobContainer { get; set; }
     }
 }

@@ -53,9 +53,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterMatchingAlgorithmServices();
             services.RegisterDataServices();
             services.RegisterDonorClient();
-            services.RegisterHlaMetadataDictionary(
-                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
-                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
+            services.RegisterHlaMetadataDictionaryAsReader(
+                sp => sp.GetService<IOptions<MatchingAzureStorageSettings>>().Value.ConnectionString,
                 sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
                 sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
                 sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value
@@ -68,9 +67,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterMatchingAlgorithmServices();
             services.RegisterDataServices();
             services.RegisterDonorManagementServices();
-            services.RegisterHlaMetadataDictionary(
-                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
-                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
+            services.RegisterHlaMetadataDictionaryAsReader(
+                sp => sp.GetService<IOptions<MatchingAzureStorageSettings>>().Value.ConnectionString,
                 sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
                 sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
                 sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value
@@ -156,7 +154,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<ISearchRunner, SearchRunner>();
             services.AddScoped<IResultsBlobStorageClient, ResultsBlobStorageClient>(sp =>
             {
-                var azureStorageSettings = sp.GetService<IOptions<AzureStorageSettings>>().Value;
+                var azureStorageSettings = sp.GetService<IOptions<MatchingAzureStorageSettings>>().Value;
                 var logger = sp.GetService<ILogger>();
                 return new ResultsBlobStorageClient(azureStorageSettings.ConnectionString, logger, azureStorageSettings.SearchResultsBlobContainer);
             });
@@ -276,7 +274,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static void RegisterSharedSettings(this IServiceCollection services)
         {
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterOptions<AzureStorageSettings>("AzureStorage");
+            services.RegisterOptions<MatchingAzureStorageSettings>("AzureStorage");
             services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterOptions<HlaServiceSettings>("Client:HlaService");
             services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
@@ -292,7 +290,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         {
             services.RegisterSharedSettings();
             services.RegisterOptions<DonorServiceSettings>("Client:DonorService");
-            services.RegisterOptions<WmdaSettings>("Wmda");
             services.RegisterOptions<AzureAuthenticationSettings>("AzureManagement:Authentication");
             services.RegisterOptions<AzureAppServiceManagementSettings>("AzureManagement:AppService");
             services.RegisterOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");

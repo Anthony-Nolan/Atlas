@@ -1,4 +1,4 @@
-namespace Atlas.MatchingAlgorithm.Settings
+namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Settings
 {
     public class WmdaSettings
     {

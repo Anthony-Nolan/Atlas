@@ -32,7 +32,6 @@
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications",
-    "Wmda:WmdaFileUri": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",
     "FUNCTIONS.WORKER.RUNTIME": "dotnet"
   },
   "ConnectionStrings": {

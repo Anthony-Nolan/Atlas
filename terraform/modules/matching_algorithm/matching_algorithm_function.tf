@@ -37,7 +37,6 @@ locals {
     "NotificationsServiceBus:ConnectionString"                  = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:AlertsTopic"                       = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:NotificationsTopic"                = var.servicebus_topics.notifications.name
-    "Wmda:WmdaFileUri"                                          = var.WMDA_FILE_URL
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"                 = "1"
     "WEBSITE_RUN_FROM_PACKAGE"                                  = var.WEBSITE_RUN_FROM_PACKAGE
   }

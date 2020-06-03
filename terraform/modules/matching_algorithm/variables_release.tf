@@ -80,7 +80,3 @@ variable "WEBSITE_RUN_FROM_PACKAGE" {
   type = string
 }
 
-variable "WMDA_FILE_URL" {
-  type = string
-}
-

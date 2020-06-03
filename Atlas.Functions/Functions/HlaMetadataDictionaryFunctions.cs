@@ -10,9 +10,9 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
 
-namespace Atlas.MatchingAlgorithm.Functions.Functions
+namespace Atlas.Functions.Functions
 {
-    public class HlaMetadataDictionaryFunctions //TODO: ATLAS-262 (MDM) migrate to new project
+    public class HlaMetadataDictionaryFunctions
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
 
