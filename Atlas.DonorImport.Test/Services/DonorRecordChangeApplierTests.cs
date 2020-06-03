@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -89,6 +88,19 @@ namespace Atlas.DonorImport.Test.Services
             await messagingServiceBusClient.Received(donorUpdates.Count).PublishDonorUpdateMessage(Arg.Is<SearchableDonorUpdate>(u =>
                 u.DonorId == atlasId
             ));
+        }
+        
+        [Test]
+        public async Task ApplyDonorOperationBatch_ForFullUpdate_DoesNotFetchNewlyAssignedAtlasIds()
+        {
+            var donorUpdates = new List<DonorUpdate>
+            {
+                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-1").With(d => d.UpdateMode, UpdateMode.Full).Build(),
+            };
+
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates);
+
+            await donorRepository.DidNotReceiveWithAnyArgs().GetDonorsByExternalDonorCodes(null);
         }
 
         [Test]

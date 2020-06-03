@@ -24,6 +24,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
     [TestFixture]
     public class DonorUpdateProcessorTests
     {
+        private readonly string invalidHlaAtRequiredLocus = null;
+        
         private IDonorUpdateProcessor donorUpdateProcessor;
 
         private IServiceBusMessageReceiver<SearchableDonorUpdate> messageReceiver;
@@ -75,7 +77,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         public async Task ProcessDonorUpdates_SingleUpdateHasInvalidDonorInfo_DoesNotManageDonorUpdate()
         {
             var donorInfo = SearchableDonorInformationBuilder.New
-                .With(x => x.A_1, null as string)
+                .With(x => x.A_1, invalidHlaAtRequiredLocus)
                 .Build();
 
             var update = SearchableDonorUpdateBuilder.New
@@ -99,7 +101,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         public void ProcessDonorUpdates_SingleUpdateHasInvalidDonorInfo_DoesNotThrowValidationException()
         {
             var donorInfo = SearchableDonorInformationBuilder.New
-                .With(x => x.A_1, null as string)
+                .With(x => x.A_1, invalidHlaAtRequiredLocus)
                 .Build();
 
             var update = SearchableDonorUpdateBuilder.New
@@ -226,7 +228,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var validMessage = SearchableDonorUpdateMessageBuilder.New.Build();
 
             var invalidDonorInfo = SearchableDonorInformationBuilder.New
-                .With(d => d.A_1, null as string)
+                .With(d => d.A_1, invalidHlaAtRequiredLocus)
                 .Build();
 
             var invalidUpdate = SearchableDonorUpdateBuilder.New
