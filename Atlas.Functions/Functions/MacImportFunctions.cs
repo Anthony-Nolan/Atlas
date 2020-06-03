@@ -17,13 +17,13 @@ namespace Atlas.Functions.Functions
         }
 
         [FunctionName(nameof(ImportMacs))]
-        public async Task ImportMacs([TimerTrigger("0 12 11 * * *")] TimerInfo myTimer)
+        public async Task ImportMacs([TimerTrigger("0 0 2 * * *")] TimerInfo myTimer)
         {
             await MacImporter.ImportLatestMultipleAlleleCodes();
         }
         
         [FunctionName(nameof(ImportMacsManual))]
-        public async Task ImportMacsManual([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestMessage request)
+        public async Task ImportMacsManual([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestMessage request)
         {
             await MacImporter.ImportLatestMultipleAlleleCodes();
         }

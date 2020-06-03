@@ -64,7 +64,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
 
         private static void ReadToEntry(StreamReader reader, string entryToReadTo)
         {
-            // The first two lines of the NMDp dictionary contain descriptions
+            // The first two lines of the NMDP source file contain descriptions, so are discarded
             reader.ReadLine();
             reader.ReadLine();
             while (!reader.EndOfStream)

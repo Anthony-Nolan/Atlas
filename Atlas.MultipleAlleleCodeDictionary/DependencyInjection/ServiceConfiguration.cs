@@ -19,8 +19,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.DependencyInjection
         
         private static void RegisterSettings(this IServiceCollection services)
         {
-            services.RegisterOptions<MacImportSettings>("MacImport");
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterOptions<MacImportSettings>("MacImport");
         }
 
 
