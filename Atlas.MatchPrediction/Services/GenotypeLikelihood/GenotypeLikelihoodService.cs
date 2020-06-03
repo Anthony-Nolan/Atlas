@@ -18,13 +18,13 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         private readonly IHaplotypeFrequencySetRepository setRepository;
         private readonly IHaplotypeFrequenciesRepository frequencyRepository;
         private readonly IGenotypeImputer genotypeImputer;
-        private readonly ILikelihoodCalculator likelihoodCalculator;
+        private readonly IGenotypeLikelihoodCalculator likelihoodCalculator;
 
         public GenotypeLikelihoodService(
             IHaplotypeFrequencySetRepository setRepository,
             IHaplotypeFrequenciesRepository frequencyRepository,
             IGenotypeImputer genotypeImputer,
-            ILikelihoodCalculator likelihoodCalculator)
+            IGenotypeLikelihoodCalculator likelihoodCalculator)
         {
             this.setRepository = setRepository;
             this.frequencyRepository = frequencyRepository;
@@ -34,22 +34,21 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 
         public async Task<GenotypeLikelihoodResponse> CalculateLikelihood(GenotypeLikelihoodInput genotypeLikelihood)
         {
-            var diplotypes = genotypeImputer.GetPossibleDiplotypes(genotypeLikelihood.Genotype);
+            var imputedGenotype = genotypeImputer.ImputeGenotype(genotypeLikelihood.Genotype);
+            var haplotypesWithFrequencies = await GetHaplotypesWithFrequencies(imputedGenotype);
 
-            var haplotypes = GetHaplotypes(diplotypes).ToList();
-            var frequencySet = await setRepository.GetActiveSet(null, null);
-            var haplotypesWithFrequencies = await frequencyRepository.GetDiplotypeFrequencies(haplotypes, frequencySet.Id);
-
-            UpdateFrequenciesForDiplotype(haplotypesWithFrequencies, diplotypes);
-            var likelihood = likelihoodCalculator.CalculateLikelihood(diplotypes);
+            UpdateFrequenciesForDiplotype(haplotypesWithFrequencies, imputedGenotype.Diplotypes);
+            var likelihood = likelihoodCalculator.CalculateLikelihood(imputedGenotype);
 
             return new GenotypeLikelihoodResponse {Likelihood = likelihood};
         }
 
-        private static IEnumerable<LociInfo<string>> GetHaplotypes(IEnumerable<Diplotype> diplotypes)
+        private async Task<Dictionary<LociInfo<string>, decimal>> GetHaplotypesWithFrequencies(ImputedGenotype imputedGenotype)
         {
-            return diplotypes.SelectMany(diplotype => new List<LociInfo<string>>
-                {diplotype.Item1.Hla, diplotype.Item2.Hla});
+            var haplotypes = imputedGenotype.GetHaplotypes().ToList();
+            var frequencySet = await setRepository.GetActiveSet(null, null);
+
+            return await frequencyRepository.GetDiplotypeFrequencies(haplotypes, frequencySet.Id);
         }
 
         private static void UpdateFrequenciesForDiplotype(
