@@ -1,28 +1,30 @@
-﻿using System.Collections.Generic;
-using Atlas.MatchPrediction.Models;
+﻿using Atlas.MatchPrediction.Models;
 using System.Linq;
 
 namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
     public interface ILikelihoodCalculator
     {
-        public decimal CalculateLikelihood(List<Diplotype> diplotypes);
+        /// <summary>
+        /// Calculate genotype likelihood using the haplotype frequencies contained within a list of diplotypes.
+        /// Provided diplotypes must have frequency values pre-populated, else said haplotype will be considered to have a frequency of 0.
+        /// </summary>
+        public decimal CalculateLikelihood(ImputedGenotype imputedGenotype);
     }
 
     public class LikelihoodCalculator : ILikelihoodCalculator
     {
-        public decimal CalculateLikelihood(List<Diplotype> diplotypes)
+        public decimal CalculateLikelihood(ImputedGenotype imputedGenotype)
         {
-            var diplotypeLikelihoods = CalculateDiplotypeLikelihoods(diplotypes);
-            return diplotypeLikelihoods.Sum();
+            var homozygosityCorrectionFactor = imputedGenotype.IsHomozygousAtEveryLocus ? 1 : 2;
+
+            return imputedGenotype.Diplotypes.Sum(diplotype =>
+                CalculateDiplotypeLikelihood(diplotype, homozygosityCorrectionFactor));
         }
 
-        private static IEnumerable<decimal> CalculateDiplotypeLikelihoods(List<Diplotype> diplotypes)
+        private static decimal CalculateDiplotypeLikelihood(Diplotype diplotype, int homozygosityCorrectionFactor)
         {
-            var correctionFactor = diplotypes.Count == 1 && diplotypes[0].Item1.Hla == diplotypes[0].Item2.Hla ? 1 : 2;
-
-            return diplotypes.Select(diplotype =>
-                diplotype.Item1.Frequency * diplotype.Item2.Frequency * correctionFactor);
+            return diplotype.Item1.Frequency * diplotype.Item2.Frequency * homozygosityCorrectionFactor;
         }
     }
 }

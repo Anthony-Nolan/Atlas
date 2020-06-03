@@ -34,14 +34,14 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 
         public async Task<GenotypeLikelihoodResponse> CalculateLikelihood(GenotypeLikelihoodInput genotypeLikelihood)
         {
-            var diplotypes = genotypeImputer.GetPossibleDiplotypes(genotypeLikelihood.Genotype);
+            var imputedGenotype = genotypeImputer.ImputeGenotype(genotypeLikelihood.Genotype);
 
-            var haplotypes = GetHaplotypes(diplotypes).ToList();
+            var haplotypes = GetHaplotypes(imputedGenotype.Diplotypes).ToList();
             var frequencySet = await setRepository.GetActiveSet(null, null);
             var haplotypesWithFrequencies = await frequencyRepository.GetDiplotypeFrequencies(haplotypes, frequencySet.Id);
 
-            UpdateFrequenciesForDiplotype(haplotypesWithFrequencies, diplotypes);
-            var likelihood = likelihoodCalculator.CalculateLikelihood(diplotypes);
+            UpdateFrequenciesForDiplotype(haplotypesWithFrequencies, imputedGenotype.Diplotypes);
+            var likelihood = likelihoodCalculator.CalculateLikelihood(imputedGenotype);
 
             return new GenotypeLikelihoodResponse {Likelihood = likelihood};
         }
