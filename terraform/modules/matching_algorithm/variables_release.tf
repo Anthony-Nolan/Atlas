@@ -40,28 +40,16 @@ variable "DATABASE_PASSWORD" {
   type = string
 }
 
-variable "DATABASE_PASSWORD_FOR_DONOR_IMPORT_DATABASE" {
-  type = string
-}
-
 variable "DATABASE_USERNAME" {
   type = string
 }
 
-variable "DATABASE_USERNAME_FOR_DONOR_IMPORT_DATABASE" {
+variable "DONOR_IMPORT_DATABASE_PASSWORD" {
   type = string
 }
 
-variable "DONOR_SERVICE_APIKEY" {
+variable "DONOR_IMPORT_DATABASE_USERNAME" {
   type = string
-}
-
-variable "DONOR_SERVICE_BASEURL" {
-  type = string
-}
-
-variable "DONOR_SERVICE_READ_DONORS_FROM_FILE" {
-  type = bool
 }
 
 variable "FUNCTION_HOST_KEY" {

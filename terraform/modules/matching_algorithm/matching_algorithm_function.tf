@@ -18,9 +18,6 @@ locals {
     "AzureManagement:Database:SubscriptionId"                   = var.general.subscription_id
     "AzureStorage:ConnectionString"                             = var.azure_storage.primary_connection_string
     "AzureStorage:SearchResultsBlobContainer"                   = azurerm_storage_container.search_matching_results_blob_container.name
-    "Client:DonorService:ApiKey"                                = var.DONOR_SERVICE_APIKEY
-    "Client:DonorService:BaseUrl"                               = var.DONOR_SERVICE_BASEURL
-    "Client:DonorService:ReadDonorsFromFile"                    = var.DONOR_SERVICE_READ_DONORS_FROM_FILE
     "Client:HlaService:ApiKey"                                  = var.HLA_SERVICE_APIKEY
     "Client:HlaService:BaseUrl"                                 = var.HLA_SERVICE_BASEURL
     "DataRefresh:ActiveDatabaseSize"                            = var.DATA_REFRESH_DB_SIZE_ACTIVE
@@ -79,6 +76,6 @@ resource "azurerm_function_app" "atlas_matching_algorithm_function" {
   connection_string {
     name  = "DonorImportSql"
     type  = "SQLAzure"
-    value = "Server=tcp:${var.sql_server.fully_qualified_domain_name},1433;Initial Catalog=${var.donor_import_sql_database.name};Persist Security Info=False;User ID=${var.DATABASE_USERNAME_FOR_DONOR_IMPORT_DATABASE};Password=${var.DATABASE_PASSWORD_FOR_DONOR_IMPORT_DATABASE};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
+    value = "Server=tcp:${var.sql_server.fully_qualified_domain_name},1433;Initial Catalog=${var.donor_import_sql_database.name};Persist Security Info=False;User ID=${var.DONOR_IMPORT_DATABASE_USERNAME};Password=${var.DONOR_IMPORT_DATABASE_PASSWORD};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=1800;"
   }
 }
