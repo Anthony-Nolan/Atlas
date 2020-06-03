@@ -37,20 +37,6 @@ variable "DONOR_DATABASE_USERNAME" {
   default = "donors"
 }
 
-variable "DONOR_SERVICE_APIKEY" {
-  type = string
-}
-
-variable "DONOR_SERVICE_BASEURL" {
-  type = string
-}
-
-variable "DONOR_SERVICE_READ_DONORS_FROM_FILE" {
-  type        = bool
-  default     = false
-  description = "When set to 'true', will read donor details from an EmbeddedResource file rather than attempting to contact the Donor Service."
-}
-
 variable "ENVIRONMENT" {
   type        = string
   description = "Prepended to all ATLAS resources, to indicate which environment of the installation they represent. Some alphanumeric characters must be present, as non-alphanumeric characters will be stripped from the storage account name. Max 8 alphanumeric characters. e.g. DEV/UAT/LIVE"
@@ -125,16 +111,7 @@ variable "MATCHING_DATABASE_PASSWORD" {
   type = string
 }
 
-variable "MATCHING_DATABASE_PASSWORD_FOR_DONOR_IMPORT_DATABASE" {
-  type = string
-}
-
 variable "MATCHING_DATABASE_USERNAME" {
-  type    = string
-  default = "matching"
-}
-
-variable "MATCHING_DATABASE_USERNAME_FOR_DONOR_IMPORT_DATABASE" {
   type    = string
   default = "matching"
 }
@@ -155,6 +132,15 @@ variable "MATCHING_MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
   type        = string
   default     = "0 */1 * * * *"
   description = "Crontab used to determine when to poll for new batches of donor updates to the matching component."
+}
+
+variable "MATCHING_PASSWORD_FOR_DONOR_IMPORT_DATABASE" {
+  type = string
+}
+
+variable "MATCHING_USERNAME_FOR_DONOR_IMPORT_DATABASE" {
+  type    = string
+  default = "matching"
 }
 
 variable "SERVICE_PLAN_SKU" {
