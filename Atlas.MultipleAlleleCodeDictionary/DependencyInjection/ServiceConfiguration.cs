@@ -24,8 +24,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.DependencyInjection
         //TODO: ATLAS-327. Migrate config reading to entry points
         private static void RegisterSettings(this IServiceCollection services)
         {
-            services.RegisterOptions<MacImportSettings>("MacImport");
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterOptions<MacImportSettings>("MacImport");
         }
 
         private static void RegisterServices(this IServiceCollection services)
