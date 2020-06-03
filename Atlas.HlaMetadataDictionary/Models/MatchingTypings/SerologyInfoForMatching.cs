@@ -5,9 +5,9 @@ using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
 namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
-    internal interface ISerologyInfoForMatching : IMatchedOn, IMatchingSerologies
+    internal interface ISerologyInfoForMatching : IMatchedOn
     {
-        
+        IEnumerable<MatchingSerology> MatchingSerologies { get; }
     }
 
     internal class SerologyInfoForMatching : ISerologyInfoForMatching, IEquatable<ISerologyInfoForMatching>

@@ -3,15 +3,15 @@ using Atlas.Common.GeneticData.Hla.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup
 {
     /// <summary>
     /// Metadata required to match HLA pairings.
     /// </summary>
-    public interface IHlaMatchingMetadata : ISerialisableHlaMetadata, IMatchingPGroups
+    public interface IHlaMatchingMetadata : ISerialisableHlaMetadata
     {
+        IEnumerable<string> MatchingPGroups { get; }
         bool IsNullExpressingTyping { get; }
     }
 

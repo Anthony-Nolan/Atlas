@@ -5,9 +5,10 @@ using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
 namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
 {
-    internal interface IAlleleInfoForMatching : IMatchedOn, IMatchingPGroups, IMatchingGGroups
+    internal interface IAlleleInfoForMatching : IMatchedOn
     {
-        
+        IEnumerable<string> MatchingPGroups { get; }
+        IEnumerable<string> MatchingGGroups { get; }
     }
 
     internal class AlleleInfoForMatching : IAlleleInfoForMatching, IEquatable<IAlleleInfoForMatching>

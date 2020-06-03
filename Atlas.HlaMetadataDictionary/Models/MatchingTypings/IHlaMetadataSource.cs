@@ -1,4 +1,5 @@
-﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
+﻿using System.Collections.Generic;
+using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 
 namespace Atlas.HlaMetadataDictionary.Models.Lookups
@@ -7,10 +8,11 @@ namespace Atlas.HlaMetadataDictionary.Models.Lookups
     /// Identifies classes that can serve as a data source
     /// for the creation of a HLA Metadata.
     /// </summary>
-    internal interface IHlaMetadataSource<out THlaTyping> : 
-        IMatchingPGroups, IMatchingGGroups, IMatchingSerologies 
-        where THlaTyping : HlaTyping
+    internal interface IHlaMetadataSource<out THlaTyping> where THlaTyping : HlaTyping
     {
+        IEnumerable<string> MatchingPGroups { get; }
+        IEnumerable<string> MatchingGGroups { get; }
+        IEnumerable<MatchingSerology> MatchingSerologies { get; }
         THlaTyping TypingForHlaMetadata { get; }
     }
 }
