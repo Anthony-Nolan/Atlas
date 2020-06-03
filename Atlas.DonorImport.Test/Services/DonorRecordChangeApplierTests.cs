@@ -16,7 +16,7 @@ namespace Atlas.DonorImport.Test.Services
     [TestFixture]
     internal class DonorRecordChangeApplierTests
     {
-        private IDonorRepository donorRepository;
+        private IDonorImportRepository donorImportRepository;
         private IMessagingServiceBusClient messagingServiceBusClient;
 
         private IDonorRecordChangeApplier donorOperationApplier;
@@ -24,10 +24,10 @@ namespace Atlas.DonorImport.Test.Services
         [SetUp]
         public void SetUp()
         {
-            donorRepository = Substitute.For<IDonorRepository>();
+            donorImportRepository = Substitute.For<IDonorImportRepository>();
             messagingServiceBusClient = Substitute.For<IMessagingServiceBusClient>();
 
-            donorOperationApplier = new DonorRecordChangeApplier(donorRepository, messagingServiceBusClient);
+            donorOperationApplier = new DonorRecordChangeApplier(donorImportRepository, messagingServiceBusClient);
         }
 
         [Test]
@@ -41,7 +41,7 @@ namespace Atlas.DonorImport.Test.Services
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates);
 
-            await donorRepository.Received().InsertDonorBatch(Arg.Is<IEnumerable<Donor>>(storedDonors =>
+            await donorImportRepository.Received().InsertDonorBatch(Arg.Is<IEnumerable<Donor>>(storedDonors =>
                 storedDonors.Count() == donorUpdates.Count)
             );
         }
