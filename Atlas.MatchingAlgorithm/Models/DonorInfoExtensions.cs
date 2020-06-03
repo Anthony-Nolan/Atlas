@@ -8,7 +8,7 @@ namespace Atlas.MatchingAlgorithm.Models
         {
             return new FailedDonorInfo(donorInfo)
             {
-                DonorId = donorInfo.DonorId
+                AtlasDonorId = donorInfo.DonorId
             };
         }
     }

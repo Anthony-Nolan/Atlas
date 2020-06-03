@@ -10,8 +10,6 @@ namespace Atlas.DonorImport.Data.Repositories
     public interface IDonorImportRepository
     {
         public Task InsertDonorBatch(IEnumerable<Donor> donors);
-
-        public Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes);
     }
 
     public class DonorImportRepository : DonorRepositoryBase, IDonorImportRepository
@@ -35,28 +33,6 @@ namespace Atlas.DonorImport.Data.Repositories
             await sqlBulk.WriteToServerAsync(dataTable);
         }
 
-        public IEnumerable<Donor> GetAllDonors()
-        {
-            var sql = $"SELECT {string.Join(", ", donorInsertDataTableColumnNames)} FROM Donors";
-            using var connection = new SqlConnection(connectionString);
-            // With "buffered: true" this will load all donors into memory before returning.
-            // We may want to consider streaming this if we have issues running out of memory in this approach.  
-            // Pro: Smaller memory footprint.
-            // Con: Longer open connection, consumer can cause timeouts by not fully enumerating.
-            return connection.Query<Donor>(sql, buffered: true);
-        }
-
-        public async Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes)
-        {
-            var sql = @$"
-SELECT {string.Join(", ", donorInsertDataTableColumnNames)} FROM Donors
-WHERE ExternalDonorCode IN @codes
-";
-            await using var connection = new SqlConnection(connectionString);
-            var donors = await connection.QueryAsync<Donor>(sql, new {codes = externalDonorCodes});
-            return donors.ToDictionary(d => d.ExternalDonorCode, d => d);
-        }
-
         private SqlBulkCopy BuildDonorSqlBulkCopy()
         {
             var sqlBulk = new SqlBulkCopy(ConnectionString) {BulkCopyTimeout = 3600, BatchSize = 10000, DestinationTableName = "Donors"};
@@ -66,7 +42,7 @@ WHERE ExternalDonorCode IN @codes
                 // Relies on setting up the data table with column names matching the database columns.
                 sqlBulk.ColumnMappings.Add(columnName, columnName);
             }
-            
+
             return sqlBulk;
         }
 
