@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Repositories;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 {
     internal interface IAlleleNameVariantsExtractor
     {
-        IEnumerable<IAlleleNameLookupResult> GetAlleleNames(IEnumerable<IAlleleNameLookupResult> originalAlleleNames, string hlaNomenclatureVersion);
+        IEnumerable<IAlleleNameMetadata> GetAlleleNames(IEnumerable<IAlleleNameMetadata> originalAlleleNames, string hlaNomenclatureVersion);
     }
 
     internal class AlleleNameVariantsExtractor : AlleleNamesExtractorBase, IAlleleNameVariantsExtractor
@@ -18,13 +18,13 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
         {
         }
 
-        public IEnumerable<IAlleleNameLookupResult> GetAlleleNames(IEnumerable<IAlleleNameLookupResult> originalAlleleNames, string hlaNomenclatureVersion)
+        public IEnumerable<IAlleleNameMetadata> GetAlleleNames(IEnumerable<IAlleleNameMetadata> originalAlleleNames, string hlaNomenclatureVersion)
         {
             var variantsNotFoundInHistories = originalAlleleNames.SelectMany(n => GetAlleleNameVariantsNotFoundInHistories(n, hlaNomenclatureVersion)).ToList();
             return GroupAlleleNamesByLocusAndLookupName(variantsNotFoundInHistories);
         }
 
-        private IEnumerable<IAlleleNameLookupResult> GetAlleleNameVariantsNotFoundInHistories(IAlleleNameLookupResult alleleName, string hlaNomenclatureVersion)
+        private IEnumerable<IAlleleNameMetadata> GetAlleleNameVariantsNotFoundInHistories(IAlleleNameMetadata alleleName, string hlaNomenclatureVersion)
         {
             var typingFromCurrentName = new AlleleTyping(
                 alleleName.Locus,
@@ -33,17 +33,17 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
             return typingFromCurrentName
                 .NameVariantsTruncatedByFieldAndOrExpressionSuffix
                 .Where(nameVariant => AlleleNameIsNotInHistories(typingFromCurrentName.TypingLocus, nameVariant, hlaNomenclatureVersion))
-                .Select(nameVariant => new AlleleNameLookupResult(
+                .Select(nameVariant => new AlleleNameMetadata(
                     alleleName.Locus,
                     nameVariant,
                     alleleName.CurrentAlleleNames));
         }
 
-        private static IEnumerable<IAlleleNameLookupResult> GroupAlleleNamesByLocusAndLookupName(IEnumerable<IAlleleNameLookupResult> alleleNameVariants)
+        private static IEnumerable<IAlleleNameMetadata> GroupAlleleNamesByLocusAndLookupName(IEnumerable<IAlleleNameMetadata> alleleNameVariants)
         {
             var groupedEntries = alleleNameVariants
                 .GroupBy(e => new { e.Locus, e.LookupName })
-                .Select(e => new AlleleNameLookupResult(
+                .Select(e => new AlleleNameMetadata(
                     e.Key.Locus,
                     e.Key.LookupName,
                     e.SelectMany(x => x.CurrentAlleleNames).Distinct()

@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Extensions;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
+using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
+using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
 {
@@ -20,59 +22,59 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
         MatchedHlaDataConverterBase,
         IHlaScoringDataConverter
     {
-        protected override ISerialisableHlaMetadata GetSerologyLookupResult(
-            IHlaLookupResultSource<SerologyTyping> lookupResultSource)
+        protected override ISerialisableHlaMetadata GetSerologyMetadata(
+            IHlaMetadataSource<SerologyTyping> metadataSource)
         {
-            var scoringInfo = SerologyScoringInfo.GetScoringInfo(lookupResultSource);
+            var scoringInfo = SerologyScoringInfo.GetScoringInfo(metadataSource);
 
-            return new HlaScoringLookupResult(
-                lookupResultSource.TypingForHlaLookupResult.Locus,
-                lookupResultSource.TypingForHlaLookupResult.Name,
+            return new HlaScoringMetadata(
+                metadataSource.TypingForHlaMetadata.Locus,
+                metadataSource.TypingForHlaMetadata.Name,
                 scoringInfo,
                 TypingMethod.Serology
             );
         }
 
-        protected override ISerialisableHlaMetadata GetSingleAlleleLookupResult(
-            IHlaLookupResultSource<AlleleTyping> lookupResultSource)
+        protected override ISerialisableHlaMetadata GetSingleAlleleMetadata(
+            IHlaMetadataSource<AlleleTyping> metadataSource)
         {
-            return GetMolecularLookupResult(
-                new[] { lookupResultSource },
+            return GetMolecularMetadata(
+                new[] { metadataSource },
                 allele => allele.Name,
                 sources => SingleAlleleScoringInfo.GetScoringInfoWithMatchingSerologies(sources.First()));
         }
 
-        protected override ISerialisableHlaMetadata GetNmdpCodeAlleleLookupResult(
-            IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources,
+        protected override ISerialisableHlaMetadata GetNmdpCodeAlleleMetadata(
+            IEnumerable<IHlaMetadataSource<AlleleTyping>> metadataSources,
             string nmdpLookupName)
         {
-            return GetMolecularLookupResult(
-                lookupResultSources,
+            return GetMolecularMetadata(
+                metadataSources,
                 allele => nmdpLookupName,
                 MultipleAlleleScoringInfo.GetScoringInfo);
         }
 
-        protected override ISerialisableHlaMetadata GetXxCodeLookupResult(
-            IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources)
+        protected override ISerialisableHlaMetadata GetXxCodeMetadata(
+            IEnumerable<IHlaMetadataSource<AlleleTyping>> metadataSources)
         {
-            return GetMolecularLookupResult(
-                lookupResultSources,
+            return GetMolecularMetadata(
+                metadataSources,
                 allele => allele.ToXxCodeLookupName(),
                 ConsolidatedMolecularScoringInfo.GetScoringInfo);
         }
 
-        private static HlaScoringLookupResult GetMolecularLookupResult(
-            IEnumerable<IHlaLookupResultSource<AlleleTyping>> lookupResultSources,
+        private static HlaScoringMetadata GetMolecularMetadata(
+            IEnumerable<IHlaMetadataSource<AlleleTyping>> metadataSources,
             Func<AlleleTyping, string> getLookupName,
-            Func<IEnumerable<IHlaLookupResultSource<AlleleTyping>>, IHlaScoringInfo> getScoringInfo)
+            Func<IEnumerable<IHlaMetadataSource<AlleleTyping>>, IHlaScoringInfo> getScoringInfo)
         {
-            var sources = lookupResultSources.ToList();
+            var sources = metadataSources.ToList();
 
             var firstAllele = sources
                 .First()
-                .TypingForHlaLookupResult;
+                .TypingForHlaMetadata;
 
-            return new HlaScoringLookupResult(
+            return new HlaScoringMetadata(
                 firstAllele.Locus,
                 getLookupName(firstAllele),
                 getScoringInfo(sources),

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
+using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation;
 using Atlas.HlaMetadataDictionary.Test.UnitTests.Data;

@@ -18,15 +18,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         private const string DonorHlaName = "donor-hla-name";
         private const string NoTceGroupAssignment = "";
 
-        private IDpb1TceGroupLookupService dpb1TceGroupLookupService;
+        private IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
         private IPermissiveMismatchCalculator permissiveMismatchCalculator;
 
         [SetUp]
         public void SetUpBeforeEachTest()
         {
-            dpb1TceGroupLookupService = Substitute.For<IDpb1TceGroupLookupService>();
+            dpb1TceGroupMetadataService = Substitute.For<IDpb1TceGroupMetadataService>();
 
-            var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(dpb1TceGroupLookupService);
+            var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(dpb1TceGroupMetadataService);
             var hlaVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
 
             permissiveMismatchCalculator = new PermissiveMismatchCalculator(hlaMetadataDictionaryBuilder, hlaVersionAccessor);
@@ -50,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         public void IsPermissiveMismatch_AtDpb1Locus_PatientAndDonorHaveSameTceGroup_ReturnsTrue()
         {
             const string sharedTceGroup = "shared-tce-group";
-            dpb1TceGroupLookupService.GetDpb1TceGroup(Arg.Any<string>(), Arg.Any<string>()).Returns(sharedTceGroup);
+            dpb1TceGroupMetadataService.GetDpb1TceGroup(Arg.Any<string>(), Arg.Any<string>()).Returns(sharedTceGroup);
 
             var actualResult = permissiveMismatchCalculator.IsPermissiveMismatch(Dpb1Locus, PatientHlaName, DonorHlaName);
 
@@ -61,10 +61,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         public void IsPermissiveMismatch_AtDpb1Locus_PatientAndDonorHaveDifferentTceGroup_ReturnsFalse()
         {
             const string patientTceGroup = "patient-tce-group";
-            dpb1TceGroupLookupService.GetDpb1TceGroup(PatientHlaName, Arg.Any<string>()).Returns(patientTceGroup);
+            dpb1TceGroupMetadataService.GetDpb1TceGroup(PatientHlaName, Arg.Any<string>()).Returns(patientTceGroup);
 
             const string donorTceGroup = "donor-tce-group";
-            dpb1TceGroupLookupService.GetDpb1TceGroup(DonorHlaName, Arg.Any<string>()).Returns(donorTceGroup);
+            dpb1TceGroupMetadataService.GetDpb1TceGroup(DonorHlaName, Arg.Any<string>()).Returns(donorTceGroup);
 
             var actualResult = permissiveMismatchCalculator.IsPermissiveMismatch(Dpb1Locus, PatientHlaName, DonorHlaName);
 
@@ -74,10 +74,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         [Test]
         public void IsPermissiveMismatch_AtDpb1Locus_PatientHasNoTceGroupAssigned_AndDonorHasTceGroup_ReturnsFalse()
         {
-            dpb1TceGroupLookupService.GetDpb1TceGroup(PatientHlaName, Arg.Any<string>()).Returns(NoTceGroupAssignment);
+            dpb1TceGroupMetadataService.GetDpb1TceGroup(PatientHlaName, Arg.Any<string>()).Returns(NoTceGroupAssignment);
 
             const string donorTceGroup = "donor-tce-group";
-            dpb1TceGroupLookupService.GetDpb1TceGroup(DonorHlaName, Arg.Any<string>()).Returns(donorTceGroup);
+            dpb1TceGroupMetadataService.GetDpb1TceGroup(DonorHlaName, Arg.Any<string>()).Returns(donorTceGroup);
 
             var actualResult = permissiveMismatchCalculator.IsPermissiveMismatch(Dpb1Locus, PatientHlaName, DonorHlaName);
 
@@ -88,9 +88,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         public void IsPermissiveMismatch_AtDpb1Locus_PatientHasTceGroup_AndDonorHasNoTceGroupAssigned_ReturnsFalse()
         {
             const string patientTceGroup = "patient-tce-group";
-            dpb1TceGroupLookupService.GetDpb1TceGroup(PatientHlaName, Arg.Any<string>()).Returns(patientTceGroup);
+            dpb1TceGroupMetadataService.GetDpb1TceGroup(PatientHlaName, Arg.Any<string>()).Returns(patientTceGroup);
 
-            dpb1TceGroupLookupService.GetDpb1TceGroup(DonorHlaName, Arg.Any<string>()).Returns(NoTceGroupAssignment);
+            dpb1TceGroupMetadataService.GetDpb1TceGroup(DonorHlaName, Arg.Any<string>()).Returns(NoTceGroupAssignment);
 
             var actualResult = permissiveMismatchCalculator.IsPermissiveMismatch(Dpb1Locus, PatientHlaName, DonorHlaName);
 
@@ -100,8 +100,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         [Test]
         public void IsPermissiveMismatch_AtDpb1Locus_PatientAndDonorHaveNoTceGroupsAssigned_ReturnsFalse()
         {
-            dpb1TceGroupLookupService.GetDpb1TceGroup(PatientHlaName, Arg.Any<string>()).Returns(NoTceGroupAssignment);
-            dpb1TceGroupLookupService.GetDpb1TceGroup(DonorHlaName, Arg.Any<string>()).Returns(NoTceGroupAssignment);
+            dpb1TceGroupMetadataService.GetDpb1TceGroup(PatientHlaName, Arg.Any<string>()).Returns(NoTceGroupAssignment);
+            dpb1TceGroupMetadataService.GetDpb1TceGroup(DonorHlaName, Arg.Any<string>()).Returns(NoTceGroupAssignment);
 
             var actualResult = permissiveMismatchCalculator.IsPermissiveMismatch(Dpb1Locus, PatientHlaName, DonorHlaName);
 

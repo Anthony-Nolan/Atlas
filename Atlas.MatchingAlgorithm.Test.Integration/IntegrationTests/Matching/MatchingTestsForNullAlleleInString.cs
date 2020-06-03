@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers;
-using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -53,11 +53,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private IDonorUpdateRepository donorUpdateRepository;
         private IDonorMatchingService donorMatchingService;
 
-        private PhenotypeInfo<IHlaMatchingLookupResult> patientWithNullAlleleInStringAndExpressingAllele;
-        private PhenotypeInfo<IHlaMatchingLookupResult> patientWithTwoCopiesOfExpressingAllele;
-        private PhenotypeInfo<IHlaMatchingLookupResult> patientWithExpressingAlleleInStringAndNullAlleleInString;
-        private PhenotypeInfo<IHlaMatchingLookupResult> patientWithTwoCopiesOfExpressingAlleleInStrings;
-        private PhenotypeInfo<IHlaMatchingLookupResult> patientWithTwoNullAllelesInTwoStrings;
+        private PhenotypeInfo<IHlaMatchingMetadata> patientWithNullAlleleInStringAndExpressingAllele;
+        private PhenotypeInfo<IHlaMatchingMetadata> patientWithTwoCopiesOfExpressingAllele;
+        private PhenotypeInfo<IHlaMatchingMetadata> patientWithExpressingAlleleInStringAndNullAlleleInString;
+        private PhenotypeInfo<IHlaMatchingMetadata> patientWithTwoCopiesOfExpressingAlleleInStrings;
+        private PhenotypeInfo<IHlaMatchingMetadata> patientWithTwoNullAllelesInTwoStrings;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -465,7 +465,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 BuildExpandedHlaPhenotype(NullAlleleInString1, ExpressingAlleleAndRelatedNullInString);
         }
 
-        private PhenotypeInfo<IHlaMatchingLookupResult> BuildExpandedHlaPhenotype(string hla1, string hla2)
+        private PhenotypeInfo<IHlaMatchingMetadata> BuildExpandedHlaPhenotype(string hla1, string hla2)
         {
             var newPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla);
             newPhenotype.SetPosition(LocusUnderTest, LocusPosition.One, hla1);
@@ -476,7 +476,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             return expandedDonor.MatchingHla;
         }
 
-        private async Task<int> AddSingleDonorPhenotypeToDonorRepository(PhenotypeInfo<IHlaMatchingLookupResult> donorPhenotype)
+        private async Task<int> AddSingleDonorPhenotypeToDonorRepository(PhenotypeInfo<IHlaMatchingMetadata> donorPhenotype)
         {
             var donor = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(donorPhenotype)

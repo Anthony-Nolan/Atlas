@@ -1,5 +1,4 @@
 ﻿using Atlas.HlaMetadataDictionary.Exceptions;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;

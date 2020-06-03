@@ -6,7 +6,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Donors;
@@ -29,10 +29,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         public void SetUp()
         {
             hlaMetadataDictionary = Substitute.For<IHlaMetadataDictionary>();
-            hlaMetadataDictionary.GetLocusHlaMatchingLookupResults(default, default).ReturnsForAnyArgs(call =>
+            hlaMetadataDictionary.GetLocusHlaMatchingMetadata(default, default).ReturnsForAnyArgs(call =>
             {
                 var input = call.Arg<LocusInfo<string>>();
-                return Task.FromResult(new LocusInfo<IHlaMatchingLookupResult>(default, default));
+                return Task.FromResult(new LocusInfo<IHlaMatchingMetadata>(default, default));
             });
 
             logger = Substitute.For<ILogger>();
@@ -52,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 "event-name");
 
 
-            await hlaMetadataDictionary.Received().GetLocusHlaMatchingLookupResults(Arg.Any<Locus>(), Arg.Any<LocusInfo<string>>());
+            await hlaMetadataDictionary.Received().GetLocusHlaMatchingMetadata(Arg.Any<Locus>(), Arg.Any<LocusInfo<string>>());
         }
 
         [Test]
@@ -71,7 +71,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 },
                 "event-name");
 
-            await hlaMetadataDictionary.Received().GetLocusHlaMatchingLookupResults(
+            await hlaMetadataDictionary.Received().GetLocusHlaMatchingMetadata(
                 Arg.Any<Locus>(),
                 Arg.Any<LocusInfo<string>>());
         }
@@ -82,8 +82,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             const int donorId = 123;
 
             hlaMetadataDictionary
-                .GetLocusHlaMatchingLookupResults(default, default)
-                .ReturnsForAnyArgs(new LocusInfo<IHlaMatchingLookupResult>(null));
+                .GetLocusHlaMatchingMetadata(default, default)
+                .ReturnsForAnyArgs(new LocusInfo<IHlaMatchingMetadata>(null));
                 
             var result = await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<DonorInfo>
             {
@@ -104,7 +104,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             const int donorId = 123;
 
             hlaMetadataDictionary
-                .GetLocusHlaMatchingLookupResults(default, default)
+                .GetLocusHlaMatchingMetadata(default, default)
                 .ThrowsForAnyArgs(new HlaMetadataDictionaryException(Locus.A, "hla", "error"));
                 
             var result = await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<DonorInfo>
@@ -124,7 +124,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         public void ExpandDonorHlaBatchAsync_AnticipatedExpansionFailure_DoesNotThrowException()
         {
             hlaMetadataDictionary
-                .GetLocusHlaMatchingLookupResults(default, default)
+                .GetLocusHlaMatchingMetadata(default, default)
                 .ThrowsForAnyArgs(new HlaMetadataDictionaryException(Locus.A, "hla", "error"));
 
             Assert.DoesNotThrowAsync(async () =>
@@ -144,7 +144,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         public void ExpandDonorHlaBatchAsync_UnanticipatedExpansionFailure_ThrowsException()
         {
             hlaMetadataDictionary
-                .GetLocusHlaMatchingLookupResults(Locus.A, Arg.Any<LocusInfo<string>>())
+                .GetLocusHlaMatchingMetadata(Locus.A, Arg.Any<LocusInfo<string>>())
                 .Throws(new Exception("error"));
 
             Assert.ThrowsAsync<Exception>(async () =>

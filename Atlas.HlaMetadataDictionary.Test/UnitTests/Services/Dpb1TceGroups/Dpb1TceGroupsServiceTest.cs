@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.Test.SharedTestHelpers;
-using Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup;
+using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using FluentAssertions;
 using NUnit.Framework;
@@ -10,7 +10,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.Dpb1TceGroups
 {
     public class Dpb1TceGroupsServiceTest
     {
-        private List<IDpb1TceGroupsLookupResult> tceGroupsLookupResults;
+        private List<IDpb1TceGroupsMetadata> tceGroupsMetadata;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -19,17 +19,17 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.Dpb1TceGroups
             {
                 var dataRepository = SharedTestDataCache.GetWmdaDataRepository();
 
-                tceGroupsLookupResults = new Dpb1TceGroupsService(dataRepository)
-                    .GetDpb1TceGroupLookupResults(SharedTestDataCache.HlaNomenclatureVersionToTest)
+                tceGroupsMetadata = new Dpb1TceGroupsService(dataRepository)
+                    .GetDpb1TceGroupMetadata(SharedTestDataCache.HlaNomenclatureVersionToTest)
                     .ToList();
             });
         }
 
         [Test]
-        public void Dpb1TceGroupsService_GetDpb1TceGroupLookupResults_DoesNotGenerateDuplicateLookupResults()
+        public void Dpb1TceGroupsService_GetDpb1TceGroupMetadata_DoesNotGenerateDuplicateMetadata()
         {
-            tceGroupsLookupResults
-                .GroupBy(lookupResult => lookupResult.LookupName)
+            tceGroupsMetadata
+                .GroupBy(metadata => metadata.LookupName)
                 .Any(group => group.Count() > 1)
                 .Should()
                 .BeFalse();
@@ -52,17 +52,17 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.Dpb1TceGroups
         [TestCase("04:01:01:24N", "", Description = "Null allele; single allele name")]
         [TestCase("04:01", "3", Description = "Group of alleles with same lookup name & assignment contains a null allele; NMDP code allele name")]
         [TestCase("04:XX", "3", Description = "Group of alleles with same lookup name & assignment contains a null allele; XX code name")]
-        public void Dpb1TceGroupsService_GetDpb1TceGroupLookupResults_TceGroupIsAsExpected(
+        public void Dpb1TceGroupsService_GetDpb1TceGroupMetadata_TceGroupIsAsExpected(
             string lookupName, string expectedTceGroup)
         {
-            var actualLookupResult = GetDpb1TceGroupsLookupResult(lookupName);
+            var actualMetadata = GetDpb1TceGroupsMetadata(lookupName);
 
-            actualLookupResult.TceGroup.Should().Be(expectedTceGroup);
+            actualMetadata.TceGroup.Should().Be(expectedTceGroup);
         }
 
-        private IDpb1TceGroupsLookupResult GetDpb1TceGroupsLookupResult(string lookupName)
+        private IDpb1TceGroupsMetadata GetDpb1TceGroupsMetadata(string lookupName)
         {
-            return tceGroupsLookupResults
+            return tceGroupsMetadata
                 .Single(alleleName => alleleName.LookupName.Equals(lookupName));
         }
     }

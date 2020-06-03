@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.ScoringInfoBuilders;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
@@ -37,11 +37,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             Type donorScoringInfoType
         )
         {
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(patientScoringInfoType))
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(ScoringInfoBuilderFactory.GetDefaultScoringInfoFromBuilder(donorScoringInfoType))
                 .Build();
 
@@ -58,13 +58,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var sharedSerology = new SerologyEntry("shared-serology", SerologySubtype.Associated, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { sharedSerology })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { sharedSerology })
                     .Build())
@@ -80,13 +80,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var sharedSerology = new SerologyEntry("shared-serology", SerologySubtype.Split, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { sharedSerology })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { sharedSerology })
                     .Build())
@@ -102,13 +102,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var sharedSerology = new SerologyEntry("shared-serology", SerologySubtype.NotSplit, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { sharedSerology })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { sharedSerology })
                     .Build())
@@ -138,7 +138,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry(patientSerologyName, patientSerologySubtype, true),
                 new SerologyEntry(donorSerologyName, donorSerologySubtype, false)
             };
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(patientSerologies)
                     .Build())
@@ -149,7 +149,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry(donorSerologyName, donorSerologySubtype, true),
                 new SerologyEntry(patientSerologyName, patientSerologySubtype, false)
             };
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(donorSerologies)
                     .Build())
@@ -165,13 +165,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var sharedSerology = new SerologyEntry("shared-serology", SerologySubtype.Broad, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { sharedSerology })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { sharedSerology })
                     .Build())
@@ -202,7 +202,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry(patientSerologyName, patientSerologySubtype, true),
                 new SerologyEntry(donorSerologyName, donorSerologySubtype, false)
             };
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(patientSerologies)
                     .Build())
@@ -214,7 +214,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry(patientSerologyName, patientSerologySubtype, false)
 
             };
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(donorSerologies)
                     .Build())
@@ -234,13 +234,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToPatientAllele = new SerologyEntry("shared-serology", SerologySubtype.Associated, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientAllele })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientAllele })
                     .Build())
@@ -256,13 +256,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToPatientAllele = new SerologyEntry("shared-serology", SerologySubtype.Split, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientAllele })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientAllele })
                     .Build())
@@ -278,13 +278,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToPatientAllele = new SerologyEntry("shared-serology", SerologySubtype.NotSplit, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientAllele })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientAllele })
                     .Build())
@@ -313,7 +313,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("patient-serology", directToAlleleSubtype, true),
                 new SerologyEntry(sharedSerologyName, indirectToAlleleSubtype, false)
             };
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(patientSerologies)
                     .Build())
@@ -323,7 +323,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             {
                 new SerologyEntry(sharedSerologyName, indirectToAlleleSubtype, true)
             };
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(donorSerologies)
                     .Build())
@@ -339,13 +339,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToPatientAllele = new SerologyEntry("shared-serology", SerologySubtype.Broad, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientAllele })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientAllele })
                     .Build())
@@ -375,7 +375,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("patient-serology", directToAlleleSubtype, true),
                 new SerologyEntry(sharedSerologyName, indirectToAlleleSubtype, false)
             };
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(patientSerologies)
                     .Build())
@@ -385,7 +385,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             {
                 new SerologyEntry(sharedSerologyName, indirectToAlleleSubtype, true)
             };
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(donorSerologies)
                     .Build())
@@ -405,13 +405,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToDonorAllele = new SerologyEntry("shared-serology", SerologySubtype.Associated, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorAllele })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorAllele })
                     .Build())
@@ -427,13 +427,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToDonorAllele = new SerologyEntry("shared-serology", SerologySubtype.Split, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorAllele })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorAllele })
                     .Build())
@@ -449,13 +449,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToDonorAllele = new SerologyEntry("shared-serology", SerologySubtype.NotSplit, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorAllele })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorAllele })
                     .Build())
@@ -483,7 +483,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             {
                 new SerologyEntry(sharedSerologyName, indirectToAlleleSubtype, true)
             };
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(patientSerologies)
                     .Build())
@@ -494,7 +494,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("donor-serology", directToAlleleSubtype, true),
                 new SerologyEntry(sharedSerologyName, indirectToAlleleSubtype, false)
             };
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(donorSerologies)
                     .Build())
@@ -510,13 +510,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToDonorAllele = new SerologyEntry("shared-serology", SerologySubtype.Broad, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorAllele })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorAllele })
                     .Build())
@@ -545,7 +545,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             {
                 new SerologyEntry(sharedSerologyName, indirectToAlleleSubtype, true)
             };
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(patientSerologies)
                     .Build())
@@ -556,7 +556,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("donor-serology", directToAlleleSubtype, true),
                 new SerologyEntry(sharedSerologyName, indirectToAlleleSubtype, false)
             };
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(donorSerologies)
                     .Build())
@@ -575,13 +575,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         public void CalculateGrade_NullAlleleVsSerology_ReturnsMismatch()
         {
             // null alleles do not have any matching serologies
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new List<SerologyEntry>())
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().Build())
                 .Build();
 
@@ -597,12 +597,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         [Test]
         public void CalculateGrade_SerologyVsNullAllele_ReturnsMismatch()
         {
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder().Build())
                 .Build();
 
             // null alleles do not have any matching serologies
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new List<SerologyEntry>())
                     .Build())
@@ -623,13 +623,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             var serologyDirectlyMappedToPatientMultipleAllele =
                 new SerologyEntry("shared-serology", SerologySubtype.Associated, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientMultipleAllele })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientMultipleAllele })
                     .Build())
@@ -645,13 +645,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToPatientMultipleAllele = new SerologyEntry("shared-serology", SerologySubtype.Split, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientMultipleAllele })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientMultipleAllele })
                     .Build())
@@ -667,13 +667,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToPatientMultipleAllele = new SerologyEntry("shared-serology", SerologySubtype.NotSplit, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientMultipleAllele })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientMultipleAllele })
                     .Build())
@@ -702,7 +702,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("patient-serology", directToMultipleAlleleSubtype, true),
                 new SerologyEntry(sharedSerologyName, indirectToMultipleAlleleSubtype, false)
             };
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(patientSerologies)
                     .Build())
@@ -712,7 +712,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             {
                 new SerologyEntry(sharedSerologyName, indirectToMultipleAlleleSubtype, true)
             };
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(donorSerologies)
                     .Build())
@@ -728,13 +728,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToPatientMultipleAllele = new SerologyEntry("shared-serology", SerologySubtype.Broad, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientMultipleAllele })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientMultipleAllele })
                     .Build())
@@ -764,7 +764,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("patient-serology", directToMultipleAlleleSubtype, true),
                 new SerologyEntry(sharedSerologyName, indirectToMultipleAlleleSubtype, false)
             };
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(patientSerologies)
                     .Build())
@@ -774,7 +774,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             {
                 new SerologyEntry(sharedSerologyName, indirectToMultipleAlleleSubtype, true)
             };
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(donorSerologies)
                     .Build())
@@ -794,13 +794,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToDonorMultipleAllele = new SerologyEntry("shared-serology", SerologySubtype.Associated, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorMultipleAllele })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorMultipleAllele })
                     .Build())
@@ -816,13 +816,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToDonorMultipleAllele = new SerologyEntry("shared-serology", SerologySubtype.Split, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorMultipleAllele })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorMultipleAllele })
                     .Build())
@@ -838,13 +838,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToDonorMultipleAllele = new SerologyEntry("shared-serology", SerologySubtype.NotSplit, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorMultipleAllele })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorMultipleAllele })
                     .Build())
@@ -872,7 +872,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             {
                 new SerologyEntry(sharedSerologyName, indirectToMultipleAlleleSubtype, true)
             };
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(patientSerologies)
                     .Build())
@@ -883,7 +883,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("donor-serology", directToMultipleAlleleSubtype, true),
                 new SerologyEntry(sharedSerologyName, indirectToMultipleAlleleSubtype, false)
             };
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(donorSerologies)
                     .Build())
@@ -899,13 +899,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToDonorMultipleAllele = new SerologyEntry("shared-serology", SerologySubtype.Broad, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorMultipleAllele })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorMultipleAllele })
                     .Build())
@@ -934,7 +934,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             {
                 new SerologyEntry(sharedSerologyName, indirectToMultipleAlleleSubtype, true)
             };
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(patientSerologies)
                     .Build())
@@ -945,7 +945,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("donor-serology", directToMultipleAlleleSubtype, true),
                 new SerologyEntry(sharedSerologyName, indirectToMultipleAlleleSubtype, false)
             };
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new MultipleAlleleScoringInfoBuilder()
                     .WithMatchingSerologies(donorSerologies)
                     .Build())
@@ -965,13 +965,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToPatientConsolidatedMolecular = new SerologyEntry("shared-serology", SerologySubtype.Associated, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientConsolidatedMolecular })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientConsolidatedMolecular })
                     .Build())
@@ -987,13 +987,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToPatientConsolidatedMolecular = new SerologyEntry("shared-serology", SerologySubtype.Split, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientConsolidatedMolecular })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientConsolidatedMolecular })
                     .Build())
@@ -1009,13 +1009,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToPatientConsolidatedMolecular = new SerologyEntry("shared-serology", SerologySubtype.NotSplit, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientConsolidatedMolecular })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientConsolidatedMolecular })
                     .Build())
@@ -1044,7 +1044,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("patient-serology", directToConsolidatedMolecularSubtype, true),
                 new SerologyEntry(sharedSerologyName, indirectToConsolidatedMolecularSubtype, false)
             };
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingSerologies(patientSerologies)
                     .Build())
@@ -1054,7 +1054,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             {
                 new SerologyEntry(sharedSerologyName, indirectToConsolidatedMolecularSubtype, true)
             };
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(donorSerologies)
                     .Build())
@@ -1070,13 +1070,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToPatientConsolidatedMolecular = new SerologyEntry("shared-serology", SerologySubtype.Broad, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientConsolidatedMolecular })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToPatientConsolidatedMolecular })
                     .Build())
@@ -1106,7 +1106,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("patient-serology", directToConsolidatedMolecularSubtype, true),
                 new SerologyEntry(sharedSerologyName, indirectToConsolidatedMolecularSubtype, false)
             };
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingSerologies(patientSerologies)
                     .Build())
@@ -1116,7 +1116,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             {
                 new SerologyEntry(sharedSerologyName, indirectToConsolidatedMolecularSubtype, true)
             };
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(donorSerologies)
                     .Build())
@@ -1136,13 +1136,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToDonorConsolidatedMolecular = new SerologyEntry("shared-serology", SerologySubtype.Associated, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorConsolidatedMolecular })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorConsolidatedMolecular })
                     .Build())
@@ -1158,13 +1158,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToDonorConsolidatedMolecular = new SerologyEntry("shared-serology", SerologySubtype.Split, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorConsolidatedMolecular })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorConsolidatedMolecular })
                     .Build())
@@ -1180,13 +1180,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToDonorConsolidatedMolecular = new SerologyEntry("shared-serology", SerologySubtype.NotSplit, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorConsolidatedMolecular })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorConsolidatedMolecular })
                     .Build())
@@ -1214,7 +1214,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             {
                 new SerologyEntry(sharedSerologyName, indirectToConsolidatedMolecularSubtype, true)
             };
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(patientSerologies)
                     .Build())
@@ -1225,7 +1225,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("donor-serology", directToConsolidateMolecularSubtype, true),
                 new SerologyEntry(sharedSerologyName, indirectToConsolidatedMolecularSubtype, false)
             };
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingSerologies(donorSerologies)
                     .Build())
@@ -1241,13 +1241,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var serologyDirectlyMappedToDonorConsolidatedMolecular = new SerologyEntry("shared-serology", SerologySubtype.Broad, true);
 
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorConsolidatedMolecular })
                     .Build())
                 .Build();
 
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingSerologies(new[] { serologyDirectlyMappedToDonorConsolidatedMolecular })
                     .Build())
@@ -1276,7 +1276,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             {
                 new SerologyEntry(sharedSerologyName, indirectToConsolidatedMolecularSubtype, true)
             };
-            var patientLookupResult = new HlaScoringLookupResultBuilder()
+            var patientLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new SerologyScoringInfoBuilder()
                     .WithMatchingSerologies(patientSerologies)
                     .Build())
@@ -1287,7 +1287,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                 new SerologyEntry("donor-serology", directToConsolidateMolecularSubtype, true),
                 new SerologyEntry(sharedSerologyName, indirectToConsolidatedMolecularSubtype, false)
             };
-            var donorLookupResult = new HlaScoringLookupResultBuilder()
+            var donorLookupResult = new HlaScoringMetadataBuilder()
                 .WithHlaScoringInfo(new ConsolidatedMolecularScoringInfoBuilder()
                     .WithMatchingSerologies(donorSerologies)
                     .Build())

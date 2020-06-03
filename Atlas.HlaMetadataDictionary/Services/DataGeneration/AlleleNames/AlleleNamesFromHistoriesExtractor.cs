@@ -1,16 +1,16 @@
 ﻿using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Extensions;
-using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
-using Atlas.HlaMetadataDictionary.Models.Wmda;
 using Atlas.HlaMetadataDictionary.Repositories;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
 {
     internal interface IAlleleNamesFromHistoriesExtractor
     {
-        IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaNomenclatureVersion);
+        IEnumerable<AlleleNameMetadata> GetAlleleNames(string hlaNomenclatureVersion);
     }
 
     internal class AlleleNamesFromHistoriesExtractor : AlleleNamesExtractorBase, IAlleleNamesFromHistoriesExtractor
@@ -30,19 +30,19 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames
             this.historiesConsolidator = historiesConsolidator;
         }
 
-        public IEnumerable<AlleleNameLookupResult> GetAlleleNames(string hlaNomenclatureVersion)
+        public IEnumerable<AlleleNameMetadata> GetAlleleNames(string hlaNomenclatureVersion)
         {
             return ConsolidatedAlleleNameHistories(hlaNomenclatureVersion)
                 .SelectMany(h => GetAlleleNamesFromSingleHistory(h, hlaNomenclatureVersion));
         }
 
-        private IEnumerable<AlleleNameLookupResult> GetAlleleNamesFromSingleHistory(AlleleNameHistory history, string hlaNomenclatureVersion)
+        private IEnumerable<AlleleNameMetadata> GetAlleleNamesFromSingleHistory(AlleleNameHistory history, string hlaNomenclatureVersion)
         {
             var currentAlleleName = GetCurrentAlleleName(history, hlaNomenclatureVersion);
 
             return !string.IsNullOrEmpty(currentAlleleName)
-                ? history.ToAlleleNameLookupResults(currentAlleleName)
-                : new List<AlleleNameLookupResult>();
+                ? history.ToAlleleNameMetadata(currentAlleleName)
+                : new List<AlleleNameMetadata>();
         }
 
         private string GetCurrentAlleleName(AlleleNameHistory history, string hlaNomenclatureVersion)

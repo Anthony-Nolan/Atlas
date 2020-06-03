@@ -287,7 +287,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             public DonorInfoWithExpandedHla Build()
             {
                 return DonorResultBuilder
-                    .WithDefaultRequiredHla(new TestHla
+                    .WithDefaultRequiredHla(new TestHlaMetadata
                     {
                         OriginalName = "hla-name",
                         MatchingPGroups = matchingPGroups

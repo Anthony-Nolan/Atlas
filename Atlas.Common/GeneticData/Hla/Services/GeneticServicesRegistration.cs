@@ -1,7 +1,6 @@
-﻿using Atlas.Common.GeneticData.Hla.Services;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Atlas.Common.Caching
+namespace Atlas.Common.GeneticData.Hla.Services
 {
     public static class GeneticServicesRegistration
     {

@@ -1,9 +1,10 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
-using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
+using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using LazyCache;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
@@ -35,20 +36,20 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         //For Dictionary
         private readonly IRecreateHlaMetadataService recreateMetadataService;
-        private readonly IAlleleNamesLookupService alleleNamesLookupService;
-        private readonly IHlaMatchingLookupService hlaMatchingLookupService;
-        private readonly ILocusHlaMatchingLookupService locusHlaMatchingLookupService;
-        private readonly IHlaScoringLookupService hlaScoringLookupService;
-        private readonly IHlaLookupResultsService hlaLookupResultsService;
-        private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
+        private readonly IAlleleNamesMetadataService alleleNamesMetadataService;
+        private readonly IHlaMatchingMetadataService hlaMatchingMetadataService;
+        private readonly ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
+        private readonly IHlaScoringMetadataService hlaScoringMetadataService;
+        private readonly IHlaMetadataService hlaMetadataService;
+        private readonly IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
 
         //For CacheControl
-        private readonly IAlleleNamesLookupRepository alleleNamesRepository;
-        private readonly IHlaMatchingLookupRepository matchingLookupRepository;
-        private readonly IHlaScoringLookupRepository scoringLookupRepository;
-        private readonly IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository;
+        private readonly IAlleleNamesMetadataRepository alleleNamesRepository;
+        private readonly IHlaMatchingMetadataRepository matchingMetadataRepository;
+        private readonly IHlaScoringMetadataRepository scoringMetadataRepository;
+        private readonly IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository;
 
 
         public HlaMetadataDictionaryFactory(
@@ -56,40 +57,40 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
             //For Dictionary
             IRecreateHlaMetadataService recreateMetadataService,
-            IAlleleNamesLookupService alleleNamesLookupService,
-            IHlaMatchingLookupService hlaMatchingLookupService,
-            ILocusHlaMatchingLookupService locusHlaMatchingLookupService,
-            IHlaScoringLookupService hlaScoringLookupService,
-            IHlaLookupResultsService hlaLookupResultsService,
-            IDpb1TceGroupLookupService dpb1TceGroupLookupService,
+            IAlleleNamesMetadataService alleleNamesMetadataService,
+            IHlaMatchingMetadataService hlaMatchingMetadataService,
+            ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService,
+            IHlaScoringMetadataService hlaScoringMetadataService,
+            IHlaMetadataService hlaMetadataService,
+            IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger,
 
             //For CacheControl
-            IAlleleNamesLookupRepository alleleNamesRepository,
-            IHlaMatchingLookupRepository matchingLookupRepository,
-            IHlaScoringLookupRepository scoringLookupRepository,
-            IDpb1TceGroupsLookupRepository dpb1TceGroupsLookupRepository
+            IAlleleNamesMetadataRepository alleleNamesRepository,
+            IHlaMatchingMetadataRepository matchingMetadataRepository,
+            IHlaScoringMetadataRepository scoringMetadataRepository,
+            IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository
             )
         {
             this.cache = cacheProvider.Cache;
 
             //For Dictionary
             this.recreateMetadataService = recreateMetadataService;
-            this.alleleNamesLookupService = alleleNamesLookupService;
-            this.hlaMatchingLookupService = hlaMatchingLookupService;
-            this.locusHlaMatchingLookupService = locusHlaMatchingLookupService;
-            this.hlaScoringLookupService = hlaScoringLookupService;
-            this.hlaLookupResultsService = hlaLookupResultsService;
-            this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
+            this.alleleNamesMetadataService = alleleNamesMetadataService;
+            this.hlaMatchingMetadataService = hlaMatchingMetadataService;
+            this.locusHlaMatchingMetadataService = locusHlaMatchingMetadataService;
+            this.hlaScoringMetadataService = hlaScoringMetadataService;
+            this.hlaMetadataService = hlaMetadataService;
+            this.dpb1TceGroupMetadataService = dpb1TceGroupMetadataService;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
 
             //For CacheControl
             this.alleleNamesRepository = alleleNamesRepository;
-            this.matchingLookupRepository = matchingLookupRepository;
-            this.scoringLookupRepository = scoringLookupRepository;
-            this.dpb1TceGroupsLookupRepository = dpb1TceGroupsLookupRepository;
+            this.matchingMetadataRepository = matchingMetadataRepository;
+            this.scoringMetadataRepository = scoringMetadataRepository;
+            this.dpb1TceGroupsMetadataRepository = dpb1TceGroupsMetadataRepository;
 
         }
 
@@ -131,12 +132,12 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             return new HlaMetadataDictionary(
                 activeHlaNomenclatureVersion,
                 recreateMetadataService,
-                alleleNamesLookupService,
-                hlaMatchingLookupService,
-                locusHlaMatchingLookupService,
-                hlaScoringLookupService,
-                hlaLookupResultsService,
-                dpb1TceGroupLookupService,
+                alleleNamesMetadataService,
+                hlaMatchingMetadataService,
+                locusHlaMatchingMetadataService,
+                hlaScoringMetadataService,
+                hlaMetadataService,
+                dpb1TceGroupMetadataService,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger);
         }
@@ -146,9 +147,9 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             return new HlaMetadataCacheControl(
                 activeHlaNomenclatureVersion,
                 alleleNamesRepository,
-                matchingLookupRepository,
-                scoringLookupRepository,
-                dpb1TceGroupsLookupRepository);
+                matchingMetadataRepository,
+                scoringMetadataRepository,
+                dpb1TceGroupsMetadataRepository);
         }
     }
 }

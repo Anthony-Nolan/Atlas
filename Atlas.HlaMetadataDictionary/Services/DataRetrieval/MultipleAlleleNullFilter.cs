@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
+using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
@@ -11,9 +11,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// </summary>
     internal static class MultipleAlleleNullFilter
     {
-        public static IEnumerable<IHlaLookupResultSource<AlleleTyping>> Filter(IEnumerable<IHlaLookupResultSource<AlleleTyping>> resultSource)
+        public static IEnumerable<IHlaMetadataSource<AlleleTyping>> Filter(IEnumerable<IHlaMetadataSource<AlleleTyping>> resultSource)
         {
-            return resultSource.Where(allele => !allele.TypingForHlaLookupResult.IsNullExpresser);
+            return resultSource.Where(allele => !allele.TypingForHlaMetadata.IsNullExpresser);
         }
 
         public static IEnumerable<SingleAlleleScoringInfo> Filter(IEnumerable<SingleAlleleScoringInfo> results)

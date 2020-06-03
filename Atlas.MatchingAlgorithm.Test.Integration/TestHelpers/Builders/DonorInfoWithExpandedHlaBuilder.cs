@@ -1,7 +1,7 @@
 ﻿using System;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 
@@ -18,18 +18,18 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
                 DonorType = DonorType.Adult,
                 DonorId = donorId,
                 HlaNames = new PhenotypeInfo<string>(),
-                MatchingHla = new PhenotypeInfo<IHlaMatchingLookupResult>()
+                MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>()
             };
         }
 
-        public DonorInfoWithTestHlaBuilder WithHla(PhenotypeInfo<IHlaMatchingLookupResult> matchingHla)
+        public DonorInfoWithTestHlaBuilder WithHla(PhenotypeInfo<IHlaMatchingMetadata> matchingHla)
         {
             donor.HlaNames = new PhenotypeInfo<string>(matchingHla.Map(info => info?.LookupName));
             donor.MatchingHla = matchingHla;
             return this;
         }
 
-        public DonorInfoWithTestHlaBuilder WithHlaAtLocus(Locus locus, TestHla hla1, TestHla hla2)
+        public DonorInfoWithTestHlaBuilder WithHlaAtLocus(Locus locus, TestHlaMetadata hla1, TestHlaMetadata hla2)
         {
             switch (locus)
             {
@@ -76,21 +76,21 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         }
 
         // Populates all null required hla positions (A, B, Drb1) with given hla values
-        public DonorInfoWithTestHlaBuilder WithDefaultRequiredHla(TestHla hla)
+        public DonorInfoWithTestHlaBuilder WithDefaultRequiredHla(TestHlaMetadata hlaMetadata)
         {
-            donor.HlaNames.A.Position1 = donor.HlaNames.A.Position1 ?? hla.OriginalName;
-            donor.HlaNames.A.Position2 = donor.HlaNames.A.Position2 ?? hla.OriginalName;
-            donor.HlaNames.B.Position1 = donor.HlaNames.B.Position1 ?? hla.OriginalName;
-            donor.HlaNames.B.Position2 = donor.HlaNames.B.Position2 ?? hla.OriginalName;
-            donor.HlaNames.Drb1.Position1 = donor.HlaNames.Drb1.Position1 ?? hla.OriginalName;
-            donor.HlaNames.Drb1.Position2 = donor.HlaNames.Drb1.Position2 ?? hla.OriginalName;
+            donor.HlaNames.A.Position1 = donor.HlaNames.A.Position1 ?? hlaMetadata.OriginalName;
+            donor.HlaNames.A.Position2 = donor.HlaNames.A.Position2 ?? hlaMetadata.OriginalName;
+            donor.HlaNames.B.Position1 = donor.HlaNames.B.Position1 ?? hlaMetadata.OriginalName;
+            donor.HlaNames.B.Position2 = donor.HlaNames.B.Position2 ?? hlaMetadata.OriginalName;
+            donor.HlaNames.Drb1.Position1 = donor.HlaNames.Drb1.Position1 ?? hlaMetadata.OriginalName;
+            donor.HlaNames.Drb1.Position2 = donor.HlaNames.Drb1.Position2 ?? hlaMetadata.OriginalName;
 
-            donor.MatchingHla.A.Position1 = donor.MatchingHla.A.Position1 ?? hla;
-            donor.MatchingHla.A.Position2 = donor.MatchingHla.A.Position2 ?? hla;
-            donor.MatchingHla.B.Position1 = donor.MatchingHla.B.Position1 ?? hla;
-            donor.MatchingHla.B.Position2 = donor.MatchingHla.B.Position2 ?? hla;
-            donor.MatchingHla.Drb1.Position1 = donor.MatchingHla.Drb1.Position1 ?? hla;
-            donor.MatchingHla.Drb1.Position2 = donor.MatchingHla.Drb1.Position2 ?? hla;
+            donor.MatchingHla.A.Position1 = donor.MatchingHla.A.Position1 ?? hlaMetadata;
+            donor.MatchingHla.A.Position2 = donor.MatchingHla.A.Position2 ?? hlaMetadata;
+            donor.MatchingHla.B.Position1 = donor.MatchingHla.B.Position1 ?? hlaMetadata;
+            donor.MatchingHla.B.Position2 = donor.MatchingHla.B.Position2 ?? hlaMetadata;
+            donor.MatchingHla.Drb1.Position1 = donor.MatchingHla.Drb1.Position1 ?? hlaMetadata;
+            donor.MatchingHla.Drb1.Position2 = donor.MatchingHla.Drb1.Position2 ?? hlaMetadata;
             return this;
         }
 
