@@ -5,7 +5,7 @@
         /// <summary>
         /// The Atlas ID of the failed donor - this corresponds to the PK of the donor in the master Atlas "donor import" database
         /// </summary>
-        public int? DonorId { get; set; }
+        public int? AtlasDonorId { get; set; }
         public object DonorInfo { get; set; }
 
         public FailedDonorInfo()

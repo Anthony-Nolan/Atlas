@@ -56,6 +56,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
                 sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value
             );
+            
+            // TODO: ATLAS-327: Inject settings
             services.RegisterDonorReader(sp => sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["DonorImportSql"]);
         }
 
