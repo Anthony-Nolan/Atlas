@@ -10,7 +10,7 @@ using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 {
     /// <summary>
-    /// Manages the contents of the matching dictionary
+    /// Manages the contents of the Metadata dictionary
     /// by orchestrating the generation and storage of the HLA Metadata dataset.
     /// </summary>
     internal interface IRecreateHlaMetadataService

@@ -6,7 +6,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings
     public enum SequenceStatus
     {
         // Enum values stored in db; changing values will require rebuild
-        // of the matching dictionary.
+        // of the Metadata Dictionary storage tables
         Unknown = 0,
         Partial = 1,
         Full = 2
@@ -15,7 +15,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings
     public enum DnaCategory
     {
         // Enum values stored in db; changing values will require rebuild
-        // of the matching dictionary.
+        // of the Metadata Dictionary storage tables.
         Unknown = 0,
         CDna = 1,
         GDna = 2

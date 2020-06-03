@@ -3,7 +3,7 @@
     public enum SerologySubtype
     {
         // Enum values stored in db; changing values will require rebuild
-        // of the matching dictionary.
+        // of the Metadata Dictionary StorageTables.
         Broad = 1,
         Split = 2,
         NotSplit = 3,
