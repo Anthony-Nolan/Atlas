@@ -13,16 +13,16 @@ namespace Atlas.DonorImport.ExternalInterface
 
     public class DonorReader : IDonorReader
     {
-        private readonly IDonorInspectionRepository donorInspectionRepository;
+        private readonly IDonorReadRepository donorReadRepository;
 
-        public DonorReader(IDonorInspectionRepository donorInspectionRepository)
+        public DonorReader(IDonorReadRepository donorReadRepository)
         {
-            this.donorInspectionRepository = donorInspectionRepository;
+            this.donorReadRepository = donorReadRepository;
         }
 
         public IList<Donor> GetAllDonors()
         {
-            return donorInspectionRepository.GetAllDonors().Select(d => d.ToPublicDonor()).ToList();
+            return donorReadRepository.GetAllDonors().Select(d => d.ToPublicDonor()).ToList();
         }
     }
 }

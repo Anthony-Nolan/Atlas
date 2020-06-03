@@ -1,10 +1,11 @@
 {
+  "comment": "The donor ids in this file are hard coded in the co-located test file. Changing one requires an equivalent change in the other",
   "updateMode": "full",
   "donors": [
     {
-      "RecordId": 1,
+      "RecordId": 2,
       "ChangeType": "N",
-      "DonorType": "D",
+      "DonorType": "C",
       "donPool": 1,
       "ethn": "ethnicity",
       "Hla": {
@@ -64,11 +65,10 @@
         }
       }
     },
-
     {
-      "RecordId": 2,
+      "RecordId": 1,
       "ChangeType": "N",
-      "DonorType": "C",
+      "DonorType": "D",
       "donPool": 1,
       "ethn": "ethnicity",
       "Hla": {

@@ -61,16 +61,24 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorTypeParsing
         public async Task ImportDonors_WhenBankedDonorTypeInFile_RejectsFile()
         {
            Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => ImportDonorFile("bankedDonor.json"));
+           
            var adultDonor = await donorRepository.GetDonor(AdultDonorInBankedFileId);
            adultDonor.Should().BeNull();
+           
+           var bankedDonor = await donorRepository.GetDonor(BankedDonorId);
+           bankedDonor.Should().BeNull();
         }
 
         [Test]
         public async Task ImportDonors_WhenUnrecognisedDonorTypeInFile_RejectsFile()
         {
            Assert.ThrowsAsync<JsonSerializationException>(() => ImportDonorFile("invalidDonorType.json"));
+           
            var adultDonor = await donorRepository.GetDonor(AdultDonorInInvalidFileId);
            adultDonor.Should().BeNull();
+           
+           var invalidDonor = await donorRepository.GetDonor(InvalidDonorId);
+           invalidDonor.Should().BeNull();
         }
         
         private async Task ImportValidDonorFile()

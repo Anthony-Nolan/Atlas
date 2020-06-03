@@ -41,7 +41,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task DonorImport_AddsNewDonorsToDatabase()
         {
-            var donorInfo = IncrementingDonorBuilder.With(d => d.DonorId, DonorIdGenerator.NextId().ToString()).Build();
+            var donorInfo = IncrementingDonorBuilder.Build();
 
             MockDonorReader.GetAllDonors().Returns(new List<Donor> {donorInfo});
 
@@ -70,24 +70,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             var donor = await inspectionRepo.GetDonor(donorInfo.DonorIdInt());
 
             donor.Should().BeNull();
-        }
-
-        [TestCase("")]
-        [TestCase(null)]
-        public void DonorImport_WhenDonorHasMissingRequiredHla_DoesNotThrowException(string missingHla)
-        {
-            var donorInfo = IncrementingDonorBuilder
-                .With(x => x.A_1, missingHla)
-                .With(x => x.A_2, missingHla)
-                .With(x => x.B_1, missingHla)
-                .With(x => x.B_2, missingHla)
-                .With(x => x.DRB1_1, missingHla)
-                .With(x => x.DRB1_2, missingHla)
-                .Build();
-
-            MockDonorReader.GetAllDonors().Returns(new List<Donor> {donorInfo});
-
-            Assert.DoesNotThrowAsync(async () => await donorImporter.ImportDonors());
         }
 
         [TestCase("")]
