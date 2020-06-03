@@ -17,10 +17,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.RegisterSettings();
             services.RegisterClients();
             services.RegisterServices();
-
-            services.AddScoped<IDonorImportRepository>(sp =>
-                new DonorImportRepository(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["Sql"])
-            );
+            services.RegisterImportDatabaseTypes(sp => sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["Sql"]);
         }
 
         public static void RegisterDonorReader(
@@ -28,7 +25,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, string> fetchDonorImportDatabaseConnectionString)
         {
             services.RegisterDonorReaderServices();
-            
+
             services.AddScoped<IDonorInspectionRepository>(sp =>
                 new DonorInspectionRepository(fetchDonorImportDatabaseConnectionString(sp))
             );
@@ -58,13 +55,12 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<INotificationsClient, NotificationsClient>();
         }
 
-        private static void RegisterDatabaseTypes(
+        private static void RegisterImportDatabaseTypes(
             this IServiceCollection services,
             Func<IServiceProvider, string> fetchDonorImportDatabaseConnectionString)
         {
-            services.AddScoped<IDonorInspectionRepository>(sp =>
-                new DonorInspectionRepository(fetchDonorImportDatabaseConnectionString(sp))
-            );
+            services.AddScoped<IDonorImportRepository>(sp => new DonorImportRepository(fetchDonorImportDatabaseConnectionString(sp)));
+            services.AddScoped<IDonorInspectionRepository>(sp => new DonorInspectionRepository(fetchDonorImportDatabaseConnectionString(sp)));
         }
     }
 }
