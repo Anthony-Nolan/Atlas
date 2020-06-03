@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Client.Models.GenotypeLikelihood;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models;
+using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
@@ -43,16 +43,17 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
             return new GenotypeLikelihoodResponse {Likelihood = likelihood};
         }
 
-        private async Task<Dictionary<LociInfo<string>, decimal>> GetHaplotypesWithFrequencies(ImputedGenotype imputedGenotype)
+        private async Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypesWithFrequencies(ImputedGenotype imputedGenotype)
         {
             var haplotypes = imputedGenotype.GetHaplotypes().ToList();
             var frequencySet = await setRepository.GetActiveSet(null, null);
 
-            return await frequencyRepository.GetDiplotypeFrequencies(haplotypes, frequencySet.Id);
+            return await frequencyRepository.GetHaplotypeFrequencies(haplotypes, frequencySet.Id);
         }
 
         private static void UpdateFrequenciesForDiplotype(
-            Dictionary<LociInfo<string>, decimal> haplotypesWithFrequencies, IEnumerable<Diplotype> diplotypes)
+            Dictionary<HaplotypeHla, decimal> haplotypesWithFrequencies,
+            IEnumerable<Diplotype> diplotypes)
         {
             foreach (var diplotype in diplotypes)
             {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Atlas.Common.GeneticData.PhenotypeInfo;
+using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Models
 {
@@ -9,10 +9,9 @@ namespace Atlas.MatchPrediction.Models
         public IEnumerable<Diplotype> Diplotypes { get; set; }
         public bool IsHomozygousAtEveryLocus { get; set; }
 
-        public IEnumerable<LociInfo<string>> GetHaplotypes()
+        public IEnumerable<HaplotypeHla> GetHaplotypes()
         {
-            return Diplotypes.ToList().SelectMany(diplotype => new List<LociInfo<string>>
-                {diplotype.Item1.Hla, diplotype.Item2.Hla});
+            return Diplotypes.ToList().SelectMany(diplotype => new List<HaplotypeHla> {diplotype.Item1.Hla, diplotype.Item2.Hla});
         }
     }
 }

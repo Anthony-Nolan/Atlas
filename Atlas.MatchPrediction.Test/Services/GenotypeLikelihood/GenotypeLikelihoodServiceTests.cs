@@ -42,7 +42,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                     }
                 });
 
-            frequencyRepository.GetDiplotypeFrequencies(Arg.Any<List<LociInfo<string>>>(), Arg.Any<int>())
+            frequencyRepository.GetHaplotypeFrequencies(Arg.Any<List<LociInfo<string>>>(), Arg.Any<int>())
                 .Returns(new Dictionary<LociInfo<string>, decimal> {{new LociInfo<string>(), 0}});
 
             genotypeLikelihoodCalculator.CalculateLikelihood(Arg.Any<ImputedGenotype>())
@@ -78,7 +78,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             await genotypeLikelihoodService.CalculateLikelihood(new GenotypeLikelihoodInput());
 
             await frequencyRepository.Received(1)
-                .GetDiplotypeFrequencies(Arg.Any<IEnumerable<LociInfo<string>>>(), Arg.Any<int>());
+                .GetHaplotypeFrequencies(Arg.Any<IEnumerable<LociInfo<string>>>(), Arg.Any<int>());
         }
 
         [Test]
