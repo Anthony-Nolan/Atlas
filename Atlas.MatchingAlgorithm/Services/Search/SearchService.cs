@@ -114,7 +114,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             var searchTerm = new LocusInfo<string>(searchHla.SearchHla1, searchHla.SearchHla2);
 
-            var lookupResult = await hlaMetadataDictionary.GetLocusHlaMatchingLookupResults(
+            var metadata = await hlaMetadataDictionary.GetLocusHlaMatchingMetadata(
                 locus,
                 searchTerm
             );
@@ -122,8 +122,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             return new AlleleLevelLocusMatchCriteria
             {
                 MismatchCount = mismatchCriteria.MismatchCount,
-                PGroupsToMatchInPositionOne = lookupResult.Position1.MatchingPGroups,
-                PGroupsToMatchInPositionTwo = lookupResult.Position2.MatchingPGroups
+                PGroupsToMatchInPositionOne = metadata.Position1.MatchingPGroups,
+                PGroupsToMatchInPositionTwo = metadata.Position2.MatchingPGroups
             };
         }
 

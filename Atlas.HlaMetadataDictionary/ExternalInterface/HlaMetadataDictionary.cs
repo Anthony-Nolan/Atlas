@@ -5,12 +5,12 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
-using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
@@ -18,12 +18,12 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
     {
         Task<string> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour);
         Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName);
-        Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName);
-        Task<LocusInfo<IHlaMatchingLookupResult>> GetLocusHlaMatchingLookupResults(Locus locus, LocusInfo<string> locusTyping);
-        Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(Locus locus, string hlaName);
+        Task<IHlaMatchingMetadata> GetHlaMatchingMetadata(Locus locus, string hlaName);
+        Task<LocusInfo<IHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
+        Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
         IEnumerable<string> GetAllPGroups();
-        HlaLookupResultCollections GetAllHlaLookupResults();
+        HlaMetadataCollection GetAllHlaMetadata();
 
         /// <summary>
         /// Indicates whether there's a discrepancy between the version of the HLA Nomenclature that we would use from WMDA,
@@ -37,35 +37,35 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
     {
         private readonly string activeHlaNomenclatureVersion;
         private readonly IRecreateHlaMetadataService recreateMetadataService;
-        private readonly IAlleleNamesLookupService alleleNamesLookupService;
-        private readonly IHlaMatchingLookupService hlaMatchingLookupService;
-        private readonly ILocusHlaMatchingLookupService locusHlaMatchingLookupService;
-        private readonly IHlaScoringLookupService hlaScoringLookupService;
-        private readonly IHlaLookupResultsService hlaLookupResultsService;
-        private readonly IDpb1TceGroupLookupService dpb1TceGroupLookupService;
+        private readonly IAlleleNamesMetadataService alleleNamesMetadataService;
+        private readonly IHlaMatchingMetadataService hlaMatchingMetadataService;
+        private readonly ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
+        private readonly IHlaScoringMetadataService hlaScoringMetadataService;
+        private readonly IHlaMetadataService hlaMetadataService;
+        private readonly IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
 
         public HlaMetadataDictionary(
             string activeHlaNomenclatureVersion,
             IRecreateHlaMetadataService recreateMetadataService,
-            IAlleleNamesLookupService alleleNamesLookupService,
-            IHlaMatchingLookupService hlaMatchingLookupService,
-            ILocusHlaMatchingLookupService locusHlaMatchingLookupService,
-            IHlaScoringLookupService hlaScoringLookupService,
-            IHlaLookupResultsService hlaLookupResultsService,
-            IDpb1TceGroupLookupService dpb1TceGroupLookupService,
+            IAlleleNamesMetadataService alleleNamesMetadataService,
+            IHlaMatchingMetadataService hlaMatchingMetadataService,
+            ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService,
+            IHlaScoringMetadataService hlaScoringMetadataService,
+            IHlaMetadataService hlaMetadataService,
+            IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger)
         {
             this.activeHlaNomenclatureVersion = activeHlaNomenclatureVersion;
             this.recreateMetadataService = recreateMetadataService;
-            this.alleleNamesLookupService = alleleNamesLookupService;
-            this.hlaMatchingLookupService = hlaMatchingLookupService;
-            this.locusHlaMatchingLookupService = locusHlaMatchingLookupService;
-            this.hlaScoringLookupService = hlaScoringLookupService;
-            this.hlaLookupResultsService = hlaLookupResultsService;
-            this.dpb1TceGroupLookupService = dpb1TceGroupLookupService;
+            this.alleleNamesMetadataService = alleleNamesMetadataService;
+            this.hlaMatchingMetadataService = hlaMatchingMetadataService;
+            this.locusHlaMatchingMetadataService = locusHlaMatchingMetadataService;
+            this.hlaScoringMetadataService = hlaScoringMetadataService;
+            this.hlaMetadataService = hlaMetadataService;
+            this.dpb1TceGroupMetadataService = dpb1TceGroupMetadataService;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
         }
@@ -119,37 +119,37 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)
         {
-            return await alleleNamesLookupService.GetCurrentAlleleNames(locus, alleleLookupName, activeHlaNomenclatureVersion);
+            return await alleleNamesMetadataService.GetCurrentAlleleNames(locus, alleleLookupName, activeHlaNomenclatureVersion);
         }
 
-        public async Task<IHlaMatchingLookupResult> GetHlaMatchingLookupResult(Locus locus, string hlaName)
+        public async Task<IHlaMatchingMetadata> GetHlaMatchingMetadata(Locus locus, string hlaName)
         {
-            return await hlaMatchingLookupService.GetHlaLookupResult(locus, hlaName, activeHlaNomenclatureVersion);
+            return await hlaMatchingMetadataService.GetHlaMetadata(locus, hlaName, activeHlaNomenclatureVersion);
         }
 
-        public async Task<LocusInfo<IHlaMatchingLookupResult>> GetLocusHlaMatchingLookupResults(Locus locus, LocusInfo<string> locusTyping)
+        public async Task<LocusInfo<IHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping)
         {
-            return await locusHlaMatchingLookupService.GetHlaMatchingLookupResults(locus, locusTyping, activeHlaNomenclatureVersion);
+            return await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(locus, locusTyping, activeHlaNomenclatureVersion);
         }
 
-        public async Task<IHlaScoringLookupResult> GetHlaScoringLookupResult(Locus locus, string hlaName)
+        public async Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName)
         {
-            return await hlaScoringLookupService.GetHlaLookupResult(locus, hlaName, activeHlaNomenclatureVersion);
+            return await hlaScoringMetadataService.GetHlaMetadata(locus, hlaName, activeHlaNomenclatureVersion);
         }
 
         public async Task<string> GetDpb1TceGroup(string dpb1HlaName)
         {
-            return await dpb1TceGroupLookupService.GetDpb1TceGroup(dpb1HlaName, activeHlaNomenclatureVersion);
+            return await dpb1TceGroupMetadataService.GetDpb1TceGroup(dpb1HlaName, activeHlaNomenclatureVersion);
         }
 
         public IEnumerable<string> GetAllPGroups()
         {
-            return hlaMatchingLookupService.GetAllPGroups(activeHlaNomenclatureVersion);
+            return hlaMatchingMetadataService.GetAllPGroups(activeHlaNomenclatureVersion);
         }
 
-        public HlaLookupResultCollections GetAllHlaLookupResults()
+        public HlaMetadataCollection GetAllHlaMetadata()
         {
-            return hlaLookupResultsService.GetAllHlaLookupResults(activeHlaNomenclatureVersion);
+            return hlaMetadataService.GetAllHlaMetadata(activeHlaNomenclatureVersion).ToExternalCollection();
         }
     }
 }

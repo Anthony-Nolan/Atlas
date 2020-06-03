@@ -1,5 +1,5 @@
 ﻿using System;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators
@@ -7,20 +7,20 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
     public abstract class GradingCalculatorBase : IGradingCalculator
     {
         public MatchGrade CalculateGrade(
-            IHlaScoringLookupResult patientLookupResult, 
-            IHlaScoringLookupResult donorLookupResult)
+            IHlaScoringMetadata patientMetadata, 
+            IHlaScoringMetadata donorMetadata)
         {
-            if (patientLookupResult.Locus != donorLookupResult.Locus)
+            if (patientMetadata.Locus != donorMetadata.Locus)
             {
-                throw new ArgumentException("Lookup results do not belong to same locus.");
+                throw new ArgumentException("Metadata does not all belong to same locus.");
             }
 
-            if (!ScoringInfosAreOfPermittedTypes(patientLookupResult.HlaScoringInfo, donorLookupResult.HlaScoringInfo))
+            if (!ScoringInfosAreOfPermittedTypes(patientMetadata.HlaScoringInfo, donorMetadata.HlaScoringInfo))
             {
                 throw new ArgumentException("One or both scoring infos are not of the permitted types.");
             }
 
-            return GetMatchGrade(patientLookupResult, donorLookupResult);
+            return GetMatchGrade(patientMetadata, donorMetadata);
         }
 
         protected abstract bool ScoringInfosAreOfPermittedTypes(
@@ -28,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
             IHlaScoringInfo donorInfo);
 
         protected abstract MatchGrade GetMatchGrade(
-            IHlaScoringLookupResult patientLookupResult,
-            IHlaScoringLookupResult donorLookupResult);
+            IHlaScoringMetadata patientMetadata,
+            IHlaScoringMetadata donorMetadata);
     }
 }

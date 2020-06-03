@@ -1,55 +1,55 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Exceptions;
-using Atlas.HlaMetadataDictionary.Models.LookupEntities;
-using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
+using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 {
     internal abstract class HlaLookupBase
     {
-        private readonly IHlaLookupRepository hlaLookupRepository;
+        private readonly IHlaMetadataRepository hlaMetadataRepository;
 
-        protected HlaLookupBase(IHlaLookupRepository hlaLookupRepository)
+        protected HlaLookupBase(IHlaMetadataRepository hlaMetadataRepository)
         {
-            this.hlaLookupRepository = hlaLookupRepository;
+            this.hlaMetadataRepository = hlaMetadataRepository;
         }
 
         /// <summary>
         /// Lookup the submitted HLA details.
         /// </summary>
         /// <exception cref="InvalidHlaException">Thrown if no lookup results found.</exception>
-        public abstract Task<IEnumerable<HlaLookupTableEntity>> PerformLookupAsync(Locus locus, string lookupName, string hlaNomenclatureVersion);
+        public abstract Task<IEnumerable<HlaMetadataTableRow>> PerformLookupAsync(Locus locus, string lookupName, string hlaNomenclatureVersion);
 
-        protected async Task<HlaLookupTableEntity> GetHlaLookupTableEntityIfExists(
+        protected async Task<HlaMetadataTableRow> GetHlaMetadataRowIfExists(
             Locus locus,
             string lookupName,
             TypingMethod typingMethod,
             string hlaNomenclatureVersion)
         {
-            var lookupResult = await GetLookupResultFromRepository(locus, lookupName, typingMethod, hlaNomenclatureVersion);
-            return lookupResult ?? throw new InvalidHlaException(locus, lookupName);
+            var metadataRow = await GetMetadataRowFromRepository(locus, lookupName, typingMethod, hlaNomenclatureVersion);
+            return metadataRow ?? throw new InvalidHlaException(locus, lookupName);
         }
 
-        protected async Task<HlaLookupTableEntity> TryGetHlaLookupTableEntity(
+        protected async Task<HlaMetadataTableRow> TryGetHlaMetadataRow(
             Locus locus,
             string lookupName,
             TypingMethod typingMethod,
             string hlaNomenclatureVersion
         )
         {
-            return await GetLookupResultFromRepository(locus, lookupName, typingMethod, hlaNomenclatureVersion);
+            return await GetMetadataRowFromRepository(locus, lookupName, typingMethod, hlaNomenclatureVersion);
         }
 
-        private async Task<HlaLookupTableEntity> GetLookupResultFromRepository(
+        private async Task<HlaMetadataTableRow> GetMetadataRowFromRepository(
             Locus locus,
             string lookupName,
             TypingMethod typingMethod,
             string hlaNomenclatureVersion)
         {
-            return await hlaLookupRepository.GetHlaLookupTableEntityIfExists(locus, lookupName, typingMethod, hlaNomenclatureVersion);
+            return await hlaMetadataRepository.GetHlaMetadataRowIfExists(locus, lookupName, typingMethod, hlaNomenclatureVersion);
         }
     }
 }

@@ -2,7 +2,7 @@
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
-using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
+using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
 using FluentAssertions;
@@ -12,7 +12,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.AlleleNames
 {
     public class AlleleNamesServiceTest
     {
-        private List<IAlleleNameLookupResult> alleleNameLookupResults;
+        private List<IAlleleNameMetadata> alleleNameMetadata;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -25,7 +25,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.AlleleNames
                 var variantsExtractor = new AlleleNameVariantsExtractor(dataRepository);
                 var reservedNamesExtractor = new ReservedAlleleNamesExtractor(dataRepository);
 
-                alleleNameLookupResults = new AlleleNamesService(fromExtractorExtractor, variantsExtractor, reservedNamesExtractor)
+                alleleNameMetadata = new AlleleNamesService(fromExtractorExtractor, variantsExtractor, reservedNamesExtractor)
                     .GetAlleleNamesAndTheirVariants(SharedTestDataCache.HlaNomenclatureVersionToTest)
                     .ToList();
             });
@@ -34,7 +34,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.AlleleNames
         [Test]
         public void AlleleNamesService_GetAlleleNamesAndTheirVariants_DoesNotGenerateDuplicateAlleleNames()
         {
-            var nonUniqueAlleleNames = alleleNameLookupResults
+            var nonUniqueAlleleNames = alleleNameMetadata
                 .GroupBy(alleleName => new { alleleName.Locus, alleleName.LookupName })
                 .Where(group => group.Count() > 1);
 
@@ -54,7 +54,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.AlleleNames
         public void AlleleNamesService_WhenExactAlleleNameHasBeenInHlaNom_CurrentAlleleNameIsAsExpected(
             Locus locus, string lookupName, IEnumerable<string> expectedCurrentAlleleName)
         {
-            var actualAlleleName = GetAlleleNameLookupResult(locus, lookupName);
+            var actualAlleleName = GetAlleleNameMetadata(locus, lookupName);
 
             actualAlleleName.CurrentAlleleNames.Should().BeEquivalentTo(expectedCurrentAlleleName);
         }
@@ -77,14 +77,14 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.AlleleNames
         public void AlleleNamesService_WhenExactAlleleNameHasNeverBeenInHlaNom_ReturnAllPossibleCurrentNames(
             Locus locus, string lookupName, IEnumerable<string> expectedCurrentAlleleNames)
         {
-            var actualAlleleName = GetAlleleNameLookupResult(locus, lookupName);
+            var actualAlleleName = GetAlleleNameMetadata(locus, lookupName);
 
             actualAlleleName.CurrentAlleleNames.Should().BeEquivalentTo(expectedCurrentAlleleNames);
         }
 
-        private IAlleleNameLookupResult GetAlleleNameLookupResult(Locus locus, string lookupName)
+        private IAlleleNameMetadata GetAlleleNameMetadata(Locus locus, string lookupName)
         {
-            return alleleNameLookupResults
+            return alleleNameMetadata
                 .First(alleleName =>
                     alleleName.Locus.Equals(locus) &&
                     alleleName.LookupName.Equals(lookupName));

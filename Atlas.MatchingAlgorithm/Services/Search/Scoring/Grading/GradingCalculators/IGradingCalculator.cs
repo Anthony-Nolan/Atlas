@@ -1,4 +1,4 @@
-﻿using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+﻿using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators
@@ -6,7 +6,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
     public interface IGradingCalculator
     {
         MatchGrade CalculateGrade(
-            IHlaScoringLookupResult patientLookupResult,
-            IHlaScoringLookupResult donorLookupResult);
+            IHlaScoringMetadata patientMetadata,
+            IHlaScoringMetadata donorMetadata);
     }
 }

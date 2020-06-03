@@ -1,8 +1,8 @@
 ﻿using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
-using Atlas.HlaMetadataDictionary.Models.Wmda;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation.SerologyRelationships
 {

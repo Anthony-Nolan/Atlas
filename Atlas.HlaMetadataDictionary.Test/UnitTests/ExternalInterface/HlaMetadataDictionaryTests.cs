@@ -6,6 +6,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -17,12 +18,12 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         private const string DefaultVersion = "hla-version";
 
         private IRecreateHlaMetadataService recreateMetadataService;
-        private IAlleleNamesLookupService alleleNamesLookupService;
-        private IHlaMatchingLookupService hlaMatchingLookupService;
-        private ILocusHlaMatchingLookupService locusHlaMatchingLookupService;
-        private IHlaScoringLookupService hlaScoringLookupService;
-        private IHlaLookupResultsService hlaLookupResultsService;
-        private IDpb1TceGroupLookupService dpb1TceGroupLookupService;
+        private IAlleleNamesMetadataService alleleNamesMetadataService;
+        private IHlaMatchingMetadataService hlaMatchingMetadataService;
+        private ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
+        private IHlaScoringMetadataService hlaScoringMetadataService;
+        private IHlaMetadataService hlaMetadataService;
+        private IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private ILogger logger;
 
@@ -32,12 +33,12 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         public void SetUp()
         {
             recreateMetadataService = Substitute.For<IRecreateHlaMetadataService>();
-            alleleNamesLookupService = Substitute.For<IAlleleNamesLookupService>();
-            hlaMatchingLookupService = Substitute.For<IHlaMatchingLookupService>();
-            locusHlaMatchingLookupService = Substitute.For<ILocusHlaMatchingLookupService>();
-            hlaScoringLookupService = Substitute.For<IHlaScoringLookupService>();
-            hlaLookupResultsService = Substitute.For<IHlaLookupResultsService>();
-            dpb1TceGroupLookupService = Substitute.For<IDpb1TceGroupLookupService>();
+            alleleNamesMetadataService = Substitute.For<IAlleleNamesMetadataService>();
+            hlaMatchingMetadataService = Substitute.For<IHlaMatchingMetadataService>();
+            locusHlaMatchingMetadataService = Substitute.For<ILocusHlaMatchingMetadataService>();
+            hlaScoringMetadataService = Substitute.For<IHlaScoringMetadataService>();
+            hlaMetadataService = Substitute.For<IHlaMetadataService>();
+            dpb1TceGroupMetadataService = Substitute.For<IDpb1TceGroupMetadataService>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
             logger = Substitute.For<ILogger>();
 
@@ -45,12 +46,12 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
                 new HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary(
                     DefaultVersion,
                     recreateMetadataService,
-                    alleleNamesLookupService,
-                    hlaMatchingLookupService,
-                    locusHlaMatchingLookupService,
-                    hlaScoringLookupService,
-                    hlaLookupResultsService,
-                    dpb1TceGroupLookupService,
+                    alleleNamesMetadataService,
+                    hlaMatchingMetadataService,
+                    locusHlaMatchingMetadataService,
+                    hlaScoringMetadataService,
+                    hlaMetadataService,
+                    dpb1TceGroupMetadataService,
                     wmdaHlaNomenclatureVersionAccessor,
                     logger);
         }
