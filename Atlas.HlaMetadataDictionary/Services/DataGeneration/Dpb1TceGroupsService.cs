@@ -10,7 +10,7 @@ using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 {
     /// <summary>
-    /// Generates a complete collection of DPB1 TCE Group lookup results.
+    /// Generates a complete collection of DPB1 TCE Group Metadata.
     /// </summary>
     internal interface IDpb1TceGroupsService
     {
@@ -32,12 +32,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 
         public IEnumerable<IDpb1TceGroupsMetadata> GetDpb1TceGroupMetadata(string hlaNomenclatureVersion)
         {
-            var allResults = wmdaDataRepository
+            var allMetadata = wmdaDataRepository
                 .GetWmdaDataset(hlaNomenclatureVersion)
                 .Dpb1TceGroupAssignments
                 .SelectMany(GetMetadataPerDpb1LookupName);
 
-            return GroupMetadataByLookupName(allResults);
+            return GroupMetadataByLookupName(allMetadata);
         }
 
         private static IEnumerable<IDpb1TceGroupsMetadata> GetMetadataPerDpb1LookupName(Dpb1TceGroupAssignment tceGroupAssignment)

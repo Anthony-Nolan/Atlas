@@ -4,7 +4,7 @@ using Atlas.Common.GeneticData.Hla.Models;
 namespace Atlas.HlaMetadataDictionary.Services.AzureStorage
 {
     /// <summary>
-    /// Manages the partition and row key values to be used with HLA lookup tables.
+    /// Manages the partition and row key values to be used with HLA Metadata tables.
     /// </summary>
     internal static class HlaMetadataTableKeyManager
     {

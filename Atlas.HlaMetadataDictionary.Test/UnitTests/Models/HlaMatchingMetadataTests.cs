@@ -4,7 +4,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Models.Lookups
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Models
 {
     [TestFixture]
     public class HlaMatchingMetadataTests

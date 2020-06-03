@@ -13,7 +13,7 @@ using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.Lookups
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.MetadataServices
 {
     /// <summary>
     /// Fixture testing the base functionality of HlaSearchingMetadataService
