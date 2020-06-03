@@ -5,15 +5,15 @@ using Microsoft.Data.SqlClient;
 
 namespace Atlas.DonorImport.Data.Repositories
 {
-    public interface IDonorInspectionRepository
+    public interface IDonorReadRepository
     {
         public IEnumerable<Donor> GetAllDonors();
     }
 
-    public class DonorInspectionRepository : DonorRepositoryBase, IDonorInspectionRepository
+    public class DonorReadRepository : DonorRepositoryBase, IDonorReadRepository
     {
         /// <inheritdoc />
-        public DonorInspectionRepository(string connectionString) : base(connectionString)
+        public DonorReadRepository(string connectionString) : base(connectionString)
         {
         }
 
