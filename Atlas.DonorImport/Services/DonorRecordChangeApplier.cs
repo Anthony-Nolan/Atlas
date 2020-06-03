@@ -18,12 +18,12 @@ namespace Atlas.DonorImport.Services
 
     internal class DonorRecordChangeApplier : IDonorRecordChangeApplier
     {
-        private readonly IDonorRepository donorRepository;
+        private readonly IDonorImportRepository donorImportRepository;
         private readonly IMessagingServiceBusClient messagingServiceBusClient;
 
-        public DonorRecordChangeApplier(IDonorRepository donorRepository, IMessagingServiceBusClient messagingServiceBusClient)
+        public DonorRecordChangeApplier(IDonorImportRepository donorImportRepository, IMessagingServiceBusClient messagingServiceBusClient)
         {
-            this.donorRepository = donorRepository;
+            this.donorImportRepository = donorImportRepository;
             this.messagingServiceBusClient = messagingServiceBusClient;
         }
 
@@ -35,7 +35,7 @@ namespace Atlas.DonorImport.Services
                 switch (updatesOfSameOperationType.Key)
                 {
                     case ImportDonorChangeType.Create:
-                        await donorRepository.InsertDonorBatch(updatesOfSameOperationType.Select(MapToDatabaseDonor));
+                        await donorImportRepository.InsertDonorBatch(updatesOfSameOperationType.Select(MapToDatabaseDonor));
                         break;
                     case ImportDonorChangeType.Delete:
                         throw new NotImplementedException();
