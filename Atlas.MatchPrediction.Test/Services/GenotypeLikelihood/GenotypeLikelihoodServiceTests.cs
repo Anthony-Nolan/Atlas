@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Client.Models.GenotypeLikelihood;
@@ -29,14 +30,20 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             likelihoodCalculator = Substitute.For<ILikelihoodCalculator>();
 
             setRepository.GetActiveSet(Arg.Any<string>(), Arg.Any<string>())
-                .Returns(new HaplotypeFrequencySet{Id = 1});
+                .Returns(new HaplotypeFrequencySet {Id = 1});
 
             genotypeImputer.GetPossibleDiplotypes(Arg.Any<PhenotypeInfo<string>>())
                 .Returns(new List<Diplotype>
-                {new Diplotype{Item1 = new Haplotype{Hla = new LociInfo<string>()}, Item2 = new Haplotype {Hla = new LociInfo<string>()}}});
+                {
+                    new Diplotype
+                    {
+                        Item1 = new Haplotype {Hla = new LociInfo<string>()},
+                        Item2 = new Haplotype {Hla = new LociInfo<string>()}
+                    }
+                });
 
             frequencyRepository.GetDiplotypeFrequencies(Arg.Any<List<LociInfo<string>>>(), Arg.Any<int>())
-                .Returns(new Dictionary<LociInfo<string>, decimal>{{new LociInfo<string>(), 0}});
+                .Returns(new Dictionary<LociInfo<string>, decimal> {{new LociInfo<string>(), 0}});
 
             likelihoodCalculator.CalculateLikelihood(Arg.Any<List<Diplotype>>())
                 .Returns(0);
@@ -49,9 +56,20 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             );
         }
 
-        [Test]
-        public async Task CalculateLikelihood_WithListOfHaplotypes_FrequencyRepositoryIsCalledOnce()
+        [TestCase(16)]
+        [TestCase(8)]
+        [TestCase(4)]
+        [TestCase(2)]
+        [TestCase(1)]
+        public async Task CalculateLikelihood_WithListOfHaplotypes_FrequencyRepositoryIsCalledOnce(int numberOfDiplotypes)
         {
+            genotypeImputer.GetPossibleDiplotypes(Arg.Any<PhenotypeInfo<string>>())
+                .Returns(Enumerable.Range(0, numberOfDiplotypes).Select(i => new Diplotype
+                {
+                    Item1 = new Haplotype {Hla = new LociInfo<string>()},
+                    Item2 = new Haplotype {Hla = new LociInfo<string>()}
+                }).ToList());
+
             await genotypeLikelihoodService.CalculateLikelihood(new GenotypeLikelihoodInput());
 
             await frequencyRepository.Received(1)
@@ -67,13 +85,19 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 .CalculateLikelihood(Arg.Any<List<Diplotype>>());
         }
 
-        [Test]
-        public async Task CalculateLikelihood_ReturnsFrequencyOfZero()
+        [TestCase(5)]
+        [TestCase(0)]
+        [TestCase(1.263452)]
+        [TestCase(0.234534)]
+        [TestCase(13.23453)]
+        public async Task CalculateLikelihood_WhenLikelihoodIsCalculated_ReturnsResponseWithLikelihood(decimal expectedLikelihood)
         {
-            var actualFrequency = await genotypeLikelihoodService.CalculateLikelihood(new GenotypeLikelihoodInput());
-            const decimal expectedFrequency = 0;
+            likelihoodCalculator.CalculateLikelihood(Arg.Any<List<Diplotype>>())
+                .Returns(expectedLikelihood);
 
-            actualFrequency.Likelihood.Should().Be(expectedFrequency);
+            var actualLikelihoodResponse = await genotypeLikelihoodService.CalculateLikelihood(new GenotypeLikelihoodInput());
+
+            actualLikelihoodResponse.Likelihood.Should().Be(expectedLikelihood);
         }
 
     }
