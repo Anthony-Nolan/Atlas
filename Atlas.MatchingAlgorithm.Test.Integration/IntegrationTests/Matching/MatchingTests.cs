@@ -62,6 +62,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             });
         }
 
+        [OneTimeTearDown]
+        public void TearDown()
+        {
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(DatabaseManager.ClearDatabases);
+        }
+
         private void AddTestDonorsAvailableForSearch(IDonorUpdateRepository donorUpdateRepository)
         {
             cordDonorInfoWithFullHomozygousMatchAtLocusA = GetDefaultDonorBuilder().Build();
@@ -172,12 +178,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { unavailableMatchingCordDonor });
                 donorUpdateRepository.SetDonorBatchAsUnavailableForSearch(new[] { unavailableMatchingCordDonor.DonorId });
             }).Wait();
-        }
-
-        [OneTimeTearDown]
-        public void TearDown()
-        {
-            DatabaseManager.ClearDatabases();
         }
 
         [Test]

@@ -182,13 +182,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())
                 .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>
                 {
-                    FailedDonors = new[] { new FailedDonorInfo { DonorId = donorId } }
+                    FailedDonors = new[] { new FailedDonorInfo { AtlasDonorId = donorId } }
                 });
 
             await donorService.CreateOrUpdateDonorBatch(new[] { new DonorInfo() });
 
             await failedDonorsNotificationSender.Received().SendFailedDonorsAlert(
-                Arg.Is<IEnumerable<FailedDonorInfo>>(x => x.Single().DonorId == donorId),
+                Arg.Is<IEnumerable<FailedDonorInfo>>(x => x.Single().AtlasDonorId == donorId),
                 Arg.Any<string>(),
                 Arg.Any<Priority>());
         }

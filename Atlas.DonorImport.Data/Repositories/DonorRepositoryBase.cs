@@ -8,8 +8,8 @@ namespace Atlas.DonorImport.Data.Repositories
 
         // The order of these matters when setting up the datatable - if re-ordering, also re-order datatable contents
         protected readonly string[] DonorInsertDataTableColumnNames = {
-            nameof(Donor.Id),
-            nameof(Donor.DonorId),
+            nameof(Donor.AtlasId),
+            nameof(Donor.ExternalDonorCode),
             nameof(Donor.DonorType),
             nameof(Donor.EthnicityCode),
             nameof(Donor.RegistryCode),
