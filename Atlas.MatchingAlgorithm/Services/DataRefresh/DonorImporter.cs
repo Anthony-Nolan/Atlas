@@ -34,7 +34,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private const int BatchSize = 10000;
         private const string ImportFailureEventName = "Donor Import Failure(s) in the Search Algorithm";
 
-        private readonly IDonorImportRepository donorImportRepository;
+        private readonly IDonorImportRepository matchingDonorImportRepository;
         private readonly IDonorInfoConverter donorInfoConverter;
         private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
         private readonly ILogger logger;
@@ -47,7 +47,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             ILogger logger,
             IDonorReader donorReader)
         {
-            donorImportRepository = repositoryFactory.GetDonorImportRepository();
+            matchingDonorImportRepository = repositoryFactory.GetDonorImportRepository();
             this.donorInfoConverter = donorInfoConverter;
             this.failedDonorsNotificationSender = failedDonorsNotificationSender;
             this.logger = logger;
@@ -83,7 +83,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             return await TimingLogger.RunTimedAsync(async () =>
                 {
                     var donorInfoConversionResult = await donorInfoConverter.ConvertDonorInfoAsync(donors, ImportFailureEventName);
-                    await donorImportRepository.InsertBatchOfDonors(donorInfoConversionResult.ProcessingResults);
+                    await matchingDonorImportRepository.InsertBatchOfDonors(donorInfoConversionResult.ProcessingResults);
                     return donorInfoConversionResult.FailedDonors;
                 },
                 "Imported donor batch.",
