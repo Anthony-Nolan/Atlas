@@ -2,13 +2,13 @@ using System;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.Utils.Extensions;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.Services.AzureStorage;
 using EnumStringValues;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 
-namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
+namespace Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows
 {
     internal class HlaMetadataTableRow : TableEntity
     {

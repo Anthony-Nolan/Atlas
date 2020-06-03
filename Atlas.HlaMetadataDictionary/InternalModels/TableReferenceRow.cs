@@ -1,6 +1,6 @@
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Atlas.HlaMetadataDictionary.Models
+namespace Atlas.HlaMetadataDictionary.InternalModels
 {
     internal class TableReferenceRow : TableEntity
     {

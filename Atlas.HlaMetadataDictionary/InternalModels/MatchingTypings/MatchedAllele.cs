@@ -1,8 +1,7 @@
-﻿using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 
-namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
+namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
 {
     internal class MatchedAllele : IMatchedHla, IHlaMetadataSource<AlleleTyping>
     {

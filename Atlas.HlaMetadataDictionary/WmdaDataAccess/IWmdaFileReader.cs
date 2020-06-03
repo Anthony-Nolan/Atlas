@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Atlas.HlaMetadataDictionary.Data
+namespace Atlas.HlaMetadataDictionary.WmdaDataAccess
 {
     internal interface IWmdaFileReader
     {

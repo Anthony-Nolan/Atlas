@@ -1,9 +1,10 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
-using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
+using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using LazyCache;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface

@@ -1,11 +1,12 @@
-﻿using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.HlaMetadataDictionary.HlaTypingInfo;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.HlaTypingInfo;
 
-namespace Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup
+namespace Atlas.HlaMetadataDictionary.InternalModels.Metadata
 {
     internal interface IAlleleNameMetadata : ISerialisableHlaMetadata
     {

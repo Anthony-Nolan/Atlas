@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Atlas.HlaMetadataDictionary.Data;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Data
 {

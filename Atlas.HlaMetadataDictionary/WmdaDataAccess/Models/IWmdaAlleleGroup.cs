@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Atlas.HlaMetadataDictionary.Models.Wmda
+namespace Atlas.HlaMetadataDictionary.WmdaDataAccess.Models
 {
     /// <summary>
     /// WMDA data types that group alleles by a shared property,

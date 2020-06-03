@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 
-namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
+namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
 {
     internal interface IAlleleInfoForMatching : IMatchedOn
     {

@@ -1,8 +1,7 @@
 using System.Collections.Generic;
-using Atlas.HlaMetadataDictionary.Models.LookupEntities;
-using Atlas.HlaMetadataDictionary.Models.Lookups.MatchingLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 
-namespace Atlas.HlaMetadataDictionary.Extensions
+namespace Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows
 {
     internal static class HlaMatchingMetadataExtensions
     {

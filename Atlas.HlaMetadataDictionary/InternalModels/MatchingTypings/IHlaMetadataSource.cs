@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 
-namespace Atlas.HlaMetadataDictionary.Models.Lookups
+namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
 {
     /// <summary>
     /// Identifies classes that can serve as a data source

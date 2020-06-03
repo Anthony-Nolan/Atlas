@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Atlas.HlaMetadataDictionary.Models.Lookups
+namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata
 {
     public class HlaMetadataCollection
     {

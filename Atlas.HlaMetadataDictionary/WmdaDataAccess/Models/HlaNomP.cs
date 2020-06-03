@@ -1,9 +1,9 @@
-﻿using Atlas.Common.GeneticData.Hla.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.GeneticData.Hla.Models;
 
-namespace Atlas.HlaMetadataDictionary.Models.Wmda
+namespace Atlas.HlaMetadataDictionary.WmdaDataAccess.Models
 {
     internal class HlaNomP : IWmdaAlleleGroup, IEquatable<HlaNomP>
     {

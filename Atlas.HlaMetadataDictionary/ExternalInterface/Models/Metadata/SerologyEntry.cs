@@ -1,9 +1,9 @@
 ﻿using System;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using Newtonsoft.Json;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using Atlas.HlaMetadataDictionary.Models.MatchingTypings;
 
-namespace Atlas.HlaMetadataDictionary.Models.Lookups
+namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata
 {
     public class SerologyEntry : IEquatable<SerologyEntry>
     {

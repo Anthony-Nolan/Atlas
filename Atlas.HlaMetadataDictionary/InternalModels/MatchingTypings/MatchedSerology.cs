@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 
-namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
+namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
 {
     internal class MatchedSerology : IMatchedHla, IHlaMetadataSource<SerologyTyping>
     {

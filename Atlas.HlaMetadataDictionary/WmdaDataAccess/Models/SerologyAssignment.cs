@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Atlas.HlaMetadataDictionary.Models.Wmda
+namespace Atlas.HlaMetadataDictionary.WmdaDataAccess.Models
 {
     internal class SerologyAssignment : IEquatable<SerologyAssignment>
     {

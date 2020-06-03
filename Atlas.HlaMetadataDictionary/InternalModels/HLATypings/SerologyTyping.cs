@@ -1,9 +1,10 @@
-using Newtonsoft.Json;
-using Atlas.HlaMetadataDictionary.Models.Wmda;
 using System;
 using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
+using Newtonsoft.Json;
 
-namespace Atlas.HlaMetadataDictionary.Models.HLATypings
+namespace Atlas.HlaMetadataDictionary.InternalModels.HLATypings
 {
     internal class SerologyTyping : HlaTyping, IEquatable<SerologyTyping>
     {

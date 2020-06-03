@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Atlas.HlaMetadataDictionary.InternalModels;
 using Microsoft.WindowsAzure.Storage.Table;
-using Atlas.HlaMetadataDictionary.Models;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
 namespace Atlas.HlaMetadataDictionary.Repositories

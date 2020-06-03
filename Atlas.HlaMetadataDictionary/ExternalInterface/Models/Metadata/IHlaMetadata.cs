@@ -1,7 +1,7 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 
-namespace Atlas.HlaMetadataDictionary.Models.Lookups
+namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata
 {
     /// <summary>
     /// HLA Metadata. i.e. something with the key necessary to be looked up in our HLA Metadata Dictionary.

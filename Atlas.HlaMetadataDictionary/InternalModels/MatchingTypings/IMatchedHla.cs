@@ -1,4 +1,4 @@
-﻿namespace Atlas.HlaMetadataDictionary.Models.MatchingTypings
+﻿namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
 {
     internal interface IMatchedHla : IAlleleInfoForMatching, ISerologyInfoForMatching
     {

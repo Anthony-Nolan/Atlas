@@ -1,6 +1,6 @@
 ﻿using Atlas.Common.GeneticData.Hla.Models;
 
-namespace Atlas.HlaMetadataDictionary.Models.Wmda
+namespace Atlas.HlaMetadataDictionary.WmdaDataAccess.Models
 {
     internal interface IWmdaHlaTyping
     {

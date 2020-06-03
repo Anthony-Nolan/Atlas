@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
+using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {

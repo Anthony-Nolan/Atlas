@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup;
-using Atlas.HlaMetadataDictionary.Repositories.LookupRepositories;
+using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
+using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs
 {

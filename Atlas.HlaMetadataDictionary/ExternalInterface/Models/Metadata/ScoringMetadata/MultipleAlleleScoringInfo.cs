@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using Newtonsoft.Json;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
 
-namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
+namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata
 {
     /// <summary>
     /// To be used with allele name variants that map to >1 allele,

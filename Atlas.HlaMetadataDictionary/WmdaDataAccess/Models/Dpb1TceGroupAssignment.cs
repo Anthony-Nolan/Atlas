@@ -1,7 +1,7 @@
-﻿using Atlas.Common.GeneticData.Hla.Models;
-using System;
+﻿using System;
+using Atlas.Common.GeneticData.Hla.Models;
 
-namespace Atlas.HlaMetadataDictionary.Models.Wmda
+namespace Atlas.HlaMetadataDictionary.WmdaDataAccess.Models
 {
     internal class Dpb1TceGroupAssignment : IWmdaHlaTyping, IEquatable<Dpb1TceGroupAssignment>
     {

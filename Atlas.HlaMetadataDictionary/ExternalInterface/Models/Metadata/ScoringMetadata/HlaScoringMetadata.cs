@@ -4,7 +4,7 @@ using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 
-namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
+namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata
 {
     /// <summary>
     /// Metadata required to score HLA pairings.

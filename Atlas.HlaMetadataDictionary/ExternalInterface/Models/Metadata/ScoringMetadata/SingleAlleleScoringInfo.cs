@@ -1,12 +1,13 @@
-﻿using Newtonsoft.Json;
-using Atlas.HlaMetadataDictionary.Models.HLATypings;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using Atlas.HlaMetadataDictionary.Services;
+using Newtonsoft.Json;
 
-namespace Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup
+namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata
 {
     /// <summary>
     /// Data needed to score a single allele typing.

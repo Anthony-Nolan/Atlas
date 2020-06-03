@@ -2,11 +2,10 @@
 using System.Linq;
 using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Exceptions;
-using Atlas.HlaMetadataDictionary.Extensions;
-using Atlas.HlaMetadataDictionary.Models.LookupEntities;
+using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
+namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 {
     internal interface IHlaMatchingMetadataRepository : IHlaMetadataRepository
     {

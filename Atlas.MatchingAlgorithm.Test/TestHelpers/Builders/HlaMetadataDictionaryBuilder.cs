@@ -4,6 +4,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using NSubstitute;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders

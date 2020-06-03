@@ -1,9 +1,8 @@
 using System;
 using Atlas.Common.Caching;
-using Atlas.HlaMetadataDictionary.Data;
 using LazyCache;
 
-namespace Atlas.HlaMetadataDictionary.Services
+namespace Atlas.HlaMetadataDictionary.WmdaDataAccess
 {
     internal interface IWmdaHlaNomenclatureVersionAccessor
     {

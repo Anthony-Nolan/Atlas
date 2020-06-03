@@ -1,5 +1,5 @@
 ﻿using System;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading

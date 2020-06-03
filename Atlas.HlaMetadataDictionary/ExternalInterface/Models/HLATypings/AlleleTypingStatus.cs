@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
+using Newtonsoft.Json;
 
-namespace Atlas.HlaMetadataDictionary.Models.HLATypings
+namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings
 {
     public enum SequenceStatus
     {

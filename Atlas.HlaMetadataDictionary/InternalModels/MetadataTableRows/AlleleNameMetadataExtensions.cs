@@ -1,9 +1,8 @@
 using System.Collections.Generic;
-using Atlas.HlaMetadataDictionary.Models.LookupEntities;
-using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
+using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 
 //QQ Path & Namespace - entities
-namespace Atlas.HlaMetadataDictionary.Extensions
+namespace Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows
 {
     internal static class AlleleNameMetadataExtensions
     {

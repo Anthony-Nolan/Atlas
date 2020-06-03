@@ -1,11 +1,11 @@
-using Atlas.HlaMetadataDictionary.HlaTypingInfo;
-using Atlas.HlaMetadataDictionary.Services;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.HlaMetadataDictionary.HlaTypingInfo;
+using Atlas.HlaMetadataDictionary.Services;
 
-namespace Atlas.HlaMetadataDictionary.Models.HLATypings
+namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings
 {
     public class AlleleTyping : HlaTyping
     {

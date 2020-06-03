@@ -1,7 +1,8 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 
-namespace Atlas.HlaMetadataDictionary.Models.Lookups.Dpb1TceGroupLookup
+namespace Atlas.HlaMetadataDictionary.InternalModels.Metadata
 {
     internal interface IDpb1TceGroupsMetadata : ISerialisableHlaMetadata
     {

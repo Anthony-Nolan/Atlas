@@ -1,8 +1,8 @@
 using System;
-using Atlas.HlaMetadataDictionary.Models.Lookups.ScoringLookup;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using static Atlas.Common.Utils.Extensions.TypeExtensions;
 
-namespace Atlas.HlaMetadataDictionary.Models.LookupEntities
+namespace Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows
 {
     /// These are a bunch of extension methods on HlaMetadataTableRow, trying to work around the fact that Azure Storage
     /// doesn't support sub-typing at all nicely.

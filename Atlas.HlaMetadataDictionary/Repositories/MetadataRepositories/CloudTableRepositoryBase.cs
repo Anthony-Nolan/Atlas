@@ -1,16 +1,15 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using LazyCache;
 using Microsoft.WindowsAzure.Storage.Table;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.HlaMetadataDictionary.Models.LookupEntities;
-using Atlas.HlaMetadataDictionary.Models.Lookups;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
+namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 {
     /// <summary>
     /// Generic repository that persists data to a CloudTable

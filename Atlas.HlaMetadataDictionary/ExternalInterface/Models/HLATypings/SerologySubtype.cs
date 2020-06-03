@@ -1,4 +1,4 @@
-﻿namespace Atlas.HlaMetadataDictionary.Models.HLATypings
+﻿namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings
 {
     public enum SerologySubtype
     {

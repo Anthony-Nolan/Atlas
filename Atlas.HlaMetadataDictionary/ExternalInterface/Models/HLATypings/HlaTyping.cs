@@ -1,10 +1,10 @@
-using Atlas.HlaMetadataDictionary.HlaTypingInfo;
-using Atlas.HlaMetadataDictionary.Models.Wmda;
 using System;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.HlaMetadataDictionary.HlaTypingInfo;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
-namespace Atlas.HlaMetadataDictionary.Models.HLATypings
+namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings
 {
     public class HlaTyping : IEquatable<HlaTyping>, IWmdaHlaTyping
     {

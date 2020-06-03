@@ -1,7 +1,7 @@
 ﻿using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
+namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 {
     internal interface IHlaScoringMetadataRepository : IHlaMetadataRepository
     {

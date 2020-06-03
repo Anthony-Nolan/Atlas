@@ -1,12 +1,12 @@
-﻿using Atlas.Common.Caching;
+﻿using System.Threading.Tasks;
+using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.HlaMetadataDictionary.Extensions;
-using Atlas.HlaMetadataDictionary.Models.Lookups.AlleleNameLookup;
+using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
+using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
-using System.Threading.Tasks;
 
-namespace Atlas.HlaMetadataDictionary.Repositories.LookupRepositories
+namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 {
     internal interface IAlleleNamesMetadataRepository : IHlaMetadataRepository
     {
