@@ -1,7 +1,8 @@
-using Atlas.DonorImport.DependencyInjection;
+using Atlas.DonorImport.ExternalInterface.DependencyInjection;
+using Atlas.DonorImport.Functions;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 
-[assembly: FunctionsStartup(typeof(Atlas.DonorImport.Functions.Startup))]
+[assembly: FunctionsStartup(typeof(Startup))]
 
 namespace Atlas.DonorImport.Functions
 {
@@ -9,7 +10,8 @@ namespace Atlas.DonorImport.Functions
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.Services.RegisterDonorImportTypes();
+            // TODO: ATLAS-327: Inject settings
+            builder.Services.RegisterDonorImport();
         }
     }
 }

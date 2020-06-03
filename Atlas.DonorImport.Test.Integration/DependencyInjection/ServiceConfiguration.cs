@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Context;
-using Atlas.DonorImport.DependencyInjection;
+using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Microsoft.Extensions.Configuration;
@@ -19,7 +19,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
         {
             var services = new ServiceCollection();
             SetUpConfiguration(services);
-            services.RegisterDonorImportTypes();
+            services.RegisterDonorImport();
             RegisterIntegrationTestServices(services);
             SetUpMockServices(services);
             return services.BuildServiceProvider();
