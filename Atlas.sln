@@ -87,6 +87,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction.Client.Models", "Atlas.MatchPrediction.Client.Models\Atlas.MatchPrediction.Client.Models.csproj", "{E1D33B92-6AFE-48F0-9873-D0B86CF1AEE6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HlaMetadataDictionary", "HlaMetadataDictionary", "{86922A44-CA43-4DC8-A6A0-3973117C77EB}"
+	ProjectSection(SolutionItems) = preProject
+		HlaMetadataDictionaryREADME.md = HlaMetadataDictionaryREADME.md
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.HlaMetadataDictionary.Test", "Atlas.HlaMetadataDictionary.Test\Atlas.HlaMetadataDictionary.Test.csproj", "{506F18FC-DAF2-4DE5-B853-F50E5638EC11}"
 EndProject
