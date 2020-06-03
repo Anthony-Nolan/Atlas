@@ -6,62 +6,27 @@
       "RecordId": 5,
       "ChangeType": "N",
       "DonorType": "D",
-      "donPool": 1,
-      "ethn": "ethnicity",
       "Hla": {
         "A": {
           "Dna": {
             "Field1": "*03:112",
             "Field2": "*24:02:13"
           },
-          "ser": null,
-          "Field1": "*03:112",
-          "Field2": "*24:02:13"
+          "ser": null
         },
         "B": {
           "Dna": {
             "Field1": "*39:06:02:01",
             "Field2": "*07:02:45"
           },
-          "ser": null,
-          "Field1": "*39:06:02:01",
-          "Field2": "*07:02:45"
-        },
-        "C": {
-          "Dna": {
-            "Field1": "*04:03:01",
-            "Field2": "*07:01:09"
-          },
-          "ser": null,
-          "Field1": "*04:03:01",
-          "Field2": "*07:01:09"
-        },
-        "DPB1": {
-          "Dna": {
-            "Field1": "*17:01:01:01",
-            "Field2": "*02:01:04"
-          },
-          "ser": null,
-          "Field1": "*17:01:01:01",
-          "Field2": "*02:01:04"
-        },
-        "DQB1": {
-          "Dna": {
-            "Field1": "*06:04:01",
-            "Field2": "*02:02:01:02"
-          },
-          "ser": null,
-          "Field1": "*06:04:01",
-          "Field2": "*02:02:01:02"
+          "ser": null
         },
         "DRB1": {
           "Dna": {
             "Field1": "*15:03:01:01",
             "Field2": "*15:02:01:01"
           },
-          "ser": null,
-          "Field1": "*15:03:01:01",
-          "Field2": "*15:02:01:01"
+          "ser": null
         }
       }
     },
@@ -70,62 +35,27 @@
       "RecordId": 6,
       "ChangeType": "N",
       "DonorType": "Not-recognised",
-      "donPool": 1,
-      "ethn": "ethnicity",
       "Hla": {
         "A": {
           "Dna": {
             "Field1": "*03:112",
             "Field2": "*24:02:13"
           },
-          "ser": null,
-          "Field1": "*03:112",
-          "Field2": "*24:02:13"
+          "ser": null
         },
         "B": {
           "Dna": {
             "Field1": "*39:06:02:01",
             "Field2": "*07:02:45"
           },
-          "ser": null,
-          "Field1": "*39:06:02:01",
-          "Field2": "*07:02:45"
-        },
-        "C": {
-          "Dna": {
-            "Field1": "*04:03:01",
-            "Field2": "*07:01:09"
-          },
-          "ser": null,
-          "Field1": "*04:03:01",
-          "Field2": "*07:01:09"
-        },
-        "DPB1": {
-          "Dna": {
-            "Field1": "*17:01:01:01",
-            "Field2": "*02:01:04"
-          },
-          "ser": null,
-          "Field1": "*17:01:01:01",
-          "Field2": "*02:01:04"
-        },
-        "DQB1": {
-          "Dna": {
-            "Field1": "*06:04:01",
-            "Field2": "*02:02:01:02"
-          },
-          "ser": null,
-          "Field1": "*06:04:01",
-          "Field2": "*02:02:01:02"
+          "ser": null
         },
         "DRB1": {
           "Dna": {
             "Field1": "*15:03:01:01",
             "Field2": "*15:02:01:01"
           },
-          "ser": null,
-          "Field1": "*15:03:01:01",
-          "Field2": "*15:02:01:01"
+          "ser": null
         }
       }
     }

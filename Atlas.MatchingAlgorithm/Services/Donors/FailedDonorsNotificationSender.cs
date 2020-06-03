@@ -1,11 +1,11 @@
-﻿using Atlas.Common.ApplicationInsights;
-using Atlas.Common.Notifications;
-using Atlas.MatchingAlgorithm.Config;
-using Atlas.MatchingAlgorithm.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Notifications;
+using Atlas.MatchingAlgorithm.Config;
+using Atlas.MatchingAlgorithm.Models;
 
 namespace Atlas.MatchingAlgorithm.Services.Donors
 {
@@ -53,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 
         private static string GetDistinctDonorCountText(IEnumerable<FailedDonorInfo> failedDonors)
         {
-            var count = failedDonors.Select(d => d.DonorId).Distinct().Count();
+            var count = failedDonors.Select(d => d.AtlasDonorId).Distinct().Count();
 
             return $"Failed donor count: {count}";
         }

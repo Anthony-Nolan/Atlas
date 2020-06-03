@@ -28,7 +28,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DifferentialDonorA
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
                 serviceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<IMessagingServiceBusClient>();
                 donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
-                // Run operation under test once for this fixture, to (a) improve performance (b) remove the need to clean up duplicate ids between runs
+                // Run operation under test once for this fixture, to (a) improve performance (b) remove the need to clean up duplicate ids between tests within this fixture
                 await ImportFile();
             });
         }

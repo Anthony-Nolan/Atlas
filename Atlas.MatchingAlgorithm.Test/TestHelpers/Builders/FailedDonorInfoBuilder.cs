@@ -9,6 +9,6 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
     {
         public static Builder<FailedDonorInfo> New() =>
             Builder<FailedDonorInfo>.New
-                .With(x => x.DonorId, Enumerable.Range(1, int.MaxValue).Select(i => (int?) i));
+                .With(x => x.AtlasDonorId, Enumerable.Range(1, int.MaxValue).Select(i => (int?) i));
     }
 }
