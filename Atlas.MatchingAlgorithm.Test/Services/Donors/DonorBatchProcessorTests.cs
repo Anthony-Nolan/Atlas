@@ -28,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         private static FailedDonorInfo GetFailedDonorInfoFunc(ServiceBusMessage<SearchableDonorUpdate> donor)
         {
             var donorIdFromDonorInfoFunc = GetDonorIdFromDonorInfoFunc(donor);
-            return new FailedDonorInfo(donor) {DonorId = donorIdFromDonorInfoFunc ?? default};
+            return new FailedDonorInfo(donor) {AtlasDonorId = donorIdFromDonorInfoFunc ?? default};
         }
 
         private static Task<DonorAvailabilityUpdate> ProcessDonorFunc(ServiceBusMessage<SearchableDonorUpdate> donor)
@@ -36,9 +36,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             var donorIdFromDonorInfoFunc = GetDonorIdFromDonorInfoFunc(donor);
             return Task.FromResult(new DonorAvailabilityUpdate
             {
-                DonorId = donor.DeserializedBody == null || donorIdFromDonorInfoFunc == null
-                    ? default
-                    : donorIdFromDonorInfoFunc.Value
+                DonorId = donorIdFromDonorInfoFunc ?? 0
             });
         }
 
@@ -120,7 +118,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 DefaultEventName
             );
 
-            result.FailedDonors.Should().OnlyContain(d => d.DonorId == donorId);
+            result.FailedDonors.Should().OnlyContain(d => d.AtlasDonorId == donorId);
         }
 
         [Test]
@@ -279,7 +277,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 DefaultEventName
             );
 
-            result.FailedDonors.Should().OnlyContain(d => d.DonorId == failedDonor);
+            result.FailedDonors.Should().OnlyContain(d => d.AtlasDonorId == failedDonor);
         }
 
         [Test]

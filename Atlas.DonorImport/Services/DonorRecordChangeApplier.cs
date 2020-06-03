@@ -44,10 +44,8 @@ namespace Atlas.DonorImport.Services
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-
-
-                var shouldFetchAtlasDonorIds = updatesOfSameOperationType.Key != ImportDonorChangeType.Delete &&
-                                               updatesOfSameOperationType.Any(u => u.UpdateMode != UpdateMode.Full);
+                
+                var shouldFetchAtlasDonorIds = updatesOfSameOperationType.Any(u => u.UpdateMode != UpdateMode.Full);
                 var atlasDonors = shouldFetchAtlasDonorIds
                     ? await donorRepository.GetDonorsByExternalDonorCodes(updatesOfSameOperationType.Select(u => u.RecordId))
                     : new Dictionary<string, Donor>();
