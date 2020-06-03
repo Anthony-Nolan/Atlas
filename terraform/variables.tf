@@ -70,6 +70,12 @@ variable "LOCATION" {
   description = "GeoLocation of all Azure resources for this ATLAS installation."
 }
 
+variable "MAC_SOURCE" {
+  type = string 
+  default = "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip"
+  description = "The source of our Multiple Allele Codes"
+}
+
 variable "MATCH_PREDICTION_DATABASE_PASSWORD" {
   type = string
 }
