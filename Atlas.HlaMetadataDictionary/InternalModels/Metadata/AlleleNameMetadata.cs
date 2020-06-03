@@ -13,7 +13,6 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.Metadata
         List<string> CurrentAlleleNames { get; }
     }
 
-    //QQ Path, Namespace.
     internal class AlleleNameMetadata : 
         IAlleleNameMetadata, 
         IEquatable<AlleleNameMetadata>

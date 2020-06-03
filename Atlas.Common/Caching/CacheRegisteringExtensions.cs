@@ -23,7 +23,7 @@ namespace Atlas.Common.Caching
             });
 
             // The PersistentCache is SingletonScoped, so that it is shared across requests, thus
-            // avoiding re-caching large collections e.g. Matching Dictionary and Alleles each request.
+            // avoiding re-caching large collections e.g. Metadata Dictionary and Alleles each request.
             // It is reloaded once a day to ensure it doesn't get problematically stale.
             services.AddSingleton<IPersistentCacheProvider, PersistentCacheProvider>(sp =>
             {

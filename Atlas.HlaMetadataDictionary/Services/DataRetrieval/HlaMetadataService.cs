@@ -21,7 +21,6 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         HlaMetadataCollectionForSerialisation GetAllHlaMetadata(string hlaNomenclatureVersion);
     }
 
-    //QQ Review Name. `HlaMetadataGenerationService`, perhaps?
     internal class HlaMetadataService : IHlaMetadataService
     {
         private readonly IHlaMatchPreCalculationService matchPreCalculationService;
