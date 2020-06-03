@@ -1,5 +1,4 @@
 {
-  "comment": "The donor ids in this file are hard coded in the co-located test file. Changing one requires an equivalent change in the other",
   "updateMode": "full",
   "donors": [
     {
