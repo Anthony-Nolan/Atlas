@@ -1,18 +1,18 @@
-using Atlas.MatchPrediction.Data.Models;
-using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchPrediction.Data.Models;
 using Dapper;
+using Microsoft.Data.SqlClient;
+using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Data.Repositories
 {
     public interface IHaplotypeFrequenciesRepository
     {
         Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies);
-        Task<Dictionary<LociInfo<string>, decimal>> GetDiplotypeFrequencies(IEnumerable<LociInfo<string>> diplotypes, int setId);
+        Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypeFrequencies(IEnumerable<HaplotypeHla> haplotypes, int setId);
     }
 
     public class HaplotypeFrequenciesRepository : IHaplotypeFrequenciesRepository
@@ -83,9 +83,9 @@ namespace Atlas.MatchPrediction.Data.Repositories
             return dataTable;
         }
 
-        public async Task<Dictionary<LociInfo<string>, decimal>> GetDiplotypeFrequencies(IEnumerable<LociInfo<string>> haplotypes, int setId)
+        public async Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypeFrequencies(IEnumerable<HaplotypeHla> haplotypes, int setId)
         {
-            var haplotypeInfo = new Dictionary<LociInfo<string>, decimal>();
+            var haplotypeInfo = new Dictionary<HaplotypeHla, decimal>();
             var distinctHaplotypes = haplotypes.ToList().Distinct();
 
             // TODO: ATLAS-2: Investigate if quicker to run multiple queries vs collated one to fetch everything in one go.
