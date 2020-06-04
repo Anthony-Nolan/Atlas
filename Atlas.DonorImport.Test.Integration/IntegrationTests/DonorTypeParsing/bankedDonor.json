@@ -2,9 +2,9 @@
   "updateMode": "full",
   "donors": [
     {
-      "RecordId": 3,
+      "RecordId": 4,
       "ChangeType": "N",
-      "DonorType": "D",
+      "DonorType": "B",
       "Hla": {
         "A": {
           "Dna": {
@@ -29,11 +29,10 @@
         }
       }
     },
-
     {
-      "RecordId": 4,
+      "RecordId": 3,
       "ChangeType": "N",
-      "DonorType": "B",
+      "DonorType": "D",
       "Hla": {
         "A": {
           "Dna": {

@@ -2,9 +2,9 @@
   "updateMode": "full",
   "donors": [
     {
-      "RecordId": 5,
+      "RecordId": 6,
       "ChangeType": "N",
-      "DonorType": "D",
+      "DonorType": "Not-recognised",
       "Hla": {
         "A": {
           "Dna": {
@@ -29,11 +29,10 @@
         }
       }
     },
-
     {
-      "RecordId": 6,
+      "RecordId": 5,
       "ChangeType": "N",
-      "DonorType": "Not-recognised",
+      "DonorType": "D",
       "Hla": {
         "A": {
           "Dna": {
