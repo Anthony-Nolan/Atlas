@@ -1,14 +1,14 @@
 {
-    "IsEncrypted": false,
-    "Values": {
-        "ApplicationInsights:LogLevel": "Info",
-        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-        "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-        "MacImport:ConnectionString":  "override-this",
-        "MacImport:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
-        "MacImport:TableName": "AtlasMultipleAlleleCodes",
-        "MessagingServiceBus:ConnectionString": "override-this",
-        "MessagingServiceBus:SearchRequestsQueue": "matching-requests",
-        "MessagingServiceBus:SearchResultsTopic": "matching-results-ready"
-    }
+  "IsEncrypted": false,
+  "Values": {
+    "ApplicationInsights:LogLevel": "Info",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "MacImport:ConnectionString": "UseDevelopmentStorage=true",
+    "MacImport:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
+    "MacImport:TableName": "AtlasMultipleAlleleCodes",
+    "MessagingServiceBus:ConnectionString": "override-this",
+    "MessagingServiceBus:SearchRequestsQueue": "matching-requests",
+    "MessagingServiceBus:SearchResultsTopic": "matching-results-ready"
+  }
 }
