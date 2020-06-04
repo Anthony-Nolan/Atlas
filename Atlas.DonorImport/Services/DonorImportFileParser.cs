@@ -14,9 +14,6 @@ namespace Atlas.DonorImport.Services
 
     internal class DonorImportFileParser : IDonorImportFileParser
     {
-        private const string UpdateModePropertyName = "updateMode";
-        private const string DonorsPropertyName = "donors";
-
         public IEnumerable<DonorUpdate> LazilyParseDonorUpdates(Stream stream)
         {
             using (var streamReader = new StreamReader(stream))
@@ -32,12 +29,12 @@ namespace Atlas.DonorImport.Services
                         var propertyName = reader.Value?.ToString();
                         switch (propertyName)
                         {
-                            case UpdateModePropertyName:
+                            case nameof(DonorImportFileSchema.updateMode):
                                 // Read into property
                                 reader.Read();
                                 updateMode = serializer.Deserialize<UpdateMode>(reader);
                                 break;
-                            case DonorsPropertyName:
+                            case nameof(DonorImportFileSchema.donors):
                                 reader.Read(); // Read into property
                                 reader.Read(); // Read into array. Do not deserialize to collection, as the collection can be very large and requires streaming.
                                 // Loops through all donors in array
