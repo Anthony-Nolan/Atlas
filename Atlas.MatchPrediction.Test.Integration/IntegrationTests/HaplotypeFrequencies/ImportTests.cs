@@ -2,6 +2,7 @@
 using Atlas.Common.Notifications.MessageModels;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.HaplotypeFrequencies;
@@ -50,11 +51,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         [TestCase("registry", "ethnicity")]
         public async Task Import_ImportsSetAsActive(string registryCode, string ethnicityCode)
         {
-            var file = FrequencyFileBuilder.Build(registryCode, ethnicityCode);
+            var file = TestFrequencyFileBuilder.Build(registryCode, ethnicityCode);
 
             await using (var stream = GetHaplotypeFrequenciesStream(file.Contents))
             {
-                await service.ImportFrequencySet(stream, file.FullPath);
+                await service.ImportFrequencySet(new FrequencySetFile { Contents = stream, FileName = file.FullPath });
             }
 
             var activeSet = await setRepository.GetActiveSet(registryCode, ethnicityCode);
@@ -67,16 +68,16 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         [TestCase("registry", "ethnicity")]
         public async Task Import_DeactivatesPreviouslyActiveSet(string registryCode, string ethnicityCode)
         {
-            var oldFile = FrequencyFileBuilder.Build(registryCode, ethnicityCode);
+            var oldFile = TestFrequencyFileBuilder.Build(registryCode, ethnicityCode);
             await using (var stream = GetHaplotypeFrequenciesStream(oldFile.Contents))
             {
-                await service.ImportFrequencySet(stream, oldFile.FullPath);
+                await service.ImportFrequencySet(new FrequencySetFile { Contents = stream, FileName = oldFile.FullPath });
             }
 
-            var newFile = FrequencyFileBuilder.Build(registryCode, ethnicityCode);
+            var newFile = TestFrequencyFileBuilder.Build(registryCode, ethnicityCode);
             await using (var stream = GetHaplotypeFrequenciesStream(newFile.Contents))
             {
-                await service.ImportFrequencySet(stream, newFile.FullPath);
+                await service.ImportFrequencySet(new FrequencySetFile { Contents = stream, FileName = newFile.FullPath });
             }
 
             var activeSet = await setRepository.GetActiveSet(registryCode, ethnicityCode);
@@ -92,11 +93,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         public async Task Import_StoresFrequencies(string registryCode, string ethnicityCode)
         {
             const int frequencyCount = 10;
-            var file = FrequencyFileBuilder.Build(registryCode, ethnicityCode, 10);
+            var file = TestFrequencyFileBuilder.Build(registryCode, ethnicityCode, 10);
 
             await using (var stream = GetHaplotypeFrequenciesStream(file.Contents))
             {
-                await service.ImportFrequencySet(stream, file.FullPath);
+                await service.ImportFrequencySet(new FrequencySetFile { Contents = stream, FileName = file.FullPath });
             }
 
             var activeSet = await setRepository.GetActiveSet(registryCode, ethnicityCode);
@@ -110,11 +111,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         [TestCase("registry", "ethnicity")]
         public async Task Import_SendsNotification(string registryCode, string ethnicityCode)
         {
-            var file = FrequencyFileBuilder.Build(registryCode, ethnicityCode);
+            var file = TestFrequencyFileBuilder.Build(registryCode, ethnicityCode);
 
             await using (var stream = GetHaplotypeFrequenciesStream(file.Contents))
             {
-                await service.ImportFrequencySet(stream, file.FullPath);
+                await service.ImportFrequencySet(new FrequencySetFile { Contents = stream, FileName = file.FullPath });
             }
 
             await notificationsClient.Received().SendNotification(Arg.Any<Notification>());
@@ -127,11 +128,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         public async Task Import_StoresFrequencyValueAsDecimalToRequiredNumberOfPlaces()
         {
             const decimal frequency = 1E-16m;
-            var file = FrequencyFileBuilder.Build(null, null, frequencyValue: frequency);
+            var file = TestFrequencyFileBuilder.Build(null, null, frequencyValue: frequency);
 
             await using (var stream = GetHaplotypeFrequenciesStream(file.Contents))
             {
-                await service.ImportFrequencySet(stream, file.FullPath);
+                await service.ImportFrequencySet(new FrequencySetFile { Contents = stream, FileName = file.FullPath });
             }
 
             var activeSet = await setRepository.GetActiveSet(null, null);
@@ -144,11 +145,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         [TestCase("/too/many/subfolders/file")]
         public async Task Import_InvalidFilePath_ThrowsException(string invalidFileName)
         {
-            var fileWithValidContents = FrequencyFileBuilder.Build(null, null);
+            var fileWithValidContents = TestFrequencyFileBuilder.Build(null, null);
             await using (var stream = GetHaplotypeFrequenciesStream(fileWithValidContents.Contents))
             {
                 service.Invoking(async importer =>
-                    await service.ImportFrequencySet(stream, invalidFileName)).Should().Throw<Exception>();
+                    await service.ImportFrequencySet(new FrequencySetFile { Contents = stream, FileName = invalidFileName }))
+                    .Should().Throw<Exception>();
             }
         }
 
@@ -156,12 +158,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         [TestCase("/too/many/subfolders/file")]
         public async Task Import_InvalidFilePath_SendsAlert(string invalidFileName)
         {
-            var fileWithValidContents = FrequencyFileBuilder.Build(null, null);
+            var fileWithValidContents = TestFrequencyFileBuilder.Build(null, null);
             await using (var stream = GetHaplotypeFrequenciesStream(fileWithValidContents.Contents))
             {
                 try
                 {
-                    await service.ImportFrequencySet(stream, invalidFileName);
+                    await service.ImportFrequencySet(new FrequencySetFile { Contents = stream, FileName = invalidFileName });
                 }
                 catch (Exception)
                 {
@@ -174,12 +176,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         [TestCase("/too/many/subfolders/file")]
         public async Task Import_InvalidFilePath_DoesNotSendNotification(string invalidFileName)
         {
-            var fileWithValidContents = FrequencyFileBuilder.Build(null, null);
+            var fileWithValidContents = TestFrequencyFileBuilder.Build(null, null);
             await using (var stream = GetHaplotypeFrequenciesStream(fileWithValidContents.Contents))
             {
                 try
                 {
-                    await service.ImportFrequencySet(stream, invalidFileName);
+                    await service.ImportFrequencySet(new FrequencySetFile { Contents = stream, FileName = invalidFileName });
                 }
                 catch (Exception)
                 {
