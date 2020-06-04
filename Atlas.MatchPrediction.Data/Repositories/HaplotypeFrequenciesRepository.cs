@@ -1,11 +1,11 @@
-using Atlas.MatchPrediction.Data.Models;
-using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchPrediction.Data.Models;
 using Dapper;
+using Microsoft.Data.SqlClient;
 
 namespace Atlas.MatchPrediction.Data.Repositories
 {
@@ -34,8 +34,10 @@ namespace Atlas.MatchPrediction.Data.Repositories
 
             var dataTable = BuildFrequencyInsertDataTable(haplotypeFrequencySetId, haplotypeFrequencies);
 
-            using var sqlBulk = BuildFrequencySqlBulkCopy();
-            await sqlBulk.WriteToServerAsync(dataTable);
+            using (var sqlBulk = BuildFrequencySqlBulkCopy())
+            {
+                await sqlBulk.WriteToServerAsync(dataTable);
+            }
         }
 
         private SqlBulkCopy BuildFrequencySqlBulkCopy()

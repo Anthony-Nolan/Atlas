@@ -63,8 +63,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DifferentialDonorA
         private async Task ImportFile()
         {
             const string donorTestFile = "Atlas.DonorImport.Test.Integration.IntegrationTests.DifferentialDonorAdditions.test-data.json";
-            await using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFile);
-            await donorFileImporter.ImportDonorFile(stream, donorTestFile);
+            await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFile))
+            {
+                await donorFileImporter.ImportDonorFile(stream, donorTestFile);
+            }
         }
     }
 }

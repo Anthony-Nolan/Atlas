@@ -154,27 +154,34 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             IEnumerable<string> columnNames = null)
         {
             columnNames ??= new List<string>();
-            await using var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
-            connection.Open();
-            var transaction = connection.BeginTransaction();
+            await using (var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            {
+                connection.Open();
+                var transaction = connection.BeginTransaction();
+                using (var sqlBulk = BuildSqlBulkCopy(tableName, connection, transaction))
+                {
+                    foreach (var columnName in columnNames)
+                    {
+                        // Relies on setting up the data table with column names matching the database columns.
+                        sqlBulk.ColumnMappings.Add(columnName, columnName);
+                    }
 
-            using var sqlBulk = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction)
+                    await sqlBulk.WriteToServerAsync(dataTable);
+                }
+
+                transaction.Commit();
+                connection.Close();
+            }
+        }
+
+        private static SqlBulkCopy BuildSqlBulkCopy(string tableName, SqlConnection connection, SqlTransaction transaction)
+        {
+            return new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction)
             {
                 BatchSize = 10000,
                 DestinationTableName = tableName,
                 BulkCopyTimeout = 3600
             };
-
-            foreach (var columnName in columnNames)
-            {
-                // Relies on setting up the data table with column names matching the database columns.
-                sqlBulk.ColumnMappings.Add(columnName, columnName);
-            }
-
-            await sqlBulk.WriteToServerAsync(dataTable);
-
-            transaction.Commit();
-            connection.Close();
         }
     }
 }
