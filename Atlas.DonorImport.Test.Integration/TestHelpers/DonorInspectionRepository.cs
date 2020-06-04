@@ -25,17 +25,21 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
 
         public async Task<Donor> GetDonor(string externalDonorCode)
         {
-            await using var conn = new SqlConnection(connectionString);
-            return await conn.QuerySingleOrDefaultAsync<Donor>(
-                "SELECT * FROM Donors WHERE ExternalDonorCode = @externalDonorCode",
-                new {externalDonorCode},
-                commandTimeout: 300);
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                return await conn.QuerySingleOrDefaultAsync<Donor>(
+                    "SELECT * FROM Donors WHERE ExternalDonorCode = @externalDonorCode",
+                    new {externalDonorCode},
+                    commandTimeout: 300);
+            }
         }
 
         public async Task<int> DonorCount()
         {
-            await using var conn = new SqlConnection(connectionString);
-            return await conn.QuerySingleOrDefaultAsync<int>("SELECT COUNT(*) FROM Donors", commandTimeout: 300);
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                return await conn.QuerySingleOrDefaultAsync<int>("SELECT COUNT(*) FROM Donors", commandTimeout: 300);
+            }
         }
     }
 }

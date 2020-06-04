@@ -21,14 +21,15 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 throw new ArgumentNullException();
             }
             
-            using var reader = new StreamReader(stream);
-            using var csv = new CsvReader(reader);
-            ConfigureCsvReader(csv);
-
-            while (csv.Read())
+            using (var reader = new StreamReader(stream))
+            using (var csv = new CsvReader(reader))
             {
-                var frequency = csv.GetRecord<HaplotypeFrequency>();
-                yield return frequency;
+                ConfigureCsvReader(csv);
+                while (csv.Read())
+                {
+                    var frequency = csv.GetRecord<HaplotypeFrequency>();
+                    yield return frequency;
+                }
             }
         }
 

@@ -29,8 +29,10 @@ namespace Atlas.DonorImport.Data.Repositories
 
             var dataTable = BuildDonorInsertDataTable(donors);
 
-            using var sqlBulk = BuildDonorSqlBulkCopy();
-            await sqlBulk.WriteToServerAsync(dataTable);
+            using (var sqlBulk = BuildDonorSqlBulkCopy())
+            {
+                await sqlBulk.WriteToServerAsync(dataTable);
+            }
         }
 
         private SqlBulkCopy BuildDonorSqlBulkCopy()

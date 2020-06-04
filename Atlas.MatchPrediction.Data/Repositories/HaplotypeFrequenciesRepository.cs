@@ -34,8 +34,10 @@ namespace Atlas.MatchPrediction.Data.Repositories
 
             var dataTable = BuildFrequencyInsertDataTable(haplotypeFrequencySetId, haplotypeFrequencies);
 
-            using var sqlBulk = BuildFrequencySqlBulkCopy();
-            await sqlBulk.WriteToServerAsync(dataTable);
+            using (var sqlBulk = BuildFrequencySqlBulkCopy())
+            {
+                await sqlBulk.WriteToServerAsync(dataTable);
+            }
         }
 
         private SqlBulkCopy BuildFrequencySqlBulkCopy()
