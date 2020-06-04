@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using FluentAssertions;
@@ -60,10 +61,11 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.InitialDataLoad
 
         private async Task ImportFile()
         {
-            const string donorTestFile = "Atlas.DonorImport.Test.Integration.IntegrationTests.InitialDataLoad.1000-initial-donors.json";
-            await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFile))
+            const string fileName = "1000-initial-donors.json";
+            var donorTestFilePath = $"Atlas.DonorImport.Test.Integration.IntegrationTests.InitialDataLoad.{fileName}";
+            await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFilePath))
             {
-                await donorFileImporter.ImportDonorFile(stream, donorTestFile);
+                await donorFileImporter.ImportDonorFile(new DonorImportFile{ Contents = stream, FileName = fileName});
             }
         }
     }

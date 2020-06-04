@@ -1,5 +1,6 @@
 using System.IO;
 using System.Threading.Tasks;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Services;
 using Microsoft.Azure.WebJobs;
 
@@ -13,7 +14,7 @@ namespace Atlas.DonorImport.Functions.Functions
         {
             this.donorFileImporter = donorFileImporter;
         }
-        
+
         [FunctionName(nameof(ImportDonorFile))]
         public async Task ImportDonorFile(
             // Raw JSON Text file containing donor updates in expected schema
@@ -21,7 +22,7 @@ namespace Atlas.DonorImport.Functions.Functions
             Stream blobStream,
             string fileName)
         {
-            await donorFileImporter.ImportDonorFile(blobStream, fileName);
+            await donorFileImporter.ImportDonorFile(new DonorImportFile {Contents = blobStream, FileName = fileName});
         }
     }
 }
