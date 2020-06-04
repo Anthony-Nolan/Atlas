@@ -1,8 +1,7 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
+using System.Threading.Tasks;
 using Atlas.MultipleAlleleCodeDictionary.MacImportService;
 using Microsoft.Azure.WebJobs;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 
 namespace Atlas.Functions.Functions
@@ -23,7 +22,7 @@ namespace Atlas.Functions.Functions
         }
         
         [FunctionName(nameof(ImportMacsManual))]
-        public async Task ImportMacsManual([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestMessage request)
+        public async Task ImportMacsManual([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestMessage request)
         {
             await MacImporter.ImportLatestMultipleAlleleCodes();
         }
