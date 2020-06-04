@@ -44,7 +44,6 @@ namespace Atlas.MatchPrediction.Models
             };
         }
 
-
         public void SetAtLocus(Locus locus, LocusInfo<string> locusInfo)
         {
             Item1.Hla.SetLocus(locus, locusInfo.Position1);
