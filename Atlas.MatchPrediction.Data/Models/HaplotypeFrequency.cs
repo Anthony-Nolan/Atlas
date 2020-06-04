@@ -9,7 +9,7 @@ namespace Atlas.MatchPrediction.Data.Models
     {
         public long Id { get; set; }
 
-        [Column(TypeName = "decimal(21,20)")]
+        [Column(TypeName = "decimal(20,20)")]
         public decimal Frequency { get; set; }
 
         [Required]
