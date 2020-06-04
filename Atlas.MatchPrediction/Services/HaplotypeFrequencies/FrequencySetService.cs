@@ -72,9 +72,10 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
             logger.SendEvent(new ErrorEventModel(errorName, ex));
 
+            var exceptionMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
             await notificationsClient.SendAlert(new Alert(
                 errorName,
-                $"Import of file, '{file.FileName}', failed with the following exception message: {ex.Message} " +
+                $"Import of file, '{file.FileName}', failed with the following exception message: {exceptionMessage} " +
                 "Full exception info has been logged to Application Insights.",
                 Priority.High,
                 NotificationConstants.OriginatorName));
