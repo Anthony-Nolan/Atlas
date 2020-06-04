@@ -19,47 +19,49 @@ namespace Atlas.DonorImport.Services
 
         public IEnumerable<DonorUpdate> LazilyParseDonorUpdates(Stream stream)
         {
-            using var streamReader = new StreamReader(stream);
-            using var reader = new JsonTextReader(streamReader);
-            var serializer = new JsonSerializer();
-
-            UpdateMode? updateMode = null;
-            
-            // Loops through top level JSON
-            while (reader.Read())
+            using (var streamReader = new StreamReader(stream))
+            using (var reader = new JsonTextReader(streamReader))
             {
-                if (reader.TokenType == JsonToken.PropertyName)
+                var serializer = new JsonSerializer();
+                UpdateMode? updateMode = null;
+                // Loops through top level JSON
+                while (reader.Read())
                 {
-                    var propertyName = reader.Value?.ToString();
-                    switch (propertyName)
+                    if (reader.TokenType == JsonToken.PropertyName)
                     {
-                        case UpdateModePropertyName:
-                            // Read into property
-                            reader.Read();
-                            updateMode = serializer.Deserialize<UpdateMode>(reader);
-                            break;
-                        case DonorsPropertyName:
-                            reader.Read(); // Read into property
-                            reader.Read(); // Read into array. Do not deserialize to collection, as the collection can be very large and requires streaming.
-                            // Loops through all donors in array
-                            do
-                            {
-                                if (!updateMode.HasValue)
+                        var propertyName = reader.Value?.ToString();
+                        switch (propertyName)
+                        {
+                            case UpdateModePropertyName:
+                                // Read into property
+                                reader.Read();
+                                updateMode = serializer.Deserialize<UpdateMode>(reader);
+                                break;
+                            case DonorsPropertyName:
+                                reader.Read(); // Read into property
+                                reader.Read(); // Read into array. Do not deserialize to collection, as the collection can be very large and requires streaming.
+                                // Loops through all donors in array
+                                do
                                 {
-                                    throw new Exception("Update Mode must be provided before donor list in donor import JSON file.");
-                                }
-                                var donorOperation = serializer.Deserialize<DonorUpdate>(reader);
-                                if (donorOperation == null)
-                                {
-                                    throw new Exception("Donor in array of input file could not be parsed.");
-                                }
-                                donorOperation.UpdateMode = updateMode.Value;
-                                yield return donorOperation;
-                            } while (reader.Read() && reader.TokenType != JsonToken.EndArray);
+                                    if (!updateMode.HasValue)
+                                    {
+                                        throw new Exception("Update Mode must be provided before donor list in donor import JSON file.");
+                                    }
 
-                            break;
-                        default:
-                            throw new Exception($"Unrecognised property: {propertyName} encountered in donor import file.");
+                                    var donorOperation = serializer.Deserialize<DonorUpdate>(reader);
+                                    if (donorOperation == null)
+                                    {
+                                        throw new Exception("Donor in array of input file could not be parsed.");
+                                    }
+
+                                    donorOperation.UpdateMode = updateMode.Value;
+                                    yield return donorOperation;
+                                } while (reader.Read() && reader.TokenType != JsonToken.EndArray);
+
+                                break;
+                            default:
+                                throw new Exception($"Unrecognised property: {propertyName} encountered in donor import file.");
+                        }
                     }
                 }
             }
