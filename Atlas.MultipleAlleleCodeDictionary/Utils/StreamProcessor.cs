@@ -4,6 +4,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.MultipleAlleleCodeDictionary.Settings.MacImport;
 using Microsoft.Extensions.Options;
 
@@ -16,17 +17,21 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
 
     public class MacCodeDownloader : IMacCodeDownloader
     {
+        private readonly ILogger logger;
         private readonly WebClient webClient = new WebClient();
         private readonly string url;
 
-        public MacCodeDownloader(IOptions<MacImportSettings> macImportSettings)
+        public MacCodeDownloader(IOptions<MacImportSettings> macImportSettings, ILogger logger)
         {
+            this.logger = logger;
             this.url = macImportSettings.Value.MacSourceUrl;
         }
 
         public async Task<Stream> DownloadAndUnzipStream()
         {
+            logger.SendTrace($"Downloading MACs from NMDP source", LogLevel.Info);
             var stream = await DownloadToMemoryStream();
+            logger.SendTrace($"Downloaded MACs. Unzipping.", LogLevel.Info);
             return UnzipStream(stream);
         }
 

@@ -3,10 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.AzureStorage.TableStorage.Extensions;
 using Atlas.MultipleAlleleCodeDictionary.Models;
-using Microsoft.Azure.Cosmos.Table;
-using MoreLinq;
 using Atlas.MultipleAlleleCodeDictionary.Settings.MacImport;
+using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Options;
+using MoreLinq;
 
 namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
 {
@@ -18,6 +18,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
 
     public class MacRepository : IMacRepository
     {
+        /// <summary>
+        /// The maximum BatchSize for inserting to an Azure Storage Table is 100. This cannot be > 100 for this reason.
+        /// </summary>
+        private const int BatchSize = 100;
+
         private readonly CloudTable table;
 
         public MacRepository(IOptions<MacImportSettings> macImportSettings)
@@ -32,15 +37,14 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
         public async Task<string> GetLastMacEntry()
         {
             var query = new TableQuery<MultipleAlleleCodeEntity>();
-            var result = await  table.ExecuteQueryAsync(query);
+            var result = await table.ExecuteQueryAsync(query);
             // MACs are alphabetical - any new MACs are appended to the end of the list alphabetically.
             return result.OrderByDescending(x => x.RowKey).FirstOrDefault()?.RowKey ?? "";
-
         }
 
         public async Task InsertMacs(IEnumerable<MultipleAlleleCodeEntity> macs)
         {
-            foreach (var macBatch in macs.Batch(100))
+            foreach (var macBatch in macs.Batch(BatchSize))
             {
                 var batchOp = new TableBatchOperation();
                 foreach (var mac in macBatch)

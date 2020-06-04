@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.MultipleAlleleCodeDictionary.Models;
 using Polly;
 
@@ -16,14 +17,17 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
     public class MacLineParser : IMacParser
     {
         private readonly IMacCodeDownloader macCodeDownloader;
+        private readonly ILogger logger;
 
-        public MacLineParser(IMacCodeDownloader macCodeDownloader)
+        public MacLineParser(IMacCodeDownloader macCodeDownloader, ILogger logger)
         {
             this.macCodeDownloader = macCodeDownloader;
+            this.logger = logger;
         }
 
         public async Task<List<MultipleAlleleCodeEntity>> GetMacsSinceLastEntry(string lastMacEntry)
         {
+            logger.SendTrace($"Fetching MACs since: {lastMacEntry}", LogLevel.Info);
             var macCodes = new List<MultipleAlleleCodeEntity>();
 
             await using (var stream = await GetStream())
