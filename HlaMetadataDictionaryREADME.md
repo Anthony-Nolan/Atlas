@@ -1,21 +1,22 @@
 # Summary
 
 The HLA Metadata Dictionary (HMD) Library is responsible for knowing how to interpret HLA descriptor strings in various forms; the "HLA Nomenclature".
-It gets its original data primarily from files stored on the WMDA GitHub account, plus some data about MACs from NMDP.
+It gets its original data primarily from files published by the WMDA, plus some data about MACs from NMDP.
 
-On command (expected to be roughly quarterly), the HMD library will read the latest version of the HLA Nomenclature from WMDA, and slow-cache all of that data in its own Azure CloudStorage Table.
+On command (expected to be roughly quarterly), the HMD library will read the latest version of the HLA Nomenclature published by the WMDA (read from a mirror hosted by Anthony Nolan Bioinformatics). Having read it from raw data files from the WMDA, the HMD converts it into a the format that is of most use for itself, and slow-caches all of that formatted data in its own Azure CloudStorage Table.
 When used, the HMD then caches the contents of those CloudTables in memory, although that initial caching is slightly slow. Cache-Warming methods are available to trigger that cache-to-memory action, if desired.
 
 The run-time consumer of the HMD doesn't need to know much of those details though; all it needs to know is that the HMD will return data from an in-memory cache, and that if you want to ensure the first usage of the HMD is already fast, then you can pre-warm the cache.
 
 ## Project-To-Project Interface
 
-The primary classes that other projects should be using are:
+The logic  classes that other projects should be using are the following.
 
 * `ServiceConfiguration.RegisterHlaMetadataDictionary()`
   * Used during App `Startup` to configure dependency injection for the classes you'll use.
   * This method demands various configurationSettings be passed in. See below for details.
 * `IHlaMetadataDictionaryFactory`
+  * **This is the ONLY interface that consuming classes should be directly declaring depending upon at general run-time, using DI.**
   * `.BuildDictionary(string activeHlaNomenclatureVersion)`
   * `.BuildCacheControl(string activeHlaNomenclatureVersion)`
   * This is the object that your classes will depend upon, and which will be injected by DI.
