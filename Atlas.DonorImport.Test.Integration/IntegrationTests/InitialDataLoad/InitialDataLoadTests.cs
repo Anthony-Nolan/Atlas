@@ -61,8 +61,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.InitialDataLoad
         private async Task ImportFile()
         {
             const string donorTestFile = "Atlas.DonorImport.Test.Integration.IntegrationTests.InitialDataLoad.1000-initial-donors.json";
-            await using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFile);
-            await donorFileImporter.ImportDonorFile(stream, donorTestFile);
+            await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFile))
+            {
+                await donorFileImporter.ImportDonorFile(stream, donorTestFile);
+            }
         }
     }
 }

@@ -14,10 +14,12 @@ namespace Atlas.Common.Utils.Extensions
                 return "NULL";
             }
 
-            using var md5 = MD5.Create();
-            var bytes = Encoding.UTF8.GetBytes(str);
-            var hash = md5.ComputeHash(bytes);
-            return Convert.ToBase64String(hash);
+            using (var md5 = MD5.Create())
+            {
+                var bytes = Encoding.UTF8.GetBytes(str);
+                var hash = md5.ComputeHash(bytes);
+                return Convert.ToBase64String(hash);
+            }
         }
 
         public static string StringJoin(this IEnumerable<string> strings, string separatorString)

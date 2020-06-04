@@ -31,18 +31,22 @@ namespace Atlas.HlaMetadataDictionary.WmdaDataAccess
             {
                 throw new Exception($"Null stream returned from WebClient when reading from: {fileAddress}");
             }
-            using var reader = new StreamReader(stream);
-            string line;
-            while ((line = reader.ReadLine()) != null)
+
+            using (var reader = new StreamReader(stream))
             {
-                if (IsCommentLine(line))
+                string line;
+                while ((line = reader.ReadLine()) != null)
                 {
-                    continue;
+                    if (IsCommentLine(line))
+                    {
+                        continue;
+                    }
+
+                    return line;
                 }
 
-                return line;
+                throw new Exception($"No non comment lines found when reading: {fileAddress}");
             }
-            throw new Exception($"No non comment lines found when reading: {fileAddress}");
         }
 
         private string GetFileAddress(string hlaNomenclatureVersion, string fileName)
