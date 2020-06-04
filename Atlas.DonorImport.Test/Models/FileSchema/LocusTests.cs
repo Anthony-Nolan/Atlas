@@ -45,9 +45,12 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         }
 
         [TestCase(DefaultMolecularHlaValue, null, DefaultMolecularHlaValue)]
+        [TestCase(DefaultMolecularHlaValue, "", DefaultMolecularHlaValue)]
         [TestCase(null, DefaultSerologyHlaValue, DefaultSerologyHlaValue)]
+        [TestCase("", DefaultSerologyHlaValue, DefaultSerologyHlaValue)]
         [TestCase(DefaultMolecularHlaValue, DefaultSerologyHlaValue, DefaultMolecularHlaValue)]
         [TestCase(null, null, null)]
+        [TestCase("", "", null)]
         public void Field1_WhenMolecularAndSerologyTypingPresent_ReturnsCorrectField(
             string molecularTyping,
             string serologyTyping,
@@ -63,9 +66,12 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         }
         
         [TestCase(DefaultMolecularHlaValue, null, DefaultMolecularHlaValue)]
+        [TestCase(DefaultMolecularHlaValue, "", DefaultMolecularHlaValue)]
         [TestCase(null, DefaultSerologyHlaValue, DefaultSerologyHlaValue)]
+        [TestCase("", DefaultSerologyHlaValue, DefaultSerologyHlaValue)]
         [TestCase(DefaultMolecularHlaValue, DefaultSerologyHlaValue, DefaultMolecularHlaValue)]
         [TestCase(null, null, null)]
+        [TestCase("", "", null)]
         public void Field2_WhenMolecularAndSerologyTypingPresent_ReturnsCorrectField(
             string molecularTyping,
             string serologyTyping,
