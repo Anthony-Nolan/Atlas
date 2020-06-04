@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Atlas.MultipleAlleleCodeDictionary.utils;
 using Atlas.Common.ApplicationInsights;
+using Atlas.MultipleAlleleCodeDictionary.utils;
 
 namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
 {
@@ -38,6 +38,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportService
             catch (Exception e)
             {
                 logger.SendEvent(new ErrorEventModel($"{tracePrefix}Failed to finish MAC Import", e));
+                throw;
             }
             logger.SendTrace($"{tracePrefix}Successfully finished MAC Import", LogLevel.Info);
         }
