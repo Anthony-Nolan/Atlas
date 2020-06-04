@@ -1,11 +1,11 @@
-﻿using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
-using CsvHelper;
-using FluentAssertions;
-using NUnit.Framework;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using CsvHelper;
+using FluentAssertions;
+using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 {
@@ -33,8 +33,10 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         {
             reader.Invoking(service =>
             {
-                using var stream = new MemoryStream(Encoding.UTF8.GetBytes("invalid-file"));
-                return service.GetFrequencies(stream).ToList();
+                using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("invalid-file")))
+                {
+                    return service.GetFrequencies(stream).ToList();
+                }
             }).Should().Throw<CsvHelperException>();
         }
 
@@ -44,9 +46,11 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             const int count = 5;
             var csvFile = CsvFileBuilder(count);
 
-            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvFile));
-            var frequencies = reader.GetFrequencies(stream);
-            frequencies.Count().Should().Be(count);
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvFile)))
+            {
+                var frequencies = reader.GetFrequencies(stream);
+                frequencies.Count().Should().Be(count);
+            }
         }
 
         private static string CsvFileBuilder(int frequencyCount)

@@ -4,8 +4,6 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Atlas.MultipleAlleleCodeDictionary.Models;
-using Atlas.MultipleAlleleCodeDictionary.Settings.MacImport;
-using Microsoft.Extensions.Options;
 using Polly;
 
 namespace Atlas.MultipleAlleleCodeDictionary.utils
@@ -28,20 +26,21 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
         {
             var macCodes = new List<MultipleAlleleCodeEntity>();
 
-            await using var stream = await GetStream();
-            using var reader = new StreamReader(stream);
-            ReadToEntry(reader, lastMacEntry);
-
-            while (!reader.EndOfStream)
+            await using (var stream = await GetStream())
+            using (var reader = new StreamReader(stream))
             {
-                var macLine = (await reader.ReadLineAsync())?.TrimEnd();
-
-                if (string.IsNullOrWhiteSpace(macLine))
+                ReadToEntry(reader, lastMacEntry);
+                while (!reader.EndOfStream)
                 {
-                    continue;
-                }
+                    var macLine = (await reader.ReadLineAsync())?.TrimEnd();
 
-                macCodes.Add(ParseMac(macLine));
+                    if (string.IsNullOrWhiteSpace(macLine))
+                    {
+                        continue;
+                    }
+
+                    macCodes.Add(ParseMac(macLine));
+                }
             }
 
             return macCodes;

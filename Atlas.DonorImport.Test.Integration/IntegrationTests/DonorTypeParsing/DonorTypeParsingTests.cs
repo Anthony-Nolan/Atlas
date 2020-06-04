@@ -96,8 +96,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorTypeParsing
         {
             
             var donorTestFile = $"Atlas.DonorImport.Test.Integration.IntegrationTests.DonorTypeParsing.{fileName}";
-            await using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFile);
-            await donorFileImporter.ImportDonorFile(stream, donorTestFile);
+            await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFile))
+            {
+                await donorFileImporter.ImportDonorFile(stream, donorTestFile);
+            }
         }
     }
 }

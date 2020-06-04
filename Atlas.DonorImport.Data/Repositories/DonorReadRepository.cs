@@ -24,12 +24,14 @@ namespace Atlas.DonorImport.Data.Repositories
         public IEnumerable<Donor> GetAllDonors()
         {
             var sql = $"SELECT {DonorInsertDataTableColumnNames.StringJoin(",")} FROM Donors";
-            using var connection = new SqlConnection(ConnectionString);
-            // With "buffered: true" this will load all donors into memory before returning.
-            // We may want to consider streaming this if we have issues running out of memory in this approach.  
-            // Pro: Smaller memory footprint.
-            // Con: Longer open connection, consumer can cause timeouts by not fully enumerating.
-            return connection.Query<Donor>(sql, buffered: true);
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                // With "buffered: true" this will load all donors into memory before returning.
+                // We may want to consider streaming this if we have issues running out of memory in this approach.  
+                // Pro: Smaller memory footprint.
+                // Con: Longer open connection, consumer can cause timeouts by not fully enumerating.
+                return connection.Query<Donor>(sql, buffered: true);
+            }
         }
 
         public async Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes)
@@ -38,9 +40,11 @@ namespace Atlas.DonorImport.Data.Repositories
 SELECT {DonorInsertDataTableColumnNames.StringJoin(",")} FROM Donors
 WHERE ExternalDonorCode IN @codes
 ";
-            await using var connection = new SqlConnection(ConnectionString);
-            var donors = await connection.QueryAsync<Donor>(sql, new {codes = externalDonorCodes});
-            return donors.ToDictionary(d => d.ExternalDonorCode, d => d);
+            await using (var connection = new SqlConnection(ConnectionString))
+            {
+                var donors = await connection.QueryAsync<Donor>(sql, new {codes = externalDonorCodes});
+                return donors.ToDictionary(d => d.ExternalDonorCode, d => d);
+            }
         }
     }
 }
