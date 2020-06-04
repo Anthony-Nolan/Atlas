@@ -18,5 +18,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models
 
         public string HLA { get; set; }
         public bool IsGeneric { get; set; }
+        
+        public string Mac => RowKey;
     }
 }
