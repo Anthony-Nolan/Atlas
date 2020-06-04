@@ -10,20 +10,24 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
     public interface IGenotypeImputer
     {
-        public List<Diplotype> GetPossibleDiplotypes(PhenotypeInfo<string> genotype);
+        public ImputedGenotype ImputeGenotype(PhenotypeInfo<string> genotype);
     }
 
     public class GenotypeImputer : IGenotypeImputer
     {
-        public List<Diplotype> GetPossibleDiplotypes(PhenotypeInfo<string> genotype)
+        public ImputedGenotype ImputeGenotype(PhenotypeInfo<string> genotype)
         {
-            var diplotypes = new List<Diplotype>();
-
             var heterozygousLoci = GetHeterozygousLoci(genotype);
             if (!heterozygousLoci.Any())
             {
-                return new List<Diplotype> {new Diplotype(genotype)};
+                return new ImputedGenotype
+                {
+                    Diplotypes = new List<Diplotype> {new Diplotype(genotype)},
+                    IsHomozygousAtEveryLocus = true
+                };
             }
+
+            var diplotypes = new List<Diplotype>();
 
             // This method uses binary representations of i to indicate whether the alleles of a particular locus should be swapped.
             // Each locus is assigned a bit, and the range of i guarantees that all permutations are considered.
@@ -51,7 +55,11 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
                 diplotypes.Add(diplotype);
             }
 
-            return diplotypes;
+            return new ImputedGenotype
+            {
+                Diplotypes = diplotypes,
+                IsHomozygousAtEveryLocus = false
+            };
         }
 
         private static LocusInfo<string> SwapLocus(LocusInfo<string> genotypeLocusInfo)

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Client.Models.GenotypeLikelihood;
@@ -6,7 +7,7 @@ using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
-using FluentAssertions;
+using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -18,7 +19,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         private IGenotypeImputer genotypeImputer;
         private IHaplotypeFrequencySetRepository setRepository;
         private IHaplotypeFrequenciesRepository frequencyRepository;
-        private ILikelihoodCalculator likelihoodCalculator;
+        private IGenotypeLikelihoodCalculator genotypeLikelihoodCalculator;
 
         [SetUp]
         public void SetUp()
@@ -26,55 +27,47 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             genotypeImputer = Substitute.For<IGenotypeImputer>();
             frequencyRepository = Substitute.For<IHaplotypeFrequenciesRepository>();
             setRepository = Substitute.For<IHaplotypeFrequencySetRepository>();
-            likelihoodCalculator = Substitute.For<ILikelihoodCalculator>();
+            genotypeLikelihoodCalculator = Substitute.For<IGenotypeLikelihoodCalculator>();
 
             setRepository.GetActiveSet(Arg.Any<string>(), Arg.Any<string>())
-                .Returns(new HaplotypeFrequencySet{Id = 1});
+                .Returns(new HaplotypeFrequencySet {Id = 1});
 
-            genotypeImputer.GetPossibleDiplotypes(Arg.Any<PhenotypeInfo<string>>())
-                .Returns(new List<Diplotype>
-                {new Diplotype{Item1 = new Haplotype{Hla = new LociInfo<string>()}, Item2 = new Haplotype {Hla = new LociInfo<string>()}}});
+            genotypeImputer.ImputeGenotype(Arg.Any<PhenotypeInfo<string>>())
+                .Returns(new ImputedGenotype {Diplotypes = new List<Diplotype> {DiplotypeBuilder.New.Build()}});
 
-            frequencyRepository.GetDiplotypeFrequencies(Arg.Any<List<LociInfo<string>>>(), Arg.Any<int>())
-                .Returns(new Dictionary<LociInfo<string>, decimal>{{new LociInfo<string>(), 0}});
+            frequencyRepository.GetHaplotypeFrequencies(Arg.Any<IEnumerable<LociInfo<string>>>(), Arg.Any<int>())
+                .Returns(new Dictionary<LociInfo<string>, decimal> {{new LociInfo<string>(), 0}});
 
-            likelihoodCalculator.CalculateLikelihood(Arg.Any<List<Diplotype>>())
+            genotypeLikelihoodCalculator.CalculateLikelihood(Arg.Any<ImputedGenotype>())
                 .Returns(0);
 
             genotypeLikelihoodService = new GenotypeLikelihoodService(
                 setRepository,
                 frequencyRepository,
                 genotypeImputer,
-                likelihoodCalculator
+                genotypeLikelihoodCalculator
             );
         }
 
         [Test]
-        public async Task CalculateLikelihood_WithListOfHaplotypes_FrequencyRepositoryIsCalledOnce()
+        public async Task CalculateLikelihood_FrequencyRepositoryIsCalledOnce([Values(16, 8, 4, 2, 1)] int numberOfDiplotypes)
         {
+            genotypeImputer.ImputeGenotype(Arg.Any<PhenotypeInfo<string>>())
+                .Returns(new ImputedGenotype {Diplotypes = DiplotypeBuilder.New.Build(numberOfDiplotypes).ToList()});
+
             await genotypeLikelihoodService.CalculateLikelihood(new GenotypeLikelihoodInput());
 
             await frequencyRepository.Received(1)
-                .GetDiplotypeFrequencies(Arg.Any<IEnumerable<LociInfo<string>>>(), Arg.Any<int>());
+                .GetHaplotypeFrequencies(Arg.Any<IEnumerable<LociInfo<string>>>(), Arg.Any<int>());
         }
 
         [Test]
-        public async Task CalculateLikelihood_WithListOfDiplotypes_LikelihoodCalculatorIsCalledOnce()
+        public async Task CalculateLikelihood_LikelihoodCalculatorIsCalledOnce()
         {
             await genotypeLikelihoodService.CalculateLikelihood(new GenotypeLikelihoodInput());
 
-            likelihoodCalculator.Received(1)
-                .CalculateLikelihood(Arg.Any<List<Diplotype>>());
+            genotypeLikelihoodCalculator.Received(1)
+                .CalculateLikelihood(Arg.Any<ImputedGenotype>());
         }
-
-        [Test]
-        public async Task CalculateLikelihood_ReturnsFrequencyOfZero()
-        {
-            var actualFrequency = await genotypeLikelihoodService.CalculateLikelihood(new GenotypeLikelihoodInput());
-            const decimal expectedFrequency = 0;
-
-            actualFrequency.Likelihood.Should().Be(expectedFrequency);
-        }
-
     }
 }
