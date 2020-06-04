@@ -20,6 +20,7 @@ resource "azurerm_function_app" "atlas_function" {
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "1"
     "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
     "MacImport:ConnectionString"                = azurerm_storage_account.azure_storage.primary_connection_string
-    "MacImport:TableName"                       = module.multiple_allele_code_lookup.general.storage_table_name
+    "MacImport:TableName"                       = module.multiple_allele_code_lookup.general.storage_table_name,
+    "MacImport:MacSourceUrl"                    = var.MAC_SOURCE
   }
 }
