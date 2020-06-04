@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.Data.Models;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using FluentAssertions;
@@ -16,19 +17,19 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorTypeParsing
     public class DonorTypeParsingTests
     {
         private IDonorInspectionRepository donorRepository;
-        
+
         private IDonorFileImporter donorFileImporter;
-        
+
         // These are set in the corresponding resource files - ids must be updated in both places
         private const string AdultDonorId = "1";
         private const string CordDonorId = "2";
-        
+
         private const string AdultDonorInBankedFileId = "3";
         private const string BankedDonorId = "4";
-        
+
         private const string AdultDonorInInvalidFileId = "5";
         private const string InvalidDonorId = "6";
-        
+
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
         {
@@ -66,27 +67,27 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorTypeParsing
         [Test]
         public async Task ImportDonors_WhenBankedDonorTypeInFile_RejectsFile()
         {
-           Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => ImportDonorFile("bankedDonor.json"));
-           
-           var adultDonor = await donorRepository.GetDonor(AdultDonorInBankedFileId);
-           adultDonor.Should().BeNull();
-           
-           var bankedDonor = await donorRepository.GetDonor(BankedDonorId);
-           bankedDonor.Should().BeNull();
+            Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => ImportDonorFile("bankedDonor.json"));
+
+            var adultDonor = await donorRepository.GetDonor(AdultDonorInBankedFileId);
+            adultDonor.Should().BeNull();
+
+            var bankedDonor = await donorRepository.GetDonor(BankedDonorId);
+            bankedDonor.Should().BeNull();
         }
 
         [Test]
         public async Task ImportDonors_WhenUnrecognisedDonorTypeInFile_RejectsFile()
         {
-           Assert.ThrowsAsync<JsonSerializationException>(() => ImportDonorFile("invalidDonorType.json"));
-           
-           var adultDonor = await donorRepository.GetDonor(AdultDonorInInvalidFileId);
-           adultDonor.Should().BeNull();
-           
-           var invalidDonor = await donorRepository.GetDonor(InvalidDonorId);
-           invalidDonor.Should().BeNull();
+            Assert.ThrowsAsync<JsonSerializationException>(() => ImportDonorFile("invalidDonorType.json"));
+
+            var adultDonor = await donorRepository.GetDonor(AdultDonorInInvalidFileId);
+            adultDonor.Should().BeNull();
+
+            var invalidDonor = await donorRepository.GetDonor(InvalidDonorId);
+            invalidDonor.Should().BeNull();
         }
-        
+
         private async Task ImportValidDonorFile()
         {
             await ImportDonorFile("validDonorTypes.json");
@@ -94,11 +95,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorTypeParsing
 
         private async Task ImportDonorFile(string fileName)
         {
-            
             var donorTestFile = $"Atlas.DonorImport.Test.Integration.IntegrationTests.DonorTypeParsing.{fileName}";
             await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFile))
             {
-                await donorFileImporter.ImportDonorFile(stream, donorTestFile);
+                await donorFileImporter.ImportDonorFile(new DonorImportFile {Contents = stream, FileName = donorTestFile});
             }
         }
     }
