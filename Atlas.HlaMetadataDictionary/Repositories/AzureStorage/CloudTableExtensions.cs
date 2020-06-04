@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
-using Atlas.HlaMetadataDictionary.Exceptions;
 using MoreLinq;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage

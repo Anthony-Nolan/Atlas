@@ -1,8 +1,8 @@
-﻿using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.HlaMetadataDictionary.Exceptions;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 

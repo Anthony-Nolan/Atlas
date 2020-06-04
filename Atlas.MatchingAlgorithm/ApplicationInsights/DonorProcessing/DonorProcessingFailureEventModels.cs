@@ -1,6 +1,6 @@
 ﻿using System;
 using Atlas.Common.ApplicationInsights;
-using Atlas.HlaMetadataDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Helpers;
 using Atlas.MatchingAlgorithm.Models;

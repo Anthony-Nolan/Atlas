@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.ApplicationInsights;
-using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;

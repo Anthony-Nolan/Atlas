@@ -2,7 +2,7 @@
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
-namespace Atlas.HlaMetadataDictionary.Exceptions
+namespace Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions
 {
     public class HlaMetadataDictionaryException : Exception
     {

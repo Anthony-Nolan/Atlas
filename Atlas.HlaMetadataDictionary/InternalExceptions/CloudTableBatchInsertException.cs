@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.WindowsAzure.Storage.Table;
 
-namespace Atlas.HlaMetadataDictionary.Exceptions
+namespace Atlas.HlaMetadataDictionary.InternalExceptions
 {
     internal class CloudTableBatchInsertException : Exception
     {

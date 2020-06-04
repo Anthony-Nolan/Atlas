@@ -1,7 +1,7 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.InternalExceptions;
 using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Models.HlaTypings

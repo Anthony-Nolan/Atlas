@@ -4,7 +4,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Test.SharedTestHelpers;
-using Atlas.HlaMetadataDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;

@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Caching;
-using Atlas.HlaMetadataDictionary.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using LazyCache;

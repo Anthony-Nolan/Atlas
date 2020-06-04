@@ -2,7 +2,7 @@
 using System.Net;
 using Atlas.Common.Utils.Http;
 
-namespace Atlas.HlaMetadataDictionary.Exceptions
+namespace Atlas.HlaMetadataDictionary.InternalExceptions
 {
     internal class HlaMetadataDictionaryHttpException : AtlasHttpException
     {

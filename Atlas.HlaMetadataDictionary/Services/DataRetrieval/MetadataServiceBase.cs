@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {

@@ -1,4 +1,4 @@
-﻿using Atlas.HlaMetadataDictionary.Exceptions;
+﻿using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 using EnumStringValues;

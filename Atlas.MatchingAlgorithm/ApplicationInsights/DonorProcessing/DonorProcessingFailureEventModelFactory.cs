@@ -1,5 +1,5 @@
 ﻿using System;
-using Atlas.HlaMetadataDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchingAlgorithm.Exceptions;
 using FluentValidation;
 

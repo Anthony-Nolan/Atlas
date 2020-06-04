@@ -2,7 +2,7 @@
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
-using Atlas.HlaMetadataDictionary.Exceptions;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.MultipleAlleleCodeDictionary.HlaService;

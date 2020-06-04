@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Atlas.HlaMetadataDictionary.Exceptions
+namespace Atlas.HlaMetadataDictionary.InternalExceptions
 {
     internal class MemoryCacheException : Exception
     {

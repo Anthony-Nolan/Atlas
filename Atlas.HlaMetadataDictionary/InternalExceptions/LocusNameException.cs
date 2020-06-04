@@ -1,4 +1,6 @@
-﻿namespace Atlas.HlaMetadataDictionary.Exceptions
+﻿using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
+
+namespace Atlas.HlaMetadataDictionary.InternalExceptions
 {
     internal class LocusNameException : HlaMetadataDictionaryException
     {

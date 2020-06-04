@@ -1,6 +1,7 @@
 ﻿using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 
-namespace Atlas.HlaMetadataDictionary.Exceptions
+namespace Atlas.HlaMetadataDictionary.InternalExceptions
 {
     internal class InvalidHlaException : HlaMetadataDictionaryException
     {
