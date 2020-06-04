@@ -4,13 +4,13 @@ using System.Text;
 
 namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.HaplotypeFrequencies
 {
-    internal static class FrequencyFileBuilder
+    internal static class TestFrequencyFileBuilder
     {
-        public static FrequencyFile Build(string registryCode, string ethnicityCode, int haplotypeCount = 1, decimal frequencyValue = 0.00001m)
+        public static TestFrequencyFile Build(string registryCode, string ethnicityCode, int haplotypeCount = 1, decimal frequencyValue = 0.00001m)
         {
             var uniqueFileName = $"file-{DateTime.Now:HHmmssffff}.csv";
 
-            return new FrequencyFile(uniqueFileName)
+            return new TestFrequencyFile(uniqueFileName)
             {
                 FullPath = BuildFilePath(uniqueFileName, registryCode, ethnicityCode),
                 Contents = BuildCsvFile(haplotypeCount, frequencyValue)

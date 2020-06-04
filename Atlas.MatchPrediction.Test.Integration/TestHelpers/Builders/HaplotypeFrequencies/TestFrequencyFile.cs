@@ -1,12 +1,12 @@
 ﻿namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.HaplotypeFrequencies
 {
-    internal class FrequencyFile
+    internal class TestFrequencyFile
     {
         public string FileName { get; set; }
         public string FullPath { get; set; }
         public string Contents { get; set; }
 
-        public FrequencyFile(string fileName)
+        public TestFrequencyFile(string fileName)
         {
             FileName = fileName;
             FullPath = fileName;
