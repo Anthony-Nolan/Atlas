@@ -15,7 +15,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         }
 
         /// <param name="hlaNomenclatureVersion">
-        /// The file backed version of the matching dictionary used for integration tests is locked
+        /// The file backed version of the Metadata Dictionary used for integration tests is locked
         /// to a single version of the HLA Nomenclature ("3330"), so this parameter is ignored.
         /// </param>
         public IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion)

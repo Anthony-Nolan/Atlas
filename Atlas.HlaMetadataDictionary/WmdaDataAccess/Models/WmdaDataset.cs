@@ -4,7 +4,7 @@ namespace Atlas.HlaMetadataDictionary.WmdaDataAccess.Models
 {
     /// <summary>
     /// Container for all parsed information from published WMDA allele data
-    /// We do not want the collections to be of type IEnumerable as they are accessed thousands of times during the matching dictionary refresh
+    /// We do not want the collections to be of type IEnumerable as they are accessed thousands of times during the Metadata Dictionary refresh
     /// Without enumerating them first we risk a huge performance hit due to multiple enumerations of large collections
     /// </summary>
     internal class WmdaDataset
