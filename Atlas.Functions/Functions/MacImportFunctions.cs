@@ -1,6 +1,6 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
-using Atlas.MultipleAlleleCodeDictionary.MacImportService;
+using Atlas.MultipleAlleleCodeDictionary.MacImportServices;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 
