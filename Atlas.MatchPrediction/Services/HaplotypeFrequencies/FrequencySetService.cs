@@ -69,7 +69,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
             await notificationsClient.SendAlert(new Alert(
                 errorName,
-                $"Import of file, '{file.FullPath}', failed with the following exception message: \"{ex.InnermostMessage()}\". "
+                $"Import of file, '{file.FullPath}', failed with the following exception message: \"{ex.GetBaseException().Message}\". "
                     + "Full exception info has been logged to Application Insights.",
                 Priority.High,
                 NotificationConstants.OriginatorName));
