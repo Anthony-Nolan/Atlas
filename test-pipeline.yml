@@ -161,3 +161,26 @@ jobs:
         projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Test.Integration/Atlas.MatchPrediction.Test.Integration.csproj'
         arguments: '--no-restore -v d'
 
+- job: Multiple_Allele_Code_Dictionary_Integration_Tests
+  pool:
+    name: Hosted Ubuntu 1604
+  steps:
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'restore'
+        feedsToUse: 'select'
+    - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
+      displayName: 'Set Azure Storage ConnectionString'
+      inputs:
+        filename: '$(System.DefaultWorkingDirectory)/Atlas.MultipleAlleleCodeDictionary.Test.Integration/appsettings.json'
+        numberOfLevels: 2
+        keyname1: MacImport
+        keyname2: ConnectionString
+        valueToSet: '$(AZURE_STORAGE_CONNECTION_STRING)'
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet test'
+      inputs:
+        command: test
+        projects: '$(System.DefaultWorkingDirectory)/Atlas.MultipleAlleleCodeDictionary.Test.Integration/Atlas.MultipleAlleleCodeDictionary.Test.Integration.csproj'
+        arguments: '--no-restore -v d'
+
