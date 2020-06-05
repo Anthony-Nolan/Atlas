@@ -114,9 +114,6 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
       - Create a `MessagingServiceBus.ConnectionString` setting using the `read-write` SAP.
       - Create a `NotificationsServiceBus.ConnectionString` setting using the `write-only` SAP.
         - *Note these keys aren't part of the `Client` block of the settings object!*
-    - the DonorService to read from file.
-      - Create a `Client.DonorService.ReadDonorsFromFile` setting and set value to `true`.
-        - *Note these keys **are** part of the `Client` block of the settings object, and will have to share it with `HlaService` settings!*
 - Set up sensible initial data.
   - In SSMS, open and run the SQL script `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\InitialRefreshData.sql"`.
     - This should take < 1 second to run.
@@ -193,7 +190,7 @@ Some of the files in the hla metadata dictionary tests are longer than the 260 c
 
 Settings for each non-functions project are defined in the `appsettings.json` file.
 
-In some cases these settings will need overriding locally - either for secure values (e.g. api keys), or if you want to use a different service (e.g. donor service, azure storage account, service bus)
+In some cases these settings will need overriding locally - either for secure values (e.g. api keys), or if you want to use a different service (e.g. azure storage account, service bus)
 
 This is achieved with User Secrets: <https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-2.2&tabs=windows>
 
@@ -230,7 +227,10 @@ The service uses two storage methods for different data, SQL and Azure Cloud Tab
 
 ### Dependencies
 
-The service has external dependencies on two services, the `DonorService` and `HlaService`. By default the configuration points to the deployed development instances of these service - locally the api keys for these services will need adding as user secrets.
+The service has external dependencies on the `HlaService`. 
+By default the configuration points to the deployed development instances of this service - locally the api keys for this service will need adding as a user secret.
+
+// TODO: ATLAS-54: Remove dependency on HLA service 
 
 ## Pre-Processing
 
@@ -251,13 +251,12 @@ The pre-processing job fetches up to date information from WMDA, and populates t
 
 ### (2) Donor Import
 
-The donors against which we run searches are imported from Anthony Nolan's `Solar` Oracle database, via the `DonorService`.
+The donors against which we run searches are imported from the Atlas master data store, maintained in the "DonorImport" component.
 We only store as much information as is needed for a search - ID, Donor Type, and HLA information.
 
 - Start the job by triggering the `RunDonorImport` function
 - The job is expected to take several hours to run
 - The job will only be re-run in full when WMDA publish a new version of the HLA Nomenclature (every 3 months).
-  - A smaller donor import of only new/changed donors should be configured to run overnight (NOVA-2131. At time of writing, 07/08/2018, this is yet to be implemented)
 
 ### (3) Hla Processing
 
@@ -266,7 +265,6 @@ For each donor, we expand all hla into corresponding p-groups, and store a relat
 - Start the job by triggering the `ProcessDonorHla` function
 - The job is expected to take multiple hours to run
 - The job will only be re-run in full when WMDA publish a new version of the HLA Nomenclature (every 3 months).
-  - New/changed donors should have these relations (re-)calculated as they change (NOVA-2131. At time of writing, 07/08/2018, this is yet to be implemented)
 
 ## Support
 
@@ -448,7 +446,6 @@ The following keys must be set as user secrets in the api project:
 
 - apiKey:{example-key}
 - hlaservice.apikey
-- donorservice.apikey
 
 *******
 
