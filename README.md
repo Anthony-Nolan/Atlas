@@ -227,10 +227,10 @@ The service uses two storage methods for different data, SQL and Azure Cloud Tab
 
 ### Dependencies
 
-The service has external dependencies on the `HlaService`. 
+The service has external dependencies on the `HlaService`.
 By default the configuration points to the deployed development instances of this service - locally the api keys for this service will need adding as a user secret.
 
-// TODO: ATLAS-54: Remove dependency on HLA service 
+// TODO: ATLAS-54: Remove dependency on HLA service
 
 ## Pre-Processing
 
@@ -473,7 +473,7 @@ The following are the steps that are required to be taken manually when deployin
     - Details available from the azure AD app registration
 - New Devops build pipelines should be created, using the checked in `<pipeline>.yml` files.
 - An Azure service connection should be set up to the target Azure subscription, scoped to the new resource group for this Atlas installation
-    - Due to the restriction by resource group, terraform must be run before this can be set up - either via a partial release or manually
+  - Due to the restriction by resource group, terraform must be run before this can be set up - either via a partial release or manually
 - A Devops release should be manually created
   - The following steps should be defined:
     - Apply terraform
@@ -491,8 +491,8 @@ The following are the steps that are required to be taken manually when deployin
 ### Terraform Configuration
 
 - Before terraform can be run for the first time, a new terraform workspace should be manually created. During the release step, this new workspace should be selected.
-    - In development, we needed to create this workspace as a one-off command in our Devops release, before removing it for future releases. 
-    - TODO: ATLAS-216: Ensure this can be run as a one-off locally, without needing to change and revert the Devops release pipeline 
+  - In development, we needed to create this workspace as a one-off command in our Devops release, before removing it for future releases.
+  - TODO: ATLAS-216: Ensure this can be run as a one-off locally, without needing to change and revert the Devops release pipeline
 - You will also need to register any relevant resource providers. See notes in `.\terraform\main.tf`.
 - All Atlas infrastructure is controlled via terraform scripts. If any specific naming or configuration changes are required for your installation, such changes should be made to the terraform scripts in a fork of the repository - changing them manually in Azure will lead to the changes being reverted on the next deployment to that environment.
 
@@ -505,26 +505,32 @@ Once terraform has created ATLAS resources for the first time, certain actions m
 - Azure SQL Permissions
   - Service Accounts
     - Each service (e.g. matching) within ATLAS should have a service account created on the appropriate databases. The username and password for such accounts should then be set as a variable in the release pipeline.
+    - Passwords should be created by a Password Generator, such as <https://passwordsgenerator.net/>.Sensible generation settings might be:
+      - 16 characters
+      - Upper, Lower, Numbers, Symbols
+      - Exclude ambiguous letters.
+      - Exclude ambiguous Symboles.
     - By default, `db_datareader` and `db_datawriter` will be necessary for a given component to access its corresponding database(s)  
     - Note that the user for the matching component to access the *transient matching databases* (a and b) will need to be granted `db_owner` permission, as a `truncate table` command is used in the full data refresh, which requires elevated permissions
-    
-    
-    CREATE USER [USERNAME] WITH PASSWORD = '[PASSWORD]'
-    ALTER ROLE db_datareader ADD MEMBER [USERNAME]
-    ALTER ROLE db_datawriter ADD MEMBER [USERNAME]
-    -- uncomment this line for matching databases, where owner role is required
-    -- ALTER ROLE db_owner ADD MEMBER [USERNAME]
-    
-   Expected Access Requirements: 
-   
-   |Database             |User            |Permissions                 |
-   |---------------------|----------------|----------------------------|
-   |Matching - Transient |Matching        |db-owner/db-writer/db-reader| 
-   |Matching - Persistent|Matching        |db-owner/db-writer/db-reader|
-   |Match Prediction     |Match Prediction|db-writer/db-reader         | 
-   |Donor Import         |Donor Import    |db-writer/db-reader         | 
-   |Donor Import         |Matching        |db-reader                   | 
-    
+
+      ```sql
+      CREATE USER [USERNAME] WITH PASSWORD = '[PASSWORD]'
+      ALTER ROLE db_datareader ADD MEMBER [USERNAME]
+      -- uncomment more lines as indicated in table below
+      -- ALTER ROLE db_datawriter ADD MEMBER [USERNAME]
+      -- ALTER ROLE db_owner ADD MEMBER [USERNAME]
+      ```
+
+    Expected Access Requirements:
+
+      |Database             |User            |Permissions                 |
+      |---------------------|----------------|----------------------------|
+      |Matching - Transient |Matching        |db-owner/db-writer/db-reader|
+      |Matching - Persistent|Matching        |db-owner/db-writer/db-reader|
+      |Match Prediction     |Match Prediction|db-writer/db-reader         |
+      |Donor Import         |Donor Import    |db-writer/db-reader         |
+      |Donor Import         |Matching        |db-reader                   |
+
   - Active Directory (Optional)
         - If you would like to be able to access the database server using Active Directory authentication, this should be manually configured
   - IP Whitelisting (Optional)
