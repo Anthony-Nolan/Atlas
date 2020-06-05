@@ -1,0 +1,52 @@
+﻿using Atlas.Common.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.MatchPrediction.Services.GenotypeLikelihood;
+using FluentAssertions;
+using NUnit.Framework;
+
+namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
+{
+    [TestFixture]
+    public class GenotypeAlleleTruncaterTests
+    {
+        private IGenotypeAlleleTruncater alleleTruncater;
+
+        [SetUp]
+        public void SetUp()
+        {
+            alleleTruncater = new GenotypeAlleleTruncater();
+        }
+
+        [Test]
+        public void TruncateGenotypeAlleles_WhenGenotypeOnlyHasTwoFieldAlleles_ReturnsExpectedGenotype()
+        {
+            var genotype = PhenotypeInfoBuilder.New.Build();
+
+            var actualGenotype = alleleTruncater.TruncateGenotypeAlleles(genotype);
+
+            actualGenotype.Should().BeEquivalentTo(genotype);
+        }
+
+        [TestCase("ExtraField", Locus.A)]
+        [TestCase("ExtraField:ExtraField", Locus.A)]
+        [TestCase("ExtraField", Locus.B)]
+        [TestCase("ExtraField:ExtraField", Locus.B)]
+        [TestCase("ExtraField", Locus.C)]
+        [TestCase("ExtraField:ExtraField", Locus.C)]
+        [TestCase("ExtraField", Locus.Dqb1)]
+        [TestCase("ExtraField:ExtraField", Locus.Dqb1)]
+        [TestCase("ExtraField", Locus.Drb1)]
+        [TestCase("ExtraField:ExtraField", Locus.Drb1)]
+        public void TruncateGenotypeAlleles_WhenGenotypeHasThreeOrFourFieldAllele_ReturnsExpectedGenotype(string fieldsToAdd, Locus locus)
+        {
+            var genotype = PhenotypeInfoBuilder.New.Build();
+
+            genotype.SetPosition(locus, LocusPosition.One, $"{genotype.GetPosition(locus, LocusPosition.One)}:{fieldsToAdd}");
+            genotype.SetPosition(locus, LocusPosition.Two, $"{genotype.GetPosition(locus, LocusPosition.Two)}:{fieldsToAdd}");
+
+            var actualGenotype = alleleTruncater.TruncateGenotypeAlleles(genotype);
+
+            actualGenotype.Should().BeEquivalentTo(PhenotypeInfoBuilder.New.Build());
+        }
+    }
+}

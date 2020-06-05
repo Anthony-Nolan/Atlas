@@ -54,114 +54,114 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = "B-1", C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-1"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = "B1:B1", C = "C1:C1", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb11:Drb11"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = "B-2", C = "C-2", Dqb1 = "Dqb1-2", Drb1 = "Drb1-2"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = "B2:B2", C = "C2:C2", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb12:Drb12"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = "B-1", C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-2"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = "B1:B1", C = "C1:C1", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb12:Drb12"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = "B-2", C = "C-2", Dqb1 = "Dqb1-2", Drb1 = "Drb1-1"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = "B2:B2", C = "C2:C2", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb11:Drb11"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = "B-1", C = "C-1", Dqb1 = "Dqb1-2", Drb1 = "Drb1-1"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = "B1:B1", C = "C1:C1", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb11:Drb11"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = "B-2", C = "C-2", Dqb1 = "Dqb1-1", Drb1 = "Drb1-2"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = "B2:B2", C = "C2:C2", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb12:Drb12"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = "B-1", C = "C-1", Dqb1 = "Dqb1-2", Drb1 = "Drb1-2"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = "B1:B1", C = "C1:C1", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb12:Drb12"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = "B-2", C = "C-2", Dqb1 = "Dqb1-1", Drb1 = "Drb1-1"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = "B2:B2", C = "C2:C2", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb11:Drb11"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = "B-1", C = "C-2", Dqb1 = "Dqb1-1", Drb1 = "Drb1-1"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = "B1:B1", C = "C2:C2", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb11:Drb11"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = "B-2", C = "C-1", Dqb1 = "Dqb1-2", Drb1 = "Drb1-2"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = "B2:B2", C = "C1:C1", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb12:Drb12"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = "B-1", C = "C-2", Dqb1 = "Dqb1-1", Drb1 = "Drb1-2"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = "B1:B1", C = "C2:C2", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb12:Drb12"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = "B-2", C = "C-1", Dqb1 = "Dqb1-2", Drb1 = "Drb1-1"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = "B2:B2", C = "C1:C1", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb11:Drb11"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = "B-1", C = "C-2", Dqb1 = "Dqb1-2", Drb1 = "Drb1-1"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = "B1:B1", C = "C2:C2", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb11:Drb11"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = "B-2", C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-2"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = "B2:B2", C = "C1:C1", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb12:Drb12"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = "B-1", C = "C-2", Dqb1 = "Dqb1-2", Drb1 = "Drb1-2"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = "B1:B1", C = "C2:C2", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb12:Drb12"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = "B-2", C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-1"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = "B2:B2", C = "C1:C1", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb11:Drb11"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = "B-2", C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-1"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = "B2:B2", C = "C1:C1", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb11:Drb11"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = "B-1", C = "C-2", Dqb1 = "Dqb1-2", Drb1 = "Drb1-2"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = "B1:B1", C = "C2:C2", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb12:Drb12"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = "B-2", C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-2"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = "B2:B2", C = "C1:C1", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb12:Drb12"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = "B-1", C = "C-2", Dqb1 = "Dqb1-2", Drb1 = "Drb1-1"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = "B1:B1", C = "C2:C2", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb11:Drb11"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = "B-2", C = "C-1", Dqb1 = "Dqb1-2", Drb1 = "Drb1-1"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = "B2:B2", C = "C1:C1", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb11:Drb11"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = "B-1", C = "C-2", Dqb1 = "Dqb1-1", Drb1 = "Drb1-2"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = "B1:B1", C = "C2:C2", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb12:Drb12"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = "B-2", C = "C-1", Dqb1 = "Dqb1-2", Drb1 = "Drb1-2"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = "B2:B2", C = "C1:C1", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb12:Drb12"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = "B-1", C = "C-2", Dqb1 = "Dqb1-1", Drb1 = "Drb1-1"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = "B1:B1", C = "C2:C2", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb11:Drb11"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = "B-2", C = "C-2", Dqb1 = "Dqb1-1", Drb1 = "Drb1-1"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = "B2:B2", C = "C2:C2", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb11:Drb11"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = "B-1", C = "C-1", Dqb1 = "Dqb1-2", Drb1 = "Drb1-2"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = "B1:B1", C = "C1:C1", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb12:Drb12"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = "B-2", C = "C-2", Dqb1 = "Dqb1-1", Drb1 = "Drb1-2"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = "B2:B2", C = "C2:C2", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb12:Drb12"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = "B-1", C = "C-1", Dqb1 = "Dqb1-2", Drb1 = "Drb1-1"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = "B1:B1", C = "C1:C1", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb11:Drb11"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = "B-2", C = "C-2", Dqb1 = "Dqb1-2", Drb1 = "Drb1-1"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = "B2:B2", C = "C2:C2", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb11:Drb11"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = "B-1", C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-2"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = "B1:B1", C = "C1:C1", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb12:Drb12"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = "B-2", C = "C-2", Dqb1 = "Dqb1-2", Drb1 = "Drb1-2"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = "B2:B2", C = "C2:C2", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb12:Drb12"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = "B-1", C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-1"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = "B1:B1", C = "C1:C1", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb11:Drb11"}}
                 }
             }.Select(d => d.Map(h => h.Hla));
 
@@ -184,58 +184,58 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = locusValue, C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-1"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = locusValue, C = "C1:C1", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb11:Drb11"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = locusValue, C = "C-2", Dqb1 = "Dqb1-2", Drb1 = "Drb1-2"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = locusValue, C = "C2:C2", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb12:Drb12"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = locusValue, C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-2"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = locusValue, C = "C1:C1", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb12:Drb12"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = locusValue, C = "C-2", Dqb1 = "Dqb1-2", Drb1 = "Drb1-1"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = locusValue, C = "C2:C2", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb11:Drb11"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = locusValue, C = "C-1", Dqb1 = "Dqb1-2", Drb1 = "Drb1-1"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = locusValue, C = "C1:C1", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb11:Drb11"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = locusValue, C = "C-2", Dqb1 = "Dqb1-1", Drb1 = "Drb1-2"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = locusValue, C = "C2:C2", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb12:Drb12"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = locusValue, C = "C-1", Dqb1 = "Dqb1-2", Drb1 = "Drb1-2"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = locusValue, C = "C1:C1", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb12:Drb12"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = locusValue, C = "C-2", Dqb1 = "Dqb1-1", Drb1 = "Drb1-1"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = locusValue, C = "C2:C2", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb11:Drb11"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = locusValue, C = "C-2", Dqb1 = "Dqb1-1", Drb1 = "Drb1-1"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = locusValue, C = "C2:C2", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb11:Drb11"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = locusValue, C = "C-1", Dqb1 = "Dqb1-2", Drb1 = "Drb1-2"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = locusValue, C = "C1:C1", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb12:Drb12"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = locusValue, C = "C-2", Dqb1 = "Dqb1-1", Drb1 = "Drb1-2"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = locusValue, C = "C2:C2", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb12:Drb12"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = locusValue, C = "C-1", Dqb1 = "Dqb1-2", Drb1 = "Drb1-1"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = locusValue, C = "C1:C1", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb11:Drb11"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = locusValue, C = "C-2", Dqb1 = "Dqb1-2", Drb1 = "Drb1-1"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = locusValue, C = "C2:C2", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb11:Drb11"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = locusValue, C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-2"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = locusValue, C = "C1:C1", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb12:Drb12"}}
                 },
                 new Diplotype
                 {
                     Item1 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-2", B = locusValue, C = "C-2", Dqb1 = "Dqb1-2", Drb1 = "Drb1-2"}},
+                        {Hla = new LociInfo<string> {A = "A2:A2", B = locusValue, C = "C2:C2", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb12:Drb12"}},
                     Item2 = new Haplotype
-                        {Hla = new LociInfo<string> {A = "A-1", B = locusValue, C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-1"}}
+                        {Hla = new LociInfo<string> {A = "A1:A1", B = locusValue, C = "C1:C1", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb11:Drb11"}}
                 }
             }.Select(d => d.Map(h => h.Hla));
 
@@ -312,39 +312,39 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         {
             var genotypeWithAllFields = new PhenotypeInfo<string>
             {
-                A = {Position1 = "A-1", Position2 = "A-2"},
-                B = {Position1 = "B-1", Position2 = "B-2"},
-                C = {Position1 = "C-1", Position2 = "C-2"},
-                Dqb1 = {Position1 = "Dqb1-1", Position2 = "Dqb1-2"},
-                Drb1 = {Position1 = "Drb1-1", Position2 = "Drb1-2"}
+                A = {Position1 = "A1:A1", Position2 = "A2:A2"},
+                B = {Position1 = "B1:B1", Position2 = "B2:B2"},
+                C = {Position1 = "C1:C1", Position2 = "C2:C2"},
+                Dqb1 = {Position1 = "Dqb11:Dqb11", Position2 = "Dqb12:Dqb12"},
+                Drb1 = {Position1 = "Drb11:Drb11", Position2 = "Drb12:Drb12"}
             };
             genotypeImputer.ImputeGenotype(genotypeWithAllFields);
 
             var genotypeWithMissingField = new PhenotypeInfo<string>
             {
-                A = {Position1 = "A-1", Position2 = "A-2"},
-                B = {Position1 = "B-1", Position2 = "B-2"},
-                Dqb1 = {Position1 = "Dqb1-1", Position2 = "Dqb1-2"},
-                Drb1 = {Position1 = "Drb1-1", Position2 = "Drb1-2"}
+                A = {Position1 = "A1:A1", Position2 = "A2:A2"},
+                B = {Position1 = "B1:B1", Position2 = "B2:B2"},
+                Dqb1 = {Position1 = "Dqb11:Dqb11", Position2 = "Dqb12:Dqb12"},
+                Drb1 = {Position1 = "Drb11:Drb11", Position2 = "Drb12:Drb12"}
             };
             genotypeImputer.ImputeGenotype(genotypeWithMissingField);
 
             var genotypeWithHomozygousType = new PhenotypeInfo<string>
             {
                 A = {Position1 = "homozygous", Position2 = "homozygous"},
-                B = {Position1 = "B-1", Position2 = "B-2"},
-                C = {Position1 = "C-1", Position2 = "C-2"},
-                Dqb1 = {Position1 = "Dqb1-1", Position2 = "Dqb1-2"},
-                Drb1 = {Position1 = "Drb1-1", Position2 = "Drb1-2"}
+                B = {Position1 = "B1:B1", Position2 = "B2:B2"},
+                C = {Position1 = "C1:C1", Position2 = "C2:C2"},
+                Dqb1 = {Position1 = "Dqb11:Dqb11", Position2 = "Dqb12:Dqb12"},
+                Drb1 = {Position1 = "Drb11:Drb11", Position2 = "Drb12:Drb12"}
             };
             genotypeImputer.ImputeGenotype(genotypeWithHomozygousType);
 
             var genotypeWithHomozygousTypeAndMissingField = new PhenotypeInfo<string>
             {
                 A = {Position1 = "homozygous", Position2 = "homozygous"},
-                B = {Position1 = "B-1", Position2 = "B-2"},
-                Dqb1 = {Position1 = "Dqb1-1", Position2 = "Dqb1-2"},
-                Drb1 = {Position1 = "Drb1-1", Position2 = "Drb1-2"}
+                B = {Position1 = "B1:B1", Position2 = "B2:B2"},
+                Dqb1 = {Position1 = "Dqb11:Dqb11", Position2 = "Dqb12:Dqb12"},
+                Drb1 = {Position1 = "Drb11:Drb11", Position2 = "Drb12:Drb12"}
             };
             genotypeImputer.ImputeGenotype(genotypeWithHomozygousTypeAndMissingField);
         }

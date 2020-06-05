@@ -32,8 +32,8 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             decimal frequency2,
             decimal expectedLikelihood)
         {
-            var hlaInfo1 = new LociInfo<string> {A = "A-1", B = "B-1", C = "C-1", Dqb1 = "Dqb1-1", Drb1 = "Drb1-1"};
-            var hlaInfo2 = new LociInfo<string> {A = "A-2", B = "B-2", C = "C-2", Dqb1 = "Dqb1-2", Drb1 = "Drb1-2"};
+            var hlaInfo1 = new LociInfo<string> {A = "A1:A1", B = "B1:B1", C = "C1:C1", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb11:Drb11"};
+            var hlaInfo2 = new LociInfo<string> {A = "A2:A2", B = "B2:B2", C = "C2:C2", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb12:Drb12"};
 
             var lociToMakeHomozygous = LocusSettings.MatchPredictionLoci.Take(numberOfHomozygousCases);
 
