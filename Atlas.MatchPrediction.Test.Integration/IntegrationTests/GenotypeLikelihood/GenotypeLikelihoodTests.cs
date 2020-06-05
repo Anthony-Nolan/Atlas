@@ -26,17 +26,17 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
         private IFrequencySetService importService;
         private IGenotypeLikelihoodService likelihoodService;
 
-        private const string A1 = "A-1";
-        private const string A2 = "A-2";
-        private const string B1 = "B-1";
-        private const string B2 = "B-2";
-        private const string C1 = "C-1";
-        private const string C2 = "C-2";
-        private const string Dqb11 = "Dqb1-1";
-        private const string Dqb12 = "Dqb1-2";
-        private const string Drb11 = "Drb1-1";
-        private const string Drb12 = "Drb1-2";
-
+        private const string A1 = "A1:A1";
+        private const string A2 = "A2:A2";
+        private const string B1 = "B1:B1";
+        private const string B2 = "B2:B2";
+        private const string C1 = "C1:C1";
+        private const string C2 = "C2:C2";
+        private const string Dqb11 = "Dqb11:Dqb11";
+        private const string Dqb12 = "Dqb12:Dqb12";
+        private const string Drb11 = "Drb11:Drb11";
+        private const string Drb12 = "Drb12:Drb12";
+        
         [SetUp]
         public async Task SetUp()
         {
@@ -226,6 +226,36 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
             likelihoodResponse.Likelihood.Should().Be(expectedLikelihood);
         }
 
+        [TestCase("ExtraField", Locus.A)]
+        [TestCase("ExtraField:ExtraField", Locus.A)]
+        [TestCase("ExtraField", Locus.B)]
+        [TestCase("ExtraField:ExtraField", Locus.B)]
+        [TestCase("ExtraField", Locus.C)]
+        [TestCase("ExtraField:ExtraField", Locus.C)]
+        [TestCase("ExtraField", Locus.Dqb1)]
+        [TestCase("ExtraField:ExtraField", Locus.Dqb1)]
+        [TestCase("ExtraField", Locus.Drb1)]
+        [TestCase("ExtraField:ExtraField", Locus.Drb1)]
+        public async Task CalculateLikelihood_WhenGenotypeHasThreeOrFourFieldAllele_ReturnsExpectedLikelihood(string fieldsToAdd, Locus locus)
+        {
+            var genotype = PhenotypeInfoBuilder.New
+                .With(d => d.A, new LocusInfo<string> { Position1 = A1, Position2 = A2 })
+                .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
+                .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
+                .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
+                .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
+                .Build();
+
+            genotype.SetPosition(locus, LocusPosition.One, $"{genotype.GetPosition(locus, LocusPosition.One)}:{fieldsToAdd}");
+            genotype.SetPosition(locus, LocusPosition.Two, $"{genotype.GetPosition(locus, LocusPosition.Two)}:{fieldsToAdd}");
+
+            var genotypeInput = new GenotypeLikelihoodInput {Genotype = genotype};
+            const decimal expectedLikelihood = 3.28716m;
+
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotypeInput);
+
+            likelihoodResponse.Likelihood.Should().Be(expectedLikelihood);
+        }
 
         [Test]
         public async Task CalculateLikelihood_WhenOnlySomeHaplotypesAreRepresentedInDatabase_ReturnsExpectedLikelihood()
