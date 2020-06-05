@@ -33,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             alleleTruncater = Substitute.For<IGenotypeAlleleTruncater>();
 
             alleleTruncater.TruncateGenotypeAlleles(Arg.Any<PhenotypeInfo<string>>())
-                .Returns(new PhenotypeInfo<string>());
+                .Returns(arg => arg[0]);
 
             setRepository.GetActiveSet(Arg.Any<string>(), Arg.Any<string>())
                 .Returns(new HaplotypeFrequencySet {Id = 1});
