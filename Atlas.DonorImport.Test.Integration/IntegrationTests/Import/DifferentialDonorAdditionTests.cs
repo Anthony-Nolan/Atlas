@@ -1,9 +1,10 @@
-using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
+using Atlas.DonorImport.Test.TestHelpers.Builders;
+using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,15 +22,13 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DifferentialDonorA
         private IDonorFileImporter donorFileImporter;
 
         [OneTimeSetUp]
-        public async Task OneTimeSetUp()
+        public void OneTimeSetUp()
         {
-            await TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage_Async(async () =>
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
                 serviceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<IMessagingServiceBusClient>();
                 donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
-                // Run operation under test once for this fixture, to (a) improve performance (b) remove the need to clean up duplicate ids between tests within this fixture
-                await ImportFile();
             });
         }
 
@@ -42,15 +41,27 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DifferentialDonorA
         [Test]
         public async Task ImportDonors_ForAllAdditions_SendsMatchingUpdate()
         {
-            await serviceBusClient.Received(2).PublishDonorUpdateMessage(Arg.Any<SearchableDonorUpdate>());
+            const int numberOfDonors = 5;
+            var donorUpdateFile = DonorImportFileBuilder.WithDefaultMetaData.WithDonors(numberOfDonors).Build();
+
+            await donorFileImporter.ImportDonorFile(donorUpdateFile);
+            
+            await serviceBusClient.Received(numberOfDonors).PublishDonorUpdateMessage(Arg.Any<SearchableDonorUpdate>());
         }
 
         [Test]
         public async Task ImportDonors_SendsMatchingUpdateWithNewlyAssignedAtlasId()
         {
-            var donor1 = await donorRepository.GetDonor("external-donor-code-1");
-            var donor2 = await donorRepository.GetDonor("external-donor-code-2");
-
+            const string donorCodePrefix = "external-donor-code";
+            var donorUpdate1 = DonorUpdateBuilder.ForRecordId(IncrementingIdGenerator.NextStringId(donorCodePrefix)).Build();
+            var donorUpdate2 = DonorUpdateBuilder.ForRecordId(IncrementingIdGenerator.NextStringId(donorCodePrefix)).Build();
+            var donorUpdateFile = DonorImportFileBuilder.WithDefaultMetaData.WithDonors(donorUpdate1, donorUpdate2);
+            
+            await donorFileImporter.ImportDonorFile(donorUpdateFile);
+            
+            var donor1 = await donorRepository.GetDonor(donorUpdate1.RecordId);
+            var donor2 = await donorRepository.GetDonor(donorUpdate2.RecordId);
+            
             donor1.AtlasId.Should().NotBe(donor2.AtlasId);
             await serviceBusClient.Received().PublishDonorUpdateMessage(Arg.Is<SearchableDonorUpdate>(u =>
                 u.DonorId == donor1.AtlasId && u.SearchableDonorInformation.DonorId == donor1.AtlasId)
@@ -58,15 +69,6 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DifferentialDonorA
             await serviceBusClient.Received().PublishDonorUpdateMessage(Arg.Is<SearchableDonorUpdate>(u =>
                 u.DonorId == donor2.AtlasId && u.SearchableDonorInformation.DonorId == donor2.AtlasId)
             );
-        }
-
-        private async Task ImportFile()
-        {
-            const string donorTestFile = "Atlas.DonorImport.Test.Integration.IntegrationTests.DifferentialDonorAdditions.test-data.json";
-            await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFile))
-            {
-                await donorFileImporter.ImportDonorFile(stream, donorTestFile);
-            }
         }
     }
 }

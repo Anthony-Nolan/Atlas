@@ -31,11 +31,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="IntegrationTests\DonorTypeParsing\bankedDonor.json" />
-      <EmbeddedResource Include="IntegrationTests\DonorTypeParsing\invalidDonorType.json" />
-      <EmbeddedResource Include="IntegrationTests\DonorTypeParsing\validDonorTypes.json" />
-      <EmbeddedResource Include="IntegrationTests\InitialDataLoad\1000-initial-donors.json" />
-      <EmbeddedResource Include="IntegrationTests\DifferentialDonorAdditions\test-data.json" />
+      <EmbeddedResource Include="IntegrationTests\Import\DonorTypeParsing\bankedDonor.json" />
+      <EmbeddedResource Include="IntegrationTests\Import\DonorTypeParsing\invalidDonorType.json" />
+      <EmbeddedResource Include="IntegrationTests\Import\DonorTypeParsing\validDonorTypes.json" />
+      <EmbeddedResource Include="IntegrationTests\Import\InitialDataLoad\1000-initial-donors.json" />
     </ItemGroup>
 
 </Project>
