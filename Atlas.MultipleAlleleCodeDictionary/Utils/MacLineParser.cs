@@ -4,14 +4,14 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.MultipleAlleleCodeDictionary.Models;
-using Polly;
+using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
+using Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData;
 
 namespace Atlas.MultipleAlleleCodeDictionary.utils
 {
     public interface IMacParser
     {
-        public Task<List<MultipleAlleleCodeEntity>> GetMacsSinceLastEntry(string lastMacEntry);
+        public Task<List<MultipleAlleleCodeEntity>> GetMacsSinceLastEntry(Stream file, string lastMacEntry);
     }
 
     public class MacLineParser : IMacParser
@@ -25,13 +25,13 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
             this.logger = logger;
         }
 
-        public async Task<List<MultipleAlleleCodeEntity>> GetMacsSinceLastEntry(string lastMacEntry)
+        /// <inheritdoc />
+        public async Task<List<MultipleAlleleCodeEntity>> GetMacsSinceLastEntry(Stream file, string lastMacEntry)
         {
-            logger.SendTrace($"Fetching MACs since: {lastMacEntry}", LogLevel.Info);
+            logger.SendTrace($"Parsing MACs since: {lastMacEntry}", LogLevel.Info);
             var macCodes = new List<MultipleAlleleCodeEntity>();
 
-            await using (var stream = await GetStream())
-            using (var reader = new StreamReader(stream))
+            using (var reader = new StreamReader(file))
             {
                 ReadToEntry(reader, lastMacEntry);
                 while (!reader.EndOfStream)
@@ -57,19 +57,17 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
             return new MultipleAlleleCodeEntity(substrings[1], substrings[2], isGeneric);
         }
 
-        private async Task<Stream> GetStream()
-        {
-            var retryPolicy = Policy.Handle<Exception>()
-                .Retry(3);
-            
-            return await retryPolicy.Execute(async () => await macCodeDownloader.DownloadAndUnzipStream());
-        }
-
         private static void ReadToEntry(StreamReader reader, string entryToReadTo)
         {
             // The first two lines of the NMDP source file contain descriptions, so are discarded
             reader.ReadLine();
             reader.ReadLine();
+
+            if (entryToReadTo == null)
+            {
+                return;
+            }
+            
             while (!reader.EndOfStream)
             {
                 var line = reader.ReadLine().TrimEnd();

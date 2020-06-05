@@ -3,13 +3,15 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.NovaHttpClient.Client;
 using Atlas.Common.Utils.Extensions;
+using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.HlaService;
-using Atlas.MultipleAlleleCodeDictionary.MacImportService;
-using Atlas.MultipleAlleleCodeDictionary.Settings.MacImport;
+using Atlas.MultipleAlleleCodeDictionary.MacImportServices;
+using Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.MultipleAlleleCodeDictionary.utils;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace Atlas.MultipleAlleleCodeDictionary.DependencyInjection
 {
@@ -19,22 +21,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.DependencyInjection
         {
             services.RegisterServices();
             services.RegisterSettings();
-        }
-
-        //TODO: ATLAS-327. Migrate config reading to entry points
-        private static void RegisterSettings(this IServiceCollection services)
-        {
-            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterOptions<MacImportSettings>("MacImport");
-        }
-
-        private static void RegisterServices(this IServiceCollection services)
-        {
-            services.AddScoped<IMacRepository, MacRepository>();
-            services.AddScoped<IMacParser, MacLineParser>();
-            services.AddScoped<IMacImporter, MacImporter>();
-            services.AddScoped<IMacCodeDownloader, MacCodeDownloader>();
-            services.RegisterAtlasLogger(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value);
         }
 
         /// <remarks>
@@ -55,6 +41,22 @@ namespace Atlas.MultipleAlleleCodeDictionary.DependencyInjection
             services.RegisterHlaServiceClient(
                 fetchHlaClientApiKey,
                 fetchHlaClientBaseUrl);
+        }
+
+        //TODO: ATLAS-327. Migrate config reading to entry points
+        private static void RegisterSettings(this IServiceCollection services)
+        {
+            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterOptions<MacImportSettings>("MacImport");
+        }
+
+        private static void RegisterServices(this IServiceCollection services)
+        {
+            services.AddScoped<IMacRepository, MacRepository>();
+            services.AddScoped<IMacParser, MacLineParser>();
+            services.AddScoped<IMacImporter, MacImporter>();
+            services.AddScoped<IMacCodeDownloader, MacCodeDownloader>();
+            services.RegisterAtlasLogger(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value);
         }
 
         private static void RegisterHlaServiceClient(

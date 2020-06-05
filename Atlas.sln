@@ -93,6 +93,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HlaMetadataDictionary", "Hl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.HlaMetadataDictionary.Test", "Atlas.HlaMetadataDictionary.Test\Atlas.HlaMetadataDictionary.Test.csproj", "{506F18FC-DAF2-4DE5-B853-F50E5638EC11}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.MultipleAlleleCodeDictionary.Test.Integration", "Atlas.MultipleAlleleCodeDictionary.Test.Integration\Atlas.MultipleAlleleCodeDictionary.Test.Integration.csproj", "{DA4729BC-8829-474F-9DDC-257F61AC07BC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -286,6 +288,12 @@ Global
 		{506F18FC-DAF2-4DE5-B853-F50E5638EC11}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{506F18FC-DAF2-4DE5-B853-F50E5638EC11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{506F18FC-DAF2-4DE5-B853-F50E5638EC11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA4729BC-8829-474F-9DDC-257F61AC07BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA4729BC-8829-474F-9DDC-257F61AC07BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA4729BC-8829-474F-9DDC-257F61AC07BC}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA4729BC-8829-474F-9DDC-257F61AC07BC}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{DA4729BC-8829-474F-9DDC-257F61AC07BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA4729BC-8829-474F-9DDC-257F61AC07BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -322,6 +330,7 @@ Global
 		{E1D33B92-6AFE-48F0-9873-D0B86CF1AEE6} = {8DF9D0B6-B94E-4680-8AB8-CB1509F23A74}
 		{506F18FC-DAF2-4DE5-B853-F50E5638EC11} = {86922A44-CA43-4DC8-A6A0-3973117C77EB}
 		{263F79E5-38EF-46B4-A6B6-AC47CAEE532F} = {FA86EBC5-984E-4694-876D-FB64B239E0FC}
+		{DA4729BC-8829-474F-9DDC-257F61AC07BC} = {DCB9E81B-16A1-4D0D-BB02-42A138B4D078}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB0B0AD5-58AC-4CDF-826D-C653D03DC2AC}
