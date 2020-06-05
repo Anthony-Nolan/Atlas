@@ -18,11 +18,24 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         }
 
         [Test]
-        public void TruncateGenotypeAlleles_WhenGenotypeOnlyHasTwoFieldAlleles_ReturnsExpectedGenotype()
+        public void TruncateGenotypeAlleles_WhenGenotypeOnlyHasTwoFieldAlleles_ReturnsUnmodifiedGenotype()
         {
             var genotype = PhenotypeInfoBuilder.New.Build();
 
             var actualGenotype = alleleTruncater.TruncateGenotypeAlleles(genotype);
+
+            actualGenotype.Should().BeEquivalentTo(genotype);
+        }
+
+
+        [TestCase("ExtraField")]
+        [TestCase("ExtraField:ExtraField")]
+        public void TruncateGenotypeAlleles_WhenWholeGenotypeHasThreeOrFourFieldAllele_ReturnsGenotypeTruncatedToTwoFields(string fieldsToAdd)
+        {
+            var genotype = PhenotypeInfoBuilder.New.Build();
+            var genotypeWithAddedFields = genotype.Map((locus, position, allele) => $"{genotype.GetPosition(locus, position)}:{fieldsToAdd}");
+
+            var actualGenotype = alleleTruncater.TruncateGenotypeAlleles(genotypeWithAddedFields);
 
             actualGenotype.Should().BeEquivalentTo(genotype);
         }
@@ -37,7 +50,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         [TestCase("ExtraField:ExtraField", Locus.Dqb1)]
         [TestCase("ExtraField", Locus.Drb1)]
         [TestCase("ExtraField:ExtraField", Locus.Drb1)]
-        public void TruncateGenotypeAlleles_WhenGenotypeHasThreeOrFourFieldAllele_ReturnsExpectedGenotype(string fieldsToAdd, Locus locus)
+        public void TruncateGenotypeAlleles_WhenGenotypeHasThreeOrFourFieldAllele_ReturnsGenotypeTruncatedToTwoFields(string fieldsToAdd, Locus locus)
         {
             var genotype = PhenotypeInfoBuilder.New.Build();
 

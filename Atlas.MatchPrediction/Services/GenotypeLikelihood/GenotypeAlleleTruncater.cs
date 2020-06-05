@@ -12,20 +12,8 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
     {
         public PhenotypeInfo<string> TruncateGenotypeAlleles(PhenotypeInfo<string> genotype)
         {
-            var truncatedGenotype = new PhenotypeInfo<string>();
-
-            genotype.EachPosition((locus, position, allele) =>
-            {
-                if (allele == null)
-                {
-                    return;
-                }
-
-                var truncatedAllele = AlleleSplitter.FirstTwoFieldsAsString(allele);
-                truncatedGenotype.SetPosition(locus, position, truncatedAllele);
-            });
-
-            return truncatedGenotype;
+            return genotype.Map((locus, position, allele) =>
+                allele == null ? null : AlleleSplitter.FirstTwoFieldsAsString(allele));
         }
     }
 }
