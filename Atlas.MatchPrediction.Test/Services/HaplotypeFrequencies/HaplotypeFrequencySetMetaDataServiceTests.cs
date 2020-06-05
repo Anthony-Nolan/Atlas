@@ -17,29 +17,29 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 
         [TestCase(null)]
         [TestCase("")]
-        public void GetMetadataFromFileName_IsNullOrEmpty_ThrowsException(string fullFileName)
+        public void GetMetadataFromFullPath_IsNullOrEmpty_ThrowsException(string fullPath)
         {
-            metadataExtractor.Invoking(service => service.GetMetadataFromFileName(fullFileName))
+            metadataExtractor.Invoking(service => service.GetMetadataFromFullPath(fullPath))
                 .Should().Throw<Exception>();
         }
 
         [TestCase("0/1/2/fileName")]
         [TestCase("/1/2/fileName")]
-        public void GetMetadataFromFileName_ContainsMoreThanTwoSubfolders_ThrowsException(string fullFileName)
+        public void GetMetadataFromFullPath_ContainsMoreThanTwoSubfolders_ThrowsException(string fullPath)
         {
-            metadataExtractor.Invoking(service => service.GetMetadataFromFileName(fullFileName))
+            metadataExtractor.Invoking(service => service.GetMetadataFromFullPath(fullPath))
                 .Should().Throw<Exception>();
         }
 
         [Test]
-        public void GetMetadataFromFileName_ContainsTwoSubfolders_SetsRegistryEthnicityAndName()
+        public void GetMetadataFromFullPath_ContainsTwoSubfolders_SetsRegistryEthnicityAndName()
         {
             const string registry = "subfolder-1";
             const string ethnicity = "subfolder-2";
             const string fileName = "fileName";
-            const string fullFileName = registry + "/" + ethnicity + "/" + fileName;
+            const string fullPath = registry + "/" + ethnicity + "/" + fileName;
 
-            var metaData = metadataExtractor.GetMetadataFromFileName(fullFileName);
+            var metaData = metadataExtractor.GetMetadataFromFullPath(fullPath);
 
             metaData.Registry.Should().Be(registry);
             metaData.Ethnicity.Should().Be(ethnicity);
@@ -47,13 +47,13 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         }
 
         [Test]
-        public void GetMetadataFromFileName_ContainsOneSubfolder_SetsOnlyRegistryAndName()
+        public void GetMetadataFromFullPath_ContainsOneSubfolder_SetsOnlyRegistryAndName()
         {
             const string registry = "subfolder-1";
             const string fileName = "fileName";
-            const string fullFileName = registry + "/" + fileName;
+            const string fullPath = registry + "/" + fileName;
 
-            var metaData = metadataExtractor.GetMetadataFromFileName(fullFileName);
+            var metaData = metadataExtractor.GetMetadataFromFullPath(fullPath);
 
             metaData.Registry.Should().Be(registry);
             metaData.Name.Should().Be(fileName);
@@ -61,11 +61,11 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         }
 
         [Test]
-        public void GetMetadataFromFileName_ContainsNoSubfolders_SetsOnlyName()
+        public void GetMetadataFromFullPath_ContainsNoSubfolders_SetsOnlyName()
         {
             const string fileName = "fileName";
 
-            var metaData = metadataExtractor.GetMetadataFromFileName(fileName);
+            var metaData = metadataExtractor.GetMetadataFromFullPath(fileName);
 
             metaData.Name.Should().Be(fileName);
             metaData.Registry.Should().BeNull();

@@ -17,20 +17,17 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
     internal class FrequencySetService : IFrequencySetService
     {
-        private const string SummaryPrefix = "Haplotype Frequency Set Import";
+        private const string SupportSummaryPrefix = "Haplotype Frequency Set Import";
 
-        private readonly IFrequencySetMetadataExtractor metadataExtractor;
         private readonly IFrequencySetImporter importer;
         private readonly INotificationsClient notificationsClient;
         private readonly ILogger logger;
 
         public FrequencySetService(
-            IFrequencySetMetadataExtractor metadataExtractor,
             IFrequencySetImporter importer,
             INotificationsClient notificationsClient,
             ILogger logger)
         {
-            this.metadataExtractor = metadataExtractor;
             this.importer = importer;
             this.notificationsClient = notificationsClient;
             this.logger = logger;
@@ -40,8 +37,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         {
             try
             {
-                var metaData = metadataExtractor.GetMetadataFromFileName(file.FileName);
-                await importer.Import(metaData, file.Contents);
+                await importer.Import(file);
                 file.ImportedDateTime = DateTimeOffset.UtcNow;
 
                 await SendSuccessNotification(file);
@@ -55,25 +51,25 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
         private async Task SendSuccessNotification(FrequencySetFile file)
         {
-            var successName = $"{SummaryPrefix} Succeeded";
+            var successName = $"{SupportSummaryPrefix} Succeeded";
 
             logger.SendEvent(new HaplotypeFrequencySetImportEventModel(successName, file));
 
             await notificationsClient.SendNotification(new Notification(
                 successName,
-                $"Import of file, '{file.FileName}', has completed successfully.",
+                $"Import of file, '{file.FullPath}', has completed successfully.",
                 NotificationConstants.OriginatorName));
         }
 
         private async Task SendErrorAlert(FrequencySetFile file, Exception ex)
         {
-            var errorName = $"{SummaryPrefix} Failure in the Match Prediction component";
+            var errorName = $"{SupportSummaryPrefix} Failure";
 
             logger.SendEvent(new ErrorEventModel(errorName, ex));
 
             await notificationsClient.SendAlert(new Alert(
                 errorName,
-                $"Import of file, '{file.FileName}', failed with the following exception message: \"{ex.InnermostMessage()}\". "
+                $"Import of file, '{file.FullPath}', failed with the following exception message: \"{ex.InnermostMessage()}\". "
                     + "Full exception info has been logged to Application Insights.",
                 Priority.High,
                 NotificationConstants.OriginatorName));
