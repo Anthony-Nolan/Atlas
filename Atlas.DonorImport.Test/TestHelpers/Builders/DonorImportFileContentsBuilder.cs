@@ -17,7 +17,16 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
             this Builder<SerialisableDonorImportFileContents> builder,
             int numberOfDonors)
         {
-            return builder.With(c => c.donors, DonorUpdateBuilder.New.Build(numberOfDonors).ToList());
+            // Note we cannot use the LochNessBuilder "build x" functionality, as all donors must have unique ids.
+            var donors = Enumerable.Range(0, numberOfDonors).Select(i => DonorUpdateBuilder.New.Build());
+            return builder.With(c => c.donors, donors);
+        }
+        
+        public static Builder<SerialisableDonorImportFileContents> WithDonors(
+            this Builder<SerialisableDonorImportFileContents> builder,
+            params DonorUpdate[] donors)
+        {
+            return builder.With(c => c.donors, donors);
         }
     }
 }

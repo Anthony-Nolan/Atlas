@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
-namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DonorTypeParsing
+namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.DonorTypeParsing
 {
     [TestFixture]
     public class DonorTypeParsingTests
