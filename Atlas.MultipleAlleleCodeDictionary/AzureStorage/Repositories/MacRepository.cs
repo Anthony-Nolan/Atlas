@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Atlas.Common.AzureStorage.TableStorage.Extensions;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
-using Microsoft.Azure.Amqp.Serialization;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Options;
 using MoreLinq;
@@ -24,7 +23,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         /// </summary>
         private const int BatchSize = 100;
 
-        protected readonly CloudTable table;
+        protected readonly CloudTable Table;
 
         public MacRepository(IOptions<MacImportSettings> macImportSettings)
         {
@@ -32,14 +31,16 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             var tableName = macImportSettings.Value.TableName;
             var storageAccount = CloudStorageAccount.Parse(connectionString);
             var tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
-            table = tableClient.GetTableReference(tableName);
+            Table = tableClient.GetTableReference(tableName);
         }
 
         public async Task<string> GetLastMacEntry()
         {
             var query = new TableQuery<MultipleAlleleCodeEntity>();
-            var result = await table.ExecuteQueryAsync(query);
-            // MACs are alphabetical - any new MACs are appended to the end of the list alphabetically.
+            var result = await Table.ExecuteQueryAsync(query);
+            // MACs are alphabetical within a character length - any new MACs are appended to the end of the list alphabetically.
+            // Order by partition key to ensure that longer MACs are returned later.
+            // e.g. purely alphabetically, ABC comes before ZX, but as it has fewer character, ZX is actually the earlier MAC
             return result
                 .OrderByDescending(x => int.Parse(x.PartitionKey))
                 .ThenByDescending(x => x.RowKey).FirstOrDefault()?.RowKey;
@@ -58,7 +59,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
                         batchOp.Insert(mac);
                     }
 
-                    await table.ExecuteBatchAsync(batchOp);
+                    await Table.ExecuteBatchAsync(batchOp);
                 }
             }
             
