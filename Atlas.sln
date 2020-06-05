@@ -63,6 +63,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction.Functions", "Atlas.MatchPrediction.Functions\Atlas.MatchPrediction.Functions.csproj", "{5153507D-2E76-4F57-ABF2-A1CCB685F3A5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DonorImport", "DonorImport", "{FA86EBC5-984E-4694-876D-FB64B239E0FC}"
+	ProjectSection(SolutionItems) = preProject
+		DonorImportingREADME.md = DonorImportingREADME.md
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.DonorImport.Api", "Atlas.DonorImport.Api\Atlas.DonorImport.Api.csproj", "{647307AB-50FD-44F4-BD15-E534B3A14BA8}"
 EndProject
@@ -329,7 +332,6 @@ Global
 		{263F79E5-38EF-46B4-A6B6-AC47CAEE532F} = {FA86EBC5-984E-4694-876D-FB64B239E0FC}
 		{E1D33B92-6AFE-48F0-9873-D0B86CF1AEE6} = {8DF9D0B6-B94E-4680-8AB8-CB1509F23A74}
 		{506F18FC-DAF2-4DE5-B853-F50E5638EC11} = {86922A44-CA43-4DC8-A6A0-3973117C77EB}
-		{263F79E5-38EF-46B4-A6B6-AC47CAEE532F} = {FA86EBC5-984E-4694-876D-FB64B239E0FC}
 		{DA4729BC-8829-474F-9DDC-257F61AC07BC} = {DCB9E81B-16A1-4D0D-BB02-42A138B4D078}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
