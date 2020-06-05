@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Common.AzureStorage.TableStorage.Extensions;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Microsoft.Azure.Amqp.Serialization;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Options;
 using MoreLinq;
@@ -39,21 +40,28 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             var query = new TableQuery<MultipleAlleleCodeEntity>();
             var result = await table.ExecuteQueryAsync(query);
             // MACs are alphabetical - any new MACs are appended to the end of the list alphabetically.
-            return result.OrderByDescending(x => x.RowKey).FirstOrDefault()?.RowKey;
+            return result
+                .OrderByDescending(x => int.Parse(x.PartitionKey))
+                .ThenByDescending(x => x.RowKey).FirstOrDefault()?.RowKey;
         }
 
         public async Task InsertMacs(IEnumerable<MultipleAlleleCodeEntity> macs)
         {
-            foreach (var macBatch in macs.Batch(BatchSize))
+            var macsByLength = macs.GroupBy(x => x.PartitionKey);
+            foreach (var macsOfSameLength in macsByLength)
             {
-                var batchOp = new TableBatchOperation();
-                foreach (var mac in macBatch)
+                foreach (var macBatch in macsOfSameLength.Batch(BatchSize))
                 {
-                    batchOp.Insert(mac);
-                }
+                    var batchOp = new TableBatchOperation();
+                    foreach (var mac in macBatch)
+                    {
+                        batchOp.Insert(mac);
+                    }
 
-                await table.ExecuteBatchAsync(batchOp);
+                    await table.ExecuteBatchAsync(batchOp);
+                }
             }
+            
         }
     }
 }
