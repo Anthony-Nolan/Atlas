@@ -1,142 +1,130 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
-using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Client.Models.GenotypeLikelihood;
 using Atlas.MatchPrediction.Data.Models;
-using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.GenotypeLikelihood;
 using Microsoft.Extensions.DependencyInjection;
 using FluentAssertions;
 using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikelihood
 {
+    ///<summary>
+    /// These tests are snapshots based on some manually calculated frequencies/expectations.
+    /// Any tests of the GenotypeLikelihood calculator that are not such tests should be added elsewhere.
+    ///</summary>
     [TestFixture]
     public class GenotypeLikelihoodTests
     {
-        private IGenotypeLikelihoodService service;
+        private IFrequencySetService importService;
+        private IGenotypeLikelihoodService likelihoodService;
+
+        private const string A1 = "A-1";
+        private const string A2 = "A-2";
+        private const string B1 = "B-1";
+        private const string B2 = "B-2";
+        private const string C1 = "C-1";
+        private const string C2 = "C-2";
+        private const string Dqb11 = "Dqb1-1";
+        private const string Dqb12 = "Dqb1-2";
+        private const string Drb11 = "Drb1-1";
+        private const string Drb12 = "Drb1-2";
 
         [SetUp]
-        public void SetUp()
+        public async Task SetUp()
         {
-            service = DependencyInjection.DependencyInjection.Provider.GetService<IGenotypeLikelihoodService>();
-        }
+            importService = DependencyInjection.DependencyInjection.Provider.GetService<IFrequencySetService>();
+            likelihoodService = DependencyInjection.DependencyInjection.Provider.GetService<IGenotypeLikelihoodService>();
 
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
-        {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(async () =>
+            // 32 possible haplotypes for a single unambiguous genotype.
+            var allPossibleHaplotypes = new List<HaplotypeFrequency>
             {
-                var frequencyRepository = DependencyInjection.DependencyInjection.Provider
-                    .GetService<IHaplotypeFrequenciesRepository>();
-                var setRepository = DependencyInjection.DependencyInjection.Provider
-                    .GetService<IHaplotypeFrequencySetRepository>();
-
-                var setId = await AddHaplotypeFrequencySetsAvailableForLookup(setRepository);
-                AddHaplotypeFrequenciesAvailableForLookup(frequencyRepository, setId);
-            });
-        }
-
-        private static async Task<int> AddHaplotypeFrequencySetsAvailableForLookup(IHaplotypeFrequencySetRepository setRepository)
-        {
-            var frequencySet = new HaplotypeFrequencySet
-            {
-                RegistryCode = null,
-                EthnicityCode = null,
-                Active = true,
-                Name = "Test"
+                new HaplotypeFrequency
+                    {A = A2, B = B1, C = C1, DQB1 = Dqb11, DRB1 = Drb11, Frequency = 0.32m},
+                new HaplotypeFrequency
+                    {A = A1, B = B2, C = C2, DQB1 = Dqb12, DRB1 = Drb12, Frequency = 0.31m},
+                new HaplotypeFrequency
+                    {A = A2, B = B1, C = C1, DQB1 = Dqb11, DRB1 = Drb12, Frequency = 0.301m},
+                new HaplotypeFrequency
+                    {A = A1, B = B2, C = C2, DQB1 = Dqb12, DRB1 = Drb11, Frequency = 0.29m},
+                new HaplotypeFrequency
+                    {A = A2, B = B1, C = C1, DQB1 = Dqb12, DRB1 = Drb11, Frequency = 0.28m},
+                new HaplotypeFrequency
+                    {A = A1, B = B2, C = C2, DQB1 = Dqb11, DRB1 = Drb12, Frequency = 0.27m},
+                new HaplotypeFrequency
+                    {A = A2, B = B1, C = C1, DQB1 = Dqb12, DRB1 = Drb12, Frequency = 0.26m},
+                new HaplotypeFrequency
+                    {A = A1, B = B2, C = C2, DQB1 = Dqb11, DRB1 = Drb11, Frequency = 0.25m},
+                new HaplotypeFrequency
+                    {A = A2, B = B1, C = C2, DQB1 = Dqb11, DRB1 = Drb11, Frequency = 0.24m},
+                new HaplotypeFrequency
+                    {A = A1, B = B2, C = C1, DQB1 = Dqb12, DRB1 = Drb12, Frequency = 0.23m},
+                new HaplotypeFrequency
+                    {A = A2, B = B1, C = C2, DQB1 = Dqb11, DRB1 = Drb12, Frequency = 0.22m},
+                new HaplotypeFrequency
+                    {A = A1, B = B2, C = C1, DQB1 = Dqb12, DRB1 = Drb11, Frequency = 0.21m},
+                new HaplotypeFrequency
+                    {A = A2, B = B1, C = C2, DQB1 = Dqb12, DRB1 = Drb11, Frequency = 0.201m},
+                new HaplotypeFrequency
+                    {A = A1, B = B2, C = C1, DQB1 = Dqb11, DRB1 = Drb12, Frequency = 0.19m},
+                new HaplotypeFrequency
+                    {A = A2, B = B1, C = C2, DQB1 = Dqb12, DRB1 = Drb12, Frequency = 0.18m},
+                new HaplotypeFrequency
+                    {A = A1, B = B2, C = C1, DQB1 = Dqb11, DRB1 = Drb11, Frequency = 0.17m},
+                new HaplotypeFrequency
+                    {A = A2, B = B2, C = C1, DQB1 = Dqb11, DRB1 = Drb11, Frequency = 0.16m},
+                new HaplotypeFrequency
+                    {A = A1, B = B1, C = C2, DQB1 = Dqb12, DRB1 = Drb12, Frequency = 0.15m},
+                new HaplotypeFrequency
+                    {A = A2, B = B2, C = C1, DQB1 = Dqb11, DRB1 = Drb12, Frequency = 0.14m},
+                new HaplotypeFrequency
+                    {A = A1, B = B1, C = C2, DQB1 = Dqb12, DRB1 = Drb11, Frequency = 0.13m},
+                new HaplotypeFrequency
+                    {A = A2, B = B2, C = C1, DQB1 = Dqb12, DRB1 = Drb11, Frequency = 0.12m},
+                new HaplotypeFrequency
+                    {A = A1, B = B1, C = C2, DQB1 = Dqb11, DRB1 = Drb12, Frequency = 0.11m},
+                new HaplotypeFrequency
+                    {A = A2, B = B2, C = C1, DQB1 = Dqb12, DRB1 = Drb12, Frequency = 0.101m},
+                new HaplotypeFrequency
+                    {A = A1, B = B1, C = C2, DQB1 = Dqb11, DRB1 = Drb11, Frequency = 0.9m},
+                new HaplotypeFrequency
+                    {A = A2, B = B2, C = C2, DQB1 = Dqb11, DRB1 = Drb11, Frequency = 0.8m},
+                new HaplotypeFrequency
+                    {A = A1, B = B1, C = C1, DQB1 = Dqb12, DRB1 = Drb12, Frequency = 0.7m},
+                new HaplotypeFrequency
+                    {A = A2, B = B2, C = C2, DQB1 = Dqb11, DRB1 = Drb12, Frequency = 0.6m},
+                new HaplotypeFrequency
+                    {A = A1, B = B1, C = C1, DQB1 = Dqb12, DRB1 = Drb11, Frequency = 0.5m},
+                new HaplotypeFrequency
+                    {A = A2, B = B2, C = C2, DQB1 = Dqb12, DRB1 = Drb11, Frequency = 0.4m},
+                new HaplotypeFrequency
+                    {A = A1, B = B1, C = C1, DQB1 = Dqb11, DRB1 = Drb12, Frequency = 0.3m},
+                new HaplotypeFrequency
+                    {A = A2, B = B2, C = C2, DQB1 = Dqb12, DRB1 = Drb12, Frequency = 0.2m},
+                new HaplotypeFrequency
+                    {A = A1, B = B1, C = C1, DQB1 = Dqb11, DRB1 = Drb11, Frequency = 0.1m}
             };
 
-            var createdSet = await setRepository.AddSet(frequencySet);
-            return createdSet.Id;
-        }
-
-        private static void AddHaplotypeFrequenciesAvailableForLookup(IHaplotypeFrequenciesRepository frequencyRepository, int setId)
-        {
-            var expectedDiplotypeHla = new List<HaplotypeFrequency>
-            {
-                new HaplotypeFrequency
-                    {A = "A-2", B = "B-1", C = "C-1", DQB1 = "Dqb1-1", DRB1 = "Drb1-1", Frequency = (decimal) 0.32},
-                new HaplotypeFrequency
-                    {A = "A-1", B = "B-2", C = "C-2", DQB1 = "Dqb1-2", DRB1 = "Drb1-2", Frequency = (decimal) 0.31},
-                new HaplotypeFrequency
-                    {A = "A-2", B = "B-1", C = "C-1", DQB1 = "Dqb1-1", DRB1 = "Drb1-2", Frequency = (decimal) 0.301},
-                new HaplotypeFrequency
-                    {A = "A-1", B = "B-2", C = "C-2", DQB1 = "Dqb1-2", DRB1 = "Drb1-1", Frequency = (decimal) 0.29},
-                new HaplotypeFrequency
-                    {A = "A-2", B = "B-1", C = "C-1", DQB1 = "Dqb1-2", DRB1 = "Drb1-1", Frequency = (decimal) 0.28},
-                new HaplotypeFrequency
-                    {A = "A-1", B = "B-2", C = "C-2", DQB1 = "Dqb1-1", DRB1 = "Drb1-2", Frequency = (decimal) 0.27},
-                new HaplotypeFrequency
-                    {A = "A-2", B = "B-1", C = "C-1", DQB1 = "Dqb1-2", DRB1 = "Drb1-2", Frequency = (decimal) 0.26},
-                new HaplotypeFrequency
-                    {A = "A-1", B = "B-2", C = "C-2", DQB1 = "Dqb1-1", DRB1 = "Drb1-1", Frequency = (decimal) 0.25},
-                new HaplotypeFrequency
-                    {A = "A-2", B = "B-1", C = "C-2", DQB1 = "Dqb1-1", DRB1 = "Drb1-1", Frequency = (decimal) 0.24},
-                new HaplotypeFrequency
-                    {A = "A-1", B = "B-2", C = "C-1", DQB1 = "Dqb1-2", DRB1 = "Drb1-2", Frequency = (decimal) 0.23},
-                new HaplotypeFrequency
-                    {A = "A-2", B = "B-1", C = "C-2", DQB1 = "Dqb1-1", DRB1 = "Drb1-2", Frequency = (decimal) 0.22},
-                new HaplotypeFrequency
-                    {A = "A-1", B = "B-2", C = "C-1", DQB1 = "Dqb1-2", DRB1 = "Drb1-1", Frequency = (decimal) 0.21},
-                new HaplotypeFrequency
-                    {A = "A-2", B = "B-1", C = "C-2", DQB1 = "Dqb1-2", DRB1 = "Drb1-1", Frequency = (decimal) 0.201},
-                new HaplotypeFrequency
-                    {A = "A-1", B = "B-2", C = "C-1", DQB1 = "Dqb1-1", DRB1 = "Drb1-2", Frequency = (decimal) 0.19},
-                new HaplotypeFrequency
-                    {A = "A-2", B = "B-1", C = "C-2", DQB1 = "Dqb1-2", DRB1 = "Drb1-2", Frequency = (decimal) 0.18},
-                new HaplotypeFrequency
-                    {A = "A-1", B = "B-2", C = "C-1", DQB1 = "Dqb1-1", DRB1 = "Drb1-1", Frequency = (decimal) 0.17},
-                new HaplotypeFrequency
-                    {A = "A-2", B = "B-2", C = "C-1", DQB1 = "Dqb1-1", DRB1 = "Drb1-1", Frequency = (decimal) 0.16},
-                new HaplotypeFrequency
-                    {A = "A-1", B = "B-1", C = "C-2", DQB1 = "Dqb1-2", DRB1 = "Drb1-2", Frequency = (decimal) 0.15},
-                new HaplotypeFrequency
-                    {A = "A-2", B = "B-2", C = "C-1", DQB1 = "Dqb1-1", DRB1 = "Drb1-2", Frequency = (decimal) 0.14},
-                new HaplotypeFrequency
-                    {A = "A-1", B = "B-1", C = "C-2", DQB1 = "Dqb1-2", DRB1 = "Drb1-1", Frequency = (decimal) 0.13},
-                new HaplotypeFrequency
-                    {A = "A-2", B = "B-2", C = "C-1", DQB1 = "Dqb1-2", DRB1 = "Drb1-1", Frequency = (decimal) 0.12},
-                new HaplotypeFrequency
-                    {A = "A-1", B = "B-1", C = "C-2", DQB1 = "Dqb1-1", DRB1 = "Drb1-2", Frequency = (decimal) 0.11},
-                new HaplotypeFrequency
-                    {A = "A-2", B = "B-2", C = "C-1", DQB1 = "Dqb1-2", DRB1 = "Drb1-2", Frequency = (decimal) 0.101},
-                new HaplotypeFrequency
-                    {A = "A-1", B = "B-1", C = "C-2", DQB1 = "Dqb1-1", DRB1 = "Drb1-1", Frequency = (decimal) 0.9},
-                new HaplotypeFrequency
-                    {A = "A-2", B = "B-2", C = "C-2", DQB1 = "Dqb1-1", DRB1 = "Drb1-1", Frequency = (decimal) 0.8},
-                new HaplotypeFrequency
-                    {A = "A-1", B = "B-1", C = "C-1", DQB1 = "Dqb1-2", DRB1 = "Drb1-2", Frequency = (decimal) 0.7},
-                new HaplotypeFrequency
-                    {A = "A-2", B = "B-2", C = "C-2", DQB1 = "Dqb1-1", DRB1 = "Drb1-2", Frequency = (decimal) 0.6},
-                new HaplotypeFrequency
-                    {A = "A-1", B = "B-1", C = "C-1", DQB1 = "Dqb1-2", DRB1 = "Drb1-1", Frequency = (decimal) 0.5},
-                new HaplotypeFrequency
-                    {A = "A-2", B = "B-2", C = "C-2", DQB1 = "Dqb1-2", DRB1 = "Drb1-1", Frequency = (decimal) 0.4},
-                new HaplotypeFrequency
-                    {A = "A-1", B = "B-1", C = "C-1", DQB1 = "Dqb1-1", DRB1 = "Drb1-2", Frequency = (decimal) 0.3},
-                new HaplotypeFrequency
-                    {A = "A-2", B = "B-2", C = "C-2", DQB1 = "Dqb1-2", DRB1 = "Drb1-2", Frequency = (decimal) 0.2},
-                new HaplotypeFrequency
-                    {A = "A-1", B = "B-1", C = "C-1", DQB1 = "Dqb1-1", DRB1 = "Drb1-1", Frequency = (decimal) 0.1}
-            };
-
-            frequencyRepository.AddHaplotypeFrequencies(setId, expectedDiplotypeHla);
+            await ImportFrequencies(allPossibleHaplotypes);
         }
 
         [Test]
         public async Task CalculateLikelihood_WhenAllLociAreHeterozygous_ReturnsExpectedLikelihood()
         {
             var genotypeInput = new GenotypeLikelihoodInput {Genotype = PhenotypeInfoBuilder.New.Build()};
-            const decimal expectedLikelihood = (decimal) 3.28716;
+            const decimal expectedLikelihood = 3.28716m;
 
-            var likelihoodResponse = await service.CalculateLikelihood(genotypeInput);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotypeInput);
 
             likelihoodResponse.Likelihood.Should().Be(expectedLikelihood);
         }
-
 
         [TestCase(Locus.A, 1.4166)]
         [TestCase(Locus.B, 1.41646)]
@@ -145,12 +133,20 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
         [TestCase(Locus.Drb1, 1.63234)]
         public async Task CalculateLikelihood_WhenLocusIsHomozygous_ReturnsExpectedLikelihood(Locus homozygousLocus, decimal expectedLikelihood)
         {
-            var genotype = PhenotypeInfoBuilder.New.Build();
-            genotype.SetPosition(homozygousLocus, LocusPosition.Two, genotype.GetPosition(homozygousLocus, LocusPosition.One));
+            var genotype = PhenotypeInfoBuilder.New
+                .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})
+                .With(d => d.B, new LocusInfo<string> {Position1 = B1, Position2 = B2})
+                .With(d => d.C, new LocusInfo<string> {Position1 = C1, Position2 = C2})
+                .With(d => d.Dqb1, new LocusInfo<string> {Position1 = Dqb11, Position2 = Dqb12})
+                .With(d => d.Drb1, new LocusInfo<string> {Position1 = Drb11, Position2 = Drb12})
+                .Build();
+
+            genotype.SetPosition(homozygousLocus, LocusPosition.Two,
+                genotype.GetPosition(homozygousLocus, LocusPosition.One));
 
             var genotypeInput = new GenotypeLikelihoodInput {Genotype = genotype};
 
-            var likelihoodResponse = await service.CalculateLikelihood(genotypeInput);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotypeInput);
 
             likelihoodResponse.Likelihood.Should().Be(expectedLikelihood);
         }
@@ -161,32 +157,139 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
         [TestCase(new[] {Locus.Dqb1, Locus.A, Locus.Drb1, Locus.C}, 0.034)]
         public async Task CalculateLikelihood_WhenMultipleLocusAreHomozygous_ReturnsExpectedLikelihood(Locus[] homozygousLoci, decimal expectedLikelihood)
         {
-            var genotype = PhenotypeInfoBuilder.New.Build();
+            var genotype = PhenotypeInfoBuilder.New
+                .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})
+                .With(d => d.B, new LocusInfo<string> {Position1 = B1, Position2 = B2})
+                .With(d => d.C, new LocusInfo<string> {Position1 = C1, Position2 = C2})
+                .With(d => d.Dqb1, new LocusInfo<string> {Position1 = Dqb11, Position2 = Dqb12})
+                .With(d => d.Drb1, new LocusInfo<string> {Position1 = Drb11, Position2 = Drb12})
+                .Build();
 
             foreach (var homozygousLocus in homozygousLoci)
             {
-                genotype.SetPosition(homozygousLocus, LocusPosition.Two, genotype.GetPosition(homozygousLocus, LocusPosition.One));
+                genotype.SetPosition(homozygousLocus, LocusPosition.Two,
+                    genotype.GetPosition(homozygousLocus, LocusPosition.One));
             }
 
-            var genotypeInput = new GenotypeLikelihoodInput { Genotype = genotype };
+            var genotypeInput = new GenotypeLikelihoodInput {Genotype = genotype};
 
-            var likelihoodResponse = await service.CalculateLikelihood(genotypeInput);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotypeInput);
 
             likelihoodResponse.Likelihood.Should().Be(expectedLikelihood);
         }
 
+        //TODO: ATLAS-345: This test will no longer be correct once we handle untyped input loci.
         [TestCase(Locus.C)]
         [TestCase(Locus.Dqb1)]
-        public async Task CalculateLikelihood_WhenGenotypeHasNullLoci_Returns0Likelihood(Locus locusToBeNull)
+        public async Task CalculateLikelihood_WhenGenotypeHasNullLoci_ReturnsZeroLikelihood(Locus locusToBeNull)
         {
-            var genotypeInput = new GenotypeLikelihoodInput {Genotype = PhenotypeInfoBuilder.New.Build()};
+            var genotype = PhenotypeInfoBuilder.New
+                .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})
+                .With(d => d.B, new LocusInfo<string> {Position1 = B1, Position2 = B2})
+                .With(d => d.C, new LocusInfo<string> {Position1 = C1, Position2 = C2})
+                .With(d => d.Dqb1, new LocusInfo<string> {Position1 = Dqb11, Position2 = Dqb12})
+                .With(d => d.Drb1, new LocusInfo<string> {Position1 = Drb11, Position2 = Drb12})
+                .Build();
+
+            var genotypeInput = new GenotypeLikelihoodInput {Genotype = genotype};
             genotypeInput.Genotype.SetLocus(locusToBeNull, null);
 
             const decimal expectedLikelihood = 0;
 
-            var likelihoodResponse = await service.CalculateLikelihood(genotypeInput);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotypeInput);
 
             likelihoodResponse.Likelihood.Should().Be(expectedLikelihood);
+        }
+
+        [TestCase(Locus.A)]
+        [TestCase(Locus.B)]
+        [TestCase(Locus.C)]
+        [TestCase(Locus.Dqb1)]
+        [TestCase(Locus.Drb1)]
+        public async Task CalculateLikelihood_WhenNoHaplotypesAreRepresentedInDatabase_ReturnsZeroLikelihood(Locus unrepresentedLocus)
+        {
+            var genotype = PhenotypeInfoBuilder.New
+                .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})
+                .With(d => d.B, new LocusInfo<string> {Position1 = B1, Position2 = B2})
+                .With(d => d.C, new LocusInfo<string> {Position1 = C1, Position2 = C2})
+                .With(d => d.Dqb1, new LocusInfo<string> {Position1 = Dqb11, Position2 = Dqb12})
+                .With(d => d.Drb1, new LocusInfo<string> {Position1 = Drb11, Position2 = Drb12})
+                .Build();
+
+            var genotypeInput = new GenotypeLikelihoodInput {Genotype = genotype};
+            genotypeInput.Genotype.SetLocus(unrepresentedLocus, "un-represented");
+
+            const decimal expectedLikelihood = 0;
+
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotypeInput);
+
+            likelihoodResponse.Likelihood.Should().Be(expectedLikelihood);
+        }
+
+
+        [Test]
+        public async Task CalculateLikelihood_WhenOnlySomeHaplotypesAreRepresentedInDatabase_ReturnsExpectedLikelihood()
+        {
+            // 16 of the possible 32 haplotypes for a single unambiguous genotype.
+            var haplotypesWith16Missing = new List<HaplotypeFrequency>
+            {
+                new HaplotypeFrequency
+                    {A = A2, B = B1, C = C1, DQB1 = Dqb11, DRB1 = Drb11, Frequency = 0.32m},
+                new HaplotypeFrequency
+                    {A = A1, B = B2, C = C2, DQB1 = Dqb12, DRB1 = Drb12, Frequency = 0.31m},
+                new HaplotypeFrequency
+                    {A = A2, B = B1, C = C1, DQB1 = Dqb11, DRB1 = Drb12, Frequency = 0.301m},
+                new HaplotypeFrequency
+                    {A = A1, B = B2, C = C2, DQB1 = Dqb12, DRB1 = Drb11, Frequency = 0.29m},
+                new HaplotypeFrequency
+                    {A = A2, B = B1, C = C1, DQB1 = Dqb12, DRB1 = Drb11, Frequency = 0.28m},
+                new HaplotypeFrequency
+                    {A = A1, B = B2, C = C2, DQB1 = Dqb11, DRB1 = Drb12, Frequency = 0.27m},
+                new HaplotypeFrequency
+                    {A = A2, B = B1, C = C1, DQB1 = Dqb12, DRB1 = Drb12, Frequency = 0.26m},
+                new HaplotypeFrequency
+                    {A = A1, B = B2, C = C2, DQB1 = Dqb11, DRB1 = Drb11, Frequency = 0.25m},
+                new HaplotypeFrequency
+                    {A = A2, B = B1, C = C2, DQB1 = Dqb11, DRB1 = Drb11, Frequency = 0.24m},
+                new HaplotypeFrequency
+                    {A = A1, B = B2, C = C1, DQB1 = Dqb12, DRB1 = Drb12, Frequency = 0.23m},
+                new HaplotypeFrequency
+                    {A = A2, B = B1, C = C2, DQB1 = Dqb11, DRB1 = Drb12, Frequency = 0.22m},
+                new HaplotypeFrequency
+                    {A = A1, B = B2, C = C1, DQB1 = Dqb12, DRB1 = Drb11, Frequency = 0.21m},
+                new HaplotypeFrequency
+                    {A = A2, B = B1, C = C2, DQB1 = Dqb12, DRB1 = Drb11, Frequency = 0.201m},
+                new HaplotypeFrequency
+                    {A = A1, B = B2, C = C1, DQB1 = Dqb11, DRB1 = Drb12, Frequency = 0.19m},
+                new HaplotypeFrequency
+                    {A = A2, B = B1, C = C2, DQB1 = Dqb12, DRB1 = Drb12, Frequency = 0.18m},
+                new HaplotypeFrequency
+                    {A = A1, B = B2, C = C1, DQB1 = Dqb11, DRB1 = Drb11, Frequency = 0.17m}
+            };
+
+            await ImportFrequencies(haplotypesWith16Missing);
+
+            var genotypeInput = new GenotypeLikelihoodInput { Genotype = PhenotypeInfoBuilder.New.Build() };
+            const decimal expectedLikelihood = 0.99456m;
+
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotypeInput);
+
+            likelihoodResponse.Likelihood.Should().Be(expectedLikelihood);
+        }
+
+        private async Task ImportFrequencies(IEnumerable<HaplotypeFrequency> haplotypes)
+        {
+            var file = FrequenciesFileBuilder.Build(haplotypes);
+
+            await using (var stream = GetHaplotypeFrequenciesStream(file.Contents))
+            {
+                await importService.ImportFrequencySet(stream, file.FileName);
+            }
+        }
+
+        private static Stream GetHaplotypeFrequenciesStream(string fileContents)
+        {
+            return new MemoryStream(Encoding.UTF8.GetBytes(fileContents));
         }
     }
 }
