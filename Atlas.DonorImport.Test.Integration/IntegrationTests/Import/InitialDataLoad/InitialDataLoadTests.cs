@@ -8,8 +8,12 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
-namespace Atlas.DonorImport.Test.Integration.IntegrationTests.InitialDataLoad
+namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialDataLoad
 {
+    /// <summary>
+    /// While most of the tests in this suite can use memory streams of files built by the test themselves, this test runs on a real input file.
+    /// This grants us extra certainty that there are no issues in our serialisation of in-memory files in other tests.
+    /// </summary>
     [TestFixture]
     public class InitialDataLoadTests
     {
