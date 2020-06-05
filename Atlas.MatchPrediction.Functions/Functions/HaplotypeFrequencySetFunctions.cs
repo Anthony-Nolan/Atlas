@@ -23,7 +23,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
             string fileName,
             BlobProperties properties)
         {
-            var file = new FrequencySetFile
+            using var file = new FrequencySetFile
             {
                 Contents = blob,
                 FileName = fileName,

@@ -25,12 +25,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         private IHaplotypeFrequencyInspectionRepository inspectionRepository;
         private INotificationsClient notificationsClient;
 
-        [SetUp]
-        public void SetUp()
-        {
-            notificationsClient.ClearReceivedCalls();
-        }
-
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
@@ -44,6 +38,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
                 notificationsClient =
                     DependencyInjection.DependencyInjection.Provider.GetService<INotificationsClient>();
             });
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            notificationsClient.ClearReceivedCalls();
         }
 
         [TestCase(null, null)]
