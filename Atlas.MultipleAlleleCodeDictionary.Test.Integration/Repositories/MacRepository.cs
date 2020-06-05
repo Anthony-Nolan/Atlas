@@ -28,7 +28,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
         /// <inheritdoc />
         public async Task CreateTableIfNotExists()
         {
-            await table.CreateIfNotExistsAsync();
+            await Table.CreateIfNotExistsAsync();
         }
 
         /// <inheritdoc />
@@ -37,7 +37,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
             foreach (var alleleCodeEntity in await GetAllMacs())
             {
                 var delete = TableOperation.Delete(alleleCodeEntity);
-                table.Execute(delete);
+                Table.Execute(delete);
             }
         }
 
@@ -45,7 +45,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
         public async Task<IEnumerable<MultipleAlleleCodeEntity>> GetAllMacs()
         {
             var query = new TableQuery<MultipleAlleleCodeEntity>();
-            return await table.ExecuteQueryAsync(query);
+            return await Table.ExecuteQueryAsync(query);
         }
     }
 }

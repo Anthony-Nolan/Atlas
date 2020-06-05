@@ -40,11 +40,26 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
         [Test]
         public async Task ImportMacs_InsertsAllMacs()
         {
-            const int numberOfMacs = 100;
+            const int numberOfMacs = 3;
             // We cannot use LochNessBuilder's "Build(x)" feature as all macs must have unique ids.
             var macs = Enumerable.Range(0, numberOfMacs).Select(i => MacEntityBuilder.New.Build());
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs));
-            
+
+            await macImporter.ImportLatestMultipleAlleleCodes();
+
+            var importedMacs = await macRepository.GetAllMacs();
+            importedMacs.Count().Should().Be(numberOfMacs);
+        }
+        
+        [Test]
+        public async Task ImportMacs_WithMoreThanOneBatchOfMacs_InsertsAllMacs()
+        {
+            // Max batch size for inserting to cloud storage is 100, so regardless of the batch size this will always be >1 batch
+            const int numberOfMacs = 101;
+            // We cannot use LochNessBuilder's "Build(x)" feature as all macs must have unique ids.
+            var macs = Enumerable.Range(0, numberOfMacs).Select(i => MacEntityBuilder.New.Build());
+            mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs));
+
             await macImporter.ImportLatestMultipleAlleleCodes();
 
             var importedMacs = await macRepository.GetAllMacs();
@@ -52,21 +67,41 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
         }
 
         [Test]
-        public async Task ImportMacs_InsertsNewMacs()
+        public async Task ImportMacs_WithExistingMacs_InsertsNewMacs()
         {
-            const int numberOfMacs = 50;
+            const int numberOfMacs = 2;
             // We cannot use LochNessBuilder's "Build(x)" feature as all macs must have unique ids.
             var macs = Enumerable.Range(0, numberOfMacs).Select(i => MacEntityBuilder.New.Build()).ToList();
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs));
             await macImporter.ImportLatestMultipleAlleleCodes();
-            
-            const int numberOfNewMacs = 50;
+
+            const int numberOfNewMacs = 2;
             var newMacs = Enumerable.Range(numberOfMacs, numberOfNewMacs).Select(i => MacEntityBuilder.New.Build());
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs.Concat(newMacs)));
             await macImporter.ImportLatestMultipleAlleleCodes();
-            
+
             var importedMacs = await macRepository.GetAllMacs();
             importedMacs.Count().Should().Be(numberOfMacs + numberOfNewMacs);
+        }
+
+        [Test]
+        public async Task ImportMacs_WithMacsOfDifferentLength_DoesNotReImportAnyMacs()
+        {
+            var shorterEarlyMac = MacEntityBuilder.New.With(m => m.RowKey, "AA");
+            var shorterLateMac = MacEntityBuilder.New.With(m => m.RowKey, "ZZ");
+            var longerEarlyMac = MacEntityBuilder.New.With(m => m.RowKey, "AAA");
+            var longerLateMac = MacEntityBuilder.New.With(m => m.RowKey, "AAZ");
+
+            mockDownloader.DownloadAndUnzipStream().Returns(
+                MacSourceFileBuilder.BuildMacFile(shorterEarlyMac, shorterLateMac, longerEarlyMac));
+            await macImporter.ImportLatestMultipleAlleleCodes();
+
+            mockDownloader.DownloadAndUnzipStream().Returns(
+                MacSourceFileBuilder.BuildMacFile(shorterEarlyMac, shorterLateMac, longerEarlyMac, longerLateMac));
+            await macImporter.ImportLatestMultipleAlleleCodes();
+
+            var importedMacs = await macRepository.GetAllMacs();
+            importedMacs.Count().Should().Be(4);
         }
     }
 }
