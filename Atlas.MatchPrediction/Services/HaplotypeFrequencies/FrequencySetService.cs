@@ -1,6 +1,7 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.Common.Notifications.MessageModels;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Models;
@@ -16,7 +17,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
     internal class FrequencySetService : IFrequencySetService
     {
-        const string SummaryPrefix = "Haplotype Frequency Set Import";
+        private const string SummaryPrefix = "Haplotype Frequency Set Import";
 
         private readonly IFrequencySetMetadataExtractor metadataExtractor;
         private readonly IFrequencySetImporter importer;
@@ -37,13 +38,11 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
         public async Task ImportFrequencySet(FrequencySetFile file)
         {
-            logger.SendTrace($"{SummaryPrefix}: request initiated for file, {file.FileName}.", LogLevel.Info);
-
             try
             {
                 var metaData = metadataExtractor.GetMetadataFromFileName(file.FileName);
                 await importer.Import(metaData, file.Contents);
-                file.ImportedDateTime = DateTimeOffset.Now;
+                file.ImportedDateTime = DateTimeOffset.UtcNow;
 
                 await SendSuccessNotification(file);
             }
@@ -72,11 +71,10 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
             logger.SendEvent(new ErrorEventModel(errorName, ex));
 
-            var exceptionMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
             await notificationsClient.SendAlert(new Alert(
                 errorName,
-                $"Import of file, '{file.FileName}', failed with the following exception message: {exceptionMessage} " +
-                "Full exception info has been logged to Application Insights.",
+                $"Import of file, '{file.FileName}', failed with the following exception message: \"{ex.InnermostMessage()}\". "
+                    + "Full exception info has been logged to Application Insights.",
                 Priority.High,
                 NotificationConstants.OriginatorName));
         }
