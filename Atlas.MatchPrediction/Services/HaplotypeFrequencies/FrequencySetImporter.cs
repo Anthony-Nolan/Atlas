@@ -11,44 +11,51 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 {
     internal interface IFrequencySetImporter
     {
-        Task Import(HaplotypeFrequencySetMetadata metadata, Stream blob);
+        Task Import(FrequencySetFile file);
     }
 
     internal class FrequencySetImporter : IFrequencySetImporter
     {
+        private readonly IFrequencySetMetadataExtractor metadataExtractor;
         private readonly IFrequencyCsvReader frequencyCsvReader;
         private readonly IHaplotypeFrequencySetRepository setRepository;
         private readonly IHaplotypeFrequenciesRepository frequenciesRepository;
 
         public FrequencySetImporter(
+            IFrequencySetMetadataExtractor metadataExtractor,
             IFrequencyCsvReader frequencyCsvReader,
             IHaplotypeFrequencySetRepository setRepository,
             IHaplotypeFrequenciesRepository frequenciesRepository)
         {
+            this.metadataExtractor = metadataExtractor;
             this.frequencyCsvReader = frequencyCsvReader;
             this.setRepository = setRepository;
             this.frequenciesRepository = frequenciesRepository;
         }
 
-        public async Task Import(HaplotypeFrequencySetMetadata metadata, Stream blob)
+        public async Task Import(FrequencySetFile file)
         {
-            if (metadata == null || blob == null)
+            if (file.FullPath.IsNullOrEmpty() || file.Contents == null)
             {
                 throw new ArgumentNullException();
             }
 
-            ValidateMetaData(metadata);
+            var metadata = GetMetadata(file);
             var set = await AddNewInactiveSet(metadata);
-            await StoreFrequencies(blob, set.Id);
+            await StoreFrequencies(file.Contents, set.Id);
             await setRepository.ActivateSet(set.Id);
         }
 
-        private static void ValidateMetaData(HaplotypeFrequencySetMetadata metadata)
+        private HaplotypeFrequencySetMetadata GetMetadata(FrequencySetFile file)
         {
+            var metadata = metadataExtractor.GetMetadataFromFullPath(file.FullPath);
+
             if (!metadata.Ethnicity.IsNullOrEmpty() && metadata.Registry.IsNullOrEmpty())
             {
                 throw new ArgumentException($"Cannot import set: Ethnicity ('{metadata.Ethnicity}') provided but no registry.");
             }
+
+            return metadata;
         }
 
         private async Task<HaplotypeFrequencySet> AddNewInactiveSet(HaplotypeFrequencySetMetadata metadata)

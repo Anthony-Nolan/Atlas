@@ -1,20 +1,20 @@
-﻿using System;
-using System.Linq;
-using Atlas.Common.Utils.Extensions;
+﻿using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Models;
+using System;
+using System.Linq;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 {
     internal interface IFrequencySetMetadataExtractor
     {
-        HaplotypeFrequencySetMetadata GetMetadataFromFileName(string fileName);
+        HaplotypeFrequencySetMetadata GetMetadataFromFullPath(string fullPath);
     }
 
     internal class FrequencySetMetadataExtractor : IFrequencySetMetadataExtractor
     {
-        public HaplotypeFrequencySetMetadata GetMetadataFromFileName(string fileName)
+        public HaplotypeFrequencySetMetadata GetMetadataFromFullPath(string fullPath)
         {
-            var filePathSections = GetFilePathSections(fileName);
+            var filePathSections = GetFilePathSections(fullPath);
 
             return new HaplotypeFrequencySetMetadata
             {
@@ -24,18 +24,18 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             };
         }
 
-        private static string[] GetFilePathSections(string fileName)
+        private static string[] GetFilePathSections(string fullPath)
         {
-            if (fileName.IsNullOrEmpty())
+            if (fullPath.IsNullOrEmpty())
             {
-                throw new ArgumentException($"{nameof(fileName)} cannot be null or empty.");
+                throw new ArgumentException($"{nameof(fullPath)} cannot be null or empty.");
             }
 
-            var filePathSections = fileName.Split('/');
+            var filePathSections = fullPath.Split('/');
 
             if (filePathSections.Length < 1 || filePathSections.Length > 3)
             {
-                throw new ArgumentException($"'{fileName}' is not a valid {nameof(fileName)}.");
+                throw new ArgumentException($"'{fullPath}' is not a valid {nameof(fullPath)}.");
             }
 
             return filePathSections;

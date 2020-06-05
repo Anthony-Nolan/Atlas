@@ -18,15 +18,15 @@ namespace Atlas.MatchPrediction.Functions.Functions
 
         [FunctionName(nameof(ImportHaplotypeFrequencySet))]
         public async Task ImportHaplotypeFrequencySet(
-            [BlobTrigger("%AzureStorage:HaplotypeFrequencySetImportContainer%/{fileName}", Connection = "AzureStorage:ConnectionString")]
+            [BlobTrigger("%AzureStorage:HaplotypeFrequencySetImportContainer%/{fullPath}", Connection = "AzureStorage:ConnectionString")]
             Stream blob,
-            string fileName,
+            string fullPath,
             BlobProperties properties)
         {
             using var file = new FrequencySetFile
             {
                 Contents = blob,
-                FileName = fileName,
+                FullPath = fullPath,
                 UploadedDateTime = properties.LastModified
             };
 

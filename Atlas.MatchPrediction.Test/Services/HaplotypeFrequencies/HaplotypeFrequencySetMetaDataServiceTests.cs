@@ -19,7 +19,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         [TestCase("")]
         public void GetMetadataFromFileName_IsNullOrEmpty_ThrowsException(string fullFileName)
         {
-            metadataExtractor.Invoking(service => service.GetMetadataFromFileName(fullFileName))
+            metadataExtractor.Invoking(service => service.GetMetadataFromFullPath(fullFileName))
                 .Should().Throw<Exception>();
         }
 
@@ -27,7 +27,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         [TestCase("/1/2/fileName")]
         public void GetMetadataFromFileName_ContainsMoreThanTwoSubfolders_ThrowsException(string fullFileName)
         {
-            metadataExtractor.Invoking(service => service.GetMetadataFromFileName(fullFileName))
+            metadataExtractor.Invoking(service => service.GetMetadataFromFullPath(fullFileName))
                 .Should().Throw<Exception>();
         }
 
@@ -39,7 +39,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             const string fileName = "fileName";
             const string fullFileName = registry + "/" + ethnicity + "/" + fileName;
 
-            var metaData = metadataExtractor.GetMetadataFromFileName(fullFileName);
+            var metaData = metadataExtractor.GetMetadataFromFullPath(fullFileName);
 
             metaData.Registry.Should().Be(registry);
             metaData.Ethnicity.Should().Be(ethnicity);
@@ -53,7 +53,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             const string fileName = "fileName";
             const string fullFileName = registry + "/" + fileName;
 
-            var metaData = metadataExtractor.GetMetadataFromFileName(fullFileName);
+            var metaData = metadataExtractor.GetMetadataFromFullPath(fullFileName);
 
             metaData.Registry.Should().Be(registry);
             metaData.Name.Should().Be(fileName);
@@ -65,7 +65,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         {
             const string fileName = "fileName";
 
-            var metaData = metadataExtractor.GetMetadataFromFileName(fileName);
+            var metaData = metadataExtractor.GetMetadataFromFullPath(fileName);
 
             metaData.Name.Should().Be(fileName);
             metaData.Registry.Should().BeNull();
