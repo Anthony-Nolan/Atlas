@@ -20,14 +20,20 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         private IHaplotypeFrequencySetRepository setRepository;
         private IHaplotypeFrequenciesRepository frequencyRepository;
         private IGenotypeLikelihoodCalculator genotypeLikelihoodCalculator;
+        private IGenotypeAlleleTruncater alleleTruncater;
 
         [SetUp]
         public void SetUp()
         {
             genotypeImputer = Substitute.For<IGenotypeImputer>();
+            genotypeImputer = Substitute.For<IGenotypeImputer>();
             frequencyRepository = Substitute.For<IHaplotypeFrequenciesRepository>();
             setRepository = Substitute.For<IHaplotypeFrequencySetRepository>();
             genotypeLikelihoodCalculator = Substitute.For<IGenotypeLikelihoodCalculator>();
+            alleleTruncater = Substitute.For<IGenotypeAlleleTruncater>();
+
+            alleleTruncater.TruncateGenotypeAlleles(Arg.Any<PhenotypeInfo<string>>())
+                .Returns(new PhenotypeInfo<string>());
 
             setRepository.GetActiveSet(Arg.Any<string>(), Arg.Any<string>())
                 .Returns(new HaplotypeFrequencySet {Id = 1});
@@ -45,7 +51,8 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 setRepository,
                 frequencyRepository,
                 genotypeImputer,
-                genotypeLikelihoodCalculator
+                genotypeLikelihoodCalculator,
+                alleleTruncater
             );
         }
 
@@ -68,6 +75,15 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
 
             genotypeLikelihoodCalculator.Received(1)
                 .CalculateLikelihood(Arg.Any<ImputedGenotype>());
+        }
+
+        [Test]
+        public async Task CalculateLikelihood_TruncateGenotypeAllelesIsCalledOnce()
+        {
+            await genotypeLikelihoodService.CalculateLikelihood(new GenotypeLikelihoodInput());
+
+            alleleTruncater.Received(1)
+                .TruncateGenotypeAlleles(Arg.Any<PhenotypeInfo<string>>());
         }
     }
 }

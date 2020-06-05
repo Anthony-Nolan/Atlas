@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Helpers
+namespace Atlas.Common.Helpers
 {
     public static class AlleleSplitter
     {
