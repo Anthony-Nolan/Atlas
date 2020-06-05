@@ -31,6 +31,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
             });
         }
 
+        [TearDown]
+        public async Task TearDown()
+        {
+            await macRepository.DeleteAllMacs();
+        }
+
         [Test]
         public async Task ImportMacs_InsertsAllMacs()
         {
@@ -43,6 +49,24 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
 
             var importedMacs = await macRepository.GetAllMacs();
             importedMacs.Count().Should().Be(numberOfMacs);
+        }
+
+        [Test]
+        public async Task ImportMacs_InsertsNewMacs()
+        {
+            const int numberOfMacs = 50;
+            // We cannot use LochNessBuilder's "Build(x)" feature as all macs must have unique ids.
+            var macs = Enumerable.Range(0, numberOfMacs).Select(i => MacEntityBuilder.New.Build()).ToList();
+            mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs));
+            await macImporter.ImportLatestMultipleAlleleCodes();
+            
+            const int numberOfNewMacs = 50;
+            var newMacs = Enumerable.Range(numberOfMacs, numberOfNewMacs).Select(i => MacEntityBuilder.New.Build());
+            mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs.Concat(newMacs)));
+            await macImporter.ImportLatestMultipleAlleleCodes();
+            
+            var importedMacs = await macRepository.GetAllMacs();
+            importedMacs.Count().Should().Be(numberOfMacs + numberOfNewMacs);
         }
     }
 }
