@@ -9,12 +9,12 @@ using Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData;
 
 namespace Atlas.MultipleAlleleCodeDictionary.utils
 {
-    public interface IMacParser
+    internal interface IMacParser
     {
         public Task<List<MultipleAlleleCodeEntity>> GetMacsSinceLastEntry(Stream file, string lastMacEntry);
     }
 
-    public class MacLineParser : IMacParser
+    internal class MacLineParser : IMacParser
     {
         private readonly IMacCodeDownloader macCodeDownloader;
         private readonly ILogger logger;

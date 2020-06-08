@@ -10,12 +10,12 @@ using Microsoft.Extensions.Options;
 
 namespace Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData
 {
-    public interface IMacCodeDownloader
+    internal interface IMacCodeDownloader
     {
         public Task<Stream> DownloadAndUnzipStream();
     }
 
-    public class MacCodeDownloader : IMacCodeDownloader
+    internal class MacCodeDownloader : IMacCodeDownloader
     {
         private readonly ILogger logger;
         private readonly WebClient webClient = new WebClient();
