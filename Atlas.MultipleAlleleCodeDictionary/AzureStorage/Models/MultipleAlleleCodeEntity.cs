@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Cosmos.Table;
+﻿using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
+using Microsoft.Azure.Cosmos.Table;
 
 namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models
 {
