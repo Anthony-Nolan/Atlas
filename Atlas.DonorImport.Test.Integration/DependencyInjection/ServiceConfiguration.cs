@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Context;
@@ -19,7 +20,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
         {
             var services = new ServiceCollection();
             SetUpConfiguration(services);
-            services.RegisterDonorImport();
+            services.RegisterDonorImport(sp => new ApplicationInsightsSettings { LogLevel = "Info" });
             RegisterIntegrationTestServices(services);
             SetUpMockServices(services);
             return services.BuildServiceProvider();

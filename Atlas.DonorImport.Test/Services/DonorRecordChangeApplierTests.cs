@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
@@ -31,7 +33,7 @@ namespace Atlas.DonorImport.Test.Services
 
             donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>());
 
-            donorOperationApplier = new DonorRecordChangeApplier(messagingServiceBusClient, donorImportRepository, donorInspectionRepository);
+            donorOperationApplier = new DonorRecordChangeApplier(messagingServiceBusClient, donorImportRepository, donorInspectionRepository, Substitute.For<IHlaCategorisationService>(), Substitute.For<ILogger>());
         }
 
         [Test]
