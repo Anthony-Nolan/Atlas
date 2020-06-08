@@ -1,3 +1,5 @@
+using System;
+
 namespace Atlas.Common.Test.SharedTestHelpers
 {
     /// <summary>
@@ -16,8 +18,12 @@ namespace Atlas.Common.Test.SharedTestHelpers
         public static string NextStringId(string prefix = null)
         {
             var stringId = NextIntId().ToString();
-            
-            return prefix != null ? $"{prefix}{stringId}" : stringId;
+            return $"{prefix}{stringId}";
+        }
+
+        public static Func<string> NextStringIdFactory(string prefix = null)
+        {
+            return () => NextStringId(prefix);
         }
     }
 }

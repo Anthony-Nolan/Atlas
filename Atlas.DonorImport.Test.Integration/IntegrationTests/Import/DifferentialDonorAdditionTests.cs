@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.Clients;
@@ -42,7 +43,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DifferentialDonorA
         public async Task ImportDonors_ForAllAdditions_SendsMatchingUpdate()
         {
             const int numberOfDonors = 5;
-            var donorUpdateFile = DonorImportFileBuilder.WithDefaultMetaData.WithDonors(numberOfDonors).Build();
+            var donorUpdateFile = DonorImportFileBuilder.NewWithoutContents.WithDonorCount(numberOfDonors).Build();
 
             await donorFileImporter.ImportDonorFile(donorUpdateFile);
             
@@ -53,14 +54,13 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DifferentialDonorA
         public async Task ImportDonors_SendsMatchingUpdateWithNewlyAssignedAtlasId()
         {
             const string donorCodePrefix = "external-donor-code";
-            var donorUpdate1 = DonorUpdateBuilder.ForRecordId(IncrementingIdGenerator.NextStringId(donorCodePrefix)).Build();
-            var donorUpdate2 = DonorUpdateBuilder.ForRecordId(IncrementingIdGenerator.NextStringId(donorCodePrefix)).Build();
-            var donorUpdateFile = DonorImportFileBuilder.WithDefaultMetaData.WithDonors(donorUpdate1, donorUpdate2);
+            var donorUpdates = DonorUpdateBuilder.New.WithRecordIdPrefix(donorCodePrefix).Build(2).ToArray();
+            var donorUpdateFile = DonorImportFileBuilder.NewWithoutContents.WithDonors(donorUpdates);
             
             await donorFileImporter.ImportDonorFile(donorUpdateFile);
             
-            var donor1 = await donorRepository.GetDonor(donorUpdate1.RecordId);
-            var donor2 = await donorRepository.GetDonor(donorUpdate2.RecordId);
+            var donor1 = await donorRepository.GetDonor(donorUpdates[0].RecordId);
+            var donor2 = await donorRepository.GetDonor(donorUpdates[1].RecordId);
             
             donor1.AtlasId.Should().NotBe(donor2.AtlasId);
             await serviceBusClient.Received().PublishDonorUpdateMessage(Arg.Is<SearchableDonorUpdate>(u =>

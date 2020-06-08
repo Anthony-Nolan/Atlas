@@ -21,7 +21,7 @@ namespace Atlas.DonorImport.Test.Services
         public void ImportDonorFile_ProcessesAllDonors()
         {
             const int donorCount = 100;
-            var fileStream = DonorImportFileContentsBuilder.New.WithDonors(donorCount).Build().ToStream();
+            var fileStream = DonorImportFileContentsBuilder.New.WithDonorCount(donorCount).Build().ToStream();
             
             var donors = donorImportFileParser.LazilyParseDonorUpdates(fileStream).ToList();
 
