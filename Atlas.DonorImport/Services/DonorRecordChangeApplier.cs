@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
@@ -21,15 +23,21 @@ namespace Atlas.DonorImport.Services
         private readonly IMessagingServiceBusClient messagingServiceBusClient;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDonorReadRepository donorInspectionRepository;
+        private readonly IHlaCategorisationService hlaCategoriser;
+        private readonly ILogger logger;
 
         public DonorRecordChangeApplier(
             IMessagingServiceBusClient messagingServiceBusClient,
             IDonorImportRepository donorImportRepository,
-            IDonorReadRepository donorInspectionRepository)
+            IDonorReadRepository donorInspectionRepository,
+            IHlaCategorisationService hlaCategoriser,
+            ILogger logger)
         {
             this.donorImportRepository = donorImportRepository;
             this.messagingServiceBusClient = messagingServiceBusClient;
             this.donorInspectionRepository = donorInspectionRepository;
+            this.hlaCategoriser = hlaCategoriser;
+            this.logger = logger;
         }
 
         public async Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates)
@@ -74,7 +82,7 @@ namespace Atlas.DonorImport.Services
             }
         }
 
-        private static Donor MapToDatabaseDonor(DonorUpdate fileUpdate)
+        private Donor MapToDatabaseDonor(DonorUpdate fileUpdate)
         {
             var donor = new Donor
             {
@@ -82,24 +90,24 @@ namespace Atlas.DonorImport.Services
                 DonorType = fileUpdate.DonorType.ToDatabaseType(),
                 EthnicityCode = fileUpdate.Ethnicity,
                 RegistryCode = fileUpdate.RegistryCode,
-                A_1 = fileUpdate.Hla.A.Field1,
-                A_2 = fileUpdate.Hla.A.Field2,
-                B_1 = fileUpdate.Hla.B.Field1,
-                B_2 = fileUpdate.Hla.B.Field2,
-                C_1 = fileUpdate.Hla.C?.Field1,
-                C_2 = fileUpdate.Hla.C?.Field2,
-                DPB1_1 = fileUpdate.Hla.DPB1?.Field1,
-                DPB1_2 = fileUpdate.Hla.DPB1?.Field2,
-                DQB1_1 = fileUpdate.Hla.DQB1?.Field1,
-                DQB1_2 = fileUpdate.Hla.DQB1?.Field2,
-                DRB1_1 = fileUpdate.Hla.DRB1.Field1,
-                DRB1_2 = fileUpdate.Hla.DRB1.Field2,
+                A_1 = fileUpdate.Hla.A.ReadField1(hlaCategoriser, logger),
+                A_2 = fileUpdate.Hla.A.ReadField2(hlaCategoriser, logger),
+                B_1 = fileUpdate.Hla.B.ReadField1(hlaCategoriser, logger),
+                B_2 = fileUpdate.Hla.B.ReadField2(hlaCategoriser, logger),
+                C_1 = fileUpdate.Hla.C?.ReadField1(hlaCategoriser, logger),
+                C_2 = fileUpdate.Hla.C?.ReadField2(hlaCategoriser, logger),
+                DPB1_1 = fileUpdate.Hla.DPB1?.ReadField1(hlaCategoriser, logger),
+                DPB1_2 = fileUpdate.Hla.DPB1?.ReadField2(hlaCategoriser, logger),
+                DQB1_1 = fileUpdate.Hla.DQB1?.ReadField1(hlaCategoriser, logger),
+                DQB1_2 = fileUpdate.Hla.DQB1?.ReadField2(hlaCategoriser, logger),
+                DRB1_1 = fileUpdate.Hla.DRB1.ReadField1(hlaCategoriser, logger),
+                DRB1_2 = fileUpdate.Hla.DRB1.ReadField2(hlaCategoriser, logger),
             };
             donor.Hash = donor.CalculateHash();
             return donor;
         }
 
-        private static SearchableDonorUpdate MapToMatchingUpdateMessage(DonorUpdate fileUpdate, int atlasId)
+        private SearchableDonorUpdate MapToMatchingUpdateMessage(DonorUpdate fileUpdate, int atlasId)
         {
             return new SearchableDonorUpdate
             {
@@ -111,18 +119,18 @@ namespace Atlas.DonorImport.Services
                 {
                     DonorId = atlasId,
                     DonorType = fileUpdate.DonorType.ToMatchingAlgorithmType(),
-                    A_1 = fileUpdate.Hla.A.Field1,
-                    A_2 = fileUpdate.Hla.A.Field2,
-                    B_1 = fileUpdate.Hla.B.Field1,
-                    B_2 = fileUpdate.Hla.B.Field2,
-                    C_1 = fileUpdate.Hla.C.Field1,
-                    C_2 = fileUpdate.Hla.C.Field2,
-                    DPB1_1 = fileUpdate.Hla.DPB1.Field1,
-                    DPB1_2 = fileUpdate.Hla.DPB1.Field2,
-                    DQB1_1 = fileUpdate.Hla.DQB1.Field1,
-                    DQB1_2 = fileUpdate.Hla.DQB1.Field2,
-                    DRB1_1 = fileUpdate.Hla.DRB1.Field1,
-                    DRB1_2 = fileUpdate.Hla.DRB1.Field2,
+                    A_1 = fileUpdate.Hla.A.ReadField1(hlaCategoriser, logger),
+                    A_2 = fileUpdate.Hla.A.ReadField2(hlaCategoriser, logger),
+                    B_1 = fileUpdate.Hla.B.ReadField1(hlaCategoriser, logger),
+                    B_2 = fileUpdate.Hla.B.ReadField2(hlaCategoriser, logger),
+                    C_1 = fileUpdate.Hla.C.ReadField1(hlaCategoriser, logger),
+                    C_2 = fileUpdate.Hla.C.ReadField2(hlaCategoriser, logger),
+                    DPB1_1 = fileUpdate.Hla.DPB1.ReadField1(hlaCategoriser, logger),
+                    DPB1_2 = fileUpdate.Hla.DPB1.ReadField2(hlaCategoriser, logger),
+                    DQB1_1 = fileUpdate.Hla.DQB1.ReadField1(hlaCategoriser, logger),
+                    DQB1_2 = fileUpdate.Hla.DQB1.ReadField2(hlaCategoriser, logger),
+                    DRB1_1 = fileUpdate.Hla.DRB1.ReadField1(hlaCategoriser, logger),
+                    DRB1_2 = fileUpdate.Hla.DRB1.ReadField2(hlaCategoriser, logger),
                 }
             };
         }
