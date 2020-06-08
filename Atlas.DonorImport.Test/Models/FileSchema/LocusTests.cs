@@ -1,5 +1,8 @@
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.DonorImport.Models.FileSchema;
 using FluentAssertions;
+using NSubstitute;
 using NUnit.Framework;
 
 #pragma warning disable 618
@@ -9,15 +12,27 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
     [TestFixture]
     internal class LocusTests
     {
-        private const string DefaultMolecularHlaValue = "hla-molecular";
+        private const string DefaultMolecularHlaValue = "*hla-molecular";
         private const string DefaultSerologyHlaValue = "hla-serology";
+        private ILogger logger = Substitute.For<ILogger>();
+        private IHlaCategorisationService permissiveCategoriser = Substitute.For<IHlaCategorisationService>();
+        private IHlaCategorisationService dismissiveCategoriser = Substitute.For<IHlaCategorisationService>();
+
+        [OneTimeSetUp]
+        public void SetUp()
+        {
+            permissiveCategoriser = Substitute.For<IHlaCategorisationService>();
+            permissiveCategoriser.IsRecognisableHla(default).ReturnsForAnyArgs(true);
+            dismissiveCategoriser = Substitute.For<IHlaCategorisationService>();
+            dismissiveCategoriser.IsRecognisableHla(default).ReturnsForAnyArgs(false);
+        }
 
         [Test]
         public void Field1_WhenOnlyMolecularTypingPresent_ReturnsMolecularField1()
         {
             var locus = new Locus {Dna = new DnaLocus {Field1 = DefaultMolecularHlaValue}};
 
-            locus.Field1.Should().Be(DefaultMolecularHlaValue);
+            locus.ReadField1(permissiveCategoriser, logger).Should().Be(DefaultMolecularHlaValue);
         }
 
         [Test]
@@ -25,7 +40,7 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         {
             var locus = new Locus {Dna = new DnaLocus {Field2 = DefaultMolecularHlaValue}};
 
-            locus.Field2.Should().Be(DefaultMolecularHlaValue);
+            locus.ReadField2(permissiveCategoriser, logger).Should().Be(DefaultMolecularHlaValue);
         }
 
         [Test]
@@ -33,7 +48,7 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         {
             var locus = new Locus {Serology = new SerologyLocus() {Field1 = DefaultSerologyHlaValue}};
 
-            locus.Field1.Should().Be(DefaultSerologyHlaValue);
+            locus.ReadField1(permissiveCategoriser, logger).Should().Be(DefaultSerologyHlaValue);
         }
 
         [Test]
@@ -41,7 +56,7 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         {
             var locus = new Locus {Serology = new SerologyLocus() {Field2 = DefaultSerologyHlaValue}};
 
-            locus.Field2.Should().Be(DefaultSerologyHlaValue);
+            locus.ReadField2(permissiveCategoriser, logger).Should().Be(DefaultSerologyHlaValue);
         }
 
         [TestCase(DefaultMolecularHlaValue, null, DefaultMolecularHlaValue)]
@@ -62,7 +77,7 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
                 Serology = new SerologyLocus() {Field1 = serologyTyping}
             };
 
-            locus.Field1.Should().Be(expectedField);
+            locus.ReadField1(permissiveCategoriser, logger).Should().Be(expectedField);
         }
         
         [TestCase(DefaultMolecularHlaValue, null, DefaultMolecularHlaValue)]
@@ -83,7 +98,7 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
                 Serology = new SerologyLocus() {Field2 = serologyTyping}
             };
 
-            locus.Field2.Should().Be(expectedField);
+            locus.ReadField2(permissiveCategoriser, logger).Should().Be(expectedField);
         }
 
         [Test]
@@ -91,7 +106,7 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         {
             var locus = new Locus();
 
-            locus.Field1.Should().BeNull();
+            locus.ReadField1(permissiveCategoriser, logger).Should().BeNull();
         }
 
         [Test]
@@ -99,7 +114,7 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         {
             var locus = new Locus();
 
-            locus.Field2.Should().BeNull();
+            locus.ReadField2(permissiveCategoriser, logger).Should().BeNull();
         }
     }
 }
