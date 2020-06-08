@@ -18,7 +18,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         Task<string> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour);
         Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName);
         Task<IHlaMatchingMetadata> GetHlaMatchingMetadata(Locus locus, string hlaName);
-        Task<List<string>> GetTwoFieldAlleleForAmbiguousHla(Locus locus, string hlaName);
+        Task<List<string>> GetTwoFieldAllelesForAmbiguousHla(Locus locus, string hlaName);
         Task<LocusInfo<IHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
         Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
@@ -128,20 +128,20 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         }
 
         //TODO: ATLAS-372: Do lookup for hla and return associated alleles
-        public async Task<List<string>> GetTwoFieldAlleleForAmbiguousHla(Locus locus, string hlaName)
+        public async Task<List<string>> GetTwoFieldAllelesForAmbiguousHla(Locus locus, string hlaName)
         {
             return new List<string>
             {
-                "01:01",
-                "08:01",
-                "07:02",
-                "06:02",
-                "05:01",
-                "15:01",
-                "13:01",
-                "14:04",
-                "03:01",
-                "02:01"
+                "Hla1:Hla1",
+                "Hla2:Hla1",
+                "Hla2:Hla2",
+                "Hla3:Hla1",
+                "Hla3:Hla2",
+                "Hla3:Hla3",
+                "Hla4:Hla1",
+                "Hla4:Hla2",
+                "Hla4:Hla3",
+                "Hla4:Hla4"
             };
         }
 
