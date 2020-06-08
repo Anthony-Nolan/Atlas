@@ -39,8 +39,8 @@ namespace Atlas.DonorImport.Test.Services
         {
             var donorUpdates = new List<DonorUpdate>
             {
-                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-1").With(d => d.UpdateMode, UpdateMode.Differential).Build(),
-                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-2").With(d => d.UpdateMode, UpdateMode.Differential).Build(),
+                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Differential).Build(),
+                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Differential).Build(),
             };
 
             donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>
@@ -61,8 +61,8 @@ namespace Atlas.DonorImport.Test.Services
         {
             var donorUpdates = new List<DonorUpdate>
             {
-                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-1").With(d => d.UpdateMode, UpdateMode.Differential).Build(),
-                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-2").With(d => d.UpdateMode, UpdateMode.Differential).Build(),
+                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Differential).Build(),
+                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Differential).Build(),
             };
 
             donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(donorUpdates.ToDictionary(d => d.RecordId, d => new Donor()));
@@ -97,7 +97,7 @@ namespace Atlas.DonorImport.Test.Services
         {
             var donorUpdates = new List<DonorUpdate>
             {
-                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-1").With(d => d.UpdateMode, UpdateMode.Full).Build(),
+                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Full).Build(),
             };
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates);
@@ -110,8 +110,8 @@ namespace Atlas.DonorImport.Test.Services
         {
             var donorUpdates = new List<DonorUpdate>
             {
-                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-1").With(d => d.UpdateMode, UpdateMode.Full).Build(),
-                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-2").With(d => d.UpdateMode, UpdateMode.Full).Build(),
+                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Full).Build(),
+                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Full).Build(),
             };
 
             donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>

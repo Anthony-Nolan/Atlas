@@ -11,7 +11,7 @@ using NUnit.Framework;
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialDataLoad
 {
     /// <summary>
-    /// While most of the tests in this suite can use memory streams of files built by the test themselves, this test runs on a real input file.
+    /// While most of the other tests in this suite can use memory streams of files built by the test themselves, this test runs on a real input file.
     /// This grants us extra certainty that there are no issues in our serialisation of in-memory files in other tests.
     /// </summary>
     [TestFixture]
@@ -66,7 +66,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
         private async Task ImportFile()
         {
             const string fileName = "1000-initial-donors.json";
-            var donorTestFilePath = $"Atlas.DonorImport.Test.Integration.IntegrationTests.InitialDataLoad.{fileName}";
+            // Relies on namespace matching file nesting, but is resilient to file re-structure.
+            var donorTestFilePath = $"{typeof(InitialDataLoadTests).Namespace}.{fileName}";
             await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFilePath))
             {
                 await donorFileImporter.ImportDonorFile(new DonorImportFile{ Contents = stream, FileName = fileName});

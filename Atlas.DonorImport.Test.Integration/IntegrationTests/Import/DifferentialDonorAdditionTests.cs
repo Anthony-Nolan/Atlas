@@ -42,7 +42,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DifferentialDonorA
         public async Task ImportDonors_ForAllAdditions_SendsMatchingUpdate()
         {
             const int numberOfDonors = 5;
-            var donorUpdateFile = DonorImportFileBuilder.WithDefaultMetaData.WithDonors(numberOfDonors).Build();
+            var donorUpdateFile = DonorImportFileBuilder.NewWithoutContents.WithDonorCount(numberOfDonors).Build();
 
             await donorFileImporter.ImportDonorFile(donorUpdateFile);
             
@@ -53,9 +53,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.DifferentialDonorA
         public async Task ImportDonors_SendsMatchingUpdateWithNewlyAssignedAtlasId()
         {
             const string donorCodePrefix = "external-donor-code";
-            var donorUpdate1 = DonorUpdateBuilder.ForRecordId(IncrementingIdGenerator.NextStringId(donorCodePrefix)).Build();
-            var donorUpdate2 = DonorUpdateBuilder.ForRecordId(IncrementingIdGenerator.NextStringId(donorCodePrefix)).Build();
-            var donorUpdateFile = DonorImportFileBuilder.WithDefaultMetaData.WithDonors(donorUpdate1, donorUpdate2);
+            var donorUpdate1 = DonorUpdateBuilder.New.WithRecordIdPrefix(donorCodePrefix).Build();
+            var donorUpdate2 = DonorUpdateBuilder.New.WithRecordIdPrefix(donorCodePrefix).Build();
+            var donorUpdateFile = DonorImportFileBuilder.NewWithoutContents.WithDonors(donorUpdate1, donorUpdate2);
             
             await donorFileImporter.ImportDonorFile(donorUpdateFile);
             
