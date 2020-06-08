@@ -95,10 +95,11 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.DonorTypePa
 
         private async Task ImportDonorFile(string fileName)
         {
-            var donorTestFile = $"Atlas.DonorImport.Test.Integration.IntegrationTests.DonorTypeParsing.{fileName}";
-            await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFile))
+            // Relies on namespace matching file nesting, but is resilient to file re-structure.
+            var donorTestFilePath = $"{typeof(DonorTypeParsingTests).Namespace}.{fileName}";
+            await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFilePath))
             {
-                await donorFileImporter.ImportDonorFile(new DonorImportFile {Contents = stream, FileName = donorTestFile});
+                await donorFileImporter.ImportDonorFile(new DonorImportFile {Contents = stream, FileName = donorTestFilePath});
             }
         }
     }

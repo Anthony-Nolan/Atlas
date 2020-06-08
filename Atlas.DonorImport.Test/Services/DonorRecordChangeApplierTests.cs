@@ -37,11 +37,10 @@ namespace Atlas.DonorImport.Test.Services
         [Test]
         public async Task ApplyDonorOperationBatch_WithCreationsOnly_WritesBatchToDatabase()
         {
-            var donorUpdates = new List<DonorUpdate>
-            {
-                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-1").With(d => d.UpdateMode, UpdateMode.Differential).Build(),
-                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-2").With(d => d.UpdateMode, UpdateMode.Differential).Build(),
-            };
+            var donorUpdates = DonorUpdateBuilder.New
+                .With(d => d.UpdateMode, UpdateMode.Differential)
+                .Build(2)
+                .ToList();
 
             donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>
             {
@@ -59,13 +58,13 @@ namespace Atlas.DonorImport.Test.Services
         [Test]
         public async Task ApplyDonorOperationBatch_ForDifferentialUpdate_WithCreationsOnly_PostsAMatchingUpdateForEachDonor()
         {
-            var donorUpdates = new List<DonorUpdate>
-            {
-                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-1").With(d => d.UpdateMode, UpdateMode.Differential).Build(),
-                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-2").With(d => d.UpdateMode, UpdateMode.Differential).Build(),
-            };
+            var donorUpdates = DonorUpdateBuilder.New
+                .With(d => d.UpdateMode, UpdateMode.Differential)
+                .Build(2)
+                .ToList();
 
-            donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(donorUpdates.ToDictionary(d => d.RecordId, d => new Donor()));
+            donorInspectionRepository.GetDonorsByExternalDonorCodes(null)
+                .ReturnsForAnyArgs(donorUpdates.ToDictionary(d => d.RecordId, d => new Donor()));
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates);
 
@@ -91,13 +90,13 @@ namespace Atlas.DonorImport.Test.Services
                 u.DonorId == atlasId
             ));
         }
-        
+
         [Test]
         public async Task ApplyDonorOperationBatch_ForFullUpdate_DoesNotFetchNewlyAssignedAtlasIds()
         {
             var donorUpdates = new List<DonorUpdate>
             {
-                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-1").With(d => d.UpdateMode, UpdateMode.Full).Build(),
+                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Full).Build(),
             };
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates);
@@ -108,11 +107,10 @@ namespace Atlas.DonorImport.Test.Services
         [Test]
         public async Task ApplyDonorOperationBatch_ForFullUpdate_DoesNotPostMatchingUpdates()
         {
-            var donorUpdates = new List<DonorUpdate>
-            {
-                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-1").With(d => d.UpdateMode, UpdateMode.Full).Build(),
-                DonorUpdateBuilder.New.With(d => d.RecordId, "donor-2").With(d => d.UpdateMode, UpdateMode.Full).Build(),
-            };
+            var donorUpdates = DonorUpdateBuilder.New
+                .With(d => d.UpdateMode, UpdateMode.Full)
+                .Build(2)
+                .ToList();
 
             donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>
             {

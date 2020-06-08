@@ -44,8 +44,8 @@ namespace Atlas.DonorImport.Services
             }
             catch (Exception e)
             {
-                var summary = $"Donor Import Failed: {file.Contents}";
-                var description = @$"Importing donors for file: {file.Contents} has failed. With exception {e.Message}. If there were more than 
+                var summary = $"Donor Import Failed: {file.FileName}";
+                var description = @$"Importing donors for file: {file.FileName} has failed. With exception {e.Message}. If there were more than 
                                   {BatchSize} donor updates in the file, the file may have been partially imported - manual investigation is 
                                   recommended. See Application Insights for more information.";
                 var alert = new Alert(summary, description, Priority.Medium);
