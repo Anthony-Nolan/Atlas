@@ -14,5 +14,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models
             Hla = macEntity.HLA;
             IsGeneric = macEntity.IsGeneric;
         }
+
+        internal MultipleAlleleCode(string mac, string hla, bool isGeneric)
+        {
+            Mac = mac;
+            Hla = hla;
+            IsGeneric = isGeneric;
+        }
     }
 }
