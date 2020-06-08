@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text.RegularExpressions;
 using Atlas.Common.GeneticData.Hla.Models;
@@ -9,7 +10,8 @@ namespace Atlas.Common.GeneticData.Hla.Services
 {
     public interface IHlaCategorisationService
     {
-        HlaTypingCategory GetHlaTypingCategory(string hlaName);
+        bool IsRecognisableHla(string hlaDescriptor);
+        HlaTypingCategory GetHlaTypingCategory(string hlaDescriptor);
     }
 
     internal class HlaCategorisationService : IHlaCategorisationService
@@ -32,20 +34,36 @@ namespace Atlas.Common.GeneticData.Hla.Services
             {$"^{MolecularFirstFieldPattern}:{AlleleFinalFieldPattern}(\\/{AlleleFinalFieldPattern}){{1,}}$", HlaTypingCategory.AlleleStringOfSubtypes}
         };
 
-        public HlaTypingCategory GetHlaTypingCategory(string hlaName)
+        public bool TryGetHlaTypingCategory(string hlaDescriptor, [NotNullWhen(true)]out HlaTypingCategory? category)
         {
-            var name = hlaName.Trim().ToUpper();
+            var name = hlaDescriptor.Trim().ToUpper();
 
             foreach (var pattern in TypingCategoryPatterns.Keys)
             {
                 if (new Regex(pattern).IsMatch(name))
                 {
-                    return TypingCategoryPatterns[pattern];
+                    category = TypingCategoryPatterns[pattern];
+                    return true;
                 }
             }
 
-            throw new AtlasHttpException(HttpStatusCode.BadRequest,
-                    $"Typing category of HLA name: {name} could not be determined.");
+            category = null;
+            return false;
+        }
+
+        public HlaTypingCategory GetHlaTypingCategory(string hlaDescriptor)
+        {
+            if (TryGetHlaTypingCategory(hlaDescriptor, out var category))
+            {
+                return category.Value;
+            }
+
+            throw new AtlasHttpException(HttpStatusCode.BadRequest, $"Typing category of HLA name: {hlaDescriptor} could not be determined.");
+        }
+
+        public bool IsRecognisableHla(string hlaDescriptor)
+        {
+            return TryGetHlaTypingCategory(hlaDescriptor, out _);
         }
     }
 }
