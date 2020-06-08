@@ -2,7 +2,7 @@
 
 namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models
 {
-    public class MultipleAlleleCodeEntity : TableEntity
+    internal class MultipleAlleleCodeEntity : TableEntity
     {
         public MultipleAlleleCodeEntity()
         {
