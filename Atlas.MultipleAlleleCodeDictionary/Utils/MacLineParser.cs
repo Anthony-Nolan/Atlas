@@ -50,11 +50,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
             return macCodes;
         }
 
-        private static MultipleAlleleCodeEntity ParseMac(string macString)
+        private static MultipleAlleleCode ParseMac(string macString)
         {
             var substrings = macString.Split('\t');
             var isGeneric = substrings[0] != "*";
-            return new MultipleAlleleCodeEntity(substrings[1], substrings[2], isGeneric);
+            return new MultipleAlleleCode(substrings[1], substrings[2], isGeneric);
         }
 
         private static void ReadToEntry(StreamReader reader, string entryToReadTo)
