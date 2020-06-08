@@ -7,7 +7,6 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
@@ -19,6 +18,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         Task<string> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour);
         Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName);
         Task<IHlaMatchingMetadata> GetHlaMatchingMetadata(Locus locus, string hlaName);
+        Task<List<string>> GetTwoFieldAlleleForAmbiguousHla(Locus locus, string hlaName);
         Task<LocusInfo<IHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
         Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
@@ -125,6 +125,24 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         public async Task<IHlaMatchingMetadata> GetHlaMatchingMetadata(Locus locus, string hlaName)
         {
             return await hlaMatchingMetadataService.GetHlaMetadata(locus, hlaName, activeHlaNomenclatureVersion);
+        }
+
+        //TODO: ATLAS-372: Do lookup for hla and return associated alleles
+        public async Task<List<string>> GetTwoFieldAlleleForAmbiguousHla(Locus locus, string hlaName)
+        {
+            return new List<string>
+            {
+                "01:01",
+                "08:01",
+                "07:02",
+                "06:02",
+                "05:01",
+                "15:01",
+                "13:01",
+                "14:04",
+                "03:01",
+                "02:01"
+            };
         }
 
         public async Task<LocusInfo<IHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping)
