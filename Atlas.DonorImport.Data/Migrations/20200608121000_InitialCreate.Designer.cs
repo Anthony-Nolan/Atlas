@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.DonorImport.Data.Migrations
 {
     [DbContext(typeof(DonorContext))]
-    [Migration("20200522182914_AddDonorIndex")]
-    partial class AddDonorIndex
+    [Migration("20200608121000_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -22,7 +22,7 @@ namespace Atlas.DonorImport.Data.Migrations
 
             modelBuilder.Entity("Atlas.DonorImport.Data.Models.Donor", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("AtlasId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
@@ -63,27 +63,29 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.Property<string>("DRB1_2")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DonorId")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
-
                     b.Property<int>("DonorType")
                         .HasColumnType("int");
 
                     b.Property<string>("EthnicityCode")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(256)")
+                        .HasMaxLength(256);
+
+                    b.Property<string>("ExternalDonorCode")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
 
                     b.Property<string>("Hash")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("RegistryCode")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(256)")
+                        .HasMaxLength(256);
 
-                    b.HasKey("Id");
+                    b.HasKey("AtlasId");
 
-                    b.HasIndex("DonorId")
+                    b.HasIndex("ExternalDonorCode")
                         .IsUnique()
-                        .HasFilter("[DonorId] IS NOT NULL");
+                        .HasFilter("[ExternalDonorCode] IS NOT NULL");
 
                     b.HasIndex("Hash");
 
