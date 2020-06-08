@@ -40,7 +40,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
         [Test]
         public async Task ImportMacs_WillNotReplaceExistingMacs()
         {
-            // Arrange
             var shorterEarlyMac = MacEntityBuilder.New.With(m => m.RowKey, "AA").Build();
             var shorterLateMac = MacEntityBuilder.New.With(m => m.RowKey, "ZZ").Build();
             var lastMac = MacEntityBuilder.New.With(m => m.RowKey, "ZZZ").Build();
@@ -56,10 +55,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(oldMacs.Concat(newMacs)));
             mockRepository.GetLastMacEntry().Returns(lastOldMac);
             
-            // Act
             await macImporter.ImportLatestMultipleAlleleCodes();
             
-            // Assert
             await mockRepository.Received().InsertMacs(Arg.Is<List<MultipleAlleleCodeEntity>>(x => x.Count == numberOfNewMacs));
             
         }
