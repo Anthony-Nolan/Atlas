@@ -18,7 +18,6 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Atlas.MultipleAlleleCodeDictionary.Test" />
     <InternalsVisibleTo Include="Atlas.MultipleAlleleCodeDictionary.Test.Integration" />
-    <InternalsVisibleTo Include="Atlas.Functions" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
   
