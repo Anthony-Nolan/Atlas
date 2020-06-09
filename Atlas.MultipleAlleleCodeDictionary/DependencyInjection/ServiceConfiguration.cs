@@ -17,7 +17,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.DependencyInjection
 {
     public static class ServiceConfiguration
     {
-        public static void RegisterMacDictionaryImportTypes(this IServiceCollection services)
+        internal static void RegisterMacDictionaryImportTypes(this IServiceCollection services)
         {
             services.RegisterServices();
             services.RegisterSettings();

@@ -4,7 +4,7 @@
     "ApplicationInsights:LogLevel": "Info",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "MacImport:ConnectionString": "UseDevelopmentStorage=true",
+    "MacImport:ConnectionString": "DefaultEndpointsProtocol=https;AccountName=devatlasstorage;AccountKey=ELvrCzBAaZBrpmSgZhV1X18q619mv3+dp+ldsd6D6QGYAEIVTO1c690eOiK4HmyBBmrczjW4gK6BZjE54ZJggA==;EndpointSuffix=core.windows.net",
     "MacImport:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
     "MacImport:TableName": "AtlasMultipleAlleleCodes",
     "MessagingServiceBus:ConnectionString": "override-this",

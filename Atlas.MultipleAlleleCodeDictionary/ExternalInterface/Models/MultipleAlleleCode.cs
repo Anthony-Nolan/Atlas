@@ -1,4 +1,4 @@
-﻿using Atlas.MultipleAlleleCodeDictionary.Models;
+﻿using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
 
 namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models
 {
@@ -8,18 +8,18 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models
         public string Hla { get; set; }
         public bool IsGeneric { get; set; }
 
-        internal MultipleAlleleCode(MultipleAlleleCodeEntity macEntity)
-        {
-            Mac = macEntity.Mac;
-            Hla = macEntity.HLA;
-            IsGeneric = macEntity.IsGeneric;
-        }
-
         internal MultipleAlleleCode(string mac, string hla, bool isGeneric)
         {
             Mac = mac;
             Hla = hla;
             IsGeneric = isGeneric;
+        }
+
+        internal MultipleAlleleCode(MultipleAlleleCodeEntity mac)
+        {
+            Mac = mac.Mac;
+            Hla = mac.HLA;
+            IsGeneric = mac.IsGeneric;
         }
     }
 }
