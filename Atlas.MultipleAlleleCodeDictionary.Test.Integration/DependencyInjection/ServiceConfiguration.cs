@@ -2,8 +2,10 @@ using System;
 using System.IO;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.MultipleAlleleCodeDictionary.DependencyInjection;
+using Atlas.Common.Utils.Extensions;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,8 +19,13 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjectio
         public static IServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
+            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterOptions<MacImportSettings>("MacImport");
             SetUpConfiguration(services);
-            services.RegisterMacDictionaryImportTypes();
+            services.RegisterMacDictionary(
+                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value,
+                sp => sp.GetService<IOptions<MacImportSettings>>().Value
+                );
             services.RegisterMacDictionaryUsageServices(
                 sp => "TODO: Remove HLA Service",
                 sp => "TODO: Remove HLA Service",
