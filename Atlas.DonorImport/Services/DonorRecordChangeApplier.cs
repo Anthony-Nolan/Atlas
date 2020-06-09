@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
@@ -23,20 +23,20 @@ namespace Atlas.DonorImport.Services
         private readonly IMessagingServiceBusClient messagingServiceBusClient;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDonorReadRepository donorInspectionRepository;
-        private readonly IHlaCategorisationService hlaCategoriser;
+        private readonly IImportedLocusInterpreter locusInterpreter;
         private readonly ILogger logger;
 
         public DonorRecordChangeApplier(
             IMessagingServiceBusClient messagingServiceBusClient,
             IDonorImportRepository donorImportRepository,
             IDonorReadRepository donorInspectionRepository,
-            IHlaCategorisationService hlaCategoriser,
+            IImportedLocusInterpreter locusInterpreter,
             ILogger logger)
         {
             this.donorImportRepository = donorImportRepository;
             this.messagingServiceBusClient = messagingServiceBusClient;
             this.donorInspectionRepository = donorInspectionRepository;
-            this.hlaCategoriser = hlaCategoriser;
+            this.locusInterpreter = locusInterpreter;
             this.logger = logger;
         }
 
@@ -84,24 +84,33 @@ namespace Atlas.DonorImport.Services
 
         private Donor MapToDatabaseDonor(DonorUpdate fileUpdate)
         {
+            locusInterpreter.SetDonorContext(fileUpdate);
+
+            var interpretedA = locusInterpreter.Interpret(fileUpdate.Hla.A);
+            var interpretedB = locusInterpreter.Interpret(fileUpdate.Hla.B);
+            var interpretedC = locusInterpreter.Interpret(fileUpdate.Hla.C);
+            var interpretedDpb1 = locusInterpreter.Interpret(fileUpdate.Hla.DPB1);
+            var interpretedDqb1 = locusInterpreter.Interpret(fileUpdate.Hla.DQB1);
+            var interpretedDrb1 = locusInterpreter.Interpret(fileUpdate.Hla.DRB1);
+
             var donor = new Donor
             {
                 ExternalDonorCode = fileUpdate.RecordId,
                 DonorType = fileUpdate.DonorType.ToDatabaseType(),
                 EthnicityCode = fileUpdate.Ethnicity,
                 RegistryCode = fileUpdate.RegistryCode,
-                A_1 = fileUpdate.Hla.A.ReadField1(hlaCategoriser, logger),
-                A_2 = fileUpdate.Hla.A.ReadField2(hlaCategoriser, logger),
-                B_1 = fileUpdate.Hla.B.ReadField1(hlaCategoriser, logger),
-                B_2 = fileUpdate.Hla.B.ReadField2(hlaCategoriser, logger),
-                C_1 = fileUpdate.Hla.C?.ReadField1(hlaCategoriser, logger),
-                C_2 = fileUpdate.Hla.C?.ReadField2(hlaCategoriser, logger),
-                DPB1_1 = fileUpdate.Hla.DPB1?.ReadField1(hlaCategoriser, logger),
-                DPB1_2 = fileUpdate.Hla.DPB1?.ReadField2(hlaCategoriser, logger),
-                DQB1_1 = fileUpdate.Hla.DQB1?.ReadField1(hlaCategoriser, logger),
-                DQB1_2 = fileUpdate.Hla.DQB1?.ReadField2(hlaCategoriser, logger),
-                DRB1_1 = fileUpdate.Hla.DRB1.ReadField1(hlaCategoriser, logger),
-                DRB1_2 = fileUpdate.Hla.DRB1.ReadField2(hlaCategoriser, logger),
+                A_1 = interpretedA.Position1,
+                A_2 = interpretedA.Position2,
+                B_1 = interpretedB.Position1,
+                B_2 = interpretedB.Position2,
+                C_1 = interpretedC.Position1,
+                C_2 = interpretedC.Position2,
+                DPB1_1 = interpretedDpb1.Position1,
+                DPB1_2 = interpretedDpb1.Position2,
+                DQB1_1 = interpretedDqb1.Position1,
+                DQB1_2 = interpretedDqb1.Position2,
+                DRB1_1 = interpretedDrb1.Position1,
+                DRB1_2 = interpretedDrb1.Position2,
             };
             donor.Hash = donor.CalculateHash();
             return donor;
@@ -109,6 +118,16 @@ namespace Atlas.DonorImport.Services
 
         private SearchableDonorUpdate MapToMatchingUpdateMessage(DonorUpdate fileUpdate, int atlasId)
         {
+            //TODO: Pass in a pre-interpreted DB Donor instead
+            locusInterpreter.SetDonorContext(fileUpdate);
+
+            var interpretedA = locusInterpreter.Interpret(fileUpdate.Hla.A);
+            var interpretedB = locusInterpreter.Interpret(fileUpdate.Hla.B);
+            var interpretedC = locusInterpreter.Interpret(fileUpdate.Hla.C);
+            var interpretedDpb1 = locusInterpreter.Interpret(fileUpdate.Hla.DPB1);
+            var interpretedDqb1 = locusInterpreter.Interpret(fileUpdate.Hla.DQB1);
+            var interpretedDrb1 = locusInterpreter.Interpret(fileUpdate.Hla.DRB1);
+
             return new SearchableDonorUpdate
             {
                 AuditId = 0,
@@ -119,18 +138,18 @@ namespace Atlas.DonorImport.Services
                 {
                     DonorId = atlasId,
                     DonorType = fileUpdate.DonorType.ToMatchingAlgorithmType(),
-                    A_1 = fileUpdate.Hla.A.ReadField1(hlaCategoriser, logger),
-                    A_2 = fileUpdate.Hla.A.ReadField2(hlaCategoriser, logger),
-                    B_1 = fileUpdate.Hla.B.ReadField1(hlaCategoriser, logger),
-                    B_2 = fileUpdate.Hla.B.ReadField2(hlaCategoriser, logger),
-                    C_1 = fileUpdate.Hla.C.ReadField1(hlaCategoriser, logger),
-                    C_2 = fileUpdate.Hla.C.ReadField2(hlaCategoriser, logger),
-                    DPB1_1 = fileUpdate.Hla.DPB1.ReadField1(hlaCategoriser, logger),
-                    DPB1_2 = fileUpdate.Hla.DPB1.ReadField2(hlaCategoriser, logger),
-                    DQB1_1 = fileUpdate.Hla.DQB1.ReadField1(hlaCategoriser, logger),
-                    DQB1_2 = fileUpdate.Hla.DQB1.ReadField2(hlaCategoriser, logger),
-                    DRB1_1 = fileUpdate.Hla.DRB1.ReadField1(hlaCategoriser, logger),
-                    DRB1_2 = fileUpdate.Hla.DRB1.ReadField2(hlaCategoriser, logger),
+                    A_1 = interpretedA.Position1,
+                    A_2 = interpretedA.Position2,
+                    B_1 = interpretedB.Position1,
+                    B_2 = interpretedB.Position2,
+                    C_1 = interpretedC.Position1,
+                    C_2 = interpretedC.Position2,
+                    DPB1_1 = interpretedDpb1.Position1,
+                    DPB1_2 = interpretedDpb1.Position2,
+                    DQB1_1 = interpretedDqb1.Position1,
+                    DQB1_2 = interpretedDqb1.Position2,
+                    DRB1_1 = interpretedDrb1.Position1,
+                    DRB1_2 = interpretedDrb1.Position2,
                 }
             };
         }

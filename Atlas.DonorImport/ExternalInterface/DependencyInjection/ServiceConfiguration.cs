@@ -51,6 +51,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IDonorImportFileParser, DonorImportFileParser>();
             services.AddScoped<IDonorRecordChangeApplier, DonorRecordChangeApplier>();
             services.RegisterCommonGeneticServices();
+            services.AddScoped<IImportedLocusInterpreter, ImportedLocusInterpreter>();
         }
 
         private static void RegisterDonorReaderServices(this IServiceCollection services)

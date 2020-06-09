@@ -1,39 +1,66 @@
-using System;
 using System.Collections.Generic;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Models.FileSchema
 {
-    // ReSharper disable InconsistentNaming
-    // ReSharper disable ClassNeverInstantiated.Global - Instantiated by JSON parser
-    // ReSharper disable UnusedAutoPropertyAccessor.Global
-    internal class Hla
+    internal interface IImportedLocusInterpreter
     {
-        public Locus A { get; set; }
-        public Locus B { get; set; }
-        public Locus C { get; set; }
-        public Locus DPB1 { get; set; }
-        public Locus DQB1 { get; set; }
-        public Locus DRB1 { get; set; }
+        LocusInfo<string> Interpret(ImportedLocus locus);
+        /// <summary>
+        /// Store contextual information for use with logging warnings.
+        /// </summary>
+        /// <param name="fileUpdate"></param>
+        void SetDonorContext(DonorUpdate fileUpdate);
     }
 
-    internal class Locus
+    internal class ImportedLocusInterpreter : IImportedLocusInterpreter
     {
-        // ReSharper disable once MemberCanBePrivate.Global - Needed for JSON parsing
-        [Obsolete("Access via ReadField1 and ReadField2, not directly - this property is only for deserialization purposes.")]
-        public DnaLocus Dna { get; set; }
+        private readonly IHlaCategorisationService storedHlaCategoriser;
+        private readonly ILogger storedLogger;
+        private DonorUpdate currentDonorFileData = null;
+        private TwoFieldStringData Dna;
+        private TwoFieldStringData Serology;
 
-        [Obsolete("Access via ReadField1 and ReadField2, not directly - this property is only for deserialization purposes.")]
-        [JsonProperty(PropertyName = "ser")]
-        public SerologyLocus Serology { get; set; }
+
+        public ImportedLocusInterpreter(IHlaCategorisationService hlaCategoriser, ILogger logger)
+        {
+            this.storedHlaCategoriser = hlaCategoriser;
+            this.storedLogger = logger;
+        }
+
+        public LocusInfo<string> Interpret(ImportedLocus locus)
+        {
+#pragma warning disable 618
+            Dna = MergeEmptyToNull(locus?.Dna);
+            Serology = MergeEmptyToNull(locus?.Serology);
+            field1IsPrecalculated = false;
+            field2IsPrecalculated = false;
+#pragma warning restore 618
+
+            return new LocusInfo<string>
+            {
+                Position1 = ReadField1(storedHlaCategoriser, storedLogger),
+                Position2 = ReadField2(storedHlaCategoriser, storedLogger)
+            };
+        }
+
+        private string ToNullIfEmpty(string input) => string.IsNullOrEmpty(input) ? null : input;
+        private TwoFieldStringData MergeEmptyToNull(TwoFieldStringData input) => new TwoFieldStringData { Field1 = ToNullIfEmpty(input?.Field1), Field2 = ToNullIfEmpty(input?.Field2) };
+
+        /// <inheritdoc />
+        public void SetDonorContext(DonorUpdate fileUpdate)
+        {
+            this.currentDonorFileData = fileUpdate;
+        }
 
 #pragma warning disable 618 // Dna & Serology are not Obsolete, but would be considered private if not for deserialization to this class
         #region Field1
         private bool field1IsPrecalculated = false;
         private string precalculatedField1 = null;
-        public string ReadField1(IHlaCategorisationService hlaCategoriser, ILogger logger)
+        private string ReadField1(IHlaCategorisationService hlaCategoriser, ILogger logger)
         {
             if (!field1IsPrecalculated)
             {
@@ -55,7 +82,8 @@ namespace Atlas.DonorImport.Models.FileSchema
         #region Field2
         private bool field2IsPrecalculated = false;
         private string precalculatedField2 = null;
-        public string ReadField2(IHlaCategorisationService hlaCategoriser, ILogger logger)
+
+        private string ReadField2(IHlaCategorisationService hlaCategoriser, ILogger logger)
         {
             if (!field2IsPrecalculated)
             {
@@ -118,24 +146,5 @@ namespace Atlas.DonorImport.Models.FileSchema
             return dnaField1;
         }
 
-    }
-
-    internal class DnaLocus : TwoFieldDefaultingStringData
-    {
-    }
-
-    internal class SerologyLocus : TwoFieldDefaultingStringData
-    {
-    }
-
-    internal abstract class TwoFieldDefaultingStringData
-    {
-        [JsonIgnore]
-        private string raw1;
-        public string Field1 { get => raw1; set => raw1 = string.IsNullOrEmpty(value) ? null : value; }
-
-        [JsonIgnore]
-        private string raw2;
-        public string Field2 { get => raw2; set => raw2 = string.IsNullOrEmpty(value) ? null : value; }
     }
 }
