@@ -1,4 +1,5 @@
-﻿using Atlas.Common.GeneticData.Hla.Models;
+﻿using System.Collections.Generic;
+using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Utils.Http;
 using NUnit.Framework;
@@ -119,6 +120,23 @@ namespace Atlas.Common.Test.Hla.Services
         public void GetHlaTypingCategory_WhenHlaNameFitsAlleleStringOfSubtypesPattern_ReturnsAlleleStringOfSubtypes(string hlaName)
         {
             Assert.AreEqual(hlaCategorisationService.GetHlaTypingCategory(hlaName), HlaTypingCategory.AlleleStringOfSubtypes);
+        }
+
+        [Test, Repeat(100000), Ignore("Only used for manual benchmarking. Ran in ~18.8s")]
+        public void PerformanceTest()
+        {
+            const string nmdpCode = "*01:NMDP";
+            const string xxCode = "*01:XX";
+            const string gGroup = "01:01:901G";
+            const string pGroup = "01:901P";
+            const string serology = "7";
+            const string allele = "*01:01";
+            const string alleleStringOfNames = "*01:01/02:01";
+            const string alleleStringOfSubtypes = "*01:01/02";
+            foreach (var hla in new List<string> {nmdpCode, xxCode, gGroup, pGroup, serology, allele, alleleStringOfNames, alleleStringOfSubtypes})
+            {
+                hlaCategorisationService.GetHlaTypingCategory(hla);
+            }
         }
     }
 }
