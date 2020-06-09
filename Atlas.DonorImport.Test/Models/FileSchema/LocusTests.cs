@@ -1,3 +1,4 @@
+using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.DonorImport.Models.FileSchema;
@@ -15,8 +16,8 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         private const string DefaultMolecularHlaValue = "*hla-molecular";
         private const string DefaultSerologyHlaValue = "hla-serology";
         private ILogger logger = Substitute.For<ILogger>();
-        private IHlaCategorisationService permissiveCategoriser = Substitute.For<IHlaCategorisationService>();
-        private IHlaCategorisationService dismissiveCategoriser = Substitute.For<IHlaCategorisationService>();
+        private IHlaCategorisationService permissiveCategoriser;
+        private IHlaCategorisationService dismissiveCategoriser;
 
         [OneTimeSetUp]
         public void SetUp()
@@ -28,35 +29,15 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         }
 
         [Test]
-        public void Field1_WhenOnlyMolecularTypingPresent_ReturnsMolecularField1()
+        public void Fields1And2_WhenOnlyMolecularTypingPresent_ReturnsMolecularFields()
         {
-            var locus = new Locus {Dna = new DnaLocus {Field1 = DefaultMolecularHlaValue}};
-
-            locus.ReadField1(permissiveCategoriser, logger).Should().Be(DefaultMolecularHlaValue);
+            PerformLocusReadingTest(true, DefaultMolecularHlaValue, DefaultMolecularHlaValue, false, DefaultMolecularHlaValue, DefaultMolecularHlaValue);
         }
 
         [Test]
-        public void Field2_WhenOnlyMolecularTypingPresent_ReturnsMolecularField2()
+        public void Fields1And2_WhenOnlySerologyTypingPresent_ReturnsSerologyFields()
         {
-            var locus = new Locus {Dna = new DnaLocus {Field2 = DefaultMolecularHlaValue}};
-
-            locus.ReadField2(permissiveCategoriser, logger).Should().Be(DefaultMolecularHlaValue);
-        }
-
-        [Test]
-        public void Field1_WhenOnlySerologyTypingPresent_ReturnsSerologyField1()
-        {
-            var locus = new Locus {Serology = new SerologyLocus() {Field1 = DefaultSerologyHlaValue}};
-
-            locus.ReadField1(permissiveCategoriser, logger).Should().Be(DefaultSerologyHlaValue);
-        }
-
-        [Test]
-        public void Field2_WhenOnlySerologyTypingPresent_ReturnsSerologyField2()
-        {
-            var locus = new Locus {Serology = new SerologyLocus() {Field2 = DefaultSerologyHlaValue}};
-
-            locus.ReadField2(permissiveCategoriser, logger).Should().Be(DefaultSerologyHlaValue);
+            PerformLocusReadingTest(false, true, DefaultSerologyHlaValue, DefaultSerologyHlaValue, DefaultSerologyHlaValue, DefaultSerologyHlaValue);
         }
 
         [TestCase(DefaultMolecularHlaValue, null, DefaultMolecularHlaValue)]
@@ -66,55 +47,72 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         [TestCase(DefaultMolecularHlaValue, DefaultSerologyHlaValue, DefaultMolecularHlaValue)]
         [TestCase(null, null, null)]
         [TestCase("", "", null)]
-        public void Field1_WhenMolecularAndSerologyTypingPresent_ReturnsCorrectField(
+        public void Field1And2_WhenMolecularAndSerologyTypingPresentAndMatch_ReturnsCorrectField(
             string molecularTyping,
             string serologyTyping,
             string expectedField)
         {
-            var locus = new Locus
-            {
-                Dna = new DnaLocus() {Field1 = molecularTyping},
-                Serology = new SerologyLocus() {Field1 = serologyTyping}
-            };
-
-            locus.ReadField1(permissiveCategoriser, logger).Should().Be(expectedField);
-        }
-        
-        [TestCase(DefaultMolecularHlaValue, null, DefaultMolecularHlaValue)]
-        [TestCase(DefaultMolecularHlaValue, "", DefaultMolecularHlaValue)]
-        [TestCase(null, DefaultSerologyHlaValue, DefaultSerologyHlaValue)]
-        [TestCase("", DefaultSerologyHlaValue, DefaultSerologyHlaValue)]
-        [TestCase(DefaultMolecularHlaValue, DefaultSerologyHlaValue, DefaultMolecularHlaValue)]
-        [TestCase(null, null, null)]
-        [TestCase("", "", null)]
-        public void Field2_WhenMolecularAndSerologyTypingPresent_ReturnsCorrectField(
-            string molecularTyping,
-            string serologyTyping,
-            string expectedField)
-        {
-            var locus = new Locus
-            {
-                Dna = new DnaLocus() {Field2 = molecularTyping},
-                Serology = new SerologyLocus() {Field2 = serologyTyping}
-            };
-
-            locus.ReadField2(permissiveCategoriser, logger).Should().Be(expectedField);
+            PerformLocusReadingTest(true, molecularTyping, molecularTyping, true, serologyTyping, serologyTyping, expectedField, expectedField);
         }
 
         [Test]
-        public void Field1_WhenNoTypingPresent_ReturnsNull()
+        public void Field1And2_WhenNoTypingPresent_ReturnsNull()
         {
-            var locus = new Locus();
-
-            locus.ReadField1(permissiveCategoriser, logger).Should().BeNull();
+            PerformLocusReadingTest(false, false,  null, null);
         }
 
-        [Test]
-        public void Field2_WhenNoTypingPresent_ReturnsNull()
+        #region Overloads
+        private void PerformLocusReadingTest(bool molecularIsDefined, bool serologyIsDefined, string expectedField1, string expectedField2)
+        {
+            if (molecularIsDefined)
+            {
+                throw new InvalidOperationException("The Test declared Molecular data was defined by didn't actually define it.");
+            }
+
+            if (serologyIsDefined)
+            {
+                throw new InvalidOperationException("The Test declared Serology data was defined by didn't actually define it.");
+            }
+
+            PerformLocusReadingTest(false, null, null, false, null, null, expectedField1, expectedField2);
+        }
+
+        private void PerformLocusReadingTest(bool molecularIsDefined, bool serologyIsDefined, string serologyField1, string serologyField2, string expectedField1, string expectedField2)
+        {
+            if (molecularIsDefined)
+            {
+                throw new InvalidOperationException("The Test declared Molecular data was defined by didn't provide it.");
+            }
+
+            PerformLocusReadingTest(false, null, null, serologyIsDefined, serologyField1, serologyField2, expectedField1, expectedField2);
+        }
+
+        private void PerformLocusReadingTest(bool molecularIsDefined, string molecularField1, string molecularField2, bool serologyIsDefined, string expectedField1, string expectedField2)
+        {
+            if (serologyIsDefined)
+            {
+                throw new InvalidOperationException("The Test declared Serology data was defined by didn't actually define it.");
+            }
+
+            PerformLocusReadingTest(molecularIsDefined, molecularField1, molecularField2, false, null, null, expectedField1, expectedField2);
+        }
+        #endregion
+
+        private void PerformLocusReadingTest(bool molecularIsDefined, string molecularField1, string molecularField2, bool serologyIsDefined, string serologyField1, string serologyField2, string expectedField1, string expectedField2, IHlaCategorisationService categoriser = null)
         {
             var locus = new Locus();
+            if (molecularIsDefined)
+            {
+                locus.Dna = new DnaLocus { Field1 = molecularField1, Field2 = molecularField2 };
+            }
+            if (serologyIsDefined)
+            {
+                locus.Serology = new SerologyLocus { Field1 = serologyField1, Field2 = serologyField2 };
+            }
 
-            locus.ReadField2(permissiveCategoriser, logger).Should().BeNull();
+            var categoriserToUse = categoriser ?? permissiveCategoriser;
+            locus.ReadField1(categoriserToUse, logger).Should().Be(expectedField1);
+            locus.ReadField2(categoriserToUse, logger).Should().Be(expectedField2);
         }
     }
 }
