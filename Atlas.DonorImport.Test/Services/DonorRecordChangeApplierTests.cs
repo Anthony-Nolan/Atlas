@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
@@ -23,6 +24,7 @@ namespace Atlas.DonorImport.Test.Services
         private IDonorReadRepository donorInspectionRepository;
 
         private IDonorRecordChangeApplier donorOperationApplier;
+        private IImportedLocusInterpreter naiveDnalocusInterpretter;
 
         [SetUp]
         public void SetUp()
@@ -30,10 +32,16 @@ namespace Atlas.DonorImport.Test.Services
             messagingServiceBusClient = Substitute.For<IMessagingServiceBusClient>();
             donorImportRepository = Substitute.For<IDonorImportRepository>();
             donorInspectionRepository = Substitute.For<IDonorReadRepository>();
+            naiveDnalocusInterpretter = Substitute.For<IImportedLocusInterpreter>();
+            naiveDnalocusInterpretter.Interpret(default).ReturnsForAnyArgs((call) =>
+            {
+                var arg = call.Arg<ImportedLocus>();
+                return new LocusInfo<string>(arg?.Dna?.Field1, arg?.Dna?.Field2);
+            });
 
             donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>());
 
-            donorOperationApplier = new DonorRecordChangeApplier(messagingServiceBusClient, donorImportRepository, donorInspectionRepository, Substitute.For<IHlaCategorisationService>(), Substitute.For<ILogger>());
+            donorOperationApplier = new DonorRecordChangeApplier(messagingServiceBusClient, donorImportRepository, donorInspectionRepository, naiveDnalocusInterpretter, Substitute.For<ILogger>());
         }
 
         [Test]

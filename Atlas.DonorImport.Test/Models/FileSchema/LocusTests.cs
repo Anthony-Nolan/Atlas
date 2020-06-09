@@ -246,7 +246,7 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         private class LocusTestPerformer
         {
             public static LocusTestPerformer NewTestCase => new LocusTestPerformer();
-            private Locus locus = new Locus();
+            private ImportedLocus locus = new ImportedLocus();
             private IHlaCategorisationService categoriser = null;
             private ILogger logger = Substitute.For<ILogger>();
 
@@ -258,20 +258,21 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
 
             public LocusTestPerformer WithMolecular(string field1, string field2)
             {
-                locus.Dna = new DnaLocus { Field1 = field1, Field2 = field2 };
+                locus.Dna = new TwoFieldStringData { Field1 = field1, Field2 = field2 };
                 return this;
             }
 
             public LocusTestPerformer WithSerology(string field1, string field2)
             {
-                locus.Serology = new SerologyLocus { Field1 = field1, Field2 = field2 };
+                locus.Serology = new TwoFieldStringData { Field1 = field1, Field2 = field2 };
                 return this;
             }
 
             public void ShouldHaveFields(string expectedField1, string expectedField2)
             {
-                locus.ReadField1(categoriser, logger).Should().Be(expectedField1);
-                locus.ReadField2(categoriser, logger).Should().Be(expectedField2);
+                var interprettedLocus = new ImportedLocusInterpreter(categoriser, logger).Interpret(locus);
+                interprettedLocus.Position1.Should().Be(expectedField1);
+                interprettedLocus.Position2.Should().Be(expectedField2);
             }
 
             public LocusTestPerformer WithHomozygousMolecular(string bothFields) => WithMolecular(bothFields, bothFields);
