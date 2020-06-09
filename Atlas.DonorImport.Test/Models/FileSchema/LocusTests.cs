@@ -10,12 +10,29 @@ using NUnit.Framework;
 
 namespace Atlas.DonorImport.Test.Models.FileSchema
 {
+    /// <summary>
+    /// All of these tests are considering the following object:
+    /// {
+    ///     Dna: {
+    ///         Field1: `molecularField1`,
+    ///         Field2: `molecularField2`,
+    ///     },
+    ///     Serology: {
+    ///         Field1: `molecularField1`,
+    ///         Field2: `molecularField2`,
+    ///     }
+    /// }
+    ///
+    /// Where occasionally the Dna or Serology sub-objects are entirely absent.
+    /// 
+    /// And then answering the question:
+    ///    Given that data, what are "The Field1 Value" and "The Field2 Value"         
+    /// </summary>
     [TestFixture]
     internal class LocusTests
     {
-        private const string DefaultMolecularHlaValue = "*hla-molecular";
-        private const string DefaultSerologyHlaValue = "hla-serology";
-        private ILogger logger = Substitute.For<ILogger>();
+        private const string MolecularHlaValue = "*hla-molecular";
+        private const string SerologyHlaValue = "hla-serology";
         private IHlaCategorisationService permissiveCategoriser;
         private IHlaCategorisationService dismissiveCategoriser;
 
@@ -29,212 +46,237 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         }
 
         [Test]
-        public void Fields1And2_WhenOnlyMolecularTypingPresent_ReturnsMolecularFields()
+        public void Field1And2_WhenNoTypingPresent_ReturnsNull()
         {
-            PerformLocusReadingTest(true, DefaultMolecularHlaValue, DefaultMolecularHlaValue, false, DefaultMolecularHlaValue, DefaultMolecularHlaValue);
+            LocusTestPerformer.NewTestCase
+                .WithCategoriser(permissiveCategoriser)
+                .ShouldHaveHomozygousFields(null);
         }
 
         [Test]
-        public void Fields1And2_WhenOnlySerologyTypingPresent_ReturnsSerologyFields()
+        public void Fields1And2_WhenOnlyHomozygousMolecularTypingsArePresent_ReturnsMolecularFields()
         {
-            PerformLocusReadingTest(false, true, DefaultSerologyHlaValue, DefaultSerologyHlaValue, DefaultSerologyHlaValue, DefaultSerologyHlaValue);
+            LocusTestPerformer.NewTestCase
+                .WithCategoriser(permissiveCategoriser)
+                .WithHomozygousMolecular(MolecularHlaValue)
+                .ShouldHaveHomozygousFields(MolecularHlaValue);
         }
 
-        [TestCase(DefaultMolecularHlaValue, null, DefaultMolecularHlaValue)]
-        [TestCase(DefaultMolecularHlaValue, "", DefaultMolecularHlaValue)]
-        [TestCase(null, DefaultSerologyHlaValue, DefaultSerologyHlaValue)]
-        [TestCase("", DefaultSerologyHlaValue, DefaultSerologyHlaValue)]
-        [TestCase(DefaultMolecularHlaValue, DefaultSerologyHlaValue, DefaultMolecularHlaValue)]
+        [Test]
+        public void Fields1And2_WhenOnlyHomozygousSerologyTypingsArePresent_ReturnsSerologyFields()
+        {
+            LocusTestPerformer.NewTestCase
+                .WithCategoriser(permissiveCategoriser)
+                .WithHomozygousSerology(SerologyHlaValue)
+                .ShouldHaveHomozygousFields(SerologyHlaValue);
+        }
+
+        [TestCase(MolecularHlaValue, null, MolecularHlaValue)]
+        [TestCase(MolecularHlaValue, "", MolecularHlaValue)]
+        [TestCase(null, SerologyHlaValue, SerologyHlaValue)]
+        [TestCase("", SerologyHlaValue, SerologyHlaValue)]
+        [TestCase(MolecularHlaValue, SerologyHlaValue, MolecularHlaValue)]
         [TestCase(null, null, null)]
         [TestCase("", "", null)]
-        public void Field1And2_WhenMolecularAndSerologyTypingPresentAndMatch_ReturnsCorrectField(
+        public void Field1And2_WhenHomozygousDataFromFromAVarietyOfMolecularAndOrSerologyTypingsArePresent_ReturnsCorrectHomozygousFields(
             string molecularTyping,
             string serologyTyping,
             string expectedField)
         {
-            PerformLocusReadingTest(true, molecularTyping, molecularTyping, true, serologyTyping, serologyTyping, expectedField, expectedField);
+            LocusTestPerformer.NewTestCase
+                .WithCategoriser(permissiveCategoriser)
+                .WithHomozygousMolecular(molecularTyping)
+                .WithHomozygousSerology(serologyTyping)
+                .ShouldHaveHomozygousFields(expectedField);
         }
 
         [Test]
-        public void Field1And2_WhenNoTypingPresent_ReturnsNull()
-        {
-            PerformLocusReadingTest(false, false,  null, null);
-        }
-
-        [Test]
-        // Four Values: Dna 1, Dna 2, Serology 1, Serology 2 
-        // Each value can be in 4 states: present, empty, null, or parent-property-undefined (PPU)
-        // That would give Dna 16 states (4 * 4) ... but if Dna 1 is PPU, then so is Dna 2, ruling out 6 states.
-        // So Dna combined has 10 states.
-        // Serology also has 10 states.
-        // Dna and Serology are independent, so we have 100 states to test the interactions for ...
+        // Regarding the number of cases here:
+        // We have Four Values: Dna 1, Dna 2, Serology 1, Serology 2 
+        // Each value can be in 3 states, independently: present, emptyString, null
+        // So we have a total of 3^4 = 81 cases.
         //Serology Is fully Specced
-        [TestCase(true, "*1", "*2",  true, "3", "4",    "*1", "*2")]
-        [TestCase(true, "*1", "",    true, "3", "4",    "*1", "*1")]
-        [TestCase(true, "*1", null,  true, "3", "4",    "*1", "*1")]
-        [TestCase(true, "", "*2",    true, "3", "4",    null, "*2")] // These ones are a particularly notable edge case!
-        [TestCase(true, null, "*2",  true, "3", "4",    null, "*2")] // These ones are a particularly notable edge case!
-        [TestCase(true, "", "",      true, "3", "4",    "3", "4")]
-        [TestCase(true, null, "",    true, "3", "4",    "3", "4")]
-        [TestCase(true, "", null,    true, "3", "4",    "3", "4")]
-        [TestCase(true, null, null,  true, "3", "4",    "3", "4")]
-        [TestCase(false, null, null, true, "3", "4",    "3", "4")]
+        [TestCase("*1", "*2",  "3", "4",    "*1", "*2")]
+        [TestCase("*1", "",    "3", "4",    "*1", "*1")]
+        [TestCase("*1", null,  "3", "4",    "*1", "*1")]
+        [TestCase("", "*2",    "3", "4",    null, "*2")] // These ones are a particularly notable edge case!
+        [TestCase(null, "*2",  "3", "4",    null, "*2")] // These ones are a particularly notable edge case!
+        [TestCase("", "",      "3", "4",    "3", "4")]
+        [TestCase(null, "",    "3", "4",    "3", "4")]
+        [TestCase("", null,    "3", "4",    "3", "4")]
+        [TestCase(null, null,  "3", "4",    "3", "4")]
         //Serology Is Partial (2="")
-        [TestCase(true, "*1", "*2",  true, "3", "",     "*1", "*2")]
-        [TestCase(true, "*1", "",    true, "3", "",     "*1", "*1")]
-        [TestCase(true, "*1", null,  true, "3", "",     "*1", "*1")]
-        [TestCase(true, "", "*2",    true, "3", "",     null, "*2")]
-        [TestCase(true, null, "*2",  true, "3", "",     null, "*2")]
-        [TestCase(true, "", "",      true, "3", "",     "3", "3")]
-        [TestCase(true, null, "",    true, "3", "",     "3", "3")]
-        [TestCase(true, "", null,    true, "3", "",     "3", "3")]
-        [TestCase(true, null, null,  true, "3", "",     "3", "3")]
-        [TestCase(false, null, null, true, "3", "",     "3", "3")]
+        [TestCase("*1", "*2",  "3", "",     "*1", "*2")]
+        [TestCase("*1", "",    "3", "",     "*1", "*1")]
+        [TestCase("*1", null,  "3", "",     "*1", "*1")]
+        [TestCase("", "*2",    "3", "",     null, "*2")]
+        [TestCase(null, "*2",  "3", "",     null, "*2")]
+        [TestCase("", "",      "3", "",     "3", "3")]
+        [TestCase(null, "",    "3", "",     "3", "3")]
+        [TestCase("", null,    "3", "",     "3", "3")]
+        [TestCase(null, null,  "3", "",     "3", "3")]
         //Serology Is Partial (2=null)
-        [TestCase(true, "*1", "*2",  true, "3", null,    "*1", "*2")]
-        [TestCase(true, "*1", "",    true, "3", null,    "*1", "*1")]
-        [TestCase(true, "*1", null,  true, "3", null,    "*1", "*1")]
-        [TestCase(true, "", "*2",    true, "3", null,    null, "*2")]
-        [TestCase(true, null, "*2",  true, "3", null,    null, "*2")]
-        [TestCase(true, "", "",      true, "3", null,    "3", "3")]
-        [TestCase(true, null, "",    true, "3", null,    "3", "3")]
-        [TestCase(true, "", null,    true, "3", null,    "3", "3")]
-        [TestCase(true, null, null,  true, "3", null,    "3", "3")]
-        [TestCase(false, null, null, true, "3", null,    "3", "3")]
+        [TestCase("*1", "*2",  "3", null,    "*1", "*2")]
+        [TestCase("*1", "",    "3", null,    "*1", "*1")]
+        [TestCase("*1", null,  "3", null,    "*1", "*1")]
+        [TestCase("", "*2",    "3", null,    null, "*2")]
+        [TestCase(null, "*2",  "3", null,    null, "*2")]
+        [TestCase("", "",      "3", null,    "3", "3")]
+        [TestCase(null, "",    "3", null,    "3", "3")]
+        [TestCase("", null,    "3", null,    "3", "3")]
+        [TestCase(null, null,  "3", null,    "3", "3")]
         //Serology Is Partial (1="")
-        [TestCase(true, "*1", "*2",  true, "", "4",      "*1", "*2")]
-        [TestCase(true, "*1", "",    true, "", "4",      "*1", "*1")]
-        [TestCase(true, "*1", null,  true, "", "4",      "*1", "*1")]
-        [TestCase(true, "", "*2",    true, "", "4",      null, "*2")]
-        [TestCase(true, null, "*2",  true, "", "4",      null, "*2")]
-        [TestCase(true, "", "",      true, "", "4",      null, "4")]
-        [TestCase(true, null, "",    true, "", "4",      null, "4")]
-        [TestCase(true, "", null,    true, "", "4",      null, "4")]
-        [TestCase(true, null, null,  true, "", "4",      null, "4")]
-        [TestCase(false, null, null, true, "", "4",      null, "4")]
+        [TestCase("*1", "*2",  "", "4",      "*1", "*2")]
+        [TestCase("*1", "",    "", "4",      "*1", "*1")]
+        [TestCase("*1", null,  "", "4",      "*1", "*1")]
+        [TestCase("", "*2",    "", "4",      null, "*2")]
+        [TestCase(null, "*2",  "", "4",      null, "*2")]
+        [TestCase("", "",      "", "4",      null, "4")]
+        [TestCase(null, "",    "", "4",      null, "4")]
+        [TestCase("", null,    "", "4",      null, "4")]
+        [TestCase(null, null,  "", "4",      null, "4")]
         //Serology Is Partial (1=null)
-        [TestCase(true, "*1", "*2",  true, null, "4",    "*1", "*2")]
-        [TestCase(true, "*1", "",    true, null, "4",    "*1", "*1")]
-        [TestCase(true, "*1", null,  true, null, "4",    "*1", "*1")]
-        [TestCase(true, "", "*2",    true, null, "4",    null, "*2")]
-        [TestCase(true, null, "*2",  true, null, "4",    null, "*2")]
-        [TestCase(true, "", "",      true, null, "4",    null, "4")]
-        [TestCase(true, null, "",    true, null, "4",    null, "4")]
-        [TestCase(true, "", null,    true, null, "4",    null, "4")]
-        [TestCase(true, null, null,  true, null, "4",    null, "4")]
-        [TestCase(false, null, null, true, null, "4",    null, "4")]
+        [TestCase("*1", "*2",  null, "4",    "*1", "*2")]
+        [TestCase("*1", "",    null, "4",    "*1", "*1")]
+        [TestCase("*1", null,  null, "4",    "*1", "*1")]
+        [TestCase("", "*2",    null, "4",    null, "*2")]
+        [TestCase(null, "*2",  null, "4",    null, "*2")]
+        [TestCase("", "",      null, "4",    null, "4")]
+        [TestCase(null, "",    null, "4",    null, "4")]
+        [TestCase("", null,    null, "4",    null, "4")]
+        [TestCase(null, null,  null, "4",    null, "4")]
         //Serology Is unspecified (both="")
-        [TestCase(true, "*1", "*2",  true, "", "",       "*1", "*2")]
-        [TestCase(true, "*1", "",    true, "", "",       "*1", "*1")]
-        [TestCase(true, "*1", null,  true, "", "",       "*1", "*1")]
-        [TestCase(true, "", "*2",    true, "", "",       null, "*2")]
-        [TestCase(true, null, "*2",  true, "", "",       null, "*2")]
-        [TestCase(true, "", "",      true, "", "",       null, null)]
-        [TestCase(true, null, "",    true, "", "",       null, null)]
-        [TestCase(true, "", null,    true, "", "",       null, null)]
-        [TestCase(true, null, null,  true, "", "",       null, null)]
-        [TestCase(false, null, null, true, "", "",       null, null)]
+        [TestCase("*1", "*2",  "", "",       "*1", "*2")]
+        [TestCase("*1", "",    "", "",       "*1", "*1")]
+        [TestCase("*1", null,  "", "",       "*1", "*1")]
+        [TestCase("", "*2",    "", "",       null, "*2")]
+        [TestCase(null, "*2",  "", "",       null, "*2")]
+        [TestCase("", "",      "", "",       null, null)]
+        [TestCase(null, "",    "", "",       null, null)]
+        [TestCase("", null,    "", "",       null, null)]
+        [TestCase(null, null,  "", "",       null, null)]
         //Serology Is unspecified (both=null)
-        [TestCase(true, "*1", "*2",  true, null, null,   "*1", "*2")]
-        [TestCase(true, "*1", "",    true, null, null,   "*1", "*1")]
-        [TestCase(true, "*1", null,  true, null, null,   "*1", "*1")]
-        [TestCase(true, "", "*2",    true, null, null,   null, "*2")]
-        [TestCase(true, null, "*2",  true, null, null,   null, "*2")]
-        [TestCase(true, "", "",      true, null, null,   null, null)]
-        [TestCase(true, null, "",    true, null, null,   null, null)]
-        [TestCase(true, "", null,    true, null, null,   null, null)]
-        [TestCase(true, null, null,  true, null, null,   null, null)]
-        [TestCase(false, null, null, true, null, null,   null, null)]
+        [TestCase("*1", "*2",  null, null,   "*1", "*2")]
+        [TestCase("*1", "",    null, null,   "*1", "*1")]
+        [TestCase("*1", null,  null, null,   "*1", "*1")]
+        [TestCase("", "*2",    null, null,   null, "*2")]
+        [TestCase(null, "*2",  null, null,   null, "*2")]
+        [TestCase("", "",      null, null,   null, null)]
+        [TestCase(null, "",    null, null,   null, null)]
+        [TestCase("", null,    null, null,   null, null)]
+        [TestCase(null, null,  null, null,   null, null)]
         //Serology Is unspecified ("", null)
-        [TestCase(true, "*1", "*2",  true, "", null,     "*1", "*2")]
-        [TestCase(true, "*1", "",    true, "", null,     "*1", "*1")]
-        [TestCase(true, "*1", null,  true, "", null,     "*1", "*1")]
-        [TestCase(true, "", "*2",    true, "", null,     null, "*2")]
-        [TestCase(true, null, "*2",  true, "", null,     null, "*2")]
-        [TestCase(true, "", "",      true, "", null,     null, null)]
-        [TestCase(true, null, "",    true, "", null,     null, null)]
-        [TestCase(true, "", null,    true, "", null,     null, null)]
-        [TestCase(true, null, null,  true, "", null,     null, null)]
-        [TestCase(false, null, null, true, "", null,     null, null)]
+        [TestCase("*1", "*2",  "", null,     "*1", "*2")]
+        [TestCase("*1", "",    "", null,     "*1", "*1")]
+        [TestCase("*1", null,  "", null,     "*1", "*1")]
+        [TestCase("", "*2",    "", null,     null, "*2")]
+        [TestCase(null, "*2",  "", null,     null, "*2")]
+        [TestCase("", "",      "", null,     null, null)]
+        [TestCase(null, "",    "", null,     null, null)]
+        [TestCase("", null,    "", null,     null, null)]
+        [TestCase(null, null,  "", null,     null, null)]
         //Serology Is unspecified (null, "")
-        [TestCase(true, "*1", "*2",  true, null, "",     "*1", "*2")]
-        [TestCase(true, "*1", "",    true, null, "",     "*1", "*1")]
-        [TestCase(true, "*1", null,  true, null, "",     "*1", "*1")]
-        [TestCase(true, "", "*2",    true, null, "",     null, "*2")]
-        [TestCase(true, null, "*2",  true, null, "",     null, "*2")]
-        [TestCase(true, "", "",      true, null, "",     null, null)]
-        [TestCase(true, null, "",    true, null, "",     null, null)]
-        [TestCase(true, "", null,    true, null, "",     null, null)]
-        [TestCase(true, null, null,  true, null, "",     null, null)]
-        [TestCase(false, null, null, true, null, "",     null, null)]
-        //Serology Is absent (not set)
-        [TestCase(true, "*1", "*2",  false, null, null,  "*1", "*2")]
-        [TestCase(true, "*1", "",    false, null, null,  "*1", "*1")]
-        [TestCase(true, "*1", null,  false, null, null,  "*1", "*1")]
-        [TestCase(true, "", "*2",    false, null, null,  null, "*2")]
-        [TestCase(true, null, "*2",  false, null, null,  null, "*2")]
-        [TestCase(true, "", "",      false, null, null,  null, null)]
-        [TestCase(true, null, "",    false, null, null,  null, null)]
-        [TestCase(true, "", null,    false, null, null,  null, null)]
-        [TestCase(true, null, null,  false, null, null,  null, null)]
-        [TestCase(false, null, null, false, null, null,  null, null)]
-        public void HlaLocusData_GivenThatStringsPresentAreValidHlas_DefaultingBetweenFieldsAndSerologiesAreCorrect(bool molecularIsDefined, string molecularField1, string molecularField2, bool serologyIsDefined, string serologyField1, string serologyField2, string expectedField1, string expectedField2)
+        [TestCase("*1", "*2",  null, "",     "*1", "*2")]
+        [TestCase("*1", "",    null, "",     "*1", "*1")]
+        [TestCase("*1", null,  null, "",     "*1", "*1")]
+        [TestCase("", "*2",    null, "",     null, "*2")]
+        [TestCase(null, "*2",  null, "",     null, "*2")]
+        [TestCase("", "",      null, "",     null, null)]
+        [TestCase(null, "",    null, "",     null, null)]
+        [TestCase("", null,    null, "",     null, null)]
+        [TestCase(null, null,  null, "",     null, null)]
+        public void HlaLocusData_WhenMolecularAndSerologyObjectsAreDefinedButSomeDataIsMissing_DefaultingBetweenFieldsAndSerologiesIsCorrect(
+            string molecularField1,
+            string molecularField2,
+            string serologyField1,
+            string serologyField2,
+            string expectedField1,
+            string expectedField2)
         {
-            PerformLocusReadingTest(molecularIsDefined, molecularField1, molecularField2, serologyIsDefined, serologyField1, serologyField2, expectedField1, expectedField2, permissiveCategoriser);
+            LocusTestPerformer.NewTestCase
+                .WithCategoriser(permissiveCategoriser)
+                .WithMolecular(molecularField1, molecularField2)
+                .WithSerology(serologyField1, serologyField2)
+                .ShouldHaveFields(expectedField1, expectedField2);
         }
 
-        #region Overloads
-        private void PerformLocusReadingTest(bool molecularIsDefined, bool serologyIsDefined, string expectedField1, string expectedField2)
+        [TestCase("*1", "*2",  "*1", "*2")]
+        [TestCase("*1", "",    "*1", "*1")]
+        [TestCase("*1", null,  "*1", "*1")]
+        [TestCase("", "*2",    null, "*2")]
+        [TestCase(null, "*2",  null, "*2")]
+        [TestCase("", "",      null, null)]
+        [TestCase(null, "",    null, null)]
+        [TestCase("", null,    null, null)]
+        [TestCase(null, null,  null, null)]
+
+        public void HlaLocusData_WhenSerologyObjectIsAbsentButSomeMolecularDataIsMissing_DefaultingBetweenFieldsAndSerologiesIsCorrect(
+            string serologyField1,
+            string serologyField2,
+            string expectedField1,
+            string expectedField2)
         {
-            if (molecularIsDefined)
-            {
-                throw new InvalidOperationException("The Test declared Molecular data was defined by didn't actually define it.");
-            }
-
-            if (serologyIsDefined)
-            {
-                throw new InvalidOperationException("The Test declared Serology data was defined by didn't actually define it.");
-            }
-
-            PerformLocusReadingTest(false, null, null, false, null, null, expectedField1, expectedField2);
+            LocusTestPerformer.NewTestCase
+                .WithCategoriser(permissiveCategoriser)
+                .WithMolecular(serologyField1, serologyField2)
+                .ShouldHaveFields(expectedField1, expectedField2);
         }
 
-        private void PerformLocusReadingTest(bool molecularIsDefined, bool serologyIsDefined, string serologyField1, string serologyField2, string expectedField1, string expectedField2)
+        [TestCase("3", "4",    "3", "4")]
+        [TestCase("3", "",     "3", "3")]
+        [TestCase("3", null,   "3", "3")]
+        [TestCase("", "4",     null, "4")]
+        [TestCase(null, "4",   null, "4")]
+        [TestCase("", "",      null, null)]
+        [TestCase(null, null,  null, null)]
+        [TestCase("", null,    null, null)]
+        [TestCase(null, "",    null, null)]
+        public void HlaLocusData_WhenMolecularObjectIsAbsentButSomeSerologyDataIsMissing_DefaultingBetweenFieldsAndSerologiesIsCorrect(
+            string serologyField1,
+            string serologyField2,
+            string expectedField1,
+            string expectedField2)
         {
-            if (molecularIsDefined)
-            {
-                throw new InvalidOperationException("The Test declared Molecular data was defined by didn't provide it.");
-            }
-
-            PerformLocusReadingTest(false, null, null, serologyIsDefined, serologyField1, serologyField2, expectedField1, expectedField2);
+            LocusTestPerformer.NewTestCase
+                .WithCategoriser(permissiveCategoriser)
+                .WithSerology(serologyField1, serologyField2)
+                .ShouldHaveFields(expectedField1, expectedField2);
         }
 
-        private void PerformLocusReadingTest(bool molecularIsDefined, string molecularField1, string molecularField2, bool serologyIsDefined, string expectedField1, string expectedField2)
+        private class LocusTestPerformer
         {
-            if (serologyIsDefined)
+            public static LocusTestPerformer NewTestCase => new LocusTestPerformer();
+            private Locus locus = new Locus();
+            private IHlaCategorisationService categoriser = null;
+            private ILogger logger = Substitute.For<ILogger>();
+
+            public LocusTestPerformer WithCategoriser(IHlaCategorisationService categoriser)
             {
-                throw new InvalidOperationException("The Test declared Serology data was defined by didn't actually define it.");
+                this.categoriser = categoriser;
+                return this;
             }
 
-            PerformLocusReadingTest(molecularIsDefined, molecularField1, molecularField2, false, null, null, expectedField1, expectedField2);
-        }
-        #endregion
-
-        private void PerformLocusReadingTest(bool molecularIsDefined, string molecularField1, string molecularField2, bool serologyIsDefined, string serologyField1, string serologyField2, string expectedField1, string expectedField2, IHlaCategorisationService categoriser = null)
-        {
-            var locus = new Locus();
-            if (molecularIsDefined)
+            public LocusTestPerformer WithMolecular(string field1, string field2)
             {
-                locus.Dna = new DnaLocus { Field1 = molecularField1, Field2 = molecularField2 };
-            }
-            if (serologyIsDefined)
-            {
-                locus.Serology = new SerologyLocus { Field1 = serologyField1, Field2 = serologyField2 };
+                locus.Dna = new DnaLocus { Field1 = field1, Field2 = field2 };
+                return this;
             }
 
-            var categoriserToUse = categoriser ?? permissiveCategoriser;
-            locus.ReadField1(categoriserToUse, logger).Should().Be(expectedField1);
-            locus.ReadField2(categoriserToUse, logger).Should().Be(expectedField2);
+            public LocusTestPerformer WithSerology(string field1, string field2)
+            {
+                locus.Serology = new SerologyLocus { Field1 = field1, Field2 = field2 };
+                return this;
+            }
+
+            public void ShouldHaveFields(string expectedField1, string expectedField2)
+            {
+                locus.ReadField1(categoriser, logger).Should().Be(expectedField1);
+                locus.ReadField2(categoriser, logger).Should().Be(expectedField2);
+            }
+
+            public LocusTestPerformer WithHomozygousMolecular(string bothFields) => WithMolecular(bothFields, bothFields);
+            public LocusTestPerformer WithHomozygousSerology(string bothFields) => WithSerology(bothFields, bothFields);
+            public void ShouldHaveHomozygousFields(string bothFields) => ShouldHaveFields(bothFields, bothFields);
         }
     }
 }
