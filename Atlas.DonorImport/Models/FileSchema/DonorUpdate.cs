@@ -15,7 +15,7 @@ namespace Atlas.DonorImport.Models.FileSchema
         [JsonProperty(PropertyName = "ethn")]
         public string Ethnicity { get; set; }
         
-        public Hla Hla {get;set;}
+        public ImportedHla Hla {get;set;}
         
         public UpdateMode UpdateMode { get; set; }
     }
