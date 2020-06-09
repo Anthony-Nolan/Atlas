@@ -1,7 +1,6 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
@@ -20,7 +19,9 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         /// If not, builds a new appropriate Dictionary and CacheControl, stores them and returns them.
         /// </remarks>
         IHlaMetadataDictionary BuildDictionary(string activeHlaNomenclatureVersion);
+        IHlaMetadataDictionary BuildLatestDictionary();
         IHlaMetadataCacheControl BuildCacheControl(string activeHlaNomenclatureVersion);
+        IHlaMetadataCacheControl BuildLatestCacheControl();
     }
 
     /// <summary>
@@ -111,12 +112,23 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             var cachedTuple = cache.GetOrAdd(key, () => BuildTuple(activeHlaNomenclatureVersion));
             return cachedTuple.Dictionary;
         }
+        public IHlaMetadataDictionary BuildLatestDictionary()
+        {
+            var latestNomenclatureVersion = wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion();
+            return BuildDictionary(latestNomenclatureVersion);
+        }
 
         public IHlaMetadataCacheControl BuildCacheControl(string activeHlaNomenclatureVersion)
         {
             var key = CacheKey(activeHlaNomenclatureVersion);
             var cachedTuple = cache.GetOrAdd(key, () => BuildTuple(activeHlaNomenclatureVersion));
             return cachedTuple.CacheControl;
+        }
+
+        public IHlaMetadataCacheControl BuildLatestCacheControl()
+        {
+            var latestNomenclatureVersion = wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion();
+            return BuildCacheControl(latestNomenclatureVersion);
         }
 
         private CacheObject BuildTuple(string activeHlaNomenclatureVersion)

@@ -1,7 +1,6 @@
 ﻿using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
@@ -102,7 +101,17 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             );
         }
 
+        public IHlaMetadataDictionary BuildLatestDictionary()
+        {
+            throw new NotImplementedException();
+        }
+
         public IHlaMetadataCacheControl BuildCacheControl(string version)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IHlaMetadataCacheControl BuildLatestCacheControl()
         {
             throw new NotImplementedException();
         }
