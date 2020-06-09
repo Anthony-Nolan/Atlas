@@ -44,13 +44,11 @@ namespace Atlas.DonorImport.Models.FileSchema
         }
         private string CalculateField1(IHlaCategorisationService hlaCategoriser, ILogger logger)
         {
-            if (precalculatedField1 != null)
-            {
-                return precalculatedField1;
-            }
-
             var standardisedDnaField1 = StandardiseDnaField(Dna?.Field1, hlaCategoriser, logger);
-            return standardisedDnaField1 ?? Serology?.Field1;
+
+            if(standardisedDnaField1 != null) { return standardisedDnaField1; }
+            if (Dna?.Field2 != null) { return null; }
+            return Serology?.Field1;
         }
         #endregion
 

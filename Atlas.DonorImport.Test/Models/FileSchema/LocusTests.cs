@@ -61,6 +61,128 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
             PerformLocusReadingTest(false, false,  null, null);
         }
 
+        [Test]
+        // Four Values: Dna 1, Dna 2, Serology 1, Serology 2 
+        // Each value can be in 4 states: present, empty, null, or parent-property-undefined (PPU)
+        // That would give Dna 16 states (4 * 4) ... but if Dna 1 is PPU, then so is Dna 2, ruling out 6 states.
+        // So Dna combined has 10 states.
+        // Serology also has 10 states.
+        // Dna and Serology are independent, so we have 100 states to test the interactions for ...
+        //Serology Is fully Specced
+        [TestCase(true, "*1", "*2",  true, "3", "4",    "*1", "*2")]
+        [TestCase(true, "*1", "",    true, "3", "4",    "*1", "*1")]
+        [TestCase(true, "*1", null,  true, "3", "4",    "*1", "*1")]
+        [TestCase(true, "", "*2",    true, "3", "4",    null, "*2")] // These ones are a particularly notable edge case!
+        [TestCase(true, null, "*2",  true, "3", "4",    null, "*2")] // These ones are a particularly notable edge case!
+        [TestCase(true, "", "",      true, "3", "4",    "3", "4")]
+        [TestCase(true, null, "",    true, "3", "4",    "3", "4")]
+        [TestCase(true, "", null,    true, "3", "4",    "3", "4")]
+        [TestCase(true, null, null,  true, "3", "4",    "3", "4")]
+        [TestCase(false, null, null, true, "3", "4",    "3", "4")]
+        //Serology Is Partial (2="")
+        [TestCase(true, "*1", "*2",  true, "3", "",     "*1", "*2")]
+        [TestCase(true, "*1", "",    true, "3", "",     "*1", "*1")]
+        [TestCase(true, "*1", null,  true, "3", "",     "*1", "*1")]
+        [TestCase(true, "", "*2",    true, "3", "",     null, "*2")]
+        [TestCase(true, null, "*2",  true, "3", "",     null, "*2")]
+        [TestCase(true, "", "",      true, "3", "",     "3", "3")]
+        [TestCase(true, null, "",    true, "3", "",     "3", "3")]
+        [TestCase(true, "", null,    true, "3", "",     "3", "3")]
+        [TestCase(true, null, null,  true, "3", "",     "3", "3")]
+        [TestCase(false, null, null, true, "3", "",     "3", "3")]
+        //Serology Is Partial (2=null)
+        [TestCase(true, "*1", "*2",  true, "3", null,    "*1", "*2")]
+        [TestCase(true, "*1", "",    true, "3", null,    "*1", "*1")]
+        [TestCase(true, "*1", null,  true, "3", null,    "*1", "*1")]
+        [TestCase(true, "", "*2",    true, "3", null,    null, "*2")]
+        [TestCase(true, null, "*2",  true, "3", null,    null, "*2")]
+        [TestCase(true, "", "",      true, "3", null,    "3", "3")]
+        [TestCase(true, null, "",    true, "3", null,    "3", "3")]
+        [TestCase(true, "", null,    true, "3", null,    "3", "3")]
+        [TestCase(true, null, null,  true, "3", null,    "3", "3")]
+        [TestCase(false, null, null, true, "3", null,    "3", "3")]
+        //Serology Is Partial (1="")
+        [TestCase(true, "*1", "*2",  true, "", "4",      "*1", "*2")]
+        [TestCase(true, "*1", "",    true, "", "4",      "*1", "*1")]
+        [TestCase(true, "*1", null,  true, "", "4",      "*1", "*1")]
+        [TestCase(true, "", "*2",    true, "", "4",      null, "*2")]
+        [TestCase(true, null, "*2",  true, "", "4",      null, "*2")]
+        [TestCase(true, "", "",      true, "", "4",      null, "4")]
+        [TestCase(true, null, "",    true, "", "4",      null, "4")]
+        [TestCase(true, "", null,    true, "", "4",      null, "4")]
+        [TestCase(true, null, null,  true, "", "4",      null, "4")]
+        [TestCase(false, null, null, true, "", "4",      null, "4")]
+        //Serology Is Partial (1=null)
+        [TestCase(true, "*1", "*2",  true, null, "4",    "*1", "*2")]
+        [TestCase(true, "*1", "",    true, null, "4",    "*1", "*1")]
+        [TestCase(true, "*1", null,  true, null, "4",    "*1", "*1")]
+        [TestCase(true, "", "*2",    true, null, "4",    null, "*2")]
+        [TestCase(true, null, "*2",  true, null, "4",    null, "*2")]
+        [TestCase(true, "", "",      true, null, "4",    null, "4")]
+        [TestCase(true, null, "",    true, null, "4",    null, "4")]
+        [TestCase(true, "", null,    true, null, "4",    null, "4")]
+        [TestCase(true, null, null,  true, null, "4",    null, "4")]
+        [TestCase(false, null, null, true, null, "4",    null, "4")]
+        //Serology Is unspecified (both="")
+        [TestCase(true, "*1", "*2",  true, "", "",       "*1", "*2")]
+        [TestCase(true, "*1", "",    true, "", "",       "*1", "*1")]
+        [TestCase(true, "*1", null,  true, "", "",       "*1", "*1")]
+        [TestCase(true, "", "*2",    true, "", "",       null, "*2")]
+        [TestCase(true, null, "*2",  true, "", "",       null, "*2")]
+        [TestCase(true, "", "",      true, "", "",       null, null)]
+        [TestCase(true, null, "",    true, "", "",       null, null)]
+        [TestCase(true, "", null,    true, "", "",       null, null)]
+        [TestCase(true, null, null,  true, "", "",       null, null)]
+        [TestCase(false, null, null, true, "", "",       null, null)]
+        //Serology Is unspecified (both=null)
+        [TestCase(true, "*1", "*2",  true, null, null,   "*1", "*2")]
+        [TestCase(true, "*1", "",    true, null, null,   "*1", "*1")]
+        [TestCase(true, "*1", null,  true, null, null,   "*1", "*1")]
+        [TestCase(true, "", "*2",    true, null, null,   null, "*2")]
+        [TestCase(true, null, "*2",  true, null, null,   null, "*2")]
+        [TestCase(true, "", "",      true, null, null,   null, null)]
+        [TestCase(true, null, "",    true, null, null,   null, null)]
+        [TestCase(true, "", null,    true, null, null,   null, null)]
+        [TestCase(true, null, null,  true, null, null,   null, null)]
+        [TestCase(false, null, null, true, null, null,   null, null)]
+        //Serology Is unspecified ("", null)
+        [TestCase(true, "*1", "*2",  true, "", null,     "*1", "*2")]
+        [TestCase(true, "*1", "",    true, "", null,     "*1", "*1")]
+        [TestCase(true, "*1", null,  true, "", null,     "*1", "*1")]
+        [TestCase(true, "", "*2",    true, "", null,     null, "*2")]
+        [TestCase(true, null, "*2",  true, "", null,     null, "*2")]
+        [TestCase(true, "", "",      true, "", null,     null, null)]
+        [TestCase(true, null, "",    true, "", null,     null, null)]
+        [TestCase(true, "", null,    true, "", null,     null, null)]
+        [TestCase(true, null, null,  true, "", null,     null, null)]
+        [TestCase(false, null, null, true, "", null,     null, null)]
+        //Serology Is unspecified (null, "")
+        [TestCase(true, "*1", "*2",  true, null, "",     "*1", "*2")]
+        [TestCase(true, "*1", "",    true, null, "",     "*1", "*1")]
+        [TestCase(true, "*1", null,  true, null, "",     "*1", "*1")]
+        [TestCase(true, "", "*2",    true, null, "",     null, "*2")]
+        [TestCase(true, null, "*2",  true, null, "",     null, "*2")]
+        [TestCase(true, "", "",      true, null, "",     null, null)]
+        [TestCase(true, null, "",    true, null, "",     null, null)]
+        [TestCase(true, "", null,    true, null, "",     null, null)]
+        [TestCase(true, null, null,  true, null, "",     null, null)]
+        [TestCase(false, null, null, true, null, "",     null, null)]
+        //Serology Is absent (not set)
+        [TestCase(true, "*1", "*2",  false, null, null,  "*1", "*2")]
+        [TestCase(true, "*1", "",    false, null, null,  "*1", "*1")]
+        [TestCase(true, "*1", null,  false, null, null,  "*1", "*1")]
+        [TestCase(true, "", "*2",    false, null, null,  null, "*2")]
+        [TestCase(true, null, "*2",  false, null, null,  null, "*2")]
+        [TestCase(true, "", "",      false, null, null,  null, null)]
+        [TestCase(true, null, "",    false, null, null,  null, null)]
+        [TestCase(true, "", null,    false, null, null,  null, null)]
+        [TestCase(true, null, null,  false, null, null,  null, null)]
+        [TestCase(false, null, null, false, null, null,  null, null)]
+        public void HlaLocusData_GivenThatStringsPresentAreValidHlas_DefaultingBetweenFieldsAndSerologiesAreCorrect(bool molecularIsDefined, string molecularField1, string molecularField2, bool serologyIsDefined, string serologyField1, string serologyField2, string expectedField1, string expectedField2)
+        {
+            PerformLocusReadingTest(molecularIsDefined, molecularField1, molecularField2, serologyIsDefined, serologyField1, serologyField2, expectedField1, expectedField2, permissiveCategoriser);
+        }
+
         #region Overloads
         private void PerformLocusReadingTest(bool molecularIsDefined, bool serologyIsDefined, string expectedField1, string expectedField2)
         {
