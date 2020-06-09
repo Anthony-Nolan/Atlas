@@ -18,34 +18,61 @@ namespace Atlas.Common.GeneticData.Hla.Services
         private static readonly string ExpressionSuffixPattern = $"[{MolecularTypingNameConstants.ExpressionSuffixes}]?";
         private static readonly string MolecularFirstFieldPattern = $"\\{MolecularTypingNameConstants.Prefix}?{SingleFieldPattern}";
         private static readonly string AlleleFinalFieldPattern = SingleFieldPattern + ExpressionSuffixPattern;
-        private static readonly string AlleleDesignationPattern = $"{MolecularFirstFieldPattern}(:{SingleFieldPattern}){{1,3}}{ExpressionSuffixPattern}";
 
-        private static readonly Dictionary<string, HlaTypingCategory> TypingCategoryPatterns = new Dictionary<string, HlaTypingCategory>
+        private static readonly string AlleleDesignationPattern =
+            $"{MolecularFirstFieldPattern}(:{SingleFieldPattern}){{1,3}}{ExpressionSuffixPattern}";
+
+        private static readonly Dictionary<Regex, HlaTypingCategory> TypingCategoryRegexes = new Dictionary<Regex, HlaTypingCategory>
         {
-            {$"^{MolecularFirstFieldPattern}:(?!XX$)[A-Z]{{2,}}$", HlaTypingCategory.NmdpCode},
-            {$"^{MolecularFirstFieldPattern}:XX$", HlaTypingCategory.XxCode},
-            {$"^{MolecularFirstFieldPattern}(:{SingleFieldPattern}){{2}}G$", HlaTypingCategory.GGroup},
-            {$"^{MolecularFirstFieldPattern}:{SingleFieldPattern}P$", HlaTypingCategory.PGroup},
-            {$"^(?!0){SingleFieldPattern}$", HlaTypingCategory.Serology},
-            {$"^{AlleleDesignationPattern}$", HlaTypingCategory.Allele},
-            {$"^{AlleleDesignationPattern}(\\/{AlleleDesignationPattern}){{1,}}$", HlaTypingCategory.AlleleStringOfNames},
-            {$"^{MolecularFirstFieldPattern}:{AlleleFinalFieldPattern}(\\/{AlleleFinalFieldPattern}){{1,}}$", HlaTypingCategory.AlleleStringOfSubtypes}
+            {
+                CompiledRegex($"^{MolecularFirstFieldPattern}:(?!XX$)[A-Z]{{2,}}$"),
+                HlaTypingCategory.NmdpCode
+            },
+            {
+                CompiledRegex($"^{MolecularFirstFieldPattern}:XX$"),
+                HlaTypingCategory.XxCode
+            },
+            {
+                CompiledRegex($"^{MolecularFirstFieldPattern}(:{SingleFieldPattern}){{2}}G$"),
+                HlaTypingCategory.GGroup
+            },
+            {
+                CompiledRegex($"^{MolecularFirstFieldPattern}:{SingleFieldPattern}P$"),
+                HlaTypingCategory.PGroup
+            },
+            {
+                CompiledRegex($"^(?!0){SingleFieldPattern}$"),
+                HlaTypingCategory.Serology
+            },
+            {
+                CompiledRegex($"^{AlleleDesignationPattern}$"),
+                HlaTypingCategory.Allele
+            },
+            {
+                CompiledRegex($"^{AlleleDesignationPattern}(\\/{AlleleDesignationPattern}){{1,}}$"),
+                HlaTypingCategory.AlleleStringOfNames
+            },
+            {
+                CompiledRegex($"^{MolecularFirstFieldPattern}:{AlleleFinalFieldPattern}(\\/{AlleleFinalFieldPattern}){{1,}}$"),
+                HlaTypingCategory.AlleleStringOfSubtypes
+            }
         };
 
         public HlaTypingCategory GetHlaTypingCategory(string hlaName)
         {
             var name = hlaName.Trim().ToUpper();
 
-            foreach (var pattern in TypingCategoryPatterns.Keys)
+            foreach (var categoryRegex in TypingCategoryRegexes.Keys)
             {
-                if (new Regex(pattern).IsMatch(name))
+                if (categoryRegex.IsMatch(name))
                 {
-                    return TypingCategoryPatterns[pattern];
+                    return TypingCategoryRegexes[categoryRegex];
                 }
             }
 
-            throw new AtlasHttpException(HttpStatusCode.BadRequest,
-                    $"Typing category of HLA name: {name} could not be determined.");
+            throw new AtlasHttpException(HttpStatusCode.BadRequest, $"Typing category of HLA name: {name} could not be determined.");
         }
+
+        private static Regex CompiledRegex(string pattern) => new Regex(pattern, RegexOptions.Compiled);
     }
 }

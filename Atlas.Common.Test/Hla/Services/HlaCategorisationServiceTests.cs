@@ -122,7 +122,7 @@ namespace Atlas.Common.Test.Hla.Services
             Assert.AreEqual(hlaCategorisationService.GetHlaTypingCategory(hlaName), HlaTypingCategory.AlleleStringOfSubtypes);
         }
 
-        [Test, Repeat(100000), Ignore("Only used for manual benchmarking. Ran in ~18.8s")]
+        [Test, Repeat(100000), Ignore("Only used for manual benchmarking. Ran in ~2.9s")]
         public void PerformanceTest()
         {
             const string nmdpCode = "*01:NMDP";
