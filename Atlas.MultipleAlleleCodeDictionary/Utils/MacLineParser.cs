@@ -4,14 +4,14 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData;
 
 namespace Atlas.MultipleAlleleCodeDictionary.utils
 {
     internal interface IMacParser
     {
-        public Task<List<MultipleAlleleCodeEntity>> GetMacsSinceLastEntry(Stream file, string lastMacEntry);
+        public Task<List<MultipleAlleleCode>> GetMacsSinceLastEntry(Stream file, string lastMacEntry);
     }
 
     internal class MacLineParser : IMacParser
@@ -26,10 +26,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
         }
 
         /// <inheritdoc />
-        public async Task<List<MultipleAlleleCodeEntity>> GetMacsSinceLastEntry(Stream file, string lastMacEntry)
+        public async Task<List<MultipleAlleleCode>> GetMacsSinceLastEntry(Stream file, string lastMacEntry)
         {
             logger.SendTrace($"Parsing MACs since: {lastMacEntry}", LogLevel.Info);
-            var macCodes = new List<MultipleAlleleCodeEntity>();
+            var macCodes = new List<MultipleAlleleCode>();
 
             using (var reader = new StreamReader(file))
             {

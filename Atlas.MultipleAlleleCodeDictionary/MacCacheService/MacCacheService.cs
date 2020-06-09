@@ -1,28 +1,20 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
-using Atlas.Common.GeneticData;
-using Atlas.MultipleAlleleCodeDictionary.MacImportService;
-using Atlas.MultipleAlleleCodeDictionary.Models;
+using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using LazyCache;
 
 namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
 {
-
-    internal interface IMacCachingService
+    public interface IMacCache
     {
+        Task<MultipleAlleleCode> GetMacCode(string macCode);
         Task GenerateMacCache();
     }
     
-    internal interface IMacCache
+    internal class MacCache: IMacCache
     {
-        Task<MultipleAlleleCodeEntity> GetMacCode(string macCode);
-    }
-    
-    internal class MacCache: IMacCache, IMacCachingService
-    {
-        
         private readonly IAppCache cache;
         private readonly ILogger logger;
         private readonly IMacRepository macRepository;
@@ -34,15 +26,18 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
             this.macRepository = macRepository;
         }
 
-        public async Task<MultipleAlleleCodeEntity> GetMacCode(string macCode)
+        public async Task<MultipleAlleleCode> GetMacCode(string macCode)
         {
             return await cache.GetOrAddAsync(macCode, () => macRepository.GetMac(macCode));
         }
         
         public async Task GenerateMacCache()
         {
-         
-            
+            var macs = await macRepository.GetAllMacs();
+            foreach (var mac in macs)
+            {
+                cache.GetOrAdd(mac.Mac, () => mac);
+            }
         }
     }
 }

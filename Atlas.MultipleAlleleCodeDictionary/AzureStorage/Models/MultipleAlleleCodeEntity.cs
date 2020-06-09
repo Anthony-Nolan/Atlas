@@ -9,17 +9,18 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models
         {
         }
 
-        public MultipleAlleleCodeEntity(string mac, string hla, bool isGeneric = false)
+        public MultipleAlleleCodeEntity(MultipleAlleleCode mac)
         {
-            PartitionKey = mac.Length.ToString();
-            RowKey = mac;
-            HLA = hla;
-            IsGeneric = isGeneric;
+            PartitionKey = mac.Mac.Length.ToString();
+            RowKey = mac.Mac;
+            HLA = mac.Hla;
+            IsGeneric = mac.IsGeneric;
         }
 
         public string HLA { get; set; }
         public bool IsGeneric { get; set; }
         
         public string Mac => RowKey;
+        public string MacLength => PartitionKey;
     }
 }

@@ -9,6 +9,7 @@ using Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData;
 using Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders;
 using Atlas.MultipleAlleleCodeDictionary.utils;
 using Atlas.Common.ApplicationInsights;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -57,7 +58,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
             
             await macImporter.ImportLatestMultipleAlleleCodes();
             
-            await mockRepository.Received().InsertMacs(Arg.Is<List<MultipleAlleleCodeEntity>>(x => x.Count == numberOfNewMacs));
+            await mockRepository.Received().InsertMacs(Arg.Is<List<MultipleAlleleCode>>(x => x.Count == numberOfNewMacs));
             
         }
     }

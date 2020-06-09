@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData;
 using Atlas.MultipleAlleleCodeDictionary.utils;
 using Polly;
@@ -16,7 +17,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportServices
         public Task ImportLatestMultipleAlleleCodes();
     }
 
-    public class MacImporter : IMacImporter
+    internal class MacImporter : IMacImporter
     {
         private readonly IMacRepository macRepository;
         private readonly IMacParser macParser;
@@ -40,7 +41,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportServices
                 var lastEntryBeforeInsert = await macRepository.GetLastMacEntry();
                 logger.SendTrace($"{tracePrefix}The last MAC entry found was: {lastEntryBeforeInsert}", LogLevel.Info);
 
-                List<MultipleAlleleCodeEntity> newMacs;
+                List<MultipleAlleleCode> newMacs;
                 await using (var macStream = await DownloadMacs())
                 {
                     newMacs = await macParser.GetMacsSinceLastEntry(macStream, lastEntryBeforeInsert);
