@@ -18,34 +18,59 @@ namespace Atlas.Common.GeneticData.Hla.Services
         private static readonly string ExpressionSuffixPattern = $"[{MolecularTypingNameConstants.ExpressionSuffixes}]?";
         private static readonly string MolecularFirstFieldPattern = $"\\{MolecularTypingNameConstants.Prefix}?{SingleFieldPattern}";
         private static readonly string AlleleFinalFieldPattern = SingleFieldPattern + ExpressionSuffixPattern;
-        private static readonly string AlleleDesignationPattern = $"{MolecularFirstFieldPattern}(:{SingleFieldPattern}){{1,3}}{ExpressionSuffixPattern}";
 
-        private static readonly Dictionary<string, HlaTypingCategory> TypingCategoryPatterns = new Dictionary<string, HlaTypingCategory>
+        private static readonly string AlleleDesignationPattern =
+            $"{MolecularFirstFieldPattern}(:{SingleFieldPattern}){{1,3}}{ExpressionSuffixPattern}";
+
+        private static readonly Dictionary<Regex, HlaTypingCategory> TypingCategoryRegexes = new Dictionary<Regex, HlaTypingCategory>
         {
-            {$"^{MolecularFirstFieldPattern}:(?!XX$)[A-Z]{{2,}}$", HlaTypingCategory.NmdpCode},
-            {$"^{MolecularFirstFieldPattern}:XX$", HlaTypingCategory.XxCode},
-            {$"^{MolecularFirstFieldPattern}(:{SingleFieldPattern}){{2}}G$", HlaTypingCategory.GGroup},
-            {$"^{MolecularFirstFieldPattern}:{SingleFieldPattern}P$", HlaTypingCategory.PGroup},
-            {$"^(?!0){SingleFieldPattern}$", HlaTypingCategory.Serology},
-            {$"^{AlleleDesignationPattern}$", HlaTypingCategory.Allele},
-            {$"^{AlleleDesignationPattern}(\\/{AlleleDesignationPattern}){{1,}}$", HlaTypingCategory.AlleleStringOfNames},
-            {$"^{MolecularFirstFieldPattern}:{AlleleFinalFieldPattern}(\\/{AlleleFinalFieldPattern}){{1,}}$", HlaTypingCategory.AlleleStringOfSubtypes}
+            {
+                new Regex($"^{MolecularFirstFieldPattern}:(?!XX$)[A-Z]{{2,}}$", RegexOptions.Compiled),
+                HlaTypingCategory.NmdpCode
+            },
+            {
+                new Regex($"^{MolecularFirstFieldPattern}:XX$", RegexOptions.Compiled),
+                HlaTypingCategory.XxCode
+            },
+            {
+                new Regex($"^{MolecularFirstFieldPattern}(:{SingleFieldPattern}){{2}}G$", RegexOptions.Compiled),
+                HlaTypingCategory.GGroup
+            },
+            {
+                new Regex($"^{MolecularFirstFieldPattern}:{SingleFieldPattern}P$", RegexOptions.Compiled),
+                HlaTypingCategory.PGroup
+            },
+            {
+                new Regex($"^(?!0){SingleFieldPattern}$", RegexOptions.Compiled),
+                HlaTypingCategory.Serology
+            },
+            {
+                new Regex($"^{AlleleDesignationPattern}$", RegexOptions.Compiled),
+                HlaTypingCategory.Allele
+            },
+            {
+                new Regex($"^{AlleleDesignationPattern}(\\/{AlleleDesignationPattern}){{1,}}$", RegexOptions.Compiled),
+                HlaTypingCategory.AlleleStringOfNames
+            },
+            {
+                new Regex($"^{MolecularFirstFieldPattern}:{AlleleFinalFieldPattern}(\\/{AlleleFinalFieldPattern}){{1,}}$", RegexOptions.Compiled),
+                HlaTypingCategory.AlleleStringOfSubtypes
+            }
         };
 
         public HlaTypingCategory GetHlaTypingCategory(string hlaName)
         {
             var name = hlaName.Trim().ToUpper();
 
-            foreach (var pattern in TypingCategoryPatterns.Keys)
+            foreach (var categoryRegex in TypingCategoryRegexes.Keys)
             {
-                if (new Regex(pattern).IsMatch(name))
+                if (categoryRegex.IsMatch(name))
                 {
-                    return TypingCategoryPatterns[pattern];
+                    return TypingCategoryRegexes[categoryRegex];
                 }
             }
 
-            throw new AtlasHttpException(HttpStatusCode.BadRequest,
-                    $"Typing category of HLA name: {name} could not be determined.");
+            throw new AtlasHttpException(HttpStatusCode.BadRequest, $"Typing category of HLA name: {name} could not be determined.");
         }
     }
 }
