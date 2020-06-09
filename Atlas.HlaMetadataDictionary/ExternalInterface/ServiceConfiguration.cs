@@ -5,15 +5,13 @@ using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
-using Atlas.MultipleAlleleCodeDictionary;
-using Atlas.MultipleAlleleCodeDictionary.DependencyInjection;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
