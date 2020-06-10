@@ -8,7 +8,7 @@ resource "azurerm_eventgrid_event_subscription" "donor-file-upload" {
   scope = data.terraform_remote_state.atlas.outputs.storage_account.id
 
   subject_filter {
-    subject_begins_with = data.terraform_remote_state.atlas.outputs.donor_import.storage.donor_container_name
+    subject_begins_with = "/blobServices/default/containers/${data.terraform_remote_state.atlas.outputs.donor_import.storage.donor_container_name}"
   }
 
   webhook_endpoint {
