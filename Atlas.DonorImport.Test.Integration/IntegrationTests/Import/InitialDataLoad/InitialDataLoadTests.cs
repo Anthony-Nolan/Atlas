@@ -66,13 +66,13 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
         }
 
         [Test]
-        public async Task ImportDonors_AllNewDonors_AreAddedCorrectly()
+        public void ImportDonors_AllNewDonors_AreAddedCorrectly()
         {
-            const string expectedDonorHash = "jwDboXz3AUJrkMMi/MZhVA=="; //QQ needs to be verified on old master
+            const string expectedDonorHash = "jwDboXz3AUJrkMMi/MZhVA==";
 
-            var actualDonors = await donorRepository.GetAllDonors();
+            var actualDonors = donorRepository.GetAllDonors().ToList();
 
-            var actualCombinedStoredHash = actualDonors.ToList().Select(donor => donor.Hash).StringJoin("#").ToMd5Hash();
+            var actualCombinedStoredHash = actualDonors.Select(donor => donor.Hash).StringJoin("#").ToMd5Hash();
             actualCombinedStoredHash.Should().Be(expectedDonorHash);
 
             var actualCombinedCalculatedHash = actualDonors.ToList().Select(donor => donor.CalculateHash()).StringJoin("#").ToMd5Hash();

@@ -8,6 +8,7 @@ using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Models.FileSchema;
+using Atlas.DonorImport.Models.Mapping;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 
 namespace Atlas.DonorImport.Services
@@ -85,14 +86,31 @@ namespace Atlas.DonorImport.Services
 
         private Donor MapToDatabaseDonor(DonorUpdate fileUpdate, string fileName)
         {
-            locusInterpreter.SetDonorContext(fileUpdate, fileName);
+            var loggingContext = new Dictionary<string, string>
+            {
+                {"ImportFile", fileName},
+                {"DonorCode", fileUpdate.RecordId},
+            };
+            const string locusKey = "Locus";
 
-            var interpretedA = locusInterpreter.Interpret(fileUpdate.Hla.A, Locus.A);
-            var interpretedB = locusInterpreter.Interpret(fileUpdate.Hla.B, Locus.B);
-            var interpretedC = locusInterpreter.Interpret(fileUpdate.Hla.C, Locus.C);
-            var interpretedDpb1 = locusInterpreter.Interpret(fileUpdate.Hla.DPB1, Locus.Dpb1);
-            var interpretedDqb1 = locusInterpreter.Interpret(fileUpdate.Hla.DQB1, Locus.Dqb1);
-            var interpretedDrb1 = locusInterpreter.Interpret(fileUpdate.Hla.DRB1, Locus.Drb1);
+            loggingContext[locusKey] = Locus.A.ToString();
+            var interpretedA = locusInterpreter.Interpret(fileUpdate.Hla.A, loggingContext);
+
+            loggingContext[locusKey] = Locus.B.ToString();
+            var interpretedB = locusInterpreter.Interpret(fileUpdate.Hla.B, loggingContext);
+
+            loggingContext[locusKey] = Locus.C.ToString();
+            var interpretedC = locusInterpreter.Interpret(fileUpdate.Hla.C, loggingContext);
+
+            loggingContext[locusKey] = Locus.Dpb1.ToString();
+            var interpretedDpb1 = locusInterpreter.Interpret(fileUpdate.Hla.DPB1, loggingContext);
+
+            loggingContext[locusKey] = Locus.Dqb1.ToString();
+            var interpretedDqb1 = locusInterpreter.Interpret(fileUpdate.Hla.DQB1, loggingContext);
+
+            loggingContext[locusKey] = Locus.Drb1.ToString();
+            var interpretedDrb1 = locusInterpreter.Interpret(fileUpdate.Hla.DRB1, loggingContext);
+            
             var donor = new Donor
             {
                 ExternalDonorCode = fileUpdate.RecordId,
