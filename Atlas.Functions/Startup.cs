@@ -19,8 +19,8 @@ namespace Atlas.Functions
             builder.Services.RegisterMatchingAlgorithmOrchestration();
             RegisterSettings(builder.Services);
             builder.Services.RegisterMacDictionary(
-                (sp) => sp.GetService<IOptions<ApplicationInsightsSettings>>(), 
-                (sp) => sp.GetService<IOptions<MacImportSettings>>());
+                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>(), 
+                sp => sp.GetService<IOptions<MacImportSettings>>());
         }
 
         private static void RegisterSettings(IServiceCollection services)
