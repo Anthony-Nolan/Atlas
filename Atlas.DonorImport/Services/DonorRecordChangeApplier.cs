@@ -72,9 +72,11 @@ namespace Atlas.DonorImport.Services
                     if (update.UpdateMode != UpdateMode.Full)
                     {
                         var atlasDonor = atlasDonors[update.RecordId];
+                        SearchableDonorUpdate updateMessage;
+
                         if (update.ChangeType == ImportDonorChangeType.Delete)
                         {
-                            await messagingServiceBusClient.PublishDonorUpdateMessage(CreateDeletionUpdate(atlasDonor));
+                            updateMessage = MapToDeletionUpdate(atlasDonor);
                         }
                         else
                         {
@@ -83,8 +85,10 @@ namespace Atlas.DonorImport.Services
                                 throw new Exception($"Could not find created/updated donor in Atlas database: {update.RecordId}");
                             }
 
-                            await messagingServiceBusClient.PublishDonorUpdateMessage(MapToMatchingUpdateMessage(atlasDonor));
+                            updateMessage = MapToMatchingUpdateMessage(atlasDonor);
                         }
+
+                        await messagingServiceBusClient.PublishDonorUpdateMessage(updateMessage);
                     }
                 }
             }
@@ -92,30 +96,20 @@ namespace Atlas.DonorImport.Services
 
         private Donor MapToDatabaseDonor(DonorUpdate fileUpdate, string fileName)
         {
-            var loggingContext = new Dictionary<string, string>
-            {
-                {"ImportFile", fileName},
-                {"DonorCode", fileUpdate.RecordId},
-            };
-            const string locusKey = "Locus";
+            Dictionary<string, string> createLogContext(Locus locus) =>
+                new Dictionary<string, string>
+                {
+                    {"ImportFile", fileName},
+                    {"DonorCode", fileUpdate.RecordId},
+                    {"Locus", locus.ToString()}
+                };
 
-            loggingContext[locusKey] = Locus.A.ToString();
-            var interpretedA = locusInterpreter.Interpret(fileUpdate.Hla.A, loggingContext);
-
-            loggingContext[locusKey] = Locus.B.ToString();
-            var interpretedB = locusInterpreter.Interpret(fileUpdate.Hla.B, loggingContext);
-
-            loggingContext[locusKey] = Locus.C.ToString();
-            var interpretedC = locusInterpreter.Interpret(fileUpdate.Hla.C, loggingContext);
-
-            loggingContext[locusKey] = Locus.Dpb1.ToString();
-            var interpretedDpb1 = locusInterpreter.Interpret(fileUpdate.Hla.DPB1, loggingContext);
-
-            loggingContext[locusKey] = Locus.Dqb1.ToString();
-            var interpretedDqb1 = locusInterpreter.Interpret(fileUpdate.Hla.DQB1, loggingContext);
-
-            loggingContext[locusKey] = Locus.Drb1.ToString();
-            var interpretedDrb1 = locusInterpreter.Interpret(fileUpdate.Hla.DRB1, loggingContext);
+            var interpretedA = locusInterpreter.Interpret(fileUpdate.Hla.A, createLogContext(Locus.A));
+            var interpretedB = locusInterpreter.Interpret(fileUpdate.Hla.B, createLogContext(Locus.B));
+            var interpretedC = locusInterpreter.Interpret(fileUpdate.Hla.C, createLogContext(Locus.C));
+            var interpretedDpb1 = locusInterpreter.Interpret(fileUpdate.Hla.DPB1, createLogContext(Locus.Dpb1));
+            var interpretedDqb1 = locusInterpreter.Interpret(fileUpdate.Hla.DQB1, createLogContext(Locus.Dqb1));
+            var interpretedDrb1 = locusInterpreter.Interpret(fileUpdate.Hla.DRB1, createLogContext(Locus.Drb1));
             
             var donor = new Donor
             {
@@ -140,7 +134,7 @@ namespace Atlas.DonorImport.Services
             return donor;
         }
 
-        private SearchableDonorUpdate CreateDeletionUpdate(Donor updatedDonor)
+        private SearchableDonorUpdate MapToDeletionUpdate(Donor updatedDonor)
         {
             return new SearchableDonorUpdate
             {
