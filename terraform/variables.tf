@@ -37,6 +37,12 @@ variable "DONOR_DATABASE_USERNAME" {
   default = "donors"
 }
 
+// https://github.com/terraform-providers/terraform-provider-azurerm/issues/699 - if this issue is resolved, we can remove this variable and use terraform for this.
+variable "DONOR_IMPORT_FUNCTION_MASTER_KEY" {
+  type        = string
+  description = "The master host key for the donor import function - required to set up event grid webhooks. When running terraform for the first time on an environment, use a dummy value to create the key, then re-run with the key."
+}
+
 variable "ENVIRONMENT" {
   type        = string
   description = "Prepended to all ATLAS resources, to indicate which environment of the installation they represent. Some alphanumeric characters must be present, as non-alphanumeric characters will be stripped from the storage account name. Max 8 alphanumeric characters. e.g. DEV/UAT/LIVE"
@@ -57,8 +63,8 @@ variable "LOCATION" {
 }
 
 variable "MAC_SOURCE" {
-  type = string 
-  default = "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip"
+  type        = string
+  default     = "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip"
   description = "The source of our Multiple Allele Codes"
 }
 
