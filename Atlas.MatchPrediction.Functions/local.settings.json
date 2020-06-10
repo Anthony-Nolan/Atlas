@@ -5,10 +5,13 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:HaplotypeFrequencySetImportContainer": "haplotype-frequency-set-import",
+    "Client:HlaService:ApiKey": "override-this",
+    "Client:HlaService:BaseUrl": "https://dev-nova-hla-service.azurewebsites.net/",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet"
+    "Wmda:WmdaFileUri": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/"
   },
   "ConnectionStrings": {
     "Sql": "Data Source=(local);Initial Catalog=AtlasMatchPrediction;Integrated Security=True;MultipleActiveResultSets=True;"

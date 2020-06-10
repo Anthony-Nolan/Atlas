@@ -8,6 +8,7 @@ using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
 
@@ -15,24 +16,26 @@ namespace Atlas.MatchPrediction.Functions.Functions
 {
     public class GenotypeImputationFunctions
     {
-        private readonly IGenotypeImputationService genotypeImputationService;
+        private readonly IHlaMetadataDictionaryFactory metadataDictionaryFactory;
 
-        public GenotypeImputationFunctions(IGenotypeImputationService genotypeImputationService)
+        public GenotypeImputationFunctions(IHlaMetadataDictionaryFactory metadataDictionaryFactory)
         {
-            this.genotypeImputationService = genotypeImputationService;
+            this.metadataDictionaryFactory = metadataDictionaryFactory;
         }
 
-        [FunctionName(nameof(GenotypeImputer))]
-        public async Task<IActionResult> GenotypeImputer(
+        [FunctionName(nameof(GenotypeImputation))]
+        public async Task<IActionResult> GenotypeImputation(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(GenotypeImputationInput), "phenotype input")]
             HttpRequest request)
         {
-            var phenotype = JsonConvert.DeserializeObject<GenotypeImputationInput>(await new StreamReader(request.Body).ReadToEndAsync());
+            var genotypeImputationInput = JsonConvert.DeserializeObject<GenotypeImputationInput>(await new StreamReader(request.Body).ReadToEndAsync());
+
+            IGenotypeImputationService genotypeImputationService = new GenotypeImputationService(genotypeImputationInput.NomenclatureVersion, metadataDictionaryFactory);
 
             try
             {
-                var genotypes = genotypeImputationService.ImputeGenotype(phenotype);
+                var genotypes = genotypeImputationService.ImputeGenotype(genotypeImputationInput);
                 return new JsonResult(genotypes);
             }
             catch (Exception)
