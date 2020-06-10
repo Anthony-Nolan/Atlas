@@ -26,6 +26,12 @@ variable "function_storage" {
   })
 }
 
+variable "resource_group" {
+  type = object({
+    id : string
+  })
+}
+
 variable "servicebus_namespace" {
   type = object({
     name = string
@@ -42,8 +48,12 @@ variable "servicebus_namespace_authorization_rules" {
 
 variable "servicebus_topics" {
   type = object({
-    alerts        = object({ name = string })
-    notifications = object({ name = string })
+    alerts = object({
+      name = string
+    })
+    notifications = object({
+      name = string
+    })
   })
 }
 
