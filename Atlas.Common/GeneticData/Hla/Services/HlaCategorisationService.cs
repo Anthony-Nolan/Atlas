@@ -22,51 +22,51 @@ namespace Atlas.Common.GeneticData.Hla.Services
         private static readonly string AlleleDesignationPattern =
             $"{MolecularFirstFieldPattern}(:{SingleFieldPattern}){{1,3}}{ExpressionSuffixPattern}";
 
-        private static readonly Dictionary<Regex, HlaTypingCategory> TypingCategoryRegexes = new Dictionary<Regex, HlaTypingCategory>
+        private static readonly List<(Regex, HlaTypingCategory)> TypingCategoryRegexes = new List<(Regex, HlaTypingCategory)>
         {
-            {
+            (
                 CompiledRegex($"^{MolecularFirstFieldPattern}:(?!XX$)[A-Z]{{2,}}$"),
                 HlaTypingCategory.NmdpCode
-            },
-            {
+            ),
+            (
                 CompiledRegex($"^{MolecularFirstFieldPattern}:XX$"),
                 HlaTypingCategory.XxCode
-            },
-            {
+            ),
+            (
                 CompiledRegex($"^{MolecularFirstFieldPattern}(:{SingleFieldPattern}){{2}}G$"),
                 HlaTypingCategory.GGroup
-            },
-            {
+            ),
+            (
                 CompiledRegex($"^{MolecularFirstFieldPattern}:{SingleFieldPattern}P$"),
                 HlaTypingCategory.PGroup
-            },
-            {
+            ),
+            (
                 CompiledRegex($"^(?!0){SingleFieldPattern}$"),
                 HlaTypingCategory.Serology
-            },
-            {
+            ),
+            (
                 CompiledRegex($"^{AlleleDesignationPattern}$"),
                 HlaTypingCategory.Allele
-            },
-            {
+            ),
+            (
                 CompiledRegex($"^{AlleleDesignationPattern}(\\/{AlleleDesignationPattern}){{1,}}$"),
                 HlaTypingCategory.AlleleStringOfNames
-            },
-            {
+            ),
+            (
                 CompiledRegex($"^{MolecularFirstFieldPattern}:{AlleleFinalFieldPattern}(\\/{AlleleFinalFieldPattern}){{1,}}$"),
                 HlaTypingCategory.AlleleStringOfSubtypes
-            }
+            )
         };
 
         public HlaTypingCategory GetHlaTypingCategory(string hlaName)
         {
             var name = hlaName.Trim().ToUpper();
 
-            foreach (var categoryRegex in TypingCategoryRegexes.Keys)
+            foreach (var (regex, category) in TypingCategoryRegexes)
             {
-                if (categoryRegex.IsMatch(name))
+                if (regex.IsMatch(name))
                 {
-                    return TypingCategoryRegexes[categoryRegex];
+                    return category;
                 }
             }
 
