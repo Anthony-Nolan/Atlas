@@ -20,6 +20,7 @@ namespace Atlas.DonorImport.Functions.Functions
         /// IMPORTANT: Do not rename this function without careful consideration. This function is called by event grid, which has the function name set by terraform.
         // If changing this, you must also change the value hardcoded in the event_grid.tf terraform file. 
         [FunctionName(nameof(ImportDonorFile))]
+        [StorageAccount("AzureStorage:ConnectionString")]
         public async Task ImportDonorFile(
             // Raw JSON Text file containing donor updates in expected schema
             [EventGridTrigger] EventGridEvent blobCreatedEvent,
