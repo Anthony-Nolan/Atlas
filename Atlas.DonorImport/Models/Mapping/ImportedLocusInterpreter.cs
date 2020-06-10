@@ -57,6 +57,7 @@ namespace Atlas.DonorImport.Models.FileSchema
         }
 
 #pragma warning disable 618 // Dna & Serology are not Obsolete, but would be considered private if not for deserialization to this class
+
         #region Field1
         private bool field1IsPrecalculated = false;
         private string precalculatedField1 = null;
@@ -73,8 +74,16 @@ namespace Atlas.DonorImport.Models.FileSchema
         {
             var standardisedDnaField1 = StandardiseDnaField(Dna?.Field1, hlaCategoriser, logger);
 
-            if(standardisedDnaField1 != null) { return standardisedDnaField1; }
-            if (Dna?.Field2 != null) { return null; }
+            if (standardisedDnaField1 != null)
+            {
+                return standardisedDnaField1;
+            }
+
+            if (Dna?.Field2 != null)
+            {
+                return null;
+            }
+
             return Serology?.Field1;
         }
         #endregion
@@ -125,25 +134,26 @@ namespace Atlas.DonorImport.Models.FileSchema
             return null;
         }
         #endregion
+
 #pragma warning restore 618
 
-        private string StandardiseDnaField(string dnaField1, IHlaCategorisationService hlaCategoriser, ILogger logger)
+        private string StandardiseDnaField(string dnaField, IHlaCategorisationService hlaCategoriser, ILogger logger)
         {
-            if (dnaField1 == null)
+            if (dnaField == null)
             {
                 return null;
             }
 
-            var needsStar = hlaCategoriser.IsRecognisableHla(dnaField1);
-            var hasStar = dnaField1.StartsWith('*');
+            var needsStar = hlaCategoriser.ConformsToValidHlaFormat(dnaField);
+            var hasStar = dnaField.StartsWith('*');
             if (needsStar && !hasStar)
             {
                 logger.SendTrace("Prepended * to non-standard donor hla.", LogLevel.Verbose,
                     new Dictionary<string, string> {{"DonorCode", "XXX"}, {"HLA", "YYY"}, {"Location", "DNA Field1"}});
-                return "*" + dnaField1;
+                return "*" + dnaField;
             }
 
-            return dnaField1;
+            return dnaField;
         }
 
     }

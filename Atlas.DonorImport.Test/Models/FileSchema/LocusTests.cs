@@ -40,9 +40,9 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         public void SetUp()
         {
             permissiveCategoriser = Substitute.For<IHlaCategorisationService>();
-            permissiveCategoriser.IsRecognisableHla(default).ReturnsForAnyArgs(true);
+            permissiveCategoriser.ConformsToValidHlaFormat(default).ReturnsForAnyArgs(true);
             dismissiveCategoriser = Substitute.For<IHlaCategorisationService>();
-            dismissiveCategoriser.IsRecognisableHla(default).ReturnsForAnyArgs(false);
+            dismissiveCategoriser.ConformsToValidHlaFormat(default).ReturnsForAnyArgs(false);
         }
 
         [Test]

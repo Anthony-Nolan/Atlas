@@ -10,8 +10,17 @@ namespace Atlas.Common.GeneticData.Hla.Services
 {
     public interface IHlaCategorisationService
     {
-        bool IsRecognisableHla(string hlaDescriptor);
+        /// <summary>
+        /// Tests whether the specified string matches the syntactic pattern of an HLA.
+        /// i.e. whether it conforms to the general Regex pattern of one of the 8 Typing Categories.
+        /// <br/>
+        /// Does NOT check whether the exact values of the string are recognised. i.e. non-existent NMDP codes or Field values will NOT be detected.
+        /// </summary>
+        /// <param name="hlaDescriptor"></param>
+        /// <returns></returns>
+        bool ConformsToValidHlaFormat(string hlaDescriptor);
         HlaTypingCategory GetHlaTypingCategory(string hlaDescriptor);
+        bool TryGetHlaTypingCategory(string hlaDescriptor, [NotNullWhen(true)]out HlaTypingCategory? category);
     }
 
     internal class HlaCategorisationService : IHlaCategorisationService
@@ -87,7 +96,8 @@ namespace Atlas.Common.GeneticData.Hla.Services
             throw new AtlasHttpException(HttpStatusCode.BadRequest, $"Typing category of HLA name: {hlaDescriptor} could not be determined.");
         }
 
-        public bool IsRecognisableHla(string hlaDescriptor)
+        /// <inheritdoc/>
+        public bool ConformsToValidHlaFormat(string hlaDescriptor)
         {
             return TryGetHlaTypingCategory(hlaDescriptor, out _);
         }
