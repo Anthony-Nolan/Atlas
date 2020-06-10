@@ -136,6 +136,7 @@ module "donor_import" {
   application_insights = azurerm_application_insights.atlas
   azure_storage        = azurerm_storage_account.azure_storage
   function_storage     = azurerm_storage_account.function_storage
+  resource_group       = azurerm_resource_group.atlas_resource_group
   servicebus_namespace = azurerm_servicebus_namespace.general
   sql_server           = azurerm_sql_server.atlas_sql_server
 
@@ -151,6 +152,7 @@ module "donor_import" {
   APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
   DATABASE_PASSWORD              = var.DONOR_DATABASE_PASSWORD
   DATABASE_USERNAME              = var.DONOR_DATABASE_USERNAME
+  FUNCTIONS_MASTER_KEY           = var.DONOR_IMPORT_FUNCTION_MASTER_KEY
 }
 
 module "support" {

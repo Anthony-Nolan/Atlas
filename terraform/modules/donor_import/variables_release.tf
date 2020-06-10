@@ -11,3 +11,7 @@ variable "DATABASE_PASSWORD" {
 variable "DATABASE_USERNAME" {
   type = string
 }
+
+variable "FUNCTIONS_MASTER_KEY" {
+  type = string
+}
