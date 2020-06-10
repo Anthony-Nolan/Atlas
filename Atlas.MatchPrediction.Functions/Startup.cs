@@ -5,7 +5,7 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 
 namespace Atlas.MatchPrediction.Functions
 {
-    public class Startup : FunctionsStartup
+    internal class Startup : FunctionsStartup
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {

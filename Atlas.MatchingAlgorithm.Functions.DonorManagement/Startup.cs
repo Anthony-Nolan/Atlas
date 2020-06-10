@@ -5,7 +5,7 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 [assembly: FunctionsStartup(typeof(Startup))]
 namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
 {
-    public class Startup : FunctionsStartup
+    internal class Startup : FunctionsStartup
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
