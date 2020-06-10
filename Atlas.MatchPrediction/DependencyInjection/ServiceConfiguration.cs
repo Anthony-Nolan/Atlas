@@ -6,9 +6,9 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
-using Atlas.MatchPrediction.Services.GenotypeImputation;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Settings;
 using Atlas.MatchPrediction.Settings.Azure;
 using Microsoft.EntityFrameworkCore;
@@ -70,11 +70,11 @@ namespace Atlas.MatchPrediction.DependencyInjection
             services.AddScoped<IFrequencySetService, FrequencySetService>();
 
             services.AddScoped<IGenotypeLikelihoodService, GenotypeLikelihoodService>();
-            services.AddScoped<IGenotypeImputer, GenotypeImputer>();
+            services.AddScoped<IUnambiguousGenotypeExpander, UnambiguousGenotypeExpander>();
             services.AddScoped<IGenotypeLikelihoodCalculator, GenotypeLikelihoodCalculator>();
             services.AddScoped<IGenotypeAlleleTruncater, GenotypeAlleleTruncater>();
 
-            services.AddScoped<IGenotypeImputationService, GenotypeImputationService>();
+            services.AddScoped<IExpandAmbiguousPhenotypeService, ExpandAmbiguousPhenotypeService>();
         }
 
         private static string GetSqlConnectionString(IServiceProvider sp)

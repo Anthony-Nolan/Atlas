@@ -17,20 +17,20 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
     {
         private readonly IHaplotypeFrequencySetRepository setRepository;
         private readonly IHaplotypeFrequenciesRepository frequencyRepository;
-        private readonly IGenotypeImputer genotypeImputer;
+        private readonly IUnambiguousGenotypeExpander unambiguousGenotypeExpander;
         private readonly IGenotypeLikelihoodCalculator likelihoodCalculator;
         private readonly IGenotypeAlleleTruncater alleleTruncater;
 
         public GenotypeLikelihoodService(
             IHaplotypeFrequencySetRepository setRepository,
             IHaplotypeFrequenciesRepository frequencyRepository,
-            IGenotypeImputer genotypeImputer,
+            IUnambiguousGenotypeExpander unambiguousGenotypeExpander,
             IGenotypeLikelihoodCalculator likelihoodCalculator,
             IGenotypeAlleleTruncater alleleTruncater)
         {
             this.setRepository = setRepository;
             this.frequencyRepository = frequencyRepository;
-            this.genotypeImputer = genotypeImputer;
+            this.unambiguousGenotypeExpander = unambiguousGenotypeExpander;
             this.likelihoodCalculator = likelihoodCalculator;
             this.alleleTruncater = alleleTruncater;
         }
@@ -39,18 +39,18 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         {
             var genotype = alleleTruncater.TruncateGenotypeAlleles(genotypeLikelihood.Genotype);
 
-            var imputedGenotype = genotypeImputer.ImputeGenotype(genotype);
-            var haplotypesWithFrequencies = await GetHaplotypesWithFrequencies(imputedGenotype);
+            var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype);
+            var haplotypesWithFrequencies = await GetHaplotypesWithFrequencies(expandedGenotype);
 
-            UpdateFrequenciesForDiplotype(haplotypesWithFrequencies, imputedGenotype.Diplotypes);
-            var likelihood = likelihoodCalculator.CalculateLikelihood(imputedGenotype);
+            UpdateFrequenciesForDiplotype(haplotypesWithFrequencies, expandedGenotype.Diplotypes);
+            var likelihood = likelihoodCalculator.CalculateLikelihood(expandedGenotype);
 
             return new GenotypeLikelihoodResponse {Likelihood = likelihood};
         }
 
-        private async Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypesWithFrequencies(ImputedGenotype imputedGenotype)
+        private async Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypesWithFrequencies(ExpandedGenotype expandedGenotype)
         {
-            var haplotypes = GetHaplotypes(imputedGenotype.Diplotypes);
+            var haplotypes = GetHaplotypes(expandedGenotype.Diplotypes);
             var frequencySet = await setRepository.GetActiveSet(null, null);
 
             return await frequencyRepository.GetHaplotypeFrequencies(haplotypes, frequencySet.Id);

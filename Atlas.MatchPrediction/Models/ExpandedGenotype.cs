@@ -2,7 +2,7 @@
 
 namespace Atlas.MatchPrediction.Models
 {
-    public class ImputedGenotype
+    public class ExpandedGenotype
     {
         public IEnumerable<Diplotype> Diplotypes { get; set; }
         public bool IsHomozygousAtEveryLocus { get; set; }

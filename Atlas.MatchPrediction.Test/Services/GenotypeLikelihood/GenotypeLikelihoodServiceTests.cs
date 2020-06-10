@@ -16,7 +16,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
     public class GenotypeLikelihoodServiceTests
     {
         private IGenotypeLikelihoodService genotypeLikelihoodService;
-        private IGenotypeImputer genotypeImputer;
+        private IUnambiguousGenotypeExpander unambiguousGenotypeExpander;
         private IHaplotypeFrequencySetRepository setRepository;
         private IHaplotypeFrequenciesRepository frequencyRepository;
         private IGenotypeLikelihoodCalculator genotypeLikelihoodCalculator;
@@ -25,8 +25,8 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         [SetUp]
         public void SetUp()
         {
-            genotypeImputer = Substitute.For<IGenotypeImputer>();
-            genotypeImputer = Substitute.For<IGenotypeImputer>();
+            unambiguousGenotypeExpander = Substitute.For<IUnambiguousGenotypeExpander>();
+            unambiguousGenotypeExpander = Substitute.For<IUnambiguousGenotypeExpander>();
             frequencyRepository = Substitute.For<IHaplotypeFrequenciesRepository>();
             setRepository = Substitute.For<IHaplotypeFrequencySetRepository>();
             genotypeLikelihoodCalculator = Substitute.For<IGenotypeLikelihoodCalculator>();
@@ -38,19 +38,19 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             setRepository.GetActiveSet(Arg.Any<string>(), Arg.Any<string>())
                 .Returns(new HaplotypeFrequencySet {Id = 1});
 
-            genotypeImputer.ImputeGenotype(Arg.Any<PhenotypeInfo<string>>())
-                .Returns(new ImputedGenotype {Diplotypes = new List<Diplotype> {DiplotypeBuilder.New.Build()}});
+            unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>())
+                .Returns(new ExpandedGenotype {Diplotypes = new List<Diplotype> {DiplotypeBuilder.New.Build()}});
 
             frequencyRepository.GetHaplotypeFrequencies(Arg.Any<IEnumerable<LociInfo<string>>>(), Arg.Any<int>())
                 .Returns(new Dictionary<LociInfo<string>, decimal> {{new LociInfo<string>(), 0}});
 
-            genotypeLikelihoodCalculator.CalculateLikelihood(Arg.Any<ImputedGenotype>())
+            genotypeLikelihoodCalculator.CalculateLikelihood(Arg.Any<ExpandedGenotype>())
                 .Returns(0);
 
             genotypeLikelihoodService = new GenotypeLikelihoodService(
                 setRepository,
                 frequencyRepository,
-                genotypeImputer,
+                unambiguousGenotypeExpander,
                 genotypeLikelihoodCalculator,
                 alleleTruncater
             );
@@ -59,8 +59,8 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         [Test]
         public async Task CalculateLikelihood_FrequencyRepositoryIsCalledOnce([Values(16, 8, 4, 2, 1)] int numberOfDiplotypes)
         {
-            genotypeImputer.ImputeGenotype(Arg.Any<PhenotypeInfo<string>>())
-                .Returns(new ImputedGenotype {Diplotypes = DiplotypeBuilder.New.Build(numberOfDiplotypes).ToList()});
+            unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>())
+                .Returns(new ExpandedGenotype {Diplotypes = DiplotypeBuilder.New.Build(numberOfDiplotypes).ToList()});
 
             await genotypeLikelihoodService.CalculateLikelihood(new GenotypeLikelihoodInput());
 
@@ -74,7 +74,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             await genotypeLikelihoodService.CalculateLikelihood(new GenotypeLikelihoodInput());
 
             genotypeLikelihoodCalculator.Received(1)
-                .CalculateLikelihood(Arg.Any<ImputedGenotype>());
+                .CalculateLikelihood(Arg.Any<ExpandedGenotype>());
         }
 
         [Test]
