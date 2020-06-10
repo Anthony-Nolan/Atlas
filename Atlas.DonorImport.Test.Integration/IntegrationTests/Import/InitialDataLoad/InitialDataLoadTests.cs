@@ -68,7 +68,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
         [Test]
         public async Task ImportDonors_AllNewDonors_AreAddedCorrectly()
         {
-            const string expectedDonorHash = "jwDboXz3AUJrkMMi/MZhVA=="; //QQ needs to be verified on old master
+            const string expectedDonorHash = "jwDboXz3AUJrkMMi/MZhVA==";
 
             var actualDonors = await donorRepository.GetAllDonors();
 

@@ -8,6 +8,7 @@ using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Models.FileSchema;
+using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;

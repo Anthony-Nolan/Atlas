@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.DonorImport.Models.FileSchema;
 
-namespace Atlas.DonorImport.Models.FileSchema
+namespace Atlas.DonorImport.Models.Mapping
 {
     internal interface IImportedLocusInterpreter
     {
@@ -13,26 +13,18 @@ namespace Atlas.DonorImport.Models.FileSchema
         /// convert it into a standardised HLA representation.
         /// Standardisation currently consists of
         /// * using NULLs for missing data
-        /// * prepending Molecular HLAs with '*'
-        /// * interpretting missing 
+        /// * pre-pending Molecular HLAs with '*'
+        /// * interpreting missing 2nd Fields
+        /// * determining whether Molecular or Serological data should be used.
         /// </summary>
-        /// <param name="locus"></param>
-        /// <returns></returns>
-        LocusInfo<string> Interpret(ImportedLocus locusData, Locus locus);
-
-        /// <summary>
-        /// Store contextual information for use with logging warnings.
-        /// </summary>
-        /// <param name="fileUpdate"></param>
-        /// <param name="fileName"></param>
-        void SetDonorContext(DonorUpdate fileUpdate, string fileName);
+        LocusInfo<string> Interpret(ImportedLocus locusData, Dictionary<string, string> locus);
     }
 
     internal class ImportedLocusInterpreter : IImportedLocusInterpreter
     {
         private readonly IHlaCategorisationService categoriser;
         private readonly ILogger logger;
-        private Dictionary<string, string> currentInterpretationContext = new Dictionary<string, string>();
+        private Dictionary<string, string> currentInterpretationContext;
         private const string contextHlaKey = "HLA";
         private const string contextPositionKey = "Position";
 
@@ -43,23 +35,13 @@ namespace Atlas.DonorImport.Models.FileSchema
         }
 
         /// <inheritdoc />
-        public void SetDonorContext(DonorUpdate fileUpdate, string fileName)
+        public LocusInfo<string> Interpret(ImportedLocus locusData, Dictionary<string, string> context)
         {
-            currentInterpretationContext = new Dictionary<string, string>
-            {
-                {"ImportFile", fileName},
-                {"DonorCode", fileUpdate.RecordId},
-            };
-        }
-
-        /// <inheritdoc />
-        public LocusInfo<string> Interpret(ImportedLocus locusData, Locus locus)
-        {
-            currentInterpretationContext["Locus"] = locus.ToString();
+            currentInterpretationContext = context;
 
             if (locusData == null)
             {
-                return NewNullLocusInfo;
+                return NewNullLocusInfo();
             }
 
             var dna = locusData.Dna;
@@ -67,7 +49,7 @@ namespace Atlas.DonorImport.Models.FileSchema
 
             if (IsBlank(dna) && IsBlank(serology))
             {
-                return NewNullLocusInfo;
+                return NewNullLocusInfo();
             }
 
             if (IsBlank(dna))
@@ -86,7 +68,7 @@ namespace Atlas.DonorImport.Models.FileSchema
 
             if ((field1 ?? field2) == null)
             {
-                return NewNullLocusInfo;
+                return NewNullLocusInfo();
             }
 
             if (field2 == null)
@@ -101,7 +83,7 @@ namespace Atlas.DonorImport.Models.FileSchema
             return new LocusInfo<string>(field1, field2);
         }
 
-        private LocusInfo<string> NewNullLocusInfo => new LocusInfo<string>(null);
+        private LocusInfo<string> NewNullLocusInfo() => new LocusInfo<string>(null);
         private bool IsBlank(TwoFieldStringData input) => input == null || (IsBlank(input.Field1) && IsBlank(input.Field2));
         private bool IsBlank(string input) => string.IsNullOrEmpty(input);
         private string NullIfBlank(string input) => IsBlank(input) ? null : input;
@@ -126,17 +108,20 @@ namespace Atlas.DonorImport.Models.FileSchema
             {
                 return null;
             }
-
-            var needsStar = categoriser.ConformsToValidHlaFormat(dnaField);
+            
             var hasStar = dnaField.StartsWith('*');
-            if (needsStar && !hasStar)
+            if (!hasStar)
             {
-                currentInterpretationContext[contextHlaKey] = dnaField;
-                currentInterpretationContext[contextPositionKey] = positionLabel;
-                logger.SendTrace("Prepended * to non-standard donor hla.", LogLevel.Verbose, currentInterpretationContext);
-                currentInterpretationContext.Remove(contextPositionKey);
+                var needsStar = categoriser.ConformsToValidHlaFormat(dnaField); // Only do this regex if it doesn't already start with a '*'.
+                if (needsStar)
+                {
+                    currentInterpretationContext[contextHlaKey] = dnaField;
+                    currentInterpretationContext[contextPositionKey] = positionLabel;
+                    logger.SendTrace("Prepended * to non-standard donor hla.", LogLevel.Verbose, currentInterpretationContext);
+                    currentInterpretationContext.Remove(contextPositionKey);
 
-                return "*" + dnaField;
+                    return "*" + dnaField;
+                }
             }
 
             return dnaField;

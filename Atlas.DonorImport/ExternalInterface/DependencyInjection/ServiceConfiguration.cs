@@ -6,6 +6,7 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Models.FileSchema;
+using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Settings.ServiceBus;
 using Microsoft.Extensions.Configuration;
