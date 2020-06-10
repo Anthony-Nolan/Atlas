@@ -11,7 +11,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
 {
     internal interface IMacParser
     {
-        public Task<List<MultipleAlleleCode>> GetMacsSinceLastEntry(Stream file, string lastMacEntry);
+        public Task<List<Mac>> GetMacsSinceLastEntry(Stream file, string lastMacEntry);
     }
 
     internal class MacLineParser : IMacParser
@@ -26,10 +26,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
         }
 
         /// <inheritdoc />
-        public async Task<List<MultipleAlleleCode>> GetMacsSinceLastEntry(Stream file, string lastMacEntry)
+        public async Task<List<Mac>> GetMacsSinceLastEntry(Stream file, string lastMacEntry)
         {
             logger.SendTrace($"Parsing MACs since: {lastMacEntry}", LogLevel.Info);
-            var macCodes = new List<MultipleAlleleCode>();
+            var macCodes = new List<Mac>();
 
             using (var reader = new StreamReader(file))
             {
@@ -50,11 +50,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
             return macCodes;
         }
 
-        private static MultipleAlleleCode ParseMac(string macString)
+        private static Mac ParseMac(string macString)
         {
             var substrings = macString.Split('\t');
             var isGeneric = substrings[0] != "*";
-            return new MultipleAlleleCode(substrings[1], substrings[2], isGeneric);
+            return new Mac(substrings[1], substrings[2], isGeneric);
         }
 
         private static void ReadToEntry(StreamReader reader, string entryToReadTo)

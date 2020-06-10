@@ -2,22 +2,22 @@
 
 namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models
 {
-    public class MultipleAlleleCode
+    public class Mac
     {
-        public string Mac { get; set; }
+        public string MacCode { get; set; }
         public string Hla { get; set; }
         public bool IsGeneric { get; set; }
 
-        internal MultipleAlleleCode(string mac, string hla, bool isGeneric)
+        internal Mac(string macCode, string hla, bool isGeneric)
         {
-            Mac = mac;
+            MacCode = macCode;
             Hla = hla;
             IsGeneric = isGeneric;
         }
 
-        internal MultipleAlleleCode(MultipleAlleleCodeEntity mac)
+        internal Mac(MacEntity mac)
         {
-            Mac = mac.Mac;
+            MacCode = mac.Mac;
             Hla = mac.HLA;
             IsGeneric = mac.IsGeneric;
         }

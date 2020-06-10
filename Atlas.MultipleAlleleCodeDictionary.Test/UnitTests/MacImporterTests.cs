@@ -44,7 +44,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
             var shorterEarlyMac = MacEntityBuilder.New.With(m => m.RowKey, "AA").Build();
             var shorterLateMac = MacEntityBuilder.New.With(m => m.RowKey, "ZZ").Build();
             var lastMac = MacEntityBuilder.New.With(m => m.RowKey, "ZZZ").Build();
-            var oldMacs = new List<MultipleAlleleCodeEntity>
+            var oldMacs = new List<MacEntity>
             {
                 shorterEarlyMac,
                 shorterLateMac,
@@ -56,9 +56,9 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(oldMacs.Concat(newMacs)));
             mockRepository.GetLastMacEntry().Returns(lastOldMac);
             
-            await macImporter.ImportLatestMultipleAlleleCodes();
+            await macImporter.ImportLatestMacs();
             
-            await mockRepository.Received().InsertMacs(Arg.Is<List<MultipleAlleleCode>>(x => x.Count == numberOfNewMacs));
+            await mockRepository.Received().InsertMacs(Arg.Is<List<Mac>>(x => x.Count == numberOfNewMacs));
             
         }
     }

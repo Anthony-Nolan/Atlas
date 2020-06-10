@@ -3,16 +3,16 @@ using Microsoft.Azure.Cosmos.Table;
 
 namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models
 {
-    internal class MultipleAlleleCodeEntity : TableEntity
+    internal class MacEntity : TableEntity
     {
-        public MultipleAlleleCodeEntity()
+        public MacEntity()
         {
         }
 
-        public MultipleAlleleCodeEntity(MultipleAlleleCode mac)
+        public MacEntity(Mac mac)
         {
-            PartitionKey = mac.Mac.Length.ToString();
-            RowKey = mac.Mac;
+            PartitionKey = mac.MacCode.Length.ToString();
+            RowKey = mac.MacCode;
             HLA = mac.Hla;
             IsGeneric = mac.IsGeneric;
         }

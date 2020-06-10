@@ -15,7 +15,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
         public Task DeleteAllMacs();
         
         // TODO: ATLAS-47: Remove this in favour of non-test version
-        public Task<IEnumerable<MultipleAlleleCodeEntity>> GetAllMacs();
+        public Task<IEnumerable<MacEntity>> GetAllMacs();
 
     }
 
@@ -42,9 +42,9 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<MultipleAlleleCodeEntity>> GetAllMacs()
+        public async Task<IEnumerable<MacEntity>> GetAllMacs()
         {
-            var query = new TableQuery<MultipleAlleleCodeEntity>();
+            var query = new TableQuery<MacEntity>();
             return await Table.ExecuteQueryAsync(query);
         }
     }

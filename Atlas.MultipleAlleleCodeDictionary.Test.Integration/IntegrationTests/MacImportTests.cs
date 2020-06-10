@@ -45,7 +45,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
             var macs = Enumerable.Range(0, numberOfMacs).Select(i => MacEntityBuilder.New.Build());
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs));
 
-            await macImporter.ImportLatestMultipleAlleleCodes();
+            await macImporter.ImportLatestMacs();
 
             var importedMacs = await macRepository.GetAllMacs();
             importedMacs.Count().Should().Be(numberOfMacs);
@@ -60,7 +60,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
             var macs = Enumerable.Range(0, numberOfMacs).Select(i => MacEntityBuilder.New.Build());
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs));
 
-            await macImporter.ImportLatestMultipleAlleleCodes();
+            await macImporter.ImportLatestMacs();
 
             var importedMacs = await macRepository.GetAllMacs();
             importedMacs.Count().Should().Be(numberOfMacs);
@@ -73,12 +73,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
             // We cannot use LochNessBuilder's "Build(x)" feature as all macs must have unique ids.
             var macs = Enumerable.Range(0, numberOfMacs).Select(i => MacEntityBuilder.New.Build()).ToList();
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs));
-            await macImporter.ImportLatestMultipleAlleleCodes();
+            await macImporter.ImportLatestMacs();
 
             const int numberOfNewMacs = 2;
             var newMacs = Enumerable.Range(numberOfMacs, numberOfNewMacs).Select(i => MacEntityBuilder.New.Build());
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs.Concat(newMacs)));
-            await macImporter.ImportLatestMultipleAlleleCodes();
+            await macImporter.ImportLatestMacs();
 
             var importedMacs = await macRepository.GetAllMacs();
             importedMacs.Count().Should().Be(numberOfMacs + numberOfNewMacs);
@@ -94,11 +94,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
 
             mockDownloader.DownloadAndUnzipStream().Returns(
                 MacSourceFileBuilder.BuildMacFile(shorterEarlyMac, shorterLateMac, longerEarlyMac));
-            await macImporter.ImportLatestMultipleAlleleCodes();
+            await macImporter.ImportLatestMacs();
 
             mockDownloader.DownloadAndUnzipStream().Returns(
                 MacSourceFileBuilder.BuildMacFile(shorterEarlyMac, shorterLateMac, longerEarlyMac, longerLateMac));
-            await macImporter.ImportLatestMultipleAlleleCodes();
+            await macImporter.ImportLatestMacs();
 
             var importedMacs = await macRepository.GetAllMacs();
             importedMacs.Count().Should().Be(4);
