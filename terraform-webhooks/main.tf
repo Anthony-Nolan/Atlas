@@ -3,7 +3,7 @@ terraform {
   backend "azurerm" {
     storage_account_name = "novaterraform"
     container_name       = "terraform-state"
-    key                  = "atlas.terraform.tfstate"
+    key                  = "atlas.webhooks.terraform.tfstate"
     resource_group_name  = "AN-RESOURCE-GROUP"
   }
 }
