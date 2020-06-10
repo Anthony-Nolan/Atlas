@@ -45,11 +45,11 @@ jobs:
             Atlas.MatchPrediction.Functions
           arguments: '--configuration Release --no-restore'
       - task: DotNetCoreCLI@2
+        displayName: 'Run Unit Tests'
         inputs:
           command: 'test'
           projects: '**/*Test.csproj'
           arguments: '--no-restore'
-          displayName: 'Run Unit Tests'
       - task: CopyFiles@2
         displayName: 'Copy Atlas Functions Build'
         inputs:
