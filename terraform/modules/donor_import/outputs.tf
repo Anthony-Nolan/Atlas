@@ -1,6 +1,18 @@
-output "general" {
+output "function_app" {
   value = {
-    updated_searchable_donors_servicebus_topic = azurerm_servicebus_topic.updated-searchable-donors
+    hostname = azurerm_function_app.atlas_donor_import_function.default_hostname
+  }
+}
+
+output "service_bus" {
+  value = {
+    updated_searchable_donors_topic = azurerm_servicebus_topic.updated-searchable-donors
+  }
+}
+
+output "storage" {
+  value = {
+    donor_container_name = azurerm_storage_container.donor_blob_storage.name
   }
 }
 

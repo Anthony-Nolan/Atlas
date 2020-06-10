@@ -174,7 +174,7 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/SQL'
           ArtifactName: sql
-  - job: Terraform
+  - job: Terraform_Core
     pool: Hosted Ubuntu 1604
     steps:
       - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
@@ -196,13 +196,45 @@ jobs:
           ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
           ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
       - bash: |
-          echo Remove the terraform directory before pushing
+          echo Remove the .terraform directory before pushing
 
           rm -rf .terraform/
         workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
         displayName: 'rm -rf .terraform/'
       - task: PublishBuildArtifacts@1
-        displayName: 'Publish Artifact: terraform-drop'
+        displayName: 'Publish Artifact: terraform-atlas'
         inputs:
           PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform'
-          ArtifactName: 'terraform-drop'
+          ArtifactName: 'terraform-atlas'
+  - job: Terraform_Webhooks
+    pool: Hosted Ubuntu 1604
+    steps:
+      - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
+        displayName: 'Use Terraform 0.12.24'
+        inputs:
+          terraformVersion: '0.12.24'
+      - script: 'terraform init -reconfigure'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform-webhooks'
+        displayName: 'terraform init'
+        env:
+          ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+      - script: |
+          echo Validating the syntax
+
+          terraform validate
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform-webhooks'
+        displayName: 'terraform validate'
+        env:
+          ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+          ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+      - bash: |
+          echo Remove the .terraform directory before pushing
+
+          rm -rf .terraform/
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform-webhooks'
+        displayName: 'rm -rf .terraform/'
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: terraform-atlas-webhooks'
+        inputs:
+          PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform-webhooks'
+          ArtifactName: 'terraform-atlas-webhooks'
