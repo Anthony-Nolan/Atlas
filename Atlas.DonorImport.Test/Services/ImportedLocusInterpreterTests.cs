@@ -1,13 +1,10 @@
-using System;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.DonorImport.Models.FileSchema;
+using Atlas.DonorImport.Models.Mapping;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-
-#pragma warning disable 618
 
 namespace Atlas.DonorImport.Test.Models.FileSchema
 {
@@ -30,7 +27,7 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
     ///    Given that data, what are "The Field1 Value" and "The Field2 Value"         
     /// </summary>
     [TestFixture]
-    internal class LocusTests
+    internal class ImportedLocusInterpreterTests
     {
         private const string MolecularHlaValue = "*hla-molecular";
         private const string SerologyHlaValue = "hla-serology";
