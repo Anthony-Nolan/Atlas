@@ -37,7 +37,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     DeserializedBody = new SearchableDonorUpdate
                     {
                         DonorId = donorId,
-                        PublishedDateTime = DateTime.UtcNow,
                         IsAvailableForSearch = false
                     }
                 }

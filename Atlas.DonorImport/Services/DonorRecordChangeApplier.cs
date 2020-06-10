@@ -72,13 +72,19 @@ namespace Atlas.DonorImport.Services
                     if (update.UpdateMode != UpdateMode.Full)
                     {
                         var atlasDonor = atlasDonors[update.RecordId];
-                        if (atlasDonor == null)
+                        if (update.ChangeType == ImportDonorChangeType.Delete)
                         {
-                            throw new Exception($"Could not fnd created/updated donor in Atlas database: {update.RecordId}");
+                            await messagingServiceBusClient.PublishDonorUpdateMessage(CreateDeletionUpdate(atlasDonor));
                         }
+                        else
+                        {
+                            if (atlasDonor == null)
+                            {
+                                throw new Exception($"Could not find created/updated donor in Atlas database: {update.RecordId}");
+                            }
 
-                        var atlasId = atlasDonor.AtlasId;
-                        await messagingServiceBusClient.PublishDonorUpdateMessage(MapToMatchingUpdateMessage(update, atlasId));
+                            await messagingServiceBusClient.PublishDonorUpdateMessage(MapToMatchingUpdateMessage(atlasDonor));
+                        }
                     }
                 }
             }
@@ -134,40 +140,38 @@ namespace Atlas.DonorImport.Services
             return donor;
         }
 
-        private SearchableDonorUpdate MapToMatchingUpdateMessage(DonorUpdate fileUpdate, int atlasId)
+        private SearchableDonorUpdate CreateDeletionUpdate(Donor updatedDonor)
         {
-            //TODO: Pass in a pre-interpreted DB Donor instead
-            locusInterpreter.SetDonorContext(fileUpdate, "file");
-
-            var interpretedA = locusInterpreter.Interpret(fileUpdate.Hla.A, Locus.A);
-            var interpretedB = locusInterpreter.Interpret(fileUpdate.Hla.B, Locus.B);
-            var interpretedC = locusInterpreter.Interpret(fileUpdate.Hla.C, Locus.C);
-            var interpretedDpb1 = locusInterpreter.Interpret(fileUpdate.Hla.DPB1, Locus.Dpb1);
-            var interpretedDqb1 = locusInterpreter.Interpret(fileUpdate.Hla.DQB1, Locus.Dqb1);
-            var interpretedDrb1 = locusInterpreter.Interpret(fileUpdate.Hla.DRB1, Locus.Drb1);
-
             return new SearchableDonorUpdate
             {
-                AuditId = 0,
-                DonorId = atlasId,
-                PublishedDateTime = DateTimeOffset.UtcNow,
-                IsAvailableForSearch = fileUpdate.ChangeType != ImportDonorChangeType.Delete,
+                DonorId = updatedDonor.AtlasId,
+                IsAvailableForSearch = false,
+                SearchableDonorInformation = null
+            };
+        }
+
+        private SearchableDonorUpdate MapToMatchingUpdateMessage(Donor updatedDonor)
+        {
+            return new SearchableDonorUpdate
+            {
+                DonorId = updatedDonor.AtlasId,
+                IsAvailableForSearch = true, //Only false for deletions, which are handled separately
                 SearchableDonorInformation = new SearchableDonorInformation
                 {
-                    DonorId = atlasId,
-                    DonorType = fileUpdate.DonorType.ToMatchingAlgorithmType(),
-                    A_1 = interpretedA.Position1,
-                    A_2 = interpretedA.Position2,
-                    B_1 = interpretedB.Position1,
-                    B_2 = interpretedB.Position2,
-                    C_1 = interpretedC.Position1,
-                    C_2 = interpretedC.Position2,
-                    DPB1_1 = interpretedDpb1.Position1,
-                    DPB1_2 = interpretedDpb1.Position2,
-                    DQB1_1 = interpretedDqb1.Position1,
-                    DQB1_2 = interpretedDqb1.Position2,
-                    DRB1_1 = interpretedDrb1.Position1,
-                    DRB1_2 = interpretedDrb1.Position2,
+                    DonorId = updatedDonor.AtlasId,
+                    DonorType = updatedDonor.DonorType.ToMatchingAlgorithmType(),
+                    A_1 = updatedDonor.A_1,
+                    A_2 = updatedDonor.A_2,
+                    B_1 = updatedDonor.B_1,
+                    B_2 = updatedDonor.B_2,
+                    C_1 = updatedDonor.C_1,
+                    C_2 = updatedDonor.C_2,
+                    DPB1_1 = updatedDonor.DPB1_1,
+                    DPB1_2 = updatedDonor.DPB1_2,
+                    DQB1_1 = updatedDonor.DQB1_1,
+                    DQB1_2 = updatedDonor.DQB1_2,
+                    DRB1_1 = updatedDonor.DRB1_1,
+                    DRB1_2 = updatedDonor.DRB1_2,
                 }
             };
         }
