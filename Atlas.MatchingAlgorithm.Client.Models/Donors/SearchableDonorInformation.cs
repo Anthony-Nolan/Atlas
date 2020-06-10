@@ -29,15 +29,9 @@ namespace Atlas.MatchingAlgorithm.Client.Models.Donors
 
     public class SearchableDonorUpdate
     {
-        /// <summary>
-        /// The id of the audit table row that triggered this donor update
-        /// </summary>
-        [JsonIgnore]
-        public int AuditId { get; set; }
-
+        public DateTimeOffset PublishedDateTime { get; } = DateTimeOffset.UtcNow;
         public int DonorId { get; set; }
         public bool IsAvailableForSearch { get; set; }
         public SearchableDonorInformation SearchableDonorInformation { get; set; }
-        public DateTimeOffset? PublishedDateTime { get; set; }
     }
 }

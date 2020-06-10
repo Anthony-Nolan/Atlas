@@ -52,7 +52,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
             {
                 DonorId = ValidDonorId,
                 IsAvailableForSearch = false,
-                PublishedDateTime = DateTime.UtcNow,
                 SearchableDonorInformation = null
             };
 
@@ -95,7 +94,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
             var update = new SearchableDonorUpdate
             {
                 DonorId = ValidDonorId,
-                PublishedDateTime = DateTime.UtcNow,
                 SearchableDonorInformation = new SearchableDonorInformation
                 {
                     DonorId = ValidDonorId,
