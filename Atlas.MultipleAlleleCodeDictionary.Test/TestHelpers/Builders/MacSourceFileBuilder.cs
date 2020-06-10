@@ -11,19 +11,19 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders
     internal static class MacSourceFileBuilder
     {
         // TODO: ATLAS-47: Replace with internal ATLAS MAC model
-        public static Stream BuildMacFile(params MultipleAlleleCodeEntity[] macEntities)
+        public static Stream BuildMacFile(params MacEntity[] macEntities)
         {
             return BuildMacFile(macEntities.ToList());
         }
         
         // TODO: ATLAS-47: Replace with internal ATLAS MAC model
-        public static Stream BuildMacFile(IEnumerable<MultipleAlleleCodeEntity> macEntities)
+        public static Stream BuildMacFile(IEnumerable<MacEntity> macEntities)
         {
             var file = BuildFileAsString(macEntities);
             return file.ToStream();
         }
 
-        private static string BuildFileAsString(IEnumerable<MultipleAlleleCodeEntity> macEntities)
+        private static string BuildFileAsString(IEnumerable<MacEntity> macEntities)
         {
             var fileBuilder = new StringBuilder();
             fileBuilder.AppendLine("LAST UPDATED: 10/03/19");

@@ -15,9 +15,9 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
     internal interface IMacRepository
     {
         public Task<string> GetLastMacEntry();
-        public Task InsertMacs(IEnumerable<MultipleAlleleCode> macCodes);
-        public Task<MultipleAlleleCode> GetMac(string macCode);
-        public Task<IEnumerable<MultipleAlleleCode>> GetAllMacs();
+        public Task InsertMacs(IEnumerable<Mac> macCodes);
+        public Task<Mac> GetMac(string macCode);
+        public Task<IEnumerable<Mac>> GetAllMacs();
     }
 
     internal class MacRepository : IMacRepository
@@ -40,7 +40,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
         public async Task<string> GetLastMacEntry()
         {
-            var query = new TableQuery<MultipleAlleleCodeEntity>();
+            var query = new TableQuery<MacEntity>();
             var result = await Table.ExecuteQueryAsync(query);
             // MACs are alphabetical within a character length - any new MACs are appended to the end of the list alphabetically.
             // Order by partition key to ensure that longer MACs are returned later.
@@ -50,9 +50,9 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
                 .ThenByDescending(x => x.Mac).FirstOrDefault()?.Mac;
         }
 
-        public async Task InsertMacs(IEnumerable<MultipleAlleleCode> macs)
+        public async Task InsertMacs(IEnumerable<Mac> macs)
         {
-            var macsByLength = macs.Select(x => new MultipleAlleleCodeEntity(x)).GroupBy(x => x.PartitionKey);
+            var macsByLength = macs.Select(x => new MacEntity(x)).GroupBy(x => x.PartitionKey);
             foreach (var macsOfSameLength in macsByLength)
             {
                 foreach (var macBatch in macsOfSameLength.Batch(BatchSize))
@@ -68,23 +68,23 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             }
         }
 
-        public async Task<MultipleAlleleCode> GetMac(string macCode)
+        public async Task<Mac> GetMac(string macCode)
         {
-            var query = new TableQuery<MultipleAlleleCodeEntity>().Where(
+            var query = new TableQuery<MacEntity>().Where(
                 TableQuery.CombineFilters(
                     TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, macCode.Length.ToString()),
                     TableOperators.And,
                     TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, macCode)
                     ));
             var result = await Table.ExecuteQueryAsync(query);
-            return new MultipleAlleleCode(result.Single());
+            return new Mac(result.Single());
         }
 
-        public async Task<IEnumerable<MultipleAlleleCode>> GetAllMacs()
+        public async Task<IEnumerable<Mac>> GetAllMacs()
         {
-            var query = new TableQuery<MultipleAlleleCodeEntity>();
+            var query = new TableQuery<MacEntity>();
             var result = await Table.ExecuteQueryAsync(query);
-            return result.Select(x => new MultipleAlleleCode(x));
+            return result.Select(x => new Mac(x));
         }
     }
 }

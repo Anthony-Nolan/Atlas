@@ -13,7 +13,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportServices
 {
     public interface IMacImporter
     {
-        public Task ImportLatestMultipleAlleleCodes();
+        public Task ImportLatestMacs();
     }
 
     internal class MacImporter : IMacImporter
@@ -31,7 +31,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportServices
             this.macCodeDownloader = macCodeDownloader;
         }
 
-        public async Task ImportLatestMultipleAlleleCodes()
+        public async Task ImportLatestMacs()
         {
             const string tracePrefix = "Mac Import: ";
             logger.SendTrace($"{tracePrefix}Mac Import started", LogLevel.Info);
@@ -40,7 +40,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportServices
                 var lastEntryBeforeInsert = await macRepository.GetLastMacEntry();
                 logger.SendTrace($"{tracePrefix}The last MAC entry found was: {lastEntryBeforeInsert}", LogLevel.Info);
 
-                List<MultipleAlleleCode> newMacs;
+                List<Mac> newMacs;
                 await using (var macStream = await DownloadMacs())
                 {
                     newMacs = await macParser.GetMacsSinceLastEntry(macStream, lastEntryBeforeInsert);

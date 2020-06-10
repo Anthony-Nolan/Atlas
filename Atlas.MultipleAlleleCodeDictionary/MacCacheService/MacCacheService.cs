@@ -9,7 +9,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
 {
     public interface IMacCache
     {
-        Task<MultipleAlleleCode> GetMacCode(string macCode);
+        Task<Mac> GetMacCode(string macCode);
         Task GenerateMacCache();
     }
     
@@ -26,7 +26,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
             this.macRepository = macRepository;
         }
 
-        public async Task<MultipleAlleleCode> GetMacCode(string macCode)
+        public async Task<Mac> GetMacCode(string macCode)
         {
             return await cache.GetOrAddAsync(macCode, () => macRepository.GetMac(macCode));
         }
@@ -36,7 +36,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
             var macs = await macRepository.GetAllMacs();
             foreach (var mac in macs)
             {
-                cache.GetOrAdd(mac.Mac, () => mac);
+                cache.GetOrAdd(mac.MacCode, () => mac);
             }
         }
     }

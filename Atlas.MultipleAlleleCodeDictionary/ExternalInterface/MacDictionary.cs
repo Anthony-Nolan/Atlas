@@ -5,30 +5,30 @@ using Atlas.MultipleAlleleCodeDictionary.MacImportServices;
 
 namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
 {
-    public interface IMultipleAlleleCodeDictionary
+    public interface IMacDictionary
     {
-        public Task ImportLatestMultipleAlleleCodes();
-        public Task<MultipleAlleleCode> GetMultipleAlleleCode(string macCode);
+        public Task ImportLatestMacs();
+        public Task<Mac> GetMac(string macCode);
         public Task GenerateMacCache();
     }
     
-    public class MultipleAlleleCodeDictionary : IMultipleAlleleCodeDictionary
+    public class MacDictionary : IMacDictionary
     {
         private readonly IMacImporter macImporter;
         private readonly IMacCache macCache;
 
-        public MultipleAlleleCodeDictionary(IMacImporter macImporter, IMacCache macCache)
+        public MacDictionary(IMacImporter macImporter, IMacCache macCache)
         {
             this.macImporter = macImporter;
             this.macCache = macCache;
         }
         
-        public async Task ImportLatestMultipleAlleleCodes()
+        public async Task ImportLatestMacs()
         {
-            await macImporter.ImportLatestMultipleAlleleCodes();
+            await macImporter.ImportLatestMacs();
         }
         
-        public async Task<MultipleAlleleCode> GetMultipleAlleleCode(string macCode)
+        public async Task<Mac> GetMac(string macCode)
         {
             return await macCache.GetMacCode(macCode);
         }
