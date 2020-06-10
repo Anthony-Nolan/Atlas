@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
@@ -15,7 +15,7 @@ namespace Atlas.DonorImport.Services
     internal interface IDonorRecordChangeApplier
     {
         // ReSharper disable once ParameterTypeCanBeEnumerable.Global
-        Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates);
+        Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, string fileName);
     }
 
     internal class DonorRecordChangeApplier : IDonorRecordChangeApplier
@@ -40,7 +40,7 @@ namespace Atlas.DonorImport.Services
             this.logger = logger;
         }
 
-        public async Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates)
+        public async Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, string fileName)
         {
             var updatesByType = donorUpdates.GroupBy(du => du.ChangeType);
             foreach (var updatesOfSameOperationType in updatesByType)
@@ -48,7 +48,8 @@ namespace Atlas.DonorImport.Services
                 switch (updatesOfSameOperationType.Key)
                 {
                     case ImportDonorChangeType.Create:
-                        await donorImportRepository.InsertDonorBatch(updatesOfSameOperationType.Select(MapToDatabaseDonor));
+                        var creations = updatesOfSameOperationType.Select(update => MapToDatabaseDonor(update, fileName)).ToList();
+                        await donorImportRepository.InsertDonorBatch(creations);
                         break;
                     case ImportDonorChangeType.Delete:
                         throw new NotImplementedException();
@@ -82,17 +83,16 @@ namespace Atlas.DonorImport.Services
             }
         }
 
-        private Donor MapToDatabaseDonor(DonorUpdate fileUpdate)
+        private Donor MapToDatabaseDonor(DonorUpdate fileUpdate, string fileName)
         {
-            locusInterpreter.SetDonorContext(fileUpdate);
+            locusInterpreter.SetDonorContext(fileUpdate, fileName);
 
-            var interpretedA = locusInterpreter.Interpret(fileUpdate.Hla.A);
-            var interpretedB = locusInterpreter.Interpret(fileUpdate.Hla.B);
-            var interpretedC = locusInterpreter.Interpret(fileUpdate.Hla.C);
-            var interpretedDpb1 = locusInterpreter.Interpret(fileUpdate.Hla.DPB1);
-            var interpretedDqb1 = locusInterpreter.Interpret(fileUpdate.Hla.DQB1);
-            var interpretedDrb1 = locusInterpreter.Interpret(fileUpdate.Hla.DRB1);
-
+            var interpretedA = locusInterpreter.Interpret(fileUpdate.Hla.A, Locus.A);
+            var interpretedB = locusInterpreter.Interpret(fileUpdate.Hla.B, Locus.B);
+            var interpretedC = locusInterpreter.Interpret(fileUpdate.Hla.C, Locus.C);
+            var interpretedDpb1 = locusInterpreter.Interpret(fileUpdate.Hla.DPB1, Locus.Dpb1);
+            var interpretedDqb1 = locusInterpreter.Interpret(fileUpdate.Hla.DQB1, Locus.Dqb1);
+            var interpretedDrb1 = locusInterpreter.Interpret(fileUpdate.Hla.DRB1, Locus.Drb1);
             var donor = new Donor
             {
                 ExternalDonorCode = fileUpdate.RecordId,
@@ -119,14 +119,14 @@ namespace Atlas.DonorImport.Services
         private SearchableDonorUpdate MapToMatchingUpdateMessage(DonorUpdate fileUpdate, int atlasId)
         {
             //TODO: Pass in a pre-interpreted DB Donor instead
-            locusInterpreter.SetDonorContext(fileUpdate);
+            locusInterpreter.SetDonorContext(fileUpdate, "file");
 
-            var interpretedA = locusInterpreter.Interpret(fileUpdate.Hla.A);
-            var interpretedB = locusInterpreter.Interpret(fileUpdate.Hla.B);
-            var interpretedC = locusInterpreter.Interpret(fileUpdate.Hla.C);
-            var interpretedDpb1 = locusInterpreter.Interpret(fileUpdate.Hla.DPB1);
-            var interpretedDqb1 = locusInterpreter.Interpret(fileUpdate.Hla.DQB1);
-            var interpretedDrb1 = locusInterpreter.Interpret(fileUpdate.Hla.DRB1);
+            var interpretedA = locusInterpreter.Interpret(fileUpdate.Hla.A, Locus.A);
+            var interpretedB = locusInterpreter.Interpret(fileUpdate.Hla.B, Locus.B);
+            var interpretedC = locusInterpreter.Interpret(fileUpdate.Hla.C, Locus.C);
+            var interpretedDpb1 = locusInterpreter.Interpret(fileUpdate.Hla.DPB1, Locus.Dpb1);
+            var interpretedDqb1 = locusInterpreter.Interpret(fileUpdate.Hla.DQB1, Locus.Dqb1);
+            var interpretedDrb1 = locusInterpreter.Interpret(fileUpdate.Hla.DRB1, Locus.Drb1);
 
             return new SearchableDonorUpdate
             {
