@@ -62,11 +62,11 @@ namespace Atlas.Common.GeneticData.Hla.Services
         {
             var name = hlaName.Trim().ToUpper();
 
-            foreach (var categoryRegex in TypingCategoryRegexes.Keys)
+            foreach (var (regex, category) in TypingCategoryRegexes)
             {
-                if (categoryRegex.IsMatch(name))
+                if (regex.IsMatch(name))
                 {
-                    return TypingCategoryRegexes[categoryRegex];
+                    return category;
                 }
             }
 
