@@ -2,11 +2,13 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.Common.Utils.Extensions;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Services.GenotypeImputation;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using Atlas.MatchPrediction.Settings;
 using Atlas.MatchPrediction.Settings.Azure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -24,13 +26,21 @@ namespace Atlas.MatchPrediction.DependencyInjection
             services.RegisterServices();
             services.RegisterDatabaseServices();
             services.RegisterClientServices();
+            services.RegisterHlaMetadataDictionary(
+                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
+                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
+                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
+                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
+                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value);
         }
 
         private static void RegisterSettings(this IServiceCollection services)
         {
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterOptions<AzureStorageSettings>("AzureStorage");
+            services.RegisterOptions<HlaServiceSettings>("Client:HlaService");
             services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
+            services.RegisterOptions<WmdaSettings>("Wmda");
         }
 
         private static void RegisterDatabaseServices(this IServiceCollection services)
