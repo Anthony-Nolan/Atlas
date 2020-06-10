@@ -16,11 +16,11 @@ namespace Atlas.MatchPrediction.Functions.Functions
 {
     public class GenotypeImputationFunctions
     {
-        private readonly IHlaMetadataDictionaryFactory metadataDictionaryFactory;
+        private readonly IGenotypeImputationService genotypeImputationService;
 
-        public GenotypeImputationFunctions(IHlaMetadataDictionaryFactory metadataDictionaryFactory)
+        public GenotypeImputationFunctions(IHlaMetadataDictionaryFactory metadataDictionaryFactory, IGenotypeImputationService genotypeImputationService)
         {
-            this.metadataDictionaryFactory = metadataDictionaryFactory;
+            this.genotypeImputationService = genotypeImputationService;
         }
 
         [FunctionName(nameof(GenotypeImputation))]
@@ -30,8 +30,6 @@ namespace Atlas.MatchPrediction.Functions.Functions
             HttpRequest request)
         {
             var genotypeImputationInput = JsonConvert.DeserializeObject<GenotypeImputationInput>(await new StreamReader(request.Body).ReadToEndAsync());
-
-            IGenotypeImputationService genotypeImputationService = new GenotypeImputationService(genotypeImputationInput.NomenclatureVersion, metadataDictionaryFactory);
 
             try
             {

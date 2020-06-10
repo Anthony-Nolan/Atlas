@@ -11,15 +11,17 @@ namespace Atlas.MatchPrediction.Services.GenotypeImputation
 
     public class GenotypeImputationService : IGenotypeImputationService
     {
-        private readonly IHlaMetadataDictionary hlaMetadataDictionary;
+        private readonly IHlaMetadataDictionaryFactory metadataDictionaryFactory;
 
-        public GenotypeImputationService(string nomenclatureVersion, IHlaMetadataDictionaryFactory factory)
+        public GenotypeImputationService(IHlaMetadataDictionaryFactory metadataDictionaryFactory)
         {
-            this.hlaMetadataDictionary = factory.BuildDictionary(nomenclatureVersion);
+            this.metadataDictionaryFactory = metadataDictionaryFactory;
         }
 
         public async Task<GenotypeImputationResponse> ImputeGenotype(GenotypeImputationInput genotypeImputationInput)
         {
+            var hlaMetadataDictionary = metadataDictionaryFactory.BuildDictionary(genotypeImputationInput.NomenclatureVersion);
+
             var allelesPerLocus = await genotypeImputationInput.Phenotype.MapAsync(async (locus, position, hla) =>
                 await hlaMetadataDictionary.GetTwoFieldAllelesForAmbiguousHla(locus, hla));
 

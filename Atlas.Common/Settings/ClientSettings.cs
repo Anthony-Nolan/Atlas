@@ -1,4 +1,4 @@
-namespace Atlas.MatchingAlgorithm.Settings
+namespace Atlas.Common.Settings
 {
     public abstract class ClientSettings
     {
