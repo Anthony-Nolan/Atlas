@@ -72,21 +72,15 @@ namespace Atlas.DonorImport.Services
                     if (update.UpdateMode != UpdateMode.Full)
                     {
                         var atlasDonor = atlasDonors[update.RecordId];
-                        SearchableDonorUpdate updateMessage;
-
-                        if (update.ChangeType == ImportDonorChangeType.Delete)
+                        if (atlasDonor == null)
                         {
-                            updateMessage = MapToDeletionUpdate(atlasDonor);
+                            throw new Exception($"Could not find changed donor in Atlas database: {update.RecordId}");
                         }
-                        else
-                        {
-                            if (atlasDonor == null)
-                            {
-                                throw new Exception($"Could not find created/updated donor in Atlas database: {update.RecordId}");
-                            }
 
-                            updateMessage = MapToMatchingUpdateMessage(atlasDonor);
-                        }
+                        SearchableDonorUpdate updateMessage =
+                            update.ChangeType == ImportDonorChangeType.Delete
+                                ? MapToDeletionUpdate(atlasDonor)
+                                : MapToMatchingUpdateMessage(atlasDonor);
 
                         await messagingServiceBusClient.PublishDonorUpdateMessage(updateMessage);
                     }
