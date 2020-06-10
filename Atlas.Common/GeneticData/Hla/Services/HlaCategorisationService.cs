@@ -16,8 +16,6 @@ namespace Atlas.Common.GeneticData.Hla.Services
         /// <br/>
         /// Does NOT check whether the exact values of the string are recognised. i.e. non-existent NMDP codes or Field values will NOT be detected.
         /// </summary>
-        /// <param name="hlaDescriptor"></param>
-        /// <returns></returns>
         bool ConformsToValidHlaFormat(string hlaDescriptor);
         HlaTypingCategory GetHlaTypingCategory(string hlaDescriptor);
         bool TryGetHlaTypingCategory(string hlaDescriptor, [NotNullWhen(true)]out HlaTypingCategory? category);

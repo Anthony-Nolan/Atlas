@@ -1,15 +1,12 @@
-using System;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.DonorImport.Models.FileSchema;
+using Atlas.DonorImport.Models.Mapping;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
-#pragma warning disable 618
-
-namespace Atlas.DonorImport.Test.Models.FileSchema
+namespace Atlas.DonorImport.Test.Services
 {
     /// <summary>
     /// All of these tests are considering the following object:
@@ -30,7 +27,7 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
     ///    Given that data, what are "The Field1 Value" and "The Field2 Value"         
     /// </summary>
     [TestFixture]
-    internal class LocusTests
+    internal class ImportedLocusInterpreterTests
     {
         private const string MolecularHlaValue = "*hla-molecular";
         private const string SerologyHlaValue = "hla-serology";
@@ -47,7 +44,7 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         }
 
         [Test]
-        public void Interpret_WhenLocusNull_ReturnsNull()
+        public void Interpret_WhenLocusNull_ReturnsNullInfo()
         {
             var result = new ImportedLocusInterpreter(null, null).Interpret(null, default);
             result.Position1.Should().BeNull();
@@ -55,26 +52,26 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         }
 
         [Test]
-        public void Field1And2_WhenNoTypingPresent_ReturnsNull()
+        public void Interpret_WhenNoTypingPresent_ReturnsNullInfo()
         {
-            LocusTestPerformer.NewTestCase
+            LocusInterpretationTestPerformer.NewTestCase
                 .WithCategoriser(permissiveCategoriser)
                 .ShouldHaveHomozygousFields(null);
         }
 
         [Test]
-        public void Fields1And2_WhenOnlyHomozygousMolecularTypingsArePresent_ReturnsMolecularFields()
+        public void Interpret_WhenOnlyHomozygousMolecularTypingsArePresent_ReturnsMolecularFields()
         {
-            LocusTestPerformer.NewTestCase
+            LocusInterpretationTestPerformer.NewTestCase
                 .WithCategoriser(permissiveCategoriser)
                 .WithHomozygousMolecular(MolecularHlaValue)
                 .ShouldHaveHomozygousFields(MolecularHlaValue);
         }
 
         [Test]
-        public void Fields1And2_WhenOnlyHomozygousSerologyTypingsArePresent_ReturnsSerologyFields()
+        public void Interpret_WhenOnlyHomozygousSerologyTypingsArePresent_ReturnsSerologyFields()
         {
-            LocusTestPerformer.NewTestCase
+            LocusInterpretationTestPerformer.NewTestCase
                 .WithCategoriser(permissiveCategoriser)
                 .WithHomozygousSerology(SerologyHlaValue)
                 .ShouldHaveHomozygousFields(SerologyHlaValue);
@@ -87,12 +84,12 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         [TestCase(MolecularHlaValue, SerologyHlaValue, MolecularHlaValue)]
         [TestCase(null, null, null)]
         [TestCase("", "", null)]
-        public void Field1And2_WhenHomozygousDataFromFromAVarietyOfMolecularAndOrSerologyTypingsArePresent_ReturnsCorrectHomozygousFields(
+        public void Interpret_WhenHomozygousDataFromFromAVarietyOfMolecularAndOrSerologyTypingsArePresent_ReturnsCorrectHomozygousFields(
             string molecularTyping,
             string serologyTyping,
             string expectedField)
         {
-            LocusTestPerformer.NewTestCase
+            LocusInterpretationTestPerformer.NewTestCase
                 .WithCategoriser(permissiveCategoriser)
                 .WithHomozygousMolecular(molecularTyping)
                 .WithHomozygousSerology(serologyTyping)
@@ -194,7 +191,7 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         [TestCase(null, "",    null, "",     null, null)]
         [TestCase("", null,    null, "",     null, null)]
         [TestCase(null, null,  null, "",     null, null)]
-        public void HlaLocusData_WhenMolecularAndSerologyObjectsAreDefinedButSomeDataIsMissing_DefaultingBetweenFieldsAndSerologiesIsCorrect(
+        public void Interpret_WhenMolecularAndSerologyObjectsAreDefinedButSomeDataIsMissing_DefaultingBetweenFieldsAndSerologiesIsCorrect(
             string molecularField1,
             string molecularField2,
             string serologyField1,
@@ -202,7 +199,7 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
             string expectedField1,
             string expectedField2)
         {
-            LocusTestPerformer.NewTestCase
+            LocusInterpretationTestPerformer.NewTestCase
                 .WithCategoriser(permissiveCategoriser)
                 .WithMolecular(molecularField1, molecularField2)
                 .WithSerology(serologyField1, serologyField2)
@@ -218,14 +215,13 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         [TestCase(null, "",    null, null)]
         [TestCase("", null,    null, null)]
         [TestCase(null, null,  null, null)]
-
-        public void HlaLocusData_WhenSerologyObjectIsAbsentButSomeMolecularDataIsMissing_DefaultingBetweenFieldsAndSerologiesIsCorrect(
+        public void Interpret_WhenSerologyObjectIsAbsentButSomeMolecularDataIsMissing_DefaultingBetweenFieldsAndSerologiesIsCorrect(
             string serologyField1,
             string serologyField2,
             string expectedField1,
             string expectedField2)
         {
-            LocusTestPerformer.NewTestCase
+            LocusInterpretationTestPerformer.NewTestCase
                 .WithCategoriser(permissiveCategoriser)
                 .WithMolecular(serologyField1, serologyField2)
                 .ShouldHaveFields(expectedField1, expectedField2);
@@ -240,38 +236,38 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
         [TestCase(null, null,  null, null)]
         [TestCase("", null,    null, null)]
         [TestCase(null, "",    null, null)]
-        public void HlaLocusData_WhenMolecularObjectIsAbsentButSomeSerologyDataIsMissing_DefaultingBetweenFieldsAndSerologiesIsCorrect(
+        public void Interpret_WhenMolecularObjectIsAbsentButSomeSerologyDataIsMissing_DefaultingBetweenFieldsAndSerologiesIsCorrect(
             string serologyField1,
             string serologyField2,
             string expectedField1,
             string expectedField2)
         {
-            LocusTestPerformer.NewTestCase
+            LocusInterpretationTestPerformer.NewTestCase
                 .WithCategoriser(permissiveCategoriser)
                 .WithSerology(serologyField1, serologyField2)
                 .ShouldHaveFields(expectedField1, expectedField2);
         }
 
-        private class LocusTestPerformer
+        private class LocusInterpretationTestPerformer
         {
-            public static LocusTestPerformer NewTestCase => new LocusTestPerformer();
+            public static LocusInterpretationTestPerformer NewTestCase => new LocusInterpretationTestPerformer();
             private ImportedLocus locus = new ImportedLocus();
             private IHlaCategorisationService categoriser = null;
             private ILogger logger = Substitute.For<ILogger>();
 
-            public LocusTestPerformer WithCategoriser(IHlaCategorisationService categoriser)
+            public LocusInterpretationTestPerformer WithCategoriser(IHlaCategorisationService categoriser)
             {
                 this.categoriser = categoriser;
                 return this;
             }
 
-            public LocusTestPerformer WithMolecular(string field1, string field2)
+            public LocusInterpretationTestPerformer WithMolecular(string field1, string field2)
             {
                 locus.Dna = new TwoFieldStringData { Field1 = field1, Field2 = field2 };
                 return this;
             }
 
-            public LocusTestPerformer WithSerology(string field1, string field2)
+            public LocusInterpretationTestPerformer WithSerology(string field1, string field2)
             {
                 locus.Serology = new TwoFieldStringData { Field1 = field1, Field2 = field2 };
                 return this;
@@ -284,8 +280,8 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
                 interprettedLocus.Position2.Should().Be(expectedField2);
             }
 
-            public LocusTestPerformer WithHomozygousMolecular(string bothFields) => WithMolecular(bothFields, bothFields);
-            public LocusTestPerformer WithHomozygousSerology(string bothFields) => WithSerology(bothFields, bothFields);
+            public LocusInterpretationTestPerformer WithHomozygousMolecular(string bothFields) => WithMolecular(bothFields, bothFields);
+            public LocusInterpretationTestPerformer WithHomozygousSerology(string bothFields) => WithSerology(bothFields, bothFields);
             public void ShouldHaveHomozygousFields(string bothFields) => ShouldHaveFields(bothFields, bothFields);
         }
     }
