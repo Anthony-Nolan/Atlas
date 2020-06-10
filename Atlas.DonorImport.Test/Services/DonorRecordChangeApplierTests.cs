@@ -33,7 +33,7 @@ namespace Atlas.DonorImport.Test.Services
             donorImportRepository = Substitute.For<IDonorImportRepository>();
             donorInspectionRepository = Substitute.For<IDonorReadRepository>();
             naiveDnalocusInterpretter = Substitute.For<IImportedLocusInterpreter>();
-            naiveDnalocusInterpretter.Interpret(default).ReturnsForAnyArgs((call) =>
+            naiveDnalocusInterpretter.Interpret(default, default).ReturnsForAnyArgs((call) =>
             {
                 var arg = call.Arg<ImportedLocus>();
                 return new LocusInfo<string>(arg?.Dna?.Field1, arg?.Dna?.Field2);
@@ -58,7 +58,7 @@ namespace Atlas.DonorImport.Test.Services
                 {donorUpdates[1].RecordId, new Donor {AtlasId = 2, ExternalDonorCode = donorUpdates[1].RegistryCode}},
             });
 
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates);
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, "file");
 
             await donorImportRepository.Received().InsertDonorBatch(Arg.Is<IEnumerable<Donor>>(storedDonors =>
                 storedDonors.Count() == donorUpdates.Count)
@@ -76,7 +76,7 @@ namespace Atlas.DonorImport.Test.Services
             donorInspectionRepository.GetDonorsByExternalDonorCodes(null)
                 .ReturnsForAnyArgs(donorUpdates.ToDictionary(d => d.RecordId, d => new Donor()));
 
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates);
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, "file");
 
             await messagingServiceBusClient.Received(donorUpdates.Count).PublishDonorUpdateMessage(Arg.Any<SearchableDonorUpdate>());
         }
@@ -94,7 +94,7 @@ namespace Atlas.DonorImport.Test.Services
                 donorUpdates.ToDictionary(d => d.RecordId, d => new Donor {AtlasId = atlasId})
             );
 
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates);
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, "file");
 
             await messagingServiceBusClient.Received(donorUpdates.Count).PublishDonorUpdateMessage(Arg.Is<SearchableDonorUpdate>(u =>
                 u.DonorId == atlasId
@@ -109,7 +109,7 @@ namespace Atlas.DonorImport.Test.Services
                 DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Full).Build(),
             };
 
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates);
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, "file");
 
             await donorInspectionRepository.DidNotReceiveWithAnyArgs().GetDonorsByExternalDonorCodes(null);
         }
@@ -128,7 +128,7 @@ namespace Atlas.DonorImport.Test.Services
                 {donorUpdates[1].RecordId, new Donor {AtlasId = 2, ExternalDonorCode = donorUpdates[1].RegistryCode}},
             });
 
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates);
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, "file");
 
             await messagingServiceBusClient.DidNotReceive().PublishDonorUpdateMessage(Arg.Any<SearchableDonorUpdate>());
         }

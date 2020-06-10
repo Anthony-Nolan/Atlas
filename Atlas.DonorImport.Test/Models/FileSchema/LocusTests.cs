@@ -1,5 +1,6 @@
 using System;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.DonorImport.Models.FileSchema;
 using FluentAssertions;
@@ -43,6 +44,14 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
             permissiveCategoriser.ConformsToValidHlaFormat(default).ReturnsForAnyArgs(true);
             dismissiveCategoriser = Substitute.For<IHlaCategorisationService>();
             dismissiveCategoriser.ConformsToValidHlaFormat(default).ReturnsForAnyArgs(false);
+        }
+
+        [Test]
+        public void Interpret_WhenLocusNull_ReturnsNull()
+        {
+            var result = new ImportedLocusInterpreter(null, null).Interpret(null, default);
+            result.Position1.Should().BeNull();
+            result.Position2.Should().BeNull();
         }
 
         [Test]
@@ -270,7 +279,7 @@ namespace Atlas.DonorImport.Test.Models.FileSchema
 
             public void ShouldHaveFields(string expectedField1, string expectedField2)
             {
-                var interprettedLocus = new ImportedLocusInterpreter(categoriser, logger).Interpret(locus);
+                var interprettedLocus = new ImportedLocusInterpreter(categoriser, logger).Interpret(locus, default);
                 interprettedLocus.Position1.Should().Be(expectedField1);
                 interprettedLocus.Position2.Should().Be(expectedField2);
             }

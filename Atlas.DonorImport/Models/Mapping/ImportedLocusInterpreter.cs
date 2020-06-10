@@ -1,160 +1,145 @@
 using System.Collections.Generic;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Models.FileSchema
 {
     internal interface IImportedLocusInterpreter
     {
-        LocusInfo<string> Interpret(ImportedLocus locus);
+        /// <summary>
+        /// Take the locus representation as found in the import files, and
+        /// convert it into a standardised HLA representation.
+        /// Standardisation currently consists of
+        /// * using NULLs for missing data
+        /// * prepending Molecular HLAs with '*'
+        /// * interpretting missing 
+        /// </summary>
+        /// <param name="locus"></param>
+        /// <returns></returns>
+        LocusInfo<string> Interpret(ImportedLocus locusData, Locus locus);
+
         /// <summary>
         /// Store contextual information for use with logging warnings.
         /// </summary>
         /// <param name="fileUpdate"></param>
-        void SetDonorContext(DonorUpdate fileUpdate);
+        /// <param name="fileName"></param>
+        void SetDonorContext(DonorUpdate fileUpdate, string fileName);
     }
 
     internal class ImportedLocusInterpreter : IImportedLocusInterpreter
     {
-        private readonly IHlaCategorisationService storedHlaCategoriser;
-        private readonly ILogger storedLogger;
-        private DonorUpdate currentDonorFileData = null;
-        private TwoFieldStringData Dna;
-        private TwoFieldStringData Serology;
-
+        private readonly IHlaCategorisationService categoriser;
+        private readonly ILogger logger;
+        private Dictionary<string, string> currentInterpretationContext = new Dictionary<string, string>();
+        private const string contextHlaKey = "HLA";
+        private const string contextPositionKey = "Position";
 
         public ImportedLocusInterpreter(IHlaCategorisationService hlaCategoriser, ILogger logger)
         {
-            this.storedHlaCategoriser = hlaCategoriser;
-            this.storedLogger = logger;
+            categoriser = hlaCategoriser;
+            this.logger = logger;
         }
 
-        public LocusInfo<string> Interpret(ImportedLocus locus)
+        /// <inheritdoc />
+        public void SetDonorContext(DonorUpdate fileUpdate, string fileName)
         {
-#pragma warning disable 618
-            Dna = MergeEmptyToNull(locus?.Dna);
-            Serology = MergeEmptyToNull(locus?.Serology);
-            field1IsPrecalculated = false;
-            field2IsPrecalculated = false;
-#pragma warning restore 618
-
-            return new LocusInfo<string>
+            currentInterpretationContext = new Dictionary<string, string>
             {
-                Position1 = ReadField1(storedHlaCategoriser, storedLogger),
-                Position2 = ReadField2(storedHlaCategoriser, storedLogger)
+                {"ImportFile", fileName},
+                {"DonorCode", fileUpdate.RecordId},
             };
         }
 
-        private string ToNullIfEmpty(string input) => string.IsNullOrEmpty(input) ? null : input;
-        private TwoFieldStringData MergeEmptyToNull(TwoFieldStringData input) => new TwoFieldStringData { Field1 = ToNullIfEmpty(input?.Field1), Field2 = ToNullIfEmpty(input?.Field2) };
-
         /// <inheritdoc />
-        public void SetDonorContext(DonorUpdate fileUpdate)
+        public LocusInfo<string> Interpret(ImportedLocus locusData, Locus locus)
         {
-            this.currentDonorFileData = fileUpdate;
-        }
+            currentInterpretationContext["Locus"] = locus.ToString();
 
-#pragma warning disable 618 // Dna & Serology are not Obsolete, but would be considered private if not for deserialization to this class
-
-        #region Field1
-        private bool field1IsPrecalculated = false;
-        private string precalculatedField1 = null;
-        private string ReadField1(IHlaCategorisationService hlaCategoriser, ILogger logger)
-        {
-            if (!field1IsPrecalculated)
+            if (locusData == null)
             {
-                precalculatedField1 = CalculateField1(hlaCategoriser, logger);
-                field1IsPrecalculated = true;
-            }
-            return precalculatedField1;
-        }
-        private string CalculateField1(IHlaCategorisationService hlaCategoriser, ILogger logger)
-        {
-            var standardisedDnaField1 = StandardiseDnaField(Dna?.Field1, hlaCategoriser, logger);
-
-            if (standardisedDnaField1 != null)
-            {
-                return standardisedDnaField1;
+                return NewNullLocusInfo;
             }
 
-            if (Dna?.Field2 != null)
+            var dna = locusData.Dna;
+            var serology = locusData.Serology;
+
+            if (IsBlank(dna) && IsBlank(serology))
+            {
+                return NewNullLocusInfo;
+            }
+
+            if (IsBlank(dna))
+            {
+                return InterpretFrom(serology);
+            }
+
+            var standardisedDna = StandardiseDna(dna);
+            return InterpretFrom(standardisedDna);
+        }
+
+        public LocusInfo<string> InterpretFrom(TwoFieldStringData locusData)
+        {
+            var field1 = NullIfBlank(locusData.Field1);
+            var field2 = NullIfBlank(locusData.Field2);
+
+            if ((field1 ?? field2) == null)
+            {
+                return NewNullLocusInfo;
+            }
+
+            if (field2 == null)
+            {
+                // If Field2 is not Specified, but Field1 IS, then interpret that as a homozygous record and return Field1. The reverse is NOT valid.
+                currentInterpretationContext[contextHlaKey] = field1;
+                logger.SendTrace("Interpreted Locus Data as implicitly homozygous", LogLevel.Verbose, currentInterpretationContext);
+
+                return new LocusInfo<string>(field1);
+            }
+
+            return new LocusInfo<string>(field1, field2);
+        }
+
+        private LocusInfo<string> NewNullLocusInfo => new LocusInfo<string>(null);
+        private bool IsBlank(TwoFieldStringData input) => input == null || (IsBlank(input.Field1) && IsBlank(input.Field2));
+        private bool IsBlank(string input) => string.IsNullOrEmpty(input);
+        private string NullIfBlank(string input) => IsBlank(input) ? null : input;
+
+        /// <summary>
+        /// Currently this only covers ensuring that Molecular HLAs are pre-pended by a '*'
+        /// </summary>
+        /// <param name="dnaData"></param>
+        /// <returns></returns>
+        public TwoFieldStringData StandardiseDna(TwoFieldStringData dnaData)
+        {
+            return new TwoFieldStringData
+            {
+                Field1 = StandardiseDnaField(dnaData.Field1, "1"),
+                Field2 = StandardiseDnaField(dnaData.Field2, "2")
+            };
+        }
+
+        private string StandardiseDnaField(string dnaField, string positionLabel)
+        {
+            if (IsBlank(dnaField))
             {
                 return null;
             }
 
-            return Serology?.Field1;
-        }
-        #endregion
-
-        #region Field2
-        private bool field2IsPrecalculated = false;
-        private string precalculatedField2 = null;
-
-        private string ReadField2(IHlaCategorisationService hlaCategoriser, ILogger logger)
-        {
-            if (!field2IsPrecalculated)
-            {
-                precalculatedField2 = CalculateField2(hlaCategoriser, logger);
-                field2IsPrecalculated = true;
-            }
-            return precalculatedField2;
-        }
-        private string CalculateField2(IHlaCategorisationService hlaCategoriser, ILogger logger)
-        {
-            var standardisedDnaField2 = StandardiseDnaField(Dna?.Field2, hlaCategoriser, logger);
-            if (standardisedDnaField2 != null)
-            {
-                return standardisedDnaField2;
-            }
-
-            var standardisedDnaField1 = StandardiseDnaField(Dna?.Field1, hlaCategoriser, logger);
-            if (standardisedDnaField1 != null)
-            {
-                // If Field2 is not Specified, but Field1 IS, then interpret that as a homozygous record and return Field1. The reverse is NOT valid.
-                logger.SendTrace("Interpreted Dna Data as implicitly homozygous", LogLevel.Verbose,
-                    new Dictionary<string, string> { { "DonorCode", "XXX" }, { "HLA", "YYY" } });
-                return standardisedDnaField1;
-            }
-
-            if (Serology?.Field2 != null)
-            {
-                return Serology?.Field2;
-            }
-
-            if (Serology?.Field1 != null)
-            {
-                // If Field2 is not Specified, but Field1 IS, then interpret that as a homozygous record and return Field1. The reverse is NOT valid.
-                logger.SendTrace("Interpreted Serology Data as implicitly homozygous", LogLevel.Verbose,
-                    new Dictionary<string, string> { { "DonorCode", "XXX" }, { "HLA", "YYY" } });
-                return Serology?.Field1;
-            }
-
-            return null;
-        }
-        #endregion
-
-#pragma warning restore 618
-
-        private string StandardiseDnaField(string dnaField, IHlaCategorisationService hlaCategoriser, ILogger logger)
-        {
-            if (dnaField == null)
-            {
-                return null;
-            }
-
-            var needsStar = hlaCategoriser.ConformsToValidHlaFormat(dnaField);
+            var needsStar = categoriser.ConformsToValidHlaFormat(dnaField);
             var hasStar = dnaField.StartsWith('*');
             if (needsStar && !hasStar)
             {
-                logger.SendTrace("Prepended * to non-standard donor hla.", LogLevel.Verbose,
-                    new Dictionary<string, string> {{"DonorCode", "XXX"}, {"HLA", "YYY"}, {"Location", "DNA Field1"}});
+                currentInterpretationContext[contextHlaKey] = dnaField;
+                currentInterpretationContext[contextPositionKey] = positionLabel;
+                logger.SendTrace("Prepended * to non-standard donor hla.", LogLevel.Verbose, currentInterpretationContext);
+                currentInterpretationContext.Remove(contextPositionKey);
+
                 return "*" + dnaField;
             }
 
             return dnaField;
         }
-
     }
 }
