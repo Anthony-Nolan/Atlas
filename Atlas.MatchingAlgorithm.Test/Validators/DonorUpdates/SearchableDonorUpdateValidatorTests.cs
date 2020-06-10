@@ -19,11 +19,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
             validator = new SearchableDonorUpdateValidator();
         }
 
-        public void Validator_WhenDonorIdIsMissing_ShouldHaveValidationError()
-        {
-            validator.ShouldHaveValidationErrorFor(x => x.DonorId, null);
-        }
-
         [Test]
         public void Validator_WhenDonorIdCanBeParsedToInteger_ShouldNotHaveValidationError()
         {
@@ -110,18 +105,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.DonorUpdates
             var result = validator.Validate(update);
 
             result.IsValid.Should().BeTrue();
-        }
-
-        [Test]
-        public void Validator_WhenPublishedDateTimeUtcIsNull_ShouldHaveValidationError()
-        {
-            validator.ShouldHaveValidationErrorFor(x => x.PublishedDateTime, (DateTime?)null);
-        }
-
-        [Test]
-        public void Validator_WhenPublishedDateTimeUtcIsNotNull_ShouldNotHaveValidationError()
-        {
-            validator.ShouldNotHaveValidationErrorFor(x => x.PublishedDateTime, DateTime.UtcNow);
         }
     }
 }

@@ -1,5 +1,4 @@
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
-using Atlas.MatchingAlgorithm.Models;
 using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Validators.DonorInfo
@@ -22,8 +21,6 @@ namespace Atlas.MatchingAlgorithm.Validators.DonorInfo
             RuleFor(x => x.DonorId)
                 .Equal(x => x.SearchableDonorInformation.DonorId)
                 .When(x => x.SearchableDonorInformation != null);
-
-            RuleFor(x => x.PublishedDateTime).NotNull();
         }
     }
 }
