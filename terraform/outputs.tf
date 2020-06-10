@@ -11,12 +11,12 @@ output "matching_algorithm" {
   value = module.matching_algorithm.general
 }
 
-output "resource_group" {
-  value = {
-    id = azurerm_resource_group.atlas_resource_group.id
-  }
-}
-
 output "sql_server" {
   value = azurerm_sql_server.atlas_sql_server.name
+}
+
+output "storage_account" {
+  value = {
+    id = azurerm_storage_account.azure_storage.id
+  }
 }

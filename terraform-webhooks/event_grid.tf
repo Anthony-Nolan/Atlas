@@ -5,7 +5,7 @@ locals {
 
 resource "azurerm_eventgrid_event_subscription" "donor-file-upload" {
   name  = "${lower(var.ENVIRONMENT)}-donor-file-upload-subscription"
-  scope = data.terraform_remote_state.atlas.outputs.resource_group.id
+  scope = data.terraform_remote_state.atlas.outputs.storage_account.id
 
   subject_filter {
     subject_begins_with = data.terraform_remote_state.atlas.outputs.donor_import.storage.donor_container_name
