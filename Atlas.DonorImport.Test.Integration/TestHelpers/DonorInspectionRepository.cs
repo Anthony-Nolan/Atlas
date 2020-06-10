@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.DonorImport.Data.Models;
 using Dapper;
@@ -11,6 +12,7 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
     public interface IDonorInspectionRepository
     {
         Task<Donor> GetDonor(string externalDonorCode);
+        Task<IEnumerable<Donor>> GetAllDonors();
         Task<int> DonorCount();
     }
 
@@ -29,7 +31,17 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
             {
                 return await conn.QuerySingleOrDefaultAsync<Donor>(
                     "SELECT * FROM Donors WHERE ExternalDonorCode = @externalDonorCode",
-                    new {externalDonorCode},
+                    new { externalDonorCode },
+                    commandTimeout: 300);
+            }
+        }
+
+        public async Task<IEnumerable<Donor>> GetAllDonors()
+        {
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                return await conn.QueryAsync<Donor>(
+                    "SELECT * FROM Donors",
                     commandTimeout: 300);
             }
         }

@@ -1,6 +1,8 @@
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
@@ -61,6 +63,20 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
 
             actualDonor.Hash.Should().Be(expectedDonorHash);
             actualDonor.CalculateHash().Should().Be(expectedDonorHash);
+        }
+
+        [Test]
+        public async Task ImportDonors_AllNewDonors_AreAddedCorrectly()
+        {
+            const string expectedDonorHash = "jwDboXz3AUJrkMMi/MZhVA=="; //QQ needs to be verified on old master
+
+            var actualDonors = await donorRepository.GetAllDonors();
+
+            var actualCombinedStoredHash = actualDonors.ToList().Select(donor => donor.Hash).StringJoin("#").ToMd5Hash();
+            actualCombinedStoredHash.Should().Be(expectedDonorHash);
+
+            var actualCombinedCalculatedHash = actualDonors.ToList().Select(donor => donor.CalculateHash()).StringJoin("#").ToMd5Hash();
+            actualCombinedCalculatedHash.Should().Be(expectedDonorHash);
         }
 
         private async Task ImportFile()
