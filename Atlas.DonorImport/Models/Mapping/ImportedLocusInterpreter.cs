@@ -3,6 +3,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.DonorImport.Models.FileSchema;
+using MoreLinq;
 
 namespace Atlas.DonorImport.Models.Mapping
 {
@@ -17,7 +18,7 @@ namespace Atlas.DonorImport.Models.Mapping
         /// * interpreting missing 2nd Fields
         /// * determining whether Molecular or Serological data should be used.
         /// </summary>
-        LocusInfo<string> Interpret(ImportedLocus locusData, Dictionary<string, string> locus);
+        LocusInfo<string> Interpret(ImportedLocus locusData, Dictionary<string, string> loggingContext);
     }
 
     internal class ImportedLocusInterpreter : IImportedLocusInterpreter
@@ -35,9 +36,9 @@ namespace Atlas.DonorImport.Models.Mapping
         }
 
         /// <inheritdoc />
-        public LocusInfo<string> Interpret(ImportedLocus locusData, Dictionary<string, string> context)
+        public LocusInfo<string> Interpret(ImportedLocus locusData, Dictionary<string, string> loggingContext)
         {
-            currentInterpretationContext = context;
+            currentInterpretationContext = loggingContext?.ToDictionary() ?? new Dictionary<string, string>();
 
             if (locusData == null)
             {
