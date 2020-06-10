@@ -21,10 +21,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData
         private readonly WebClient webClient = new WebClient();
         private readonly string url;
 
-        public MacCodeDownloader(IOptions<MacImportSettings> macImportSettings, ILogger logger)
+        public MacCodeDownloader(MacImportSettings macImportSettings, ILogger logger)
         {
             this.logger = logger;
-            this.url = macImportSettings.Value.MacSourceUrl;
+            this.url = macImportSettings.MacSourceUrl;
         }
 
         public async Task<Stream> DownloadAndUnzipStream()

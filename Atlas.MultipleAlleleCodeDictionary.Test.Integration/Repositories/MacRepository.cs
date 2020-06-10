@@ -21,7 +21,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
 
     internal class TestMacRepository : MacRepository, ITestMacRepository
     {
-        public TestMacRepository(IOptions<MacImportSettings> macImportSettings) : base(macImportSettings)
+        public TestMacRepository(MacImportSettings macImportSettings) : base(macImportSettings)
         {
         }
 
