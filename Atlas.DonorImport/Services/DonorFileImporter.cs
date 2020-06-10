@@ -39,7 +39,7 @@ namespace Atlas.DonorImport.Services
                 var donorUpdates = fileParser.LazilyParseDonorUpdates(file.Contents);
                 foreach (var donorUpdateBatch in donorUpdates.Batch(BatchSize))
                 {
-                    await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(donorUpdateBatch.ToList());
+                    await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(donorUpdateBatch.ToList(), file.FileName);
                 }
             }
             catch (Exception e)
