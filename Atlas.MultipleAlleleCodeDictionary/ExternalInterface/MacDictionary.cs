@@ -10,6 +10,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         public Task ImportLatestMacs();
         public Task<Mac> GetMac(string macCode);
         public Task GenerateMacCache();
+         public Task<string> GetHlaFromMac(string macCode);
     }
     
     public class MacDictionary : IMacDictionary
@@ -36,6 +37,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         public async Task GenerateMacCache()
         {
             await macCache.GenerateMacCache();
+        }
+
+        public async Task<string> GetHlaFromMac(string macCode)
+        {
+            return await macCache.GetHlaFromMac(macCode);
         }
         
     }
