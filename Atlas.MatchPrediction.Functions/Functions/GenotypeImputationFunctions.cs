@@ -8,6 +8,7 @@ using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
 
@@ -15,11 +16,11 @@ namespace Atlas.MatchPrediction.Functions.Functions
 {
     public class GenotypeImputationFunctions
     {
-        private readonly IGenotypeImputationService genotypeImputationService;
+        private readonly IHlaMetadataDictionaryFactory metadataDictionaryFactory;
 
-        public GenotypeImputationFunctions(IGenotypeImputationService genotypeImputationService)
+        public GenotypeImputationFunctions(IHlaMetadataDictionaryFactory metadataDictionaryFactory)
         {
-            this.genotypeImputationService = genotypeImputationService;
+            this.metadataDictionaryFactory = metadataDictionaryFactory;
         }
 
         [FunctionName(nameof(GenotypeImputer))]
@@ -29,6 +30,8 @@ namespace Atlas.MatchPrediction.Functions.Functions
             HttpRequest request)
         {
             var phenotype = JsonConvert.DeserializeObject<GenotypeImputationInput>(await new StreamReader(request.Body).ReadToEndAsync());
+
+            IGenotypeImputationService genotypeImputationService = new GenotypeImputationService(phenotype.NomenclatureVersion, metadataDictionaryFactory);
 
             try
             {

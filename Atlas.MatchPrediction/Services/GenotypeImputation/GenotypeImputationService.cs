@@ -13,9 +13,9 @@ namespace Atlas.MatchPrediction.Services.GenotypeImputation
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
 
-        public GenotypeImputationService(IHlaMetadataDictionaryFactory factory)
+        public GenotypeImputationService(string nomenclatureVersion, IHlaMetadataDictionaryFactory factory)
         {
-            this.hlaMetadataDictionary = factory.BuildDictionary();
+            this.hlaMetadataDictionary = factory.BuildDictionary(nomenclatureVersion);
         }
 
         public async Task<GenotypeImputationResponse> ImputeGenotype(GenotypeImputationInput phenotype)
