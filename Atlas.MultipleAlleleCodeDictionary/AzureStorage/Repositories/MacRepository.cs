@@ -29,10 +29,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
         protected readonly CloudTable Table;
 
-        public MacRepository(IOptions<MacImportSettings> macImportSettings)
+        public MacRepository(MacImportSettings macImportSettings)
         {
-            var connectionString = macImportSettings.Value.ConnectionString;
-            var tableName = macImportSettings.Value.TableName;
+            var connectionString = macImportSettings.ConnectionString;
+            var tableName = macImportSettings.TableName;
             var storageAccount = CloudStorageAccount.Parse(connectionString);
             var tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
             Table = tableClient.GetTableReference(tableName);

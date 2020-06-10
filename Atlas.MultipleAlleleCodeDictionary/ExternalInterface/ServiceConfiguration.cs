@@ -20,8 +20,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
     {
         public static void RegisterMacDictionary(
             this IServiceCollection services,
-            Func<IServiceProvider, IOptions<ApplicationInsightsSettings>> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, IOptions<MacImportSettings>> fetchMacImportSettings)
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, MacImportSettings> fetchMacImportSettings)
         {
             services.RegisterSettings(fetchApplicationInsightsSettings, fetchMacImportSettings);
             services.RegisterServices();
@@ -51,11 +51,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         
         private static void RegisterSettings(
             this IServiceCollection services,
-            Func<IServiceProvider, IOptions<ApplicationInsightsSettings>> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, IOptions<MacImportSettings>> fetchMacImportSettings)
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, MacImportSettings> fetchMacImportSettings)
         {
-            services.AddScoped(sp => fetchApplicationInsightsSettings(sp).Value);
-            services.AddScoped(sp => fetchMacImportSettings(sp).Value);
+            services.AddScoped(fetchApplicationInsightsSettings);
+            services.AddScoped(fetchMacImportSettings);
         }
         
         private static void RegisterServices(this IServiceCollection services)
