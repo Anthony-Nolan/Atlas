@@ -30,7 +30,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         [SetUp]
         public void SetUp()
         {
-            genotypeImputer = new GenotypeImputer();
+            genotypeImputer = new ImputeToDiplotypes();
         }
 
         [Test]

@@ -8,12 +8,12 @@ using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
-    public interface IGenotypeImputer
+    public interface IImputeToDiplotypes
     {
         public ImputedGenotype ImputeGenotype(PhenotypeInfo<string> genotype);
     }
 
-    public class GenotypeImputer : IGenotypeImputer
+    public class ImputeToDiplotypes : IImputeToDiplotypes
     {
         public ImputedGenotype ImputeGenotype(PhenotypeInfo<string> genotype)
         {

@@ -70,7 +70,7 @@ namespace Atlas.MatchPrediction.DependencyInjection
             services.AddScoped<IFrequencySetService, FrequencySetService>();
 
             services.AddScoped<IGenotypeLikelihoodService, GenotypeLikelihoodService>();
-            services.AddScoped<IGenotypeImputer, GenotypeImputer>();
+            services.AddScoped<IGenotypeImputer, ImputeToDiplotypes>();
             services.AddScoped<IGenotypeLikelihoodCalculator, GenotypeLikelihoodCalculator>();
             services.AddScoped<IGenotypeAlleleTruncater, GenotypeAlleleTruncater>();
 

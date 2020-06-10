@@ -17,20 +17,20 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
     {
         private readonly IHaplotypeFrequencySetRepository setRepository;
         private readonly IHaplotypeFrequenciesRepository frequencyRepository;
-        private readonly IGenotypeImputer genotypeImputer;
+        private readonly IImputeToDiplotypes imputeToDiplotypes;
         private readonly IGenotypeLikelihoodCalculator likelihoodCalculator;
         private readonly IGenotypeAlleleTruncater alleleTruncater;
 
         public GenotypeLikelihoodService(
             IHaplotypeFrequencySetRepository setRepository,
             IHaplotypeFrequenciesRepository frequencyRepository,
-            IGenotypeImputer genotypeImputer,
+            IImputeToDiplotypes imputeToDiplotypes,
             IGenotypeLikelihoodCalculator likelihoodCalculator,
             IGenotypeAlleleTruncater alleleTruncater)
         {
             this.setRepository = setRepository;
             this.frequencyRepository = frequencyRepository;
-            this.genotypeImputer = genotypeImputer;
+            this.imputeToDiplotypes = imputeToDiplotypes;
             this.likelihoodCalculator = likelihoodCalculator;
             this.alleleTruncater = alleleTruncater;
         }
@@ -39,7 +39,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         {
             var genotype = alleleTruncater.TruncateGenotypeAlleles(genotypeLikelihood.Genotype);
 
-            var imputedGenotype = genotypeImputer.ImputeGenotype(genotype);
+            var imputedGenotype = imputeToDiplotypes.ImputeGenotype(genotype);
             var haplotypesWithFrequencies = await GetHaplotypesWithFrequencies(imputedGenotype);
 
             UpdateFrequenciesForDiplotype(haplotypesWithFrequencies, imputedGenotype.Diplotypes);
