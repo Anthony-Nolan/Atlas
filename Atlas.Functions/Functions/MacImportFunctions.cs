@@ -11,8 +11,8 @@ namespace Atlas.Functions.Functions
 {
     internal class MacImportFunctions
     {
-        private readonly  IMultipleAlleleCodeDictionary macDictionary;
-        
+        private readonly IMultipleAlleleCodeDictionary macDictionary;
+
         public MacImportFunctions(IMultipleAlleleCodeDictionary macDictionary)
         {
             this.macDictionary = macDictionary;
@@ -23,15 +23,17 @@ namespace Atlas.Functions.Functions
         {
             await macDictionary.ImportLatestMultipleAlleleCodes();
         }
-        
+
         [FunctionName(nameof(ImportMacsManual))]
-        public async Task ImportMacsManual([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestMessage request)
+        public async Task ImportMacsManual([HttpTrigger(AuthorizationLevel.Function, "post")]
+            HttpRequestMessage request)
         {
             await macDictionary.ImportLatestMultipleAlleleCodes();
         }
-        
+
         [FunctionName(nameof(GetMac))]
-        public async Task<MultipleAlleleCode> GetMac([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest request)
+        public async Task<MultipleAlleleCode> GetMac([HttpTrigger(AuthorizationLevel.Function, "get")]
+            HttpRequest request)
         {
             var macCode = request.Query["code"];
             return await macDictionary.GetMultipleAlleleCode(macCode);
