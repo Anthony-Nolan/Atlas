@@ -20,37 +20,18 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
     {
         public static void RegisterMacDictionary(
             this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, MacImportSettings> fetchMacImportSettings)
+            Func<IServiceProvider, IOptions<ApplicationInsightsSettings>> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, IOptions<MacImportSettings>> fetchMacImportSettings)
         {
             services.RegisterSettings(fetchApplicationInsightsSettings, fetchMacImportSettings);
             services.RegisterServices();
             services.RegisterLifeTimeScopedCacheTypes();
         }
         
-        private static void RegisterSettings(
-            this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, MacImportSettings> fetchMacImportSettings)
-        {
-            services.AddScoped(fetchApplicationInsightsSettings);
-            services.AddScoped(fetchMacImportSettings);
-        }
-        
-        private static void RegisterServices(this IServiceCollection services)
-        {
-            services.AddScoped<IMacRepository, MacRepository>();
-            services.AddScoped<IMacParser, MacLineParser>();
-            services.AddScoped<IMacImporter, MacImporter>();
-            services.AddScoped<IMacCodeDownloader, MacCodeDownloader>();
-            services.RegisterAtlasLogger(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value);
-            services.AddScoped<IMacCache, MacCache>();
-            services.AddScoped<IMultipleAlleleCodeDictionary, MultipleAlleleCodeDictionary>();
-        }
-        
         /// <remarks>
         /// Expected to be made obsolete once the new Mac Dictionary
         /// process is fully implemented.
+        /// TODO: Atlas-54
         /// </remarks>
         public static void RegisterMacDictionaryUsageServices(
             this IServiceCollection services,
@@ -67,7 +48,27 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
                 fetchHlaClientApiKey,
                 fetchHlaClientBaseUrl);
         }
-
+        
+        private static void RegisterSettings(
+            this IServiceCollection services,
+            Func<IServiceProvider, IOptions<ApplicationInsightsSettings>> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, IOptions<MacImportSettings>> fetchMacImportSettings)
+        {
+            services.AddScoped(sp => fetchApplicationInsightsSettings(sp).Value);
+            services.AddScoped(sp => fetchMacImportSettings(sp).Value);
+        }
+        
+        private static void RegisterServices(this IServiceCollection services)
+        {
+            services.AddScoped<IMacRepository, MacRepository>();
+            services.AddScoped<IMacParser, MacLineParser>();
+            services.AddScoped<IMacImporter, MacImporter>();
+            services.AddScoped<IMacCodeDownloader, MacCodeDownloader>();
+            services.RegisterAtlasLogger(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value);
+            services.AddScoped<IMacCache, MacCache>();
+            services.AddScoped<IMultipleAlleleCodeDictionary, MultipleAlleleCodeDictionary>();
+        }
+        
         private static void RegisterHlaServiceClient(
             this IServiceCollection services,
             Func<IServiceProvider, string> fetchHlaClientApiKey,

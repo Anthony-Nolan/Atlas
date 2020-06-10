@@ -1,4 +1,3 @@
-using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils.Extensions;
 using Atlas.Functions;
@@ -18,19 +17,16 @@ namespace Atlas.Functions
         public override void Configure(IFunctionsHostBuilder builder)
         {
             builder.Services.RegisterMatchingAlgorithmOrchestration();
-            builder.Services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            builder.Services.RegisterOptions<MacImportSettings>("MacImport");
-            builder.Services.RegisterMacDictionary(RegisterApplicationInsightsSettings, RegisterMacImportSettings);
+            RegisterSettings(builder.Services);
+            builder.Services.RegisterMacDictionary(
+                (sp) => sp.GetService<IOptions<ApplicationInsightsSettings>>(), 
+                (sp) => sp.GetService<IOptions<MacImportSettings>>());
         }
-        
-        private ApplicationInsightsSettings RegisterApplicationInsightsSettings(IServiceProvider sp)
+
+        private static void RegisterSettings(IServiceCollection services)
         {
-            return sp.GetService<IOptions<ApplicationInsightsSettings>>().Value;
-        }
-        
-        private MacImportSettings RegisterMacImportSettings(IServiceProvider sp)
-        {
-            return sp.GetService<IOptions<MacImportSettings>>().Value;
+            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterOptions<MacImportSettings>("MacImport");
         }
     }
 }
