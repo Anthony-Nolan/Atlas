@@ -37,6 +37,8 @@ using Atlas.MatchingAlgorithm.Services.Utility;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Caching.Memory;
@@ -255,5 +257,14 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");
             services.RegisterOptions<DataRefreshSettings>("DataRefresh");
         }
+
+        private static void RegisterMAcDictionary(this IServiceCollection services)
+        {
+            services.RegisterOptions<MacImportSettings>("MacImport");
+            services.RegisterMacDictionary(
+                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value, 
+                sp => sp.GetService<IOptions<MacImportSettings>>().Value);
+        }
+        
     }
 }

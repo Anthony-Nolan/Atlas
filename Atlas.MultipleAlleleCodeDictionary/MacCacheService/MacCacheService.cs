@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
@@ -9,6 +10,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
 {
     public interface IMacCache
     {
+        Task<string> GetHlaFromMac(string macCode);
         Task<Mac> GetMacCode(string macCode);
         Task GenerateMacCache();
     }
@@ -26,6 +28,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
             this.macRepository = macRepository;
         }
 
+        public async Task<string> GetHlaFromMac(string macCode)
+        {
+            var mac = await GetMacCode(macCode);
+            logger.SendTrace($"Attempting to expand Hla for Mac: {mac.Mac}", LogLevel.Info);
+            return GetExpandedHla(mac);
+        }
         public async Task<Mac> GetMacCode(string macCode)
         {
             return await cache.GetOrAddAsync(macCode, () => macRepository.GetMac(macCode));
@@ -38,6 +46,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
             {
                 cache.GetOrAdd(mac.Code, () => mac);
             }
+        }
+        
+        private static string GetExpandedHla(MultipleAlleleCode mac)
+        {
+            // TODO: Atlas-384: handle generic Mac.
+            return mac.IsGeneric ? throw new NotImplementedException() : mac.Hla;
         }
     }
 }
