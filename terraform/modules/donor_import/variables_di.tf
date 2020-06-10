@@ -26,12 +26,6 @@ variable "function_storage" {
   })
 }
 
-variable "resource_group" {
-  type = object({
-    id : string
-  })
-}
-
 variable "servicebus_namespace" {
   type = object({
     name = string
