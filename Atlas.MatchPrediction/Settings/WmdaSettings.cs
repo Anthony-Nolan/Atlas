@@ -2,6 +2,6 @@ namespace Atlas.MatchPrediction.Settings
 {
     public class WmdaSettings
     {
-        public string WmdaFileUri { get; set; }
+        public string WmdaFileUri => "no-op";
     }
 }

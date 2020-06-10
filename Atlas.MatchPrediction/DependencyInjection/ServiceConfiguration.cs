@@ -1,6 +1,7 @@
 ﻿using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
+using Atlas.Common.Settings;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Data.Context;
@@ -40,7 +41,6 @@ namespace Atlas.MatchPrediction.DependencyInjection
             services.RegisterOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterOptions<HlaServiceSettings>("Client:HlaService");
             services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
-            services.RegisterOptions<WmdaSettings>("Wmda");
         }
 
         private static void RegisterDatabaseServices(this IServiceCollection services)

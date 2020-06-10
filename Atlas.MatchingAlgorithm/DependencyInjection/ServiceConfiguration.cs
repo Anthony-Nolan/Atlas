@@ -3,6 +3,7 @@ using Atlas.Common.Caching;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus.BatchReceiving;
+using Atlas.Common.Settings;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
