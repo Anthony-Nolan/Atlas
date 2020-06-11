@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
-using Atlas.MatchingAlgorithm.Services.DataRefresh;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;

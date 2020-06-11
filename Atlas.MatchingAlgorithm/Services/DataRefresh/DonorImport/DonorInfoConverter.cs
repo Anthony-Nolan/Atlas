@@ -9,7 +9,7 @@ using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
 using FluentValidation;
 
-namespace Atlas.MatchingAlgorithm.Services.DataRefresh
+namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
 {
     public interface IDonorInfoConverter
     {

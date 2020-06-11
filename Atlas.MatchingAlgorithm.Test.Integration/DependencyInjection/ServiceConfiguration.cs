@@ -9,8 +9,8 @@ using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.DependencyInjection;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
+using Atlas.MatchingAlgorithm.Services.AzureManagement;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -36,13 +36,19 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             // This call must be made after `RegisterMatchingAlgorithm()`, as it overrides the non-mock dictionary set up in that method
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value); //These configuration values won't be used, because all they are all (indirectly) overridden, below.
 
-            services.AddScoped(sp => Substitute.For<IDonorReader>());
-            
             services.AddScoped(sp =>
                 new ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"])
             );
 
-            services.AddScoped<IActiveHlaNomenclatureVersionAccessor, MockHlaNomenclatureVersionAccessor>();
+            RegisterMockServices(services);
+            RegisterIntegrationTestServices(services);
+            
+            return services.BuildServiceProvider();
+        }
+
+        private static void RegisterMockServices(IServiceCollection services)
+        {
+            services.AddScoped(sp => Substitute.For<IDonorReader>());
 
             // Clients
             var mockSearchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
@@ -52,8 +58,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.AddScoped(sp => mockSearchServiceBusClient);
 
             services.AddScoped(sp => Substitute.For<INotificationsClient>());
+            
+            services.AddScoped(sp => Substitute.For<IAzureDatabaseManager>());
+            services.AddScoped(sp => Substitute.For<IAzureFunctionManager>());
+        }
 
-            return services.BuildServiceProvider();
+        private static void RegisterIntegrationTestServices(IServiceCollection services)
+        {
+            services.AddScoped<ITestDataRefreshHistoryRepository, TestDataRefreshHistoryRepository>();
         }
     }
 }

@@ -5,6 +5,7 @@ using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MultipleAlleleCodeDictionary.HlaService;
 using Atlas.MultipleAlleleCodeDictionary.HlaService.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,6 +45,13 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             var mockHlaServiceClient = Substitute.For<IHlaServiceClient>();
             mockHlaServiceClient.GetAntigens(Arg.Any<Locus>(), Arg.Any<bool>()).Returns(new List<Antigen>());
             services.AddScoped(sp => mockHlaServiceClient);
+
+            services.AddScoped(sp =>
+            {
+                var wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
+                wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(Constants.SnapshotHlaNomenclatureVersion);
+                return wmdaHlaNomenclatureVersionAccessor;
+            });
         }
     }
 }

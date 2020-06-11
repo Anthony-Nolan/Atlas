@@ -20,8 +20,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
         private static void ResetDatabase()
         {
-            DatabaseManager.SetupDatabase();
+            DatabaseManager.MigrateDatabases();
             DatabaseManager.ClearDatabases();
+            DatabaseManager.PopulateDatabasesWithInitialData();
         }
     }
 }

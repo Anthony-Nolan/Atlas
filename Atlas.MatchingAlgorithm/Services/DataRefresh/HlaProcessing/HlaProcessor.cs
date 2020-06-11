@@ -16,7 +16,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MultipleAlleleCodeDictionary;
 
-namespace Atlas.MatchingAlgorithm.Services.DataRefresh
+namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 {
     public interface IHlaProcessor
     {

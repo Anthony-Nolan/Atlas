@@ -5,7 +5,7 @@ using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
-using Atlas.MatchingAlgorithm.Services.DataRefresh;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using FluentAssertions;
 using LochNessBuilder;

@@ -28,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly ILogger logger;
         private readonly IOptions<DataRefreshSettings> settingsOptions;
         private readonly IHlaMetadataDictionary activeVersionHlaMetadataDictionary;
-        private readonly IDataRefreshService dataRefreshService;
+        private readonly IDataRefreshRunner dataRefreshRunner;
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private readonly IAzureFunctionManager azureFunctionManager;
         private readonly IAzureDatabaseManager azureDatabaseManager;
@@ -42,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IActiveDatabaseProvider activeDatabaseProvider,
-            IDataRefreshService dataRefreshService,
+            IDataRefreshRunner dataRefreshRunner,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
             IAzureFunctionManager azureFunctionManager,
             IAzureDatabaseManager azureDatabaseManager,
@@ -52,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.logger = logger;
             this.settingsOptions = settingsOptions;
             this.activeDatabaseProvider = activeDatabaseProvider;
-            this.dataRefreshService = dataRefreshService;
+            this.dataRefreshRunner = dataRefreshRunner;
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
             this.azureFunctionManager = azureFunctionManager;
             this.azureDatabaseManager = azureDatabaseManager;
@@ -109,7 +109,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             try
             {
                 await AzureFunctionsSetUp();
-                var newWmdaHlaNomenclatureVersion = await dataRefreshService.RefreshData();
+                var newWmdaHlaNomenclatureVersion = await dataRefreshRunner.RefreshData(recordId);
                 var previouslyActiveDatabase = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetActiveDatabase());
                 await MarkDataHistoryRecordAsComplete(recordId, true, newWmdaHlaNomenclatureVersion);
                 await ScaleDownDatabaseToDormantLevel(previouslyActiveDatabase);

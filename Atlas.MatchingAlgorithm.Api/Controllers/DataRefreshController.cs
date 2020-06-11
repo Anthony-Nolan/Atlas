@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Services.DataRefresh;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Atlas.MatchingAlgorithm.Api.Controllers

@@ -15,7 +15,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.Donors;
 using MoreLinq;
 
-namespace Atlas.MatchingAlgorithm.Services.DataRefresh
+namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
 {
     /// <summary>
     /// Responsible for fetching all eligible donors for the search algorithm
