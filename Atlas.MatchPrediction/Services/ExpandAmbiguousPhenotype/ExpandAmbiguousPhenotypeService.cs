@@ -13,10 +13,14 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
     public class ExpandAmbiguousPhenotypeService : IExpandAmbiguousPhenotypeService
     {
         private readonly IHlaMetadataDictionaryFactory metadataDictionaryFactory;
+        private readonly IAmbiguousPhenotypeExpander ambiguousPhenotypeExpander;
 
-        public ExpandAmbiguousPhenotypeService(IHlaMetadataDictionaryFactory metadataDictionaryFactory)
+        public ExpandAmbiguousPhenotypeService(
+            IHlaMetadataDictionaryFactory metadataDictionaryFactory,
+            IAmbiguousPhenotypeExpander ambiguousPhenotypeExpander)
         {
             this.metadataDictionaryFactory = metadataDictionaryFactory;
+            this.ambiguousPhenotypeExpander = ambiguousPhenotypeExpander;
         }
 
         public async Task<IEnumerable<PhenotypeInfo<string>>> ExpandPhenotype(PhenotypeInfo<string> phenotype, string hlaNomenclatureVersion)
@@ -26,9 +30,9 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             var allelesPerLocus = await phenotype.MapAsync(async (locus, position, hla) =>
                 await hlaMetadataDictionary.GetTwoFieldAllelesForAmbiguousHla(locus, hla));
 
-            //TODO: ATLAS-20: expand to genotypes
+            var genotypes = ambiguousPhenotypeExpander.ExpandPhenotype(allelesPerLocus);
 
-            return new List<PhenotypeInfo<string>>();
+            return genotypes;
         }
     }
 }
