@@ -16,7 +16,7 @@ namespace Atlas.DonorImport.Services
     internal interface IDonorRecordChangeApplier
     {
         // ReSharper disable once ParameterTypeCanBeEnumerable.Global
-        Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, string fileName);
+        Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, string fileLocation);
     }
 
     internal class DonorRecordChangeApplier : IDonorRecordChangeApplier
@@ -41,7 +41,7 @@ namespace Atlas.DonorImport.Services
             this.logger = logger;
         }
 
-        public async Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, string fileName)
+        public async Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, string fileLocation)
         {
             var updatesByType = donorUpdates.GroupBy(du => du.ChangeType);
             foreach (var updatesOfSameOperationType in updatesByType)
@@ -49,7 +49,7 @@ namespace Atlas.DonorImport.Services
                 switch (updatesOfSameOperationType.Key)
                 {
                     case ImportDonorChangeType.Create:
-                        var creations = updatesOfSameOperationType.Select(update => MapToDatabaseDonor(update, fileName)).ToList();
+                        var creations = updatesOfSameOperationType.Select(update => MapToDatabaseDonor(update, fileLocation)).ToList();
                         await donorImportRepository.InsertDonorBatch(creations);
                         break;
                     case ImportDonorChangeType.Delete:
@@ -88,22 +88,22 @@ namespace Atlas.DonorImport.Services
             }
         }
 
-        private Donor MapToDatabaseDonor(DonorUpdate fileUpdate, string fileName)
+        private Donor MapToDatabaseDonor(DonorUpdate fileUpdate, string fileLocation)
         {
-            Dictionary<string, string> createLogContext(Locus locus) =>
+            Dictionary<string, string> CreateLogContext(Locus locus) =>
                 new Dictionary<string, string>
                 {
-                    {"ImportFile", fileName},
+                    {"ImportFile", fileLocation},
                     {"DonorCode", fileUpdate.RecordId},
                     {"Locus", locus.ToString()}
                 };
 
-            var interpretedA = locusInterpreter.Interpret(fileUpdate.Hla.A, createLogContext(Locus.A));
-            var interpretedB = locusInterpreter.Interpret(fileUpdate.Hla.B, createLogContext(Locus.B));
-            var interpretedC = locusInterpreter.Interpret(fileUpdate.Hla.C, createLogContext(Locus.C));
-            var interpretedDpb1 = locusInterpreter.Interpret(fileUpdate.Hla.DPB1, createLogContext(Locus.Dpb1));
-            var interpretedDqb1 = locusInterpreter.Interpret(fileUpdate.Hla.DQB1, createLogContext(Locus.Dqb1));
-            var interpretedDrb1 = locusInterpreter.Interpret(fileUpdate.Hla.DRB1, createLogContext(Locus.Drb1));
+            var interpretedA = locusInterpreter.Interpret(fileUpdate.Hla.A, CreateLogContext(Locus.A));
+            var interpretedB = locusInterpreter.Interpret(fileUpdate.Hla.B, CreateLogContext(Locus.B));
+            var interpretedC = locusInterpreter.Interpret(fileUpdate.Hla.C, CreateLogContext(Locus.C));
+            var interpretedDpb1 = locusInterpreter.Interpret(fileUpdate.Hla.DPB1, CreateLogContext(Locus.Dpb1));
+            var interpretedDqb1 = locusInterpreter.Interpret(fileUpdate.Hla.DQB1, CreateLogContext(Locus.Dqb1));
+            var interpretedDrb1 = locusInterpreter.Interpret(fileUpdate.Hla.DRB1, CreateLogContext(Locus.Drb1));
             
             var donor = new Donor
             {
@@ -138,7 +138,7 @@ namespace Atlas.DonorImport.Services
             };
         }
 
-        private SearchableDonorUpdate MapToMatchingUpdateMessage(Donor updatedDonor)
+        private static SearchableDonorUpdate MapToMatchingUpdateMessage(Donor updatedDonor)
         {
             return new SearchableDonorUpdate
             {
