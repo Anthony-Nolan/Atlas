@@ -6,8 +6,9 @@ locals {
 }
 
 resource "azurerm_eventgrid_event_subscription" "donor-file-upload" {
-  name  = "${lower(var.ENVIRONMENT)}-donor-file-upload-subscription"
-  scope = data.terraform_remote_state.atlas.outputs.storage_account.id
+  name                 = "${lower(var.ENVIRONMENT)}-donor-file-upload-subscription"
+  scope                = data.terraform_remote_state.atlas.outputs.storage_account.id
+  included_event_types = ["Microsoft.Storage.BlobCreated"]
 
   subject_filter {
     subject_begins_with = "/blobServices/default/containers/${data.terraform_remote_state.atlas.outputs.donor_import.storage.donor_container_name}"
@@ -19,8 +20,9 @@ resource "azurerm_eventgrid_event_subscription" "donor-file-upload" {
 }
 
 resource "azurerm_eventgrid_event_subscription" "haplotype-frequency-set-upload" {
-  name  = "${lower(var.ENVIRONMENT)}-haplotype-frequency-set-upload-subscription"
-  scope = data.terraform_remote_state.atlas.outputs.storage_account.id
+  name                 = "${lower(var.ENVIRONMENT)}-haplotype-frequency-set-upload-subscription"
+  scope                = data.terraform_remote_state.atlas.outputs.storage_account.id
+  included_event_types = ["Microsoft.Storage.BlobCreated"]
 
   subject_filter {
     subject_begins_with = "/blobServices/default/containers/${data.terraform_remote_state.atlas.outputs.match_prediction.storage.haplotype_frequency_set_container_name}"
