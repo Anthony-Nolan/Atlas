@@ -5,17 +5,17 @@ using Atlas.HlaMetadataDictionary.ExternalInterface;
 
 namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 {
-    public interface IExpandAmbiguousPhenotypeService
+    public interface ICompressedPhenotypeExpander
     {
-        public Task<IEnumerable<PhenotypeInfo<string>>> ExpandPhenotype(PhenotypeInfo<string> phenotype, string hlaNomenclatureVersion);
+        public Task<IEnumerable<PhenotypeInfo<string>>> ExpandCompressedPhenotype(PhenotypeInfo<string> phenotype, string hlaNomenclatureVersion);
     }
 
-    public class ExpandAmbiguousPhenotypeService : IExpandAmbiguousPhenotypeService
+    public class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     {
         private readonly IHlaMetadataDictionaryFactory metadataDictionaryFactory;
         private readonly IAmbiguousPhenotypeExpander ambiguousPhenotypeExpander;
 
-        public ExpandAmbiguousPhenotypeService(
+        public CompressedPhenotypeExpander(
             IHlaMetadataDictionaryFactory metadataDictionaryFactory,
             IAmbiguousPhenotypeExpander ambiguousPhenotypeExpander)
         {
@@ -23,7 +23,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             this.ambiguousPhenotypeExpander = ambiguousPhenotypeExpander;
         }
 
-        public async Task<IEnumerable<PhenotypeInfo<string>>> ExpandPhenotype(PhenotypeInfo<string> phenotype, string hlaNomenclatureVersion)
+        public async Task<IEnumerable<PhenotypeInfo<string>>> ExpandCompressedPhenotype(PhenotypeInfo<string> phenotype, string hlaNomenclatureVersion)
         {
             var hlaMetadataDictionary = metadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
 

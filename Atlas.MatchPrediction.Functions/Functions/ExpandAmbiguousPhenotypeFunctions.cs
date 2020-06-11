@@ -15,11 +15,11 @@ namespace Atlas.MatchPrediction.Functions.Functions
 {
     public class ExpandAmbiguousPhenotypeFunctions
     {
-        private readonly IExpandAmbiguousPhenotypeService expandAmbiguousPhenotypeService;
+        private readonly ICompressedPhenotypeExpander compressedPhenotypeExpander;
 
-        public ExpandAmbiguousPhenotypeFunctions(IExpandAmbiguousPhenotypeService expandAmbiguousPhenotypeService)
+        public ExpandAmbiguousPhenotypeFunctions(ICompressedPhenotypeExpander compressedPhenotypeExpander)
         {
-            this.expandAmbiguousPhenotypeService = expandAmbiguousPhenotypeService;
+            this.compressedPhenotypeExpander = compressedPhenotypeExpander;
         }
 
         [FunctionName(nameof(ExpandAmbiguousPhenotype))]
@@ -34,7 +34,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
 
             try
             {
-                var genotypes = await expandAmbiguousPhenotypeService.ExpandPhenotype(
+                var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(
                     expandAmbiguousPhenotypeInput.Phenotype,
                     expandAmbiguousPhenotypeInput.HlaNomenclatureVersion);
 

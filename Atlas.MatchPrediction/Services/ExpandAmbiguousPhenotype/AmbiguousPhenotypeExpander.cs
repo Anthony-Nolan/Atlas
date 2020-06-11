@@ -6,6 +6,9 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 {
     public interface IAmbiguousPhenotypeExpander
     {
+        /// <summary>
+        ///  Returns all possible unambiguous genotypes by calculating the cartesian product of a set of possible alleles at each position.
+        /// </summary>
         public IEnumerable<PhenotypeInfo<string>> ExpandPhenotype(PhenotypeInfo<List<string>> allelesPerLocus);
     }
 

@@ -30,7 +30,7 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
         }
 
         [Test]
-        public void ExpandPhenotype_WhenOnlyOneAllelePerLocus_ReturnsSingleGenotype()
+        public void ExpandPhenotype_WhenOnlyOneAllelePerPosition_ReturnsSingleGenotype()
         {
             var allelesPerLocus = new PhenotypeInfo<List<string>>
             {
@@ -52,8 +52,7 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
                 Drb1 = new LocusInfo<string>(Hla9, Hla10)
             };
 
-            actualGenotypes.Count.Should().Be(1);
-            actualGenotypes[0].Should().BeEquivalentTo(expectedGenotype);
+            actualGenotypes.Single().Should().BeEquivalentTo(expectedGenotype);
         }
 
         [Test]
@@ -221,12 +220,11 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
             actualGenotypes.Should().BeEquivalentTo(expectedGenotype);
         }
 
-        // Ran in ~15.9 sec
+        // Ran in ~1.5 sec
         [TestCase(1, 1)]
         [TestCase(2, 1024)]
         [TestCase(3, 59049)]
         [TestCase(4, 1048576)]
-        [TestCase(5, 9765625)]
         public void ExpandPhenotype_WithMultipleAllelePerLocus_ReturnsExpectedNumberOfGenotypes(int numberOfAllelesPerLocus, int expectedNumberOfGenotypes)
         {
             var alleles = new List<string>();
