@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 {
-    public class HaplotypeFrequencySetMetaDataServiceTests
+    public class FrequencySetMetadataExtractorTests
     {
         private IFrequencySetMetadataExtractor metadataExtractor;
 
@@ -70,6 +70,26 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             metaData.Name.Should().Be(fileName);
             metaData.Registry.Should().BeNull();
             metaData.Ethnicity.Should().BeNull();
+        }
+
+        [TestCase("/blobServices/default/containers/haplotype-frequency-set-import/blobs/fileName", "fileName", null, null)]
+        [TestCase("blobs/fileName", "fileName", null, null)]
+        [TestCase("blobs/registry/fileName", "fileName", "registry", null)]
+        [TestCase("blobs/registry/ethnicity/fileName", "fileName", "registry", "ethnicity")]
+        [TestCase("blobs/blobs/fileName", "fileName", "blobs", null)]
+        [TestCase("blobs/blobs/blobs/fileName", "fileName", "blobs", "blobs")]
+        public void GetMetadataFromFullPath_IncludingBlobStorageInformation_ParsesMetadataCorrectly(
+            string fullPath,
+            string expectedFileName,
+            string expectedRegistry,
+            string expectedEthnicity
+        )
+        {
+            var metadata = metadataExtractor.GetMetadataFromFullPath(fullPath);
+
+            metadata.Name.Should().Be(expectedFileName);
+            metadata.Registry.Should().Be(expectedRegistry);
+            metadata.Ethnicity.Should().Be(expectedEthnicity);
         }
     }
 }

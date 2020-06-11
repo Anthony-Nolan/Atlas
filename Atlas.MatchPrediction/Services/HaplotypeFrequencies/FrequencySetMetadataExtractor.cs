@@ -1,7 +1,7 @@
-﻿using Atlas.Common.Utils.Extensions;
-using Atlas.MatchPrediction.Models;
-using System;
+﻿using System;
 using System.Linq;
+using Atlas.Common.Utils.Extensions;
+using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 {
@@ -14,7 +14,8 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
     {
         public HaplotypeFrequencySetMetadata GetMetadataFromFullPath(string fullPath)
         {
-            var filePathSections = GetFilePathSections(fullPath);
+            var blobPath = GetBlobPath(fullPath);
+            var filePathSections = GetFilePathSections(blobPath);
 
             return new HaplotypeFrequencySetMetadata
             {
@@ -22,6 +23,14 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 Ethnicity = filePathSections.Length == 3 ? filePathSections[1] : null,
                 Name = filePathSections.Length > 0 ? filePathSections.Last() : null
             };
+        }
+
+        private static string GetBlobPath(string fullPath)
+        {
+            // Full path from Event Grid triggered function includes some extra path information. 
+            // Everything post the first instance of 'blobs/' is the blob file path - any further slashes indicate folder nesting.
+            var pathPostBlobs = fullPath.Split("blobs/", 2);
+            return pathPostBlobs.Skip(pathPostBlobs.Length == 1 ? 0 : 1).StringJoin("");
         }
 
         private static string[] GetFilePathSections(string fullPath)
