@@ -39,13 +39,13 @@ namespace Atlas.DonorImport.Services
                 var donorUpdates = fileParser.LazilyParseDonorUpdates(file.Contents);
                 foreach (var donorUpdateBatch in donorUpdates.Batch(BatchSize))
                 {
-                    await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(donorUpdateBatch.ToList(), file.FileName);
+                    await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(donorUpdateBatch.ToList(), file.FileLocation);
                 }
             }
             catch (Exception e)
             {
-                var summary = $"Donor Import Failed: {file.FileName}";
-                var description = @$"Importing donors for file: {file.FileName} has failed. With exception {e.Message}. If there were more than 
+                var summary = $"Donor Import Failed: {file.FileLocation}";
+                var description = @$"Importing donors for file: {file.FileLocation} has failed. With exception {e.Message}. If there were more than 
                                   {BatchSize} donor updates in the file, the file may have been partially imported - manual investigation is 
                                   recommended. See Application Insights for more information.";
                 var alert = new Alert(summary, description, Priority.Medium);

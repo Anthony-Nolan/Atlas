@@ -86,7 +86,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
             var donorTestFilePath = $"{typeof(InitialDataLoadTests).Namespace}.{fileName}";
             await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFilePath))
             {
-                await donorFileImporter.ImportDonorFile(new DonorImportFile{ Contents = stream, FileName = fileName});
+                await donorFileImporter.ImportDonorFile(new DonorImportFile{ Contents = stream, FileLocation = fileName});
             }
         }
     }
