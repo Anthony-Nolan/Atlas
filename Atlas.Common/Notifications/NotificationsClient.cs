@@ -7,13 +7,13 @@ using Newtonsoft.Json;
 
 namespace Atlas.Common.Notifications
 {
-    public interface INotificationsClient
+    internal interface INotificationsClient
     {
         Task SendAlert(Alert alert);
         Task SendNotification(Notification notification);
     }
 
-    public class NotificationsClient : INotificationsClient
+    internal class NotificationsClient : INotificationsClient
     {
         private readonly TopicClient notificationTopicClient;
         private readonly TopicClient alertTopicClient;

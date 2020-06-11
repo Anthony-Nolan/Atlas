@@ -1,4 +1,3 @@
-using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.MatchingAlgorithm.Config;
 using System.Threading.Tasks;
@@ -15,14 +14,25 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         Task SendRecommendManualCleanupAlert();
     }
     
-    public class DataRefreshNotificationSender: NotificationSender, IDataRefreshNotificationSender
+    public class DataRefreshNotificationSender: IDataRefreshNotificationSender
     {
-        public DataRefreshNotificationSender(
-            INotificationsClient notificationsClient,
-            ILogger logger) : base(notificationsClient, logger, NotificationConstants.OriginatorName)
+        private readonly INotificationSender notificationsSender;
+
+        public DataRefreshNotificationSender(INotificationSender notificationsSender)
         {
+            this.notificationsSender = notificationsSender;
         }
-        
+
+        private async Task SendNotification(string summary, string description)
+        {
+            await notificationsSender.SendNotification(summary, description, NotificationConstants.OriginatorName);
+        }
+
+        private async Task SendAlert(string summary, string description)
+        {
+            await notificationsSender.SendAlert(summary, description, Priority.High, NotificationConstants.OriginatorName);
+        }
+
         public async Task SendInitialisationNotification()
         {
             const string summary = "Data refresh begun";
@@ -50,7 +60,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                                        "Appropriate teardown should have been run by the job itself." +
                                        "Check application insights to track down the failure - the job may need to be restarted manually once issues have been resolved.";
 
-            await SendAlert(summary, description, Priority.High);
+            await SendAlert(summary, description);
         }
 
         public async Task SendTeardownFailureAlert()
@@ -60,7 +70,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                                        "The (expensive) database has likely not been scaled down - this should be manually triggered as a matter of urgency." +
                                        "Check application insights to track down the failure - the job may need to be restarted manually once issues have been resolved.";
 
-            await SendAlert(summary, description, Priority.High);
+            await SendAlert(summary, description);
         }
 
         public async Task SendRequestManualTeardownNotification()
@@ -86,7 +96,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     CAVEAT: Due to restrictions of triggers in Azure functions, this function will run once a year not at start-up. 
                     Check the crontab of the `CheckIfCleanupNecessary` function to ensure it isn't this known false positive.'";;
 
-            await SendAlert(summary, description, Priority.High);
+            await SendAlert(summary, description);
         }
     }
 }

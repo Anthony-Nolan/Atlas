@@ -1,6 +1,5 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.Common.Notifications.MessageModels;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
@@ -18,16 +17,16 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
     {
         private IFailedDonorsNotificationSender failedDonorsNotificationSender;
 
-        private INotificationsClient notificationsClient;
+        private INotificationSender notificationsClient;
         private ILogger logger;
 
         [SetUp]
         public void SetUp()
         {
-            notificationsClient = Substitute.For<INotificationsClient>();
+            notificationsClient = Substitute.For<INotificationSender>();
             logger = Substitute.For<ILogger>();
 
-            failedDonorsNotificationSender = new FailedDonorsNotificationSender(notificationsClient, logger);
+            failedDonorsNotificationSender = new FailedDonorsNotificationSender(notificationsClient);
         }
 
         [Test]
@@ -36,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             await failedDonorsNotificationSender.SendFailedDonorsAlert(
                 new List<FailedDonorInfo>(), "alert", Priority.Medium);
 
-            await notificationsClient.DidNotReceive().SendAlert(Arg.Any<Alert>());
+            await notificationsClient.DidNotReceiveWithAnyArgs().SendAlert(default, default, default, default);
         }
 
         [Test]
@@ -50,7 +49,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 Priority.Medium);
 
             await notificationsClient.Received().SendAlert(
-                Arg.Is<Alert>(x => x.Summary == alertSummary));
+                Arg.Is<string>(summary => summary == alertSummary),
+                Arg.Any<string>(),
+                Arg.Any<Priority>(),
+                Arg.Any<string>()
+            );
         }
 
         [Test]
@@ -64,7 +67,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 loggerPriority);
 
             await notificationsClient.Received().SendAlert(
-                Arg.Is<Alert>(x => x.Priority == loggerPriority));
+                Arg.Any<string>(),
+                Arg.Any<string>(),
+                Arg.Is<Priority>(pri => pri == loggerPriority),
+                Arg.Any<string>()
+            );
         }
 
 
@@ -74,38 +81,16 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             const int totalDonorCount = 50;
 
             await failedDonorsNotificationSender.SendFailedDonorsAlert(
-                FailedDonorInfoBuilder
-                    .New()
-                    .Build(totalDonorCount),
+                FailedDonorInfoBuilder.New().Build(totalDonorCount),
                 "alert",
                 Priority.Medium);
 
             await notificationsClient.Received().SendAlert(
-                Arg.Is<Alert>(x => x.Description.Contains(totalDonorCount.ToString())));
-        }
-
-        [Test]
-        public void SendFailedDonorsAlert_ExceptionThrownByNotificationsClient_DoesNotRethrowException()
-        {
-            notificationsClient.SendAlert(Arg.Any<Alert>()).Throws(new Exception());
-
-            Assert.DoesNotThrowAsync(async() => await failedDonorsNotificationSender.SendFailedDonorsAlert(
-                FailedDonorInfoBuilder.New().Build(1),
-                "summary",
-                Priority.Medium));
-        }
-
-        [Test]
-        public async Task SendFailedDonorsAlert_ExceptionThrownByNotificationsClient_LogsNotificationSenderFailureEvent()
-        {
-            notificationsClient.SendAlert(Arg.Any<Alert>()).Throws(new Exception());
-
-            await failedDonorsNotificationSender.SendFailedDonorsAlert(
-                FailedDonorInfoBuilder.New().Build(1),
-                "summary",
-                Priority.Medium);
-
-            logger.SendEvent(Arg.Any<NotificationSenderFailureEventModel>());
+                Arg.Any<string>(),
+                Arg.Is<string>(description => description.Contains(totalDonorCount.ToString())),
+                Arg.Any<Priority>(),
+                Arg.Any<string>()
+            );
         }
     }
 }
