@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchPrediction.DependencyInjection
 {
@@ -32,7 +33,7 @@ namespace Atlas.MatchPrediction.DependencyInjection
                 sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
                 sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
                 sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
-                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value);
+                OptionsReaderFor<ApplicationInsightsSettings>());
         }
 
         private static void RegisterSettings(this IServiceCollection services)
@@ -59,7 +60,10 @@ namespace Atlas.MatchPrediction.DependencyInjection
 
         private static void RegisterClientServices(this IServiceCollection services)
         {
-            services.AddScoped<INotificationsClient, NotificationsClient>();
+            services.RegisterNotificationSender(
+                OptionsReaderFor<NotificationsServiceBusSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>()
+            );
         }
 
         private static void RegisterServices(this IServiceCollection services)

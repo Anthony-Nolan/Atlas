@@ -1,7 +1,5 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.Common.Notifications.MessageModels;
-using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Models;
@@ -20,16 +18,16 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         private const string SupportSummaryPrefix = "Haplotype Frequency Set Import";
 
         private readonly IFrequencySetImporter importer;
-        private readonly INotificationsClient notificationsClient;
+        private readonly INotificationSender notificationsSender;
         private readonly ILogger logger;
 
         public FrequencySetService(
             IFrequencySetImporter importer,
-            INotificationsClient notificationsClient,
+            INotificationSender notificationsSender,
             ILogger logger)
         {
             this.importer = importer;
-            this.notificationsClient = notificationsClient;
+            this.notificationsSender = notificationsSender;
             this.logger = logger;
         }
 
@@ -55,10 +53,10 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
             logger.SendEvent(new HaplotypeFrequencySetImportEventModel(successName, file));
 
-            await notificationsClient.SendNotification(new Notification(
+            await notificationsSender.SendNotification(
                 successName,
                 $"Import of file, '{file.FullPath}', has completed successfully.",
-                NotificationConstants.OriginatorName));
+                NotificationConstants.OriginatorName);
         }
 
         private async Task SendErrorAlert(FrequencySetFile file, Exception ex)
@@ -67,12 +65,12 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
             logger.SendEvent(new ErrorEventModel(errorName, ex));
 
-            await notificationsClient.SendAlert(new Alert(
+            await notificationsSender.SendAlert(
                 errorName,
                 $"Import of file, '{file.FullPath}', failed with the following exception message: \"{ex.GetBaseException().Message}\". "
                     + "Full exception info has been logged to Application Insights.",
                 Priority.High,
-                NotificationConstants.OriginatorName));
+                NotificationConstants.OriginatorName);
         }
     }
 }

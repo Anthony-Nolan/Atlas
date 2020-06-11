@@ -57,7 +57,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 .Returns(Task.CompletedTask);
             services.AddScoped(sp => mockSearchServiceBusClient);
 
-            services.AddScoped(sp => Substitute.For<INotificationsClient>());
+            services.AddScoped(sp => Substitute.For<INotificationSender>());
             
             services.AddScoped(sp => Substitute.For<IAzureDatabaseManager>());
             services.AddScoped(sp => Substitute.For<IAzureFunctionManager>());

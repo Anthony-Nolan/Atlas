@@ -57,7 +57,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
                 .Returns(Task.CompletedTask);
 
             services.AddScoped(sp => mockSearchServiceBusClient);
-            services.AddScoped(sp => Substitute.For<INotificationsClient>());
+            services.AddScoped(sp => Substitute.For<INotificationSender>());
         }
 
         private static string GetSqlConnectionString(IServiceProvider serviceProvider)
