@@ -454,8 +454,8 @@ The following keys must be set as user secrets in the api project:
 As much as possible of deployment of the ATLAS system has been scripted, via a combination of Terraform (using the Azure Resource Manager provider), and Azure Devops .yml scripts.
 Atlas is supported in an Azure environment, built and deployed using Azure Devops - to change either would require some custom changes to the codebase.
 
-Note that two terraform scripts are used. The first, "terraform", covers the majority of ATLAS infrastructure. 
-The second, "terraform-webhooks", covers any webhooks that need setting up for e.g. eventGrid triggered functions. As webhooks need to send a 
+Note that two terraform scripts are used. The first, "terraform/core", covers the majority of ATLAS infrastructure. 
+The second, "terraform/webhooks", covers any webhooks that need setting up for e.g. eventGrid triggered functions. As webhooks need to send a 
 handshake request to the target as part of set-up, the relevant webhooks must have been deployed before this script can be run.
 
 The following are the steps that are required to be taken manually when deploying ATLAS to a new environment.
