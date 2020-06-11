@@ -454,6 +454,10 @@ The following keys must be set as user secrets in the api project:
 As much as possible of deployment of the ATLAS system has been scripted, via a combination of Terraform (using the Azure Resource Manager provider), and Azure Devops .yml scripts.
 Atlas is supported in an Azure environment, built and deployed using Azure Devops - to change either would require some custom changes to the codebase.
 
+Note that two terraform scripts are used. The first, "terraform", covers the majority of ATLAS infrastructure. 
+The second, "terraform-webhooks", covers any webhooks that need setting up for e.g. eventGrid triggered functions. As webhooks need to send a 
+handshake request to the target as part of set-up, the relevant webhooks must have been deployed before this script can be run.
+
 The following are the steps that are required to be taken manually when deploying ATLAS to a new environment.
 
 ### Azure Configuration
@@ -482,6 +486,7 @@ The following are the steps that are required to be taken manually when deployin
       - The server connection details will need to be set manually once terraform has been run.
       - For login details, the server admin details required as release variables can be used.
     - Release azure function apps
+    - Apply terraform-webhooks
   - Release variables should be set up for each target environment. Expected variables are defined in `variables.tf`. Those without default values are required.
     - Note that the variable "API_KEY" is slightly unusual: the host keys for azure functions cannot be set by terraform, so this cannot be set before the first release.
       The only usage is via a terraform export, in case consumers of the matching function choose to access the host key via terraform remote states.
