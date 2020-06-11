@@ -12,6 +12,9 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData
 {
     internal interface IMacCodeDownloader
     {
+        /// <remarks>
+        ///  This method downloads the zipped Mac Source file fully, and when that is complete, unzips the result into a stream.
+        /// </remarks>
         public Task<Stream> DownloadAndUnzipStream();
     }
 
@@ -26,7 +29,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData
             this.logger = logger;
             this.url = macImportSettings.MacSourceUrl;
         }
-
+        
+        /// <inheritdoc />
         public async Task<Stream> DownloadAndUnzipStream()
         {
             logger.SendTrace($"Downloading MACs from NMDP source", LogLevel.Info);
@@ -37,7 +41,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData
 
         private async Task<Stream> DownloadToMemoryStream()
         {
-            var data = await webClient.DownloadDataTaskAsync(url);
+            byte[] data = await webClient.DownloadDataTaskAsync(url);
             var stream = new MemoryStream(data);
             return stream;
         }
