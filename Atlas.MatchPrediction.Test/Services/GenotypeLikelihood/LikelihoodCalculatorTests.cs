@@ -44,7 +44,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             }
 
 
-            var homozygousImputedGenotype = new ImputedGenotype
+            var homozygousExpandedGenotype = new ExpandedGenotype
             {
                 Diplotypes = DiplotypeBuilder.New
                     .With(d => d.Item1, new Haplotype {Hla = hlaInfo1, Frequency = frequency1})
@@ -53,7 +53,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 IsHomozygousAtEveryLocus = false
             };
 
-            var actualLikelihood = genotypeLikelihoodCalculator.CalculateLikelihood(homozygousImputedGenotype);
+            var actualLikelihood = genotypeLikelihoodCalculator.CalculateLikelihood(homozygousExpandedGenotype);
 
             actualLikelihood.Should().Be(expectedLikelihood);
         }
@@ -74,7 +74,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 Drb1 = "homozygous"
             };
 
-            var homozygousImputedGenotype = new ImputedGenotype
+            var homozygousExpandedGenotype = new ExpandedGenotype
             {
                 Diplotypes = new List<Diplotype>
                 {
@@ -86,7 +86,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 IsHomozygousAtEveryLocus = true
             };
 
-            var actualLikelihood = genotypeLikelihoodCalculator.CalculateLikelihood(homozygousImputedGenotype);
+            var actualLikelihood = genotypeLikelihoodCalculator.CalculateLikelihood(homozygousExpandedGenotype);
 
             actualLikelihood.Should().Be(expectedLikelihood);
         }

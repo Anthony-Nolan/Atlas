@@ -12,9 +12,9 @@ using NUnit.Framework;
 namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
 {
     [TestFixture]
-    public class GenotypeImputerTests
+    public class UnambiguousGenotypeExpanderTests
     {
-        private IGenotypeImputer genotypeImputer;
+        private IUnambiguousGenotypeExpander unambiguousGenotypeExpander;
 
         private const string A1 = "A1:A1";
         private const string A2 = "A2:A2";
@@ -30,7 +30,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         [SetUp]
         public void SetUp()
         {
-            genotypeImputer = new GenotypeImputer();
+            unambiguousGenotypeExpander = new UnambiguousGenotypeExpander();
         }
 
         [Test]
@@ -47,9 +47,9 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
 
             var expectedDiplotypeHla = new Diplotype(genotype).Map(h => h.Hla);
 
-            var imputedGenotype = genotypeImputer.ImputeGenotype(genotype);
-            var actualDiplotypeHla = imputedGenotype.Diplotypes.Select(d => d.Map(h => h.Hla));
-            var actualHomozygousValue = imputedGenotype.IsHomozygousAtEveryLocus;
+            var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype);
+            var actualDiplotypeHla = expandedGenotype.Diplotypes.Select(d => d.Map(h => h.Hla));
+            var actualHomozygousValue = expandedGenotype.IsHomozygousAtEveryLocus;
 
             actualDiplotypeHla.Should().BeEquivalentTo(expectedDiplotypeHla);
             actualHomozygousValue.Should().BeTrue();
@@ -176,9 +176,9 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 }
             }.Select(d => d.Map(h => h.Hla));
 
-            var imputedGenotype = genotypeImputer.ImputeGenotype(genotype);
-            var actualDiplotypeHla = imputedGenotype.Diplotypes.Select(d => d.Map(h => h.Hla));
-            var actualHomozygousValue = imputedGenotype.IsHomozygousAtEveryLocus;
+            var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype);
+            var actualDiplotypeHla = expandedGenotype.Diplotypes.Select(d => d.Map(h => h.Hla));
+            var actualHomozygousValue = expandedGenotype.IsHomozygousAtEveryLocus;
 
             actualDiplotypeHla.Should().BeEquivalentTo(expectedDiplotypeHla);
             actualHomozygousValue.Should().BeFalse();
@@ -250,9 +250,9 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 }
             }.Select(d => d.Map(h => h.Hla));
 
-            var imputedGenotype = genotypeImputer.ImputeGenotype(genotype);
-            var actualDiplotypeHla = imputedGenotype.Diplotypes.Select(d => d.Map(h => h.Hla));
-            var actualHomozygousValue = imputedGenotype.IsHomozygousAtEveryLocus;
+            var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype);
+            var actualDiplotypeHla = expandedGenotype.Diplotypes.Select(d => d.Map(h => h.Hla));
+            var actualHomozygousValue = expandedGenotype.IsHomozygousAtEveryLocus;
 
             actualDiplotypeHla.Should().BeEquivalentTo(expectedDiplotypeHla);
             actualHomozygousValue.Should().BeFalse();
@@ -265,9 +265,9 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             var genotype = PhenotypeInfoBuilder.New.Build();
             genotype.SetLocus(emptyLocus, new LocusInfo<string>(null));
 
-            var imputedGenotype = genotypeImputer.ImputeGenotype(genotype);
-            var actualDiplotypes = imputedGenotype.Diplotypes.ToList();
-            var actualHomozygousValue = imputedGenotype.IsHomozygousAtEveryLocus;
+            var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype);
+            var actualDiplotypes = expandedGenotype.Diplotypes.ToList();
+            var actualHomozygousValue = expandedGenotype.IsHomozygousAtEveryLocus;
 
             actualDiplotypes.Count.Should().Be(8);
             actualHomozygousValue.Should().BeFalse();
@@ -292,9 +292,9 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 genotype.SetLocus(locus, new LocusInfo<string>("homozygous"));
             }
 
-            var imputedGenotype = genotypeImputer.ImputeGenotype(genotype);
-            var actualDiplotypes = imputedGenotype.Diplotypes.ToList();
-            var actualHomozygousValue = imputedGenotype.IsHomozygousAtEveryLocus;
+            var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype);
+            var actualDiplotypes = expandedGenotype.Diplotypes.ToList();
+            var actualHomozygousValue = expandedGenotype.IsHomozygousAtEveryLocus;
 
             actualHomozygousValue.Should().Be(expectedHomozygousValue);
             actualDiplotypes.Count.Should().Be(expectedDiplotypeCount);
@@ -310,9 +310,9 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             var genotype = PhenotypeInfoBuilder.New.Build();
             genotype.SetLocus(homozygousLocus, new LocusInfo<string>("homozygous"));
 
-            var imputedGenotype = genotypeImputer.ImputeGenotype(genotype);
-            var actualDiplotypes = imputedGenotype.Diplotypes.ToList();
-            var actualHomozygousValue = imputedGenotype.IsHomozygousAtEveryLocus;
+            var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype);
+            var actualDiplotypes = expandedGenotype.Diplotypes.ToList();
+            var actualHomozygousValue = expandedGenotype.IsHomozygousAtEveryLocus;
 
             actualDiplotypes.Count.Should().Be(8);
             actualHomozygousValue.Should().BeFalse();
@@ -329,7 +329,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 Dqb1 = {Position1 = Dqb11, Position2 = Dqb12},
                 Drb1 = {Position1 = Drb11, Position2 = Drb12}
             };
-            genotypeImputer.ImputeGenotype(genotypeWithAllFields);
+            unambiguousGenotypeExpander.ExpandGenotype(genotypeWithAllFields);
 
             var genotypeWithMissingField = new PhenotypeInfo<string>
             {
@@ -338,7 +338,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 Dqb1 = {Position1 = Dqb11, Position2 = Dqb12},
                 Drb1 = {Position1 = Drb11, Position2 = Drb12}
             };
-            genotypeImputer.ImputeGenotype(genotypeWithMissingField);
+            unambiguousGenotypeExpander.ExpandGenotype(genotypeWithMissingField);
 
             var genotypeWithHomozygousType = new PhenotypeInfo<string>
             {
@@ -348,7 +348,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 Dqb1 = {Position1 = Dqb11, Position2 = Dqb12},
                 Drb1 = {Position1 = Drb11, Position2 = Drb12}
             };
-            genotypeImputer.ImputeGenotype(genotypeWithHomozygousType);
+            unambiguousGenotypeExpander.ExpandGenotype(genotypeWithHomozygousType);
 
             var genotypeWithHomozygousTypeAndMissingField = new PhenotypeInfo<string>
             {
@@ -357,7 +357,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 Dqb1 = {Position1 = Dqb11, Position2 = Dqb12},
                 Drb1 = {Position1 = Drb11, Position2 = Drb12}
             };
-            genotypeImputer.ImputeGenotype(genotypeWithHomozygousTypeAndMissingField);
+            unambiguousGenotypeExpander.ExpandGenotype(genotypeWithHomozygousTypeAndMissingField);
         }
     }
 }
