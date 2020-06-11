@@ -5,12 +5,12 @@ using Atlas.Common.Notifications;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Repositories;
-using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Settings.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
 {
@@ -21,7 +21,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
         {
             services.RegisterSettings();
-            services.RegisterClients();
+            services.RegisterClients(fetchApplicationInsightsSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices();
             // TODO: ATLAS-327: Inject settings
@@ -60,10 +60,15 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IDonorReader, DonorReader>();
         }
 
-        private static void RegisterClients(this IServiceCollection services)
+        private static void RegisterClients(
+            this IServiceCollection services,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
         {
             services.AddScoped<IMessagingServiceBusClient, MessagingServiceBusClient>();
-            services.AddScoped<INotificationsClient, NotificationsClient>();
+            services.RegisterNotificationSender(
+                OptionsReaderFor<NotificationsServiceBusSettings>(), //TODO: ATLAS-327
+                fetchApplicationInsightsSettings
+            );
         }
 
         private static void RegisterImportDatabaseTypes(

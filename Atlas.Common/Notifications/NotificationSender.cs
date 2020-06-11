@@ -5,28 +5,41 @@ using System.Threading.Tasks;
 
 namespace Atlas.Common.Notifications
 {
-    public abstract class NotificationSender
+    public interface INotificationSender
+    {
+        /// <summary>
+        /// Sends a Notification to the configured MessageBus.
+        /// Will not leak any exceptions, if that can't be achieved
+        /// </summary>
+        Task SendNotification(string summary, string description, string source);
+
+        /// <summary>
+        /// Sends a Notification to the configured MessageBus.
+        /// Will not leak any exceptions, if that can't be achieved
+        /// </summary>
+        Task SendAlert(string summary, string description, Priority priority, string source);
+    }
+
+    internal class NotificationSender : INotificationSender
     {
         private readonly INotificationsClient notificationsClient;
         private readonly ILogger logger;
-        private readonly string originatorName;
 
-        protected NotificationSender(
+        public NotificationSender(
             INotificationsClient notificationsClient,
-            ILogger logger,
-            string originatorName)
+            ILogger logger)
         {
             this.notificationsClient = notificationsClient;
             this.logger = logger;
-            this.originatorName = originatorName;
         }
 
-        protected async Task SendNotification(string summary, string description)
+        public async Task SendNotification(string summary, string description, string source)
         {
-            var notification = new Notification(summary, description, originatorName);
+            var notification = new Notification(summary, description, source);
 
             try
             {
+                logger.SendTrace($"{nameof(Notification)} sent from {notification.Originator}. Summary: {notification.Summary}. Detail: {notification.Description}", LogLevel.Info);
                 await notificationsClient.SendNotification(notification);
             }
             catch (Exception ex)
@@ -35,12 +48,13 @@ namespace Atlas.Common.Notifications
             }
         }
 
-        protected async Task SendAlert(string summary, string description, Priority priority)
+        public async Task SendAlert(string summary, string description, Priority priority, string source)
         {
-            var alert = new Alert(summary, description, priority, originatorName);
+            var alert = new Alert(summary, description, priority, source);
 
             try
             {
+                logger.SendTrace($"{nameof(Alert)} sent from {alert.Originator}. Priority: {alert.Priority.ToString()}. Summary: {alert.Summary}. Detail: {alert.Description}", LogLevel.Warn);
                 await notificationsClient.SendAlert(alert);
             }
             catch (Exception ex)
@@ -51,7 +65,17 @@ namespace Atlas.Common.Notifications
 
         private void SendNotificationSenderFailureEvent(Exception exception, BaseNotificationsMessage message)
         {
-            logger.SendEvent(new NotificationSenderFailureEventModel(exception, message));
+            try
+            {
+                logger.SendEvent(new NotificationSenderFailureEventModel(exception, message));
+            }
+            catch
+            {
+                // If we can't log, then there's not much point in whinging about it.
+                // On the off chance that the underlying operation succeeded, we don't
+                // want to crash a happy execution just because the logging broke.
+                // So just swallow this.
+            }
         }
     }
 }

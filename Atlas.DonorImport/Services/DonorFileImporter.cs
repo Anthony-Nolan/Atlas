@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.Common.Notifications.MessageModels;
 using Atlas.DonorImport.ExternalInterface.Models;
 using MoreLinq.Extensions;
 
@@ -21,18 +20,18 @@ namespace Atlas.DonorImport.Services
         private const int BatchSize = 10000;
         private readonly IDonorImportFileParser fileParser;
         private readonly IDonorRecordChangeApplier donorRecordChangeApplier;
-        private readonly INotificationsClient notificationsClient;
+        private readonly INotificationSender notificationsSender;
         private readonly ILogger logger;
 
         public DonorFileImporter(
             IDonorImportFileParser fileParser,
             IDonorRecordChangeApplier donorRecordChangeApplier,
-            INotificationsClient notificationsClient,
+            INotificationSender notificationsSender,
             ILogger logger)
         {
             this.fileParser = fileParser;
             this.donorRecordChangeApplier = donorRecordChangeApplier;
-            this.notificationsClient = notificationsClient;
+            this.notificationsSender = notificationsSender;
             this.logger = logger;
         }
 
@@ -56,9 +55,8 @@ namespace Atlas.DonorImport.Services
                 var description = @$"Importing donors for file: {file.FileLocation} has failed. With exception {e.Message}.
 {importedDonorCount} Donors were successfully imported prior to this error and have already been stored in the Database. Any remaining donors in the file have not been stored.
 Manual investigation is recommended; see Application Insights for more information.";
-                var alert = new Alert(summary, description, Priority.Medium);
 
-                await notificationsClient.SendAlert(alert);
+                await notificationsSender.SendAlert(summary, description, Priority.Medium, nameof(ImportDonorFile));
 
                 throw;
             }
