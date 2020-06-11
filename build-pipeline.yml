@@ -182,7 +182,7 @@ jobs:
         inputs:
           terraformVersion: '0.12.24'
       - script: 'terraform init -reconfigure'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/core'
         displayName: 'terraform init'
         env:
           ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
@@ -190,7 +190,7 @@ jobs:
           echo Validating the syntax
 
           terraform validate
-        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/core'
         displayName: 'terraform validate'
         env:
           ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
@@ -199,13 +199,13 @@ jobs:
           echo Remove the .terraform directory before pushing
 
           rm -rf .terraform/
-        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/core'
         displayName: 'rm -rf .terraform/'
       - task: PublishBuildArtifacts@1
-        displayName: 'Publish Artifact: terraform-atlas'
+        displayName: 'Publish Artifact: terraform-core'
         inputs:
-          PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform'
-          ArtifactName: 'terraform-atlas'
+          PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform/core'
+          ArtifactName: 'terraform-atlas-core'
   - job: Terraform_Webhooks
     pool: Hosted Ubuntu 1604
     steps:
@@ -214,7 +214,7 @@ jobs:
         inputs:
           terraformVersion: '0.12.24'
       - script: 'terraform init -reconfigure'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform-webhooks'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/webhooks'
         displayName: 'terraform init'
         env:
           ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
@@ -222,7 +222,7 @@ jobs:
           echo Validating the syntax
 
           terraform validate
-        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform-webhooks'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/webhooks'
         displayName: 'terraform validate'
         env:
           ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
@@ -231,10 +231,10 @@ jobs:
           echo Remove the .terraform directory before pushing
 
           rm -rf .terraform/
-        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform-webhooks'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/webhooks'
         displayName: 'rm -rf .terraform/'
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Artifact: terraform-atlas-webhooks'
         inputs:
-          PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform-webhooks'
+          PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform/webhooks'
           ArtifactName: 'terraform-atlas-webhooks'
