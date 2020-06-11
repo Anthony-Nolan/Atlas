@@ -22,9 +22,9 @@ namespace Atlas.DonorImport.Functions.Functions
         [FunctionName(nameof(ImportDonorFile))]
         [StorageAccount("AzureStorage:ConnectionString")]
         public async Task ImportDonorFile(
-            // Raw JSON Text file containing donor updates in expected schema
             [EventGridTrigger] EventGridEvent blobCreatedEvent,
-            [Blob("{data.url}", FileAccess.Read)] Stream blobStream)
+            [Blob("{data.url}", FileAccess.Read)] Stream blobStream // Raw JSON Text file containing donor updates in expected schema
+        )
         {
             await donorFileImporter.ImportDonorFile(new DonorImportFile {Contents = blobStream, FileLocation = blobCreatedEvent.Subject});
         }
