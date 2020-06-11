@@ -49,7 +49,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
 
         private static void SetUpMockServices(IServiceCollection services)
         {
-            services.AddScoped(sp => Substitute.For<INotificationsClient>());
+            services.AddScoped(sp => Substitute.For<INotificationSender>());
         }
 
         private static string GetSqlConnectionString(IServiceProvider serviceProvider)

@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Notifications;
-using Atlas.Common.Notifications.MessageModels;
 using Atlas.DonorImport.ExternalInterface.Models;
 using MoreLinq.Extensions;
 
@@ -20,16 +19,16 @@ namespace Atlas.DonorImport.Services
         private const int BatchSize = 10000;
         private readonly IDonorImportFileParser fileParser;
         private readonly IDonorRecordChangeApplier donorRecordChangeApplier;
-        private readonly INotificationsClient notificationsClient;
+        private readonly INotificationSender notificationsSender;
 
         public DonorFileImporter(
             IDonorImportFileParser fileParser,
             IDonorRecordChangeApplier donorRecordChangeApplier,
-            INotificationsClient notificationsClient)
+            INotificationSender notificationsSender)
         {
             this.fileParser = fileParser;
             this.donorRecordChangeApplier = donorRecordChangeApplier;
-            this.notificationsClient = notificationsClient;
+            this.notificationsSender = notificationsSender;
         }
 
         public async Task ImportDonorFile(DonorImportFile file)
@@ -48,9 +47,8 @@ namespace Atlas.DonorImport.Services
                 var description = @$"Importing donors for file: {file.FileLocation} has failed. With exception {e.Message}. If there were more than 
                                   {BatchSize} donor updates in the file, the file may have been partially imported - manual investigation is 
                                   recommended. See Application Insights for more information.";
-                var alert = new Alert(summary, description, Priority.Medium);
 
-                await notificationsClient.SendAlert(alert);
+                await notificationsSender.SendAlert(summary, description, Priority.Medium, nameof(ImportDonorFile));
 
                 throw;
             }

@@ -37,6 +37,7 @@ using Atlas.MatchingAlgorithm.Services.Utility;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -169,7 +170,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IAzureFunctionManager, AzureFunctionManager>();
             services.AddScoped<IAzureDatabaseManager, AzureDatabaseManager>();
 
-            services.AddScoped<INotificationsClient, NotificationsClient>();
+            services.RegisterNotificationSender(
+                OptionsReaderFor<NotificationsServiceBusSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>()
+            );
 
             services.AddScoped<IScoringCache, ScoringCache>();
         }

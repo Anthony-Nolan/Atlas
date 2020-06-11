@@ -54,7 +54,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjectio
         private static void SetUpMockServices(IServiceCollection services)
         {
             services.AddScoped(sp => Substitute.For<IMacCodeDownloader>());
-            services.AddScoped(sp => Substitute.For<INotificationsClient>());
+            services.AddScoped(sp => Substitute.For<INotificationSender>());
         }
     }
 }
