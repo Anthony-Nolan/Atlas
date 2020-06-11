@@ -4,20 +4,20 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models
 {
     public class Mac
     {
-        public string MacCode { get; set; }
+        public string Code { get; set; }
         public string Hla { get; set; }
         public bool IsGeneric { get; set; }
 
-        internal Mac(string macCode, string hla, bool isGeneric)
+        internal Mac(string code, string hla, bool isGeneric)
         {
-            MacCode = macCode;
+            Code = code;
             Hla = hla;
             IsGeneric = isGeneric;
         }
 
         internal Mac(MacEntity mac)
         {
-            MacCode = mac.Mac;
+            Code = mac.Mac;
             Hla = mac.HLA;
             IsGeneric = mac.IsGeneric;
         }

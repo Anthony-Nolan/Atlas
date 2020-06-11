@@ -11,8 +11,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models
 
         public MacEntity(Mac mac)
         {
-            PartitionKey = mac.MacCode.Length.ToString();
-            RowKey = mac.MacCode;
+            PartitionKey = mac.Code.Length.ToString();
+            RowKey = mac.Code;
             HLA = mac.Hla;
             IsGeneric = mac.IsGeneric;
         }

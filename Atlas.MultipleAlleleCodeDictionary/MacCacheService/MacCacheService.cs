@@ -36,7 +36,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
             var macs = await macRepository.GetAllMacs();
             foreach (var mac in macs)
             {
-                cache.GetOrAdd(mac.MacCode, () => mac);
+                cache.GetOrAdd(mac.Code, () => mac);
             }
         }
     }
