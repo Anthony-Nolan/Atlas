@@ -4,7 +4,7 @@ using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
 
 namespace Atlas.Common.GeneticData.Hla.Services.AlleleStringSplitters
 {
-    internal class AlleleStringOfNamesSplitter : AlleleStringSplitterBase
+    public class AlleleStringOfNamesSplitter : AlleleStringSplitterBase
     {
         protected override IEnumerable<MolecularAlleleDetails> GetAlleleTypingsFromSplitAlleleString(IEnumerable<string> splitAlleleString)
         {
