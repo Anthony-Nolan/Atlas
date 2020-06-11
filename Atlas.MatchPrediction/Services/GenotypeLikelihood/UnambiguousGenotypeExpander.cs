@@ -8,19 +8,19 @@ using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
-    public interface IGenotypeImputer
+    public interface IUnambiguousGenotypeExpander
     {
-        public ImputedGenotype ImputeGenotype(PhenotypeInfo<string> genotype);
+        public ExpandedGenotype ExpandGenotype(PhenotypeInfo<string> genotype);
     }
 
-    public class GenotypeImputer : IGenotypeImputer
+    public class UnambiguousGenotypeExpander : IUnambiguousGenotypeExpander
     {
-        public ImputedGenotype ImputeGenotype(PhenotypeInfo<string> genotype)
+        public ExpandedGenotype ExpandGenotype(PhenotypeInfo<string> genotype)
         {
             var heterozygousLoci = GetHeterozygousLoci(genotype);
             if (!heterozygousLoci.Any())
             {
-                return new ImputedGenotype
+                return new ExpandedGenotype
                 {
                     Diplotypes = new List<Diplotype> {new Diplotype(genotype)},
                     IsHomozygousAtEveryLocus = true
@@ -55,7 +55,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
                 diplotypes.Add(diplotype);
             }
 
-            return new ImputedGenotype
+            return new ExpandedGenotype
             {
                 Diplotypes = diplotypes,
                 IsHomozygousAtEveryLocus = false

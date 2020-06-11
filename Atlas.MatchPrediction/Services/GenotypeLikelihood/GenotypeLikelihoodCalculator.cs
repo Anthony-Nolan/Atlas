@@ -9,16 +9,16 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         /// Calculate genotype likelihood using the haplotype frequencies contained within a list of diplotypes.
         /// Provided diplotypes must have frequency values pre-populated, else said haplotype will be considered to have a frequency of 0.
         /// </summary>
-        public decimal CalculateLikelihood(ImputedGenotype imputedGenotype);
+        public decimal CalculateLikelihood(ExpandedGenotype expandedGenotype);
     }
 
     public class GenotypeLikelihoodCalculator : IGenotypeLikelihoodCalculator
     {
-        public decimal CalculateLikelihood(ImputedGenotype imputedGenotype)
+        public decimal CalculateLikelihood(ExpandedGenotype expandedGenotype)
         {
-            var homozygosityCorrectionFactor = imputedGenotype.IsHomozygousAtEveryLocus ? 1 : 2;
+            var homozygosityCorrectionFactor = expandedGenotype.IsHomozygousAtEveryLocus ? 1 : 2;
 
-            return imputedGenotype.Diplotypes.Sum(diplotype => CalculateDiplotypeLikelihood(diplotype, homozygosityCorrectionFactor));
+            return expandedGenotype.Diplotypes.Sum(diplotype => CalculateDiplotypeLikelihood(diplotype, homozygosityCorrectionFactor));
         }
 
         private static decimal CalculateDiplotypeLikelihood(Diplotype diplotype, int homozygosityCorrectionFactor)
