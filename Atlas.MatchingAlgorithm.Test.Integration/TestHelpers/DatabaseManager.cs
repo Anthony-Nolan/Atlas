@@ -1,6 +1,8 @@
 using System;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,12 +10,12 @@ using ContextFactory = Atlas.MatchingAlgorithm.Data.Context.ContextFactory;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
 {
-    public class DatabaseManager
+    internal class DatabaseManager
     {
         /// <summary>
         /// Creates if necessary, and runs migrations on both a transient and persistent database
         /// </summary>
-        public static void SetupDatabase()
+        public static void MigrateDatabases()
         {
             var transientContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmContext>();
             var persistentContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmPersistentContext>();
@@ -37,14 +39,17 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
         public static void ClearDatabases()
         {
             var transientContextA = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmContext>();
-            ClearDatabase(transientContextA);
+            ClearTransientDatabase(transientContextA);
             
             var connectionStringB = DependencyInjection.DependencyInjection.Provider.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"];
             var transientContextB = new ContextFactory().Create(connectionStringB);
-            ClearDatabase(transientContextB);
+            ClearTransientDatabase(transientContextB);
+            
+            var persistentContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmPersistentContext>();
+            ClearPersistentDatabase(persistentContext);
         }
 
-        private static void ClearDatabase(DbContext context)
+        private static void ClearTransientDatabase(DbContext context)
         {
             if (context != null)
             {
@@ -56,6 +61,17 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
                 context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtDqb1]");
                 context.Database.ExecuteSqlRaw("DELETE FROM PGroupNames");
             }
+        }
+
+        private static void ClearPersistentDatabase(SearchAlgorithmPersistentContext context)
+        {
+            context?.Database.ExecuteSqlRaw("TRUNCATE TABLE [DataRefreshHistory]");
+        }
+
+        public static void PopulateDatabasesWithInitialData()
+        {
+            var dataRefreshHistoryRepository = DependencyInjection.DependencyInjection.Provider.GetService<ITestDataRefreshHistoryRepository>();
+            dataRefreshHistoryRepository.InsertDummySuccessfulRefreshRecord(Constants.SnapshotHlaNomenclatureVersion);
         }
     }
 }

@@ -21,6 +21,8 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.Search;
@@ -116,7 +118,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IDonorImporter, DonorImporter>();
             services.AddScoped<IHlaProcessor, HlaProcessor>();
             services.AddScoped<IDataRefreshOrchestrator, DataRefreshOrchestrator>();
-            services.AddScoped<IDataRefreshService, DataRefreshService>();
+            services.AddScoped<IDataRefreshRunner, DataRefreshRunner>();
             services.AddScoped<IDataRefreshNotificationSender, DataRefreshNotificationSender>();
             services.AddScoped<IDataRefreshCleanupService, DataRefreshCleanupService>();
 

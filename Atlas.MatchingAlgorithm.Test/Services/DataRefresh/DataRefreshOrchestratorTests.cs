@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
@@ -28,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IOptions<DataRefreshSettings> settingsOptions;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private IActiveDatabaseProvider activeDatabaseProvider;
-        private IDataRefreshService dataRefreshService;
+        private IDataRefreshRunner dataRefreshRunner;
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
 
         private IAzureFunctionManager azureFunctionManager;
@@ -54,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             logger = Substitute.For<ILogger>();
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
-            dataRefreshService = Substitute.For<IDataRefreshService>();
+            dataRefreshRunner = Substitute.For<IDataRefreshRunner>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
             azureFunctionManager = Substitute.For<IAzureFunctionManager>();
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
@@ -66,7 +65,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 hlaMetadataDictionaryBuilder,
                 activeHlaVersionAccessor,
                 activeDatabaseProvider,
-                dataRefreshService,
+                dataRefreshRunner,
                 dataRefreshHistoryRepository,
                 azureFunctionManager,
                 azureDatabaseManager,
@@ -82,7 +81,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshService.DidNotReceive().RefreshData();
+            await dataRefreshRunner.DidNotReceive().RefreshData(Arg.Any<int>());
         }
         
         [Test]
@@ -92,7 +91,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary(shouldForceRefresh: true);
 
-            await dataRefreshService.Received().RefreshData();
+            await dataRefreshRunner.Received().RefreshData(Arg.Any<int>());
         }
 
         [Test]
@@ -102,7 +101,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshService.Received().RefreshData();
+            await dataRefreshRunner.Received().RefreshData(Arg.Any<int>());
         }
 
         [Test]
@@ -113,7 +112,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshService.DidNotReceive().RefreshData();
+            await dataRefreshRunner.DidNotReceive().RefreshData(Arg.Any<int>());
         }
         
         [Test]
@@ -123,7 +122,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary(shouldForceRefresh: true);
 
-            await dataRefreshService.DidNotReceive().RefreshData();
+            await dataRefreshRunner.DidNotReceive().RefreshData(Arg.Any<int>());
         }
 
         [Test]
@@ -139,7 +138,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_EventuallyRecordsDataRefreshOccurredWithLatestWmdaVersion()
         {
             wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(newHlaVersion);
-            dataRefreshService.RefreshData().Returns(newHlaVersion);
+            dataRefreshRunner.RefreshData(Arg.Any<int>()).Returns(newHlaVersion);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
             await dataRefreshHistoryRepository.Received().UpdateExecutionDetails(Arg.Any<int>(), newHlaVersion, Arg.Any<DateTime?>());
@@ -209,7 +208,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_WhenDataRefreshFails_LogsExceptionDetails()
         {
             const string exceptionMessage = "something very bad happened";
-            dataRefreshService.RefreshData().Throws(new Exception(exceptionMessage));
+            dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception(exceptionMessage));
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -220,7 +219,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_WhenDataRefreshFails_StoresFinishTime()
         {
             const string exceptionMessage = "something very bad happened";
-            dataRefreshService.RefreshData().Throws(new Exception(exceptionMessage));
+            dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception(exceptionMessage));
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -231,7 +230,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         public async Task RefreshDataIfNecessary_WhenDataRefreshFails_StoresSuccessFlagAsFalse()
         {
             const string exceptionMessage = "something very bad happened";
-            dataRefreshService.RefreshData().Throws(new Exception(exceptionMessage));
+            dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception(exceptionMessage));
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -311,7 +310,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Build();
             settingsOptions.Value.Returns(settings);
             activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
-            dataRefreshService.RefreshData().Throws(new Exception());
+            dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception());
             
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -326,7 +325,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .With(s => s.DonorImportFunctionName, "import-func")
                 .Build();
             settingsOptions.Value.Returns(settings);
-            dataRefreshService.RefreshData().Throws(new Exception());
+            dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception());
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -352,7 +351,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task RefreshData_SendsAlertOnFailure()
         {
-            dataRefreshService.RefreshData().Throws(new Exception());
+            dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception());
             
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
