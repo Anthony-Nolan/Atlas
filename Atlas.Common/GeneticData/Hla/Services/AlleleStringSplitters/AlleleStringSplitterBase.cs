@@ -4,7 +4,7 @@ using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
 
 namespace Atlas.Common.GeneticData.Hla.Services.AlleleStringSplitters
 {
-    internal abstract class AlleleStringSplitterBase
+    public abstract class AlleleStringSplitterBase
     {
         private const char AlleleStringDelimiter = '/';
 

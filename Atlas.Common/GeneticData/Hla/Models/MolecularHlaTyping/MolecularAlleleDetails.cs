@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping
 {
-    internal class MolecularAlleleDetails
+    public class MolecularAlleleDetails
     {
         private static readonly string ExpressionSuffixPattern = $"[{MolecularTypingNameConstants.ExpressionSuffixes}]$";
 
