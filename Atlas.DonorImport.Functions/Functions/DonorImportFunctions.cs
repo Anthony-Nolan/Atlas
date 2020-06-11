@@ -26,7 +26,7 @@ namespace Atlas.DonorImport.Functions.Functions
             [EventGridTrigger] EventGridEvent blobCreatedEvent,
             [Blob("{data.url}", FileAccess.Read)] Stream blobStream)
         {
-            await donorFileImporter.ImportDonorFile(new DonorImportFile {Contents = blobStream, FileName = "TODO:ATLAS-376"});
+            await donorFileImporter.ImportDonorFile(new DonorImportFile {Contents = blobStream, FileLocation = blobCreatedEvent.Subject});
         }
     }
 }

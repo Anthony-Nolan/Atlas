@@ -9,7 +9,7 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels
     internal static class DonorImportFileBuilder
     {
         public static Builder<DonorImportFile> NewWithoutContents => Builder<DonorImportFile>.New
-            .With(f => f.FileName, "file-name");
+            .With(f => f.FileLocation, "file-location");
 
         public static Builder<DonorImportFile> NewWithDefaultContents => NewWithoutContents
             .With(f => f.Contents, DonorImportFileContentsBuilder.New.Build().ToStream());
