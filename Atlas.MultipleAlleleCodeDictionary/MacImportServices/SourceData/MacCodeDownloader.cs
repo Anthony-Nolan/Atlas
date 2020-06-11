@@ -13,7 +13,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData
     internal interface IMacCodeDownloader
     {
         /// <remarks>
-        ///  This method downloads the zipped Mac Source file fully, and when that is complete, unzips the result into a stream.
+        ///  Downloads the zipped Mac Source file fully, and when that is complete, unzips the result into a stream.
         /// </remarks>
         public Task<Stream> DownloadAndUnzipStream();
     }
