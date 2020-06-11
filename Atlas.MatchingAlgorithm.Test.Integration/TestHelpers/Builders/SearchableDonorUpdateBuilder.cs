@@ -16,7 +16,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
                 .With(x => x.DonorId, DonorId)
                 .With(x => x.IsAvailableForSearch, DefaultIsAvailableForSearch)
                 .With(x => x.SearchableDonorInformation, 
-                    SearchableDonorInformationBuilder.New.With(x => x.DonorId, DonorId))
-                .With(x => x.PublishedDateTime, DateTimeOffset.UtcNow);
+                    SearchableDonorInformationBuilder.New.With(x => x.DonorId, DonorId));
     }
 }
