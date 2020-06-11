@@ -2,8 +2,9 @@
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
-using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 
 namespace Atlas.MatchPrediction.Functions.Functions
 {
@@ -16,18 +17,20 @@ namespace Atlas.MatchPrediction.Functions.Functions
             this.frequencySetService = frequencySetService;
         }
 
+        /// IMPORTANT: Do not rename this function without careful consideration. This function is called by event grid, which has the function name set by terraform.
+        // If changing this, you must also change the value hardcoded in the event_grid.tf terraform file. 
         [FunctionName(nameof(ImportHaplotypeFrequencySet))]
+        [StorageAccount("AzureStorage:ConnectionString")]
         public async Task ImportHaplotypeFrequencySet(
-            [BlobTrigger("%AzureStorage:HaplotypeFrequencySetImportContainer%/{fullPath}", Connection = "AzureStorage:ConnectionString")]
-            Stream blob,
-            string fullPath,
-            BlobProperties properties)
+            [EventGridTrigger] EventGridEvent blobCreatedEvent,
+            [Blob("{data.url}", FileAccess.Read)] Stream blobStream
+        )
         {
             using (var file = new FrequencySetFile
             {
-                Contents = blob,
-                FullPath = fullPath,
-                UploadedDateTime = properties.LastModified
+                Contents = blobStream,
+                FullPath = blobCreatedEvent.Subject,
+                UploadedDateTime = blobCreatedEvent.EventTime
             })
             {
                 await frequencySetService.ImportFrequencySet(file);

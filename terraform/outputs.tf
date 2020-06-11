@@ -7,6 +7,14 @@ output "donor_import" {
   }
 }
 
+output "match_prediction" {
+  value = {
+    function_app = module.match_prediction.function_app
+    sql_database = module.match_prediction.sql_database
+    storage      = module.match_prediction.storage
+  }
+}
+
 output "matching_algorithm" {
   value = module.matching_algorithm.general
 }
