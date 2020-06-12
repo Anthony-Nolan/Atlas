@@ -47,7 +47,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
 
             await macImporter.ImportLatestMacs();
 
-            var importedMacs = await macRepository.GetAllMacs();
+            var importedMacs = await macRepository.GetAllMacEntities();
             importedMacs.Count().Should().Be(numberOfMacs);
         }
         
@@ -62,7 +62,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
 
             await macImporter.ImportLatestMacs();
 
-            var importedMacs = await macRepository.GetAllMacs();
+            var importedMacs = await macRepository.GetAllMacEntities();
             importedMacs.Count().Should().Be(numberOfMacs);
         }
 
@@ -80,7 +80,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs.Concat(newMacs)));
             await macImporter.ImportLatestMacs();
 
-            var importedMacs = await macRepository.GetAllMacs();
+            var importedMacs = await macRepository.GetAllMacEntities();
             importedMacs.Count().Should().Be(numberOfMacs + numberOfNewMacs);
         }
 
@@ -100,7 +100,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
                 MacSourceFileBuilder.BuildMacFile(shorterEarlyMac, shorterLateMac, longerEarlyMac, longerLateMac));
             await macImporter.ImportLatestMacs();
 
-            var importedMacs = await macRepository.GetAllMacs();
+            var importedMacs = await macRepository.GetAllMacEntities();
             importedMacs.Count().Should().Be(4);
         }
     }
