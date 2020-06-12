@@ -1,4 +1,3 @@
-using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils.Extensions;
 using Atlas.Functions;

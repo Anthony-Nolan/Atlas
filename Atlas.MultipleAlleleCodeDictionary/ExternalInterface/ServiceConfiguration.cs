@@ -64,7 +64,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
             services.AddScoped<IMacImporter, MacImporter>();
             services.AddScoped<IMacCodeDownloader, MacCodeDownloader>();
             services.RegisterAtlasLogger(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value);
-            services.AddScoped<IMacCache, MacCache>();
+            services.AddScoped<IMacCacheService, MacCacheService.MacCacheService>();
             services.AddScoped<IMacDictionary, MacDictionary>();
         }
         

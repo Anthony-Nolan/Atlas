@@ -258,7 +258,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterOptions<DataRefreshSettings>("DataRefresh");
         }
 
-        private static void RegisterMAcDictionary(this IServiceCollection services)
+        private static void RegisterMacDictionary(this IServiceCollection services)
         {
             services.RegisterOptions<MacImportSettings>("MacImport");
             services.RegisterMacDictionary(
