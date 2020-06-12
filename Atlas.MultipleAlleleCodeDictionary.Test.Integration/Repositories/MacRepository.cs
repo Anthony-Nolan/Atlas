@@ -5,7 +5,6 @@ using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Cosmos.Table;
-using Microsoft.Extensions.Options;
 
 namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
 {
@@ -15,7 +14,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
         public Task DeleteAllMacs();
         
         // TODO: ATLAS-47: Remove this in favour of non-test version
-        public Task<IEnumerable<MacEntity>> GetAllMacs();
+        public Task<IEnumerable<MacEntity>> GetAllMacEntities();
 
     }
 
@@ -34,7 +33,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
         /// <inheritdoc />
         public async Task DeleteAllMacs()
         {
-            foreach (var alleleCodeEntity in await GetAllMacs())
+            foreach (var alleleCodeEntity in await GetAllMacEntities())
             {
                 var delete = TableOperation.Delete(alleleCodeEntity);
                 Table.Execute(delete);
@@ -42,7 +41,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<MacEntity>> GetAllMacs()
+        public async Task<IEnumerable<MacEntity>> GetAllMacEntities()
         {
             var query = new TableQuery<MacEntity>();
             return await Table.ExecuteQueryAsync(query);
