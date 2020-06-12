@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
@@ -10,20 +7,21 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetad
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
     public interface IHlaMetadataDictionary
     {
         Task<string> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour);
-        Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName);
-        Task<IHlaMatchingMetadata> GetHlaMatchingMetadata(Locus locus, string hlaName);
         Task<List<string>> GetTwoFieldAllelesForAmbiguousHla(Locus locus, string hlaName);
         Task<LocusInfo<IHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
         Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
         IEnumerable<string> GetAllPGroups();
-        HlaMetadataCollection GetAllHlaMetadata();
 
         /// <summary>
         /// Indicates whether there's a discrepancy between the version of the HLA Nomenclature that we would use from WMDA,
@@ -37,11 +35,9 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
     {
         private readonly string activeHlaNomenclatureVersion;
         private readonly IRecreateHlaMetadataService recreateMetadataService;
-        private readonly IAlleleNamesMetadataService alleleNamesMetadataService;
         private readonly IHlaMatchingMetadataService hlaMatchingMetadataService;
         private readonly ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
         private readonly IHlaScoringMetadataService hlaScoringMetadataService;
-        private readonly IHlaMetadataService hlaMetadataService;
         private readonly IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
@@ -49,22 +45,18 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         public HlaMetadataDictionary(
             string activeHlaNomenclatureVersion,
             IRecreateHlaMetadataService recreateMetadataService,
-            IAlleleNamesMetadataService alleleNamesMetadataService,
             IHlaMatchingMetadataService hlaMatchingMetadataService,
             ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService,
             IHlaScoringMetadataService hlaScoringMetadataService,
-            IHlaMetadataService hlaMetadataService,
             IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger)
         {
             this.activeHlaNomenclatureVersion = activeHlaNomenclatureVersion;
             this.recreateMetadataService = recreateMetadataService;
-            this.alleleNamesMetadataService = alleleNamesMetadataService;
             this.hlaMatchingMetadataService = hlaMatchingMetadataService;
             this.locusHlaMatchingMetadataService = locusHlaMatchingMetadataService;
             this.hlaScoringMetadataService = hlaScoringMetadataService;
-            this.hlaMetadataService = hlaMetadataService;
             this.dpb1TceGroupMetadataService = dpb1TceGroupMetadataService;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
@@ -117,16 +109,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             };
         }
 
-        public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)
-        {
-            return await alleleNamesMetadataService.GetCurrentAlleleNames(locus, alleleLookupName, activeHlaNomenclatureVersion);
-        }
-
-        public async Task<IHlaMatchingMetadata> GetHlaMatchingMetadata(Locus locus, string hlaName)
-        {
-            return await hlaMatchingMetadataService.GetHlaMetadata(locus, hlaName, activeHlaNomenclatureVersion);
-        }
-
         //TODO: ATLAS-372: Do lookup for hla and return associated alleles
         public async Task<List<string>> GetTwoFieldAllelesForAmbiguousHla(Locus locus, string hlaName)
         {
@@ -163,11 +145,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         public IEnumerable<string> GetAllPGroups()
         {
             return hlaMatchingMetadataService.GetAllPGroups(activeHlaNomenclatureVersion);
-        }
-
-        public HlaMetadataCollection GetAllHlaMetadata()
-        {
-            return hlaMetadataService.GetAllHlaMetadata(activeHlaNomenclatureVersion).ToExternalCollection();
         }
     }
 }

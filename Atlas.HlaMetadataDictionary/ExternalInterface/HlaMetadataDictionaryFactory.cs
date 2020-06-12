@@ -1,7 +1,6 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
@@ -36,11 +35,9 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         //For Dictionary
         private readonly IRecreateHlaMetadataService recreateMetadataService;
-        private readonly IAlleleNamesMetadataService alleleNamesMetadataService;
         private readonly IHlaMatchingMetadataService hlaMatchingMetadataService;
         private readonly ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
         private readonly IHlaScoringMetadataService hlaScoringMetadataService;
-        private readonly IHlaMetadataService hlaMetadataService;
         private readonly IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
@@ -57,11 +54,9 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
             //For Dictionary
             IRecreateHlaMetadataService recreateMetadataService,
-            IAlleleNamesMetadataService alleleNamesMetadataService,
             IHlaMatchingMetadataService hlaMatchingMetadataService,
             ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService,
             IHlaScoringMetadataService hlaScoringMetadataService,
-            IHlaMetadataService hlaMetadataService,
             IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger,
@@ -77,11 +72,9 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
             //For Dictionary
             this.recreateMetadataService = recreateMetadataService;
-            this.alleleNamesMetadataService = alleleNamesMetadataService;
             this.hlaMatchingMetadataService = hlaMatchingMetadataService;
             this.locusHlaMatchingMetadataService = locusHlaMatchingMetadataService;
             this.hlaScoringMetadataService = hlaScoringMetadataService;
-            this.hlaMetadataService = hlaMetadataService;
             this.dpb1TceGroupMetadataService = dpb1TceGroupMetadataService;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
@@ -132,11 +125,9 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             return new HlaMetadataDictionary(
                 activeHlaNomenclatureVersion,
                 recreateMetadataService,
-                alleleNamesMetadataService,
                 hlaMatchingMetadataService,
                 locusHlaMatchingMetadataService,
                 hlaScoringMetadataService,
-                hlaMetadataService,
                 dpb1TceGroupMetadataService,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger);
