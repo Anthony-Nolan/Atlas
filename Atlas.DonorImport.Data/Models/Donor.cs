@@ -35,7 +35,7 @@ namespace Atlas.DonorImport.Data.Models
         /// Records the last time the donor record was updated.
         /// Intended for Diagnostics.
         /// </summary>
-        public DateTimeOffset UpdateTimestamp { get; set; }
+        public DateTimeOffset LastUpdated { get; set; }
         
         public DatabaseDonorType DonorType { get; set; }
 
@@ -68,7 +68,7 @@ namespace Atlas.DonorImport.Data.Models
             // Does NOT included:
             // * AtlasId
             // * UpdateFile
-            // * UpdateTimestamp
+            // * LastUpdated
             return
                 $"{ExternalDonorCode}|{DonorType}|{EthnicityCode}|{RegistryCode}|{A_1}|{A_2}|{B_1}|{B_2}|{C_1}|{C_2}|{DPB1_1}|{DPB1_2}|{DQB1_1}|{DQB1_2}|{DRB1_1}|{DRB1_2}"
                     .ToMd5Hash();

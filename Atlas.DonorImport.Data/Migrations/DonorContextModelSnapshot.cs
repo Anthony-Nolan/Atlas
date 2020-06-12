@@ -84,7 +84,7 @@ namespace Atlas.DonorImport.Data.Migrations
                         .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
-                    b.Property<DateTimeOffset>("UpdateTimestamp")
+                    b.Property<DateTimeOffset>("LastUpdated")
                         .HasColumnType("datetimeoffset");
 
                     b.HasKey("AtlasId");
