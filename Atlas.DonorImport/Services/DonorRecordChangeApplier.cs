@@ -105,9 +105,13 @@ namespace Atlas.DonorImport.Services
             var interpretedDqb1 = locusInterpreter.Interpret(fileUpdate.Hla.DQB1, CreateLogContext(Locus.Dqb1));
             var interpretedDrb1 = locusInterpreter.Interpret(fileUpdate.Hla.DRB1, CreateLogContext(Locus.Drb1));
             
+            var storedFileLocation = LeftTruncateTo256(fileLocation);
+            
             var donor = new Donor
             {
                 ExternalDonorCode = fileUpdate.RecordId,
+                UpdateFile = storedFileLocation,
+                UpdateTimestamp = DateTimeOffset.UtcNow,
                 DonorType = fileUpdate.DonorType.ToDatabaseType(),
                 EthnicityCode = fileUpdate.Ethnicity,
                 RegistryCode = fileUpdate.RegistryCode,
@@ -126,6 +130,16 @@ namespace Atlas.DonorImport.Services
             };
             donor.Hash = donor.CalculateHash();
             return donor;
+        }
+
+        private string LeftTruncateTo256(string fileLocation)
+        {
+            if (fileLocation.Length > 256)
+            {
+                return new string(fileLocation.TakeLast(256).ToArray());
+            }
+
+            return fileLocation;
         }
 
         private SearchableDonorUpdate MapToDeletionUpdate(Donor updatedDonor)
