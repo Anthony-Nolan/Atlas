@@ -8,20 +8,20 @@ using LazyCache;
 
 namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
 {
-    public interface IMacCache
+    public interface IMacCacheService
     {
         Task<string> GetHlaFromMac(string macCode);
         Task<Mac> GetMacCode(string macCode);
         Task GenerateMacCache();
     }
     
-    internal class MacCache: IMacCache
+    internal class MacCacheService: IMacCacheService
     {
         private readonly IAppCache cache;
         private readonly ILogger logger;
         private readonly IMacRepository macRepository;
 
-        public MacCache(ILogger logger, IPersistentCacheProvider cacheProvider, IMacRepository macRepository)
+        public MacCacheService(ILogger logger, IPersistentCacheProvider cacheProvider, IMacRepository macRepository)
         {
             this.logger = logger;
             this.cache = cacheProvider.Cache;
@@ -31,7 +31,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
         public async Task<string> GetHlaFromMac(string macCode)
         {
             var mac = await GetMacCode(macCode);
-            logger.SendTrace($"Attempting to expand Hla for Mac: {mac.Mac}", LogLevel.Info);
+            logger.SendTrace($"Attempting to expand Hla for Mac: {mac.Code}", LogLevel.Info);
             return GetExpandedHla(mac);
         }
         public async Task<Mac> GetMacCode(string macCode)
@@ -48,7 +48,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
             }
         }
         
-        private static string GetExpandedHla(MultipleAlleleCode mac)
+        private static string GetExpandedHla(Mac mac)
         {
             // TODO: Atlas-384: handle generic Mac.
             return mac.IsGeneric ? throw new NotImplementedException() : mac.Hla;
