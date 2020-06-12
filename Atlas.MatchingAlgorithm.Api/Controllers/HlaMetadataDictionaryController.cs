@@ -1,12 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.ExternalInterface;
+﻿using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Api.Controllers
 {
@@ -41,45 +37,6 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
         public async Task RecreateActiveHlaMetadataDictionary()
         {
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Active);
-        }
-
-        [HttpGet]
-        [Route("allele-names-lookup")]
-        public async Task<IEnumerable<string>> GetCurrentAlleleNames(Locus locus, string alleleLookupName)
-        {
-            return await hlaMetadataDictionary.GetCurrentAlleleNames(locus, alleleLookupName);
-        }
-
-        [HttpGet]
-        [Route("matching-lookup")]
-        public async Task<IHlaMatchingMetadata> GetHlaMatchingMetadata(
-            Locus locus,
-            string hlaName)
-        {
-            return await hlaMetadataDictionary.GetHlaMatchingMetadata(locus, hlaName);
-        }
-
-        [HttpGet]
-        [Route("scoring-lookup")]
-        public async Task<IHlaScoringMetadata> GetHlaScoringMetadata(
-            Locus locus,
-            string hlaName)
-        {
-            return await hlaMetadataDictionary.GetHlaScoringMetadata(locus, hlaName);
-        }
-
-        [HttpGet]
-        [Route("dpb1-tce-group-lookup")]
-        public async Task<string> GetDpb1TceGroup(string dpb1HlaName)
-        {
-            return await hlaMetadataDictionary.GetDpb1TceGroup(dpb1HlaName);
-        }
-
-        [HttpGet]
-        [Route("all-results")]
-        public HlaMetadataCollection GetAllHlaMetadata()
-        {
-            return hlaMetadataDictionary.GetAllHlaMetadata();
         }
     }
 }

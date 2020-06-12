@@ -1,22 +1,19 @@
-﻿using System;
-using Atlas.Common.ApplicationInsights;
+﻿using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using NSubstitute;
+using System;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 {
     internal class HlaMetadataDictionaryBuilder : IHlaMetadataDictionaryFactory
     {
         private IRecreateHlaMetadataService recreate;
-        private IAlleleNamesMetadataService name;
         private IHlaMatchingMetadataService matching;
         private ILocusHlaMatchingMetadataService locus;
         private IHlaScoringMetadataService scoring;
-        private IHlaMetadataService all;
         private IDpb1TceGroupMetadataService dpb1;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private ILogger logger;
@@ -30,11 +27,9 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         private void ResetAllDependencies()
         {
             recreate = Substitute.For<IRecreateHlaMetadataService>();
-            name = Substitute.For<IAlleleNamesMetadataService>();
             matching = Substitute.For<IHlaMatchingMetadataService>();
             locus = Substitute.For<ILocusHlaMatchingMetadataService>();
             scoring = Substitute.For<IHlaScoringMetadataService>();
-            all = Substitute.For<IHlaMetadataService>();
             dpb1 = Substitute.For<IDpb1TceGroupMetadataService>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
             logger = Substitute.For<ILogger>();
@@ -53,9 +48,6 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 case IRecreateHlaMetadataService typedDependency:
                     recreate = typedDependency;
                     break;
-                case IAlleleNamesMetadataService typedDependency:
-                    name = typedDependency;
-                    break;
                 case IHlaMatchingMetadataService typedDependency:
                     matching = typedDependency;
                     break;
@@ -64,9 +56,6 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                     break;
                 case IHlaScoringMetadataService typedDependency:
                     scoring = typedDependency;
-                    break;
-                case IHlaMetadataService typedDependency:
-                    all = typedDependency;
                     break;
                 case IDpb1TceGroupMetadataService typedDependency:
                     dpb1 = typedDependency;
@@ -91,11 +80,9 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             return new Atlas.HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary(
                 activeVersion,
                 recreate,
-                name,
                 matching,
                 locus,
                 scoring,
-                all,
                 dpb1,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger
