@@ -6,9 +6,9 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion
 {
-    internal interface IMatchedHlaDataConverterBase
+    internal interface IMatchedHlaToMetaDataConverterBase
     {
         IEnumerable<ISerialisableHlaMetadata> ConvertToHlaMetadata(IEnumerable<IMatchedHla> matchedHla);
     }
@@ -16,7 +16,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
     /// <summary>
     /// Converts matched HLA to models that are optimised for HLA lookups.
     /// </summary>
-    internal abstract class MatchedHlaDataConverterBase : IMatchedHlaDataConverterBase
+    internal abstract class MatchedHlaToMetaDataConverterBase : IMatchedHlaToMetaDataConverterBase
     {
         public IEnumerable<ISerialisableHlaMetadata> ConvertToHlaMetadata(IEnumerable<IMatchedHla> matchedHla)
         {

@@ -9,7 +9,7 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
-using Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,8 +75,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             services.AddScoped<IAlleleNamesService, AlleleNamesService>();
             services.AddScoped<IHlaMatchPreCalculationService, HlaMatchPreCalculationService>();
             services.AddScoped<IDpb1TceGroupsService, Dpb1TceGroupsService>();
-            services.AddScoped<IHlaMatchingDataConverter, HlaMatchingDataConverter>();
-            services.AddScoped<IHlaScoringDataConverter, HlaScoringDataConverter>();
+            services.AddScoped<IHlaToMatchingMetaDataConverter, HlaToMatchingMetaDataConverter>();
+            services.AddScoped<IHlaToScoringMetaDataConverter, HlaToScoringMetaDataConverter>();
 
             services.AddScoped<IRecreateHlaMetadataService, RecreateHlaMetadataService>();
         }

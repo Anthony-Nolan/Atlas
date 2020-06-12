@@ -1,18 +1,18 @@
-using System.Collections.Generic;
-using System.Linq;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
-using Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion;
 using FluentAssertions;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaDataConversion
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.MatchedHlaConversion
 {
     [TestFixture]
-    internal class HlaScoringDataConverterTest :
-        MatchedHlaDataConverterTestBase<HlaScoringDataConverter>
+    internal class HlaToScoringMetaDataConverterTests :
+        MatchedHlaToMetaDataConverterTestBase<HlaToScoringMetaDataConverter>
     {
         private static readonly List<SerologyEntry> SerologyEntries =
             new List<SerologyEntry> { new SerologyEntry(SerologyName, SeroSubtype, IsDirectMapping) };

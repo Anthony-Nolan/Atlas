@@ -8,7 +8,7 @@ using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation;
-using Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
@@ -25,23 +25,23 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     {
         private readonly IHlaMatchPreCalculationService matchPreCalculationService;
         private readonly IAlleleNamesService alleleNamesService;
-        private readonly IHlaMatchingDataConverter hlaMatchingDataConverter;
-        private readonly IHlaScoringDataConverter hlaScoringDataConverter;
+        private readonly IHlaToMatchingMetaDataConverter hlaToMatchingMetaDataConverter;
+        private readonly IHlaToScoringMetaDataConverter hlaToScoringMetaDataConverter;
         private readonly IDpb1TceGroupsService dpb1TceGroupsService;
         private readonly ILogger logger;
 
         public HlaMetadataService(
             IHlaMatchPreCalculationService matchPreCalculationService,
             IAlleleNamesService alleleNamesService,
-            IHlaMatchingDataConverter hlaMatchingDataConverter,
-            IHlaScoringDataConverter hlaScoringDataConverter,
+            IHlaToMatchingMetaDataConverter hlaToMatchingMetaDataConverter,
+            IHlaToScoringMetaDataConverter hlaToScoringMetaDataConverter,
             IDpb1TceGroupsService dpb1TceGroupsService,
             ILogger logger)
         {
             this.matchPreCalculationService = matchPreCalculationService;
             this.alleleNamesService = alleleNamesService;
-            this.hlaMatchingDataConverter = hlaMatchingDataConverter;
-            this.hlaScoringDataConverter = hlaScoringDataConverter;
+            this.hlaToMatchingMetaDataConverter = hlaToMatchingMetaDataConverter;
+            this.hlaToScoringMetaDataConverter = hlaToScoringMetaDataConverter;
             this.dpb1TceGroupsService = dpb1TceGroupsService;
             this.logger = logger;
         }
@@ -91,12 +91,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
         private IEnumerable<ISerialisableHlaMetadata> GetMatchingMetadata(IEnumerable<IMatchedHla> matchedHla)
         {
-            return hlaMatchingDataConverter.ConvertToHlaMetadata(matchedHla);
+            return hlaToMatchingMetaDataConverter.ConvertToHlaMetadata(matchedHla);
         }
 
         private IEnumerable<ISerialisableHlaMetadata> GetScoringMetadata(IEnumerable<IMatchedHla> matchedHla)
         {
-            return hlaScoringDataConverter.ConvertToHlaMetadata(matchedHla);
+            return hlaToScoringMetaDataConverter.ConvertToHlaMetadata(matchedHla);
         }
 
         private IEnumerable<ISerialisableHlaMetadata> GetDpb1TceGroupMetadata(string hlaNomenclatureVersion)

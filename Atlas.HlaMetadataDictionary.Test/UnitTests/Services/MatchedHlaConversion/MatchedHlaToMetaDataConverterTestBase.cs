@@ -1,19 +1,19 @@
-using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
-using Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Generic;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaDataConversion
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.MatchedHlaConversion
 {
-    internal abstract class MatchedHlaDataConverterTestBase<THlaDataConverter>
-        where THlaDataConverter : IMatchedHlaDataConverterBase, new()
+    internal abstract class MatchedHlaToMetaDataConverterTestBase<THlaDataConverter>
+        where THlaDataConverter : IMatchedHlaToMetaDataConverterBase, new()
     {
         protected THlaDataConverter MetadataConverter;
         protected const Locus MatchedLocus = Locus.A;
