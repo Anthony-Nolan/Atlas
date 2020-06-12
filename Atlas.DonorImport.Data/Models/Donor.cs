@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Atlas.Common.Utils.Extensions;
@@ -23,6 +24,19 @@ namespace Atlas.DonorImport.Data.Models
         [MaxLength(64)]
         public string ExternalDonorCode { get; set; }
 
+        /// <summary>
+        /// Records the file which last updated the donor.
+        /// Intended for Diagnostics.
+        /// </summary>
+        [MaxLength(256)]
+        public string UpdateFile { get; set; }
+
+        /// <summary>
+        /// Records the last time the donor record was updated.
+        /// Intended for Diagnostics.
+        /// </summary>
+        public DateTimeOffset UpdateTimestamp { get; set; }
+        
         public DatabaseDonorType DonorType { get; set; }
 
         [MaxLength(256)]
@@ -51,6 +65,10 @@ namespace Atlas.DonorImport.Data.Models
         /// </summary>
         public string CalculateHash()
         {
+            // Does NOT included:
+            // * AtlasId
+            // * UpdateFile
+            // * UpdateTimestamp
             return
                 $"{ExternalDonorCode}|{DonorType}|{EthnicityCode}|{RegistryCode}|{A_1}|{A_2}|{B_1}|{B_2}|{C_1}|{C_2}|{DPB1_1}|{DPB1_2}|{DQB1_1}|{DQB1_2}|{DRB1_1}|{DRB1_2}"
                     .ToMd5Hash();
