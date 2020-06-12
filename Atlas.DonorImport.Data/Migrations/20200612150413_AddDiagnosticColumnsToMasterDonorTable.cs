@@ -14,7 +14,7 @@ namespace Atlas.DonorImport.Data.Migrations
                 nullable: true);
 
             migrationBuilder.AddColumn<DateTimeOffset>(
-                name: "UpdateTimestamp",
+                name: "LastUpdated",
                 table: "Donors",
                 nullable: false,
                 defaultValue: new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)));
@@ -27,7 +27,7 @@ namespace Atlas.DonorImport.Data.Migrations
                 table: "Donors");
 
             migrationBuilder.DropColumn(
-                name: "UpdateTimestamp",
+                name: "LastUpdated",
                 table: "Donors");
         }
     }
