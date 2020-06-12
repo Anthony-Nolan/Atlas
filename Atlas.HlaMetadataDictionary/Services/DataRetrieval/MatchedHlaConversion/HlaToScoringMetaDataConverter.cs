@@ -9,18 +9,18 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetad
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion
 {
     /// <summary>
     /// Converts Matched HLA to model optimised for HLA Scoring lookups.
     /// </summary>
-    internal interface IHlaScoringDataConverter : IMatchedHlaDataConverterBase
+    internal interface IHlaToScoringMetaDataConverter : IMatchedHlaToMetaDataConverterBase
     {
     }
 
-    internal class HlaScoringDataConverter :
-        MatchedHlaDataConverterBase,
-        IHlaScoringDataConverter
+    internal class HlaToScoringMetaDataConverter :
+        MatchedHlaToMetaDataConverterBase,
+        IHlaToScoringMetaDataConverter
     {
         protected override ISerialisableHlaMetadata GetSerologyMetadata(
             IHlaMetadataSource<SerologyTyping> metadataSource)

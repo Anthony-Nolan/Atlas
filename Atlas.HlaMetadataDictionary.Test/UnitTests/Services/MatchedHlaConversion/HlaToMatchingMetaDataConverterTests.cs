@@ -2,15 +2,15 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
-using Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaDataConversion
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.MatchedHlaConversion
 {
     [TestFixture]
-    internal class HlaMatchingDataConverterTest :
-        MatchedHlaDataConverterTestBase<HlaMatchingDataConverter>
+    internal class HlaToMatchingMetaDataConverterTests :
+        MatchedHlaToMetaDataConverterTestBase<HlaToMatchingMetaDataConverter>
     {
         [TestCase("999:999", "999:XX")]
         [TestCase("999:999Q", "999:XX")]

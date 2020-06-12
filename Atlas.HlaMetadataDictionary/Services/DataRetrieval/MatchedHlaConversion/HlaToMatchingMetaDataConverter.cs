@@ -1,25 +1,25 @@
-﻿using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.HlaMetadataDictionary.Extensions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.HlaMetadataDictionary.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.HlaDataConversion
+namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion
 {
     /// <summary>
     /// Converts Matched HLA to model optimised for HLA Scoring lookups.
     /// </summary>
-    internal interface IHlaMatchingDataConverter : IMatchedHlaDataConverterBase
+    internal interface IHlaToMatchingMetaDataConverter : IMatchedHlaToMetaDataConverterBase
     {
     }
 
-    internal class HlaMatchingDataConverter :
-        MatchedHlaDataConverterBase,
-        IHlaMatchingDataConverter
+    internal class HlaToMatchingMetaDataConverter :
+        MatchedHlaToMetaDataConverterBase,
+        IHlaToMatchingMetaDataConverter
     {
         protected override ISerialisableHlaMetadata GetSerologyMetadata(IHlaMetadataSource<SerologyTyping> metadataSource)
         {
