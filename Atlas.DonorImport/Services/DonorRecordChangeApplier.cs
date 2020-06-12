@@ -111,7 +111,7 @@ namespace Atlas.DonorImport.Services
             {
                 ExternalDonorCode = fileUpdate.RecordId,
                 UpdateFile = storedFileLocation,
-                UpdateTimestamp = DateTimeOffset.UtcNow,
+                LastUpdated = DateTimeOffset.UtcNow,
                 DonorType = fileUpdate.DonorType.ToDatabaseType(),
                 EthnicityCode = fileUpdate.Ethnicity,
                 RegistryCode = fileUpdate.RegistryCode,
@@ -132,6 +132,13 @@ namespace Atlas.DonorImport.Services
             return donor;
         }
 
+        /// <summary>
+        /// The UpdateFile field is a varchar(256), so we need to ensure that the string we try to store there is no more than 256 characters.
+        /// If the actual file name is > 256, then there's not much we can do.
+        /// But realistically if we *are* over 256, then it's more likely because the container is nested.
+        /// In that case the *end* of the path is far more interesting than the start of it.
+        /// So we should truncate from the left, rather than the right.
+        /// </summary>
         private string LeftTruncateTo256(string fileLocation)
         {
             if (fileLocation.Length > 256)
