@@ -5,12 +5,14 @@ using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using NSubstitute;
 using System;
+using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 {
     internal class HlaMetadataDictionaryBuilder : IHlaMetadataDictionaryFactory
     {
         private IRecreateHlaMetadataService recreate;
+        private IHlaConverter converter;
         private IHlaMatchingMetadataService matching;
         private ILocusHlaMatchingMetadataService locus;
         private IHlaScoringMetadataService scoring;
@@ -27,6 +29,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         private void ResetAllDependencies()
         {
             recreate = Substitute.For<IRecreateHlaMetadataService>();
+            converter = Substitute.For<IHlaConverter>();
             matching = Substitute.For<IHlaMatchingMetadataService>();
             locus = Substitute.For<ILocusHlaMatchingMetadataService>();
             scoring = Substitute.For<IHlaScoringMetadataService>();
@@ -47,6 +50,9 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             {
                 case IRecreateHlaMetadataService typedDependency:
                     recreate = typedDependency;
+                    break;
+                case IHlaConverter typedDependency:
+                    converter = typedDependency;
                     break;
                 case IHlaMatchingMetadataService typedDependency:
                     matching = typedDependency;
@@ -80,6 +86,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             return new Atlas.HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary(
                 activeVersion,
                 recreate,
+                converter,
                 matching,
                 locus,
                 scoring,

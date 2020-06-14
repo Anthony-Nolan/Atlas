@@ -3,6 +3,7 @@ using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using LazyCache;
 
@@ -35,6 +36,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         //For Dictionary
         private readonly IRecreateHlaMetadataService recreateMetadataService;
+        private readonly IHlaConverter hlaConverter;
         private readonly IHlaMatchingMetadataService hlaMatchingMetadataService;
         private readonly ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
         private readonly IHlaScoringMetadataService hlaScoringMetadataService;
@@ -48,12 +50,12 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IHlaScoringMetadataRepository scoringMetadataRepository;
         private readonly IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository;
 
-
         public HlaMetadataDictionaryFactory(
             IPersistentCacheProvider cacheProvider,
 
             //For Dictionary
             IRecreateHlaMetadataService recreateMetadataService,
+            IHlaConverter hlaConverter,
             IHlaMatchingMetadataService hlaMatchingMetadataService,
             ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService,
             IHlaScoringMetadataService hlaScoringMetadataService,
@@ -72,6 +74,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
             //For Dictionary
             this.recreateMetadataService = recreateMetadataService;
+            this.hlaConverter = hlaConverter;
             this.hlaMatchingMetadataService = hlaMatchingMetadataService;
             this.locusHlaMatchingMetadataService = locusHlaMatchingMetadataService;
             this.hlaScoringMetadataService = hlaScoringMetadataService;
@@ -114,7 +117,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         private CacheObject BuildTuple(string activeHlaNomenclatureVersion)
         {
-            return new CacheObject { 
+            return new CacheObject
+            {
                 Dictionary = BuildUncachedDictionary(activeHlaNomenclatureVersion),
                 CacheControl = BuildUncachedDictionaryCacheControl(activeHlaNomenclatureVersion)
             };
@@ -125,6 +129,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             return new HlaMetadataDictionary(
                 activeHlaNomenclatureVersion,
                 recreateMetadataService,
+                hlaConverter,
                 hlaMatchingMetadataService,
                 locusHlaMatchingMetadataService,
                 hlaScoringMetadataService,
