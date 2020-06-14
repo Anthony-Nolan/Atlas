@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData.PhenotypeInfo;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 {
@@ -12,6 +13,9 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 
     public class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     {
+        //TODO - ATLAS-20: Make this configurable
+        private const TargetHlaOptions FrequencyResolution = TargetHlaOptions.TwoFieldAlleleIncludingExpressionSuffix;
+
         private readonly IHlaMetadataDictionaryFactory metadataDictionaryFactory;
         private readonly IAmbiguousPhenotypeExpander ambiguousPhenotypeExpander;
 
@@ -28,7 +32,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             var hlaMetadataDictionary = metadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
 
             var allelesPerLocus = await phenotype.MapAsync(async (locus, position, hla) =>
-                await hlaMetadataDictionary.GetTwoFieldAllelesForAmbiguousHla(locus, hla));
+                await hlaMetadataDictionary.ConvertHla(locus, hla, FrequencyResolution));
 
             var genotypes = ambiguousPhenotypeExpander.ExpandPhenotype(allelesPerLocus);
 

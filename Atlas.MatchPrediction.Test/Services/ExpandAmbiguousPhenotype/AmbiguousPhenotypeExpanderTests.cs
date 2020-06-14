@@ -32,13 +32,13 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
         [Test]
         public void ExpandPhenotype_WhenOnlyOneAllelePerPosition_ReturnsSingleGenotype()
         {
-            var allelesPerLocus = new PhenotypeInfo<List<string>>
+            var allelesPerLocus = new PhenotypeInfo<IReadOnlyCollection<string>>
             {
-                A = new LocusInfo<List<string>>(new List<string> {Hla1}, new List<string> {Hla2}),
-                B = new LocusInfo<List<string>>(new List<string> {Hla3}, new List<string> {Hla4}),
-                C = new LocusInfo<List<string>>(new List<string> {Hla5}, new List<string> {Hla6}),
-                Dqb1 = new LocusInfo<List<string>>(new List<string> {Hla7}, new List<string> {Hla8}),
-                Drb1 = new LocusInfo<List<string>>(new List<string> {Hla9}, new List<string> {Hla10}),
+                A = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla1}, new List<string> {Hla2}),
+                B = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla3}, new List<string> {Hla4}),
+                C = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla5}, new List<string> {Hla6}),
+                Dqb1 = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla7}, new List<string> {Hla8}),
+                Drb1 = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla9}, new List<string> {Hla10}),
             };
 
             var actualGenotypes = ambiguousPhenotypeExpander.ExpandPhenotype(allelesPerLocus).ToList();
@@ -58,13 +58,13 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
         [Test]
         public void ExpandPhenotype_WhenMixOfMultipleAndSingleAllelesPerLocus_ReturnsExpectedGenotypes()
         {
-            var allelesPerLocus = new PhenotypeInfo<List<string>>
+            var allelesPerLocus = new PhenotypeInfo<IReadOnlyCollection<string>>
             {
-                A = new LocusInfo<List<string>>(new List<string> {Hla1, Hla2, Hla3}, new List<string> {Hla1, Hla2, Hla3}),
-                B = new LocusInfo<List<string>>(new List<string> {Hla3, Hla4}, new List<string> {Hla4}),
-                C = new LocusInfo<List<string>>(new List<string> {Hla5}, new List<string> {Hla6}),
-                Dqb1 = new LocusInfo<List<string>>(new List<string> {Hla7}, new List<string> {Hla8}),
-                Drb1 = new LocusInfo<List<string>>(new List<string> {Hla9}, new List<string> {Hla10}),
+                A = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla1, Hla2, Hla3}, new List<string> {Hla1, Hla2, Hla3}),
+                B = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla3, Hla4}, new List<string> {Hla4}),
+                C = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla5}, new List<string> {Hla6}),
+                Dqb1 = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla7}, new List<string> {Hla8}),
+                Drb1 = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla9}, new List<string> {Hla10}),
             };
 
             var expectedGenotype = new List<PhenotypeInfo<string>>
@@ -234,13 +234,13 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
                 alleles.Add(Hla1);
             }
 
-            var allelesPerLocus = new PhenotypeInfo<List<string>>
+            var allelesPerLocus = new PhenotypeInfo<IReadOnlyCollection<string>>
             {
-                A = new LocusInfo<List<string>>(alleles, alleles),
-                B = new LocusInfo<List<string>>(alleles, alleles),
-                C = new LocusInfo<List<string>>(alleles, alleles),
-                Dqb1 = new LocusInfo<List<string>>(alleles, alleles),
-                Drb1 = new LocusInfo<List<string>>(alleles, alleles)
+                A = new LocusInfo<IReadOnlyCollection<string>>(alleles, alleles),
+                B = new LocusInfo<IReadOnlyCollection<string>>(alleles, alleles),
+                C = new LocusInfo<IReadOnlyCollection<string>>(alleles, alleles),
+                Dqb1 = new LocusInfo<IReadOnlyCollection<string>>(alleles, alleles),
+                Drb1 = new LocusInfo<IReadOnlyCollection<string>>(alleles, alleles)
             };
 
             var actualGenotypes = ambiguousPhenotypeExpander.ExpandPhenotype(allelesPerLocus).ToList();

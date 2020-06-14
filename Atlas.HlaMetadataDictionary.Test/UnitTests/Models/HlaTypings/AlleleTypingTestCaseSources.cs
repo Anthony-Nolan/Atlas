@@ -88,7 +88,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Models.HlaTypings
             new object[] {NullExpressedAlleleTestCase, new[] { FieldValue, FieldValue , FieldValue, FieldValue } }
         };
 
-        public static readonly object[] ExpectedTwoFieldWithExpressionSuffixNames =
+        public static readonly object[] ExpectedTwoFieldIncludingExpressionSuffixNames =
         {
             new object[] {NormallyExpressedFourFieldAlleleTestCase, TwoFieldName},
             new object[] {NormallyExpressedThreeFieldAlleleTestCase, TwoFieldName},
@@ -101,7 +101,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Models.HlaTypings
             new object[] {NullExpressedAlleleTestCase, TwoFieldName + "N" }
         };
 
-        public static readonly object[] ExpectedTwoFieldWithoutExpressionSuffixNames =
+        public static readonly object[] ExpectedTwoFieldExcludingExpressionSuffixNames =
         {
             new object[] {NormallyExpressedFourFieldAlleleTestCase, TwoFieldName},
             new object[] {NormallyExpressedThreeFieldAlleleTestCase, TwoFieldName},
