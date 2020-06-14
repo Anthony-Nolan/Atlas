@@ -1,5 +1,5 @@
 using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaMatchPreCalculation;
+using Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Models.HlaTypings
 {

@@ -6,7 +6,7 @@ using Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.MatchedHlaConversion
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.MatchedHlaConversion
 {
     [TestFixture]
     internal class HlaToMatchingMetaDataConverterTests :

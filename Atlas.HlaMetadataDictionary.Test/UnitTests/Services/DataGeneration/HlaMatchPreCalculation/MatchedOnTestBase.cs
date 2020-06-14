@@ -5,7 +5,7 @@ using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaMatchPreCalculation
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation
 {
     internal abstract class MatchedOnTestBase<TMatchedOn> where TMatchedOn : IMatchedOn
     {
