@@ -12,8 +12,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings
         public IEnumerable<string> Fields { get; }
         public string ExpressionSuffix { get; }
         public bool IsNullExpresser { get; }
-        public string TwoFieldNameWithExpressionSuffix { get; }
-        public string TwoFieldNameWithoutExpressionSuffix { get; }
+        public string TwoFieldNameIncludingExpressionSuffix { get; }
+        public string TwoFieldNameExcludingExpressionSuffix { get; }
         public string FirstField { get; }
         public IEnumerable<string> NameVariantsTruncatedByFieldAndOrExpressionSuffix { get; }
         public AlleleTypingStatus Status { get; }
@@ -27,8 +27,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings
             ExpressionSuffix = ExpressionSuffixParser.GetExpressionSuffix(name);
             IsNullExpresser = ExpressionSuffixParser.IsAlleleNull(name);
             Fields = GetFields();
-            TwoFieldNameWithExpressionSuffix = BuildAlleleNameAndAddExpressionSuffix(2);
-            TwoFieldNameWithoutExpressionSuffix = BuildAlleleNameWithoutExpressionSuffix(2);
+            TwoFieldNameIncludingExpressionSuffix = BuildAlleleNameAndAddExpressionSuffix(2);
+            TwoFieldNameExcludingExpressionSuffix = BuildAlleleNameWithoutExpressionSuffix(2);
             FirstField = Fields.First();
             NameVariantsTruncatedByFieldAndOrExpressionSuffix = GetTruncatedVariantsOfAlleleName();
         }

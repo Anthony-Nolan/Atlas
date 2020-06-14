@@ -12,8 +12,8 @@ namespace Atlas.HlaMetadataDictionary.Extensions
         {
             return new []
             {
-                alleleTyping.TwoFieldNameWithExpressionSuffix,
-                alleleTyping.TwoFieldNameWithoutExpressionSuffix
+                alleleTyping.TwoFieldNameIncludingExpressionSuffix,
+                alleleTyping.TwoFieldNameExcludingExpressionSuffix
             }.Distinct();
         }
 

@@ -93,8 +93,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalcula
         private static bool IsProteinMatch(AlleleGradingInfo patientInfo, AlleleGradingInfo donorInfo)
         {
             return string.Equals(
-                patientInfo.Allele.TwoFieldNameWithoutExpressionSuffix,
-                donorInfo.Allele.TwoFieldNameWithoutExpressionSuffix) &&
+                patientInfo.Allele.TwoFieldNameExcludingExpressionSuffix,
+                donorInfo.Allele.TwoFieldNameExcludingExpressionSuffix) &&
                 AreBothSequencesFullLength(patientInfo.ScoringInfo, donorInfo.ScoringInfo);
         }
 

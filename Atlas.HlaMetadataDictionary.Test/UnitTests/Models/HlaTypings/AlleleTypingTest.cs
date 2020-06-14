@@ -67,20 +67,20 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Models.HlaTypings
             actualAlleleTyping.Fields.Should().BeEquivalentTo(expectedFields);
         }
 
-        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedTwoFieldWithExpressionSuffixNames))]
-        public void AlleleTyping_WhenNew_TwoFieldNameWithExpressionSuffixSetCorrectly(AlleleTestCase alleleTestCaseToTest, string expectedTwoFieldName)
+        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedTwoFieldIncludingExpressionSuffixNames))]
+        public void AlleleTyping_WhenNew_TwoFieldNameIncludingExpressionSuffixSetCorrectly(AlleleTestCase alleleTestCaseToTest, string expectedTwoFieldName)
         {
             var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
 
-            actualAlleleTyping.TwoFieldNameWithExpressionSuffix.Should().Be(expectedTwoFieldName);
+            actualAlleleTyping.TwoFieldNameIncludingExpressionSuffix.Should().Be(expectedTwoFieldName);
         }
 
-        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedTwoFieldWithoutExpressionSuffixNames))]
-        public void AlleleTyping_WhenNew_TwoFieldNameWithoutExpressionSuffixSetCorrectly(AlleleTestCase alleleTestCaseToTest, string expectedTwoFieldName)
+        [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedTwoFieldExcludingExpressionSuffixNames))]
+        public void AlleleTyping_WhenNew_TwoFieldNameExcludingExpressionSuffixSetCorrectly(AlleleTestCase alleleTestCaseToTest, string expectedTwoFieldName)
         {
             var actualAlleleTyping = new AlleleTyping(alleleTestCaseToTest.Locus, alleleTestCaseToTest.Name);
 
-            actualAlleleTyping.TwoFieldNameWithoutExpressionSuffix.Should().Be(expectedTwoFieldName);
+            actualAlleleTyping.TwoFieldNameExcludingExpressionSuffix.Should().Be(expectedTwoFieldName);
         }
 
         [TestCaseSource(typeof(AlleleTypingTestCaseSources), nameof(AlleleTypingTestCaseSources.ExpectedFirstField))]

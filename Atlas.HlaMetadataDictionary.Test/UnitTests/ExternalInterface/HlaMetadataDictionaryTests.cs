@@ -7,6 +7,7 @@ using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using NSubstitute;
 using NUnit.Framework;
 using System.Threading.Tasks;
+using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
 {
@@ -16,6 +17,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         private const string DefaultVersion = "hla-version";
 
         private IRecreateHlaMetadataService recreateMetadataService;
+        private IHlaConverter hlaConverter;
         private IHlaMatchingMetadataService hlaMatchingMetadataService;
         private ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
         private IHlaScoringMetadataService hlaScoringMetadataService;
@@ -29,6 +31,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         public void SetUp()
         {
             recreateMetadataService = Substitute.For<IRecreateHlaMetadataService>();
+            hlaConverter = Substitute.For<IHlaConverter>();
             hlaMatchingMetadataService = Substitute.For<IHlaMatchingMetadataService>();
             locusHlaMatchingMetadataService = Substitute.For<ILocusHlaMatchingMetadataService>();
             hlaScoringMetadataService = Substitute.For<IHlaScoringMetadataService>();
@@ -40,6 +43,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
                 new HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary(
                     DefaultVersion,
                     recreateMetadataService,
+                    hlaConverter,
                     hlaMatchingMetadataService,
                     locusHlaMatchingMetadataService,
                     hlaScoringMetadataService,

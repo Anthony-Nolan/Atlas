@@ -6,10 +6,10 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
@@ -17,7 +17,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
     public interface IHlaMetadataDictionary
     {
         Task<string> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour);
-        Task<List<string>> GetTwoFieldAllelesForAmbiguousHla(Locus locus, string hlaName);
+        Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, TargetHlaOptions targetHlaOption);
         Task<LocusInfo<IHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
         Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
@@ -35,6 +35,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
     {
         private readonly string activeHlaNomenclatureVersion;
         private readonly IRecreateHlaMetadataService recreateMetadataService;
+        private readonly IHlaConverter hlaConverter;
         private readonly IHlaMatchingMetadataService hlaMatchingMetadataService;
         private readonly ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
         private readonly IHlaScoringMetadataService hlaScoringMetadataService;
@@ -45,6 +46,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         public HlaMetadataDictionary(
             string activeHlaNomenclatureVersion,
             IRecreateHlaMetadataService recreateMetadataService,
+            IHlaConverter hlaConverter,
             IHlaMatchingMetadataService hlaMatchingMetadataService,
             ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService,
             IHlaScoringMetadataService hlaScoringMetadataService,
@@ -54,6 +56,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         {
             this.activeHlaNomenclatureVersion = activeHlaNomenclatureVersion;
             this.recreateMetadataService = recreateMetadataService;
+            this.hlaConverter = hlaConverter;
             this.hlaMatchingMetadataService = hlaMatchingMetadataService;
             this.locusHlaMatchingMetadataService = locusHlaMatchingMetadataService;
             this.hlaScoringMetadataService = hlaScoringMetadataService;
@@ -109,22 +112,13 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             };
         }
 
-        //TODO: ATLAS-372: Do lookup for hla and return associated alleles
-        public async Task<List<string>> GetTwoFieldAllelesForAmbiguousHla(Locus locus, string hlaName)
+        public async Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, TargetHlaOptions targetHlaOption)
         {
-            return new List<string>
+            return await hlaConverter.ConvertHla(locus, hlaName, new HlaConversionBehaviour
             {
-                "Hla1:Hla1",
-                "Hla2:Hla1",
-                "Hla2:Hla2",
-                "Hla3:Hla1",
-                "Hla3:Hla2",
-                "Hla3:Hla3",
-                "Hla4:Hla1",
-                "Hla4:Hla2",
-                "Hla4:Hla3",
-                "Hla4:Hla4"
-            };
+                HlaNomenclatureVersion = activeHlaNomenclatureVersion,
+                TargetHlaOptions = targetHlaOption
+            });
         }
 
         public async Task<LocusInfo<IHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping)
