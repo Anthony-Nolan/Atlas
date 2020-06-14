@@ -6,7 +6,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaMatchPreCalculation
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation
 {
     internal class AlleleInfoForMatchingTest : MatchedOnTestBase<IAlleleInfoForMatching>
     {

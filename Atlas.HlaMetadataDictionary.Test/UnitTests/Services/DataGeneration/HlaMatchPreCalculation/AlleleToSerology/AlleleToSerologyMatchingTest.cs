@@ -6,7 +6,7 @@ using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaMatchPreCalculation.AlleleToSerology
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation.AlleleToSerology
 {
     internal class AlleleToSerologyMatchingTest : MatchedOnTestBase<MatchedAllele>
     {

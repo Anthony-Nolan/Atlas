@@ -7,7 +7,7 @@ using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaMatchPreCalculation.SerologyToPgroups
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation.SerologyToPgroups
 {
     [UseReporter(typeof(NUnitReporter))]
     [UseApprovalSubdirectory("Approvals")]

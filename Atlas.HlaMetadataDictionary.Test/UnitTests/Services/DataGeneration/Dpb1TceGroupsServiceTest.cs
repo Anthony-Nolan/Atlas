@@ -6,7 +6,7 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.Dpb1TceGroups
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 {
     public class Dpb1TceGroupsServiceTest
     {

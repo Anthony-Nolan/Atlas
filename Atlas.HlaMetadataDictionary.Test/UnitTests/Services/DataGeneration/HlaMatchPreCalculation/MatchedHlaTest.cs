@@ -4,7 +4,7 @@ using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaMatchPreCalculation
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation
 {
     internal class MatchedHlaTest : MatchedOnTestBase<IMatchedHla>
     {

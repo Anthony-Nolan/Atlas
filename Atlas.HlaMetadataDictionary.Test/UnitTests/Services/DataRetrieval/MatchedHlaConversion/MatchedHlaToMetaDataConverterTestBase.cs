@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
@@ -8,9 +9,8 @@ using Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using System.Collections.Generic;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.MatchedHlaConversion
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.MatchedHlaConversion
 {
     internal abstract class MatchedHlaToMetaDataConverterTestBase<THlaDataConverter>
         where THlaDataConverter : IMatchedHlaToMetaDataConverterBase, new()

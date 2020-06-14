@@ -11,7 +11,7 @@ using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaMatchPreCalculation.SerologyToSerology
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation.SerologyToSerology
 {
     [UseReporter(typeof(NUnitReporter))]
     [UseApprovalSubdirectory("Approvals")]
