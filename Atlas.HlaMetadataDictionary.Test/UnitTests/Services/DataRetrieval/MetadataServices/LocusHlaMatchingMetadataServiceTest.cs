@@ -9,7 +9,7 @@ using NSubstitute;
 using NUnit.Framework;
 using static Atlas.Common.GeneticData.Hla.Models.TypingMethod;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.MetadataServices
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.MetadataServices
 {
     [TestFixture]
     public class LocusHlaMatchingMetadataServiceTest

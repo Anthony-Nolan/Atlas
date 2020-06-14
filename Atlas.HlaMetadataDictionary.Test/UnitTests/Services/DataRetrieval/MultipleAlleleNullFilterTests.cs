@@ -9,7 +9,7 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval
 {
     [TestFixture]
     public class MultipleAlleleNullFilterTests

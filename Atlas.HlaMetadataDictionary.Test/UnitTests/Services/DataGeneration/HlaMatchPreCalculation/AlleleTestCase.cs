@@ -1,6 +1,6 @@
 using Atlas.Common.GeneticData;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaMatchPreCalculation
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation
 {
     public class AlleleTestCase
     {

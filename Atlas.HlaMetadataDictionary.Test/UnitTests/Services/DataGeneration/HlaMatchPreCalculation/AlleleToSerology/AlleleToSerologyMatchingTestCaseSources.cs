@@ -1,7 +1,7 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaMatchPreCalculation.AlleleToSerology
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.HlaMatchPreCalculation.AlleleToSerology
 {
     public class AlleleToSerologyMatchingTestCaseSources
     {

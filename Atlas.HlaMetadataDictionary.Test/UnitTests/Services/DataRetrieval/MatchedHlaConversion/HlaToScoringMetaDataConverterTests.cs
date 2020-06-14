@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
@@ -5,10 +7,8 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetad
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion;
 using FluentAssertions;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.MatchedHlaConversion
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.MatchedHlaConversion
 {
     [TestFixture]
     internal class HlaToScoringMetaDataConverterTests :

@@ -17,38 +17,38 @@
     <None Remove="UnitTests\Data\wmda-v3330\wmda\rel_dna_ser.txt" />
     <None Remove="UnitTests\Data\wmda-v3330\wmda\rel_ser_ser.txt" />
     <None Remove="UnitTests\Repositories\Wmda\SerologiesTest.WmdaDataRepository_SerologiesCollection_ContainsAllExpectedSerologies.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithNotSplit_GGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithSplit_GGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B15And70_ShareMatchingGGroups.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B15Broad_GGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B15Split_GGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B70Broad_GGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B70Split_GGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_BroadHasSplitAndAssociated_GGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasAssociated_GGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasNoAssociated_GGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_Deleted_GGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_NotSplitNoAssociated_GGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_NotSplitWithAssociated_GGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_SplitHasAssociated_GGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_SplitNoAssociated_GGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithBroad_PGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithNotSplit_PGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithSplit_PGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B15And70_ShareMatchingPGroups.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B15Broad_PGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B15Split_PGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B70Broad_PGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B70Split_PGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_BroadHasSplitAndAssociated_PGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasAssociated_PGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasNoAssociated_PGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_Deleted_PGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_NotSplitNoAssociated_PGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_NotSplitWithAssociated_PGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_SplitHasAssociated_PGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_SplitNoAssociated_PGroupsAreCorrect.approved.txt" />
-    <None Remove="UnitTests\Services\HlaMatchPreCalculation\SerologyToSerology\Approvals\SerologyToSerologyMatchingTest.MatchedSerologies_CollectionContainsAllExpectedSerology.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithNotSplit_GGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithSplit_GGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B15And70_ShareMatchingGGroups.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B15Broad_GGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B15Split_GGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B70Broad_GGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B70Split_GGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_BroadHasSplitAndAssociated_GGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasAssociated_GGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasNoAssociated_GGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_Deleted_GGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_NotSplitNoAssociated_GGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_NotSplitWithAssociated_GGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_SplitHasAssociated_GGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_SplitNoAssociated_GGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithBroad_PGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithNotSplit_PGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithSplit_PGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B15And70_ShareMatchingPGroups.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B15Broad_PGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B15Split_PGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B70Broad_PGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B70Split_PGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_BroadHasSplitAndAssociated_PGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasAssociated_PGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasNoAssociated_PGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_Deleted_PGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_NotSplitNoAssociated_PGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_NotSplitWithAssociated_PGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_SplitHasAssociated_PGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_SplitNoAssociated_PGroupsAreCorrect.approved.txt" />
+    <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToSerology\Approvals\SerologyToSerologyMatchingTest.MatchedSerologies_CollectionContainsAllExpectedSerology.approved.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -79,38 +79,38 @@
     <Content Include="UnitTests\Repositories\Wmda\SerologiesTest.WmdaDataRepository_SerologiesCollection_ContainsAllExpectedSerologies.approved.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithNotSplit_GGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithSplit_GGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B15And70_ShareMatchingGGroups.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B15Broad_GGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B15Split_GGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B70Broad_GGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B70Split_GGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_BroadHasSplitAndAssociated_GGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasAssociated_GGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasNoAssociated_GGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_Deleted_GGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_NotSplitNoAssociated_GGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_NotSplitWithAssociated_GGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_SplitHasAssociated_GGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_SplitNoAssociated_GGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithBroad_PGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithNotSplit_PGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithSplit_PGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B15And70_ShareMatchingPGroups.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B15Broad_PGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B15Split_PGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B70Broad_PGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B70Split_PGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_BroadHasSplitAndAssociated_PGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasAssociated_PGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasNoAssociated_PGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_Deleted_PGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_NotSplitNoAssociated_PGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_NotSplitWithAssociated_PGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_SplitHasAssociated_PGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_SplitNoAssociated_PGroupsAreCorrect.approved.txt" />
-    <Content Include="UnitTests\Services\HlaMatchPreCalculation\SerologyToSerology\Approvals\SerologyToSerologyMatchingTest.MatchedSerologies_CollectionContainsAllExpectedSerology.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithNotSplit_GGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithSplit_GGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B15And70_ShareMatchingGGroups.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B15Broad_GGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B15Split_GGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B70Broad_GGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_B70Split_GGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_BroadHasSplitAndAssociated_GGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasAssociated_GGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasNoAssociated_GGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_Deleted_GGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_NotSplitNoAssociated_GGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_NotSplitWithAssociated_GGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_SplitHasAssociated_GGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToGgroups\Approvals\SerologyToGGroupsMatchingTest.SerologyToAlleleMatching_SplitNoAssociated_GGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithBroad_PGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithNotSplit_PGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_AssociatedWithSplit_PGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B15And70_ShareMatchingPGroups.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B15Broad_PGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B15Split_PGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B70Broad_PGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_B70Split_PGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_BroadHasSplitAndAssociated_PGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasAssociated_PGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_BroadWhereSplitHasNoAssociated_PGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_Deleted_PGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_NotSplitNoAssociated_PGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_NotSplitWithAssociated_PGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_SplitHasAssociated_PGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_SplitNoAssociated_PGroupsAreCorrect.approved.txt" />
+    <Content Include="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToSerology\Approvals\SerologyToSerologyMatchingTest.MatchedSerologies_CollectionContainsAllExpectedSerology.approved.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -141,6 +141,10 @@
     <None Update="UnitTests\Data\wmda-v3330\tce\dpb_tce.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="UnitTests\Services\HlaConversion\" />
   </ItemGroup>
 
 </Project>
