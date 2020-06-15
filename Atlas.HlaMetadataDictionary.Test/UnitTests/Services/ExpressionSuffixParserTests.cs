@@ -61,7 +61,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services
             result.Should().BeFalse();
         }
 
-        [Test, Repeat(100000), IgnoreExceptOnDevOpsPerfTest("Ran in ~700ms")]
+        [Test, Repeat(100000), IgnoreExceptOnCiPerfTest("Ran in ~700ms")]
         public void PerfTest()
         {
             ExpressionSuffixParser.GetExpressionSuffix("01:01");
