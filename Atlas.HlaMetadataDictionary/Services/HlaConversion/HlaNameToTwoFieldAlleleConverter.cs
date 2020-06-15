@@ -10,24 +10,24 @@ using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
 {
-    internal enum ExpressionSuffixOptions
+    internal interface IHlaNameToTwoFieldAlleleConverter
+    {
+        Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, ExpressionSuffixBehaviour behaviour);
+    }
+
+    internal enum ExpressionSuffixBehaviour
     {
         Include,
         Exclude
     }
 
-    internal interface IConvertHlaToTwoFieldAlleleService
-    {
-        Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, ExpressionSuffixOptions option);
-    }
-
-    internal class ConvertHlaToTwoFieldAlleleService : IConvertHlaToTwoFieldAlleleService
+    internal class HlaNameToTwoFieldAlleleConverter : IHlaNameToTwoFieldAlleleConverter
     {
         private readonly IHlaCategorisationService hlaCategorisationService;
         private readonly IAlleleStringSplitterService alleleStringSplitter;
         private readonly INmdpCodeCache nmdpCodeCache;
 
-        public ConvertHlaToTwoFieldAlleleService(
+        public HlaNameToTwoFieldAlleleConverter(
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleStringSplitter, INmdpCodeCache nmdpCodeCache)
         {
@@ -36,14 +36,14 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
             this.nmdpCodeCache = nmdpCodeCache;
         }
 
-        public async Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, ExpressionSuffixOptions option)
+        public async Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, ExpressionSuffixBehaviour behaviour)
         {
-            var category = hlaCategorisationService.GetHlaTypingCategory(hlaName);
+            var inputCategory = hlaCategorisationService.GetHlaTypingCategory(hlaName);
 
-            switch (category)
+            switch (inputCategory)
             {
                 case HlaTypingCategory.Allele:
-                    return new List<string> { GetTwoFieldAlleleName(locus, hlaName, option) };
+                    return new List<string> { GetTwoFieldAlleleName(locus, hlaName, behaviour) };
                 case HlaTypingCategory.GGroup:
                     // TODO: ATLAS-370
                     throw new NotImplementedException();
@@ -53,10 +53,10 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
                 case HlaTypingCategory.AlleleStringOfNames:
                 case HlaTypingCategory.AlleleStringOfSubtypes:
                     var allelesFromAlleleString = alleleStringSplitter.GetAlleleNamesFromAlleleString(hlaName);
-                    return GetTwoFieldAlleleNames(locus, allelesFromAlleleString, option);
+                    return GetTwoFieldAlleleNames(locus, allelesFromAlleleString, behaviour);
                 case HlaTypingCategory.NmdpCode:
                     var allelesForNmdpCode = await nmdpCodeCache.GetOrAddAllelesForNmdpCode(locus, hlaName);
-                    return GetTwoFieldAlleleNames(locus, allelesForNmdpCode, option);
+                    return GetTwoFieldAlleleNames(locus, allelesForNmdpCode, behaviour);
                 case HlaTypingCategory.XxCode:
                     // TODO: ATLAS-367
                     throw new NotImplementedException();
@@ -68,18 +68,18 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
             }
         }
 
-        private static IReadOnlyCollection<string> GetTwoFieldAlleleNames(Locus locus, IEnumerable<string> alleleNames, ExpressionSuffixOptions option)
+        private static IReadOnlyCollection<string> GetTwoFieldAlleleNames(Locus locus, IEnumerable<string> alleleNames, ExpressionSuffixBehaviour behaviour)
         {
             return alleleNames
-                .Select(allele => GetTwoFieldAlleleName(locus, allele, option))
+                .Select(allele => GetTwoFieldAlleleName(locus, allele, behaviour))
                 .Distinct()
                 .ToList();
         }
 
-        private static string GetTwoFieldAlleleName(Locus locus, string alleleName, ExpressionSuffixOptions option)
+        private static string GetTwoFieldAlleleName(Locus locus, string alleleName, ExpressionSuffixBehaviour behaviour)
         {
             var alleleTyping = new AlleleTyping(locus, alleleName);
-            return option == ExpressionSuffixOptions.Include
+            return behaviour == ExpressionSuffixBehaviour.Include
                 ? alleleTyping.TwoFieldNameIncludingExpressionSuffix
                 : alleleTyping.TwoFieldNameExcludingExpressionSuffix;
         }

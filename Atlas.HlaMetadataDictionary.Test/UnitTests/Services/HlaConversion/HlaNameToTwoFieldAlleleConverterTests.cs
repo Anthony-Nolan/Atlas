@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
 {
     [TestFixture]
-    public class ConvertHlaToTwoFieldAlleleServiceTests
+    public class HlaNameToTwoFieldAlleleConverterTests
     {
         private const Locus DefaultLocus = Locus.A;
         private const string DefaultHlaName = "hla";
@@ -20,7 +20,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         private IAlleleStringSplitterService alleleStringSplitter;
         private INmdpCodeCache nmdpCodeCache;
 
-        private IConvertHlaToTwoFieldAlleleService converter;
+        private IHlaNameToTwoFieldAlleleConverter converter;
 
         [SetUp]
         public void SetUp()
@@ -29,7 +29,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             alleleStringSplitter = Substitute.For<IAlleleStringSplitterService>();
             nmdpCodeCache = Substitute.For<INmdpCodeCache>();
 
-            converter = new ConvertHlaToTwoFieldAlleleService(hlaCategorisationService, alleleStringSplitter, nmdpCodeCache);
+            converter = new HlaNameToTwoFieldAlleleConverter(hlaCategorisationService, alleleStringSplitter, nmdpCodeCache);
         }
 
         [TestCase("01:01", "01:01")]
@@ -38,12 +38,17 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         [TestCase("01:01N", "01:01N")]
         [TestCase("01:01:01N", "01:01N")]
         [TestCase("01:01:01:01N", "01:01N")]
+        [TestCase("01:01:01:01A", "01:01A")]
+        [TestCase("01:01:01:01C", "01:01C")]
+        [TestCase("01:01:01:01L", "01:01L")]
+        [TestCase("01:01:01:01Q", "01:01Q")]
+        [TestCase("01:01:01:01S", "01:01S")]
         public async Task ConvertHla_HlaIsAllele_AndExpressionSuffixShouldBeIncluded_ReturnsExpectedAlleleName(string hlaName, string expectedResult)
         {
             const HlaTypingCategory category = HlaTypingCategory.Allele;
             hlaCategorisationService.GetHlaTypingCategory(hlaName).Returns(category);
 
-            const ExpressionSuffixOptions option = ExpressionSuffixOptions.Include;
+            const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Include;
             var result = await converter.ConvertHla(DefaultLocus, hlaName, option);
 
             result.Should().BeEquivalentTo(expectedResult);
@@ -55,12 +60,17 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         [TestCase("01:01N", "01:01")]
         [TestCase("01:01:01N", "01:01")]
         [TestCase("01:01:01:01N", "01:01")]
+        [TestCase("01:01:01:01A", "01:01")]
+        [TestCase("01:01:01:01C", "01:01")]
+        [TestCase("01:01:01:01L", "01:01")]
+        [TestCase("01:01:01:01Q", "01:01")]
+        [TestCase("01:01:01:01S", "01:01")]
         public async Task ConvertHla_HlaIsAllele_AndExpressionSuffixShouldNotBeIncluded_ReturnsExpectedAlleleName(string hlaName, string expectedResult)
         {
             const HlaTypingCategory category = HlaTypingCategory.Allele;
             hlaCategorisationService.GetHlaTypingCategory(hlaName).Returns(category);
 
-            const ExpressionSuffixOptions option = ExpressionSuffixOptions.Exclude;
+            const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Exclude;
             var result = await converter.ConvertHla(DefaultLocus, hlaName, option);
 
             result.Should().BeEquivalentTo(expectedResult);
@@ -72,7 +82,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         {
             hlaCategorisationService.GetHlaTypingCategory(DefaultHlaName).Returns(category);
 
-            await converter.ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixOptions.Include);
+            await converter.ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Include);
 
             alleleStringSplitter.Received().GetAlleleNamesFromAlleleString(DefaultHlaName);
         }
@@ -86,7 +96,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             var alleleNames = new[] { "01:01:01", "02:01:01:01" };
             alleleStringSplitter.GetAlleleNamesFromAlleleString(DefaultHlaName).Returns(alleleNames);
 
-            const ExpressionSuffixOptions option = ExpressionSuffixOptions.Include;
+            const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Include;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option);
 
             result.Should().BeEquivalentTo("01:01", "02:01");
@@ -101,7 +111,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             var alleleNames = new[] { "01:01:01N", "02:01:01:01" };
             alleleStringSplitter.GetAlleleNamesFromAlleleString(DefaultHlaName).Returns(alleleNames);
 
-            const ExpressionSuffixOptions option = ExpressionSuffixOptions.Include;
+            const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Include;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option);
 
             result.Should().BeEquivalentTo("01:01N", "02:01");
@@ -116,7 +126,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             var alleleNames = new[] { "01:01:01", "02:01:01:01" };
             alleleStringSplitter.GetAlleleNamesFromAlleleString(DefaultHlaName).Returns(alleleNames);
 
-            const ExpressionSuffixOptions option = ExpressionSuffixOptions.Exclude;
+            const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Exclude;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option);
 
             result.Should().BeEquivalentTo("01:01", "02:01");
@@ -131,7 +141,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             var alleleNames = new[] { "01:01:01N", "02:01:01:01" };
             alleleStringSplitter.GetAlleleNamesFromAlleleString(DefaultHlaName).Returns(alleleNames);
 
-            const ExpressionSuffixOptions option = ExpressionSuffixOptions.Exclude;
+            const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Exclude;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option);
 
             result.Should().BeEquivalentTo("01:01", "02:01");
@@ -143,7 +153,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             const HlaTypingCategory category = HlaTypingCategory.NmdpCode;
             hlaCategorisationService.GetHlaTypingCategory(DefaultHlaName).Returns(category);
 
-            await converter.ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixOptions.Include);
+            await converter.ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Include);
 
             await nmdpCodeCache.Received().GetOrAddAllelesForNmdpCode(DefaultLocus, DefaultHlaName);
         }
@@ -157,7 +167,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             var alleleNames = new[] { "01:01", "02:01" };
             nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, DefaultHlaName).Returns(alleleNames);
 
-            const ExpressionSuffixOptions option = ExpressionSuffixOptions.Include;
+            const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Include;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option);
 
             result.Should().BeEquivalentTo(alleleNames);
@@ -172,7 +182,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             var alleleNames = new[] { "01:01N", "02:01" };
             nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, DefaultHlaName).Returns(alleleNames);
 
-            const ExpressionSuffixOptions option = ExpressionSuffixOptions.Include;
+            const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Include;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option);
 
             result.Should().BeEquivalentTo(alleleNames);
@@ -187,7 +197,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             var alleleNames = new[] { "01:01", "02:01" };
             nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, DefaultHlaName).Returns(alleleNames);
 
-            const ExpressionSuffixOptions option = ExpressionSuffixOptions.Exclude;
+            const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Exclude;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option);
 
             result.Should().BeEquivalentTo(alleleNames);
@@ -202,7 +212,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             var alleleNames = new[] { "01:01N", "02:01" };
             nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, DefaultHlaName).Returns(alleleNames);
 
-            const ExpressionSuffixOptions option = ExpressionSuffixOptions.Exclude;
+            const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Exclude;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option);
 
             result.Should().BeEquivalentTo("01:01", "02:01");

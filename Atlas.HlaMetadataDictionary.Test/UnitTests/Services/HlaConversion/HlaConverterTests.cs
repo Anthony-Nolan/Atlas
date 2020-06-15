@@ -22,7 +22,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         private const Locus DefaultLocus = Locus.A;
         private const string DefaultHlaName = "hla";
 
-        private IConvertHlaToTwoFieldAlleleService convertHlaToTwoFieldAlleleService;
+        private IHlaNameToTwoFieldAlleleConverter hlaNameToTwoFieldAlleleConverter;
         private IHlaScoringMetadataService scoringMetadataService;
 
         private IHlaConverter hlaConverter;
@@ -30,10 +30,10 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         [SetUp]
         public void SetUp()
         {
-            convertHlaToTwoFieldAlleleService = Substitute.For<IConvertHlaToTwoFieldAlleleService>();
+            hlaNameToTwoFieldAlleleConverter = Substitute.For<IHlaNameToTwoFieldAlleleConverter>();
             scoringMetadataService = Substitute.For<IHlaScoringMetadataService>();
 
-            hlaConverter = new HlaConverter(convertHlaToTwoFieldAlleleService, scoringMetadataService);
+            hlaConverter = new HlaConverter(hlaNameToTwoFieldAlleleConverter, scoringMetadataService);
         }
 
         [TestCase(null)]
@@ -54,41 +54,41 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         [Test]
         public async Task ConvertHla_TargetIsTwoFieldAlleleIncludingExpressionSuffix_CallsCorrectConverter()
         {
-            const TargetHlaOptions targetHla = TargetHlaOptions.TwoFieldAlleleIncludingExpressionSuffix;
+            const TargetHlaCategory targetHla = TargetHlaCategory.TwoFieldAlleleIncludingExpressionSuffix;
 
             await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
             {
-                TargetHlaOptions = targetHla
+                TargetHlaCategory = targetHla
             });
 
-            await convertHlaToTwoFieldAlleleService.Received()
-                .ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixOptions.Include);
+            await hlaNameToTwoFieldAlleleConverter.Received()
+                .ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Include);
         }
 
         [Test]
         public async Task ConvertHla_TargetIsTwoFieldAlleleExcludingExpressionSuffix_CallsCorrectConverter()
         {
-            const TargetHlaOptions targetHla = TargetHlaOptions.TwoFieldAlleleExcludingExpressionSuffix;
+            const TargetHlaCategory targetHla = TargetHlaCategory.TwoFieldAlleleExcludingExpressionSuffix;
 
             await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
             {
-                TargetHlaOptions = targetHla
+                TargetHlaCategory = targetHla
             });
 
-            await convertHlaToTwoFieldAlleleService.Received()
-                .ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixOptions.Exclude);
+            await hlaNameToTwoFieldAlleleConverter.Received()
+                .ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Exclude);
         }
 
         //TODO ATLAS-394: After HMD has been decoupled from Scoring, test using appropriate GGroup lookup service
         [Test]
         public async Task ConvertHla_TargetIsGGroup_CallsCorrectConverter()
         {
-            const TargetHlaOptions targetHla = TargetHlaOptions.GGroup;
+            const TargetHlaCategory targetHla = TargetHlaCategory.GGroup;
             const string version = "version";
 
             await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
             {
-                TargetHlaOptions = targetHla,
+                TargetHlaCategory = targetHla,
                 HlaNomenclatureVersion = version
             });
 
@@ -105,11 +105,11 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             var metadata = BuildHlaScoringMetadata(info);
             scoringMetadataService.GetHlaMetadata(DefaultLocus, DefaultHlaName, Arg.Any<string>()).Returns(metadata);
 
-            const TargetHlaOptions targetHla = TargetHlaOptions.GGroup;
+            const TargetHlaCategory targetHla = TargetHlaCategory.GGroup;
             const string version = "version";
             var result = await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
             {
-                TargetHlaOptions = targetHla,
+                TargetHlaCategory = targetHla,
                 HlaNomenclatureVersion = version
             });
 
@@ -120,12 +120,12 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         [Test]
         public async Task ConvertHla_TargetIsPGroup_CallsCorrectConverter()
         {
-            const TargetHlaOptions targetHla = TargetHlaOptions.PGroup;
+            const TargetHlaCategory targetHla = TargetHlaCategory.PGroup;
             const string version = "version";
 
             await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
             {
-                TargetHlaOptions = targetHla,
+                TargetHlaCategory = targetHla,
                 HlaNomenclatureVersion = version
             });
 
@@ -142,11 +142,11 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             var metadata = BuildHlaScoringMetadata(info);
             scoringMetadataService.GetHlaMetadata(DefaultLocus, DefaultHlaName, Arg.Any<string>()).Returns(metadata);
 
-            const TargetHlaOptions targetHla = TargetHlaOptions.PGroup;
+            const TargetHlaCategory targetHla = TargetHlaCategory.PGroup;
             const string version = "version";
             var result = await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
             {
-                TargetHlaOptions = targetHla,
+                TargetHlaCategory = targetHla,
                 HlaNomenclatureVersion = version
             });
 
@@ -157,12 +157,12 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         [Test]
         public async Task ConvertHla_TargetIsSerology_CallsCorrectConverter()
         {
-            const TargetHlaOptions targetHla = TargetHlaOptions.Serology;
+            const TargetHlaCategory targetHla = TargetHlaCategory.Serology;
             const string version = "version";
             
             await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
             {
-                TargetHlaOptions = targetHla,
+                TargetHlaCategory = targetHla,
                 HlaNomenclatureVersion = version
             });
 
@@ -180,11 +180,11 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             var metadata = BuildHlaScoringMetadata(info);
             scoringMetadataService.GetHlaMetadata(DefaultLocus, DefaultHlaName, Arg.Any<string>()).Returns(metadata);
 
-            const TargetHlaOptions targetHla = TargetHlaOptions.Serology;
+            const TargetHlaCategory targetHla = TargetHlaCategory.Serology;
             const string version = "version";
             var result = await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
             {
-                TargetHlaOptions = targetHla,
+                TargetHlaCategory = targetHla,
                 HlaNomenclatureVersion = version
             });
 

@@ -14,7 +14,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
     public class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     {
         //TODO - ATLAS-20: Make this configurable
-        private const TargetHlaOptions FrequencyResolution = TargetHlaOptions.TwoFieldAlleleIncludingExpressionSuffix;
+        private const TargetHlaCategory FrequencyResolution = TargetHlaCategory.TwoFieldAlleleIncludingExpressionSuffix;
 
         private readonly IHlaMetadataDictionaryFactory metadataDictionaryFactory;
         private readonly IAmbiguousPhenotypeExpander ambiguousPhenotypeExpander;
