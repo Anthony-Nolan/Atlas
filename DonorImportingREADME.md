@@ -26,3 +26,46 @@ If your source of the files is OneDrive, then acquiring the files in order to be
 Downloading multiple files from the OneDrive Web Interface appears to be appallingly slow (somehow their Zipping process is managing to make this worse!?) And the 34.3 GB of data is split across nearly 500 files, so downloading them one-at-a-time is infeasible.
 
 The best approach is to install the OneDrive *App* (note you'll need to uninstall the older OneDrive *program* first), and "Synch" the folder of data to your machine. That should synch it as raw files. (alternatively get your data uploaded to OneDrive as a zip file in the first place!)
+
+### Moving files amongst Azure Containers without going via your laptop
+
+*Use the AzureCLI.* StorageExplorer is NOT good enough at this!
+If you use `az storage blob copy start-batch` then you can instruct Azure to transfer 10s of GBs of data, directly between blob containers, in a 5s of minutes (~2.5GB/min observed). The command is asynchronous and the data doesn't attempt to transfer through your PC.
+This can make "re-uploading" files to re-trigger Functions trivial.
+
+After you run the command, it will list the files that will be copied, and all the files will appear in the destination container as 0 Byte files, over time the files will acquire sizes. Ordering by Size can show you the progress.
+
+
+To transfer files between containers in 2 different storages accounts, you will need:
+ * SAS-token for the source account.
+   * In the Azure Portal, create a SAS token with ALL the access (incl. all the resource types!) and enable HTTP access.
+   * that will generate a token that starts with a question mark. `?sv=......`
+   * due to a bug in `az storage blob copy start` you will need to delete that leading question mark!
+ * Connection String for the destination account.
+
+Variables:
+ * `mydestinationstorageaccount` `manualdonorfilestorage`
+ * `my-destination-container`. e.g. `wmda-sized`
+ * `mysourcestorageaccount` e.g. `testwmdaatlasstorage`
+ * `my-destination-container` e.g. `donors`
+ * `DefaultEndpointsProtocol=https;AccountName=mydestinationstorageaccount;AccountKey=Y2T*******w==;EndpointSuffix=core.windows.net` This connection-string is for the SOURCE account, and should come from Azure Portal, naturally.
+ * `"sv=2019-10-10&ss=bfqt&srt=sco&sp=rwdlacupx&se=2020-06-15T23:40:27Z&st=2020-06-15T15:40:27Z&spr=https,http&sig=FiR69W*****0k%3D"` This SAS-token is for the DESTINCATION account, and should come from Azure Portal, naturally. Note the quotes, and the absent leading '?'
+ 
+Final command:
+
+    az storage blob copy start-batch --connection-string DefaultEndpointsProtocol=https;AccountName=mydestinationstorageaccount;AccountKey=Y2T*******w==;EndpointSuffix=core.windows.net --destination-container my-destination-container --source-account-name mysourcestorageaccount --source-container my-destination-container --source-sas "sv=2019-10-10&ss=bfqt&srt=sco&sp=rwdlacupx&se=2020-06-15T23:40:27Z&st=2020-06-15T15:40:27Z&spr=https,http&sig=FiR69W*******0k%3D"
+
+Final command on multiple lines (for ease of reading):
+
+    az storage blob copy start-batch
+        --connection-string DefaultEndpointsProtocol=https;AccountName=mydestinationstorageaccount;AccountKey=Y2T*******w==;EndpointSuffix=core.windows.net
+        --destination-container my-destination-container
+        --source-account-name mysourcestorageaccount
+        --source-container my-destination-container
+        --source-sas "sv=2019-10-10&ss=bfqt&srt=sco&sp=rwdlacupx&se=2020-06-15T23:40:27Z&st=2020-06-15T15:40:27Z&spr=https,http&sig=FiR69W*****0k%3D"
+
+`az storage blob copy start-batch --help` will show you various parameters available. Notably:
+
+* `--dryrun`, which will list the files being moved
+* `--pattern`, which allows a wild-card mask on which files to copy. e.g. `--pattern *foo*.bar`
+* `--verbose`, which gives you an indication of what's happening in the 10-30 seconds whilst the command initiates the copies (otherwise it's just blank until all copies have been initiated.
