@@ -53,7 +53,8 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
 
         public async Task<int> Create(DataRefreshRecord dataRefreshRecord)
         {
-            await Context.DataRefreshRecords.AddAsync(dataRefreshRecord);
+            // ReSharper disable once MethodHasAsyncOverload
+            Context.DataRefreshRecords.Add(dataRefreshRecord);
             await Context.SaveChangesAsync();
             return dataRefreshRecord.Id;
         }
@@ -62,7 +63,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         {
             var record = await GetRecordById(recordId);
             record.HlaNomenclatureVersion = wmdaHlaNomenclatureVersion;
-            record.RefreshEndUtc = finishTimeUtc ?? DateTime.UtcNow;
+            record.RefreshEndUtc = finishTimeUtc;
             await Context.SaveChangesAsync();
         }
 
@@ -77,36 +78,23 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         public async Task MarkStageAsComplete(int recordId, DataRefreshStage stage)
         {
             var record = await GetRecordById(recordId);
-            switch (stage)
-            {
-                case DataRefreshStage.DataDeletion:
-                    record.DataDeletionCompleted = DateTime.UtcNow;
-                    break;
-                case DataRefreshStage.DatabaseScalingSetup:
-                    record.DatabaseScalingSetupCompleted = DateTime.UtcNow;
-                    break;
-                case DataRefreshStage.MetadataDictionaryRefresh:
-                    record.MetadataDictionaryRefreshCompleted = DateTime.UtcNow;
-                    break;
-                case DataRefreshStage.DonorImport:
-                    record.DonorImportCompleted = DateTime.UtcNow;
-                    break;
-                case DataRefreshStage.DonorHlaProcessing:
-                    record.DonorHlaProcessingCompleted = DateTime.UtcNow;
-                    break;
-                case DataRefreshStage.DatabaseScalingTearDown:
-                    record.DatabaseScalingTearDownCompleted = DateTime.UtcNow;
-                    break;
-                case DataRefreshStage.QueuedDonorUpdateProcessing:
-                    record.QueuedDonorUpdatesCompleted = DateTime.UtcNow;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(stage), stage, null);
-            }
+            record.SetStageCompletionTime(stage, DateTime.UtcNow);
             await Context.SaveChangesAsync();
         }
 
-        protected async Task<DataRefreshRecord> GetRecordById(int recordId)
+        protected async Task<Dictionary<DataRefreshStage, DateTime?>> GetStageCompletionTimes(int recordId)
+        {
+            var completionTimes = new Dictionary<DataRefreshStage, DateTime?>();
+            var record = await GetRecordById(recordId);
+            foreach (var stage in EnumExtensions.EnumerateValues<DataRefreshStage>())
+            {
+                completionTimes[stage] = record.GetStageCompletionTime(stage);
+            }
+
+            return completionTimes;
+        }
+        
+        private async Task<DataRefreshRecord> GetRecordById(int recordId)
         {
             return await Context.DataRefreshRecords.SingleAsync(r => r.Id == recordId);
         }

@@ -5,6 +5,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests
         /// <summary>
         /// The HLA nomenclature version at which the file-backed metadata dictionary was generated. 
         /// </summary>
-        public static string SnapshotHlaNomenclatureVersion = "3330";
+        public const string SnapshotHlaNomenclatureVersion = "3330";
     }
 }
