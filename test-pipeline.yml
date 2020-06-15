@@ -1,8 +1,8 @@
 trigger: none
 
 schedules:
-  - cron: "0 0 * * *"
-    displayName: Daily midnight build
+  - cron: "0 0 0,13 ? * * *"
+    displayName: Twice daily build and run System Tests
     branches:
       include:
       - master
@@ -15,6 +15,7 @@ jobs:
     name: Hosted Ubuntu 1604
   steps:
   - task: DotNetCoreCLI@2
+    displayName: 'Nuget Restore'
     inputs:
       command: 'restore'
       feedsToUse: 'select'
@@ -40,11 +41,12 @@ jobs:
       connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet test'
+    displayName: 'Matching Integration Tests'
     inputs:
       command: test
       projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/Atlas.MatchingAlgorithm.Test.Integration.csproj'
       arguments: '--no-restore -v d'
+      
 - job: Matching_Algorithm_Validation_Tests
   pool:
     name: Hosted Ubuntu 1604
@@ -56,6 +58,7 @@ jobs:
       version: 3.1.102
 
   - task: DotNetCoreCLI@2
+    displayName: 'Nuget Restore'
     inputs:
       command: 'restore'
       vstsFeed: '47b810d9-ad1c-410b-b5e5-45a100bcf88a'
@@ -111,16 +114,18 @@ jobs:
       valueToSet: '$(SERVICE_BUS_CONNECTION_STRING)'
 
   - task: DotNetCoreCLI@2
-    displayName: 'dotnet test'
+    displayName: 'Matching Validation Tests'
     inputs:
       command: test
       projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/Atlas.MatchingAlgorithm.Test.Validation.csproj'
       arguments: '--no-restore -v d'
+      
 - job: Donor_Import_Integration_Tests
   pool:
     name: Hosted Ubuntu 1604
   steps:
     - task: DotNetCoreCLI@2
+      displayName: 'Nuget Restore'
       inputs:
         command: 'restore'
         feedsToUse: 'select'
@@ -132,7 +137,7 @@ jobs:
         connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-donor-import;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 
     - task: DotNetCoreCLI@2
-      displayName: 'dotnet test'
+      displayName: 'Donor Import Integration Tests'
       inputs:
         command: test
         projects: '$(System.DefaultWorkingDirectory)/Atlas.DonorImport.Test.Integration/Atlas.DonorImport.Test.Integration.csproj'
@@ -144,6 +149,7 @@ jobs:
     name: Hosted Ubuntu 1604
   steps:
     - task: DotNetCoreCLI@2
+      displayName: 'Nuget Restore'
       inputs:
         command: 'restore'
         feedsToUse: 'select'
@@ -155,7 +161,7 @@ jobs:
         connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-match-prediction;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 
     - task: DotNetCoreCLI@2
-      displayName: 'dotnet test'
+      displayName: 'MPA Integration Tests'
       inputs:
         command: test
         projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Test.Integration/Atlas.MatchPrediction.Test.Integration.csproj'
@@ -166,6 +172,7 @@ jobs:
     name: Hosted Ubuntu 1604
   steps:
     - task: DotNetCoreCLI@2
+      displayName: 'Nuget Restore'
       inputs:
         command: 'restore'
         feedsToUse: 'select'
@@ -178,7 +185,7 @@ jobs:
         keyname2: ConnectionString
         valueToSet: '$(AZURE_STORAGE_CONNECTION_STRING)'
     - task: DotNetCoreCLI@2
-      displayName: 'dotnet test'
+      displayName: 'MacDictionary Integration Tests'
       inputs:
         command: test
         projects: '$(System.DefaultWorkingDirectory)/Atlas.MultipleAlleleCodeDictionary.Test.Integration/Atlas.MultipleAlleleCodeDictionary.Test.Integration.csproj'

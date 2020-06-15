@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Models;
@@ -318,7 +319,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             actualHomozygousValue.Should().BeFalse();
         }
 
-        [Test, Repeat(10000), Ignore("Only used for manual benchmarking. Ran in ~400ms")]
+        [Test, Repeat(10000), IgnoreExceptOnDevOpsPerfTest("Ran in ~400ms")]
         public void PerformanceTest()
         {
             var genotypeWithAllFields = new PhenotypeInfo<string>

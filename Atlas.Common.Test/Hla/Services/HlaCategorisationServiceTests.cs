@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Utils.Http;
 using NUnit.Framework;
 
@@ -122,7 +123,7 @@ namespace Atlas.Common.Test.Hla.Services
             Assert.AreEqual(hlaCategorisationService.GetHlaTypingCategory(hlaName), HlaTypingCategory.AlleleStringOfSubtypes);
         }
 
-        [Test, Repeat(100000), Ignore("Only used for manual benchmarking. Ran in ~2.9s")]
+        [Test, Repeat(100000), IgnoreExceptOnDevOpsPerfTest("Ran in ~2.9s")]
         public void PerformanceTest()
         {
             const string nmdpCode = "*01:NMDP";
