@@ -1,6 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
+// ReSharper disable MemberCanBePrivate.Global - Properties need to be visible to EF 
+
 namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
 {
     [Table("DataRefreshHistory")]
@@ -20,13 +22,13 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         public string HlaNomenclatureVersion { get; set; }
         public bool? WasSuccessful { get; set; }
 
-        private DateTime? DataDeletionCompleted { get; set; }
-        private DateTime? DatabaseScalingSetupCompleted { get; set; }
-        private DateTime? MetadataDictionaryRefreshCompleted { get; set; }
-        private DateTime? DonorImportCompleted { get; set; }
-        private DateTime? DonorHlaProcessingCompleted { get; set; }
-        private DateTime? DatabaseScalingTearDownCompleted { get; set; }
-        private DateTime? QueuedDonorUpdatesCompleted { get; set; }
+        public DateTime? DataDeletionCompleted { get; set; }
+        public DateTime? DatabaseScalingSetupCompleted { get; set; }
+        public DateTime? MetadataDictionaryRefreshCompleted { get; set; }
+        public DateTime? DonorImportCompleted { get; set; }
+        public DateTime? DonorHlaProcessingCompleted { get; set; }
+        public DateTime? DatabaseScalingTearDownCompleted { get; set; }
+        public DateTime? QueuedDonorUpdatesCompleted { get; set; }
 
         internal DateTime? GetStageCompletionTime(DataRefreshStage stage) =>
             stage switch
