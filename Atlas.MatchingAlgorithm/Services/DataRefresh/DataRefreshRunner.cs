@@ -75,8 +75,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
             settingsOptions = dataRefreshSettingsOptions;
 
-            activeVersionHlaMetadataDictionary =
-                hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
+            activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(
+                hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersionOrDefault()
+            );
         }
 
         public async Task<string> RefreshData(int refreshRecordId)

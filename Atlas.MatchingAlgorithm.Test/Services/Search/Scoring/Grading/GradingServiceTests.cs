@@ -1,6 +1,7 @@
 ﻿using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
@@ -13,9 +14,6 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
 using FluentAssertions;
-using LazyCache;
-using LazyCache.Providers;
-using Microsoft.Extensions.Caching.Memory;
 using NSubstitute;
 using NUnit.Framework;
 using System;
@@ -33,7 +31,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var permissiveMismatchCalculator = Substitute.For<IPermissiveMismatchCalculator>();
             var scoringCache = new ScoringCache(
-                new PersistentCacheProvider(new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())))),
+                new PersistentCacheProvider(AppCacheBuilder.DefaultCache),
                 Substitute.For<IActiveHlaNomenclatureVersionAccessor>());
 
             gradingService = new GradingService(permissiveMismatchCalculator, scoringCache);

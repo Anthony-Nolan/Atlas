@@ -1,7 +1,7 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
 using EnumStringValues;
@@ -15,7 +15,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
     internal class DataRefreshRunnerTests
     {
         private ITestDataRefreshHistoryRepository dataRefreshHistoryRepository;
-        private IActiveHlaNomenclatureVersionAccessor activeVersionAccessor;
 
         private IDataRefreshRunner dataRefreshRunner;
 
@@ -23,7 +22,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
         public void SetUp()
         {
             dataRefreshHistoryRepository = DependencyInjection.DependencyInjection.Provider.GetService<ITestDataRefreshHistoryRepository>();
-            activeVersionAccessor = DependencyInjection.DependencyInjection.Provider.GetService<IActiveHlaNomenclatureVersionAccessor>();
+
+            // Set up a dummy record so the refresh does not attempt to regenerate the file-backed metadata dictionary
+            dataRefreshHistoryRepository.InsertDummySuccessfulRefreshRecord(Constants.SnapshotHlaNomenclatureVersion);
 
             dataRefreshRunner = DependencyInjection.DependencyInjection.Provider.GetService<IDataRefreshRunner>();
         }
@@ -36,11 +37,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
                 DataRefreshStage.QueuedDonorUpdateProcessing
             });
 
-            var refreshRecordId =
-                dataRefreshHistoryRepository.InsertDummySuccessfulRefreshRecord(activeVersionAccessor.GetActiveHlaNomenclatureVersion());
+            var refreshRecord = new DataRefreshRecord {Database = "DatabaseA", HlaNomenclatureVersion = Constants.SnapshotHlaNomenclatureVersion};
+            var refreshRecordId = await dataRefreshHistoryRepository.Create(refreshRecord);
 
             await dataRefreshRunner.RefreshData(refreshRecordId);
-
 
             var completionTimes = await dataRefreshHistoryRepository.GetStageCompletionTimes(refreshRecordId);
             var timesOfExpectedStages = expectedStages.Select(s => completionTimes[s]).ToList();
