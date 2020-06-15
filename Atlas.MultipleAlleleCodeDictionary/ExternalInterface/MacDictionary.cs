@@ -8,8 +8,18 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
 {
     public interface IMacDictionary
     {
+        /// <summary>
+        /// Collects the most recent MAC data from the external source provided in MacImportSettings,
+        /// and then stores it in the provided azure storage account.
+        /// </summary>
         public Task ImportLatestMacs();
+        /// <summary>
+        /// Fetch the HLA for a given MAC from the storage account, caching appropriately.
+        /// </summary>
         public Task<Mac> GetMac(string macCode);
+        /// <summary>
+        /// A debug endpoint to regenerate the MAC Cache.
+        /// </summary>
         public Task GenerateMacCache();
 
         /// <remarks>
