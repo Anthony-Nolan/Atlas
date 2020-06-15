@@ -1,8 +1,8 @@
-﻿using System;
-using Atlas.Common.GeneticData;
+﻿using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
-using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using NUnit.Framework;
+using System;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 {

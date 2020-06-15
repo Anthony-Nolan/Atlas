@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
@@ -11,12 +9,14 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Settings;
-using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 
-namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.ScoringInfoBuilders
+namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders.ScoringInfoBuilders
 {
     public class ScoringInfoBuilderFactory
     {
