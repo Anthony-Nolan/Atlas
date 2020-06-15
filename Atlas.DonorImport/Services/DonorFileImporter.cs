@@ -19,16 +19,16 @@ namespace Atlas.DonorImport.Services
         private const int BatchSize = 10000;
         private readonly IDonorImportFileParser fileParser;
         private readonly IDonorRecordChangeApplier donorRecordChangeApplier;
-        private readonly INotificationSender notificationsSender;
+        private readonly INotificationSender notificationSender;
 
         public DonorFileImporter(
             IDonorImportFileParser fileParser,
             IDonorRecordChangeApplier donorRecordChangeApplier,
-            INotificationSender notificationsSender)
+            INotificationSender notificationSender)
         {
             this.fileParser = fileParser;
             this.donorRecordChangeApplier = donorRecordChangeApplier;
-            this.notificationsSender = notificationsSender;
+            this.notificationSender = notificationSender;
         }
 
         public async Task ImportDonorFile(DonorImportFile file)
@@ -48,7 +48,7 @@ namespace Atlas.DonorImport.Services
                                   {BatchSize} donor updates in the file, the file may have been partially imported - manual investigation is 
                                   recommended. See Application Insights for more information.";
 
-                await notificationsSender.SendAlert(summary, description, Priority.Medium, nameof(ImportDonorFile));
+                await notificationSender.SendAlert(summary, description, Priority.Medium, nameof(ImportDonorFile));
 
                 throw;
             }

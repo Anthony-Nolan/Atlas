@@ -16,21 +16,21 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
     
     public class DataRefreshNotificationSender: IDataRefreshNotificationSender
     {
-        private readonly INotificationSender notificationsSender;
+        private readonly INotificationSender notificationSender;
 
-        public DataRefreshNotificationSender(INotificationSender notificationsSender)
+        public DataRefreshNotificationSender(INotificationSender notificationSender)
         {
-            this.notificationsSender = notificationsSender;
+            this.notificationSender = notificationSender;
         }
 
         private async Task SendNotification(string summary, string description)
         {
-            await notificationsSender.SendNotification(summary, description, NotificationConstants.OriginatorName);
+            await notificationSender.SendNotification(summary, description, NotificationConstants.OriginatorName);
         }
 
         private async Task SendAlert(string summary, string description)
         {
-            await notificationsSender.SendAlert(summary, description, Priority.High, NotificationConstants.OriginatorName);
+            await notificationSender.SendAlert(summary, description, Priority.High, NotificationConstants.OriginatorName);
         }
 
         public async Task SendInitialisationNotification()
