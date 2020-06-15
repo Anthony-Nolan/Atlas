@@ -319,7 +319,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             actualHomozygousValue.Should().BeFalse();
         }
 
-        [Test, Repeat(10000), IgnoreExceptOnDevOpsPerfTest("Ran in ~400ms")]
+        [Test, Repeat(10000), IgnoreExceptOnCiPerfTest("Ran in ~400ms")]
         public void PerformanceTest()
         {
             var genotypeWithAllFields = new PhenotypeInfo<string>
