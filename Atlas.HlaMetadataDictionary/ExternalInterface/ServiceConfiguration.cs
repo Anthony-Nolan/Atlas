@@ -85,7 +85,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private static void RegisterServices(this IServiceCollection services)
         {
             services.AddScoped<IHlaConverter, HlaConverter>();
-            services.AddScoped<IConvertHlaToTwoFieldAlleleService, ConvertHlaToTwoFieldAlleleService>();
+            services.AddScoped<IHlaNameToTwoFieldAlleleConverter, HlaNameToTwoFieldAlleleConverter>();
             services.AddScoped<IAlleleNamesMetadataService, AlleleNamesMetadataService>();
             services.AddScoped<IHlaMetadataService, HlaMetadataService>();
             services.AddScoped<ILocusHlaMatchingMetadataService, LocusHlaMatchingMetadataService>();

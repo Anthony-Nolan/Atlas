@@ -10,27 +10,27 @@ using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
 {
-    internal class HlaConversionBehaviour
-    {
-        public TargetHlaOptions TargetHlaOptions { get; set; }
-        public string HlaNomenclatureVersion { get; set; }
-    }
-
     internal interface IHlaConverter
     {
         Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, HlaConversionBehaviour conversionBehaviour);
     }
 
+    internal class HlaConversionBehaviour
+    {
+        public TargetHlaCategory TargetHlaCategory { get; set; }
+        public string HlaNomenclatureVersion { get; set; }
+    }
+
     internal class HlaConverter : IHlaConverter
     {
-        private readonly IConvertHlaToTwoFieldAlleleService convertHlaToTwoFieldAlleleService;
+        private readonly IHlaNameToTwoFieldAlleleConverter hlaNameToTwoFieldAlleleConverter;
         private readonly IHlaScoringMetadataService scoringMetadataService;
 
         public HlaConverter(
-            IConvertHlaToTwoFieldAlleleService convertHlaToTwoFieldAlleleService,
+            IHlaNameToTwoFieldAlleleConverter hlaNameToTwoFieldAlleleConverter,
             IHlaScoringMetadataService scoringMetadataService)
         {
-            this.convertHlaToTwoFieldAlleleService = convertHlaToTwoFieldAlleleService;
+            this.hlaNameToTwoFieldAlleleConverter = hlaNameToTwoFieldAlleleConverter;
             this.scoringMetadataService = scoringMetadataService;
         }
 
@@ -40,20 +40,20 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
             {
                 throw new ArgumentNullException();
             }
-            
-            switch (conversionBehaviour.TargetHlaOptions)
+
+            switch (conversionBehaviour.TargetHlaCategory)
             {
-                case TargetHlaOptions.TwoFieldAlleleIncludingExpressionSuffix:
-                    return await convertHlaToTwoFieldAlleleService.ConvertHla(locus, hlaName, ExpressionSuffixOptions.Include);
-                case TargetHlaOptions.TwoFieldAlleleExcludingExpressionSuffix:
-                    return await convertHlaToTwoFieldAlleleService.ConvertHla(locus, hlaName, ExpressionSuffixOptions.Exclude);
-                case TargetHlaOptions.GGroup:
+                case TargetHlaCategory.TwoFieldAlleleIncludingExpressionSuffix:
+                    return await hlaNameToTwoFieldAlleleConverter.ConvertHla(locus, hlaName, ExpressionSuffixBehaviour.Include);
+                case TargetHlaCategory.TwoFieldAlleleExcludingExpressionSuffix:
+                    return await hlaNameToTwoFieldAlleleConverter.ConvertHla(locus, hlaName, ExpressionSuffixBehaviour.Exclude);
+                case TargetHlaCategory.GGroup:
                     //TODO ATLAS-394: After HMD has been decoupled from Scoring, use appropriate GGroup lookup service
                     return (await GetHlaScoringInfo(locus, hlaName, conversionBehaviour.HlaNomenclatureVersion)).MatchingGGroups.ToList();
-                case TargetHlaOptions.PGroup:
+                case TargetHlaCategory.PGroup:
                     //TODO ATLAS-394: After HMD has been decoupled from Scoring, use appropriate PGroup lookup service
                     return (await GetHlaScoringInfo(locus, hlaName, conversionBehaviour.HlaNomenclatureVersion)).MatchingPGroups.ToList();
-                case TargetHlaOptions.Serology:
+                case TargetHlaCategory.Serology:
                     //TODO ATLAS-394: After HMD has been decoupled from Scoring, use appropriate Serology lookup service
                     return (await GetHlaScoringInfo(locus, hlaName, conversionBehaviour.HlaNomenclatureVersion))
                         .MatchingSerologies.Select(serology => serology.Name).ToList();

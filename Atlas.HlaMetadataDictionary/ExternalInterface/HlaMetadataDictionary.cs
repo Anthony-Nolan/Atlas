@@ -17,7 +17,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
     public interface IHlaMetadataDictionary
     {
         Task<string> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour);
-        Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, TargetHlaOptions targetHlaOption);
+        Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory);
         Task<LocusInfo<IHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
         Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
@@ -112,12 +112,12 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             };
         }
 
-        public async Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, TargetHlaOptions targetHlaOption)
+        public async Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory)
         {
             return await hlaConverter.ConvertHla(locus, hlaName, new HlaConversionBehaviour
             {
                 HlaNomenclatureVersion = activeHlaNomenclatureVersion,
-                TargetHlaOptions = targetHlaOption
+                TargetHlaCategory = targetHlaCategory
             });
         }
 
