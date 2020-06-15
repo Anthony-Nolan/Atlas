@@ -54,5 +54,5 @@ The Parameters are all of the form: `Func<IServiceProvider, T>`. They will be pa
   * Needed, in order to pass it to the MacDictionary, so that the MacDictionary can contact Nova.
 * `fetchApplicationInsightsSettings` (`ApplicationInsightsSettings`)
   * Details of the Logging Settings.
-  * THe HMD assumes that it is being run in Azure with an ApplicationInsight system attached. It will identify that system automatically, but you must provide the default LoggingLevel. Likely "Info".
+  * The HMD assumes that it is being run in Azure with an ApplicationInsight system attached. It will identify that system automatically, but you must provide the default LoggingLevel. Likely "Info".
 
