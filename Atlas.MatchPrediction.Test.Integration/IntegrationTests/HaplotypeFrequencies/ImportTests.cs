@@ -20,7 +20,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         private IFrequencySetService service;
         private IHaplotypeFrequencySetRepository setRepository;
         private IHaplotypeFrequencyInspectionRepository inspectionRepository;
-        private INotificationSender notificationsClient;
+        private INotificationSender notificationSender;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -32,7 +32,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
                     .GetService<IHaplotypeFrequencySetRepository>();
                 inspectionRepository = DependencyInjection.DependencyInjection.Provider
                     .GetService<IHaplotypeFrequencyInspectionRepository>();
-                notificationsClient =
+                notificationSender =
                     DependencyInjection.DependencyInjection.Provider.GetService<INotificationSender>();
             });
         }
@@ -40,7 +40,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         [TearDown]
         public void TearDown()
         {
-            notificationsClient.ClearReceivedCalls();
+            notificationSender.ClearReceivedCalls();
         }
 
         [TestCase(null, null)]
@@ -100,7 +100,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
 
             await service.ImportFrequencySet(file);
 
-            await notificationsClient.ReceivedWithAnyArgs().SendNotification(default, default, default);
+            await notificationSender.ReceivedWithAnyArgs().SendNotification(default, default, default);
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
             }
             catch (Exception)
             {
-                await notificationsClient.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+                await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             }
         }
 
@@ -163,7 +163,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
             }
             catch (Exception)
             {
-                await notificationsClient.DidNotReceiveWithAnyArgs().SendNotification(default, default, default);
+                await notificationSender.DidNotReceiveWithAnyArgs().SendNotification(default, default, default);
             }
         }
     }

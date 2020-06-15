@@ -18,16 +18,16 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         private const string SupportSummaryPrefix = "Haplotype Frequency Set Import";
 
         private readonly IFrequencySetImporter importer;
-        private readonly INotificationSender notificationsSender;
+        private readonly INotificationSender notificationSender;
         private readonly ILogger logger;
 
         public FrequencySetService(
             IFrequencySetImporter importer,
-            INotificationSender notificationsSender,
+            INotificationSender notificationSender,
             ILogger logger)
         {
             this.importer = importer;
-            this.notificationsSender = notificationsSender;
+            this.notificationSender = notificationSender;
             this.logger = logger;
         }
 
@@ -53,7 +53,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
             logger.SendEvent(new HaplotypeFrequencySetImportEventModel(successName, file));
 
-            await notificationsSender.SendNotification(
+            await notificationSender.SendNotification(
                 successName,
                 $"Import of file, '{file.FullPath}', has completed successfully.",
                 NotificationConstants.OriginatorName);
@@ -65,7 +65,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
             logger.SendEvent(new ErrorEventModel(errorName, ex));
 
-            await notificationsSender.SendAlert(
+            await notificationSender.SendAlert(
                 errorName,
                 $"Import of file, '{file.FullPath}', failed with the following exception message: \"{ex.GetBaseException().Message}\". "
                     + "Full exception info has been logged to Application Insights.",
