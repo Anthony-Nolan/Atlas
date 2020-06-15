@@ -5,30 +5,30 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         /// <summary>
         /// Recreation of HLA Metadata Dictionary
         /// </summary>
-        MetadataDictionaryRefresh,
+        MetadataDictionaryRefresh = 0,
         /// <summary>
         /// Deletion of all existing donor data 
         /// </summary>
-        DataDeletion,
+        DataDeletion = 1,
         /// <summary>
         /// Scaling of database to appropriate size for data refresh
         /// </summary>
-        DatabaseScalingSetup,
+        DatabaseScalingSetup = 2,
         /// <summary>
         /// Import all donors from the master donor store. No pre-processing to p-groups
         /// </summary>
-        DonorImport,
+        DonorImport = 3,
         /// <summary>
         /// Processing imported donors to p-groups. Encompasses index deletion and re-addition on relevant tables.
         /// </summary>
-        DonorHlaProcessing,
+        DonorHlaProcessing = 4,
         /// <summary>
         /// Scaling of database to appropriate size for live usage.
         /// </summary>
-        DatabaseScalingTearDown,
+        DatabaseScalingTearDown = 5,
         /// <summary>
         /// Consumption of all donor updates that have accrued during the data refresh.
         /// </summary>
-        QueuedDonorUpdateProcessing,
+        QueuedDonorUpdateProcessing = 6,
     }
 }

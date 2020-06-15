@@ -1,18 +1,20 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
+using EnumStringValues;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories
 {
     internal interface ITestDataRefreshHistoryRepository: IDataRefreshHistoryRepository
     {
-        public Task<DateTime?> GetStageCompletionTime(int recordId, DataRefreshStage stage);
+        public Task<Dictionary<DataRefreshStage, DateTime?>> GetStageCompletionTimes(int recordId);
         /// <summary>
         /// Used when we want a successful refresh to exist in the integration test database, but don't care much about the specifics of the record.
         /// </summary>
-        public int InsertDummySuccessfulRefreshRecord(string hlaNomenclatureVersion = null);
+        public int InsertDummySuccessfulRefreshRecord(string hlaNomenclatureVersion);
     }
 
     internal class TestDataRefreshHistoryRepository : DataRefreshHistoryRepository, ITestDataRefreshHistoryRepository
@@ -25,7 +27,18 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories
         #region Implementation of ITestDataRefreshHistoryRepository
 
         /// <inheritdoc />
-        public async Task<DateTime?> GetStageCompletionTime(int recordId, DataRefreshStage stage)
+        public async Task<Dictionary<DataRefreshStage, DateTime?>> GetStageCompletionTimes(int recordId)
+        {
+            var completionTimes = new Dictionary<DataRefreshStage, DateTime?>();
+            foreach (var stage in EnumExtensions.EnumerateValues<DataRefreshStage>())
+            {
+                completionTimes[stage] = await GetStageCompletionTime(recordId, stage);
+            }
+
+            return completionTimes;
+        }
+
+        private async Task<DateTime?> GetStageCompletionTime(int recordId, DataRefreshStage stage)
         {
             var record = await GetRecordById(recordId);
             

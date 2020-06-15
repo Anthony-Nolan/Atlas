@@ -53,7 +53,8 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
 
         public async Task<int> Create(DataRefreshRecord dataRefreshRecord)
         {
-            await Context.DataRefreshRecords.AddAsync(dataRefreshRecord);
+            // ReSharper disable once MethodHasAsyncOverload
+            Context.DataRefreshRecords.Add(dataRefreshRecord);
             await Context.SaveChangesAsync();
             return dataRefreshRecord.Id;
         }
@@ -62,7 +63,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         {
             var record = await GetRecordById(recordId);
             record.HlaNomenclatureVersion = wmdaHlaNomenclatureVersion;
-            record.RefreshEndUtc = finishTimeUtc ?? DateTime.UtcNow;
+            record.RefreshEndUtc = finishTimeUtc;
             await Context.SaveChangesAsync();
         }
 

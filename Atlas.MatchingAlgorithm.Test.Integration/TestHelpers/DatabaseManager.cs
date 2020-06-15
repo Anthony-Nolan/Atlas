@@ -20,9 +20,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
             var transientContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmContext>();
             var persistentContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmPersistentContext>();
 
-            var connectionStringB = DependencyInjection.DependencyInjection.Provider.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"];
+            var connectionStringB =
+                DependencyInjection.DependencyInjection.Provider.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"];
             var transientContextB = new ContextFactory().Create(connectionStringB);
-            
+
             if (transientContext == null || persistentContext == null)
             {
                 throw new Exception("Database context could resolved - DI has not been correctly configured.");
@@ -32,7 +33,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
             transientContextB?.Database.Migrate();
             persistentContext.Database.Migrate();
         }
-        
+
         /// <summary>
         /// Clears the test database of data. Can be accessed by fixtures to run after each fixture, but not after each test.
         /// </summary>
@@ -40,11 +41,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
         {
             var transientContextA = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmContext>();
             ClearTransientDatabase(transientContextA);
-            
-            var connectionStringB = DependencyInjection.DependencyInjection.Provider.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"];
+
+            var connectionStringB =
+                DependencyInjection.DependencyInjection.Provider.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"];
             var transientContextB = new ContextFactory().Create(connectionStringB);
             ClearTransientDatabase(transientContextB);
-            
+
             var persistentContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmPersistentContext>();
             ClearPersistentDatabase(persistentContext);
         }
@@ -68,6 +70,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
             context?.Database.ExecuteSqlRaw("TRUNCATE TABLE [DataRefreshHistory]");
         }
 
+        /// <summary>
+        /// Creates an initial row in the data refresh history.
+        /// Necessary as null values for the active hla nomenclature version are not valid.
+        /// </summary>
+        // TODO: ATLAS-374: Remove this method once an empty table is a valid state.
         public static void PopulateDatabasesWithInitialData()
         {
             var dataRefreshHistoryRepository = DependencyInjection.DependencyInjection.Provider.GetService<ITestDataRefreshHistoryRepository>();
