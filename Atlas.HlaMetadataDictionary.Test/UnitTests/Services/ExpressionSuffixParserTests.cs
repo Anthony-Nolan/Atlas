@@ -1,4 +1,5 @@
-﻿using Atlas.HlaMetadataDictionary.Services;
+﻿using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.HlaMetadataDictionary.Services;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -60,7 +61,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services
             result.Should().BeFalse();
         }
 
-        [Test, Repeat(100000), Ignore("Only used for manual benchmarking. Ran in ~700ms")]
+        [Test, Repeat(100000), IgnoreExceptOnDevOpsPerfTest("Ran in ~700ms")]
         public void PerfTest()
         {
             ExpressionSuffixParser.GetExpressionSuffix("01:01");
