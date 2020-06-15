@@ -86,7 +86,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             settingsOptions.Value.Returns(settings);
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
 
-            await dataRefreshRunner.RefreshData(0);
+            await dataRefreshRunner.RefreshData(default);
 
             await azureDatabaseManager.UpdateDatabaseSize(settings.DatabaseAName, Arg.Any<AzureDatabaseSize>());
         }
@@ -99,7 +99,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Build();
             settingsOptions.Value.Returns(settings);
 
-            await dataRefreshRunner.RefreshData(0);
+            await dataRefreshRunner.RefreshData(default);
 
             await azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15);
         }
@@ -107,7 +107,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task RefreshData_RemovesAllDonorInformation()
         {
-            await dataRefreshRunner.RefreshData(0);
+            await dataRefreshRunner.RefreshData(default);
 
             await donorImportRepository.Received().RemoveAllDonorInformation();
         }
@@ -121,7 +121,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .RecreateHlaMetadataDictionary(CreationBehaviour.Latest)
                 .Returns(hlaNomenclatureVersion);
 
-            var returnedHlaVersion = await dataRefreshRunner.RefreshData(0);
+            var returnedHlaVersion = await dataRefreshRunner.RefreshData(default);
 
             returnedHlaVersion.Should().Be(hlaNomenclatureVersion);
         }
@@ -129,7 +129,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task RefreshData_ImportsDonors()
         {
-            await dataRefreshRunner.RefreshData(0);
+            await dataRefreshRunner.RefreshData(default);
 
             await donorImporter.Received().ImportDonors();
         }
@@ -143,7 +143,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .RecreateHlaMetadataDictionary(CreationBehaviour.Latest)
                 .Returns(hlaNomenclatureVersion);
 
-            await dataRefreshRunner.RefreshData(0);
+            await dataRefreshRunner.RefreshData(default);
 
             await hlaProcessor.Received().UpdateDonorHla(hlaNomenclatureVersion);
         }
@@ -156,7 +156,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Build();
             settingsOptions.Value.Returns(settings);
 
-            await dataRefreshRunner.RefreshData(0);
+            await dataRefreshRunner.RefreshData(default);
 
             await azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.S4);
         }
@@ -169,7 +169,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Build();
             settingsOptions.Value.Returns(settings);
 
-            await dataRefreshRunner.RefreshData(0);
+            await dataRefreshRunner.RefreshData(default);
 
             Received.InOrder(() =>
             {
@@ -186,7 +186,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Build();
             settingsOptions.Value.Returns(settings);
 
-            await dataRefreshRunner.RefreshData(0);
+            await dataRefreshRunner.RefreshData(default);
 
             Received.InOrder(() =>
             {
@@ -204,7 +204,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Build();
             settingsOptions.Value.Returns(settings);
 
-            await dataRefreshRunner.RefreshData(0);
+            await dataRefreshRunner.RefreshData(default);
 
             Received.InOrder(() =>
             {
@@ -226,7 +226,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             try
             {
-                await dataRefreshRunner.RefreshData(0);
+                await dataRefreshRunner.RefreshData(default);
             }
             catch (Exception)
             {
@@ -247,7 +247,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             try
             {
-                await dataRefreshRunner.RefreshData(0);
+                await dataRefreshRunner.RefreshData(default);
             }
             catch (Exception)
             {
@@ -268,7 +268,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             try
             {
-                await dataRefreshRunner.RefreshData(0);
+                await dataRefreshRunner.RefreshData(default);
             }
             catch (Exception)
             {
@@ -291,7 +291,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             try
             {
-                await dataRefreshRunner.RefreshData(0);
+                await dataRefreshRunner.RefreshData(default);
             }
             catch (Exception)
             {

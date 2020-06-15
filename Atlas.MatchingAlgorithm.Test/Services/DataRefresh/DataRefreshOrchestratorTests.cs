@@ -81,7 +81,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshRunner.DidNotReceive().RefreshData(Arg.Any<int>());
+            await dataRefreshRunner.DidNotReceiveWithAnyArgs().RefreshData(default);
         }
         
         [Test]
@@ -91,7 +91,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary(shouldForceRefresh: true);
 
-            await dataRefreshRunner.Received().RefreshData(Arg.Any<int>());
+            await dataRefreshRunner.ReceivedWithAnyArgs().RefreshData(default);
         }
 
         [Test]
@@ -101,7 +101,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshRunner.Received().RefreshData(Arg.Any<int>());
+            await dataRefreshRunner.ReceivedWithAnyArgs().RefreshData(default);
         }
 
         [Test]
@@ -112,7 +112,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshRunner.DidNotReceive().RefreshData(Arg.Any<int>());
+            await dataRefreshRunner.DidNotReceiveWithAnyArgs().RefreshData(default);
         }
         
         [Test]
@@ -122,7 +122,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary(shouldForceRefresh: true);
 
-            await dataRefreshRunner.DidNotReceive().RefreshData(Arg.Any<int>());
+            await dataRefreshRunner.DidNotReceiveWithAnyArgs().RefreshData(default);
         }
 
         [Test]
@@ -201,7 +201,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshHistoryRepository.Received().UpdateExecutionDetails(Arg.Any<int>(), Arg.Any<string>(), Arg.Any<DateTime?>());
+            await dataRefreshHistoryRepository.ReceivedWithAnyArgs().UpdateExecutionDetails(default, default, default);
         }
 
         [Test]
@@ -223,7 +223,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshHistoryRepository.Received().UpdateExecutionDetails(Arg.Any<int>(), Arg.Any<string>(), Arg.Any<DateTime>());
+            await dataRefreshHistoryRepository.ReceivedWithAnyArgs().UpdateExecutionDetails(default, default, default);
         }
 
         [Test]
