@@ -121,6 +121,10 @@
     <PackageReference Include="ApprovalTests" Version="4.0.0" />
     <PackageReference Include="ApprovalUtilities" Version="4.0.0" />
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
+    <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.4" />
     <PackageReference Include="NSubstitute" Version="4.2.1" />
     <PackageReference Include="nunit" Version="3.12.0" />
@@ -138,13 +142,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="UnitTests\Data\wmda-v3330\tce\dpb_tce.csv">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <InternalsVisibleTo Include="Atlas.MatchingAlgorithm.Test" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="UnitTests\Services\HlaConversion\" />
+    <None Update="UnitTests\Data\wmda-v3330\tce\dpb_tce.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

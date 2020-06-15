@@ -1,13 +1,13 @@
-﻿using Atlas.Common.ApplicationInsights;
+﻿using System;
+using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using NSubstitute;
-using System;
-using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 
-namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
+namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
 {
     internal class HlaMetadataDictionaryBuilder : IHlaMetadataDictionaryFactory
     {
