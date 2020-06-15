@@ -1,7 +1,7 @@
 trigger: none
 
 schedules:
-  - cron: "0 0 0,13 ? * * *"
+  - cron: "0 0,13 * * *"
     displayName: Twice daily build and run System Tests
     branches:
       include:
@@ -9,6 +9,9 @@ schedules:
 
 pr: none
 
+variables:
+  RUN_CI_PERF_TESTS: 'This will get defined as an Environment Variable, which will enable various Perf-Test-only tests. See IgnoreExceptOnCiPerfTestAttribute.cs'
+  
 jobs: 
 - job: Matching_Algorithm_Integration_Tests
   pool:
