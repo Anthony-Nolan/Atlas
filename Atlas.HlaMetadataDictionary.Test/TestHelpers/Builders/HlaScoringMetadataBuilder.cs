@@ -1,10 +1,10 @@
-﻿using System;
-using Atlas.Common.GeneticData;
+﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
-using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.ScoringInfoBuilders;
+using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders.ScoringInfoBuilders;
+using System;
 
-namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
+namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
 {
     internal class HlaScoringMetadataBuilder
     {
