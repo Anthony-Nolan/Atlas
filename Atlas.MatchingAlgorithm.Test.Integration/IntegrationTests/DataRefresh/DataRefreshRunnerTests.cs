@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
         private IDataRefreshRunner dataRefreshRunner;
 
         [SetUp]
-        public async Task SetUp()
+        public void SetUp()
         {
             dataRefreshHistoryRepository = DependencyInjection.DependencyInjection.Provider.GetService<ITestDataRefreshHistoryRepository>();
             activeVersionAccessor = DependencyInjection.DependencyInjection.Provider.GetService<IActiveHlaNomenclatureVersionAccessor>();
@@ -29,22 +29,23 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
         }
 
         [Test]
-        public async Task DataRefresh_PopulatesAllStageFlags()
+        public async Task DataRefresh_PopulatesAllStageFlagInOrder()
         {
             var expectedStages = EnumExtensions.EnumerateValues<DataRefreshStage>().Except(new[]
             {
                 DataRefreshStage.QueuedDonorUpdateProcessing
             });
-            
-            var refreshRecordId = dataRefreshHistoryRepository.InsertDummySuccessfulRefreshRecord(activeVersionAccessor.GetActiveHlaNomenclatureVersion());
+
+            var refreshRecordId =
+                dataRefreshHistoryRepository.InsertDummySuccessfulRefreshRecord(activeVersionAccessor.GetActiveHlaNomenclatureVersion());
 
             await dataRefreshRunner.RefreshData(refreshRecordId);
 
-            foreach (var stage in expectedStages)
-            {
-                var completedTime = await dataRefreshHistoryRepository.GetStageCompletionTime(refreshRecordId, stage);
-                completedTime.Should().NotBeNull();
-            }
+
+            var completionTimes = await dataRefreshHistoryRepository.GetStageCompletionTimes(refreshRecordId);
+            var timesOfExpectedStages = expectedStages.Select(s => completionTimes[s]).ToList();
+            timesOfExpectedStages.Should().NotContainNulls();
+            timesOfExpectedStages.Should().BeInAscendingOrder();
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
@@ -78,19 +79,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
-        /// <summary>
-        /// Atomic stages of the data refresh, in order.
-        /// Excludes Metadata Dictionary refresh, as this cannot be performed atomically.
-        /// </summary>
-        private readonly DataRefreshStage[] orderedRefreshStages = {
-            DataRefreshStage.DataDeletion,
-            DataRefreshStage.DatabaseScalingSetup,
-            DataRefreshStage.DonorImport,
-            DataRefreshStage.DonorHlaProcessing,
-            DataRefreshStage.DatabaseScalingTearDown,
-            DataRefreshStage.QueuedDonorUpdateProcessing,
-        };
-
         public async Task<string> RefreshData(int refreshRecordId)
         {
             try
@@ -98,12 +86,17 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 // Hla Metadata Dictionary Refresh is not performed atomically as the resulting nomenclature version is needed in other stages.
                 var newHlaNomenclatureVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
                 await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecordId, DataRefreshStage.MetadataDictionaryRefresh);
+                var orderedRefreshStages = EnumExtensions.EnumerateValues<DataRefreshStage>()
+                    .Except(new[] {DataRefreshStage.MetadataDictionaryRefresh})
+                    // TODO: ATLAS-249: Implement new donor update workflow
+                    .Except(new[] {DataRefreshStage.QueuedDonorUpdateProcessing})
+                    .OrderBy(x => x);
 
                 foreach (var dataRefreshStage in orderedRefreshStages)
                 {
                     await RunDataRefreshStage(dataRefreshStage, refreshRecordId, newHlaNomenclatureVersion);
                 }
-                
+
                 return newHlaNomenclatureVersion;
             }
             catch (Exception ex)
@@ -140,8 +133,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dataRefreshStage), dataRefreshStage, null);
-                
             }
+
             await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecordId, dataRefreshStage);
         }
 
@@ -163,21 +156,18 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             logger.SendTrace("DATA REFRESH: Removing existing donor data", LogLevel.Info);
             await donorImportRepository.RemoveAllDonorInformation();
-            await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecordId, DataRefreshStage.DataDeletion);
         }
 
         private async Task ImportDonors(int refreshRecordId)
         {
             logger.SendTrace("DATA REFRESH: Importing Donors", LogLevel.Info);
             await donorImporter.ImportDonors();
-            await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecordId, DataRefreshStage.DonorImport);
         }
 
         private async Task ProcessDonorHla(string hlaNomenclatureVersion, int refreshRecordId)
         {
             logger.SendTrace($"DATA REFRESH: Processing Donor hla using HLA Nomenclature version: {hlaNomenclatureVersion}", LogLevel.Info);
             await hlaProcessor.UpdateDonorHla(hlaNomenclatureVersion);
-            await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecordId, DataRefreshStage.DonorHlaProcessing);
         }
 
         private async Task ScaleDatabase(AzureDatabaseSize targetSize)

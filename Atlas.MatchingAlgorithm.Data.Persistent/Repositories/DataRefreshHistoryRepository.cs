@@ -13,7 +13,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
     {
         /// <returns>The transient database for which the refresh job was most recently completed</returns>
         TransientDatabase? GetActiveDatabase();
-        
+
         /// <returns>The HLA nomenclature version used in the most recently completed refresh job</returns>
         string GetActiveHlaNomenclatureVersion();
 
@@ -23,7 +23,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         Task UpdateSuccessFlag(int recordId, bool wasSuccess);
         Task MarkStageAsComplete(int recordId, DataRefreshStage stage);
     }
-    
+
     public class DataRefreshHistoryRepository : IDataRefreshHistoryRepository
     {
         protected readonly SearchAlgorithmPersistentContext Context;
@@ -32,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         {
             Context = context;
         }
-        
+
         public TransientDatabase? GetActiveDatabase()
         {
             var lastCompletedRecord = GetLastSuccessfulRecord();
@@ -53,7 +53,8 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
 
         public async Task<int> Create(DataRefreshRecord dataRefreshRecord)
         {
-            await Context.DataRefreshRecords.AddAsync(dataRefreshRecord);
+            // ReSharper disable once MethodHasAsyncOverload
+            Context.DataRefreshRecords.Add(dataRefreshRecord);
             await Context.SaveChangesAsync();
             return dataRefreshRecord.Id;
         }
@@ -62,7 +63,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         {
             var record = await GetRecordById(recordId);
             record.HlaNomenclatureVersion = wmdaHlaNomenclatureVersion;
-            record.RefreshEndUtc = finishTimeUtc ?? DateTime.UtcNow;
+            record.RefreshEndUtc = finishTimeUtc;
             await Context.SaveChangesAsync();
         }
 
@@ -77,36 +78,20 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         public async Task MarkStageAsComplete(int recordId, DataRefreshStage stage)
         {
             var record = await GetRecordById(recordId);
-            switch (stage)
-            {
-                case DataRefreshStage.DataDeletion:
-                    record.DataDeletionCompleted = DateTime.UtcNow;
-                    break;
-                case DataRefreshStage.DatabaseScalingSetup:
-                    record.DatabaseScalingSetupCompleted = DateTime.UtcNow;
-                    break;
-                case DataRefreshStage.MetadataDictionaryRefresh:
-                    record.MetadataDictionaryRefreshCompleted = DateTime.UtcNow;
-                    break;
-                case DataRefreshStage.DonorImport:
-                    record.DonorImportCompleted = DateTime.UtcNow;
-                    break;
-                case DataRefreshStage.DonorHlaProcessing:
-                    record.DonorHlaProcessingCompleted = DateTime.UtcNow;
-                    break;
-                case DataRefreshStage.DatabaseScalingTearDown:
-                    record.DatabaseScalingTearDownCompleted = DateTime.UtcNow;
-                    break;
-                case DataRefreshStage.QueuedDonorUpdateProcessing:
-                    record.QueuedDonorUpdatesCompleted = DateTime.UtcNow;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(stage), stage, null);
-            }
+            record.SetStageCompletionTime(stage, DateTime.UtcNow);
             await Context.SaveChangesAsync();
         }
 
-        protected async Task<DataRefreshRecord> GetRecordById(int recordId)
+        protected async Task<Dictionary<DataRefreshStage, DateTime?>> GetStageCompletionTimes(int recordId)
+        {
+            var record = await GetRecordById(recordId);
+            return EnumExtensions.EnumerateValues<DataRefreshStage>().ToDictionary(
+                stage => stage,
+                stage => record.GetStageCompletionTime(stage)
+            );
+        }
+
+        private async Task<DataRefreshRecord> GetRecordById(int recordId)
         {
             return await Context.DataRefreshRecords.SingleAsync(r => r.Id == recordId);
         }

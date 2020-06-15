@@ -5,8 +5,18 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
 {
     public partial class AddPerStepCompletionTimesToDataRefreshHistory : Migration
     {
+        /// <summary>
+        /// Columns in this migration have been re-ordered from the EF generated migration, which added them alphabetically.
+        /// These columns can not be re-ordered once this migration has run - see https://github.com/dotnet/efcore/issues/10059
+        /// </summary>
+        /// <param name="migrationBuilder"></param>
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<DateTime>(
+                name: "MetadataDictionaryRefreshCompleted",
+                table: "DataRefreshHistory",
+                nullable: true);
+            
             migrationBuilder.AddColumn<DateTime>(
                 name: "DataDeletionCompleted",
                 table: "DataRefreshHistory",
@@ -18,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
                 nullable: true);
 
             migrationBuilder.AddColumn<DateTime>(
-                name: "DatabaseScalingTearDownCompleted",
+                name: "DonorImportCompleted",
                 table: "DataRefreshHistory",
                 nullable: true);
 
@@ -26,14 +36,9 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
                 name: "DonorHlaProcessingCompleted",
                 table: "DataRefreshHistory",
                 nullable: true);
-
+            
             migrationBuilder.AddColumn<DateTime>(
-                name: "DonorImportCompleted",
-                table: "DataRefreshHistory",
-                nullable: true);
-
-            migrationBuilder.AddColumn<DateTime>(
-                name: "MetadataDictionaryRefreshCompleted",
+                name: "DatabaseScalingTearDownCompleted",
                 table: "DataRefreshHistory",
                 nullable: true);
 

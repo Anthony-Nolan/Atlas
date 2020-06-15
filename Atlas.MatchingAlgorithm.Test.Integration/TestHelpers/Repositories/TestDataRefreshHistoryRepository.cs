@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
@@ -8,11 +9,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories
 {
     internal interface ITestDataRefreshHistoryRepository: IDataRefreshHistoryRepository
     {
-        public Task<DateTime?> GetStageCompletionTime(int recordId, DataRefreshStage stage);
+        public Task<Dictionary<DataRefreshStage, DateTime?>> GetStageCompletionTimes(int recordId);
         /// <summary>
         /// Used when we want a successful refresh to exist in the integration test database, but don't care much about the specifics of the record.
         /// </summary>
-        public int InsertDummySuccessfulRefreshRecord(string hlaNomenclatureVersion = null);
+        public int InsertDummySuccessfulRefreshRecord(string hlaNomenclatureVersion);
     }
 
     internal class TestDataRefreshHistoryRepository : DataRefreshHistoryRepository, ITestDataRefreshHistoryRepository
@@ -25,21 +26,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories
         #region Implementation of ITestDataRefreshHistoryRepository
 
         /// <inheritdoc />
-        public async Task<DateTime?> GetStageCompletionTime(int recordId, DataRefreshStage stage)
+        public new async Task<Dictionary<DataRefreshStage, DateTime?>> GetStageCompletionTimes(int recordId)
         {
-            var record = await GetRecordById(recordId);
-            
-            return stage switch
-            {
-                DataRefreshStage.MetadataDictionaryRefresh => record.MetadataDictionaryRefreshCompleted,
-                DataRefreshStage.DataDeletion => record.DataDeletionCompleted,
-                DataRefreshStage.DatabaseScalingSetup => record.DatabaseScalingSetupCompleted,
-                DataRefreshStage.DonorImport => record.DonorImportCompleted,
-                DataRefreshStage.DonorHlaProcessing => record.DonorHlaProcessingCompleted,
-                DataRefreshStage.DatabaseScalingTearDown => record.DatabaseScalingTearDownCompleted,
-                DataRefreshStage.QueuedDonorUpdateProcessing => record.QueuedDonorUpdatesCompleted,
-                _ => throw new ArgumentOutOfRangeException(nameof(stage))
-            };
+            return await base.GetStageCompletionTimes(recordId);
         }
 
         /// <inheritdoc />
