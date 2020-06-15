@@ -7,14 +7,26 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 {
     public interface IActiveHlaNomenclatureVersionAccessor
     {
-        /// <returns>The version of the HLA Nomenclature used to populate the current Transient donor database</returns>
+        /// <returns>
+        /// The version of the HLA Nomenclature used to populate the current Transient donor database.
+        /// If the transient database has not yet been populated, calling this will result in an Exception.
+        /// </returns>
         string GetActiveHlaNomenclatureVersion();
+        
+        /// <summary>
+        /// If the transient database has not yet been populated, calling this will return a dummy "un-initialised" value.
+        /// Otherwise, returns the active version.
+        /// </summary>
+        string GetActiveHlaNomenclatureVersionOrDefault();
     }
 
     public class ActiveHlaNomenclatureVersionAccessor : IActiveHlaNomenclatureVersionAccessor
     {
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private readonly IAppCache cache;
+
+        private const string ActiveVersionCacheKey = "activeWmdaVersion";
+        private const string NoActiveVersionValue = "NO-ACTIVE-VERSION";
 
         public ActiveHlaNomenclatureVersionAccessor(
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
@@ -26,13 +38,19 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 
         public string GetActiveHlaNomenclatureVersion()
         {
-            const string key = "activeWmdaVersion";
-            var version = cache.GetOrAdd(key, () => dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion());
-            ThrowIfNull(version, key);
+            var version = cache.GetOrAdd(ActiveVersionCacheKey, () => dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion());
+            ThrowIfNull(version, ActiveVersionCacheKey);
             return version;
         }
 
-        private void ThrowIfNull(string wmdaDatabaseVersion, string key)
+        /// <inheritdoc />
+        public string GetActiveHlaNomenclatureVersionOrDefault()
+        {
+            var version = cache.GetOrAdd(ActiveVersionCacheKey, () => dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion());
+            return string.IsNullOrWhiteSpace(version) ? NoActiveVersionValue : version;
+        }
+
+        private static void ThrowIfNull(string wmdaDatabaseVersion, string key)
         {
             if (string.IsNullOrWhiteSpace(wmdaDatabaseVersion))
             {

@@ -22,7 +22,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         {
             DatabaseManager.MigrateDatabases();
             DatabaseManager.ClearDatabases();
-            DatabaseManager.PopulateDatabasesWithInitialData();
         }
     }
 }

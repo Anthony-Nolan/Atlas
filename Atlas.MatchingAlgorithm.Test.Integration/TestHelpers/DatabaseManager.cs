@@ -1,8 +1,6 @@
 using System;
-using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
-using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -68,17 +66,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
         private static void ClearPersistentDatabase(SearchAlgorithmPersistentContext context)
         {
             context?.Database.ExecuteSqlRaw("TRUNCATE TABLE [DataRefreshHistory]");
-        }
-
-        /// <summary>
-        /// Creates an initial row in the data refresh history.
-        /// Necessary as null values for the active hla nomenclature version are not valid.
-        /// </summary>
-        // TODO: ATLAS-374: Remove this method once an empty table is a valid state.
-        public static void PopulateDatabasesWithInitialData()
-        {
-            var dataRefreshHistoryRepository = DependencyInjection.DependencyInjection.Provider.GetService<ITestDataRefreshHistoryRepository>();
-            dataRefreshHistoryRepository.InsertDummySuccessfulRefreshRecord(Constants.SnapshotHlaNomenclatureVersion);
         }
     }
 }
