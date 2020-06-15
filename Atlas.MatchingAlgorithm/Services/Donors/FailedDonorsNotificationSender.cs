@@ -19,11 +19,11 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 
     public class FailedDonorsNotificationSender : IFailedDonorsNotificationSender
     {
-        private readonly INotificationSender notificationsSender;
+        private readonly INotificationSender notificationSender;
 
-        public FailedDonorsNotificationSender(INotificationSender notificationsSender)
+        public FailedDonorsNotificationSender(INotificationSender notificationSender)
         {
-            this.notificationsSender = notificationsSender;
+            this.notificationSender = notificationSender;
         }
 
         public async Task SendFailedDonorsAlert(
@@ -38,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
                 return;
             }
             
-            await notificationsSender.SendAlert(alertSummary, GetDescription(failedDonors), loggerPriority, NotificationConstants.OriginatorName);
+            await notificationSender.SendAlert(alertSummary, GetDescription(failedDonors), loggerPriority, NotificationConstants.OriginatorName);
         }
 
         private static string GetDescription(IEnumerable<FailedDonorInfo> failedDonors)

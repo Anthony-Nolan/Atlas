@@ -17,16 +17,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
     {
         private IFailedDonorsNotificationSender failedDonorsNotificationSender;
 
-        private INotificationSender notificationsClient;
-        private ILogger logger;
+        private INotificationSender notificationSender;
 
         [SetUp]
         public void SetUp()
         {
-            notificationsClient = Substitute.For<INotificationSender>();
-            logger = Substitute.For<ILogger>();
+            notificationSender = Substitute.For<INotificationSender>();
 
-            failedDonorsNotificationSender = new FailedDonorsNotificationSender(notificationsClient);
+            failedDonorsNotificationSender = new FailedDonorsNotificationSender(notificationSender);
         }
 
         [Test]
@@ -35,7 +33,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             await failedDonorsNotificationSender.SendFailedDonorsAlert(
                 new List<FailedDonorInfo>(), "alert", Priority.Medium);
 
-            await notificationsClient.DidNotReceiveWithAnyArgs().SendAlert(default, default, default, default);
+            await notificationSender.DidNotReceiveWithAnyArgs().SendAlert(default, default, default, default);
         }
 
         [Test]
@@ -48,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 alertSummary,
                 Priority.Medium);
 
-            await notificationsClient.Received().SendAlert(
+            await notificationSender.Received().SendAlert(
                 Arg.Is<string>(summary => summary == alertSummary),
                 Arg.Any<string>(),
                 Arg.Any<Priority>(),
@@ -66,7 +64,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 "alert",
                 loggerPriority);
 
-            await notificationsClient.Received().SendAlert(
+            await notificationSender.Received().SendAlert(
                 Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Is<Priority>(pri => pri == loggerPriority),
@@ -85,7 +83,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 "alert",
                 Priority.Medium);
 
-            await notificationsClient.Received().SendAlert(
+            await notificationSender.Received().SendAlert(
                 Arg.Any<string>(),
                 Arg.Is<string>(description => description.Contains(totalDonorCount.ToString())),
                 Arg.Any<Priority>(),

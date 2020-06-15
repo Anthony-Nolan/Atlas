@@ -20,18 +20,18 @@ namespace Atlas.DonorImport.Services
         private const int BatchSize = 10000;
         private readonly IDonorImportFileParser fileParser;
         private readonly IDonorRecordChangeApplier donorRecordChangeApplier;
-        private readonly INotificationSender notificationsSender;
+        private readonly INotificationSender notificationSender;
         private readonly ILogger logger;
 
         public DonorFileImporter(
             IDonorImportFileParser fileParser,
             IDonorRecordChangeApplier donorRecordChangeApplier,
-            INotificationSender notificationsSender,
+            INotificationSender notificationSender,
             ILogger logger)
         {
             this.fileParser = fileParser;
             this.donorRecordChangeApplier = donorRecordChangeApplier;
-            this.notificationsSender = notificationsSender;
+            this.notificationSender = notificationSender;
             this.logger = logger;
         }
 
@@ -56,7 +56,7 @@ namespace Atlas.DonorImport.Services
 {importedDonorCount} Donors were successfully imported prior to this error and have already been stored in the Database. Any remaining donors in the file have not been stored.
 Manual investigation is recommended; see Application Insights for more information.";
 
-                await notificationsSender.SendAlert(summary, description, Priority.Medium, nameof(ImportDonorFile));
+                await notificationSender.SendAlert(summary, description, Priority.Medium, nameof(ImportDonorFile));
 
                 throw;
             }
