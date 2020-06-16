@@ -2,12 +2,12 @@ using Atlas.Common.Notifications;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.DependencyInjection;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
+using Atlas.MultipleAlleleCodeDictionary.HlaService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using System;
 using System.IO;
-using Atlas.MultipleAlleleCodeDictionary.HlaService;
 
 namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
 {
@@ -50,7 +50,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
 
         private static void SetUpMockServices(IServiceCollection services)
         {
-            services.AddScoped(sp => Substitute.For<INotificationsClient>());
+            services.AddScoped(sp => Substitute.For<INotificationSender>());
             services.AddScoped(sp => Substitute.For<IHlaServiceClient>());
         }
 
