@@ -9,6 +9,10 @@ namespace Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping
     {
         private static readonly string ExpressionSuffixPattern = $"[{MolecularTypingNameConstants.ExpressionSuffixes}]$";
 
+        public MolecularAlleleDetails()
+        {
+        }
+        
         public string AlleleNameWithoutPrefix { get; }
 
         /// <summary>

@@ -9,7 +9,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
 {
     internal interface IMacExpander
     {
-        IEnumerable<MolecularAlleleDetails> ExpandMac(MultipleAlleleCode mac, string firstField);
+        IEnumerable<MolecularAlleleDetails> ExpandMac(Mac mac, string firstField = null);
     }
     
     internal class MacExpander : IMacExpander
@@ -17,11 +17,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
         private const char AlleleDelimiter = '/';
         private const char FieldDelimiter = ':';
 
-        public IEnumerable<MolecularAlleleDetails> ExpandMac(MultipleAlleleCode mac, string firstField)
+        public IEnumerable<MolecularAlleleDetails> ExpandMac(Mac mac, string firstField)
         {
             return mac.IsGeneric ? GetGenericMac(mac, firstField) : GetSpecificMac(mac);
         }
-        private static IEnumerable<MolecularAlleleDetails> GetGenericMac(MultipleAlleleCode mac, string firstField)
+        private static IEnumerable<MolecularAlleleDetails> GetGenericMac(Mac mac, string firstField = null)
         {
             var secondFields = mac.Hla.Split(AlleleDelimiter);
             var combinedFields = new string[secondFields.Length];
@@ -33,7 +33,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
             return combinedFields.Select(x => new MolecularAlleleDetails(x));
         }
 
-        private static IEnumerable<MolecularAlleleDetails> GetSpecificMac(MultipleAlleleCode mac)
+        private static IEnumerable<MolecularAlleleDetails> GetSpecificMac(Mac mac)
         {
             var alleles = mac.Hla.Split(AlleleDelimiter);
             return alleles.Select(x => new MolecularAlleleDetails(x));

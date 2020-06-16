@@ -15,7 +15,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
     public interface IMacCache
     {
         Task<IEnumerable<MolecularAlleleDetails>> GetHlaFromMac(string macCode, string firstField);
-        Task<MultipleAlleleCode> GetMacCode(string macCode);
+        Task<Mac> GetMacCode(string macCode);
         Task GenerateMacCache();
     }
     
@@ -37,11 +37,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
         public async Task<IEnumerable<MolecularAlleleDetails>> GetHlaFromMac(string macCode, string firstField)
         {
             var mac = await GetMacCode(macCode);
-            logger.SendTrace($"Attempting to expand Hla for Mac: {mac.Mac}", LogLevel.Info);
+            logger.SendTrace($"Attempting to expand Hla for Mac: {mac.Code}", LogLevel.Info);
             return macExpander.ExpandMac(mac, firstField);
         }
 
-        public async Task<MultipleAlleleCode> GetMacCode(string macCode)
+        public async Task<Mac> GetMacCode(string macCode)
         {
             return await cache.GetOrAddAsync(macCode, () => macRepository.GetMac(macCode));
         }
@@ -51,7 +51,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
             var macs = await macRepository.GetAllMacs();
             foreach (var mac in macs)
             {
-                cache.GetOrAdd(mac.Mac, () => mac);
+                cache.GetOrAdd(mac.Code, () => mac);
             }
         }
     }
