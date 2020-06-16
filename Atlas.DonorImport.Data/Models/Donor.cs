@@ -11,6 +11,10 @@ namespace Atlas.DonorImport.Data.Models
     [Table("Donors")]
     public class Donor
     {
+        /// <remarks>
+        /// These must remaining in synch with the fields added to the rows of the
+        /// data-table in <see cref="DonorImportRepository.BuildDonorInsertDataTable"/>
+        /// </remarks>
         public static readonly string[] InsertionDataTableColumnNames =
         {
             nameof(AtlasId),

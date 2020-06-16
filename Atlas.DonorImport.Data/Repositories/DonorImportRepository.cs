@@ -76,7 +76,9 @@ namespace Atlas.DonorImport.Data.Repositories
                     donor.DQB1_2,
                     donor.DRB1_1,
                     donor.DRB1_2,
-                    donor.Hash);
+                    donor.Hash,
+                    donor.UpdateFile,
+                    donor.LastUpdated);
             }
 
             return dataTable;
