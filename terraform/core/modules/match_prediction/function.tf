@@ -16,6 +16,8 @@ resource "azurerm_function_app" "atlas_match_prediction_function" {
     "ApplicationInsights:LogLevel"                      = var.APPLICATION_INSIGHTS_LOG_LEVEL
     "AzureStorage:ConnectionString"                     = var.azure_storage.primary_connection_string
     "AzureStorage:HaplotypeFrequencySetImportContainer" = azurerm_storage_container.haplotype_frequency_set_blob_container.name
+    "Client:HlaService:ApiKey"                          = var.HLA_SERVICE_APIKEY
+    "Client:HlaService:BaseUrl"                         = var.HLA_SERVICE_BASEURL
     "NotificationsServiceBus:ConnectionString"          = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:AlertsTopic"               = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:NotificationsTopic"        = var.servicebus_topics.notifications.name
