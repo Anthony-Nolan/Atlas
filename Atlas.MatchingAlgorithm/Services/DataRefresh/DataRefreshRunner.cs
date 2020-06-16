@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -57,6 +58,23 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             .Except(new[] {DataRefreshStage.QueuedDonorUpdateProcessing}) // TODO: ATLAS-249: Implement new donor update workflow
             .OrderBy(x => x);
 
+        private readonly IDictionary<DataRefreshStage, bool> canStageBeSkipped = new Dictionary<DataRefreshStage, bool>
+        {
+            // Can not skip metadata dictionary refresh, as it is required to fetch the latest nomenclature version.
+            {DataRefreshStage.MetadataDictionaryRefresh, false},
+            // Data deletion *must* be skipped for continued updates to work.
+            // If we have imported donor data but dropped out during HLA refresh, we should not delete the donor data.
+            {DataRefreshStage.DataDeletion, true},
+            {DataRefreshStage.DatabaseScalingSetup, true},
+            {DataRefreshStage.DonorImport, true},
+            {DataRefreshStage.DonorHlaProcessing, true},
+            // Database scale down has a cost impact if skipped entirely, and it is possible for someone to manually scale the DB back up between interruption and retry.
+            // Re-performing this stage if the database is already at the required level is very quick.
+            {DataRefreshStage.DatabaseScalingTearDown, false},
+            // Donor updates will still be posted if the refresh quits after this stage. This stage should always be performed last, and the refresh only marked as success when it is fully complete. 
+            {DataRefreshStage.QueuedDonorUpdateProcessing, false},
+        };
+
         public DataRefreshRunner(
             IOptions<DataRefreshSettings> dataRefreshSettingsOptions,
             IActiveDatabaseProvider activeDatabaseProvider,
@@ -93,10 +111,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             try
             {
                 var newHlaNomenclatureVersion = await RefreshHlaMetadataDictionary(refreshRecordId);
+                var refreshRecord = await dataRefreshHistoryRepository.GetRecord(refreshRecordId);
 
                 foreach (var dataRefreshStage in orderedRefreshStages)
                 {
-                    await RunDataRefreshStage(dataRefreshStage, refreshRecordId, newHlaNomenclatureVersion);
+                    await RunDataRefreshStage(dataRefreshStage, refreshRecord, newHlaNomenclatureVersion);
                 }
 
                 return newHlaNomenclatureVersion;
@@ -117,8 +136,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             return newHlaNomenclatureVersion;
         }
 
-        private async Task RunDataRefreshStage(DataRefreshStage dataRefreshStage, int refreshRecordId, string newHlaNomenclatureVersion)
+        private async Task RunDataRefreshStage(DataRefreshStage dataRefreshStage, DataRefreshRecord refreshRecord, string newHlaNomenclatureVersion)
         {
+            if (refreshRecord.IsStageComplete(dataRefreshStage) && canStageBeSkipped[dataRefreshStage])
+            {
+                logger.SendTrace($"{LoggingPrefix} Stage {dataRefreshStage} is already complete and can be skipped. Skipping.", LogLevel.Info);
+                return;
+            }
+
             logger.SendTrace($"{LoggingPrefix} Running stage {dataRefreshStage}", LogLevel.Info);
 
             switch (dataRefreshStage)
@@ -148,7 +173,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     throw new ArgumentOutOfRangeException(nameof(dataRefreshStage), dataRefreshStage, null);
             }
 
-            await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecordId, dataRefreshStage);
+            await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecord.Id, dataRefreshStage);
         }
 
         private async Task ScaleDatabase(AzureDatabaseSize targetSize)
