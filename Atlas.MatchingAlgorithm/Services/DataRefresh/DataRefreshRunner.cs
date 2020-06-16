@@ -112,10 +112,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             {
                 var newHlaNomenclatureVersion = await RefreshHlaMetadataDictionary(refreshRecordId);
                 var refreshRecord = await dataRefreshHistoryRepository.GetRecord(refreshRecordId);
+                var stageToContinueFrom = orderedRefreshStages.Any(s => refreshRecord.IsStageComplete(s))
+                    ? orderedRefreshStages.First(s => !refreshRecord.IsStageComplete(s))
+                    : null as DataRefreshStage?;
 
                 foreach (var dataRefreshStage in orderedRefreshStages)
                 {
-                    await RunDataRefreshStage(dataRefreshStage, refreshRecord, newHlaNomenclatureVersion);
+                    var isContinuation = dataRefreshStage == stageToContinueFrom;
+                    await RunDataRefreshStage(dataRefreshStage, refreshRecord, newHlaNomenclatureVersion, isContinuation);
                 }
 
                 return newHlaNomenclatureVersion;
@@ -136,15 +140,19 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             return newHlaNomenclatureVersion;
         }
 
-        private async Task RunDataRefreshStage(DataRefreshStage dataRefreshStage, DataRefreshRecord refreshRecord, string newHlaNomenclatureVersion)
+        private async Task RunDataRefreshStage(
+            DataRefreshStage dataRefreshStage,
+            DataRefreshRecord refreshRecord,
+            string newHlaNomenclatureVersion,
+            bool isContinuation)
         {
             if (refreshRecord.IsStageComplete(dataRefreshStage) && canStageBeSkipped[dataRefreshStage])
             {
-                logger.SendTrace($"{LoggingPrefix} Stage {dataRefreshStage} is already complete and can be skipped. Skipping.", LogLevel.Info);
+                logger.SendTrace($"{LoggingPrefix} Stage {dataRefreshStage} is already complete and can be skipped. Skipping.");
                 return;
             }
 
-            logger.SendTrace($"{LoggingPrefix} Running stage {dataRefreshStage}", LogLevel.Info);
+            logger.SendTrace($"{LoggingPrefix} {(isContinuation ? "Continuing" : "Running")} stage {dataRefreshStage}");
 
             switch (dataRefreshStage)
             {
@@ -157,10 +165,21 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     await ScaleDatabase(settingsOptions.Value.RefreshDatabaseSize.ParseToEnum<AzureDatabaseSize>());
                     break;
                 case DataRefreshStage.DonorImport:
+                    if (isContinuation)
+                    {
+                        // Resuming mid-donor import is not supported, instead we will restart the whole stage.
+                        await donorImportRepository.RemoveAllDonorInformation();
+                    }
                     await donorImporter.ImportDonors();
                     break;
                 case DataRefreshStage.DonorHlaProcessing:
-                    logger.SendTrace($"{LoggingPrefix} Using HLA Nomenclature version: {newHlaNomenclatureVersion}", LogLevel.Info);
+                    logger.SendTrace($"{LoggingPrefix} Using HLA Nomenclature version: {newHlaNomenclatureVersion}");
+                    if (isContinuation)
+                    {
+                        // TODO: ATLAS-251: Allow continuation mid-hla processing.
+                        // Resuming mid-hla processing is not yet supported, instead we will restart the whole stage.
+                        await donorImportRepository.RemoveAllProcessedDonorHla();
+                    }
                     await hlaProcessor.UpdateDonorHla(newHlaNomenclatureVersion);
                     break;
                 case DataRefreshStage.DatabaseScalingTearDown:
