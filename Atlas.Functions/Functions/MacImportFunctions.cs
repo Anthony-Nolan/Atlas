@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
@@ -40,7 +41,7 @@ namespace Atlas.Functions.Functions
         }
 
         [FunctionName(nameof(GetHlaFromMac))]
-        public async Task<MolecularAlleleDetails> GetHlaFromMac([HttpTrigger(AuthorizationLevel.Function, "get")]
+        public async Task<IEnumerable<MolecularAlleleDetails>> GetHlaFromMac([HttpTrigger(AuthorizationLevel.Function, "get")]
             HttpRequest request)
         {
             var macCode = request.Query["code"];
