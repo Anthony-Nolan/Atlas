@@ -59,9 +59,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
 
-            activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(
-                hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersionOrDefault()
-            );
+            var activeVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersionOrDefault();
+            activeVersionHlaMetadataDictionary = activeVersion == HlaMetadataDictionaryConstants.NoActiveVersionValue
+                ? null
+                : hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersionOrDefault());
         }
 
         public async Task RefreshDataIfNecessary(bool shouldForceRefresh)
@@ -72,7 +73,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 return;
             }
 
-            var newHlaNomenclatureAvailable = activeVersionHlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion();
+            // No metadata dictionary will be created if there is no active version - in this case a new version is always available, as there is no active version to compare to.
+            var newHlaNomenclatureAvailable = activeVersionHlaMetadataDictionary?.IsActiveVersionDifferentFromLatestVersion() ?? true;
             if (!newHlaNomenclatureAvailable)
             {
                 const string noNewData = "No new versions of the WMDA HLA nomenclature have been published.";
