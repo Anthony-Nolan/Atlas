@@ -43,7 +43,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
 
         public async Task<IEnumerable<MolecularAlleleDetails>> GetHlaFromMac(string macCode, string firstField)
         {
-            return await macCache.GetHlaFromMac(macCode, firstField);
+            return await macCacheService.GetHlaFromMac(macCode, firstField);
         }
     }
 }
