@@ -39,6 +39,17 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         {
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
         }
+        
+        /// <summary>
+        /// If a single data refresh job is in progress, continues from the last successful stage.
+        /// Should not be called unless you are sure that an in progress job has been interrupted, to avoid multiple jobs running concurrently.
+        /// </summary>
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
+        [FunctionName(nameof(ContinueDataRefresh))]
+        public async Task ContinueDataRefresh([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
+        {
+            await dataRefreshOrchestrator.ContinueDataRefresh();
+        }
 
         /// <summary>
         /// Runs a full data refresh, if necessary

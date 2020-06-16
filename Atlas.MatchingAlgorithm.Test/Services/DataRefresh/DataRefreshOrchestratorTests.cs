@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Utils.Http;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
@@ -14,9 +18,6 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 {
@@ -41,7 +42,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [SetUp]
         public void SetUp()
         {
-
             settingsOptions = Substitute.For<IOptions<DataRefreshSettings>>();
             settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
 
@@ -83,7 +83,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshRunner.DidNotReceiveWithAnyArgs().RefreshData(default);
         }
-        
+
         [Test]
         public async Task RefreshDataIfNecessary_WhenActiveHlaVersionMatchesLatest_AndShouldForceRefresh_TriggersDataRefresh()
         {
@@ -114,7 +114,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshRunner.DidNotReceiveWithAnyArgs().RefreshData(default);
         }
-        
+
         [Test]
         public async Task RefreshDataIfNecessary_WhenShouldForceRefresh_AndJobAlreadyInProgress_DoesNotTriggerDataRefresh()
         {
@@ -236,7 +236,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(Arg.Any<int>(), false);
         }
-        
+
         [Test]
         public async Task RefreshData_StopsDonorImportFunction()
         {
@@ -264,7 +264,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await azureFunctionManager.Received().StartFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName);
         }
-        
+
         [Test]
         public async Task RefreshData_ScalesActiveDatabaseToDormantSize()
         {
@@ -279,7 +279,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
         }
-        
+
         [Test]
         public async Task RefreshData_ScalesDownDatabaseThatWasActiveWhenTheJobStarted()
         {
@@ -289,7 +289,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Build();
             settingsOptions.Value.Returns(settings);
             activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
-            
+
             // Marking refresh record as complete will switch over which database is considered "active". Emulating this with mocks here.
             dataRefreshHistoryRepository.WhenForAnyArgs(r => r.UpdateSuccessFlag(0, true)).Do(x =>
             {
@@ -300,7 +300,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
         }
-        
+
         [Test]
         public async Task RefreshData_WhenRefreshFails_DoesNotScaleActiveDatabaseToDormantSize()
         {
@@ -311,12 +311,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             settingsOptions.Value.Returns(settings);
             activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
             dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception());
-            
+
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
             await azureDatabaseManager.DidNotReceive().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
         }
-        
+
         [Test]
         public async Task RefreshData_WhenRefreshFails_RestartsDonorImportFunction()
         {
@@ -331,7 +331,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await azureFunctionManager.Received().StartFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName);
         }
-        
+
         [Test]
         public async Task RefreshData_SendsNotificationOnInitialisation()
         {
@@ -339,7 +339,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshNotificationSender.Received().SendInitialisationNotification();
         }
-        
+
         [Test]
         public async Task RefreshData_SendsNotificationOnSuccess()
         {
@@ -347,15 +347,42 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshNotificationSender.Received().SendSuccessNotification();
         }
-        
+
         [Test]
         public async Task RefreshData_SendsAlertOnFailure()
         {
             dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception());
-            
+
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
             await dataRefreshNotificationSender.Received().SendFailureAlert();
+        }
+
+        [Test]
+        public void ContinueDataRefresh_WhenNoJobsInProgress_ThrowsException()
+        {
+            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord>());
+
+            Assert.ThrowsAsync<AtlasHttpException>(async () => await dataRefreshOrchestrator.ContinueDataRefresh());
+        }
+
+        [Test]
+        public void ContinueDataRefresh_WithMultipleJobsInProgress_ThrowsException()
+        {
+            dataRefreshHistoryRepository.GetInProgressJobs().Returns(DataRefreshRecordBuilder.New.Build(2));
+
+            Assert.ThrowsAsync<AtlasHttpException>(async () => await dataRefreshOrchestrator.ContinueDataRefresh());
+        }
+
+        [Test]
+        public async Task ContinueDataRefresh_WithSingleJobInProgress_TriggersRefresh()
+        {
+            var record = DataRefreshRecordBuilder.New.With(r => r.Id, 19).Build();
+            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new[] {record});
+
+            await dataRefreshOrchestrator.ContinueDataRefresh();
+
+            await dataRefreshRunner.Received().RefreshData(record.Id);
         }
     }
 }
