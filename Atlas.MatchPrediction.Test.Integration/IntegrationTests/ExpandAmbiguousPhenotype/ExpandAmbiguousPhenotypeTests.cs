@@ -2,12 +2,11 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using FluentAssertions;
+using LochNessBuilder;
 using NUnit.Framework;
 using Microsoft.Extensions.DependencyInjection;
-
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguousPhenotype
 {
@@ -38,7 +37,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            compressedPhenotypeExpander = DependencyInjection.DependencyInjection.Provider.GetService<ICompressedPhenotypeExpander>();
+            compressedPhenotypeExpander =
+                DependencyInjection.DependencyInjection.Provider.GetService<ICompressedPhenotypeExpander>();
         }
 
         [TestCase(A1)]
@@ -46,23 +46,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
         [TestCase(FourFieldAllele)]
         public async Task ExpandCompressedPhenotype_WhenNoAmbiguousAlleles_ReturnsExpectedGenotype(string allele)
         {
-            var phenotype = PhenotypeInfoBuilder.New
-                .With(d => d.A, new LocusInfo<string> { Position1 = allele, Position2 = A2 })
-                .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
+            var phenotype = NewPhenotypeInfo
+                .With(d => d.A, new LocusInfo<string> {Position1 = allele, Position2 = A2})
                 .Build();
 
-            var expectedGenotypes = PhenotypeInfoBuilder.New
-                .With(d => d.A, new LocusInfo<string> { Position1 = A1, Position2 = A2 })
-                .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
-                .Build();
+            var expectedGenotypes = NewPhenotypeInfo.Build();
 
             var actualGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(
                 phenotype,
@@ -74,49 +62,16 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
         [Test]
         public async Task ExpandCompressedPhenotype_WhenAlleleStringOfNamesPresent_ReturnsExpectedGenotypes()
         {
-            var phenotype = PhenotypeInfoBuilder.New
-                .With(d => d.A, new LocusInfo<string> { Position1 = AlleleStringOfNames, Position2 = AlleleStringOfNames })
-                .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
+            var phenotype = NewPhenotypeInfo
+                .With(d => d.A, new LocusInfo<string> {Position1 = AlleleStringOfNames, Position2 = AlleleStringOfNames})
                 .Build();
 
             var expectedGenotypes = new List<PhenotypeInfo<string>>
             {
-                PhenotypeInfoBuilder.New
-                    .With(d => d.A, new LocusInfo<string> { Position1 = A1, Position2 = A1 })
-                    .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                    .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                    .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                    .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                    .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
-                    .Build(),
-                PhenotypeInfoBuilder.New
-                    .With(d => d.A, new LocusInfo<string> { Position1 = A2, Position2 = A1 })
-                    .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                    .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                    .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                    .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                    .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
-                    .Build(),
-                PhenotypeInfoBuilder.New
-                    .With(d => d.A, new LocusInfo<string> { Position1 = A1, Position2 = A2 })
-                    .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                    .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                    .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                    .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                    .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
-                    .Build(),
-                PhenotypeInfoBuilder.New
-                    .With(d => d.A, new LocusInfo<string> { Position1 = A2, Position2 = A2 })
-                    .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                    .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                    .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                    .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                    .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
-                    .Build()
+                NewPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A1}).Build(),
+                NewPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A2, Position2 = A1}).Build(),
+                NewPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2}).Build(),
+                NewPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A2, Position2 = A2}).Build()
             };
 
             var actualGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(
@@ -129,49 +84,16 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
         [Test]
         public async Task ExpandCompressedPhenotype_WhenAlleleStringOfSubtypesPresent_ReturnsExpectedGenotypes()
         {
-            var phenotype = PhenotypeInfoBuilder.New
-                .With(d => d.A, new LocusInfo<string> { Position1 = AlleleStringOfSubtypes, Position2 = AlleleStringOfSubtypes })
-                .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
+            var phenotype = NewPhenotypeInfo
+                .With(d => d.A, new LocusInfo<string> {Position1 = AlleleStringOfSubtypes, Position2 = AlleleStringOfSubtypes})
                 .Build();
 
             var expectedGenotypes = new List<PhenotypeInfo<string>>
             {
-                PhenotypeInfoBuilder.New
-                    .With(d => d.A, new LocusInfo<string> { Position1 = A1, Position2 = A1 })
-                    .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                    .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                    .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                    .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                    .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
-                    .Build(),
-                PhenotypeInfoBuilder.New
-                    .With(d => d.A, new LocusInfo<string> { Position1 = A2, Position2 = A1 })
-                    .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                    .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                    .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                    .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                    .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
-                    .Build(),
-                PhenotypeInfoBuilder.New
-                    .With(d => d.A, new LocusInfo<string> { Position1 = A1, Position2 = A2 })
-                    .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                    .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                    .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                    .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                    .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
-                    .Build(),
-                PhenotypeInfoBuilder.New
-                    .With(d => d.A, new LocusInfo<string> { Position1 = A2, Position2 = A2 })
-                    .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                    .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                    .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                    .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                    .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
-                    .Build()
+                NewPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A1}).Build(),
+                NewPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A2, Position2 = A1}).Build(),
+                NewPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2}).Build(),
+                NewPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A2, Position2 = A2}).Build()
             };
 
             var actualGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(
@@ -184,48 +106,34 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
         [Test]
         public async Task ExpandCompressedPhenotype_WhenMixOfAmbiguousAllelesPresent_ReturnsExpectedGenotypes()
         {
-            var phenotype = PhenotypeInfoBuilder.New
-                .With(d => d.A, new LocusInfo<string> { Position1 = AlleleStringOfSubtypes, Position2 = AlleleStringOfNames })
-                .With(d => d.B, new LocusInfo<string> { Position1 = ThreeFieldAllele, Position2 = FourFieldAllele })
-                .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
+            var phenotype = NewPhenotypeInfo
+                .With(d => d.A, new LocusInfo<string> {Position1 = AlleleStringOfSubtypes, Position2 = AlleleStringOfNames})
+                .With(d => d.B, new LocusInfo<string> {Position1 = ThreeFieldAllele, Position2 = FourFieldAllele})
+                .Build();
+
+
+            NewPhenotypeInfo
+                .With(d => d.A, new LocusInfo<string> {Position1 = AlleleStringOfSubtypes, Position2 = AlleleStringOfNames})
+                .With(d => d.B, new LocusInfo<string> {Position1 = ThreeFieldAllele, Position2 = FourFieldAllele})
                 .Build();
 
             var expectedGenotypes = new List<PhenotypeInfo<string>>
             {
-                PhenotypeInfoBuilder.New
-                    .With(d => d.A, new LocusInfo<string> { Position1 = A1, Position2 = A1 })
-                    .With(d => d.B, new LocusInfo<string> { Position1 = A1, Position2 = A1 })
-                    .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                    .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                    .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                    .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
+                NewPhenotypeInfo
+                    .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A1})
+                    .With(d => d.B, new LocusInfo<string> {Position1 = A1, Position2 = A1})
                     .Build(),
-                PhenotypeInfoBuilder.New
-                    .With(d => d.A, new LocusInfo<string> { Position1 = A2, Position2 = A1 })
-                    .With(d => d.B, new LocusInfo<string> { Position1 = A1, Position2 = A1 })
-                    .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                    .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                    .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                    .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
+                NewPhenotypeInfo
+                    .With(d => d.A, new LocusInfo<string> {Position1 = A2, Position2 = A1})
+                    .With(d => d.B, new LocusInfo<string> {Position1 = A1, Position2 = A1})
                     .Build(),
-                PhenotypeInfoBuilder.New
-                    .With(d => d.A, new LocusInfo<string> { Position1 = A1, Position2 = A2 })
-                    .With(d => d.B, new LocusInfo<string> { Position1 = A1, Position2 = A1 })
-                    .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                    .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                    .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                    .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
+                NewPhenotypeInfo
+                    .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})
+                    .With(d => d.B, new LocusInfo<string> {Position1 = A1, Position2 = A1})
                     .Build(),
-                PhenotypeInfoBuilder.New
-                    .With(d => d.A, new LocusInfo<string> { Position1 = A2, Position2 = A2 })
-                    .With(d => d.B, new LocusInfo<string> { Position1 = A1, Position2 = A1 })
-                    .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                    .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
-                    .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                    .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
+                NewPhenotypeInfo
+                    .With(d => d.A, new LocusInfo<string> {Position1 = A2, Position2 = A2})
+                    .With(d => d.B, new LocusInfo<string> {Position1 = A1, Position2 = A1})
                     .Build()
             };
 
@@ -245,5 +153,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
         // TODO: ATLAS-367 - Create tests for XX code alleles
 
         // TODO: ATLAS-407 - Create tests for NMDP alleles
+
+        private static Builder<PhenotypeInfo<string>> NewPhenotypeInfo => Builder<PhenotypeInfo<string>>.New
+            .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})
+            .With(d => d.B, new LocusInfo<string> {Position1 = B1, Position2 = B2})
+            .With(d => d.C, new LocusInfo<string> {Position1 = C1, Position2 = C2})
+            .With(d => d.Dpb1, new LocusInfo<string> {Position1 = null, Position2 = null})
+            .With(d => d.Dqb1, new LocusInfo<string> {Position1 = Dqb11, Position2 = Dqb12})
+            .With(d => d.Drb1, new LocusInfo<string> {Position1 = Drb11, Position2 = Drb12});
     }
 }
