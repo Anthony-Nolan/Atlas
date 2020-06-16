@@ -3,6 +3,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 
 namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 {
@@ -32,7 +33,15 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             var hlaMetadataDictionary = metadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
 
             var allelesPerLocus = await phenotype.MapAsync(async (locus, position, hla) =>
-                await hlaMetadataDictionary.ConvertHla(locus, hla, FrequencyResolution));
+                {
+                    if (locus == Locus.Dpb1)
+                    {
+                        return null;
+                    }
+
+                    return await hlaMetadataDictionary.ConvertHla(locus, hla, FrequencyResolution);
+                }
+            );
 
             var genotypes = ambiguousPhenotypeExpander.ExpandPhenotype(allelesPerLocus);
 

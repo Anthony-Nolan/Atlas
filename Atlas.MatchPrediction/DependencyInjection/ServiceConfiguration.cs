@@ -78,6 +78,7 @@ namespace Atlas.MatchPrediction.DependencyInjection
             services.AddScoped<IGenotypeLikelihoodCalculator, GenotypeLikelihoodCalculator>();
             services.AddScoped<IGenotypeAlleleTruncater, GenotypeAlleleTruncater>();
 
+            services.AddScoped<IAmbiguousPhenotypeExpander, AmbiguousPhenotypeExpander>();
             services.AddScoped<ICompressedPhenotypeExpander, CompressedPhenotypeExpander>();
         }
 
