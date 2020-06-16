@@ -1,3 +1,4 @@
+using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
@@ -99,7 +100,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             public IHlaMetadataCacheControl CacheControl { get; set; }
         }
 
-        internal string CacheKey(string activeHlaNomenclatureVersion) => $"hlaMetadataDictionary-version:{activeHlaNomenclatureVersion}";
+        private static string CacheKey(string activeHlaNomenclatureVersion) => $"hlaMetadataDictionary-version:{activeHlaNomenclatureVersion}";
 
         public IHlaMetadataDictionary BuildDictionary(string activeHlaNomenclatureVersion)
         {
@@ -117,6 +118,10 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         private CacheObject BuildTuple(string activeHlaNomenclatureVersion)
         {
+            if (activeHlaNomenclatureVersion == null)
+            {
+                throw new Exception("Cannot create a HLA Metadata Dictionary without a nomenclature version.");
+            }
             return new CacheObject
             {
                 Dictionary = BuildUncachedDictionary(activeHlaNomenclatureVersion),

@@ -40,6 +40,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         {
             public string Version { get; set; }
         }
+        
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(RefreshHlaMetadataDictionaryToSpecificVersion))]
         public async Task RefreshHlaMetadataDictionaryToSpecificVersion([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
