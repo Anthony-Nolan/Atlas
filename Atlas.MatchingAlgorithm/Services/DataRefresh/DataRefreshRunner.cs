@@ -75,6 +75,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
             settingsOptions = dataRefreshSettingsOptions;
 
+            // TODO: ATLAS-355: Remove the need for a hardcoded default value
             activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(
                 hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersionOrDefault()
             );

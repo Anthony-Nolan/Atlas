@@ -2,7 +2,6 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.NovaHttpClient.Client;
-using Atlas.Common.Utils.Extensions;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.HlaService;
 using Atlas.MultipleAlleleCodeDictionary.MacCacheService;
@@ -94,7 +93,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
                 ClientName = "hla_service_client",
                 JsonSettings = new JsonSerializerSettings()
             };
-
+            
             try
             {
                 return new HlaServiceClient(clientSettings, logger);
