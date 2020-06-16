@@ -28,6 +28,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
             this.macRepository = macRepository;
         }
 
+        // TODO Atlas-54 ensure all new MAC functionality is adequately tested
         public async Task<string> GetHlaFromMac(string macCode)
         {
             var mac = await GetMacCode(macCode);
