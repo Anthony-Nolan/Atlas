@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.MacCacheService;
@@ -11,7 +12,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         public Task ImportLatestMacs();
         public Task<Mac> GetMac(string macCode);
         public Task GenerateMacCache();
-         public Task<MolecularAlleleDetails> GetHlaFromMac(string macCode, string firstField);
+         public Task<IEnumerable<MolecularAlleleDetails>> GetHlaFromMac(string macCode, string firstField);
     }
     
     public class MacDictionary : IMacDictionary
@@ -40,7 +41,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
             await macCache.GenerateMacCache();
         }
 
-        public async Task<MolecularAlleleDetails> GetHlaFromMac(string macCode, string firstField)
+        public async Task<IEnumerable<MolecularAlleleDetails>> GetHlaFromMac(string macCode, string firstField)
         {
             return await macCache.GetHlaFromMac(macCode, firstField);
         }
