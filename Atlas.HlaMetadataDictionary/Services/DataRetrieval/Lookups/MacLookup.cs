@@ -3,7 +3,7 @@ using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.MacCacheService;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
+/*namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 {
 
     public interface IMacLookup
@@ -25,4 +25,4 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
             return await macDictionary.GetHlaFromMac(mac, firstField);
         }
     }
-}
+}*/

@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
+using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.GeneticData.Hla.Services.AlleleStringSplitters;
 
 namespace Atlas.MultipleAlleleCodeDictionary.utils
@@ -14,13 +16,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
     {
         private const char AlleleDelimiter = '/';
         private const char FieldDelimiter = ':';
-        private AlleleStringSplitterBase stringSplitter;
 
-        public MacExpander(AlleleStringSplitterBase stringSplitter)
-        {
-            this.stringSplitter = stringSplitter;
-        }
-        
         public IEnumerable<MolecularAlleleDetails> ExpandMac(MultipleAlleleCode mac, string firstField)
         {
             return mac.IsGeneric ? GetGenericMac(mac, firstField) : GetSpecificMac(mac);
@@ -31,19 +27,16 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
             var combinedFields = new string[secondFields.Length];
             for (var i = 0; i < secondFields.Length; i++)
             {
-                combinedFields[i] = $"{firstField}:{secondFields[i]}";
+                combinedFields[i] = $"{firstField}{FieldDelimiter}{secondFields[i]}";
             }
 
-            var alleles = string.Join(FieldDelimiter, combinedFields);
-            return new MolecularAlleleDetails(alleles);
+            return combinedFields.Select(x => new MolecularAlleleDetails(x));
         }
 
         private static IEnumerable<MolecularAlleleDetails> GetSpecificMac(MultipleAlleleCode mac)
         {
-            return new List<MolecularAlleleDetails>()
-            {
-                new MolecularAlleleDetails(mac.Hla)
-            };
+            var alleles = mac.Hla.Split(AlleleDelimiter);
+            return alleles.Select(x => new MolecularAlleleDetails(x));
         }
     }
 }
