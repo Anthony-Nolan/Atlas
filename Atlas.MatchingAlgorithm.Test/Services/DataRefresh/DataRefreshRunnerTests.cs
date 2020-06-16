@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
@@ -20,13 +22,11 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
-using System;
-using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 {
     [TestFixture]
-    public class DataRefreshServiceTests
+    public class DataRefreshRunnerTests
     {
         private IOptions<DataRefreshSettings> settingsOptions;
         private IActiveDatabaseProvider activeDatabaseProvider;
@@ -57,6 +57,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             dataRefreshNotificationSender = Substitute.For<IDataRefreshNotificationSender>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
 
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.Build());
             transientRepositoryFactory.GetDonorImportRepository().Returns(donorImportRepository);
             settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
 
@@ -297,6 +298,31 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             {
                 await dataRefreshNotificationSender.Received().SendTeardownFailureAlert();
             }
+        }
+
+        [TestCase(DataRefreshStage.MetadataDictionaryRefresh)]
+        [TestCase(DataRefreshStage.DatabaseScalingTearDown)]
+        // TODO: ATLAS-249: Add a test case for Queued Update Processing
+        public async Task RefreshData_WhenUnskippableStageIsAlreadyComplete_DoesNotSkipStage(DataRefreshStage refreshStage)
+        {
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.WithStageCompleted(refreshStage).Build());
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await dataRefreshHistoryRepository.Received().MarkStageAsComplete(Arg.Any<int>(), refreshStage);
+        }
+
+        [TestCase(DataRefreshStage.DataDeletion)]
+        [TestCase(DataRefreshStage.DatabaseScalingSetup)]
+        [TestCase(DataRefreshStage.DonorImport)]
+        [TestCase(DataRefreshStage.DonorHlaProcessing)]
+        public async Task RefreshData_WhenSkippableStageIsAlreadyComplete_SkipsStage(DataRefreshStage refreshStage)
+        {
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.WithStageCompleted(refreshStage).Build());
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await dataRefreshHistoryRepository.DidNotReceive().MarkStageAsComplete(Arg.Any<int>(), refreshStage);
         }
     }
 }
