@@ -324,5 +324,56 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshHistoryRepository.DidNotReceive().MarkStageAsComplete(Arg.Any<int>(), refreshStage);
         }
+
+        [Test]
+        public async Task RefreshData_WhenContinuingFromDonorImport_ClearsAllData()
+        {
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpTo(DataRefreshStage.DonorImport).Build()
+            );
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await donorImportRepository.Received(1).RemoveAllDonorInformation();
+        }
+
+        [Test]
+        public async Task RefreshData_WhenContinuingFromBeforeDonorImport_ButAfterInitialDataDeletion_DoesNotClearData()
+        {
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpTo(DataRefreshStage.DatabaseScalingSetup).Build()
+            );
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await donorImportRepository.DidNotReceive().RemoveAllDonorInformation();
+        }
+
+        [Test]
+        public async Task RefreshData_WhenContinuingFromHlaProcessingStep_DeletesOnlyProcessedHlaData()
+        {
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpTo(DataRefreshStage.DonorHlaProcessing).Build()
+            );
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await donorImportRepository.DidNotReceive().RemoveAllDonorInformation();
+            await donorImportRepository.Received().RemoveAllProcessedDonorHla();
+        }
+
+        [Test]
+        public async Task RefreshData_WhenNotContinued_OnlyDeletesDataOnce()
+        {
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.Build()
+            );
+
+            await dataRefreshRunner.RefreshData(default);
+
+            // Expected to be called exactly once in "DataDeletion" step, but not during donor import step
+            await donorImportRepository.Received(1).RemoveAllDonorInformation();
+            await donorImportRepository.DidNotReceive().RemoveAllProcessedDonorHla();
+        }
     }
 }
