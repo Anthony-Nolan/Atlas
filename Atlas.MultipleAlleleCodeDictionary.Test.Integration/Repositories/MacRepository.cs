@@ -12,10 +12,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
     {
         public Task CreateTableIfNotExists();
         public Task DeleteAllMacs();
-        
-        // TODO: ATLAS-47: Remove this in favour of non-test version
-        public Task<IEnumerable<MacEntity>> GetAllMacEntities();
-
     }
 
     internal class TestMacRepository : MacRepository, ITestMacRepository
@@ -33,18 +29,14 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
         /// <inheritdoc />
         public async Task DeleteAllMacs()
         {
-            foreach (var alleleCodeEntity in await GetAllMacEntities())
+            foreach (var mac in await GetAllMacs())
             {
-                var delete = TableOperation.Delete(alleleCodeEntity);
+                var macToDelete = new MacEntity(mac);
+                // A TableEntities ETag property must be set to "*" to allow overwrites.
+                macToDelete.ETag = "*";
+                var delete = TableOperation.Delete(macToDelete);
                 Table.Execute(delete);
             }
-        }
-
-        /// <inheritdoc />
-        public async Task<IEnumerable<MacEntity>> GetAllMacEntities()
-        {
-            var query = new TableQuery<MacEntity>();
-            return await Table.ExecuteQueryAsync(query);
         }
     }
 }
