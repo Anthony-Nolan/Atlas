@@ -50,6 +50,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IHlaProcessor hlaProcessor;
         private readonly ILogger logger;
 
+        private const string LoggingPrefix = "DATA REFRESH:";
+
+        private readonly IOrderedEnumerable<DataRefreshStage> orderedRefreshStages = EnumExtensions.EnumerateValues<DataRefreshStage>()
+            .Except(new[] {DataRefreshStage.MetadataDictionaryRefresh})
+            .Except(new[] {DataRefreshStage.QueuedDonorUpdateProcessing}) // TODO: ATLAS-249: Implement new donor update workflow
+            .OrderBy(x => x);
+
         public DataRefreshRunner(
             IOptions<DataRefreshSettings> dataRefreshSettingsOptions,
             IActiveDatabaseProvider activeDatabaseProvider,
@@ -85,14 +92,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             try
             {
-                // Hla Metadata Dictionary Refresh is not performed atomically as the resulting nomenclature version is needed in other stages.
-                var newHlaNomenclatureVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
-                await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecordId, DataRefreshStage.MetadataDictionaryRefresh);
-                var orderedRefreshStages = EnumExtensions.EnumerateValues<DataRefreshStage>()
-                    .Except(new[] {DataRefreshStage.MetadataDictionaryRefresh})
-                    // TODO: ATLAS-249: Implement new donor update workflow
-                    .Except(new[] {DataRefreshStage.QueuedDonorUpdateProcessing})
-                    .OrderBy(x => x);
+                var newHlaNomenclatureVersion = await RefreshHlaMetadataDictionary(refreshRecordId);
 
                 foreach (var dataRefreshStage in orderedRefreshStages)
                 {
@@ -103,29 +103,40 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             }
             catch (Exception ex)
             {
-                logger.SendTrace($"DATA REFRESH: Refresh failed. Exception: {ex}", LogLevel.Info);
+                logger.SendTrace($"{LoggingPrefix} Refresh failed. Exception: {ex}", LogLevel.Info);
                 await FailureTearDown();
                 throw;
             }
         }
 
+        private async Task<string> RefreshHlaMetadataDictionary(int refreshRecordId)
+        {
+            // Hla Metadata Dictionary Refresh is not performed atomically as the resulting nomenclature version is needed in other stages.
+            var newHlaNomenclatureVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
+            await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecordId, DataRefreshStage.MetadataDictionaryRefresh);
+            return newHlaNomenclatureVersion;
+        }
+
         private async Task RunDataRefreshStage(DataRefreshStage dataRefreshStage, int refreshRecordId, string newHlaNomenclatureVersion)
         {
+            logger.SendTrace($"{LoggingPrefix} Running stage {dataRefreshStage}", LogLevel.Info);
+
             switch (dataRefreshStage)
             {
                 case DataRefreshStage.MetadataDictionaryRefresh:
                     throw new NotImplementedException($"{nameof(DataRefreshStage.MetadataDictionaryRefresh)} cannot be performed atomically.");
                 case DataRefreshStage.DataDeletion:
-                    await RemoveExistingDonorData(refreshRecordId);
+                    await donorImportRepository.RemoveAllDonorInformation();
                     break;
                 case DataRefreshStage.DatabaseScalingSetup:
                     await ScaleDatabase(settingsOptions.Value.RefreshDatabaseSize.ParseToEnum<AzureDatabaseSize>());
                     break;
                 case DataRefreshStage.DonorImport:
-                    await ImportDonors(refreshRecordId);
+                    await donorImporter.ImportDonors();
                     break;
                 case DataRefreshStage.DonorHlaProcessing:
-                    await ProcessDonorHla(newHlaNomenclatureVersion, refreshRecordId);
+                    logger.SendTrace($"{LoggingPrefix} Using HLA Nomenclature version: {newHlaNomenclatureVersion}", LogLevel.Info);
+                    await hlaProcessor.UpdateDonorHla(newHlaNomenclatureVersion);
                     break;
                 case DataRefreshStage.DatabaseScalingTearDown:
                     await ScaleDatabase(settingsOptions.Value.ActiveDatabaseSize.ParseToEnum<AzureDatabaseSize>());
@@ -140,6 +151,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecordId, dataRefreshStage);
         }
 
+        private async Task ScaleDatabase(AzureDatabaseSize targetSize)
+        {
+            var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetDormantDatabase());
+            await azureDatabaseManager.UpdateDatabaseSize(databaseName, targetSize);
+        }
+
         private async Task FailureTearDown()
         {
             try
@@ -148,35 +165,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             }
             catch (Exception e)
             {
-                logger.SendTrace($"DATA REFRESH: Teardown failed. Database will need scaling down manually. Exception: {e}", LogLevel.Critical);
+                logger.SendTrace($"{LoggingPrefix} Teardown failed. Database will need scaling down manually. Exception: {e}", LogLevel.Critical);
                 await dataRefreshNotificationSender.SendTeardownFailureAlert();
                 throw;
             }
-        }
-
-        private async Task RemoveExistingDonorData(int refreshRecordId)
-        {
-            logger.SendTrace("DATA REFRESH: Removing existing donor data", LogLevel.Info);
-            await donorImportRepository.RemoveAllDonorInformation();
-        }
-
-        private async Task ImportDonors(int refreshRecordId)
-        {
-            logger.SendTrace("DATA REFRESH: Importing Donors", LogLevel.Info);
-            await donorImporter.ImportDonors();
-        }
-
-        private async Task ProcessDonorHla(string hlaNomenclatureVersion, int refreshRecordId)
-        {
-            logger.SendTrace($"DATA REFRESH: Processing Donor hla using HLA Nomenclature version: {hlaNomenclatureVersion}", LogLevel.Info);
-            await hlaProcessor.UpdateDonorHla(hlaNomenclatureVersion);
-        }
-
-        private async Task ScaleDatabase(AzureDatabaseSize targetSize)
-        {
-            var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetDormantDatabase());
-            logger.SendTrace($"DATA REFRESH: Scaling database: {databaseName} to size {targetSize}", LogLevel.Info);
-            await azureDatabaseManager.UpdateDatabaseSize(databaseName, targetSize);
         }
     }
 }
