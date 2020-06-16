@@ -1,14 +1,13 @@
-﻿using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
+﻿using System.Collections.Generic;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
-using Atlas.Common.GeneticData.Hla.Services;
-using Atlas.Common.Helpers;
 using Atlas.Common.GeneticData.Hla.Services.AlleleStringSplitters;
 
 namespace Atlas.MultipleAlleleCodeDictionary.utils
 {
     internal interface IMacExpander
     {
-        MolecularAlleleDetails ExpandMac(MultipleAlleleCode mac, string firstField);
+        IEnumerable<MolecularAlleleDetails> ExpandMac(MultipleAlleleCode mac, string firstField);
     }
     
     internal class MacExpander : IMacExpander
@@ -22,11 +21,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
             this.stringSplitter = stringSplitter;
         }
         
-        public MolecularAlleleDetails ExpandMac(MultipleAlleleCode mac, string firstField)
+        public IEnumerable<MolecularAlleleDetails> ExpandMac(MultipleAlleleCode mac, string firstField)
         {
-            return mac.IsGeneric ? ExpandMac(mac, firstField) : GetSpecificMac(mac);
+            return mac.IsGeneric ? GetGenericMac(mac, firstField) : GetSpecificMac(mac);
         }
-        private MolecularAlleleDetails GetGenericMac(MultipleAlleleCode mac, string firstField)
+        private static IEnumerable<MolecularAlleleDetails> GetGenericMac(MultipleAlleleCode mac, string firstField)
         {
             var secondFields = mac.Hla.Split(AlleleDelimiter);
             var combinedFields = new string[secondFields.Length];
@@ -39,10 +38,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
             return new MolecularAlleleDetails(alleles);
         }
 
-        private MolecularAlleleDetails GetSpecificMac(MultipleAlleleCode mac)
+        private static IEnumerable<MolecularAlleleDetails> GetSpecificMac(MultipleAlleleCode mac)
         {
-            return stringSplitter.GetAlleleNamesFromAlleleString(mac.Hla);
-            return new MolecularAlleleDetails(mac.Hla);
+            return new List<MolecularAlleleDetails>()
+            {
+                new MolecularAlleleDetails(mac.Hla)
+            };
         }
     }
 }
