@@ -26,7 +26,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
         private readonly IMacRepository macRepository;
         private readonly IMacExpander macExpander;
 
-        public MacCache(ILogger logger, IPersistentCacheProvider cacheProvider, IMacRepository macRepository, IMacExpander macExpander)
+        public MacCacheService(ILogger logger, IPersistentCacheProvider cacheProvider, IMacRepository macRepository, IMacExpander macExpander)
         {
             this.logger = logger;
             this.cache = cacheProvider.Cache;
@@ -55,10 +55,9 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
             }
         }
         
-        private static string GetExpandedHla(Mac mac)
+        private IEnumerable<MolecularAlleleDetails> GetExpandedHla(Mac mac, string firstField)
         {
-            // TODO: Atlas-384: handle generic Mac.
-            return mac.IsGeneric ? throw new NotImplementedException() : mac.Hla;
+            return macExpander.ExpandMac(mac, firstField);
         }
     }
 }
