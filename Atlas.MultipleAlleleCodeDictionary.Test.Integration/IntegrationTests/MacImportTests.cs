@@ -42,12 +42,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
         {
             const int numberOfMacs = 3;
             // We cannot use LochNessBuilder's "Build(x)" feature as all macs must have unique ids.
-            var macs = Enumerable.Range(0, numberOfMacs).Select(i => MacEntityBuilder.New.Build());
+            var macs = Enumerable.Range(0, numberOfMacs).Select(i => MacBuilder.New.Build());
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs));
 
             await macImporter.ImportLatestMacs();
 
-            var importedMacs = await macRepository.GetAllMacEntities();
+            var importedMacs = await macRepository.GetAllMacs();
             importedMacs.Count().Should().Be(numberOfMacs);
         }
         
@@ -57,12 +57,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
             // Max batch size for inserting to cloud storage is 100, so regardless of the batch size this will always be >1 batch
             const int numberOfMacs = 101;
             // We cannot use LochNessBuilder's "Build(x)" feature as all macs must have unique ids.
-            var macs = Enumerable.Range(0, numberOfMacs).Select(i => MacEntityBuilder.New.Build());
+            var macs = Enumerable.Range(0, numberOfMacs).Select(i => MacBuilder.New.Build());
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs));
 
             await macImporter.ImportLatestMacs();
 
-            var importedMacs = await macRepository.GetAllMacEntities();
+            var importedMacs = await macRepository.GetAllMacs();
             importedMacs.Count().Should().Be(numberOfMacs);
         }
 
@@ -71,26 +71,26 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
         {
             const int numberOfMacs = 2;
             // We cannot use LochNessBuilder's "Build(x)" feature as all macs must have unique ids.
-            var macs = Enumerable.Range(0, numberOfMacs).Select(i => MacEntityBuilder.New.Build()).ToList();
+            var macs = Enumerable.Range(0, numberOfMacs).Select(i => MacBuilder.New.Build()).ToList();
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs));
             await macImporter.ImportLatestMacs();
 
             const int numberOfNewMacs = 2;
-            var newMacs = Enumerable.Range(numberOfMacs, numberOfNewMacs).Select(i => MacEntityBuilder.New.Build());
+            var newMacs = Enumerable.Range(numberOfMacs, numberOfNewMacs).Select(i => MacBuilder.New.Build());
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs.Concat(newMacs)));
             await macImporter.ImportLatestMacs();
 
-            var importedMacs = await macRepository.GetAllMacEntities();
+            var importedMacs = await macRepository.GetAllMacs();
             importedMacs.Count().Should().Be(numberOfMacs + numberOfNewMacs);
         }
 
         [Test]
         public async Task ImportMacs_WithMacsOfDifferentLength_DoesNotReImportAnyMacs()
         {
-            var shorterEarlyMac = MacEntityBuilder.New.With(m => m.RowKey, "AA");
-            var shorterLateMac = MacEntityBuilder.New.With(m => m.RowKey, "ZZ");
-            var longerEarlyMac = MacEntityBuilder.New.With(m => m.RowKey, "AAA");
-            var longerLateMac = MacEntityBuilder.New.With(m => m.RowKey, "AAZ");
+            var shorterEarlyMac = MacBuilder.New.With(m => m.Code, "AA");
+            var shorterLateMac = MacBuilder.New.With(m => m.Code, "ZZ");
+            var longerEarlyMac = MacBuilder.New.With(m => m.Code, "AAA");
+            var longerLateMac = MacBuilder.New.With(m => m.Code, "AAZ");
 
             mockDownloader.DownloadAndUnzipStream().Returns(
                 MacSourceFileBuilder.BuildMacFile(shorterEarlyMac, shorterLateMac, longerEarlyMac));
@@ -100,7 +100,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
                 MacSourceFileBuilder.BuildMacFile(shorterEarlyMac, shorterLateMac, longerEarlyMac, longerLateMac));
             await macImporter.ImportLatestMacs();
 
-            var importedMacs = await macRepository.GetAllMacEntities();
+            var importedMacs = await macRepository.GetAllMacs();
             importedMacs.Count().Should().Be(4);
         }
     }

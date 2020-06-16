@@ -8,6 +8,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models
         public string Hla { get; set; }
         public bool IsGeneric { get; set; }
 
+        public Mac()
+        {
+        }
+        
         internal Mac(string code, string hla, bool isGeneric)
         {
             Code = code;

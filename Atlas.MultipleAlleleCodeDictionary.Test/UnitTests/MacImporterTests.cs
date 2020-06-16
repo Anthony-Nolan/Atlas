@@ -41,25 +41,24 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
         [Test]
         public async Task ImportMacs_WillNotReplaceExistingMacs()
         {
-            var shorterEarlyMac = MacEntityBuilder.New.With(m => m.RowKey, "AA").Build();
-            var shorterLateMac = MacEntityBuilder.New.With(m => m.RowKey, "ZZ").Build();
-            var lastMac = MacEntityBuilder.New.With(m => m.RowKey, "ZZZ").Build();
-            var oldMacs = new List<MacEntity>
+            var shorterEarlyMac = MacBuilder.New.With(m => m.Code, "AA").Build();
+            var shorterLateMac = MacBuilder.New.With(m => m.Code, "ZZ").Build();
+            var lastMac = MacBuilder.New.With(m => m.Code, "ZZZ").Build();
+            var oldMacs = new List<Mac>
             {
                 shorterEarlyMac,
                 shorterLateMac,
                 lastMac
             };
-            var lastOldMac = lastMac.RowKey;
+            var lastOldMac = lastMac.Code;
             const int numberOfNewMacs = 50;
-            var newMacs = Enumerable.Range(0, numberOfNewMacs).Select(i => MacEntityBuilder.New.Build()).ToList();
+            var newMacs = Enumerable.Range(0, numberOfNewMacs).Select(i => MacBuilder.New.Build()).ToList();
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(oldMacs.Concat(newMacs)));
             mockRepository.GetLastMacEntry().Returns(lastOldMac);
             
             await macImporter.ImportLatestMacs();
             
             await mockRepository.Received().InsertMacs(Arg.Is<List<Mac>>(x => x.Count == numberOfNewMacs));
-            
         }
     }
 }
