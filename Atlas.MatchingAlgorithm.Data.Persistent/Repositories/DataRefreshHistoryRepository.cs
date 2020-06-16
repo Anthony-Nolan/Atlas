@@ -19,6 +19,8 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
 
         IEnumerable<DataRefreshRecord> GetInProgressJobs();
         Task<int> Create(DataRefreshRecord dataRefreshRecord);
+
+        Task<DataRefreshRecord> GetRecord(int dataRefreshRecordId);
         Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion, DateTime? finishTimeUtc);
         Task UpdateSuccessFlag(int recordId, bool wasSuccess);
         Task MarkStageAsComplete(int recordId, DataRefreshStage stage);
@@ -61,7 +63,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
 
         public async Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion, DateTime? finishTimeUtc)
         {
-            var record = await GetRecordById(recordId);
+            var record = await GetRecord(recordId);
             record.HlaNomenclatureVersion = wmdaHlaNomenclatureVersion;
             record.RefreshEndUtc = finishTimeUtc;
             await Context.SaveChangesAsync();
@@ -69,7 +71,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
 
         public async Task UpdateSuccessFlag(int recordId, bool wasSuccess)
         {
-            var record = await GetRecordById(recordId);
+            var record = await GetRecord(recordId);
             record.WasSuccessful = wasSuccess;
             await Context.SaveChangesAsync();
         }
@@ -77,23 +79,23 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         /// <inheritdoc />
         public async Task MarkStageAsComplete(int recordId, DataRefreshStage stage)
         {
-            var record = await GetRecordById(recordId);
+            var record = await GetRecord(recordId);
             record.SetStageCompletionTime(stage, DateTime.UtcNow);
             await Context.SaveChangesAsync();
         }
 
+        public async Task<DataRefreshRecord> GetRecord(int recordId)
+        {
+            return await Context.DataRefreshRecords.SingleAsync(r => r.Id == recordId);
+        }
+
         protected async Task<Dictionary<DataRefreshStage, DateTime?>> GetStageCompletionTimes(int recordId)
         {
-            var record = await GetRecordById(recordId);
+            var record = await GetRecord(recordId);
             return EnumExtensions.EnumerateValues<DataRefreshStage>().ToDictionary(
                 stage => stage,
                 stage => record.GetStageCompletionTime(stage)
             );
-        }
-
-        private async Task<DataRefreshRecord> GetRecordById(int recordId)
-        {
-            return await Context.DataRefreshRecords.SingleAsync(r => r.Id == recordId);
         }
 
         private DataRefreshRecord GetLastSuccessfulRecord()

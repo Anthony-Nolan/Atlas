@@ -30,6 +30,8 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         public DateTime? DatabaseScalingTearDownCompleted { get; set; }
         public DateTime? QueuedDonorUpdatesCompleted { get; set; }
 
+        public bool IsStageComplete(DataRefreshStage stage) => GetStageCompletionTime(stage) != null;
+
         internal DateTime? GetStageCompletionTime(DataRefreshStage stage) =>
             stage switch
             {
