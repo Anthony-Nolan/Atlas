@@ -39,7 +39,7 @@ namespace Atlas.DonorImport.Data.Repositories
         {
             var sqlBulk = new SqlBulkCopy(ConnectionString) {BulkCopyTimeout = 3600, BatchSize = 10000, DestinationTableName = "Donors"};
 
-            foreach (var columnName in DonorInsertDataTableColumnNames)
+            foreach (var columnName in Donor.InsertionDataTableColumnNames)
             {
                 // Relies on setting up the data table with column names matching the database columns.
                 sqlBulk.ColumnMappings.Add(columnName, columnName);
@@ -51,7 +51,7 @@ namespace Atlas.DonorImport.Data.Repositories
         private DataTable BuildDonorInsertDataTable(IEnumerable<Donor> donors)
         {
             var dataTable = new DataTable();
-            foreach (var columnName in DonorInsertDataTableColumnNames)
+            foreach (var columnName in Donor.InsertionDataTableColumnNames)
             {
                 dataTable.Columns.Add(columnName);
             }
