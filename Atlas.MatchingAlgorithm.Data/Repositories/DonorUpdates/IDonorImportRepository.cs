@@ -26,6 +26,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// </summary>
         /// <returns></returns>
         Task RemoveAllDonorInformation();
+        
+        /// <summary>
+        /// Removes all donor p-group data, without removing donors themselves.
+        /// </summary>
+        Task RemoveAllProcessedDonorHla();
 
         /// <summary>
         /// Insert a batch of donors into the database.

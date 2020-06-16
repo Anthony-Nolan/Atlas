@@ -8,7 +8,7 @@ namespace Atlas.Common.ApplicationInsights
     public interface ILogger
     {
         void SendEvent(EventModel eventModel);
-        void SendTrace(string message, LogLevel messageLogLevel, Dictionary<string, string> props = null);
+        void SendTrace(string message, LogLevel messageLogLevel = LogLevel.Info, Dictionary<string, string> props = null);
     }
 
     public class Logger : ILogger

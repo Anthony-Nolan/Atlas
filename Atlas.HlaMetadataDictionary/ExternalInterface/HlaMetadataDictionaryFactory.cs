@@ -122,6 +122,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             {
                 throw new Exception("Cannot create a HLA Metadata Dictionary without a nomenclature version.");
             }
+            
             return new CacheObject
             {
                 Dictionary = BuildUncachedDictionary(activeHlaNomenclatureVersion),

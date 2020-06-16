@@ -1,11 +1,11 @@
-﻿using Atlas.MatchingAlgorithm.Common.Repositories;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.Common.Repositories;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
 using Microsoft.Data.SqlClient;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 // ReSharper disable InconsistentNaming
 
@@ -16,8 +16,20 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         private const string MatchingHlaTable_IndexName_PGroupIdAndDonorId = "IX_PGroup_Id_DonorId__TypePosition";
         private const string MatchingHlaTable_IndexName_DonorId = "IX_DonorId__PGroup_Id_TypePosition";
 
+        private const string DropAllDonorsSql = @"
+TRUNCATE TABLE [Donors]
+";
+        
+        private const string DropAllPreProcessedDonorHlaSql = @"
+TRUNCATE TABLE [MatchingHlaAtA]
+TRUNCATE TABLE [MatchingHlaAtB]
+TRUNCATE TABLE [MatchingHlaAtC]
+TRUNCATE TABLE [MatchingHlaAtDrb1]
+TRUNCATE TABLE [MatchingHlaAtDqb1]
+";
+
         public DonorImportRepository(
-            IPGroupRepository pGroupRepository, 
+            IPGroupRepository pGroupRepository,
             IConnectionStringProvider connectionStringProvider) : base(pGroupRepository, connectionStringProvider)
         {
         }
@@ -36,7 +48,7 @@ DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtC;
 DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDrb1;
 DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDqb1;
 ";
-            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 await conn.ExecuteAsync(indexRemovalSql, commandTimeout: 600);
             }
@@ -86,7 +98,7 @@ CREATE INDEX {MatchingHlaTable_IndexName_DonorId}
 ON MatchingHlaAtDqb1 (DonorId)
 INCLUDE (TypePosition, PGroup_Id)
 ";
-            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 await conn.ExecuteAsync(indexAdditionSql, commandTimeout: 10800);
             }
@@ -94,18 +106,19 @@ INCLUDE (TypePosition, PGroup_Id)
 
         public async Task RemoveAllDonorInformation()
         {
-            const string dropAllDonorInfoSql = @"
-TRUNCATE TABLE [Donors]
-TRUNCATE TABLE [MatchingHlaAtA]
-TRUNCATE TABLE [MatchingHlaAtB]
-TRUNCATE TABLE [MatchingHlaAtC]
-TRUNCATE TABLE [MatchingHlaAtDrb1]
-TRUNCATE TABLE [MatchingHlaAtDqb1]
-";
-
-            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                await conn.ExecuteAsync(dropAllDonorInfoSql, commandTimeout: 300);
+                await conn.ExecuteAsync(DropAllDonorsSql, commandTimeout: 300);
+                await conn.ExecuteAsync(DropAllPreProcessedDonorHlaSql, commandTimeout: 300);
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task RemoveAllProcessedDonorHla()
+        {
+            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            {
+                await conn.ExecuteAsync(DropAllPreProcessedDonorHlaSql, commandTimeout: 300);
             }
         }
 
@@ -136,7 +149,7 @@ DELETE FROM {locusTableName}
 WHERE DonorId IN ({string.Join(",", donorIds)});
 ";
 
-            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 await conn.ExecuteAsync(removalSql, commandTimeout: 600);
             }
