@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
@@ -13,7 +14,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
 {
     public interface IMacCacheService
     {
-        Task<MolecularAlleleDetails> GetHlaFromMac(string macCode, string firstField);
+        Task<IEnumerable<MolecularAlleleDetails>> GetHlaFromMac(string macCode, string firstField);
         Task<MultipleAlleleCode> GetMacCode(string macCode);
         Task GenerateMacCache();
     }
@@ -33,8 +34,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
             this.macExpander = macExpander;
         }
 
-        // TODO Atlas-54 ensure all new MAC functionality is adequately tested
-        public async Task<MolecularAlleleDetails> GetHlaFromMac(string macCode, string firstField)
+        public async Task<IEnumerable<MolecularAlleleDetails>> GetHlaFromMac(string macCode, string firstField)
         {
             var mac = await GetMacCode(macCode);
             logger.SendTrace($"Attempting to expand Hla for Mac: {mac.Mac}", LogLevel.Info);
