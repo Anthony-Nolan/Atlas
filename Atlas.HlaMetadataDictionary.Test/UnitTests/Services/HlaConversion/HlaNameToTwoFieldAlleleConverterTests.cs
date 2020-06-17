@@ -1,4 +1,5 @@
-﻿using Atlas.Common.GeneticData;
+﻿using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
@@ -6,7 +7,6 @@ using Atlas.MultipleAlleleCodeDictionary;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
 {
@@ -217,7 +217,5 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
 
             result.Should().BeEquivalentTo("01:01", "02:01");
         }
-
-        // TODO: ATLAS-367, 368, 369, 370: Add tests when conversion logic for other HLA categories have been implemented
     }
 }

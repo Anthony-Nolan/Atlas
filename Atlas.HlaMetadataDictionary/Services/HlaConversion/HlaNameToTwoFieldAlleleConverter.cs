@@ -1,12 +1,12 @@
-﻿using Atlas.Common.GeneticData;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.MultipleAlleleCodeDictionary;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
 {
@@ -45,11 +45,9 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
                 case HlaTypingCategory.Allele:
                     return new List<string> { GetTwoFieldAlleleName(locus, hlaName, behaviour) };
                 case HlaTypingCategory.GGroup:
-                    // TODO: ATLAS-370
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("GGroup to Two Field Conversion has not been implemented.");
                 case HlaTypingCategory.PGroup:
-                    // TODO: ATLAS-369
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("PGroup to Two Field Conversion has not been implemented.");
                 case HlaTypingCategory.AlleleStringOfNames:
                 case HlaTypingCategory.AlleleStringOfSubtypes:
                     var allelesFromAlleleString = alleleStringSplitter.GetAlleleNamesFromAlleleString(hlaName);
@@ -58,11 +56,9 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
                     var allelesForNmdpCode = await nmdpCodeCache.GetOrAddAllelesForNmdpCode(locus, hlaName);
                     return GetTwoFieldAlleleNames(locus, allelesForNmdpCode, behaviour);
                 case HlaTypingCategory.XxCode:
-                    // TODO: ATLAS-367
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("XX Code to Two Field Conversion has not been implemented.");
                 case HlaTypingCategory.Serology:
-                    // TODO: ATLAS-368
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Serology to Two Field Conversion has not been implemented.");
                 default:
                     throw new ArgumentOutOfRangeException();
             }
