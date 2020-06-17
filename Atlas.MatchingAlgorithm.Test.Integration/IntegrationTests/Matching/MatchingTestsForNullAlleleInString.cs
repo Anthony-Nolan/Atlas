@@ -51,7 +51,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private AlleleLevelMatchCriteriaFromExpandedHla criteriaFromExpandedHla;
         private IDonorHlaExpander donorHlaExpander;
         private IDonorUpdateRepository donorUpdateRepository;
-        private IDonorMatchingService donorMatchingService;
+        private IMatchingService matchingService;
 
         private PhenotypeInfo<IHlaMatchingMetadata> patientWithNullAlleleInStringAndExpressingAllele;
         private PhenotypeInfo<IHlaMatchingMetadata> patientWithTwoCopiesOfExpressingAllele;
@@ -84,7 +84,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [SetUp]
         public void SetUpBeforeEachTest()
         {
-            donorMatchingService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorMatchingService>();
+            matchingService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchingService>();
         }
 
         #region Allele String vs. Single Allele
@@ -492,7 +492,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         /// </summary>
         private async Task<IEnumerable<int>> GetMatchingDonorIds(AlleleLevelMatchCriteria alleleLevelMatchCriteria)
         {
-            var results = await donorMatchingService.GetMatches(alleleLevelMatchCriteria);
+            var results = await matchingService.GetMatches(alleleLevelMatchCriteria);
             return results.Select(d => d.DonorId);
         }
 

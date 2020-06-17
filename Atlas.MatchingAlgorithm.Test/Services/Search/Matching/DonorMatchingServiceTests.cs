@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
+﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
@@ -17,13 +14,16 @@ using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 // ReSharper disable InconsistentNaming
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
 {
     [TestFixture]
-    public class DatabaseDonorMatchingServiceTests
+    public class DonorMatchingServiceTests
     {
         private const string PGroupA1 = "p1";
         private const string PGroupA2 = "p2";
@@ -31,21 +31,21 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         private const string PGroupDrb1 = "pgDRB1";
 
         private readonly DonorInfoWithExpandedHla donor_ExactMatch_AtLocusA =
-            new DonorInfoWithExpandedHla {DonorId = 1, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>()};
+            new DonorInfoWithExpandedHla { DonorId = 1, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>() };
 
         private readonly DonorInfoWithExpandedHla donor_BothPositionsMatchPatientPositionOne_AtLocusA =
-            new DonorInfoWithExpandedHla {DonorId = 2, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>()};
+            new DonorInfoWithExpandedHla { DonorId = 2, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>() };
 
         private readonly DonorInfoWithExpandedHla donor_OnePositionMatchesBothPatientPositions_AtLocusA =
-            new DonorInfoWithExpandedHla {DonorId = 3, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>()};
+            new DonorInfoWithExpandedHla { DonorId = 3, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>() };
 
         private readonly DonorInfoWithExpandedHla donor_NoMatch_AtLocusA =
-            new DonorInfoWithExpandedHla {DonorId = 4, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>()};
+            new DonorInfoWithExpandedHla { DonorId = 4, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>() };
 
-        private IDatabaseDonorMatchingService donorMatchingService;
+        private IDonorMatchingService matchingService;
 
         private DonorMatchCriteriaBuilder criteriaBuilder;
-        private readonly List<Locus> loci = new List<Locus> {Locus.A, Locus.B, Locus.Drb1};
+        private readonly List<Locus> loci = new List<Locus> { Locus.A, Locus.B, Locus.Drb1 };
 
         [SetUp]
         public void SetUp()
@@ -58,8 +58,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
 
             repositoryFactory.GetDonorSearchRepository().Returns(donorSearchRepository);
             repositoryFactory.GetPGroupRepository().Returns(pGroupRepository);
-            
-            donorMatchingService = new DatabaseDonorMatchingService(repositoryFactory, matchFilteringService, databaseFilteringAnalyser, Substitute.For<ILogger>());
+
+            matchingService = new DonorMatchingService(repositoryFactory, matchFilteringService, databaseFilteringAnalyser, Substitute.For<ILogger>());
 
             donorSearchRepository.GetDonorMatchesAtLocus(Locus.A, Arg.Any<LocusSearchCriteria>(), Arg.Any<MatchingFilteringOptions>())
                 .Returns(new List<PotentialHlaMatchRelation>
@@ -120,8 +120,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
                 .WithLocusMismatchDRB1(PGroupDrb1, PGroupDrb1, 2);
         }
 
-        private static PotentialHlaMatchRelation HlaMatchFor(Locus locus, LocusPosition searchPosition, LocusPosition matchPosition,
-            DonorInfoWithExpandedHla donor, string hlaMatchName)
+        private static PotentialHlaMatchRelation HlaMatchFor(
+            Locus locus,
+            LocusPosition searchPosition,
+            LocusPosition matchPosition,
+            DonorInfoWithExpandedHla donor,
+            string hlaMatchName)
         {
             return new PotentialHlaMatchRelation
             {
@@ -138,7 +142,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 0).Build();
 
-            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+            var results = (await matchingService.FindMatchesForLoci(criteria, loci)).ToList();
 
             results.Should().Contain(d => d.Key == donor_ExactMatch_AtLocusA.DonorId);
             results.Single(d => d.Key == donor_ExactMatch_AtLocusA.DonorId).Value.TotalMatchCount.Should().Be(6);
@@ -149,7 +153,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 0).Build();
 
-            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+            var results = (await matchingService.FindMatchesForLoci(criteria, loci)).ToList();
 
             results.Should().NotContain(d => d.Key == donor_BothPositionsMatchPatientPositionOne_AtLocusA.DonorId);
         }
@@ -159,7 +163,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 0).Build();
 
-            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+            var results = (await matchingService.FindMatchesForLoci(criteria, loci)).ToList();
 
             results.Should().NotContain(d => d.Key == donor_OnePositionMatchesBothPatientPositions_AtLocusA.DonorId);
         }
@@ -169,7 +173,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 0).Build();
 
-            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+            var results = (await matchingService.FindMatchesForLoci(criteria, loci)).ToList();
 
             results.Should().NotContain(d => d.Key == donor_NoMatch_AtLocusA.DonorId);
         }
@@ -182,7 +186,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
                 .WithLocusMismatchB(PGroupB, PGroupB, 0)
                 .Build();
 
-            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+            var results = (await matchingService.FindMatchesForLoci(criteria, loci)).ToList();
 
             results.Should().NotContain(d => d.Key == donor_NoMatch_AtLocusA.DonorId);
         }
@@ -196,7 +200,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
                 .WithLocusMismatchDRB1(PGroupDrb1, PGroupDrb1, 0)
                 .Build();
 
-            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+            var results = (await matchingService.FindMatchesForLoci(criteria, loci)).ToList();
 
             results.Should().Contain(d => d.Key == donor_ExactMatch_AtLocusA.DonorId);
         }
@@ -206,7 +210,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 1).Build();
 
-            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+            var results = (await matchingService.FindMatchesForLoci(criteria, loci)).ToList();
 
             results.Should().Contain(d => d.Key == donor_ExactMatch_AtLocusA.DonorId);
             results.Single(d => d.Key == donor_ExactMatch_AtLocusA.DonorId).Value.MatchDetailsForLocus(Locus.A).MatchCount.Should().Be(2);
@@ -218,7 +222,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 1).Build();
 
-            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+            var results = (await matchingService.FindMatchesForLoci(criteria, loci)).ToList();
 
             results.Should().Contain(d => d.Key == donor_BothPositionsMatchPatientPositionOne_AtLocusA.DonorId);
             results.Single(d => d.Key == donor_BothPositionsMatchPatientPositionOne_AtLocusA.DonorId).Value.MatchDetailsForLocus(Locus.A).MatchCount
@@ -231,7 +235,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 1).Build();
 
-            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+            var results = (await matchingService.FindMatchesForLoci(criteria, loci)).ToList();
 
             results.Should().Contain(d => d.Key == donor_OnePositionMatchesBothPatientPositions_AtLocusA.DonorId);
             results.Single(d => d.Key == donor_OnePositionMatchesBothPatientPositions_AtLocusA.DonorId).Value.MatchDetailsForLocus(Locus.A).MatchCount
@@ -244,7 +248,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 1).Build();
 
-            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+            var results = (await matchingService.FindMatchesForLoci(criteria, loci)).ToList();
 
             results.Should().NotContain(d => d.Key == donor_NoMatch_AtLocusA.DonorId);
         }
@@ -254,7 +258,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 2).Build();
 
-            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+            var results = (await matchingService.FindMatchesForLoci(criteria, loci)).ToList();
 
             results.Should().Contain(d => d.Key == donor_ExactMatch_AtLocusA.DonorId);
             results.Single(d => d.Key == donor_ExactMatch_AtLocusA.DonorId).Value.MatchDetailsForLocus(Locus.A).MatchCount.Should().Be(2);
@@ -266,7 +270,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 2).Build();
 
-            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+            var results = (await matchingService.FindMatchesForLoci(criteria, loci)).ToList();
 
             results.Should().Contain(d => d.Key == donor_BothPositionsMatchPatientPositionOne_AtLocusA.DonorId);
             results.Single(d => d.Key == donor_BothPositionsMatchPatientPositionOne_AtLocusA.DonorId).Value.MatchDetailsForLocus(Locus.A).MatchCount
@@ -279,7 +283,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 2).Build();
 
-            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+            var results = (await matchingService.FindMatchesForLoci(criteria, loci)).ToList();
 
             results.Should().Contain(d => d.Key == donor_OnePositionMatchesBothPatientPositions_AtLocusA.DonorId);
             results.Single(d => d.Key == donor_OnePositionMatchesBothPatientPositions_AtLocusA.DonorId).Value.MatchDetailsForLocus(Locus.A).MatchCount
@@ -292,7 +296,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         {
             var criteria = criteriaBuilder.WithLocusMismatchA(PGroupA1, PGroupA2, 2).Build();
 
-            var results = (await donorMatchingService.FindMatchesForLoci(criteria, loci)).ToList();
+            var results = (await matchingService.FindMatchesForLoci(criteria, loci)).ToList();
 
             results.Should().Contain(d => d.Key == donor_NoMatch_AtLocusA.DonorId);
         }

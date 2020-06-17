@@ -80,7 +80,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private PhenotypeInfo<IHlaMatchingMetadata> patientMatchingHlaPhenotype;
 
         private IDonorHlaExpander donorHlaExpander;
-        private IDonorMatchingService donorMatchingService;
+        private IMatchingService matchingService;
         private AlleleLevelMatchCriteriaFromExpandedHla criteriaFromExpandedHla;
 
         private IEnumerable<int> twoOutOfTwoMatchCountDonors;
@@ -119,7 +119,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [SetUp]
         public void SetUpBeforeEachTest()
         {
-            donorMatchingService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorMatchingService>();
+            matchingService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchingService>();
         }
 
         [Test]
@@ -343,7 +343,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         /// <returns>List of matching donor IDs.</returns>
         private async Task<IEnumerable<int>> GetMatchingDonorIds(AlleleLevelMatchCriteria alleleLevelMatchCriteria)
         {
-            var results = await donorMatchingService.GetMatches(alleleLevelMatchCriteria);
+            var results = await matchingService.GetMatches(alleleLevelMatchCriteria);
             return results.Select(d => d.DonorId);
         }
     }
