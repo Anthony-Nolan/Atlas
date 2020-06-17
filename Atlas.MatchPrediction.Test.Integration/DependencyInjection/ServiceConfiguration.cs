@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using System;
 using System.IO;
+using Atlas.Common.ApplicationInsights;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
 {
@@ -21,6 +24,9 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             services.RegisterMatchPredictionServices();
             RegisterIntegrationTestServices(services);
             SetUpMockServices(services);
+
+            // This call must be made after `RegisterMatchPredictionServices()`, as it overrides the non-mock dictionary set up in that method
+            services.RegisterFileBasedHlaMetadataDictionaryForTesting(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value); //These configuration values won't be used, because all they are all (indirectly) overridden, below.
 
             return services.BuildServiceProvider();
         }

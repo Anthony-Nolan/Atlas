@@ -17,22 +17,27 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
 
         private const string HlaNomenclatureVersion = "3330";
 
-        private const string AlleleStringOfNames = "01:01/01:02";
-        private const string AlleleStringOfSubtypes = "01:01/02";
+        private const string A1 = "02:09";
+        private const string A2 = "02:66";
+        private const string B1 = "08:182";
+        private const string B2 = "15:146";
+        private const string C1 = "01:03";
+        private const string C2 = "03:05";
+        private const string Dqb11 = "03:09";
+        private const string Dqb12 = "02:04";
+        private const string Drb11 = "03:124";
+        private const string Drb12 = "11:129";
 
-        private const string ThreeFieldAllele = "01:01:01";
-        private const string FourFieldAllele = "01:01:01:01";
-
-        private const string A1 = "01:01";
-        private const string A2 = "01:02";
-        private const string B1 = "02:01";
-        private const string B2 = "02:02";
-        private const string C1 = "03:01";
-        private const string C2 = "03:02";
-        private const string Dqb11 = "04:01";
-        private const string Dqb12 = "04:02";
-        private const string Drb11 = "05:01";
-        private const string Drb12 = "05:02";
+        private const string A1GGroup = "02:01:01G";
+        private const string A2GGroup = "02:01:01G";
+        private const string B1GGroup = "08:01:01G";
+        private const string B2GGroup = "15:01:01G";
+        private const string C1GGroup = "01:03:01G";
+        private const string C2GGroup = "03:05:01G";
+        private const string Dqb11GGroup = "03:01:01G";
+        private const string Dqb12GGroup = "02:01:01G";
+        private const string Drb11GGroup = "03:01:01G";
+        private const string Drb12GGroup = "11:06:01G";
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -42,15 +47,15 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
         }
 
         [TestCase(A1)]
-        [TestCase(ThreeFieldAllele)]
-        [TestCase(FourFieldAllele)]
+        [TestCase("02:09:01")]
+        [TestCase("02:09:01:01")]
         public async Task ExpandCompressedPhenotype_WhenNoAmbiguousAlleles_ReturnsExpectedGenotype(string allele)
         {
             var phenotype = NewPhenotypeInfo
                 .With(d => d.A, new LocusInfo<string> {Position1 = allele, Position2 = A2})
                 .Build();
 
-            var expectedGenotypes = NewPhenotypeInfo.Build();
+            var expectedGenotypes = NewGGroupPhenotypeInfo.Build();
 
             var actualGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(
                 phenotype,
@@ -63,15 +68,15 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
         public async Task ExpandCompressedPhenotype_WhenAlleleStringOfNamesPresent_ReturnsExpectedGenotypes()
         {
             var phenotype = NewPhenotypeInfo
-                .With(d => d.A, new LocusInfo<string> {Position1 = AlleleStringOfNames, Position2 = AlleleStringOfNames})
+                .With(d => d.A, new LocusInfo<string> {Position1 = "02:09/02:04", Position2 = "02:09/02:04" })
                 .Build();
 
             var expectedGenotypes = new List<PhenotypeInfo<string>>
             {
-                NewPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A1}).Build(),
-                NewPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A2, Position2 = A1}).Build(),
-                NewPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2}).Build(),
-                NewPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A2, Position2 = A2}).Build()
+                NewGGroupPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A1GGroup, Position2 = A1GGroup}).Build(),
+                NewGGroupPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = "02:04:01G", Position2 = A1GGroup}).Build(),
+                NewGGroupPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A1GGroup, Position2 = "02:04:01G"}).Build(),
+                NewGGroupPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = "02:04:01G", Position2 = "02:04:01G"}).Build()
             };
 
             var actualGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(
@@ -85,15 +90,15 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
         public async Task ExpandCompressedPhenotype_WhenAlleleStringOfSubtypesPresent_ReturnsExpectedGenotypes()
         {
             var phenotype = NewPhenotypeInfo
-                .With(d => d.A, new LocusInfo<string> {Position1 = AlleleStringOfSubtypes, Position2 = AlleleStringOfSubtypes})
+                .With(d => d.A, new LocusInfo<string> {Position1 = "02:09/04", Position2 = "02:09/04"})
                 .Build();
 
             var expectedGenotypes = new List<PhenotypeInfo<string>>
             {
-                NewPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A1}).Build(),
-                NewPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A2, Position2 = A1}).Build(),
-                NewPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2}).Build(),
-                NewPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A2, Position2 = A2}).Build()
+                NewGGroupPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A1GGroup, Position2 = A1GGroup}).Build(),
+                NewGGroupPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = "02:04:01G", Position2 = A1GGroup}).Build(),
+                NewGGroupPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = A1GGroup, Position2 = "02:04:01G"}).Build(),
+                NewGGroupPhenotypeInfo.With(d => d.A, new LocusInfo<string> {Position1 = "02:04:01G", Position2 = "02:04:01G"}).Build()
             };
 
             var actualGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(
@@ -107,33 +112,28 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
         public async Task ExpandCompressedPhenotype_WhenMixOfAmbiguousAllelesPresent_ReturnsExpectedGenotypes()
         {
             var phenotype = NewPhenotypeInfo
-                .With(d => d.A, new LocusInfo<string> {Position1 = AlleleStringOfSubtypes, Position2 = AlleleStringOfNames})
-                .With(d => d.B, new LocusInfo<string> {Position1 = ThreeFieldAllele, Position2 = FourFieldAllele})
-                .Build();
-
-
-            NewPhenotypeInfo
-                .With(d => d.A, new LocusInfo<string> {Position1 = AlleleStringOfSubtypes, Position2 = AlleleStringOfNames})
-                .With(d => d.B, new LocusInfo<string> {Position1 = ThreeFieldAllele, Position2 = FourFieldAllele})
+                .With(d => d.A, new LocusInfo<string> {Position1 = "02:09:01", Position2 = "02:09:01:01"})
+                .With(d => d.B, new LocusInfo<string> { Position1 = "15:19/146", Position2 = B2})
+                .With(d => d.C, new LocusInfo<string> { Position1 = "01:03/01:44", Position2 = C2})
                 .Build();
 
             var expectedGenotypes = new List<PhenotypeInfo<string>>
             {
-                NewPhenotypeInfo
-                    .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A1})
-                    .With(d => d.B, new LocusInfo<string> {Position1 = A1, Position2 = A1})
+                NewGGroupPhenotypeInfo
+                    .With(d => d.B, new LocusInfo<string> {Position1 = "15:12:01G", Position2 = B2GGroup})
+                    .With(d => d.C, new LocusInfo<string> { Position1 = "01:03:01G", Position2 = C2GGroup})
                     .Build(),
-                NewPhenotypeInfo
-                    .With(d => d.A, new LocusInfo<string> {Position1 = A2, Position2 = A1})
-                    .With(d => d.B, new LocusInfo<string> {Position1 = A1, Position2 = A1})
+                NewGGroupPhenotypeInfo
+                    .With(d => d.B, new LocusInfo<string> {Position1 = "15:12:01G", Position2 = B2GGroup})
+                    .With(d => d.C, new LocusInfo<string> { Position1 = "01:02:01G", Position2 = C2GGroup})
                     .Build(),
-                NewPhenotypeInfo
-                    .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})
-                    .With(d => d.B, new LocusInfo<string> {Position1 = A1, Position2 = A1})
+                NewGGroupPhenotypeInfo
+                    .With(d => d.B, new LocusInfo<string> {Position1 = "15:01:01G", Position2 = B2GGroup})
+                    .With(d => d.C, new LocusInfo<string> { Position1 = "01:03:01G", Position2 = C2GGroup })
                     .Build(),
-                NewPhenotypeInfo
-                    .With(d => d.A, new LocusInfo<string> {Position1 = A2, Position2 = A2})
-                    .With(d => d.B, new LocusInfo<string> {Position1 = A1, Position2 = A1})
+                NewGGroupPhenotypeInfo
+                    .With(d => d.B, new LocusInfo<string> {Position1 = "15:01:01G", Position2 = B2GGroup})
+                    .With(d => d.C, new LocusInfo<string> { Position1 = "01:02:01G", Position2 = C2GGroup})
                     .Build()
             };
 
@@ -161,5 +161,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
             .With(d => d.Dpb1, new LocusInfo<string> {Position1 = null, Position2 = null})
             .With(d => d.Dqb1, new LocusInfo<string> {Position1 = Dqb11, Position2 = Dqb12})
             .With(d => d.Drb1, new LocusInfo<string> {Position1 = Drb11, Position2 = Drb12});
+
+        private static Builder<PhenotypeInfo<string>> NewGGroupPhenotypeInfo => Builder<PhenotypeInfo<string>>.New
+            .With(d => d.A, new LocusInfo<string> { Position1 = A1GGroup, Position2 = A2GGroup })
+            .With(d => d.B, new LocusInfo<string> { Position1 = B1GGroup, Position2 = B2GGroup })
+            .With(d => d.C, new LocusInfo<string> { Position1 = C1GGroup, Position2 = C2GGroup })
+            .With(d => d.Dpb1, new LocusInfo<string> { Position1 = null, Position2 = null })
+            .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11GGroup, Position2 = Dqb12GGroup })
+            .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11GGroup, Position2 = Drb12GGroup });
     }
 }
