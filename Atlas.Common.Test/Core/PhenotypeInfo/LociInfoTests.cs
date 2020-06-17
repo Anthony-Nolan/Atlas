@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using FluentAssertions;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using FluentAssertions;
 using NUnit.Framework;
 
 namespace Atlas.Common.Test.Core.PhenotypeInfo
@@ -59,6 +59,24 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
             mapped.Dpb1.Should().Be(Mapping(Locus.Dpb1, initial.Dpb1));
             mapped.Dqb1.Should().Be(Mapping(Locus.Dqb1, initial.Dqb1));
             mapped.Drb1.Should().Be(Mapping(Locus.Drb1, initial.Drb1));
+        }
+
+        [Test]
+        public void Reduce_ReducesAllLoci()
+        {
+            var data = new LociInfo<int>
+            {
+                A = 1,
+                B = 2,
+                C = 3,
+                Dpb1 = 4,
+                Dqb1 = 5,
+                Drb1 = 6
+            };
+
+            var reducedData = data.Reduce((locus, value, accumulator) => accumulator + value, 0);
+
+            reducedData.Should().Be(21);
         }
     }
 }

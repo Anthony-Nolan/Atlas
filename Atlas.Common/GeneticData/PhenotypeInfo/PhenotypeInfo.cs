@@ -164,6 +164,16 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
+        public R Reduce<R>(Func<Locus, LocusPosition, T, R, R> reducer, R initialValue = default)
+        {
+            return Reduce((locus, t, accumulator) =>
+            {
+                accumulator = reducer(locus, LocusPosition.One, t.Position1, accumulator);
+                accumulator = reducer(locus, LocusPosition.Two, t.Position2, accumulator);
+                return accumulator;
+            }, initialValue);
+        }
+
         public void SetPosition(Locus locus, LocusPosition position, T value)
         {
             GetLocus(locus).SetAtPosition(position, value);

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Microsoft.ApplicationInsights.Extensibility.Implementation;
 
 // ReSharper disable MemberCanBeProtected.Global
 
@@ -102,7 +100,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             var drb1 = mapping(Locus.Drb1, Drb1);
 
             await Task.WhenAll(a, b, c, dpb1, dqb1, drb1);
-            
+
             return new LociInfo<R>
             {
                 A = a.Result,
@@ -117,6 +115,18 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         public LociInfo<R> Map<R>(Func<T, R> mapping)
         {
             return Map((locusType, locusInfo) => mapping(locusInfo));
+        }
+
+        public R Reduce<R>(Func<Locus, T, R, R> reducer, R initialValue = default)
+        {
+            var result = initialValue;
+            result = reducer(Locus.A, A, result);
+            result = reducer(Locus.B, B, result);
+            result = reducer(Locus.C, C, result);
+            result = reducer(Locus.Dpb1, Dpb1, result);
+            result = reducer(Locus.Dqb1, Dqb1, result);
+            result = reducer(Locus.Drb1, Drb1, result);
+            return result;
         }
 
         public T GetLocus(Locus locus)
@@ -209,7 +219,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 }
             };
         }
-        
+
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
