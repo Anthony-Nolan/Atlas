@@ -108,8 +108,8 @@ INCLUDE (TypePosition, PGroup_Id)
         {
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                await conn.ExecuteAsync(DropAllDonorsSql, commandTimeout: 300);
                 await conn.ExecuteAsync(DropAllPreProcessedDonorHlaSql, commandTimeout: 300);
+                await conn.ExecuteAsync(DropAllDonorsSql, commandTimeout: 300);
             }
         }
 
