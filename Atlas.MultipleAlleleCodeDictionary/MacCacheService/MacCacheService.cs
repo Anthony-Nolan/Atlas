@@ -7,6 +7,7 @@ using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.MacImportServices;
+using Atlas.MultipleAlleleCodeDictionary.Services;
 using Atlas.MultipleAlleleCodeDictionary.utils;
 using LazyCache;
 
@@ -14,7 +15,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
 {
     public interface IMacCacheService
     {
-        Task<IEnumerable<MolecularAlleleDetails>> GetHlaFromMac(string macCode, string firstField);
+        Task<IEnumerable<string>> GetHlaFromMac(string macCode, string firstField);
         Task<Mac> GetMacCode(string macCode);
         Task GenerateMacCache();
     }
@@ -34,7 +35,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
             this.macExpander = macExpander;
         }
 
-        public async Task<IEnumerable<MolecularAlleleDetails>> GetHlaFromMac(string macCode, string firstField)
+        public async Task<IEnumerable<string>> GetHlaFromMac(string macCode, string firstField)
         {
             var mac = await GetMacCode(macCode);
             logger.SendTrace($"Attempting to expand Hla for Mac: {mac.Code}", LogLevel.Info);
@@ -53,11 +54,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
             {
                 cache.GetOrAdd(mac.Code, () => mac);
             }
-        }
-        
-        private IEnumerable<MolecularAlleleDetails> GetExpandedHla(Mac mac, string firstField)
-        {
-            return macExpander.ExpandMac(mac, firstField);
         }
     }
 }
