@@ -22,7 +22,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
     [TestFixture(Locus.C)]
     public class MatchingTestsAtASingleLocus
     {
-        private IDonorMatchingService matchingService;
+        private IMatchingService matchingService;
         private DonorInfoWithExpandedHla donorInfoWithFullHomozygousMatchAtLocus;
         private DonorInfoWithExpandedHla donorInfoWithFullExactHeterozygousMatchAtLocus;
         private DonorInfoWithExpandedHla donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus;
@@ -49,7 +49,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [SetUp]
         public void ResolveSearchRepo()
         {
-            matchingService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorMatchingService>();
+            matchingService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchingService>();
         }
 
         [OneTimeSetUp]

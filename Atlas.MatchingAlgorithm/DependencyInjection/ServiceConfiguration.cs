@@ -126,8 +126,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IDataRefreshCleanupService, DataRefreshCleanupService>();
 
             // Matching Services
+            services.AddScoped<IMatchingService, MatchingService>();
             services.AddScoped<IDonorMatchingService, DonorMatchingService>();
-            services.AddScoped<IDatabaseDonorMatchingService, DatabaseDonorMatchingService>();
+            services.AddScoped<IPreFilteredDonorMatchingService, PreFilteredDonorMatchingService>();
             services.AddScoped<IDonorMatchCalculator, DonorMatchCalculator>();
             services.AddScoped<IMatchFilteringService, MatchFilteringService>();
             services.AddScoped<IMatchCriteriaAnalyser, MatchCriteriaAnalyser>();

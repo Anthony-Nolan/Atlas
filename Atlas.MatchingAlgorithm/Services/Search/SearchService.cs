@@ -27,19 +27,19 @@ namespace Atlas.MatchingAlgorithm.Services.Search
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
         private readonly IDonorScoringService donorScoringService;
-        private readonly IDonorMatchingService donorMatchingService;
+        private readonly IMatchingService matchingService;
         private readonly ILogger logger;
 
         public SearchService(
             IHlaMetadataDictionaryFactory factory,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IDonorScoringService donorScoringService,
-            IDonorMatchingService donorMatchingService,
+            IMatchingService matchingService,
             ILogger logger
         )
         {
             this.donorScoringService = donorScoringService;
-            this.donorMatchingService = donorMatchingService;
+            this.matchingService = matchingService;
             this.logger = logger;
             this.hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
@@ -58,7 +58,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             });
             stopwatch.Restart();
 
-            var matches = (await donorMatchingService.GetMatches(criteria)).ToList();
+            var matches = (await matchingService.GetMatches(criteria)).ToList();
 
             logger.SendTrace("Search timing: Matching complete", LogLevel.Info, new Dictionary<string, string>
             {

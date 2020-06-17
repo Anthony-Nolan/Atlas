@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 {
     public class MatchingTests
     {
-        private IDonorMatchingService matchingService;
+        private IMatchingService matchingService;
 
         private DonorInfoWithExpandedHla cordDonorInfoWithFullHomozygousMatchAtLocusA;
         private DonorInfoWithExpandedHla cordDonorInfoWithFullHeterozygousMatchAtLocusA;
@@ -46,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [SetUp]
         public void ResolveSearchRepo()
         {
-            matchingService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorMatchingService>();
+            matchingService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchingService>();
         }
 
         [OneTimeSetUp]

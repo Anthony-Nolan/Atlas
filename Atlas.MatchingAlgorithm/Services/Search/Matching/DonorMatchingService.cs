@@ -1,142 +1,145 @@
+﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
+using Atlas.MatchingAlgorithm.Common.Config;
+using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Common.Models.Matching;
+using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Common.Repositories;
+using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
     public interface IDonorMatchingService
     {
-        Task<IEnumerable<MatchResult>> GetMatches(AlleleLevelMatchCriteria criteria);
+        /// <summary>
+        /// Searches the pre-processed matching data for matches at the specified loci.
+        /// Performs filtering against loci and total mismatch counts.
+        /// </summary>
+        /// <returns>
+        /// A dictionary of PotentialSearchResults, keyed by donor id.
+        /// MatchDetails will be populated only for the specified loci.
+        /// </returns>
+        Task<IDictionary<int, MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, ICollection<Locus> loci);
     }
 
-    public class DonorMatchingService : IDonorMatchingService
+    public class DonorMatchingService : DonorMatchingServiceBase, IDonorMatchingService
     {
-        private readonly IDatabaseDonorMatchingService databaseDonorMatchingService;
-        private readonly IDonorInspectionRepository donorInspectionRepository;
+        private readonly IDonorSearchRepository donorSearchRepository;
         private readonly IMatchFilteringService matchFilteringService;
-        private readonly IMatchCriteriaAnalyser matchCriteriaAnalyser;
+        private readonly IDatabaseFilteringAnalyser databaseFilteringAnalyser;
         private readonly ILogger logger;
+        private readonly IPGroupRepository pGroupRepository;
 
         public DonorMatchingService(
-            IDatabaseDonorMatchingService databaseDonorMatchingService,
-            // ReSharper disable once SuggestBaseTypeForParameter
-            IActiveRepositoryFactory transientRepositoryFactory,
+            IActiveRepositoryFactory repositoryFactory,
             IMatchFilteringService matchFilteringService,
-            IMatchCriteriaAnalyser matchCriteriaAnalyser,
-            ILogger logger)
+            IDatabaseFilteringAnalyser databaseFilteringAnalyser,
+            ILogger logger
+        )
         {
-            this.databaseDonorMatchingService = databaseDonorMatchingService;
-            donorInspectionRepository = transientRepositoryFactory.GetDonorInspectionRepository();
+            donorSearchRepository = repositoryFactory.GetDonorSearchRepository();
+            pGroupRepository = repositoryFactory.GetPGroupRepository();
             this.matchFilteringService = matchFilteringService;
-            this.matchCriteriaAnalyser = matchCriteriaAnalyser;
+            this.databaseFilteringAnalyser = databaseFilteringAnalyser;
             this.logger = logger;
         }
 
-        public async Task<IEnumerable<MatchResult>> GetMatches(AlleleLevelMatchCriteria criteria)
+        public async Task<IDictionary<int, MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, ICollection<Locus> loci)
         {
-            var lociToMatchFirst = matchCriteriaAnalyser.LociToMatchFirst(criteria).ToList();
-            var lociToMatchSecond = criteria.LociWithCriteriaSpecified().Except(lociToMatchFirst).ToList();
-
-            var initialMatches = await PerformMatchingPhaseOne(criteria, lociToMatchFirst);
-            var matchesAtAllLoci = await PerformMatchingPhaseTwo(criteria, lociToMatchSecond, initialMatches);
-            return (await PerformMatchingPhaseThree(criteria, matchesAtAllLoci)).Values;
-        }
-
-        /// <summary>
-        /// The first phase of matching must perform a full scan of the MatchingHla tables for the specified loci.
-        /// It must return a superset of the final matching donor set - i.e. no matching donors may exist and not be returned in this phase.
-        /// </summary>
-        private async Task<IDictionary<int, MatchResult>> PerformMatchingPhaseOne(AlleleLevelMatchCriteria criteria, ICollection<Locus> loci)
-        {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            var matches = await databaseDonorMatchingService.FindMatchesForLoci(criteria, loci);
-
-            logger.SendTrace("Matching timing: Phase 1 complete", LogLevel.Info, new Dictionary<string, string>
+            if (loci.Any(locus => !LocusSettings.LociPossibleToMatchInMatchingPhaseOne.Contains(locus)))
             {
-                {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
-                {"Donors", matches.Count.ToString()},
-                {"Loci", string.Join(",", loci.Select(l => l.ToString()))}
-            });
-
-            return matches;
-        }
-
-        /// <summary>
-        /// The second phase of matching needs only consider the donors matched by phase 1, and filter out mismatches at the remaining loci.
-        /// </summary>
-        private async Task<IDictionary<int, MatchResult>> PerformMatchingPhaseTwo(
-            AlleleLevelMatchCriteria criteria,
-            ICollection<Locus> loci,
-            IDictionary<int, MatchResult> initialMatches
-        )
-        {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            var matchesAtAllLoci = await databaseDonorMatchingService.FindMatchesForLociFromDonorSelection(criteria, loci, initialMatches);
-
-            logger.SendTrace("Matching timing: Phase 2 complete", LogLevel.Info, new Dictionary<string, string>
-            {
-                {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
-                {"Donors", matchesAtAllLoci.Count.ToString()},
-                {"Loci", string.Join(",", loci.Select(l => l.ToString()))}
-            });
-            return matchesAtAllLoci;
-        }
-
-        /// <summary>
-        /// The third phase of matching does not need to query the p-group matching tables.
-        /// It will assess the matches from all individual loci against the remaining search criteria
-        /// </summary>
-        private async Task<IDictionary<int, MatchResult>> PerformMatchingPhaseThree(
-            AlleleLevelMatchCriteria criteria,
-            IDictionary<int, MatchResult> matches
-        )
-        {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            var filteredMatchesByMatchCriteria = matches
-                .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m.Value, criteria))
-                .ToDictionary(m => m.Key, m => m.Value);
-
-            var matchesWithDonorInfoPopulated = await PopulateDonorData(filteredMatchesByMatchCriteria);
-
-            var filteredMatchesByDonorInformation = matchesWithDonorInfoPopulated
-                .Where(m => matchFilteringService.IsAvailableForSearch(m.Value))
-                .Where(m => matchFilteringService.FulfilsSearchTypeCriteria(m.Value, criteria))
-                .Where(m => matchFilteringService.FulfilsSearchTypeSpecificCriteria(m.Value, criteria))
-                .ToList();
-
-            // Once finished populating match data, mark data as populated (so that null locus match data can be accessed for mapping to the api model)
-            filteredMatchesByDonorInformation.ForEach(m => m.Value.MarkMatchingDataFullyPopulated());
-
-            logger.SendTrace("Matching timing: Phase 3 complete", LogLevel.Info, new Dictionary<string, string>
-            {
-                {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
-                {"Donors", filteredMatchesByDonorInformation.Count.ToString()},
-            });
-            return filteredMatchesByDonorInformation.ToDictionary(m => m.Key, m => m.Value);
-        }
-
-        private async Task<IDictionary<int, MatchResult>> PopulateDonorData(Dictionary<int, MatchResult> filteredMatchesByMatchCriteria)
-        {
-            var donors = await donorInspectionRepository.GetDonors(filteredMatchesByMatchCriteria.Keys);
-            foreach (var (donorId, matchResult) in filteredMatchesByMatchCriteria)
-            {
-                matchResult.DonorInfo = donors[donorId];
+                // Currently the logic here is not advised for these loci
+                // Donors can be untyped at these loci, which counts as a potential match
+                // so a simple search of the database would return a huge number of donors. 
+                // To avoid serialising that many results, we filter on these loci based on the results at other loci
+                throw new NotImplementedException();
             }
 
-            return filteredMatchesByMatchCriteria;
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            var results = await Task.WhenAll(loci.Select(l =>
+                FindMatchesAtLocus(criteria.SearchType, l, criteria.MatchCriteriaForLocus(l)))
+            );
+
+            logger.SendTrace($"MATCHING PHASE1: all donors from Db. {results.Sum(x => x.Count)} results in {stopwatch.ElapsedMilliseconds} ms",
+                LogLevel.Info);
+            stopwatch.Restart();
+
+            var matches = results
+                .SelectMany(r => r)
+                .GroupBy(m => m.Key)
+                // If no mismatches are allowed - donors must be matched at all provided loci. This check performed upfront to improve performance of such searches 
+                .Where(g => criteria.DonorMismatchCount != 0 || g.Count() == loci.Count)
+                .Select(matchesForDonor =>
+                {
+                    var donorId = matchesForDonor.Key;
+                    var result = new MatchResult
+                    {
+                        DonorId = donorId,
+                    };
+                    foreach (var locus in loci)
+                    {
+                        var (key, donorAndMatchForLocus) = matchesForDonor.FirstOrDefault(m => m.Value.Locus == locus);
+                        var locusMatchDetails = donorAndMatchForLocus != null
+                            ? donorAndMatchForLocus.Match
+                            : new LocusMatchDetails {MatchCount = 0};
+                        result.SetMatchDetailsForLocus(locus, locusMatchDetails);
+                    }
+
+                    return result;
+                })
+                .Where(m => loci.All(l => matchFilteringService.FulfilsPerLocusMatchCriteria(m, criteria, l)))
+                .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m, criteria))
+                .ToList();
+
+            logger.SendTrace($"MATCHING PHASE1: Manipulate + filter: {stopwatch.ElapsedMilliseconds}", LogLevel.Info);
+            stopwatch.Restart();
+
+            return matches.ToDictionary(m => m.DonorId, m => m);
+        }
+
+        private async Task<IDictionary<int, DonorAndMatchForLocus>> FindMatchesAtLocus(
+            DonorType searchType,
+            Locus locus,
+            AlleleLevelLocusMatchCriteria criteria
+        )
+        {
+            var repoCriteria = new LocusSearchCriteria
+            {
+                SearchType = searchType,
+                PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
+                PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
+                MismatchCount = criteria.MismatchCount,
+            };
+
+            var filteringOptions = new MatchingFilteringOptions
+            {
+                ShouldFilterOnDonorType = databaseFilteringAnalyser.ShouldFilterOnDonorTypeInDatabase(repoCriteria),
+            };
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            
+            var matchesAtLocus = await donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions);
+            logger.SendTrace($"MATCHING PHASE1: SQL Requests, {stopwatch.ElapsedMilliseconds}", LogLevel.Info);
+            stopwatch.Restart();
+            
+            var matches = matchesAtLocus
+                .GroupBy(m => m.DonorId)
+                .ToDictionary(g => g.Key, g => DonorAndMatchFromGroup(g, locus));
+
+            logger.SendTrace($"MATCHING PHASE1: Direct/Cross analysis, {stopwatch.ElapsedMilliseconds}", LogLevel.Info);
+            
+            return matches;
         }
     }
 }

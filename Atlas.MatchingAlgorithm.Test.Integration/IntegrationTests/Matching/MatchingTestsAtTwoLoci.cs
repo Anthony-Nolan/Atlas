@@ -30,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
     [TestFixture(Locus.C, Locus.Dqb1)]
     public class MatchingTestsAtTwoLoci
     {
-        private IDonorMatchingService matchingService;
+        private IMatchingService matchingService;
 
         private DonorInfoWithExpandedHla cordDonorInfoWithNoMatchAtEitherLocus;
         private DonorInfoWithExpandedHla cordDonorInfoWithNoMatchAtLocus1AndHalfMatchAtLocus2;
@@ -74,7 +74,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [SetUp]
         public void ResolveSearchRepo()
         {
-            matchingService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorMatchingService>();
+            matchingService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchingService>();
         }
 
         /// <summary>
