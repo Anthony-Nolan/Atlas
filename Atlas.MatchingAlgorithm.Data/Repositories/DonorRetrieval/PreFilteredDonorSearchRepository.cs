@@ -6,6 +6,7 @@ using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
 using Microsoft.Data.SqlClient;
+using MoreLinq.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -16,6 +17,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {
     public class PreFilteredDonorSearchRepository : Repository, IPreFilteredDonorSearchRepository
     {
+        private const int DonorIdBatchSize = 50000;
+
         public PreFilteredDonorSearchRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
         {
         }
@@ -25,6 +28,19 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             LocusSearchCriteria criteria,
             IEnumerable<int> donorIds
         )
+        {
+            var results = new List<PotentialHlaMatchRelation>();
+
+            // Batching is being used here, as SQL server's query processor is limited in the number of donor IDs it can handle in a single query.
+            foreach (var donorIdBatch in donorIds.Batch(DonorIdBatchSize))
+            {
+                results.AddRange(await GetDonorsMatches(locus, criteria, donorIdBatch));
+            }
+
+            return results;
+        }
+
+        private async Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorsMatches(Locus locus, LocusSearchCriteria criteria, IEnumerable<int> donorIds)
         {
             donorIds = donorIds.ToList();
 
