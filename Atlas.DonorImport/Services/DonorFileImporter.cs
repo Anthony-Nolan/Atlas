@@ -37,10 +37,13 @@ namespace Atlas.DonorImport.Services
 
         public async Task ImportDonorFile(DonorImportFile file)
         {
+            logger.SendTrace($"Beginning Donor Import for file '{file.FileLocation}'.", LogLevel.Info);
+
             var importedDonorCount = 0;
+            var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents);
             try
             {
-                var donorUpdates = fileParser.LazilyParseDonorUpdates(file.Contents);
+                var donorUpdates = lazyFile.ReadLazyDonorUpdates();
                 foreach (var donorUpdateBatch in donorUpdates.Batch(BatchSize))
                 {
                     var reifiedDonorBatch = donorUpdateBatch.ToList();
@@ -54,6 +57,7 @@ namespace Atlas.DonorImport.Services
                 var summary = $"Donor Import Failed: {file.FileLocation}";
                 var description = @$"Importing donors for file: {file.FileLocation} has failed. With exception {e.Message}.
 {importedDonorCount} Donors were successfully imported prior to this error and have already been stored in the Database. Any remaining donors in the file have not been stored.
+The first {lazyFile?.ParsedDonorCount} Donors were able to be parsed from the file. The last Donor to be *successfully* parsed had DonorCode '{lazyFile?.LastSuccessfullyParsedDonorCode}'.
 Manual investigation is recommended; see Application Insights for more information.";
 
                 await notificationSender.SendAlert(summary, description, Priority.Medium, nameof(ImportDonorFile));

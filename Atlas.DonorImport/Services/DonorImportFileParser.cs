@@ -9,14 +9,31 @@ namespace Atlas.DonorImport.Services
     internal interface IDonorImportFileParser
     {
         /// <returns>A batch of parsed donor updates</returns>
-        public IEnumerable<DonorUpdate> LazilyParseDonorUpdates(Stream stream);
+        public LazilyParsingDonorFile PrepareToLazilyParseDonorUpdates(Stream stream);
     }
 
     internal class DonorImportFileParser : IDonorImportFileParser
     {
-        public IEnumerable<DonorUpdate> LazilyParseDonorUpdates(Stream stream)
+        public LazilyParsingDonorFile PrepareToLazilyParseDonorUpdates(Stream stream)
         {
-            using (var streamReader = new StreamReader(stream))
+            return new LazilyParsingDonorFile(stream);
+        }
+    }
+
+    internal class LazilyParsingDonorFile
+    {
+        public LazilyParsingDonorFile(Stream stream)
+        {
+            underlyingDataStream = stream;
+        }
+        private readonly Stream underlyingDataStream;
+
+        public int ParsedDonorCount { get; private set; }
+        public string LastSuccessfullyParsedDonorCode { get; private set; }
+
+        public IEnumerable<DonorUpdate> ReadLazyDonorUpdates()
+        {
+            using (var streamReader = new StreamReader(underlyingDataStream))
             using (var reader = new JsonTextReader(streamReader))
             {
                 var serializer = new JsonSerializer();
@@ -52,6 +69,10 @@ namespace Atlas.DonorImport.Services
                                     }
 
                                     donorOperation.UpdateMode = updateMode.Value;
+
+                                    //Record the successful parsing for diagnostics if subsequent records fail, before returning it to the caller.
+                                    ParsedDonorCount++;
+                                    LastSuccessfullyParsedDonorCode = donorOperation.RecordId;
                                     yield return donorOperation;
                                 } while (reader.Read() && reader.TokenType != JsonToken.EndArray);
 

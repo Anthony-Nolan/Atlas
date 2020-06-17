@@ -23,7 +23,7 @@ namespace Atlas.DonorImport.Test.Services
             const int donorCount = 100;
             var fileStream = DonorImportFileContentsBuilder.New.WithDonorCount(donorCount).Build().ToStream();
             
-            var donors = donorImportFileParser.LazilyParseDonorUpdates(fileStream).ToList();
+            var donors = donorImportFileParser.PrepareToLazilyParseDonorUpdates(fileStream).ReadLazyDonorUpdates().ToList();
 
             donors.Count().Should().Be(donorCount);
         }
