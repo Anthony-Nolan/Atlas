@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.Client.Models.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
@@ -22,17 +23,25 @@ namespace Atlas.MatchPrediction.Functions.Functions
 
         [FunctionName(nameof(ExpandAmbiguousPhenotype))]
         public async Task<IActionResult> ExpandAmbiguousPhenotype(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] [RequestBodyType(typeof(ExpandAmbiguousPhenotypeInput), "phenotype input")]
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(ExpandAmbiguousPhenotypeInput), "phenotype input")]
             HttpRequest request)
         {
             var expandAmbiguousPhenotypeInput =
-                JsonConvert.DeserializeObject<ExpandAmbiguousPhenotypeInput>(await new StreamReader(request.Body).ReadToEndAsync());
+                JsonConvert.DeserializeObject<ExpandAmbiguousPhenotypeInput>(await new StreamReader(request.Body)
+                    .ReadToEndAsync());
+            try
+            {
+                var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(
+                    expandAmbiguousPhenotypeInput.Phenotype,
+                    expandAmbiguousPhenotypeInput.HlaNomenclatureVersion);
 
-            var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(
-                expandAmbiguousPhenotypeInput.Phenotype,
-                expandAmbiguousPhenotypeInput.HlaNomenclatureVersion);
-
-            return new JsonResult(new ExpandAmbiguousPhenotypeResponse {Genotypes = genotypes});
+                return new JsonResult(new ExpandAmbiguousPhenotypeResponse {Genotypes = genotypes});
+            }
+            catch (Exception exception)
+            {
+                return new BadRequestObjectResult(exception);
+            }
         }
 
         [FunctionName(nameof(NumberOfPermutationsOfAmbiguousPhenotype))]
