@@ -2,11 +2,12 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using FluentAssertions;
 using LochNessBuilder;
-using NUnit.Framework;
 using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguousPhenotype
 {
@@ -15,7 +16,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
     {
         private ICompressedPhenotypeExpander compressedPhenotypeExpander;
 
-        private const string HlaNomenclatureVersion = "3330";
+        private const string HlaNomenclatureVersion = Constants.SnapshotHlaNomenclatureVersion;
 
         private const string A1 = "02:09";
         private const string A2 = "02:66";
@@ -144,13 +145,23 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
             actualGenotypes.Should().BeEquivalentTo(expectedGenotypes);
         }
 
+        [Test]
+        public async Task ExpandCompressedPhenotype_WhenXXCodePresent_ExpandsXXCode()
+        {
+            var phenotype = NewPhenotypeInfo
+                .With(d => d.A, new LocusInfo<string> {Position1 = "01:XX", Position2 = A2})
+                .Build();
+
+            var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
+
+            genotypes.Count().Should().Be(303);
+        }
+        
         // TODO: ATLAS-370 - Create tests for g-group alleles
 
         // TODO: ATLAS-369 - Create tests for p-group alleles
 
         // TODO: ATLAS-368 - Create tests for serology alleles
-
-        // TODO: ATLAS-367 - Create tests for XX code alleles
 
         // TODO: ATLAS-407 - Create tests for NMDP alleles
 
