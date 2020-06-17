@@ -1,13 +1,13 @@
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
@@ -18,21 +18,24 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
     public class DonorMatchingService : IDonorMatchingService
     {
-        private readonly IDatabaseDonorMatchingService databaseDonorMatchingService;
+        private readonly IDonorMatchingPhaseOneService matchingPhaseOneService;
+        private readonly IDonorMatchingPhaseTwoService matchingPhaseTwoService;
         private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IMatchFilteringService matchFilteringService;
         private readonly IMatchCriteriaAnalyser matchCriteriaAnalyser;
         private readonly ILogger logger;
 
         public DonorMatchingService(
-            IDatabaseDonorMatchingService databaseDonorMatchingService,
+            IDonorMatchingPhaseOneService matchingPhaseOneService,
+            IDonorMatchingPhaseTwoService matchingPhaseTwoService,
             // ReSharper disable once SuggestBaseTypeForParameter
             IActiveRepositoryFactory transientRepositoryFactory,
             IMatchFilteringService matchFilteringService,
             IMatchCriteriaAnalyser matchCriteriaAnalyser,
             ILogger logger)
         {
-            this.databaseDonorMatchingService = databaseDonorMatchingService;
+            this.matchingPhaseOneService = matchingPhaseOneService;
+            this.matchingPhaseTwoService = matchingPhaseTwoService;
             donorInspectionRepository = transientRepositoryFactory.GetDonorInspectionRepository();
             this.matchFilteringService = matchFilteringService;
             this.matchCriteriaAnalyser = matchCriteriaAnalyser;
@@ -58,7 +61,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var matches = await databaseDonorMatchingService.FindMatchesForLoci(criteria, loci);
+            var matches = await matchingPhaseOneService.FindMatchesForLoci(criteria, loci);
 
             logger.SendTrace("Matching timing: Phase 1 complete", LogLevel.Info, new Dictionary<string, string>
             {
@@ -82,7 +85,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var matchesAtAllLoci = await databaseDonorMatchingService.FindMatchesForLociFromDonorSelection(criteria, loci, initialMatches);
+            var matchesAtAllLoci = await matchingPhaseTwoService.FindMatchesForLociFromDonorSelection(criteria, loci, initialMatches);
 
             logger.SendTrace("Matching timing: Phase 2 complete", LogLevel.Info, new Dictionary<string, string>
             {

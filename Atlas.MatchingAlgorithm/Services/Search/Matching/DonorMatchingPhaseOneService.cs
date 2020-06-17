@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
+﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Config;
@@ -11,14 +6,18 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.Matching;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Common.Repositories;
-using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
-    public interface IDatabaseDonorMatchingService
+    public interface IDonorMatchingPhaseOneService
     {
         /// <summary>
         /// Searches the pre-processed matching data for matches at the specified loci.
@@ -29,30 +28,24 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         /// MatchDetails will be populated only for the specified loci.
         /// </returns>
         Task<IDictionary<int, MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, ICollection<Locus> loci);
-
-        Task<IDictionary<int, MatchResult>> FindMatchesForLociFromDonorSelection(
-            AlleleLevelMatchCriteria criteria,
-            ICollection<Locus> loci,
-            IDictionary<int, MatchResult> phase1MatchResults
-        );
     }
 
-    public class DatabaseDonorMatchingService : IDatabaseDonorMatchingService
+    public class DonorMatchingPhaseOneService : DonorMatchingServiceBase, IDonorMatchingPhaseOneService
     {
-        private readonly IDonorSearchRepository donorSearchRepository;
+        private readonly IDonorSearchPhaseOneRepository donorSearchRepository;
         private readonly IMatchFilteringService matchFilteringService;
         private readonly IDatabaseFilteringAnalyser databaseFilteringAnalyser;
         private readonly ILogger logger;
         private readonly IPGroupRepository pGroupRepository;
 
-        public DatabaseDonorMatchingService(
+        public DonorMatchingPhaseOneService(
             IActiveRepositoryFactory repositoryFactory,
             IMatchFilteringService matchFilteringService,
             IDatabaseFilteringAnalyser databaseFilteringAnalyser,
             ILogger logger
         )
         {
-            donorSearchRepository = repositoryFactory.GetDonorSearchRepository();
+            donorSearchRepository = repositoryFactory.GetDonorSearchPhaseOneRepository();
             pGroupRepository = repositoryFactory.GetPGroupRepository();
             this.matchFilteringService = matchFilteringService;
             this.databaseFilteringAnalyser = databaseFilteringAnalyser;
@@ -114,44 +107,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             return matches.ToDictionary(m => m.DonorId, m => m);
         }
 
-        public async Task<IDictionary<int, MatchResult>> FindMatchesForLociFromDonorSelection(
-            AlleleLevelMatchCriteria criteria,
-            ICollection<Locus> loci,
-            IDictionary<int, MatchResult> phase1MatchResults
-        )
-        {
-            foreach (var locus in loci)
-            {
-                var results = await FindMatchesAtLocusFromDonorSelection(
-                    criteria.SearchType,
-                    locus,
-                    criteria.MatchCriteriaForLocus(locus),
-                    phase1MatchResults.Keys
-                );
-
-                foreach (var (donorId, phase2Match) in results)
-                {
-                    var locusMatchDetails = phase2Match != null
-                        ? phase2Match.Match
-                        : new LocusMatchDetails {MatchCount = 0};
-
-                    var phase1Match = phase1MatchResults[donorId];
-                    phase1Match?.SetMatchDetailsForLocus(locus, locusMatchDetails);
-                }
-
-                var mismatchDonorIds = phase1MatchResults.Keys.Except(results.Select(r => r.Key));
-                foreach (var mismatchDonorId in mismatchDonorIds)
-                {
-                    phase1MatchResults[mismatchDonorId].SetMatchDetailsForLocus(locus, new LocusMatchDetails {MatchCount = 0});
-                }
-            }
-
-            return phase1MatchResults
-                .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m.Value, criteria))
-                .Where(m => loci.All(l => matchFilteringService.FulfilsPerLocusMatchCriteria(m.Value, criteria, l)))
-                .ToDictionary(m => m.Key, m => m.Value);
-        }
-
         private async Task<IDictionary<int, DonorAndMatchForLocus>> FindMatchesAtLocus(
             DonorType searchType,
             Locus locus,
@@ -185,62 +140,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             logger.SendTrace($"MATCHING PHASE1: Direct/Cross analysis, {stopwatch.ElapsedMilliseconds}", LogLevel.Info);
             
             return matches;
-        }
-
-        private async Task<IDictionary<int, DonorAndMatchForLocus>> FindMatchesAtLocusFromDonorSelection(
-            DonorType searchType,
-            Locus locus,
-            AlleleLevelLocusMatchCriteria criteria,
-            IEnumerable<int> donorIds
-        )
-        {
-            var repoCriteria = new LocusSearchCriteria
-            {
-                SearchType = searchType,
-                PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
-                PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
-                MismatchCount = criteria.MismatchCount,
-            };
-
-            var matches = (await donorSearchRepository.GetDonorMatchesAtLocusFromDonorSelection(locus, repoCriteria, donorIds))
-                .GroupBy(m => m.DonorId)
-                .ToDictionary(g => g.Key, g => DonorAndMatchFromGroup(g, locus));
-
-            return matches;
-        }
-
-        private static DonorAndMatchForLocus DonorAndMatchFromGroup(IGrouping<int, PotentialHlaMatchRelation> group, Locus locus)
-        {
-            var donorId = group.Key;
-            var potentialHlaMatchRelations = group.ToList();
-            return new DonorAndMatchForLocus
-            {
-                DonorId = donorId,
-                Match = new LocusMatchDetails
-                {
-                    MatchCount = DirectMatch(potentialHlaMatchRelations) || CrossMatch(potentialHlaMatchRelations) ? 2 : 1
-                },
-                Locus = locus
-            };
-        }
-
-        private static bool DirectMatch(IList<PotentialHlaMatchRelation> matches)
-        {
-            return matches.Any(m => m.SearchTypePosition == LocusPosition.One && m.MatchingTypePosition == LocusPosition.One)
-                   && matches.Any(m => m.SearchTypePosition == LocusPosition.Two && m.MatchingTypePosition == LocusPosition.Two);
-        }
-
-        private static bool CrossMatch(IList<PotentialHlaMatchRelation> matches)
-        {
-            return matches.Any(m => m.SearchTypePosition == LocusPosition.One && m.MatchingTypePosition == LocusPosition.Two)
-                   && matches.Any(m => m.SearchTypePosition == LocusPosition.Two && m.MatchingTypePosition == LocusPosition.One);
-        }
-
-        private class DonorAndMatchForLocus
-        {
-            public LocusMatchDetails Match { get; set; }
-            public int DonorId { get; set; }
-            public Locus Locus { get; set; }
         }
     }
 }

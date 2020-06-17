@@ -7,7 +7,8 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 {
     public interface IActiveRepositoryFactory : ITransientRepositoryFactory
     {
-        IDonorSearchRepository GetDonorSearchRepository();
+        IDonorSearchPhaseOneRepository GetDonorSearchPhaseOneRepository();
+        IDonorSearchPhaseTwoRepository GetDonorSearchPhaseTwoRepository();
         IDonorManagementLogRepository GetDonorManagementLogRepository();
     }
 
@@ -22,9 +23,14 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
             this.logger = logger;
         }
 
-        public IDonorSearchRepository GetDonorSearchRepository()
+        public IDonorSearchPhaseOneRepository GetDonorSearchPhaseOneRepository()
         {
-            return new DonorSearchRepository(ConnectionStringProvider, logger);
+            return new DonorSearchPhaseOneRepository(ConnectionStringProvider, logger);
+        }
+
+        public IDonorSearchPhaseTwoRepository GetDonorSearchPhaseTwoRepository()
+        {
+            return new DonorSearchPhaseTwoRepository(ConnectionStringProvider);
         }
 
         public IDonorManagementLogRepository GetDonorManagementLogRepository()

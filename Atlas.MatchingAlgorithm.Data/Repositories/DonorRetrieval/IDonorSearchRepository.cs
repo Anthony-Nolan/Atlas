@@ -1,16 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
+﻿using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.Matching;
 using Atlas.MatchingAlgorithm.Data.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {
-    /// <summary>
-    /// Fetches filtered donors, based on a set of matching criteria
-    /// </summary>
-    public interface IDonorSearchRepository
+    public interface IDonorSearchPhaseOneRepository
     {
         /// <summary>
         /// Returns donor matches at a given locus matching the search criteria
@@ -20,7 +17,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             LocusSearchCriteria criteria,
             MatchingFilteringOptions filteringOptions
         );
+    }
 
+    public interface IDonorSearchPhaseTwoRepository
+    {
         /// <summary>
         /// Returns donor matches at a given locus matching the search criteria, that are also present in a supplied list of donor ids
         /// </summary>
