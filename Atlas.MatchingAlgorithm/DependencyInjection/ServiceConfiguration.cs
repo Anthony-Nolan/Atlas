@@ -1,6 +1,7 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.Settings;
@@ -146,6 +147,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IScoreResultAggregator, ScoreResultAggregator>();
 
             services.RegisterCommonGeneticServices();
+            services.RegisterCommonMatchingServices();
 
             services.AddScoped<IActiveHlaNomenclatureVersionAccessor, ActiveHlaNomenclatureVersionAccessor>();
 
