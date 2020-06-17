@@ -35,22 +35,25 @@ This can make "re-uploading" files to re-trigger Functions trivial.
 
 After you run the command, it will list the files that will be copied, and all the files will appear in the destination container as 0 Byte files, over time the files will acquire sizes. Ordering by Size can show you the progress.
 
-
 To transfer files between containers in 2 different storages accounts, you will need:
- * SAS-token for the source account.
-   * In the Azure Portal, create a SAS token with ALL the access (incl. all the resource types!) and enable HTTP access.
-   * that will generate a token that starts with a question mark. `?sv=......`
-   * due to a bug in `az storage blob copy start` you will need to delete that leading question mark!
- * Connection String for the destination account.
+
+* SAS-token for the source account.
+  * In the Azure Portal, create a SAS token with ALL the access (incl. all the resource types!) and enable HTTP access.
+  * that will generate a token that starts with a question mark. `?sv=......`
+  * due to a bug in `az storage blob copy start` you will need to delete that leading question mark!
+* Connection String for the destination account.
 
 Variables:
- * `mydestinationstorageaccount` `manualdonorfilestorage`
- * `my-destination-container`. e.g. `wmda-sized`
- * `mysourcestorageaccount` e.g. `testwmdaatlasstorage`
- * `my-destination-container` e.g. `donors`
- * `DefaultEndpointsProtocol=https;AccountName=mydestinationstorageaccount;AccountKey=Y2T*******w==;EndpointSuffix=core.windows.net` This connection-string is for the SOURCE account, and should come from Azure Portal, naturally.
- * `"sv=2019-10-10&ss=bfqt&srt=sco&sp=rwdlacupx&se=2020-06-15T23:40:27Z&st=2020-06-15T15:40:27Z&spr=https,http&sig=FiR69W*****0k%3D"` This SAS-token is for the DESTINCATION account, and should come from Azure Portal, naturally. Note the quotes, and the absent leading '?'
- 
+
+* `mydestinationstorageaccount`. e.g. `manualdonorfilestorage`
+* `my-destination-container`. e.g. `wmda-sized`
+* `mysourcestorageaccount` e.g. `testwmdaatlasstorage`
+* `my-destination-container` e.g. `donors`
+* `DefaultEndpointsProtocol=https;AccountName=mydestinationstorageaccount;AccountKey=Y2T*******w==;EndpointSuffix=core.windows.net`
+  * This connection-string is for the SOURCE account, and should come from Azure Portal, naturally.
+* `"sv=2019-10-10&ss=bfqt&srt=sco&sp=rwdlacupx&se=2020-06-15T23:40:27Z&st=2020-06-15T15:40:27Z&spr=https,http&sig=FiR69W*****0k%3D"`
+  * This SAS-token is for the DESTINATION account, and should come from Azure Portal, naturally. Note the quotes, and the absent leading '?'
+
 Final command:
 
     az storage blob copy start-batch --connection-string DefaultEndpointsProtocol=https;AccountName=mydestinationstorageaccount;AccountKey=Y2T*******w==;EndpointSuffix=core.windows.net --destination-container my-destination-container --source-account-name mysourcestorageaccount --source-container my-destination-container --source-sas "sv=2019-10-10&ss=bfqt&srt=sco&sp=rwdlacupx&se=2020-06-15T23:40:27Z&st=2020-06-15T15:40:27Z&spr=https,http&sig=FiR69W*******0k%3D"
