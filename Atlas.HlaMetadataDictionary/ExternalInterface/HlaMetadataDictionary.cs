@@ -76,7 +76,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         public bool IsActiveVersionDifferentFromLatestVersion()
         {
-            var active = ActiveHlaNomenclatureVersion;
+            var active = activeHlaNomenclatureVersionOrDefault;
             var latest = wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion();
             return active != latest;
         }
