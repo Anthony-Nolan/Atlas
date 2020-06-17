@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Matching.Services;
 using Atlas.MatchingAlgorithm.Common.Models;
+using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using FluentAssertions;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
@@ -46,7 +49,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         [SetUp]
         public void SetUp()
         {
-            donorMatchCalculator = new DonorMatchCalculator();
+            var alleleGroupsMatchingCount = Substitute.For<IAlleleGroupsMatchingCount>();
+            donorMatchCalculator = new DonorMatchCalculator(alleleGroupsMatchingCount);
         }
 
         #region MatchCount Tests
