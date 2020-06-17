@@ -136,6 +136,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             // Hla Metadata Dictionary Refresh is not performed atomically as the resulting nomenclature version is needed in other stages.
             var newHlaNomenclatureVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
+            await dataRefreshHistoryRepository.UpdateExecutionDetails(refreshRecordId, newHlaNomenclatureVersion);
             await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecordId, DataRefreshStage.MetadataDictionaryRefresh);
             return newHlaNomenclatureVersion;
         }
