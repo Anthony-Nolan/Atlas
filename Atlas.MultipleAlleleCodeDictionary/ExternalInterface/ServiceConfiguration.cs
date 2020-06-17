@@ -7,6 +7,7 @@ using Atlas.MultipleAlleleCodeDictionary.HlaService;
 using Atlas.MultipleAlleleCodeDictionary.MacCacheService;
 using Atlas.MultipleAlleleCodeDictionary.MacImportServices;
 using Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData;
+using Atlas.MultipleAlleleCodeDictionary.Services;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.MultipleAlleleCodeDictionary.utils;
 using Microsoft.Extensions.DependencyInjection;

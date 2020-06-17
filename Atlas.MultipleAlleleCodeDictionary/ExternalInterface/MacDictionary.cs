@@ -12,7 +12,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         public Task ImportLatestMacs();
         public Task<Mac> GetMac(string macCode);
         public Task GenerateMacCache();
-         public Task<IEnumerable<MolecularAlleleDetails>> GetHlaFromMac(string macCode, string firstField);
+        /// <remarks>
+        /// This does not guarantee that HLA generated will be valid.
+        /// For instance, a generic MAC might not be valid for a given first field.
+        /// </remarks>
+        public Task<IEnumerable<string>> GetHlaFromMac(string macCode, string firstField);
     }
 
     public class MacDictionary : IMacDictionary
@@ -41,7 +45,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
             await macCacheService.GenerateMacCache();
         }
 
-        public async Task<IEnumerable<MolecularAlleleDetails>> GetHlaFromMac(string macCode, string firstField)
+        /// <inheritdoc />
+        public async Task<IEnumerable<string>> GetHlaFromMac(string macCode, string firstField)
         {
             return await macCacheService.GetHlaFromMac(macCode, firstField);
         }

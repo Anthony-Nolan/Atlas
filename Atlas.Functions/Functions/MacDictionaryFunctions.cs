@@ -10,11 +10,11 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 
 namespace Atlas.Functions.Functions
 {
-    internal class MacImportFunctions
+    internal class MacDictionaryFunctions
     {
         private readonly IMacDictionary macDictionary;
 
-        public MacImportFunctions(IMacDictionary macDictionary)
+        public MacDictionaryFunctions(IMacDictionary macDictionary)
         {
             this.macDictionary = macDictionary;
         }
@@ -41,7 +41,7 @@ namespace Atlas.Functions.Functions
         }
 
         [FunctionName(nameof(GetHlaFromMac))]
-        public async Task<IEnumerable<MolecularAlleleDetails>> GetHlaFromMac([HttpTrigger(AuthorizationLevel.Function, "get")]
+        public async Task<IEnumerable<string>> GetHlaFromMac([HttpTrigger(AuthorizationLevel.Function, "get")]
             HttpRequest request)
         {
             var macCode = request.Query["code"];
