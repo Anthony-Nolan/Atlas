@@ -26,8 +26,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         /// <summary>
         /// If there is exactly one data refresh in progress, picks up from the last successful stage.
+        /// 
         /// This is only intended to be used when a refresh job was interrupted. Calling it when a refresh is actually in progress
         /// would cause two refreshes to be in progress simultaneously, and is not advised.
+        ///
+        /// This distinction cannot be automated, as there is no difference in the data between "A single job is unfinished, and is actively running",
+        /// and "A single job is unfinished, but is not actively running due to an interruption" 
         /// </summary>
         Task ContinueDataRefresh();
     }

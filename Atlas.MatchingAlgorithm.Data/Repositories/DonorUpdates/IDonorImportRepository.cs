@@ -22,13 +22,13 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         Task FullHlaRefreshTearDown();
 
         /// <summary>
-        /// Removes all donors, and all p-group data
+        /// Removes all donors, and all pre-processed data
         /// </summary>
         /// <returns></returns>
         Task RemoveAllDonorInformation();
         
         /// <summary>
-        /// Removes all donor p-group data, without removing donors themselves.
+        /// Removes all donor pre-processed data, without removing donors themselves.
         /// </summary>
         Task RemoveAllProcessedDonorHla();
 
