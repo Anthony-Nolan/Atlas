@@ -82,7 +82,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             if (dataRefreshHistoryRepository.GetInProgressJobs().Any())
             {
-                logger.SendTrace("Data refresh is already in progress. Data Refresh not started.");
+                logger.SendTrace("Data refresh seems to already be in progress. Data Refresh not started.");
                 return;
             }
 
@@ -124,6 +124,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     );
                 case 1:
                     await dataRefreshNotificationSender.SendContinuationNotification();
+                    //TODO: ATLAS-QQQ: Check continuation 'signature' input.
+                    //TODO: ATLAS-QQQ: Write continuation timestamp update
                     await RunDataRefresh(inProgressJobs.Single().Id);
                     break;
                 default:
