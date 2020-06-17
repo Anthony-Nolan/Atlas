@@ -1,6 +1,6 @@
-﻿using FluentAssertions;
-using Atlas.Common.GeneticData;
+﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using FluentAssertions;
 using NUnit.Framework;
 
 namespace Atlas.Common.Test.Core.PhenotypeInfo
@@ -124,6 +124,24 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
             const string testDataDpb12 = "[TEST] At locus Dpb1, position 2";
             phenotypeInfo.SetPosition(Locus.Dpb1, LocusPosition.Two, testDataDpb12);
             phenotypeInfo.Dpb1.Position2.Should().Be(testDataDpb12);
+        }
+
+        [Test]
+        public void Reduce_ReducesAllPositionValues()
+        {
+            var data = new PhenotypeInfo<int>
+            {
+                A = new LocusInfo<int>{ Position1 = 1, Position2 = 2},
+                B = new LocusInfo<int>{ Position1 = 3, Position2 = 4},
+                C = new LocusInfo<int>{ Position1 = 5, Position2 = 6},
+                Dpb1 = new LocusInfo<int>{ Position1 = 7, Position2 = 8},
+                Dqb1 = new LocusInfo<int>{ Position1 = 9, Position2 = 10},
+                Drb1 = new LocusInfo<int>{ Position1 = 11, Position2 = 12},
+            };
+
+            var reducedValue = data.Reduce((locus, position, value, aggregator) => aggregator + value, 0);
+
+            reducedValue.Should().Be(78);
         }
     }
 }

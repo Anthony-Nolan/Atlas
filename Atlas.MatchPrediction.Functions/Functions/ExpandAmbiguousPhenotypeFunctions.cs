@@ -26,14 +26,28 @@ namespace Atlas.MatchPrediction.Functions.Functions
             HttpRequest request)
         {
             var expandAmbiguousPhenotypeInput =
-                JsonConvert.DeserializeObject<ExpandAmbiguousPhenotypeInput>(await new StreamReader(request.Body)
-                    .ReadToEndAsync());
+                JsonConvert.DeserializeObject<ExpandAmbiguousPhenotypeInput>(await new StreamReader(request.Body).ReadToEndAsync());
 
             var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(
                 expandAmbiguousPhenotypeInput.Phenotype,
                 expandAmbiguousPhenotypeInput.HlaNomenclatureVersion);
 
             return new JsonResult(new ExpandAmbiguousPhenotypeResponse {Genotypes = genotypes});
+        }
+
+        [FunctionName(nameof(NumberOfPermutationsOfAmbiguousPhenotype))]
+        public async Task<IActionResult> NumberOfPermutationsOfAmbiguousPhenotype(
+            [HttpTrigger(AuthorizationLevel.Function, "post")] [RequestBodyType(typeof(ExpandAmbiguousPhenotypeInput), "phenotype input")]
+            HttpRequest request)
+        {
+            var expandAmbiguousPhenotypeInput =
+                JsonConvert.DeserializeObject<ExpandAmbiguousPhenotypeInput>(await new StreamReader(request.Body).ReadToEndAsync());
+
+            var genotypeCount = await compressedPhenotypeExpander.CalculateNumberOfPermutations(
+                expandAmbiguousPhenotypeInput.Phenotype,
+                expandAmbiguousPhenotypeInput.HlaNomenclatureVersion);
+
+            return new JsonResult(genotypeCount);
         }
     }
 }
