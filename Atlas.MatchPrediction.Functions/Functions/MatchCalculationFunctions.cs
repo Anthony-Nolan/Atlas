@@ -22,12 +22,17 @@ namespace Atlas.MatchPrediction.Functions.Functions
 
         [FunctionName(nameof(MatchAtGGroupLevelCalculation))]
         public async Task<IActionResult> MatchAtGGroupLevelCalculation(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] [RequestBodyType(typeof(MatchCalculationInput), "match calculation")]
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(MatchCalculationInput), "match calculation")]
             HttpRequest request)
         {
             var matchCalculationInput = JsonConvert.DeserializeObject<MatchCalculationInput>(await new StreamReader(request.Body).ReadToEndAsync());
 
-            var likelihood = await matchCalculatorService.MatchAtPGroupLevel(matchCalculationInput.PatientHla, matchCalculationInput.DonorHla);
+            var likelihood = await matchCalculatorService.MatchAtPGroupLevel(
+                matchCalculationInput.PatientHla,
+                matchCalculationInput.DonorHla,
+                matchCalculationInput.HlaNomenclatureVersion);
+
             return new JsonResult(likelihood);
         }
     }

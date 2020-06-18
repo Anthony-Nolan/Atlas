@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
+using Atlas.MatchPrediction.Services.Utility;
 
 namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 {
@@ -21,22 +21,22 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
     {
         private const TargetHlaCategory FrequencyResolution = TargetHlaCategory.GGroup;
 
-        private readonly IHlaMetadataDictionaryFactory metadataDictionaryFactory;
         private readonly IAmbiguousPhenotypeExpander ambiguousPhenotypeExpander;
+        private readonly IHlaPerLocusExpander hlaPerLocusExpander;
 
         public CompressedPhenotypeExpander(
-            IHlaMetadataDictionaryFactory metadataDictionaryFactory,
-            IAmbiguousPhenotypeExpander ambiguousPhenotypeExpander)
+            IAmbiguousPhenotypeExpander ambiguousPhenotypeExpander,
+            IHlaPerLocusExpander hlaPerLocusExpander)
         {
-            this.metadataDictionaryFactory = metadataDictionaryFactory;
             this.ambiguousPhenotypeExpander = ambiguousPhenotypeExpander;
+            this.hlaPerLocusExpander = hlaPerLocusExpander;
         }
 
         public async Task<IEnumerable<PhenotypeInfo<string>>> ExpandCompressedPhenotype(
             PhenotypeInfo<string> phenotype,
             string hlaNomenclatureVersion)
         {
-            var allelesPerLocus = await ExpandAllelesPerLocus(phenotype, hlaNomenclatureVersion);
+            var allelesPerLocus = await hlaPerLocusExpander.Expand(phenotype, FrequencyResolution, hlaNomenclatureVersion);
 
             var genotypes = ambiguousPhenotypeExpander.ExpandPhenotype(allelesPerLocus);
 
@@ -46,29 +46,11 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         /// <inheritdoc />
         public async Task<long> CalculateNumberOfPermutations(PhenotypeInfo<string> phenotype, string hlaNomenclatureVersion)
         {
-            var allelesPerLocus = await ExpandAllelesPerLocus(phenotype, hlaNomenclatureVersion);
+            var allelesPerLocus = await hlaPerLocusExpander.Expand(phenotype, FrequencyResolution, hlaNomenclatureVersion);
 
             return allelesPerLocus.Reduce(
                 (l, p, alleles, count) => l == Locus.Dpb1 ? count : count * alleles.Count,
                 1L
-            );
-        }
-
-        private async Task<PhenotypeInfo<IReadOnlyCollection<string>>> ExpandAllelesPerLocus(
-            PhenotypeInfo<string> phenotype,
-            string hlaNomenclatureVersion)
-        {
-            var hlaMetadataDictionary = metadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
-
-            return await phenotype.MapAsync(async (locus, position, hla) =>
-                {
-                    if (locus == Locus.Dpb1)
-                    {
-                        return null;
-                    }
-
-                    return await hlaMetadataDictionary.ConvertHla(locus, hla, FrequencyResolution);
-                }
             );
         }
     }
