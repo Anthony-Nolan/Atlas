@@ -6,7 +6,7 @@ namespace Atlas.Common.Matching.Services
     {
         public static void RegisterCommonMatchingServices(this IServiceCollection services)
         {
-            services.AddScoped<IAlleleGroupsMatchingCount, AlleleGroupsMatchingCount>();
+            services.AddScoped<ILocusMatchCalculator, LocusMatchCalculator>();
         }
     }
 }
