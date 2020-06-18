@@ -1,8 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
+using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Models;
+using Dapper;
 using Microsoft.Data.SqlClient;
 
 namespace Atlas.DonorImport.Data.Repositories
@@ -10,14 +14,14 @@ namespace Atlas.DonorImport.Data.Repositories
     public interface IDonorImportRepository
     {
         public Task InsertDonorBatch(IEnumerable<Donor> donors);
+        Task UpdateDonorBatch(List<Donor> editedDonorsWithAtlasIds);
+        Task DeleteDonorBatch(ICollection<int> deletedAtlasDonorIds);
     }
 
     public class DonorImportRepository : DonorRepositoryBase, IDonorImportRepository
     {
         /// <inheritdoc />
-        public DonorImportRepository(string connectionString) : base(connectionString)
-        {
-        }
+        public DonorImportRepository(string connectionString) : base(connectionString) {}
 
         public async Task InsertDonorBatch(IEnumerable<Donor> donors)
         {
@@ -32,6 +36,48 @@ namespace Atlas.DonorImport.Data.Repositories
             using (var sqlBulk = BuildDonorSqlBulkCopy())
             {
                 await sqlBulk.WriteToServerAsync(dataTable);
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task UpdateDonorBatch(List<Donor> editedDonorsWithAtlasIds)
+        {
+            var columnUpdateStrings =
+                Donor.UpdateDbTableColumnNames
+                    .Select(columnName => $"{columnName} = @{columnName}")
+                    .StringJoin("," + Environment.NewLine);
+
+            var sql = $@"
+                UPDATE Donors
+                SET
+                    {columnUpdateStrings}
+                WHERE {nameof(Donor.AtlasId)} = @{nameof(Donor.AtlasId)},
+                ";
+
+            using (var tran = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            await using (var conn = NewConnection())
+            {
+                conn.Open();
+                foreach (var donorEdit in editedDonorsWithAtlasIds)
+                {
+                    await conn.ExecuteAsync(sql, donorEdit, commandTimeout: 600);
+                }
+                tran.Complete();
+                conn.Close();
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task DeleteDonorBatch(ICollection<int> deletedAtlasDonorIds)
+        {
+            var sql = @$"
+                DELETE FROM Donors
+                WHERE {nameof(Donor.AtlasId)} IN @Ids
+                ";
+
+            await using (var connection = NewConnection())
+            {
+                await connection.ExecuteAsync(sql, new { Ids = deletedAtlasDonorIds.ToList() });
             }
         }
 

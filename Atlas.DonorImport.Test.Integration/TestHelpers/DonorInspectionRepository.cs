@@ -2,7 +2,6 @@ using System.Threading.Tasks;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Dapper;
-using Microsoft.Data.SqlClient;
 
 namespace Atlas.DonorImport.Test.Integration.TestHelpers
 {
@@ -17,16 +16,11 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
 
     public class DonorInspectionRepository : DonorReadRepository, IDonorInspectionRepository
     {
-        private readonly string connectionString;
-
-        public DonorInspectionRepository(string connectionString) : base(connectionString)
-        {
-            this.connectionString = connectionString;
-        }
+        public DonorInspectionRepository(string connectionString) : base(connectionString) { }
 
         public async Task<Donor> GetDonor(string externalDonorCode)
         {
-            await using (var conn = new SqlConnection(connectionString))
+            await using (var conn = NewConnection())
             {
                 return await conn.QuerySingleOrDefaultAsync<Donor>(
                     "SELECT * FROM Donors WHERE ExternalDonorCode = @externalDonorCode",
@@ -37,7 +31,7 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
 
         public async Task<int> DonorCount()
         {
-            await using (var conn = new SqlConnection(connectionString))
+            await using (var conn = NewConnection())
             {
                 return await conn.QuerySingleOrDefaultAsync<int>("SELECT COUNT(*) FROM Donors", commandTimeout: 300);
             }
