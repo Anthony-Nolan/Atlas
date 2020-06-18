@@ -156,7 +156,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
 
             await converter.ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Include);
 
-            await macDictionary.Received().GetHlaFromMac(DefaultHlaName, default);
+            await macDictionary.Received().GetHlaFromMac(DefaultHlaName);
         }
 
         [Test]
@@ -166,7 +166,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             hlaCategorisationService.GetHlaTypingCategory(DefaultHlaName).Returns(category);
 
             var alleleNames = new[] { "01:01", "02:01" };
-            macDictionary.GetHlaFromMac(DefaultHlaName, default).Returns(alleleNames);
+            macDictionary.GetHlaFromMac(DefaultHlaName).Returns(alleleNames);
 
             const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Include;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option);
@@ -181,7 +181,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             hlaCategorisationService.GetHlaTypingCategory(DefaultHlaName).Returns(category);
 
             var alleleNames = new[] { "01:01", "02:01" };
-            macDictionary.GetHlaFromMac(DefaultHlaName, default).Returns(alleleNames);
+            macDictionary.GetHlaFromMac(DefaultHlaName).Returns(alleleNames);
 
             const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Include;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option);
@@ -196,7 +196,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             hlaCategorisationService.GetHlaTypingCategory(DefaultHlaName).Returns(category);
 
             var alleleNames = new[] { "01:01", "02:01" };
-            macDictionary.GetHlaFromMac(DefaultHlaName, default).Returns(alleleNames);
+            macDictionary.GetHlaFromMac(DefaultHlaName).Returns(alleleNames);
 
             const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Exclude;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option);
@@ -211,7 +211,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             hlaCategorisationService.GetHlaTypingCategory(DefaultHlaName).Returns(category);
 
             var alleleNames = new[] { "01:01", "02:01" };
-            macDictionary.GetHlaFromMac(DefaultHlaName, default).Returns(alleleNames);
+            macDictionary.GetHlaFromMac(DefaultHlaName).Returns(alleleNames);
 
             const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Exclude;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option);

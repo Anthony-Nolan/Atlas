@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.MacCacheService;
 using Atlas.MultipleAlleleCodeDictionary.MacImportServices;
@@ -33,6 +34,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         /// but this dictionary will expand specific MACs ignoring the given first field.
         /// </remarks>
         public Task<IEnumerable<string>> GetHlaFromMac(string macCode, string firstField);
+
+        public Task<IEnumerable<string>> GetHlaFromMac(string fullAlleleString);
     }
 
     public class MacDictionary : IMacDictionary
@@ -62,9 +65,18 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<string>> GetHlaFromMac(string macCode, string firstField)
+        public async Task<IEnumerable<string>> GetHlaFromMac(string firstField, string macCode)
         {
             return await macCacheService.GetHlaFromMac(macCode, firstField);
+        }
+        
+        public async Task<IEnumerable<string>> GetHlaFromMac(string fullAlleleString)
+        {
+            var parts = fullAlleleString.Split(MolecularTypingNameConstants.FieldDelimiter);
+            var firstField = parts[0];
+            var mac = parts[1];
+
+            return await macCacheService.GetHlaFromMac(mac, firstField);
         }
     }
 }

@@ -57,7 +57,7 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
                     var allelesFromAlleleString = alleleStringSplitter.GetAlleleNamesFromAlleleString(hlaName);
                     return GetTwoFieldAlleleNames(locus, allelesFromAlleleString, behaviour);
                 case HlaTypingCategory.NmdpCode:
-                    var allelesForNmdpCode = await macDictionary.GetHlaFromMac(hlaName, null);
+                    var allelesForNmdpCode = await macDictionary.GetHlaFromMac(hlaName);
                     return GetTwoFieldAlleleNames(locus, allelesForNmdpCode, behaviour);
                 case HlaTypingCategory.XxCode:
                     throw new NotImplementedException("XX Code to Two Field Conversion has not been implemented.");
