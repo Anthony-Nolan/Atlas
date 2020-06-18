@@ -1,5 +1,6 @@
 ﻿using System;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
 using Atlas.Common.Settings;
 using Atlas.Common.Utils.Extensions;
@@ -9,6 +10,7 @@ using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
+using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Settings;
 using Atlas.MatchPrediction.Settings.Azure;
 using Microsoft.EntityFrameworkCore;
@@ -34,6 +36,7 @@ namespace Atlas.MatchPrediction.DependencyInjection
                 sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
                 sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
                 OptionsReaderFor<ApplicationInsightsSettings>());
+            services.RegisterCommonMatchingServices();
         }
 
         private static void RegisterSettings(this IServiceCollection services)
@@ -80,6 +83,8 @@ namespace Atlas.MatchPrediction.DependencyInjection
 
             services.AddScoped<IAmbiguousPhenotypeExpander, AmbiguousPhenotypeExpander>();
             services.AddScoped<ICompressedPhenotypeExpander, CompressedPhenotypeExpander>();
+
+            services.AddScoped<IMatchCalculationService, MatchCalculationService>();
         }
 
         private static string GetSqlConnectionString(IServiceProvider sp)
