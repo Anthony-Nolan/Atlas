@@ -27,28 +27,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
             services.RegisterServices();
             services.RegisterLifeTimeScopedCacheTypes();
         }
-        
-        /// <remarks>
-        /// Expected to be made obsolete once the new Mac Dictionary
-        /// process is fully implemented.
-        /// TODO: Atlas-54
-        /// </remarks>
-        public static void RegisterMacDictionaryUsageServices(
-            this IServiceCollection services,
-            Func<IServiceProvider, string> fetchHlaClientApiKey,
-            Func<IServiceProvider, string> fetchHlaClientBaseUrl,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
-        {
-            services.RegisterLifeTimeScopedCacheTypes();
-            services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
-            services.AddScoped<IAntigenCachingService, NmdpCodeCachingService>();
-            services.AddScoped<INmdpCodeCache, NmdpCodeCachingService>();
 
-            services.RegisterHlaServiceClient(
-                fetchHlaClientApiKey,
-                fetchHlaClientBaseUrl);
-        }
-        
         private static void RegisterSettings(
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
@@ -69,20 +48,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
             services.AddScoped<IMacDictionary, MacDictionary>();
             services.AddScoped<IMacExpander, MacExpander>();
         }
-        
-        private static void RegisterHlaServiceClient(
-            this IServiceCollection services,
-            Func<IServiceProvider, string> fetchHlaClientApiKey,
-            Func<IServiceProvider, string> fetchHlaClientBaseUrl)
-        {
-            services.AddSingleton(sp => GetHlaServiceClient(
-                    fetchHlaClientApiKey(sp),
-                    fetchHlaClientBaseUrl(sp),
-                    sp.GetService<ILogger>()
-                )
-            );
-        }
-        
+
         private static IHlaServiceClient GetHlaServiceClient(
             string hlaClientApiKey,
             string hlaClientBaseUrl,

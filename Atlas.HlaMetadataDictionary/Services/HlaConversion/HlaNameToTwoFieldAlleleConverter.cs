@@ -26,7 +26,6 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
     {
         private readonly IHlaCategorisationService hlaCategorisationService;
         private readonly IAlleleStringSplitterService alleleStringSplitter;
-        private readonly INmdpCodeCache nmdpCodeCache;
         private readonly IMacDictionary macDictionary;
 
         public HlaNameToTwoFieldAlleleConverter(
@@ -36,7 +35,6 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
         {
             this.hlaCategorisationService = hlaCategorisationService;
             this.alleleStringSplitter = alleleStringSplitter;
-            this.nmdpCodeCache = nmdpCodeCache;
             this.macDictionary = macDictionary;
         }
 
