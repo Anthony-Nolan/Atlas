@@ -65,7 +65,12 @@ namespace Atlas.DonorImport.Services
                                     var donorOperation = serializer.Deserialize<DonorUpdate>(reader);
                                     if (donorOperation == null)
                                     {
-                                        throw new Exception("Donor in array of input file could not be parsed.");
+                                        throw new FormatException("Donor in array of input file could not be parsed.");
+                                    }
+
+                                    if (updateMode.Value == UpdateMode.Full && donorOperation.ChangeType != ImportDonorChangeType.Create)
+                                    {
+                                        throw new InvalidOperationException($"File Update mode is '{UpdateMode.Full}, but a record in the file is of ChangeType '{donorOperation.ChangeType}'. Only 'New' records / Creations are permitted in a '{UpdateMode.Full}' file.");
                                     }
 
                                     donorOperation.UpdateMode = updateMode.Value;

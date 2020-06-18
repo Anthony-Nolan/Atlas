@@ -10,7 +10,7 @@ namespace Atlas.DonorImport.Models.FileSchema
     {
         [EnumMember(Value = "N")] Create,
         [EnumMember(Value = "D")] Delete,
-        [EnumMember(Value = "U")] Update,
+        [EnumMember(Value = "U")] Edit,
     }
 
 }
