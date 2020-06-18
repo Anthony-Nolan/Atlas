@@ -7,6 +7,7 @@ using Atlas.MultipleAlleleCodeDictionary;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
 {
@@ -18,7 +19,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
 
         private IHlaCategorisationService hlaCategorisationService;
         private IAlleleStringSplitterService alleleStringSplitter;
-        private INmdpCodeCache nmdpCodeCache;
+        private IMacDictionary macDictionary;
 
         private IHlaNameToTwoFieldAlleleConverter converter;
 
@@ -27,9 +28,9 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         {
             hlaCategorisationService = Substitute.For<IHlaCategorisationService>();
             alleleStringSplitter = Substitute.For<IAlleleStringSplitterService>();
-            nmdpCodeCache = Substitute.For<INmdpCodeCache>();
+            macDictionary = Substitute.For<IMacDictionary>();
 
-            converter = new HlaNameToTwoFieldAlleleConverter(hlaCategorisationService, alleleStringSplitter, nmdpCodeCache);
+            converter = new HlaNameToTwoFieldAlleleConverter(hlaCategorisationService, alleleStringSplitter, macDictionary);
         }
 
         [TestCase("01:01", "01:01")]
@@ -155,7 +156,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
 
             await converter.ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Include);
 
-            await nmdpCodeCache.Received().GetOrAddAllelesForNmdpCode(DefaultLocus, DefaultHlaName);
+            await macDictionary.Received().GetHlaFromMac(DefaultHlaName, default);
         }
 
         [Test]
@@ -165,7 +166,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             hlaCategorisationService.GetHlaTypingCategory(DefaultHlaName).Returns(category);
 
             var alleleNames = new[] { "01:01", "02:01" };
-            nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, DefaultHlaName).Returns(alleleNames);
+            macDictionary.GetHlaFromMac(DefaultHlaName, default).Returns(alleleNames);
 
             const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Include;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option);
@@ -179,8 +180,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             const HlaTypingCategory category = HlaTypingCategory.NmdpCode;
             hlaCategorisationService.GetHlaTypingCategory(DefaultHlaName).Returns(category);
 
-            var alleleNames = new[] { "01:01N", "02:01" };
-            nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, DefaultHlaName).Returns(alleleNames);
+            var alleleNames = new[] { "01:01", "02:01" };
+            macDictionary.GetHlaFromMac(DefaultHlaName, default).Returns(alleleNames);
 
             const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Include;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option);
@@ -195,7 +196,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             hlaCategorisationService.GetHlaTypingCategory(DefaultHlaName).Returns(category);
 
             var alleleNames = new[] { "01:01", "02:01" };
-            nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, DefaultHlaName).Returns(alleleNames);
+            macDictionary.GetHlaFromMac(DefaultHlaName, default).Returns(alleleNames);
 
             const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Exclude;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option);
@@ -209,8 +210,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             const HlaTypingCategory category = HlaTypingCategory.NmdpCode;
             hlaCategorisationService.GetHlaTypingCategory(DefaultHlaName).Returns(category);
 
-            var alleleNames = new[] { "01:01N", "02:01" };
-            nmdpCodeCache.GetOrAddAllelesForNmdpCode(DefaultLocus, DefaultHlaName).Returns(alleleNames);
+            var alleleNames = new[] { "01:01", "02:01" };
+            macDictionary.GetHlaFromMac(DefaultHlaName, default).Returns(alleleNames);
 
             const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Exclude;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option);

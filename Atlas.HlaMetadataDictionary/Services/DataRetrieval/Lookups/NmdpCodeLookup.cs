@@ -1,27 +1,32 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.MultipleAlleleCodeDictionary;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 {
     internal class NmdpCodeLookup : AlleleNamesLookupBase
     {
-        private readonly INmdpCodeCache nmdpCodeCache;
+        private readonly IMacDictionary macDictionary;
 
         public NmdpCodeLookup(
             IHlaMetadataRepository hlaMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
-            INmdpCodeCache nmdpCodeCache)
+            IMacDictionary macDictionary)
             : base(hlaMetadataRepository, alleleNamesMetadataService)
         {
-            this.nmdpCodeCache = nmdpCodeCache;
+            this.macDictionary = macDictionary;
         }
 
         protected override async Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName)
         {
-            return await nmdpCodeCache.GetOrAddAllelesForNmdpCode(locus, lookupName);
+            var parts = lookupName.Split(MolecularTypingNameConstants.FieldDelimiter);
+            var firstField = parts[0];
+            var mac = parts[1];
+            return await macDictionary.GetHlaFromMac(mac, firstField);
         }
     }
 }

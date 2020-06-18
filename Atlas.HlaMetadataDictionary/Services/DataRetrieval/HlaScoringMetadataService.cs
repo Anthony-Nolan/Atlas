@@ -9,6 +9,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetad
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.MultipleAlleleCodeDictionary;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
@@ -30,13 +31,13 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IAlleleNamesMetadataService alleleNamesMetadataService,
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
-            INmdpCodeCache cache
+            IMacDictionary macDictionary
         ) : base(
             hlaScoringMetadataRepository,
             alleleNamesMetadataService,
             hlaCategorisationService,
             alleleSplitter,
-            cache
+            macDictionary
         )
         {
         }
