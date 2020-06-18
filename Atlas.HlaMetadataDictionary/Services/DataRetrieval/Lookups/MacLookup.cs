@@ -8,11 +8,11 @@ using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 {
-    internal class NmdpCodeLookup : AlleleNamesLookupBase
+    internal class MacLookup : AlleleNamesLookupBase
     {
         private readonly IMacDictionary macDictionary;
 
-        public NmdpCodeLookup(
+        public MacLookup(
             IHlaMetadataRepository hlaMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
             IMacDictionary macDictionary)

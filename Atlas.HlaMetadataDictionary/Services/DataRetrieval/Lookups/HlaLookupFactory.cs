@@ -29,7 +29,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
                     return new SerologyLookup(
                         hlaMetadataRepository);                   
                 case HlaTypingCategory.NmdpCode:
-                    return new NmdpCodeLookup(
+                    return new MacLookup(
                         hlaMetadataRepository,
                         alleleNamesMetadataService,
                         macDictionary);                    
