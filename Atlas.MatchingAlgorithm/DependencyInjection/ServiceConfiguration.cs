@@ -56,14 +56,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterSettingsForMatchingAlgorithm();
             services.RegisterMatchingAlgorithmServices();
             services.RegisterDataServices();
-            services.RegisterHlaMetadataDictionary(
-                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
-                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
-                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
-                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
-                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value
-            );
-            
             // TODO: ATLAS-327: Inject settings
             services.RegisterDonorReader(sp => sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["DonorImportSql"]);
         }
@@ -74,13 +66,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterMatchingAlgorithmServices();
             services.RegisterDataServices();
             services.RegisterDonorManagementServices();
-            services.RegisterHlaMetadataDictionary(
-                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
-                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
-                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
-                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
-                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value
-            );
         }
 
         private static void RegisterMatchingAlgorithmServices(this IServiceCollection services)

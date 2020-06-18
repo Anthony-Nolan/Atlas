@@ -42,14 +42,6 @@ variable "ENVIRONMENT" {
   description = "Prepended to all ATLAS resources, to indicate which environment of the installation they represent. Some alphanumeric characters must be present, as non-alphanumeric characters will be stripped from the storage account name. Max 8 alphanumeric characters. e.g. DEV/UAT/LIVE"
 }
 
-variable "HLA_SERVICE_APIKEY" {
-  type = string
-}
-
-variable "HLA_SERVICE_BASEURL" {
-  type = string
-}
-
 variable "LOCATION" {
   type        = string
   default     = "uksouth"

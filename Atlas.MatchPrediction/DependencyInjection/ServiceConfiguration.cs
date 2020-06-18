@@ -28,12 +28,6 @@ namespace Atlas.MatchPrediction.DependencyInjection
             services.RegisterServices();
             services.RegisterDatabaseServices();
             services.RegisterClientServices();
-            services.RegisterHlaMetadataDictionary(
-                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
-                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
-                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
-                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
-                OptionsReaderFor<ApplicationInsightsSettings>());
         }
 
         private static void RegisterSettings(this IServiceCollection services)

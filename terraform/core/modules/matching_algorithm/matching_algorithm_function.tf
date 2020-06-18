@@ -18,8 +18,6 @@ locals {
     "AzureManagement:Database:SubscriptionId"                   = var.general.subscription_id
     "AzureStorage:ConnectionString"                             = var.azure_storage.primary_connection_string
     "AzureStorage:SearchResultsBlobContainer"                   = azurerm_storage_container.search_matching_results_blob_container.name
-    "Client:HlaService:ApiKey"                                  = var.HLA_SERVICE_APIKEY
-    "Client:HlaService:BaseUrl"                                 = var.HLA_SERVICE_BASEURL
     "DataRefresh:ActiveDatabaseSize"                            = var.DATA_REFRESH_DB_SIZE_ACTIVE
     "DataRefresh:CronTab"                                       = var.DATA_REFRESH_CRONTAB
     "DataRefresh:DatabaseAName"                                 = azurerm_sql_database.atlas-matching-transient-a.name

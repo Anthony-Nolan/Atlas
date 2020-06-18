@@ -5,8 +5,6 @@ locals {
     "APPINSIGHTS_INSTRUMENTATIONKEY"                   = var.application_insights.instrumentation_key
     "ApplicationInsights:LogLevel"                     = var.APPLICATION_INSIGHTS_LOG_LEVEL
     "AzureStorage:ConnectionString"                    = var.azure_storage.primary_connection_string
-    "Client:HlaService:ApiKey"                         = var.HLA_SERVICE_APIKEY
-    "Client:HlaService:BaseUrl"                        = var.HLA_SERVICE_BASEURL
     "MessagingServiceBus:ConnectionString"             = var.servicebus_namespace_authorization_rules.read-only.primary_connection_string
     "MessagingServiceBus:DonorManagement:Topic"        = var.servicebus_topics.updated-searchable-donors.name
     "MessagingServiceBus:DonorManagement:Subscription" = azurerm_servicebus_subscription.matching.name
