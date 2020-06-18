@@ -34,6 +34,16 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             return new LocusInfo<R>(mapping(Position1), mapping(Position2));
         }
 
+        public bool Position1And2NotNull()
+        {
+            return Position1 != null && Position2 != null;
+        }
+
+        public bool SinglePositionNull()
+        {
+            return Position1 == null ^ Position2 == null;
+        }
+
         public IEnumerable<T> ToEnumerable()
         {
             return new List<T> {Position1, Position2};
