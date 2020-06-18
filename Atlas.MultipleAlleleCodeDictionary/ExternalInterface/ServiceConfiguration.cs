@@ -2,6 +2,7 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
+using Atlas.MultipleAlleleCodeDictionary.HlaService;
 using Atlas.MultipleAlleleCodeDictionary.MacCacheService;
 using Atlas.MultipleAlleleCodeDictionary.MacImportServices;
 using Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData;
@@ -10,6 +11,7 @@ using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.MultipleAlleleCodeDictionary.utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
 {
@@ -18,9 +20,9 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         public static void RegisterMacDictionary(
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings)
+            Func<IServiceProvider, MacImportSettings> fetchMacImportSettings)
         {
-            services.RegisterSettings(fetchApplicationInsightsSettings, fetchMacDictionarySettings);
+            services.RegisterSettings(fetchApplicationInsightsSettings, fetchMacImportSettings);
             services.RegisterServices();
             services.RegisterLifeTimeScopedCacheTypes();
         }
@@ -28,10 +30,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         private static void RegisterSettings(
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings)
+            Func<IServiceProvider, MacImportSettings> fetchMacImportSettings)
         {
             services.AddScoped(fetchApplicationInsightsSettings);
-            services.AddScoped(fetchMacDictionarySettings);
+            services.AddScoped(fetchMacImportSettings);
         }
         
         private static void RegisterServices(this IServiceCollection services)
