@@ -271,7 +271,20 @@ For each donor, we expand all hla into corresponding p-groups, and store a relat
 ### Data Refresh - In the case of the refresh job server dying
 
 The data refresh function is set up such that if it *fails* for any reason, the algorithm/infrastructure will be left in a reasonable state.
-If, however, the server were to stop mid-job, some cleanup would be necessary. If this happens locally, you can likely ignore the infrastructure part of this checklist. (We do not expect this to ever occur in a deployed environment)
+
+If, however, the server were to stop mid-job, automatic teardown would not be applied.
+In this case there are two options:
+
+#### (a) Continued Refresh
+
+Calling the `ContinueDataRefresh` will, if there is exactly one in-progress data refresh, continue execution from the first unfinished stage. This is the recommended option for ensuring the refresh completes. 
+ 
+#### (b) Manual cleanup
+ 
+If you prefer not to continue a refresh, teardown must be performed.
+This can either be done entirely manually, or the `RunDataRefreshCleanup` function can be run, which performs the described steps.
+ 
+If this happens locally, you can likely ignore the infrastructure part of this checklist. (We do not expect this to ever occur in a deployed environment)
 
 - Azure Infrastructure
   - **URGENT** - if the database was scaled up to the refresh level, it will need to be manually scaled back down. This should be done as soon as possible, as the refresh size is likely to have very high operating costs
