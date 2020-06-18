@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Matching.Services;
 using Atlas.MatchingAlgorithm.Common.Models;
@@ -15,11 +14,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
     public class DonorMatchCalculator : IDonorMatchCalculator
     {
-        private readonly IAlleleGroupsMatchingCount alleleGroupsMatchingCount;
+        private readonly ILocusMatchCalculator locusMatchCalculator;
 
-        public DonorMatchCalculator(IAlleleGroupsMatchingCount alleleGroupsMatchingCount)
+        public DonorMatchCalculator(ILocusMatchCalculator locusMatchCalculator)
         {
-            this.alleleGroupsMatchingCount = alleleGroupsMatchingCount;
+            this.locusMatchCalculator = locusMatchCalculator;
         }
 
         public LocusMatchDetails CalculateMatchDetailsForDonorHla(
@@ -30,13 +29,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             var expandedLocusMatchCriteria = 
                 new LocusInfo<IEnumerable<string>>(locusMatchCriteria.PGroupsToMatchInPositionOne, locusMatchCriteria.PGroupsToMatchInPositionTwo);
 
-            if (expandedHla.Position1 == null ^ expandedHla.Position2 == null)
-            {
-                throw new ArgumentException(
-                    "Locus cannot be partially typed. Either both positions should have data, or both should be null - check the validity of the matching data.");
-            }
-
-            var matchCount = alleleGroupsMatchingCount.MatchCount(expandedLocusMatchCriteria, expandedHla);
+            var matchCount = locusMatchCalculator.MatchCount(expandedLocusMatchCriteria, expandedHla);
 
             return new LocusMatchDetails
             {
