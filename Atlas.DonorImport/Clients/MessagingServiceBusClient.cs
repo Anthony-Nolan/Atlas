@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Atlas.DonorImport.Settings.ServiceBus;
@@ -11,6 +12,7 @@ namespace Atlas.DonorImport.Clients
     internal interface IMessagingServiceBusClient
     {
         Task PublishDonorUpdateMessage(SearchableDonorUpdate donorUpdate);
+        Task PublishDonorUpdateMessages(ICollection<SearchableDonorUpdate> donorUpdates);
     }
 
     internal class MessagingServiceBusClient : IMessagingServiceBusClient
@@ -23,6 +25,14 @@ namespace Atlas.DonorImport.Clients
             var donorUpdateTopicName = messagingServiceBusSettings.Value.MatchingDonorUpdateTopic;
 
             donorUpdateTopicClient = new TopicClient(connectionString, donorUpdateTopicName);
+        }
+
+        public async Task PublishDonorUpdateMessages(ICollection<SearchableDonorUpdate> donorUpdates)
+        {
+            foreach (var update in donorUpdates)
+            {
+                await PublishDonorUpdateMessage(update);
+            }
         }
 
         public async Task PublishDonorUpdateMessage(SearchableDonorUpdate donorUpdate)
