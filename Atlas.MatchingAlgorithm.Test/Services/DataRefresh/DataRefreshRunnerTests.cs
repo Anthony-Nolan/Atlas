@@ -301,24 +301,24 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [TestCase(DataRefreshStage.MetadataDictionaryRefresh)]
+        [TestCase(DataRefreshStage.DatabaseScalingSetup)]
         [TestCase(DataRefreshStage.DatabaseScalingTearDown)]
         // TODO: ATLAS-249: Add a test case for Queued Update Processing
         public async Task RefreshData_WhenUnskippableStageIsAlreadyComplete_DoesNotSkipStage(DataRefreshStage refreshStage)
         {
-            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.WithStageCompleted(refreshStage).Build());
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(refreshStage).Build());
 
             await dataRefreshRunner.RefreshData(default);
 
-            await dataRefreshHistoryRepository.Received().MarkStageAsComplete(Arg.Any<int>(), refreshStage);
+            await dataRefreshHistoryRepository.Received(1).MarkStageAsComplete(Arg.Any<int>(), refreshStage);
         }
 
         [TestCase(DataRefreshStage.DataDeletion)]
-        [TestCase(DataRefreshStage.DatabaseScalingSetup)]
         [TestCase(DataRefreshStage.DonorImport)]
         [TestCase(DataRefreshStage.DonorHlaProcessing)]
         public async Task RefreshData_WhenSkippableStageIsAlreadyComplete_SkipsStage(DataRefreshStage refreshStage)
         {
-            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.WithStageCompleted(refreshStage).Build());
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(refreshStage).Build());
 
             await dataRefreshRunner.RefreshData(default);
 
@@ -326,10 +326,128 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
+        public async Task RefreshData_WhenRunWasPartiallyCompleteUpToDictionaryRefresh_RedoesDictionaryRefresh_AndContinuesFromDataDeletion()
+        {
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.MetadataDictionaryRefresh).Build()
+            );
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await hlaMetadataDictionary.ReceivedWithAnyArgs(1).RecreateHlaMetadataDictionary(default);
+            await donorImportRepository.Received(1).RemoveAllDonorInformation();
+        }
+
+        [Test]
+        public async Task RefreshData_WhenRunWasPartiallyCompleteUpToDataDeletion_ContinuesFromDatabaseScaling()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.RefreshDatabaseSize, AzureDatabaseSize.P15.ToString())
+                .Build();
+            settingsOptions.Value.Returns(settings);
+
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DataDeletion).Build()
+            );
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await donorImportRepository.DidNotReceive().RemoveAllDonorInformation();
+            await azureDatabaseManager.Received(1).UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15);
+        }
+
+        [Test]
+        public async Task RefreshData_WhenRunWasPartiallyCompleteUpToDatabaseScaling_RedoesDatabaseScaling_AndContinuesFromDonorImport()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.RefreshDatabaseSize, AzureDatabaseSize.P15.ToString())
+                .Build();
+            settingsOptions.Value.Returns(settings);
+
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DatabaseScalingSetup).Build()
+            );
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.P15);
+            await donorImporter.Received(1).ImportDonors();
+        }
+
+        [Test]
+        public async Task RefreshData_WhenRunWasPartiallyCompleteUpToDonorImport_RepeatsNarrowDataDeletion_AndContinuesFromHlaProcessing()
+        {
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DonorImport).Build()
+            );
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await donorImporter.DidNotReceive().ImportDonors();
+            await donorImportRepository.DidNotReceive().RemoveAllDonorInformation();
+            await donorImportRepository.Received(1).RemoveAllProcessedDonorHla();
+            await hlaProcessor.ReceivedWithAnyArgs(1).UpdateDonorHla(default);
+        }
+
+        [Test]
+        public async Task RefreshData_WhenRunWasPartiallyCompleteUpToHlaProcessing_ContinuesFromScalingTearDown()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.ActiveDatabaseSize, AzureDatabaseSize.S4.ToString())
+                .Build();
+            settingsOptions.Value.Returns(settings);
+
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DonorHlaProcessing).Build()
+            );
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await donorImportRepository.DidNotReceive().RemoveAllDonorInformation();
+            await donorImportRepository.DidNotReceive().RemoveAllProcessedDonorHla();
+            await hlaProcessor.DidNotReceiveWithAnyArgs().UpdateDonorHla(default);
+            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4);
+        }
+
+        [Test]
+        public async Task RefreshData_WhenRunWasPartiallyCompleteUpToDatabaseScaling_RedoesDownScaling()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.ActiveDatabaseSize, AzureDatabaseSize.S4.ToString())
+                .Build();
+            settingsOptions.Value.Returns(settings);
+
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DatabaseScalingTearDown).Build()
+            );
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4);
+        }
+
+        [Test]
+        public async Task RefreshData_WhenRunWasPartiallyCompleteUpToHlaProcessing_DoesNotPerformInitialUpScalingOfDatabase()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.RefreshDatabaseSize, AzureDatabaseSize.P15.ToString())
+                .Build();
+            settingsOptions.Value.Returns(settings);
+
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DonorHlaProcessing).Build()
+            );
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await azureDatabaseManager.DidNotReceive().UpdateDatabaseSize(default, AzureDatabaseSize.P15);
+        }
+
+        [Test]
         public async Task RefreshData_WhenContinuingFromDonorImport_ClearsAllData()
         {
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
-                DataRefreshRecordBuilder.New.WithStagesCompletedUpTo(DataRefreshStage.DonorImport).Build()
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpToButNotIncluding(DataRefreshStage.DonorImport).Build()
             );
 
             await dataRefreshRunner.RefreshData(default);
@@ -338,10 +456,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task RefreshData_WhenContinuingFromBeforeDonorImport_ButAfterInitialDataDeletion_DoesNotClearData()
+        public async Task RefreshData_WhenContinuingFromSomeStepBeforeDonorImport_ButAfterInitialDataDeletion_DoesNotClearData()
         {
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
-                DataRefreshRecordBuilder.New.WithStagesCompletedUpTo(DataRefreshStage.DatabaseScalingSetup).Build()
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpToButNotIncluding(DataRefreshStage.DatabaseScalingSetup).Build()
             );
 
             await dataRefreshRunner.RefreshData(default);
@@ -353,7 +471,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         public async Task RefreshData_WhenContinuingFromHlaProcessingStep_DeletesOnlyProcessedHlaData()
         {
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
-                DataRefreshRecordBuilder.New.WithStagesCompletedUpTo(DataRefreshStage.DonorHlaProcessing).Build()
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpToButNotIncluding(DataRefreshStage.DonorHlaProcessing).Build()
             );
 
             await dataRefreshRunner.RefreshData(default);

@@ -161,11 +161,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 var currentStageWasCompletedInPreviousRun = refreshRecord.IsStageComplete(stage);
                 if (currentStageWasCompletedInPreviousRun)
                 {
-                    if (canStageBeSkipped[stage])
-                    {
-                        modes[stage] = DataRefreshStageExecutionMode.Skip;
-                    }
-                    modes[stage] = DataRefreshStageExecutionMode.FromScratch;
+                    modes[stage] = canStageBeSkipped[stage]
+                        ? DataRefreshStageExecutionMode.Skip
+                        : DataRefreshStageExecutionMode.FromScratch;
                 }
                 else if(previousStageWasCompletedInInterruptedRun)
                 {

@@ -31,13 +31,41 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh
             };
         }
 
-        public static Builder<DataRefreshRecord> WithStagesCompletedUpTo(
+        public static Builder<DataRefreshRecord> WithStagesCompleted(
+            this Builder<DataRefreshRecord> builder,
+            params DataRefreshStage[] completedStages)
+        {
+            var editedBuilder = builder;
+            foreach (var completedStage in completedStages)
+            {
+                editedBuilder = editedBuilder.WithStageCompleted(completedStage);
+            }
+
+            return editedBuilder;
+        }
+
+        public static Builder<DataRefreshRecord> WithStagesCompletedUpToButNotIncluding(
             this Builder<DataRefreshRecord> builder,
             DataRefreshStage firstIncompleteStage)
         {
-            var allStages = EnumExtensions.EnumerateValues<DataRefreshStage>();
-            return allStages.Where(refreshStage => refreshStage < firstIncompleteStage)
-                .Aggregate(builder, (b, stage) => b.WithStageCompleted(stage));
+            var completedStages =
+                EnumExtensions.EnumerateValues<DataRefreshStage>()
+                    .Where(refreshStage => refreshStage < firstIncompleteStage)
+                    .ToArray();
+
+            return builder.WithStagesCompleted(completedStages);
+        }
+
+        public static Builder<DataRefreshRecord> WithStagesCompletedUpToAndIncluding(
+            this Builder<DataRefreshRecord> builder,
+            DataRefreshStage firstIncompleteStage)
+        {
+            var completedStages =
+                EnumExtensions.EnumerateValues<DataRefreshStage>()
+                    .Where(refreshStage => refreshStage <= firstIncompleteStage)
+                    .ToArray();
+
+            return builder.WithStagesCompleted(completedStages);
         }
     }
 }
