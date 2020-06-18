@@ -52,40 +52,89 @@ namespace Atlas.DonorImport.Services
                 switch (updatesOfSameOperationType.Key)
                 {
                     case ImportDonorChangeType.Create:
-                        var creations = updatesOfSameOperationType.Select(update => MapToDatabaseDonor(update, fileLocation)).ToList();
-                        await donorImportRepository.InsertDonorBatch(creations);
+                        await ProcessDonorCreations(updatesOfSameOperationType.ToList(), externalCodes, fileLocation, updateMode);
                         break;
+
+                    case ImportDonorChangeType.Edit:
+                        await ProcessDonorEdits(updatesOfSameOperationType.ToList(), externalCodes, fileLocation);
+                        break;
+
                     case ImportDonorChangeType.Delete:
-                        throw new NotImplementedException();
-                    case ImportDonorChangeType.Update:
-                        throw new NotImplementedException();
+                        await ProcessDonorDeletions(externalCodes);
+                        break;
+
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-
-                if (updateMode != UpdateMode.Full)
-                {
-                    var atlasDonors = await donorInspectionRepository.GetDonorsByExternalDonorCodes(externalCodes);
-
-                    // The process of publishing and consuming update messages for the matching algorithm is very slow. 
-                    // For an initial load, donors will be imported in bulk to the matching algorithm, via a manually triggered process 
-                    foreach (var update in updatesOfSameOperationType)
-                    {
-                        var atlasDonor = atlasDonors[update.RecordId];
-                        if (atlasDonor == null)
-                        {
-                            throw new Exception($"Could not find changed donor in Atlas database: {update.RecordId}");
-                        }
-
-                        SearchableDonorUpdate updateMessage =
-                            update.ChangeType == ImportDonorChangeType.Delete
-                                ? MapToDeletionUpdate(atlasDonor)
-                                : MapToMatchingUpdateMessage(atlasDonor);
-
-                        await messagingServiceBusClient.PublishDonorUpdateMessage(updateMessage);
-                    }
-                }
             }
+        }
+
+        private async Task ProcessDonorCreations(
+            List<DonorUpdate> creationUpdates,
+            List<string> externalCodes,
+            string fileLocation,
+            UpdateMode updateMode)
+        {
+            var creationsWithoutAtlasIds = creationUpdates.Select(update => MapToDatabaseDonor(update, fileLocation)).ToList();
+            await donorImportRepository.InsertDonorBatch(creationsWithoutAtlasIds);
+
+            if (updateMode == UpdateMode.Full)
+            {
+                // The process of publishing and consuming update messages for the matching algorithm is very slow. 
+                // For an initial load, donors will be imported in bulk to the matching algorithm, via a manually triggered process 
+                return;
+            }
+
+            var newAtlasDonorIds = await donorInspectionRepository.GetDonorIdsByExternalDonorCodes(externalCodes);
+
+            foreach (var creation in creationsWithoutAtlasIds)
+            {
+                PopulateAtlasId(creation, newAtlasDonorIds);
+                SearchableDonorUpdate updateMessage = MapToMatchingUpdateMessage(creation);
+                await messagingServiceBusClient.PublishDonorUpdateMessage(updateMessage);
+            }
+        }
+
+        private async Task ProcessDonorEdits(
+            List<DonorUpdate> editUpdates,
+            List<string> externalCodes,
+            string fileLocation)
+
+        {
+            var existingAtlasDonorIds = await donorInspectionRepository.GetDonorIdsByExternalDonorCodes(externalCodes);
+
+            var editedDonorsWithAtlasIds = editUpdates.Select(edit =>
+            {
+                var dbDonor = MapToDatabaseDonor(edit, fileLocation);
+                dbDonor.AtlasId = existingAtlasDonorIds[edit.RecordId];
+                return dbDonor;
+            }).ToList();
+
+            await donorImportRepository.UpdateDonorBatch(editedDonorsWithAtlasIds);
+
+            var donorEditMessages = editedDonorsWithAtlasIds.Select(MapToMatchingUpdateMessage).ToList();
+            await messagingServiceBusClient.PublishDonorUpdateMessages(donorEditMessages);
+        }
+
+        private async Task ProcessDonorDeletions(List<string> deletedExternalCodes)
+        {
+            var deletedAtlasDonorIds = await donorInspectionRepository.GetDonorIdsByExternalDonorCodes(deletedExternalCodes);
+
+            await donorImportRepository.DeleteDonorBatch(deletedAtlasDonorIds.Values);
+
+            var deletionUpdates = deletedAtlasDonorIds.Values.Select(MapToDeletionUpdate).ToList();
+            await messagingServiceBusClient.PublishDonorUpdateMessages(deletionUpdates);
+        }
+
+        private void PopulateAtlasId(Donor creation, Dictionary<string, int> newAtlasDonorIds)
+        {
+            var donorCode = creation.ExternalDonorCode;
+            if (!newAtlasDonorIds.TryGetValue(donorCode, out var atlasDonorId))
+            {
+                throw new Exception($"Could not find added donor in Atlas database: {donorCode}");
+            }
+
+            creation.AtlasId = atlasDonorId;
         }
 
         private UpdateMode DetermineUpdateMode(IReadOnlyCollection<DonorUpdate> donorUpdates)
@@ -161,11 +210,16 @@ namespace Atlas.DonorImport.Services
             return fileLocation;
         }
 
-        private SearchableDonorUpdate MapToDeletionUpdate(Donor updatedDonor)
+        private SearchableDonorUpdate MapToDeletionUpdate(Donor deletedDonor)
+        {
+            return MapToDeletionUpdate(deletedDonor.AtlasId);
+        }
+
+        private SearchableDonorUpdate MapToDeletionUpdate(int deletedDonorId)
         {
             return new SearchableDonorUpdate
             {
-                DonorId = updatedDonor.AtlasId,
+                DonorId = deletedDonorId,
                 IsAvailableForSearch = false,
                 SearchableDonorInformation = null
             };

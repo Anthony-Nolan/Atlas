@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Models;
 using Dapper;
-using Microsoft.Data.SqlClient;
 
 namespace Atlas.DonorImport.Data.Repositories
 {
@@ -12,6 +11,7 @@ namespace Atlas.DonorImport.Data.Repositories
     {
         public IEnumerable<Donor> StreamAllDonors();
         public Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes);
+        public Task<Dictionary<string, int>> GetDonorIdsByExternalDonorCodes(IEnumerable<string> externalDonorCodes);
     }
 
     public class DonorReadRepository : DonorRepositoryBase, IDonorReadRepository
@@ -24,7 +24,7 @@ namespace Atlas.DonorImport.Data.Repositories
         public IEnumerable<Donor> StreamAllDonors()
         {
             var sql = $"SELECT {Donor.InsertionDataTableColumnNames.StringJoin(",")} FROM Donors";
-            using (var connection = new SqlConnection(ConnectionString))
+            using (var connection = NewConnection())
             {
                 // With "buffered: false" this should avoid loading all donors into memory before returning.
                 // This is necessary because we start to have issues running out of memory on a dataset of around 2M donors.
@@ -46,12 +46,25 @@ namespace Atlas.DonorImport.Data.Repositories
         {
             var sql = @$"
 SELECT {Donor.InsertionDataTableColumnNames.StringJoin(",")} FROM Donors
-WHERE ExternalDonorCode IN @codes
+WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
 ";
-            await using (var connection = new SqlConnection(ConnectionString))
+            await using (var connection = NewConnection())
             {
-                var donors = await connection.QueryAsync<Donor>(sql, new {codes = externalDonorCodes});
+                var donors = await connection.QueryAsync<Donor>(sql, new { codes = externalDonorCodes });
                 return donors.ToDictionary(d => d.ExternalDonorCode, d => d);
+            }
+        }
+
+        public async Task<Dictionary<string, int>> GetDonorIdsByExternalDonorCodes(IEnumerable<string> externalDonorCodes)
+        {
+            var sql = @$"
+SELECT {nameof(Donor.AtlasId)}, {nameof(Donor.ExternalDonorCode)} FROM Donors
+WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
+";
+            await using (var connection = NewConnection())
+            {
+                var donors = await connection.QueryAsync<(int,string)>(sql, new { codes = externalDonorCodes });
+                return donors.ToDictionary(d => d.Item2, d => d.Item1);
             }
         }
     }
