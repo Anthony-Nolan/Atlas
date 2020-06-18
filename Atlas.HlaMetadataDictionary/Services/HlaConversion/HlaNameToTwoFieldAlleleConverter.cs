@@ -7,6 +7,7 @@ using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.MultipleAlleleCodeDictionary;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 
 namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
 {
@@ -26,14 +27,17 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
         private readonly IHlaCategorisationService hlaCategorisationService;
         private readonly IAlleleStringSplitterService alleleStringSplitter;
         private readonly INmdpCodeCache nmdpCodeCache;
+        private readonly IMacDictionary macDictionary;
 
         public HlaNameToTwoFieldAlleleConverter(
             IHlaCategorisationService hlaCategorisationService,
-            IAlleleStringSplitterService alleleStringSplitter, INmdpCodeCache nmdpCodeCache)
+            IAlleleStringSplitterService alleleStringSplitter,
+            IMacDictionary macDictionary)
         {
             this.hlaCategorisationService = hlaCategorisationService;
             this.alleleStringSplitter = alleleStringSplitter;
             this.nmdpCodeCache = nmdpCodeCache;
+            this.macDictionary = macDictionary;
         }
 
         public async Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, ExpressionSuffixBehaviour behaviour)
@@ -53,7 +57,7 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
                     var allelesFromAlleleString = alleleStringSplitter.GetAlleleNamesFromAlleleString(hlaName);
                     return GetTwoFieldAlleleNames(locus, allelesFromAlleleString, behaviour);
                 case HlaTypingCategory.NmdpCode:
-                    var allelesForNmdpCode = await nmdpCodeCache.GetOrAddAllelesForNmdpCode(locus, hlaName);
+                    var allelesForNmdpCode = await macDictionary.GetHlaFromMac(hlaName, null);
                     return GetTwoFieldAlleleNames(locus, allelesForNmdpCode, behaviour);
                 case HlaTypingCategory.XxCode:
                     throw new NotImplementedException("XX Code to Two Field Conversion has not been implemented.");

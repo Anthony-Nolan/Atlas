@@ -3,6 +3,7 @@ using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.MultipleAlleleCodeDictionary;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 {
@@ -13,7 +14,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
             IHlaMetadataRepository hlaMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
             IAlleleStringSplitterService alleleSplitter,
-            INmdpCodeCache cache)
+            IMacDictionary macDictionary)
         {
             switch (category)
             {
@@ -31,7 +32,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
                     return new NmdpCodeLookup(
                         hlaMetadataRepository,
                         alleleNamesMetadataService,
-                        cache);                    
+                        macDictionary);                    
                 case HlaTypingCategory.AlleleStringOfNames:
                 case HlaTypingCategory.AlleleStringOfSubtypes:
                     return new AlleleStringLookup(

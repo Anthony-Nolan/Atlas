@@ -9,6 +9,7 @@ using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.MultipleAlleleCodeDictionary;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
@@ -29,7 +30,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
         private IAlleleNamesMetadataService alleleNamesMetadataService;
         private IHlaCategorisationService hlaCategorisationService;
         private IAlleleStringSplitterService alleleStringSplitterService;
-        private INmdpCodeCache cache;
+        private IMacDictionary macDictionary;
 
         [SetUp]
         public void SetUp()
@@ -38,14 +39,14 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
             alleleNamesMetadataService = Substitute.For<IAlleleNamesMetadataService>();
             hlaCategorisationService = Substitute.For<IHlaCategorisationService>();
             alleleStringSplitterService = Substitute.For<IAlleleStringSplitterService>();
-            cache = Substitute.For<INmdpCodeCache>();
+            macDictionary = Substitute.For<IMacDictionary>();
 
             metadataService = new HlaMatchingMetadataService(
                 hlaMetadataRepository,
                 alleleNamesMetadataService,
                 hlaCategorisationService,
                 alleleStringSplitterService,
-                cache);
+                macDictionary);
 
             var fakeEntityToPreventInvalidHlaExceptionBeingRaised = BuildMetadataRowForSingleAllele("alleleName");
 
