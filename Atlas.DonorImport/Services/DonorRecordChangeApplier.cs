@@ -43,9 +43,12 @@ namespace Atlas.DonorImport.Services
 
         public async Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, string fileLocation)
         {
+            var updateMode = DetermineUpdateMode(donorUpdates);
+
             var updatesByType = donorUpdates.GroupBy(du => du.ChangeType);
             foreach (var updatesOfSameOperationType in updatesByType)
             {
+                var externalCodes = updatesOfSameOperationType.Select(update => update.RecordId).ToList();
                 switch (updatesOfSameOperationType.Key)
                 {
                     case ImportDonorChangeType.Create:
@@ -60,16 +63,13 @@ namespace Atlas.DonorImport.Services
                         throw new ArgumentOutOfRangeException();
                 }
 
-                var shouldFetchAtlasDonorIds = updatesOfSameOperationType.Any(u => u.UpdateMode != UpdateMode.Full);
-                var atlasDonors = shouldFetchAtlasDonorIds
-                    ? await donorInspectionRepository.GetDonorsByExternalDonorCodes(updatesOfSameOperationType.Select(u => u.RecordId))
-                    : new Dictionary<string, Donor>();
-
-                // The process of publishing and consuming update messages for the matching algorithm is very slow. 
-                // For an initial load, donors will be imported in bulk to the matching algorithm, via a manually triggered process 
-                foreach (var update in updatesOfSameOperationType)
+                if (updateMode != UpdateMode.Full)
                 {
-                    if (update.UpdateMode != UpdateMode.Full)
+                    var atlasDonors = await donorInspectionRepository.GetDonorsByExternalDonorCodes(externalCodes);
+
+                    // The process of publishing and consuming update messages for the matching algorithm is very slow. 
+                    // For an initial load, donors will be imported in bulk to the matching algorithm, via a manually triggered process 
+                    foreach (var update in updatesOfSameOperationType)
                     {
                         var atlasDonor = atlasDonors[update.RecordId];
                         if (atlasDonor == null)
@@ -86,6 +86,18 @@ namespace Atlas.DonorImport.Services
                     }
                 }
             }
+        }
+
+        private UpdateMode DetermineUpdateMode(IReadOnlyCollection<DonorUpdate> donorUpdates)
+        {
+            if (donorUpdates.Select(u => u.UpdateMode).Distinct().Count() > 1)
+            {
+                // At the moment they are entirely impossible. 
+                // But if someone wants to change that then they have to come and look at this code, and the things that rely on it.
+                throw new InvalidOperationException("Multiple UpdateModes within a single file are not supported");
+            }
+
+            return donorUpdates.First().UpdateMode;
         }
 
         private Donor MapToDatabaseDonor(DonorUpdate fileUpdate, string fileLocation)
