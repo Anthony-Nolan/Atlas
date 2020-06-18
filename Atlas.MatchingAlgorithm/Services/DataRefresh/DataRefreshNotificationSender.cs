@@ -106,7 +106,8 @@ Appropriate teardown is being run. The data refresh will need to be re-started o
 @"The algorithm has detected an in-progress data refresh job on startup. This generally implies that a data refresh job 
 was terminated without the appropriate teardown being run - this should only happen if the service was re-started unexpectedly.
 Possible causes could include: (a) the service plan running out of memory (b) an azure outage (c) a deployment of the algorithm service.
-We should confirm that this was the case, and if so, run appropriate clean-up. See the README of the Atlas.MatchingAlgorithm project for more information.
+We should confirm that this was the case, and if so, either manually trigger a continuation of the stalled job (via the `ContinueDataRefresh` 
+function) ,or run appropriate clean-up. See the README of the Atlas.MatchingAlgorithm project for more information.
 The function `RunDataRefreshCleanup` should encapsulate the majority of the necessary clean-up.
 CAVEAT: Due to restrictions of triggers in Azure functions, this function will run once a year not at start-up.
 Check the crontab of the `CheckIfCleanupNecessary` function to ensure it isn't this known false positive.'";
