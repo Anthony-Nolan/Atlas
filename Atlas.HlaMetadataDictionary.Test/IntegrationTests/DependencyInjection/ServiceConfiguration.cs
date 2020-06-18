@@ -38,12 +38,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             services.AddScoped<IDpb1TceGroupsMetadataRepository, FileBackedTceMetadataRepository>();
             services.AddScoped<IAlleleGroupsMetadataRepository, FileBackedAlleleGroupsMetadataRepository>();
 
-            services.AddScoped(sp => Substitute.For<IMacDictionary>());
-            // Mac Dictionary Stubs
-            // TODO: ATLAS-320 Move this to MacDictionary Tests, along with any tests that actually belong over there.
-            // After that migration, this may or may not still be needed in here, and/or in MatchingAlgorithm.Tests
-            // If it is, expose this as a Test Registration in the MacDictionary project.
-
 
             services.AddScoped(sp =>
             {
