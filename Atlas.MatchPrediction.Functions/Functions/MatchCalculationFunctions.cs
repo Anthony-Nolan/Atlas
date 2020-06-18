@@ -27,7 +27,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
         {
             var matchCalculationInput = JsonConvert.DeserializeObject<MatchCalculationInput>(await new StreamReader(request.Body).ReadToEndAsync());
 
-            var likelihood = await matchCalculatorService.MatchAtGGroupLevel(matchCalculationInput.PatientHla, matchCalculationInput.DonorHla);
+            var likelihood = await matchCalculatorService.MatchAtPGroupLevel(matchCalculationInput.PatientHla, matchCalculationInput.DonorHla);
             return new JsonResult(likelihood);
         }
     }
