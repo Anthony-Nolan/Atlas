@@ -46,7 +46,7 @@ namespace Atlas.Functions.Functions
         {
             var macCode = request.Query["code"];
             var firstField = request.Query["firstField"];
-            return await macDictionary.GetHlaFromMac(macCode, firstField);
+            return await macDictionary.GetHlaFromMac(firstField, macCode);
         }
         
     }

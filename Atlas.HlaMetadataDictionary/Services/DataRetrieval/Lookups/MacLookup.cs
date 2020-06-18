@@ -23,10 +23,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 
         protected override async Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName)
         {
-            var parts = lookupName.Split(MolecularTypingNameConstants.FieldDelimiter);
-            var firstField = parts[0];
-            var mac = parts[1];
-            return await macDictionary.GetHlaFromMac(mac, firstField);
+            return await macDictionary.GetHlaFromMac(lookupName);
         }
     }
 }

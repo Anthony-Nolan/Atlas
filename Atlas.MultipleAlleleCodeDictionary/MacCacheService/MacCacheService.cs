@@ -3,19 +3,16 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
-using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
-using Atlas.MultipleAlleleCodeDictionary.MacImportServices;
 using Atlas.MultipleAlleleCodeDictionary.Services;
-using Atlas.MultipleAlleleCodeDictionary.utils;
 using LazyCache;
 
 namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
 {
     public interface IMacCacheService
     {
-        Task<IEnumerable<string>> GetHlaFromMac(string macCode, string firstField);
+        Task<IEnumerable<string>> GetHlaFromMac(string firstField, string macCode);
         Task<Mac> GetMacCode(string macCode);
         Task GenerateMacCache();
     }
