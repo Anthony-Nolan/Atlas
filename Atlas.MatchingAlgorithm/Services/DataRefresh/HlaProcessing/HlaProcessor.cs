@@ -15,6 +15,7 @@ using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MultipleAlleleCodeDictionary;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 {
@@ -37,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         private readonly IDonorHlaExpanderFactory donorHlaExpanderFactory;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
-        private readonly IAntigenCachingService antigenCachingService;
+        private readonly IMacDictionary macDictionary;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IPGroupRepository pGroupRepository;
@@ -47,14 +48,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             IDonorHlaExpanderFactory donorHlaExpanderFactory,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             IFailedDonorsNotificationSender failedDonorsNotificationSender,
-            IAntigenCachingService antigenCachingService,
+            IMacDictionary macDictionary,
             IDormantRepositoryFactory repositoryFactory)
         {
             this.logger = logger;
             this.donorHlaExpanderFactory = donorHlaExpanderFactory;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
             this.failedDonorsNotificationSender = failedDonorsNotificationSender;
-            this.antigenCachingService = antigenCachingService;
+            this.macDictionary = macDictionary;
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
             pGroupRepository = repositoryFactory.GetPGroupRepository();
@@ -156,7 +157,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 
                 logger.SendTrace("HLA PROCESSOR: caching antigens from hla service", LogLevel.Info);
                 // All antigens are fetched from the HLA service. We use our cache for NMDP lookups to avoid too much load on the hla service
-                await antigenCachingService.GenerateAntigenCache();
+                await macDictionary.GenerateMacCache();
 
                 logger.SendTrace("HLA PROCESSOR: inserting new p groups to database", LogLevel.Info);
                 // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the HlaMetadataDictionary, and new ones added to the SQL database
