@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
-using Atlas.MatchPrediction.Services.Utility;
 
 namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 {
@@ -22,21 +21,21 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         private const TargetHlaCategory FrequencyResolution = TargetHlaCategory.GGroup;
 
         private readonly IAmbiguousPhenotypeExpander ambiguousPhenotypeExpander;
-        private readonly IHlaPerLocusExpander hlaPerLocusExpander;
+        private readonly ILocusHlaConverter locusHlaConverter;
 
         public CompressedPhenotypeExpander(
             IAmbiguousPhenotypeExpander ambiguousPhenotypeExpander,
-            IHlaPerLocusExpander hlaPerLocusExpander)
+            ILocusHlaConverter locusHlaConverter)
         {
             this.ambiguousPhenotypeExpander = ambiguousPhenotypeExpander;
-            this.hlaPerLocusExpander = hlaPerLocusExpander;
+            this.locusHlaConverter = locusHlaConverter;
         }
 
         public async Task<IEnumerable<PhenotypeInfo<string>>> ExpandCompressedPhenotype(
             PhenotypeInfo<string> phenotype,
             string hlaNomenclatureVersion)
         {
-            var allelesPerLocus = await hlaPerLocusExpander.Expand(phenotype, FrequencyResolution, hlaNomenclatureVersion);
+            var allelesPerLocus = await locusHlaConverter.ConvertHla(phenotype, FrequencyResolution, hlaNomenclatureVersion);
 
             var genotypes = ambiguousPhenotypeExpander.ExpandPhenotype(allelesPerLocus);
 
@@ -46,7 +45,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         /// <inheritdoc />
         public async Task<long> CalculateNumberOfPermutations(PhenotypeInfo<string> phenotype, string hlaNomenclatureVersion)
         {
-            var allelesPerLocus = await hlaPerLocusExpander.Expand(phenotype, FrequencyResolution, hlaNomenclatureVersion);
+            var allelesPerLocus = await locusHlaConverter.ConvertHla(phenotype, FrequencyResolution, hlaNomenclatureVersion);
 
             return allelesPerLocus.Reduce(
                 (l, p, alleles, count) => l == Locus.Dpb1 ? count : count * alleles.Count,
