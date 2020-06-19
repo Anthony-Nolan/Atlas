@@ -5,7 +5,6 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
-using Atlas.MultipleAlleleCodeDictionary.HlaService;
 using FluentAssertions;
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,10 +40,10 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [SetUp]
         public void SetUp()
         {
-            macDictionary.GetHlaFromMac(Arg.Any<string>(), Arg.Any<string>())
+            macDictionary.GetHlaFromMac(Arg.Any<string>())
                 .Returns(new List<string>());
 
-            // clear NMDP code allele mappings between tests
+            // clear MAC allele mappings between tests
             appCache.Remove(CacheKey);
         }
 
@@ -55,16 +54,14 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string firstAllele = "01:133";
             const string secondAllele = "01:158";
 
-            // NMDP code value does not matter, but does need to conform to the expected pattern
-            const string nmdpCode = "99:CODE";
-            
-            macDictionary
-                .GetHlaFromMac()
-            hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(DefaultLocus, nmdpCode)
-                .Returns(new List<string> { firstAllele, secondAllele });
+            // MAC value does not matter, but does need to conform to the expected pattern
+            const string macWithFirstField = "99:CODE";
 
-            var result = await metadataService.GetHlaMetadata(DefaultLocus, nmdpCode, null);
+            macDictionary
+                .GetHlaFromMac(macWithFirstField)
+                .Returns(new List<string> {firstAllele, secondAllele});
+
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, null);
 
             result.MatchingPGroups.Should().BeEquivalentTo(new[] { firstAllele, secondAllele });
         }

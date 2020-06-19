@@ -6,7 +6,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
-using Atlas.MultipleAlleleCodeDictionary.HlaService;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using FluentAssertions;
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +25,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         private const string CacheKey = "NmdpCodeLookup_A";
 
         private IHlaScoringMetadataService metadataService;
-        private IHlaServiceClient hlaServiceClient;
+        private IMacDictionary macDictionary;
         private IAppCache appCache;
 
         [OneTimeSetUp]
@@ -34,7 +34,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
                 metadataService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaScoringMetadataService>();
-                hlaServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IHlaServiceClient>();
+                macDictionary = DependencyInjection.DependencyInjection.Provider.GetService<IMacDictionary>();
                 appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
             });
         }
@@ -42,8 +42,8 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [SetUp]
         public void SetUp()
         {
-            hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(DefaultLocus, Arg.Any<string>())
+            macDictionary
+                .GetHlaFromMac(Arg.Any<string>())
                 .Returns(new List<string>());
 
             // clear NMDP code allele mappings between tests
@@ -72,13 +72,13 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string secondAllele = "01:158";
             var alleles = new[] { firstAllele, secondAllele };
 
-            // NMDP code value does not matter, but does need to conform to the expected pattern
-            const string nmdpCode = "99:CODE";
-            hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(DefaultLocus, nmdpCode)
+            // MAC value does not matter, but does need to conform to the expected pattern
+            const string macWithFirstField = "99:CODE";
+            macDictionary
+                .GetHlaFromMac(macWithFirstField)
                 .Returns(alleles.ToList());
 
-            var result = await metadataService.GetHlaMetadata(DefaultLocus, nmdpCode, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, null);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
@@ -97,13 +97,13 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             var expressingAlleles = new[] { firstAllele, secondAllele };
             var allAlleles = new List<string>(expressingAlleles) { nullAllele };
 
-            // NMDP code value does not matter, but does need to conform to the expected pattern
-            const string nmdpCode = "99:CODE";
-            hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(DefaultLocus, nmdpCode)
+            // MAC value does not matter, but does need to conform to the expected pattern
+            const string macWithFirstField = "99:CODE";
+            macDictionary
+                .GetHlaFromMac(macWithFirstField)
                 .Returns(allAlleles);
 
-            var result = await metadataService.GetHlaMetadata(DefaultLocus, nmdpCode, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, null);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
