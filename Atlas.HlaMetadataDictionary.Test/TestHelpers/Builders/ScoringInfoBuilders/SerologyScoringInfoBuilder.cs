@@ -11,13 +11,16 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders.ScoringInfoBuild
         public SerologyScoringInfoBuilder()
         {
             scoringInfo = new SerologyScoringInfo(
-                new List<SerologyEntry>()
+                new List<SerologyEntry>(),
+                new List<string>(),
+                new List<string>()
                 );
         }
         
         public SerologyScoringInfoBuilder WithMatchingSerologies(IEnumerable<SerologyEntry> serologyEntries)
         {
-            scoringInfo = new SerologyScoringInfo(serologyEntries);
+            var newScoringInfo = new SerologyScoringInfo(serologyEntries, scoringInfo.MatchingGGroups, scoringInfo.MatchingPGroups);
+            scoringInfo = newScoringInfo;
 
             return this;
         }
