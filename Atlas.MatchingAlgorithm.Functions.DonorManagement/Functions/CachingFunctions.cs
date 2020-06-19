@@ -4,6 +4,7 @@ using Atlas.Common.Utils;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MultipleAlleleCodeDictionary;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Microsoft.Azure.WebJobs;
 
 namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
@@ -11,13 +12,26 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
     public class CachingFunctions
     {
         private readonly IHlaMetadataCacheControl hlaMetadataCacheControl;
+        private readonly IMacDictionary macDictionary;
 
         public CachingFunctions(
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
-            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
+            IMacDictionary macDictionary
         )
         {
             hlaMetadataCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
+            this.macDictionary = macDictionary;
+        }
+        
+                
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
+        [FunctionName(nameof(UpdateMacDictionaryCache))]
+        public async Task UpdateMacDictionaryCache(
+            [TimerTrigger("00 00 02 * * *", RunOnStartup = true)]
+            TimerInfo timerInfo)
+        {
+            await macDictionary.GenerateMacCache();
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
