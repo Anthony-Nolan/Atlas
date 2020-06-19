@@ -98,9 +98,9 @@ DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDqb1;
             }
         }
 
-        public string SqlForPGroupIndexFor(string tableName)
+        private string GetPGroupIndexSqlFor(string tableName)
         {
-            return SqlForIndex(
+            return GetIndexCreationSqlFor(
                 MatchingHlaTable_IndexName_PGroupIdAndDonorId,
                 tableName,
                 new[] { "DonorId", "PGroup_Id" },
@@ -108,9 +108,9 @@ DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDqb1;
             );
         }
 
-        public string SqlForDonorIndexFor(string tableName)
+        private string GetDonorIdIndexSqlFor(string tableName)
         {
-            return SqlForIndex(
+            return GetIndexCreationSqlFor(
                 MatchingHlaTable_IndexName_DonorId,
                 tableName,
                 new[] {"DonorId"},
@@ -118,7 +118,12 @@ DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDqb1;
             );
         }
 
-        public string SqlForIndex(string indexName, string tableName, string[] indexColumns, string[] includeColumns)
+        /// <param name="indexName">Name to use for index</param>
+        /// <param name="tableName">Name of table (in default schema) to create index on</param>
+        /// <param name="indexColumns">Columns to be part of the index itself. Must not be null or empty.</param>
+        /// <param name="includeColumns">Columns to be 'INCLUDE'd as secondary columns of the index. Must not be null or empty</param>
+        /// <returns>Conditional CREATE statement, which will create the index if it doesn't already exist.</returns>
+        private string GetIndexCreationSqlFor(string indexName, string tableName, string[] indexColumns, string[] includeColumns)
         {
             var indexColumnsString = indexColumns.StringJoin(", ");
             var includeColumnsString = includeColumns.StringJoin(", ");
@@ -139,10 +144,10 @@ END
                 var tables = new[] {"MatchingHlaAtA", "MatchingHlaAtB", "MatchingHlaAtC", "MatchingHlaAtDrb1", "MatchingHlaAtDqb1"};
                 foreach (var table in tables)
                 {
-                    var pGroupIndexSql = SqlForPGroupIndexFor(table);
+                    var pGroupIndexSql = GetPGroupIndexSqlFor(table);
                     await conn.ExecuteAsync(pGroupIndexSql, commandTimeout: 7200);
                     
-                    var donorIndexSql = SqlForDonorIndexFor(table);
+                    var donorIndexSql = GetDonorIdIndexSqlFor(table);
                     await conn.ExecuteAsync(donorIndexSql, commandTimeout: 7200);
                 }
             }
