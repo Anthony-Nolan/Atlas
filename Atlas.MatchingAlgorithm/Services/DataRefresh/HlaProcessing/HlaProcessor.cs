@@ -101,7 +101,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 failedDonors.AddRange(failedDonorsFromBatch);
 
                 donorsProcessed += BatchSize;
-                logger.SendTrace($"Hla Processing {(double)donorsProcessed / totalDonorCount:0.00%} complete", LogLevel.Info);
+                // Note that in practice the donorsProcessed, can currently end up larger than the totalDonorCount measured at the beginning.
+                logger.SendTrace($"Hla Processing {Decimal.Divide(donorsProcessed, totalDonorCount):0.00%} complete");
             }
 
             if (failedDonors.Any())
