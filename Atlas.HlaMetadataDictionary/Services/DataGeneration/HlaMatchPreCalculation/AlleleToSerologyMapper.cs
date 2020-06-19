@@ -7,9 +7,10 @@ using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation
 {
-    internal class AlleleToSerologyMapper
+    internal static class AlleleToSerologyMapper
     {
-        public IEnumerable<MatchingSerology> GetSerologiesMatchingToAllele(IHlaInfoToMapAlleleToSerology hlaInfo, AlleleTyping alleleTyping)
+        /// <returns>Serologies that directly and indirectly match to the submitted allele.</returns>
+        public static IEnumerable<MatchingSerology> GetSerologiesMatchingToAllele(AlleleTyping alleleTyping, IHlaInfoToMapAlleleToSerology hlaInfo)
         {
             var assignments = GetSerologyAssignmentsForAllele(hlaInfo.AlleleToSerologyRelationships, alleleTyping);
 
