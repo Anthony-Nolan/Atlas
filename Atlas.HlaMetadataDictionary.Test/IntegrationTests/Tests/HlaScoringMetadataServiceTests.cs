@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.Caching;
+﻿using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
@@ -12,6 +11,9 @@ using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 {
@@ -48,6 +50,28 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 
             // clear NMDP code allele mappings between tests
             appCache.Remove(CacheKey);
+        }
+
+        [Test]
+        public async Task GetHlaMetadata_WhenSerology_ReturnsSerologyScoringInfo()
+        {
+            const Locus serologyLocus = Locus.B;
+            const string serologyName = "82";
+            var expectedMatchingSerology = new List<SerologyEntry> { new SerologyEntry("82", SerologySubtype.NotSplit, true) };
+
+            // Note: the matching G and P groups data for this serology was manually added to the json file
+            // from which the file-backed HMD is generated. If the serology name is changed, the test will fail until
+            // the relevant data is added to the file.
+            var expectedGGroups = new[] { "82:01:01G", "82:02:01G", "82:02:02", "82:03" };
+            var expectedPGroups = new[] { "82:01P", "82:02P", "82:03" };
+
+            var result = await metadataService.GetHlaMetadata(serologyLocus, serologyName, null);
+
+            var scoringInfo = result.HlaScoringInfo;
+            scoringInfo.Should().BeOfType<SerologyScoringInfo>();
+            ((SerologyScoringInfo)scoringInfo).MatchingSerologies.Should().BeEquivalentTo(expectedMatchingSerology);
+            ((SerologyScoringInfo)scoringInfo).MatchingGGroups.Should().BeEquivalentTo(expectedGGroups);
+            ((SerologyScoringInfo)scoringInfo).MatchingPGroups.Should().BeEquivalentTo(expectedPGroups);
         }
 
         [Test]

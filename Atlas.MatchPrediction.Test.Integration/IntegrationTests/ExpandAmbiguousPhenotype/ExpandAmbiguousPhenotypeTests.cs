@@ -179,11 +179,20 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
             genotypes.Count().Should().Be(303);
         }
 
+        [Test]
+        public async Task ExpandCompressedPhenotype_WhenSerologyPresent_ExpandsSerology()
+        {
+            var phenotype = NewPhenotypeInfo
+                .With(d => d.B, new LocusInfo<string> { Position1 = "82", Position2 = B2 })
+                .Build();
+
+            var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
+
+            genotypes.Count().Should().Be(4);
+        }
         // TODO: ATLAS-370 - Create tests for g-group alleles
 
         // TODO: ATLAS-369 - Create tests for p-group alleles
-
-        // TODO: ATLAS-368 - Create tests for serology alleles
 
         private static Builder<PhenotypeInfo<string>> NewPhenotypeInfo => Builder<PhenotypeInfo<string>>.New
             .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})

@@ -100,7 +100,10 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Matc
 
         protected override IHlaMetadata BuildSerologyHlaMetadata()
         {
-            var scoringInfo = new SerologyScoringInfo(SerologyEntries);
+            var scoringInfo = new SerologyScoringInfo(
+                SerologyEntries,
+                new[] { GGroupName },
+                new[] { PGroupName });
 
             return new HlaScoringMetadata(
                 MatchedLocus,
