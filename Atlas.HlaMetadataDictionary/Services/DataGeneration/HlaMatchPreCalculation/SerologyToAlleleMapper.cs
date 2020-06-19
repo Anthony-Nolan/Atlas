@@ -4,9 +4,10 @@ using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation
 {
-    internal class SerologyToAlleleMapper
+    internal static class SerologyToAlleleMapper
     {
-        public IEnumerable<IAlleleInfoForMatching> GetAlleleMappingsForSerology(IHlaInfoToMapSerologyToAllele hlaInfo, ISerologyInfoForMatching serologyInfo)
+        /// <returns>Alleles that map to one or more serologies that match the submitted serology.</returns>
+        public static IEnumerable<IAlleleInfoForMatching> GetAlleleMappingsForSerology(ISerologyInfoForMatching serologyInfo, IHlaInfoToMapSerologyToAllele hlaInfo)
         {
             var locus = serologyInfo.HlaTyping.Locus;
             var matchingSerologyNames = serologyInfo.MatchingSerologies.Select(m => m.SerologyTyping.Name);
