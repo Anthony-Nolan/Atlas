@@ -65,6 +65,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             // If we have imported donor data but dropped out during HLA refresh, we should not delete the donor data.
             {DataRefreshStage.DataDeletion, true},
 
+            // Index removal *must* be skipped for certain continued updates to work.
+            // If we have re-created donor HLA Indexes, but then failed later, then we should not delete those Indexes.
+            {DataRefreshStage.IndexRemoval, true},
+
             // Failing to scale up the Database will cause the refresh to take a VERY long time, and it is possible for someone to manually scale the DB back down between interruption and retry.
             // Re-performing this stage if the database is already at the required level is very quick.
             {DataRefreshStage.DatabaseScalingSetup, false},
@@ -72,10 +76,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             // Re-importing of Donors deletion *must* be skipped if we want to continue a partial processing of Donor HLAs, since we need to be certain that the already-processed donors haven't changed underneath us.
             {DataRefreshStage.DonorImport, true},
 
-            // The respective processing times make it pretty unlikely that an interruption would occur after HLA processing completes.
-            // But if it were to occur then we definitely don't want to re-process all the HLA just to do the final 2 steps.
+            // If the step that failed was Index recreation, then we definitely don't want to re-process all the HLA just to do the final steps.
             {DataRefreshStage.DonorHlaProcessing, true},
 
+            // The respective processing times make it pretty unlikely that an interruption would occur after Index recreation completes.
+            // But if it *were* to occur then we definitely don't want to have to *re*-re-create them just to do the final 2 steps.
+            {DataRefreshStage.IndexRecreation, true},
+            
             // Failing to scale down the Database has a cost impact, and it is possible for someone to manually scale the DB back up between interruption and retry.
             // Re-performing this stage if the database is already at the required level is very quick.
             {DataRefreshStage.DatabaseScalingTearDown, false},
@@ -244,6 +251,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 case DataRefreshStage.DataDeletion:
                     await donorImportRepository.RemoveAllDonorInformation();
                     break;
+                case DataRefreshStage.IndexRemoval:
+                    await donorImportRepository.RemoveHlaTableIndexes();
+                    break;
                 case DataRefreshStage.DatabaseScalingSetup:
                     await ScaleDatabase(settingsOptions.Value.RefreshDatabaseSize.ParseToEnum<AzureDatabaseSize>());
                     break;
@@ -265,6 +275,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     }
                     await hlaProcessor.UpdateDonorHla(newHlaNomenclatureVersion);
                     break;
+                case DataRefreshStage.IndexRecreation:
+                    await donorImportRepository.CreateHlaTableIndexes();
+                    break;
+
                 case DataRefreshStage.DatabaseScalingTearDown:
                     await ScaleDatabase(settingsOptions.Value.ActiveDatabaseSize.ParseToEnum<AzureDatabaseSize>());
                     break;
