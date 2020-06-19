@@ -73,10 +73,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 logger.SendEvent(new HlaRefreshFailureEventModel(e));
                 throw;
             }
-            finally
-            {
-                await PerformTearDown();
-            }
         }
 
         private async Task PerformHlaUpdate(string hlaNomenclatureVersion)
@@ -162,21 +158,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 var hlaDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
                 var pGroups = hlaDictionary.GetAllPGroups();
                 pGroupRepository.InsertPGroups(pGroups);
-
-                logger.SendTrace("HLA PROCESSOR: preparing database", LogLevel.Info);
-                await donorImportRepository.FullHlaRefreshSetUp();
             }
             catch (Exception e)
             {
                 logger.SendEvent(new HlaRefreshSetUpFailureEventModel(e));
                 throw;
             }
-        }
-
-        private async Task PerformTearDown()
-        {
-            logger.SendTrace("HLA PROCESSOR: restoring database", LogLevel.Info);
-            await donorImportRepository.FullHlaRefreshTearDown();
         }
     }
 }
