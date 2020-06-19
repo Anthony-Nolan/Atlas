@@ -10,6 +10,7 @@ using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 {
@@ -32,7 +33,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
                 metadataService = DependencyInjection.DependencyInjection.Provider.GetService<IDpb1TceGroupMetadataService>();
-                macDictionary = Substitute.For<IMacDictionary>();
+                macDictionary = DependencyInjection.DependencyInjection.Provider.GetService<IMacDictionary>();
                 appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
             });
         }
@@ -48,6 +49,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             appCache.Remove(CacheKey);
         }
 
+
         [Test]
         public async Task GetDpb1TceGroup_WhenNmdpCodeMapsToSingleTceGroup_ReturnsTceGroup()
         {
@@ -59,8 +61,10 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             // MAC value does not matter, but does need to conform to the expected pattern
             const string macWithFirstField = "99:CODE";
             macDictionary
-                .GetHlaFromMac(Arg.Any<string>())
+                .GetHlaFromMac(macWithFirstField)
                 .Returns(new List<string> { firstAllele, secondAllele });
+
+            macDictionary.GetHlaFromMac(default, default).Returns(new List<string> {firstAllele, secondAllele});
 
             var result = await metadataService.GetDpb1TceGroup(macWithFirstField, null);
 
