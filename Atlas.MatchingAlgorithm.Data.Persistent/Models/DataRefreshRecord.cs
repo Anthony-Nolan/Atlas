@@ -23,10 +23,12 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         public bool? WasSuccessful { get; set; }
 
         public DateTime? DataDeletionCompleted { get; set; }
+        public DateTime? IndexDeletionCompleted { get; set; }
         public DateTime? DatabaseScalingSetupCompleted { get; set; }
         public DateTime? MetadataDictionaryRefreshCompleted { get; set; }
         public DateTime? DonorImportCompleted { get; set; }
         public DateTime? DonorHlaProcessingCompleted { get; set; }
+        public DateTime? IndexRecreationCompleted { get; set; }
         public DateTime? DatabaseScalingTearDownCompleted { get; set; }
         public DateTime? QueuedDonorUpdatesCompleted { get; set; }
 
@@ -37,10 +39,12 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
             {
                 DataRefreshStage.MetadataDictionaryRefresh => MetadataDictionaryRefreshCompleted,
                 DataRefreshStage.DataDeletion => DataDeletionCompleted,
+                DataRefreshStage.IndexRemoval => IndexDeletionCompleted,
                 DataRefreshStage.DatabaseScalingSetup => DatabaseScalingSetupCompleted,
                 DataRefreshStage.DonorImport => DonorImportCompleted,
                 DataRefreshStage.DonorHlaProcessing => DonorHlaProcessingCompleted,
                 DataRefreshStage.DatabaseScalingTearDown => DatabaseScalingTearDownCompleted,
+                DataRefreshStage.IndexRecreation => IndexRecreationCompleted,
                 DataRefreshStage.QueuedDonorUpdateProcessing => QueuedDonorUpdatesCompleted,
                 _ => throw new ArgumentOutOfRangeException(nameof(stage))
             };
@@ -55,6 +59,9 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
                 case DataRefreshStage.DataDeletion:
                     DataDeletionCompleted = value;
                     break;
+                case DataRefreshStage.IndexRemoval:
+                    IndexDeletionCompleted = value;
+                    break;
                 case DataRefreshStage.DatabaseScalingSetup:
                     DatabaseScalingSetupCompleted = value;
                     break;
@@ -66,6 +73,9 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
                     break;
                 case DataRefreshStage.DatabaseScalingTearDown:
                     DatabaseScalingTearDownCompleted = value;
+                    break;
+                case DataRefreshStage.IndexRecreation:
+                    IndexRecreationCompleted = value;
                     break;
                 case DataRefreshStage.QueuedDonorUpdateProcessing:
                     QueuedDonorUpdatesCompleted = value;
