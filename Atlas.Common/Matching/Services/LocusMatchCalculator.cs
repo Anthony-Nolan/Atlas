@@ -58,15 +58,13 @@ namespace Atlas.Common.Matching.Services
             return matchCount;
         }
 
-        private static bool DirectMatch(LocusInfo<IEnumerable<string>> alleleGroup1,
-            LocusInfo<IEnumerable<string>> alleleGroup2)
+        private static bool DirectMatch(LocusInfo<IEnumerable<string>> alleleGroup1, LocusInfo<IEnumerable<string>> alleleGroup2)
         {
             return alleleGroup1.Position1.Any(pg => alleleGroup2.Position1.Contains(pg)) &&
                    alleleGroup1.Position2.Any(pg => alleleGroup2.Position2.Contains(pg));
         }
 
-        private static bool CrossMatch(LocusInfo<IEnumerable<string>> alleleGroup1,
-            LocusInfo<IEnumerable<string>> alleleGroup2)
+        private static bool CrossMatch(LocusInfo<IEnumerable<string>> alleleGroup1, LocusInfo<IEnumerable<string>> alleleGroup2)
         {
             return alleleGroup1.Position1.Any(pg => alleleGroup2.Position2.Contains(pg)) &&
                    alleleGroup1.Position2.Any(pg => alleleGroup2.Position1.Contains(pg));

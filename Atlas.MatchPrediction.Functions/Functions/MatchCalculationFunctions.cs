@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.Client.Models.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchCalculation;
@@ -28,12 +29,19 @@ namespace Atlas.MatchPrediction.Functions.Functions
         {
             var matchCalculationInput = JsonConvert.DeserializeObject<MatchCalculationInput>(await new StreamReader(request.Body).ReadToEndAsync());
 
-            var likelihood = await matchCalculatorService.MatchAtPGroupLevel(
-                matchCalculationInput.PatientHla,
-                matchCalculationInput.DonorHla,
-                matchCalculationInput.HlaNomenclatureVersion);
+            try
+            {
+                var matchCounts = await matchCalculatorService.MatchAtPGroupLevel(
+                    matchCalculationInput.PatientHla,
+                    matchCalculationInput.DonorHla,
+                    matchCalculationInput.HlaNomenclatureVersion);
 
-            return new JsonResult(likelihood);
+                return new JsonResult(new MatchCalculationResponse { MatchCounts = matchCounts });
+            }
+            catch (Exception exception)
+            {
+                return new BadRequestObjectResult(exception);
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
+using Atlas.MatchPrediction.Services.Utility;
 
 namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 {
