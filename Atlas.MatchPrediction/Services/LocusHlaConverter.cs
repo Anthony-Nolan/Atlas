@@ -19,11 +19,11 @@ namespace Atlas.MatchPrediction.Services
             string hlaNomenclatureVersion);
     }
 
-    public class LocusLocusHlaConverter : ILocusHlaConverter
+    public class LocusHlaConverter : ILocusHlaConverter
     {
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
 
-        public LocusLocusHlaConverter(IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory)
+        public LocusHlaConverter(IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory)
         {
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
         }

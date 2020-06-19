@@ -32,10 +32,12 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
             PhenotypeInfo<string> donorGenotype,
             string hlaNomenclatureVersion)
         {
+            const TargetHlaCategory matchingResolution = TargetHlaCategory.PGroup;
+
             var patientGenotypeWithPGroups =
-                await locusHlaConverter.ConvertHla(patientGenotype, TargetHlaCategory.PGroup, hlaNomenclatureVersion);
+                await locusHlaConverter.ConvertHla(patientGenotype, matchingResolution, hlaNomenclatureVersion);
             var donorGenotypeWithPGroups =
-                await locusHlaConverter.ConvertHla(donorGenotype, TargetHlaCategory.PGroup, hlaNomenclatureVersion);
+                await locusHlaConverter.ConvertHla(donorGenotype, matchingResolution, hlaNomenclatureVersion);
 
             // TODO: ATLAS-217/ATLAS-417: Return MatchHla & 10/10 result
 
