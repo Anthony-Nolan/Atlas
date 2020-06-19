@@ -59,7 +59,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             // MAC value does not matter, but does need to conform to the expected pattern
             const string macWithFirstField = "99:CODE";
             macDictionary
-                .GetHlaFromMac(macWithFirstField)
+                .GetHlaFromMac(Arg.Any<string>())
                 .Returns(new List<string> { firstAllele, secondAllele });
 
             var result = await metadataService.GetDpb1TceGroup(macWithFirstField, null);
