@@ -13,13 +13,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
     {
         public IEnumerable<IMatchedHla> PreCalculateMatchedHla(HlaInfoForMatching hlaInfo)
         {
-            var alleleToSerologyMapper = new AlleleToSerologyMapper();
-
             var matchedHlaQuery = hlaInfo.AlleleInfoForMatching
                 .AsParallel()
                 .Select(alleleInfo => new MatchedAllele(
                     alleleInfo, 
-                    alleleToSerologyMapper.GetSerologiesMatchingToAllele(hlaInfo, (AlleleTyping)alleleInfo.TypingUsedInMatching))
+                    AlleleToSerologyMapper.GetSerologiesMatchingToAllele((AlleleTyping)alleleInfo.TypingUsedInMatching, hlaInfo))
                 )
                 .AsEnumerable();
 
