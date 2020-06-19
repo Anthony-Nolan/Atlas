@@ -4,6 +4,7 @@ using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.HlaService;
 using FluentAssertions;
 using LazyCache;
@@ -23,8 +24,8 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         private const string CacheKey = "NmdpCodeLookup_A";
 
         private IHlaMatchingMetadataService metadataService;
-        private IHlaServiceClient hlaServiceClient;
         private IAppCache appCache;
+        private IMacDictionary macDictionary;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -32,18 +33,17 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
                 metadataService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMatchingMetadataService>();
-                hlaServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IHlaServiceClient>();
                 appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
+                macDictionary = DependencyInjection.DependencyInjection.Provider.GetService<IMacDictionary>();
             });
         }
 
         [SetUp]
         public void SetUp()
         {
-            hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(DefaultLocus, Arg.Any<string>())
+            macDictionary.GetHlaFromMac(Arg.Any<string>(), Arg.Any<string>())
                 .Returns(new List<string>());
- 
+
             // clear NMDP code allele mappings between tests
             appCache.Remove(CacheKey);
         }
@@ -57,6 +57,9 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 
             // NMDP code value does not matter, but does need to conform to the expected pattern
             const string nmdpCode = "99:CODE";
+            
+            macDictionary
+                .GetHlaFromMac()
             hlaServiceClient
                 .GetAllelesForDefinedNmdpCode(DefaultLocus, nmdpCode)
                 .Returns(new List<string> { firstAllele, secondAllele });
