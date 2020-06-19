@@ -8,8 +8,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
     public interface IDonorMatchCalculator
     {
-        LocusMatchDetails CalculateMatchDetailsForDonorHla(AlleleLevelLocusMatchCriteria locusMatchCriteria,
-            LocusInfo<IEnumerable<string>> pGroups);
+        LocusMatchDetails CalculateMatchDetailsForDonorHla(AlleleLevelLocusMatchCriteria locusMatchCriteria, LocusInfo<IEnumerable<string>> pGroups);
     }
 
     public class DonorMatchCalculator : IDonorMatchCalculator
