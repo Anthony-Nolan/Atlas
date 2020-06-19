@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
+using System.Collections.Generic;
 using System.Linq;
-using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation
 {
@@ -12,13 +12,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
     {
         public IEnumerable<IMatchedHla> PreCalculateMatchedHla(HlaInfoForMatching hlaInfo)
         {
-            var serologyToAlleleMapper = new SerologyToAlleleMapper();
-
             var matchedHlaQuery = hlaInfo.SerologyInfoForMatching
                 .AsParallel()
                 .Select(serologyInfo =>
                 {
-                    var allelesInfo = serologyToAlleleMapper.GetAlleleMappingsForSerology(hlaInfo, serologyInfo).ToList();
+                    var allelesInfo = SerologyToAlleleMapper.GetAlleleMappingsForSerology(serologyInfo, hlaInfo).ToList();
                     return new MatchedSerology(
                         serologyInfo,
                         allelesInfo.SelectMany(a => a.MatchingPGroups).Distinct(),
