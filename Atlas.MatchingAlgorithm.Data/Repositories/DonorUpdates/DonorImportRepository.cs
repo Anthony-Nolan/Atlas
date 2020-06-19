@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Common.Repositories;
+using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
@@ -96,53 +98,53 @@ DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDqb1;
             }
         }
 
+        public string SqlForPGroupIndexFor(string tableName)
+        {
+            return SqlForIndex(
+                MatchingHlaTable_IndexName_PGroupIdAndDonorId,
+                tableName,
+                new[] { "DonorId", "PGroup_Id" },
+                new[] { "TypePosition" }
+            );
+        }
+
+        public string SqlForDonorIndexFor(string tableName)
+        {
+            return SqlForIndex(
+                MatchingHlaTable_IndexName_DonorId,
+                tableName,
+                new[] {"DonorId"},
+                new[] {"TypePosition", "PGroup_Id"}
+            );
+        }
+
+        public string SqlForIndex(string indexName, string tableName, string[] indexColumns, string[] includeColumns)
+        {
+            var indexColumnsString = indexColumns.StringJoin(", ");
+            var includeColumnsString = includeColumns.StringJoin(", ");
+            return $@"
+IF NOT EXIST (SELECT * FROM sys.indexes WHERE name='{indexName}' AND object_id = OBJECT_ID('dbo.{tableName}'))
+BEGIN
+    CREATE INDEX {indexName}
+        ON {tableName} ({indexColumnsString})
+        INCLUDE ({includeColumnsString})
+END
+";
+        }
+
         public async Task FullHlaRefreshTearDown()
         {
-            var indexAdditionSql = $@"
-CREATE INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId}
-ON MatchingHlaAtA (PGroup_Id, DonorId)
-INCLUDE (TypePosition)
-
-CREATE INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId}
-ON MatchingHlaAtB (PGroup_Id, DonorId)
-INCLUDE (TypePosition)
-
-CREATE INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId}
-ON MatchingHlaAtC (PGroup_Id, DonorId)
-INCLUDE (TypePosition)
-
-CREATE INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId}
-ON MatchingHlaAtDrb1 (PGroup_Id, DonorId)
-INCLUDE (TypePosition)
-
-CREATE INDEX {MatchingHlaTable_IndexName_PGroupIdAndDonorId}
-ON MatchingHlaAtDqb1 (PGroup_Id, DonorId)
-INCLUDE (TypePosition)
-
-
-CREATE INDEX {MatchingHlaTable_IndexName_DonorId}
-ON MatchingHlaAtA (DonorId)
-INCLUDE (TypePosition, PGroup_Id)
-
-CREATE INDEX {MatchingHlaTable_IndexName_DonorId}
-ON MatchingHlaAtB (DonorId)
-INCLUDE (TypePosition, PGroup_Id)
-
-CREATE INDEX {MatchingHlaTable_IndexName_DonorId}
-ON MatchingHlaAtC (DonorId)
-INCLUDE (TypePosition, PGroup_Id)
-
-CREATE INDEX {MatchingHlaTable_IndexName_DonorId}
-ON MatchingHlaAtDrb1 (DonorId)
-INCLUDE (TypePosition, PGroup_Id)
-
-CREATE INDEX {MatchingHlaTable_IndexName_DonorId}
-ON MatchingHlaAtDqb1 (DonorId)
-INCLUDE (TypePosition, PGroup_Id)
-";
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                await conn.ExecuteAsync(indexAdditionSql, commandTimeout: 10800);
+                var tables = new[] {"MatchingHlaAtA", "MatchingHlaAtB", "MatchingHlaAtC", "MatchingHlaAtDrb1", "MatchingHlaAtDqb1"};
+                foreach (var table in tables)
+                {
+                    var pGroupIndexSql = SqlForPGroupIndexFor(table);
+                    await conn.ExecuteAsync(pGroupIndexSql, commandTimeout: 7200);
+                    
+                    var donorIndexSql = SqlForDonorIndexFor(table);
+                    await conn.ExecuteAsync(donorIndexSql, commandTimeout: 7200);
+                }
             }
         }
 
