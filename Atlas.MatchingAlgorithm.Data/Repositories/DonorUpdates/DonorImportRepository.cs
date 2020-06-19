@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Common.Repositories;
-using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
@@ -22,13 +21,13 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// Performs any upfront work necessary to run a full donor import with reasonable performance.
         /// e.g. Removing indexes in a SQL implementation
         /// </summary>
-        Task FullHlaRefreshSetUp();
+        Task RemoveHlaTableIndexes();
 
         /// <summary>
         /// Performs any work necessary after a full donor import has been run.
         /// e.g. Re-adding indexes in a SQL implementation
         /// </summary>
-        Task FullHlaRefreshTearDown();
+        Task CreateHlaTableIndexes();
 
         /// <summary>
         /// Removes all donors, and all pre-processed data
@@ -57,46 +56,18 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
     public class DonorImportRepository : DonorUpdateRepositoryBase, IDonorImportRepository
     {
-        private const string MatchingHlaTable_IndexName_PGroupIdAndDonorId = "IX_PGroup_Id_DonorId__TypePosition";
-        private const string MatchingHlaTable_IndexName_DonorId = "IX_DonorId__PGroup_Id_TypePosition";
-
-        private const string DropAllDonorsSql = @"
-TRUNCATE TABLE [Donors]
-";
-        
-        private const string DropAllPreProcessedDonorHlaSql = @"
-TRUNCATE TABLE [MatchingHlaAtA]
-TRUNCATE TABLE [MatchingHlaAtB]
-TRUNCATE TABLE [MatchingHlaAtC]
-TRUNCATE TABLE [MatchingHlaAtDrb1]
-TRUNCATE TABLE [MatchingHlaAtDqb1]
-";
-
         public DonorImportRepository(
             IPGroupRepository pGroupRepository,
             IConnectionStringProvider connectionStringProvider) : base(pGroupRepository, connectionStringProvider)
         {
         }
 
-        public async Task FullHlaRefreshSetUp()
-        {
-            var indexRemovalSql = $@"
-DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtA;
-DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtB;
-DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtC;
-DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtDrb1;
-DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_PGroupIdAndDonorId} ON MatchingHlaAtDqb1;
-DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtA;
-DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtB;
-DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtC;
-DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDrb1;
-DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDqb1;
-";
-            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
-            {
-                await conn.ExecuteAsync(indexRemovalSql, commandTimeout: 600);
-            }
-        }
+        private const string MatchingHlaTable_IndexName_PGroupIdAndDonorId = "IX_PGroup_Id_DonorId__TypePosition";
+        private const string MatchingHlaTable_IndexName_DonorId = "IX_DonorId__PGroup_Id_TypePosition";
+        private static readonly string[] HlaTables = {"MatchingHlaAtA", "MatchingHlaAtB", "MatchingHlaAtC", "MatchingHlaAtDrb1", "MatchingHlaAtDqb1"};
+        
+        private const string DropAllDonorsSql = @"TRUNCATE TABLE [Donors]";
+        private string GetDropAllPreProcessedDonorHlaSql() => HlaTables.Select(table => $"TRUNCATE TABLE [{table}];").StringJoinWithNewline();
 
         private string GetPGroupIndexSqlFor(string tableName)
         {
@@ -137,18 +108,40 @@ END
 ";
         }
 
-        public async Task FullHlaRefreshTearDown()
+        /// <param name="indexName">Name to use for index</param>
+        /// <param name="tableName">Name of table (in default schema) to create index on</param>
+        /// <returns>Conditional DELETE IF EXISTS statement, which will delete the index if it currently exists.</returns>
+        private string GetIndexDeletionSqlFor(string indexName, string tableName)
+        {
+            return $@"DROP INDEX IF EXISTS {indexName} ON [{tableName}];";
+        }
+
+        public async Task CreateHlaTableIndexes()
         {
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                var tables = new[] {"MatchingHlaAtA", "MatchingHlaAtB", "MatchingHlaAtC", "MatchingHlaAtDrb1", "MatchingHlaAtDqb1"};
-                foreach (var table in tables)
+                foreach (var table in HlaTables)
                 {
                     var pGroupIndexSql = GetPGroupIndexSqlFor(table);
                     await conn.ExecuteAsync(pGroupIndexSql, commandTimeout: 7200);
-                    
-                    var donorIndexSql = GetDonorIdIndexSqlFor(table);
-                    await conn.ExecuteAsync(donorIndexSql, commandTimeout: 7200);
+
+                    var donorIdIndexSql = GetDonorIdIndexSqlFor(table);
+                    await conn.ExecuteAsync(donorIdIndexSql, commandTimeout: 7200);
+                }
+            }
+        }
+
+        public async Task RemoveHlaTableIndexes()
+        {
+            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            {
+                foreach (var table in HlaTables)
+                {
+                    var pGroupIndexSql = GetIndexDeletionSqlFor(MatchingHlaTable_IndexName_PGroupIdAndDonorId, table);
+                    await conn.ExecuteAsync(pGroupIndexSql, commandTimeout: 300);
+
+                    var donorIdIndexSql = GetIndexDeletionSqlFor(MatchingHlaTable_IndexName_DonorId, table);
+                    await conn.ExecuteAsync(donorIdIndexSql, commandTimeout: 300);
                 }
             }
         }
@@ -157,7 +150,7 @@ END
         {
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                await conn.ExecuteAsync(DropAllPreProcessedDonorHlaSql, commandTimeout: 300);
+                await conn.ExecuteAsync(GetDropAllPreProcessedDonorHlaSql(), commandTimeout: 300);
                 await conn.ExecuteAsync(DropAllDonorsSql, commandTimeout: 300);
             }
         }
@@ -167,7 +160,7 @@ END
         {
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                await conn.ExecuteAsync(DropAllPreProcessedDonorHlaSql, commandTimeout: 300);
+                await conn.ExecuteAsync(GetDropAllPreProcessedDonorHlaSql(), commandTimeout: 300);
             }
         }
 
@@ -184,11 +177,10 @@ END
         public async Task RemovePGroupsForDonorBatch(IEnumerable<int> donorIds)
         {
             donorIds = donorIds.ToList();
-            await RemovePGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtA");
-            await RemovePGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtB");
-            await RemovePGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtC");
-            await RemovePGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtDqb1");
-            await RemovePGroupsForDonorBatchAtLocus(donorIds, "MatchingHlaAtDrb1");
+            foreach (var hlaTable in HlaTables)
+            {
+                await RemovePGroupsForDonorBatchAtLocus(donorIds, hlaTable);
+            }
         }
 
         private async Task RemovePGroupsForDonorBatchAtLocus(IEnumerable<int> donorIds, string locusTableName)

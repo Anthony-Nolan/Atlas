@@ -13,26 +13,35 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         /// <summary>
         /// Deletion of all existing donor data 
         /// </summary>
-        DataDeletion = 1,
+        DataDeletion = 10,
+        /// <summary>
+        /// Deletion of Indexes on (previously) existing donor data.
+        /// Done prior to DB scaling for efficiency.
+        /// </summary>
+        IndexRemoval = 20,
         /// <summary>
         /// Scaling of database to appropriate size for data refresh
         /// </summary>
-        DatabaseScalingSetup = 2,
+        DatabaseScalingSetup = 30,
         /// <summary>
         /// Import all donors from the master donor store. No pre-processing to p-groups
         /// </summary>
-        DonorImport = 3,
+        DonorImport = 40,
         /// <summary>
-        /// Processing imported donors to p-groups. Encompasses index deletion and re-addition on relevant tables.
+        /// Processing imported donors to p-groups.
         /// </summary>
-        DonorHlaProcessing = 4,
+        DonorHlaProcessing = 50,
+        /// <summary>
+        /// Recreation of Indexes on imported donors.
+        /// </summary>
+        IndexRecreation = 60,
         /// <summary>
         /// Scaling of database to appropriate size for live usage.
         /// </summary>
-        DatabaseScalingTearDown = 5,
+        DatabaseScalingTearDown = 70,
         /// <summary>
         /// Consumption of all donor updates that have accrued during the data refresh.
         /// </summary>
-        QueuedDonorUpdateProcessing = 6,
+        QueuedDonorUpdateProcessing = 80,
     }
 }

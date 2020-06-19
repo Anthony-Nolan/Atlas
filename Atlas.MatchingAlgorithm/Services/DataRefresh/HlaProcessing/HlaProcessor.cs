@@ -14,7 +14,6 @@ using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Donors;
-using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
@@ -73,10 +72,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             {
                 logger.SendEvent(new HlaRefreshFailureEventModel(e));
                 throw;
-            }
-            finally
-            {
-                await PerformTearDown();
             }
         }
 
@@ -164,21 +159,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 var hlaDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
                 var pGroups = hlaDictionary.GetAllPGroups();
                 pGroupRepository.InsertPGroups(pGroups);
-
-                logger.SendTrace("HLA PROCESSOR: preparing database", LogLevel.Info);
-                await donorImportRepository.FullHlaRefreshSetUp();
             }
             catch (Exception e)
             {
                 logger.SendEvent(new HlaRefreshSetUpFailureEventModel(e));
                 throw;
             }
-        }
-
-        private async Task PerformTearDown()
-        {
-            logger.SendTrace("HLA PROCESSOR: restoring database", LogLevel.Info);
-            await donorImportRepository.FullHlaRefreshTearDown();
         }
     }
 }
