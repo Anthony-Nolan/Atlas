@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
@@ -33,9 +34,9 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         /// This is the case for specific MACs with the incorrect first field. Technically only one first field is permitted per-specific MAC,
         /// but this dictionary will expand specific MACs ignoring the given first field.
         /// </remarks>
-        public Task<IEnumerable<string>> GetHlaFromMac(string macCode, string firstField);
+        public Task<IEnumerable<string>> GetHlaFromMac(string macCode, string mac);
 
-        public Task<IEnumerable<string>> GetHlaFromMac(string fullAlleleString);
+        public Task<IEnumerable<string>> GetHlaFromMac(string macWithFirstField);
     }
 
     public class MacDictionary : IMacDictionary
@@ -65,14 +66,22 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<string>> GetHlaFromMac(string firstField, string macCode)
+        public async Task<IEnumerable<string>> GetHlaFromMac(string firstField, string mac)
         {
-            return await macCacheService.GetHlaFromMac(macCode, firstField);
+            return await macCacheService.GetHlaFromMac(mac, firstField);
         }
         
-        public async Task<IEnumerable<string>> GetHlaFromMac(string fullAlleleString)
+
+        /// <param name="macWithFirstField">
+        /// Should be in the format "01:AB". Where 01 is the first field.
+        /// </param>
+        public async Task<IEnumerable<string>> GetHlaFromMac(string macWithFirstField)
         {
-            var parts = fullAlleleString.Split(MolecularTypingNameConstants.FieldDelimiter);
+            var parts = macWithFirstField.Split(MolecularTypingNameConstants.FieldDelimiter);
+            if (parts.Length != 2)
+            {
+                throw new ArgumentException($"{macWithFirstField} is not a valid mac.");
+            }
             var firstField = parts[0];
             var mac = parts[1];
 
