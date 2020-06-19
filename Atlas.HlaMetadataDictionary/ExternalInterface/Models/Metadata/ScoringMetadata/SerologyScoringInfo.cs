@@ -1,47 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
+﻿using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata
 {
-    public class SerologyScoringInfo : 
-        IHlaScoringInfo,
-        IEquatable<SerologyScoringInfo>
+    public class SerologyScoringInfo : IHlaScoringInfo, IEquatable<SerologyScoringInfo>
     {
         public IEnumerable<SerologyEntry> MatchingSerologies { get; }
-
-        [JsonIgnore]
-        public IEnumerable<string> MatchingGGroups => new List<string>();
-
-        [JsonIgnore]
-        public IEnumerable<string> MatchingPGroups => new List<string>();
+        public IEnumerable<string> MatchingGGroups { get; }
+        public IEnumerable<string> MatchingPGroups { get; }
 
         [JsonConstructor]
         internal SerologyScoringInfo(
-            IEnumerable<SerologyEntry> matchingSerologies)
+            IEnumerable<SerologyEntry> matchingSerologies,
+            IEnumerable<string> matchingGGroups,
+            IEnumerable<string> matchingPGroups)
         {
             MatchingSerologies = matchingSerologies;
+            MatchingGGroups = matchingGGroups;
+            MatchingPGroups = matchingPGroups;
         }
 
         internal static SerologyScoringInfo GetScoringInfo(
             IHlaMetadataSource<SerologyTyping> metadataSource)
         {
-            return new SerologyScoringInfo(
-                metadataSource.MatchingSerologies.Select(m => new SerologyEntry(m)));
+            var matchingSerologies = metadataSource.MatchingSerologies.Select(m => new SerologyEntry(m));
+            return new SerologyScoringInfo(matchingSerologies, metadataSource.MatchingGGroups, metadataSource.MatchingPGroups);
         }
 
         public List<SingleAlleleScoringInfo> ConvertToSingleAllelesInfo()
             => throw new NotSupportedException($"Converting {nameof(SerologyScoringInfo)} to SingleAllele Info cannot be done quickly and is thus not currently supported.");
 
-        #region IEquatable
+        #region Equality members
+
         public bool Equals(SerologyScoringInfo other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return MatchingSerologies.SequenceEqual(other.MatchingSerologies);
+            return MatchingSerologies.SequenceEqual(other.MatchingSerologies) &&
+                   MatchingGGroups.SequenceEqual(other.MatchingGGroups) &&
+                   MatchingPGroups.SequenceEqual(other.MatchingPGroups);
         }
 
         public override bool Equals(object obj)
@@ -49,13 +50,14 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringM
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((SerologyScoringInfo) obj);
+            return Equals((SerologyScoringInfo)obj);
         }
 
         public override int GetHashCode()
         {
-            return MatchingSerologies.GetHashCode();
+            return HashCode.Combine(MatchingSerologies, MatchingGGroups, MatchingPGroups);
         }
+
         #endregion
     }
 }
