@@ -34,8 +34,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         /// This is the case for specific MACs with the incorrect first field. Technically only one first field is permitted per-specific MAC,
         /// but this dictionary will expand specific MACs ignoring the given first field.
         /// </remarks>
-        public Task<IEnumerable<string>> GetHlaFromMac(string macCode, string mac);
+        public Task<IEnumerable<string>> GetHlaFromMac(string macCode, string firstField);
 
+        /// <param name="macWithFirstField">
+        /// Should be in the format "01:AB". Where 01 is the first field.
+        /// </param>
         public Task<IEnumerable<string>> GetHlaFromMac(string macWithFirstField);
     }
 
@@ -66,15 +69,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<string>> GetHlaFromMac(string firstField, string mac)
+        public async Task<IEnumerable<string>> GetHlaFromMac(string mac, string firstField)
         {
-            return await macCacheService.GetHlaFromMac(mac, firstField);
+            return await macCacheService.GetHlaFromMac(firstField, mac);
         }
         
-
-        /// <param name="macWithFirstField">
-        /// Should be in the format "01:AB". Where 01 is the first field.
-        /// </param>
+        /// <inheritdoc />
         public async Task<IEnumerable<string>> GetHlaFromMac(string macWithFirstField)
         {
             var parts = macWithFirstField.Split(MolecularTypingNameConstants.FieldDelimiter);
