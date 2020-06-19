@@ -3,7 +3,6 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Matching.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.Client.Models.MatchCalculation;
-using Atlas.MatchPrediction.Services.Utility;
 
 namespace Atlas.MatchPrediction.Services.MatchCalculation
 {
@@ -17,16 +16,14 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
 
     public class MatchCalculationService : IMatchCalculationService
     {
-        private const TargetHlaCategory FrequencyResolution = TargetHlaCategory.PGroup;
-
-        private readonly IHlaPerLocusExpander hlaPerLocusExpander;
+        private readonly ILocusHlaConverter locusHlaConverter;
         private readonly ILocusMatchCalculator locusMatchCalculator;
 
         public MatchCalculationService(
-            IHlaPerLocusExpander hlaPerLocusExpander,
+            ILocusHlaConverter locusHlaConverter,
             ILocusMatchCalculator locusMatchCalculator)
         {
-            this.hlaPerLocusExpander = hlaPerLocusExpander;
+            this.locusHlaConverter = locusHlaConverter;
             this.locusMatchCalculator = locusMatchCalculator;
         }
 
@@ -36,9 +33,9 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
             string hlaNomenclatureVersion)
         {
             var patientGenotypeWithPGroups =
-                await hlaPerLocusExpander.Expand(patientGenotype, FrequencyResolution, hlaNomenclatureVersion);
+                await locusHlaConverter.ConvertHla(patientGenotype, TargetHlaCategory.PGroup, hlaNomenclatureVersion);
             var donorGenotypeWithPGroups =
-                await hlaPerLocusExpander.Expand(patientGenotype, FrequencyResolution, hlaNomenclatureVersion);
+                await locusHlaConverter.ConvertHla(donorGenotype, TargetHlaCategory.PGroup, hlaNomenclatureVersion);
 
             // TODO: ATLAS-217/ATLAS-417: Return MatchHla & 10/10 result
 
