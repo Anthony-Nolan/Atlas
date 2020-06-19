@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Utils.Extensions;
@@ -9,6 +10,7 @@ using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedSt
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 
@@ -20,6 +22,9 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
         {
             var services = new ServiceCollection();
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(sp => new ApplicationInsightsSettings { LogLevel = "Info" });
+            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterOptions<MacImportSettings>("MacImport");
+            SetUpConfiguration(services);
             services.RegisterMacDictionary(
                 DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<MacImportSettings>()
@@ -41,6 +46,16 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
                 wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(Constants.SnapshotHlaNomenclatureVersion);
                 return wmdaHlaNomenclatureVersionAccessor;
             });
+        }
+        
+        private static void SetUpConfiguration(IServiceCollection services)
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .Build();
+
+            services.AddSingleton<IConfiguration>(sp => configuration);
         }
     }
 }
