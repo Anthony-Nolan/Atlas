@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
-using Atlas.MultipleAlleleCodeDictionary.HlaService;
-using Atlas.MultipleAlleleCodeDictionary.HlaService.Models;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 
@@ -19,6 +20,10 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
         {
             var services = new ServiceCollection();
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(sp => new ApplicationInsightsSettings { LogLevel = "Info" });
+            services.RegisterMacDictionary(
+                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<MacImportSettings>()
+            );
             return services.BuildServiceProvider();
         }
 
