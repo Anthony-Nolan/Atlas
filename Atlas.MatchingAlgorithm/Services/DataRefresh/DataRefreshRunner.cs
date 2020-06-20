@@ -134,7 +134,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             catch (Exception ex)
             {
                 logger.SendTrace($"{LoggingPrefix} Refresh failed. Exception: {ex}", LogLevel.Info);
-                await FailureTearDown();
+                await FailureTearDown(refreshRecordId);
                 throw;
             }
         }
@@ -284,7 +284,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             await azureDatabaseManager.UpdateDatabaseSize(databaseName, targetSize);
         }
 
-        private async Task FailureTearDown()
+        private async Task FailureTearDown(int recordId)
         {
             try
             {
@@ -293,7 +293,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             catch (Exception e)
             {
                 logger.SendTrace($"{LoggingPrefix} Teardown failed. Database will need scaling down manually. Exception: {e}", LogLevel.Critical);
-                await dataRefreshNotificationSender.SendTeardownFailureAlert();
+                await dataRefreshNotificationSender.SendTeardownFailureAlert(recordId);
                 throw;
             }
         }
