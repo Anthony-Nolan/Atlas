@@ -13,6 +13,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         public int Id { get; set; }
         public DateTime RefreshBeginUtc { get; set; }
         public DateTime? RefreshEndUtc { get; set; }
+        public DateTime? RefreshContinueUtc { get; set; }
 
         /// <summary>
         /// The string representation of a "TransientDatabase" enum value. 
