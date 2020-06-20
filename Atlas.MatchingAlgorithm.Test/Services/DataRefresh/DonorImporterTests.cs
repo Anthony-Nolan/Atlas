@@ -65,7 +65,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             var donor = DonorBuilder.New.With(d => d.AtlasDonorId, 123).Build();
 
-            donorReader.GetAllDonors().Returns(new List<Donor> {donor});
+            donorReader.StreamAllDonors().Returns(new List<Donor> {donor});
 
             await donorImporter.ImportDonors();
 
@@ -80,7 +80,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             const int donorId = 123;
             var donor = DonorBuilder.New.With(d => d.AtlasDonorId, donorId).Build();
 
-            donorReader.GetAllDonors().Returns(new List<Donor> {donor});
+            donorReader.StreamAllDonors().Returns(new List<Donor> {donor});
 
             donorInfoConverter
                 .ConvertDonorInfoAsync(null, null)
@@ -121,7 +121,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             var donor = DonorBuilder.New.With(d => d.AtlasDonorId, failedDonorId).Build();
 
-            donorReader.GetAllDonors().Returns(new List<Donor> {donor});
+            donorReader.StreamAllDonors().Returns(new List<Donor> {donor});
 
             await donorImporter.ImportDonors();
 

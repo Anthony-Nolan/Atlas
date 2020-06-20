@@ -35,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 
             MockDonorReader = DependencyInjection.DependencyInjection.Provider.GetService<IDonorReader>();
 
-            MockDonorReader.GetAllDonors().Returns(new List<Donor>());
+            MockDonorReader.StreamAllDonors().Returns(new List<Donor>());
         }
 
         [Test]
@@ -43,7 +43,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donorInfo = IncrementingDonorBuilder.Build();
 
-            MockDonorReader.GetAllDonors().Returns(new List<Donor> {donorInfo});
+            MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
 
             await donorImporter.ImportDonors();
             var donor = await inspectionRepo.GetDonor(donorInfo.AtlasDonorId);
@@ -64,7 +64,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 .With(x => x.DRB1_2, missingHla)
                 .Build();
 
-            MockDonorReader.GetAllDonors().Returns(new List<Donor> {donorInfo});
+            MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
 
             await donorImporter.ImportDonors();
             var donor = await inspectionRepo.GetDonor(donorInfo.AtlasDonorId);
@@ -85,7 +85,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 .With(x => x.DQB1_2, missingHla)
                 .Build();
 
-            MockDonorReader.GetAllDonors().Returns(new List<Donor> {donorInfo});
+            MockDonorReader.StreamAllDonors().Returns(new List<Donor> {donorInfo});
 
             await donorImporter.ImportDonors();
             var donor = await inspectionRepo.GetDonor(donorInfo.AtlasDonorId);

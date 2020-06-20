@@ -8,7 +8,7 @@ namespace Atlas.DonorImport.ExternalInterface
 {
     public interface IDonorReader
     {
-        IList<Donor> GetAllDonors();
+        IEnumerable<Donor> StreamAllDonors();
     }
 
     public class DonorReader : IDonorReader
@@ -20,9 +20,9 @@ namespace Atlas.DonorImport.ExternalInterface
             this.donorReadRepository = donorReadRepository;
         }
 
-        public IList<Donor> GetAllDonors()
+        public IEnumerable<Donor> StreamAllDonors()
         {
-            return donorReadRepository.GetAllDonors().Select(d => d.ToPublicDonor()).ToList();
+            return donorReadRepository.StreamAllDonors().Select(d => d.ToPublicDonor());
         }
     }
 }
