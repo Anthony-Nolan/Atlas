@@ -427,7 +427,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task RefreshData_WhenRunWasPartiallyCompleteUpToHlaProcessing_DoesNotPerformInitialUpScalingOfDatabase()
+        public async Task RefreshData_WhenRunWasPartiallyCompleteUpToHlaIndexRecreation_DoesNotPerformInitialUpScalingOfDatabase()
         {
             var settings = DataRefreshSettingsBuilder.New
                 .With(s => s.RefreshDatabaseSize, AzureDatabaseSize.P15.ToString())
@@ -435,7 +435,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             settingsOptions.Value.Returns(settings);
 
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
-                DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DonorHlaProcessing).Build()
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.IndexRecreation).Build()
             );
 
             await dataRefreshRunner.RefreshData(default);
