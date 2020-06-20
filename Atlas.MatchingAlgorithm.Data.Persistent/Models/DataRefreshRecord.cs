@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 // ReSharper disable MemberCanBePrivate.Global - Properties need to be visible to EF 
@@ -18,6 +19,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         /// <summary>
         /// The string representation of a "TransientDatabase" enum value. 
         /// </summary>
+        [Required]
         public string Database { get; set; }
 
         public string HlaNomenclatureVersion { get; set; }
@@ -32,6 +34,9 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         public DateTime? IndexRecreationCompleted { get; set; }
         public DateTime? DatabaseScalingTearDownCompleted { get; set; }
         public DateTime? QueuedDonorUpdatesCompleted { get; set; }
+
+        // ReSharper disable once UnusedMember.Global This is for manual Support Team use only. Neither written nor read anywhere in the code.
+        public string SupportComments { get; set; }
 
         public bool IsStageComplete(DataRefreshStage stage) => GetStageCompletionTime(stage) != null;
 
