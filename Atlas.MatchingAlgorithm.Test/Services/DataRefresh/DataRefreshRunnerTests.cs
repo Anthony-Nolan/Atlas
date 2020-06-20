@@ -296,7 +296,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             }
             catch (Exception)
             {
-                await dataRefreshNotificationSender.Received().SendTeardownFailureAlert();
+                await dataRefreshNotificationSender.ReceivedWithAnyArgs().SendTeardownFailureAlert(default);
             }
         }
 

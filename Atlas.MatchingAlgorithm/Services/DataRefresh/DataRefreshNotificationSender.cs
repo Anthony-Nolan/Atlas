@@ -6,11 +6,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 {
     public interface IDataRefreshNotificationSender
     {
-        Task SendInitialisationNotification();
-        Task SendContinuationNotification();
-        Task SendSuccessNotification();
-        Task SendFailureAlert();
-        Task SendTeardownFailureAlert();
+        Task SendInitialisationNotification(int recordId);
+        Task SendContinuationNotification(int recordId);
+        Task SendSuccessNotification(int recordId);
+        Task SendFailureAlert(int recordId);
+        Task SendTeardownFailureAlert(int recordId);
         Task SendRequestManualTeardownNotification();
         Task SendRecommendManualCleanupAlert();
     }
@@ -34,11 +34,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             await notificationSender.SendAlert(summary, description, Priority.High, NotificationConstants.OriginatorName);
         }
 
-        public async Task SendInitialisationNotification()
+        public async Task SendInitialisationNotification(int recordId)
         {
-            const string summary = "Data refresh begun";
-            const string description =
-@"The job to refresh all donor and hla data in the matching algorithm has begun.
+            var summary = $"Data refresh begun (#{recordId})";
+            var description =
+$@"The job to refresh all donor and hla data in the matching algorithm has begun (Record Id: {recordId}).
 This is expected to happen once every three months, and to take a large number of hours to run to completion.
 If no success or failure notification has been received within 24 hours of this one - check whether the job is still running.
 If it is not, follow the instructions in the Readme of the search algorithm project.
@@ -48,41 +48,41 @@ Most urgently; scaling back the database the job was running on, as it is an exp
         }
 
         /// <inheritdoc />
-        public async Task SendContinuationNotification()
+        public async Task SendContinuationNotification(int recordId)
         {
-            const string summary = "Data refresh resumed";
-            const string description =
-@"The matching algorithm data refresh has been resumed.
+            var summary = $"Data refresh resumed (#{recordId})";
+            var description =
+$@"The matching algorithm data refresh (Record Id: {recordId}) has been resumed.
 This should only be able to be manually triggered - and should have only happened if the single in-progress
 refresh had been interrupted without success or failure.";
 
             await SendNotification(summary, description);
         }
 
-        public async Task SendSuccessNotification()
+        public async Task SendSuccessNotification(int recordId)
         {
-            const string summary = "Data refresh successful";
-            const string description = @"The search algorithm data refresh was successful. Metrics will have been logged in application insights.";
+            var summary = $"Data refresh successful (#{recordId})";
+            var description = $@"The search algorithm data refresh (Record Id: {recordId}) was successful. Metrics will have been logged in application insights.";
 
             await SendNotification(summary, description);
         }
 
-        public async Task SendFailureAlert()
+        public async Task SendFailureAlert(int recordId)
         {
-            const string summary = "Data refresh failed";
-            const string description =
-@"The matching algorithm data refresh has failed.
+            var summary = $"Data refresh failed (#{recordId})";
+            var description =
+$@"The matching algorithm data refresh (Record Id: {recordId}) has failed.
 Appropriate teardown should have been run by the job itself.
 Check application insights to track down the failure - the job may need to be restarted manually once issues have been resolved.";
 
             await SendAlert(summary, description);
         }
 
-        public async Task SendTeardownFailureAlert()
+        public async Task SendTeardownFailureAlert(int recordId)
         {
-            const string summary = "Data refresh teardown failed";
-            const string description =
-@"The matching algorithm data refresh teardown has failed.
+            var summary = $"Data refresh teardown failed (#{recordId})";
+            var description =
+$@"The teardown for matching algorithm data refresh (Record Id: {recordId}) has failed.
 The (expensive) database has likely not been scaled down - this should be manually triggered as a matter of urgency.
 Check application insights to track down the failure - the job may need to be restarted manually once issues have been resolved.";
 

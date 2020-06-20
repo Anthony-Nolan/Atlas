@@ -337,7 +337,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshNotificationSender.Received().SendInitialisationNotification();
+            await dataRefreshNotificationSender.ReceivedWithAnyArgs().SendInitialisationNotification(default);
         }
 
         [Test]
@@ -345,7 +345,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshNotificationSender.Received().SendSuccessNotification();
+            await dataRefreshNotificationSender.ReceivedWithAnyArgs().SendSuccessNotification(default);
         }
 
         [Test]
@@ -355,7 +355,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshNotificationSender.Received().SendFailureAlert();
+            await dataRefreshNotificationSender.ReceivedWithAnyArgs().SendFailureAlert(default);
         }
 
         [Test]
