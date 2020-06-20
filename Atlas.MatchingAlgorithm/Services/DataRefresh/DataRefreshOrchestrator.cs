@@ -123,10 +123,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                         "Cannot continue data refresh, as there are no jobs in progress. Please initiate a non-continue refresh."
                     );
                 case 1:
+                    //TODO: ATLAS-335: Check continuation 'signature' input.
                     var inProgressJobId = inProgressJobs.Single().Id;
                     await dataRefreshNotificationSender.SendContinuationNotification(inProgressJobId);
-                    //TODO: ATLAS-335: Check continuation 'signature' input.
-                    //TODO: ATLAS-335: Write continuation start timestamp to Record.
+                    await dataRefreshHistoryRepository.MarkJobAsContinued(inProgressJobId);
                     await RunDataRefresh(inProgressJobId);
                     break;
                 default:
