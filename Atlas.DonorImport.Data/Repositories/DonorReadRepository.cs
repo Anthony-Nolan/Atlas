@@ -10,7 +10,7 @@ namespace Atlas.DonorImport.Data.Repositories
 {
     public interface IDonorReadRepository
     {
-        public IEnumerable<Donor> GetAllDonors();
+        public IEnumerable<Donor> StreamAllDonors();
         public Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes);
     }
 
@@ -21,16 +21,24 @@ namespace Atlas.DonorImport.Data.Repositories
         {
         }
 
-        public IEnumerable<Donor> GetAllDonors()
+        public IEnumerable<Donor> StreamAllDonors()
         {
             var sql = $"SELECT {Donor.InsertionDataTableColumnNames.StringJoin(",")} FROM Donors";
             using (var connection = new SqlConnection(ConnectionString))
             {
-                // With "buffered: true" this will load all donors into memory before returning.
-                // We may want to consider streaming this if we have issues running out of memory in this approach.  
+                // With "buffered: false" this should avoid loading all donors into memory before returning.
+                // This is necessary because we start to have issues running out of memory on a dataset of around 2M donors.
                 // Pro: Smaller memory footprint.
-                // Con: Longer open connection, consumer can cause timeouts by not fully enumerating.
-                return connection.Query<Donor>(sql, buffered: true);
+                // Con: Longer open connection, could cause timeouts if not by not fully consumed in time.
+                var donorStream = connection.Query<Donor>(sql, buffered: false, commandTimeout: 7200);
+
+                // Unfortunately, if you don't do this, then the connection gets closed as soon as
+                // you return the lazy enumerable, which then kills the query. So you have to do this, 
+                // which will ensure that the connection isn't closed until the end of the stream.
+                foreach (var donor in donorStream)
+                {
+                    yield return donor;
+                }
             }
         }
 

@@ -59,10 +59,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
             try
             {
                 var allFailedDonors = new List<FailedDonorInfo>();
-                var donors = donorReader.GetAllDonors().Select(d => d.MapImportDonorToMatchingUpdateDonor());
-                foreach (var donorBatch in donors.Batch(BatchSize))
+                var donorsStream = donorReader.StreamAllDonors().Select(d => d.MapImportDonorToMatchingUpdateDonor());
+                foreach (var streamedDonorBatch in donorsStream.Batch(BatchSize))
                 {
-                    var failedDonors = await InsertDonorBatch(donorBatch);
+                    var reifiedDonorBatch = streamedDonorBatch.ToList();
+                    var failedDonors = await InsertDonorBatch(reifiedDonorBatch);
                     allFailedDonors.AddRange(failedDonors);
                 }
 
@@ -78,7 +79,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
 
 
         /// <returns>Details of donors in the batch that failed import</returns>
-        private async Task<IEnumerable<FailedDonorInfo>> InsertDonorBatch(IEnumerable<SearchableDonorInformation> donors)
+        private async Task<IEnumerable<FailedDonorInfo>> InsertDonorBatch(List<SearchableDonorInformation> donors)
         {
             return await TimingLogger.RunTimedAsync(async () =>
                 {

@@ -70,7 +70,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
         {
             const string expectedDonorHash = "jwDboXz3AUJrkMMi/MZhVA==";
 
-            var actualDonors = donorRepository.GetAllDonors().ToList();
+            var actualDonors = donorRepository.StreamAllDonors().ToList();
 
             var actualCombinedStoredHash = actualDonors.Select(donor => donor.Hash).StringJoin("#").ToMd5Hash();
             actualCombinedStoredHash.Should().Be(expectedDonorHash);
