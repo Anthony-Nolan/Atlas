@@ -123,10 +123,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                         "Cannot continue data refresh, as there are no jobs in progress. Please initiate a non-continue refresh."
                     );
                 case 1:
-                    await dataRefreshNotificationSender.SendContinuationNotification();
+                    var inProgressJobId = inProgressJobs.Single().Id;
+                    await dataRefreshNotificationSender.SendContinuationNotification(inProgressJobId);
                     //TODO: ATLAS-335: Check continuation 'signature' input.
                     //TODO: ATLAS-335: Write continuation start timestamp to Record.
-                    await RunDataRefresh(inProgressJobs.Single().Id);
+                    await RunDataRefresh(inProgressJobId);
                     break;
                 default:
                     throw new AtlasHttpException(
@@ -138,16 +139,16 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         private async Task RunNewDataRefresh()
         {
-            await dataRefreshNotificationSender.SendInitialisationNotification();
-
             var dataRefreshRecord = new DataRefreshRecord
             {
                 Database = activeDatabaseProvider.GetDormantDatabase().ToString(),
                 RefreshBeginUtc = DateTime.UtcNow,
                 HlaNomenclatureVersion = null, //We don't know the version when initially creating the record.
             };
-
             var recordId = await dataRefreshHistoryRepository.Create(dataRefreshRecord);
+
+            await dataRefreshNotificationSender.SendInitialisationNotification(recordId);
+
             await RunDataRefresh(recordId);
         }
 
@@ -160,13 +161,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 var previouslyActiveDatabase = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetActiveDatabase());
                 await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, true, newWmdaHlaNomenclatureVersion);
                 await ScaleDownDatabaseToDormantLevel(previouslyActiveDatabase);
-                await dataRefreshNotificationSender.SendSuccessNotification();
+                await dataRefreshNotificationSender.SendSuccessNotification(dataRefreshRecordId);
                 logger.SendTrace("Data Refresh Succeeded.");
             }
             catch (Exception e)
             {
                 logger.SendTrace($"Data Refresh Failed: ${e}", LogLevel.Critical);
-                await dataRefreshNotificationSender.SendFailureAlert();
+                await dataRefreshNotificationSender.SendFailureAlert(dataRefreshRecordId);
                 await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, false, null);
             }
             finally
