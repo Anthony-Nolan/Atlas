@@ -128,7 +128,7 @@ DROP INDEX IF EXISTS {MatchingHlaTable_IndexName_DonorId} ON MatchingHlaAtDqb1;
             var indexColumnsString = indexColumns.StringJoin(", ");
             var includeColumnsString = includeColumns.StringJoin(", ");
             return $@"
-IF NOT EXIST (SELECT * FROM sys.indexes WHERE name='{indexName}' AND object_id = OBJECT_ID('dbo.{tableName}'))
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='{indexName}' AND object_id = OBJECT_ID('dbo.{tableName}'))
 BEGIN
     CREATE INDEX {indexName}
         ON {tableName} ({indexColumnsString})
