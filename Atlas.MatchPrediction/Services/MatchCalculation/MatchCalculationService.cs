@@ -34,9 +34,9 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
         {
             const TargetHlaCategory matchingResolution = TargetHlaCategory.PGroup;
 
-            var patientGenotypeWithPGroups =
+            var patientGenotypeAsPGroups =
                 await locusHlaConverter.ConvertHla(patientGenotype, matchingResolution, hlaNomenclatureVersion);
-            var donorGenotypeWithPGroups =
+            var donorGenotypeAsPGroups =
                 await locusHlaConverter.ConvertHla(donorGenotype, matchingResolution, hlaNomenclatureVersion);
 
             // TODO: ATLAS-217/ATLAS-417: Return MatchHla & 10/10 result
