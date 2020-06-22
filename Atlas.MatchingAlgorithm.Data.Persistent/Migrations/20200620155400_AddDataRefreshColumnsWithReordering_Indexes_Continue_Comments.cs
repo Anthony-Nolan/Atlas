@@ -5,6 +5,9 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
 {
     public partial class AddDataRefreshColumnsWithReordering_Indexes_Continue_Comments : Migration
     {
+        private const string OriginalTable = "DataRefreshHistory";
+        private const string CloneTable = "temporary_DataRefreshHistory_Clone";
+
         /// <remarks>
         /// Yeesh!
         /// There are 2 sets of changes here - making a column Non-Nullable, and adding some new columns to this table.
@@ -16,69 +19,65 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
         /// </remarks>
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            var originalTable = "DataRefreshHistory";
-            var cloneTable = "temporary_DataRefreshHistory_Clone";
-
-            CloneExistingData(migrationBuilder, cloneTable, originalTable);
-            DeleteExistingData(migrationBuilder, originalTable);
-            RemoveAllExistingColumns(migrationBuilder, originalTable);
-            ReAddAllColumns_IncludingNewColumns_InOrder(migrationBuilder, originalTable);
-            CopyClonedDataBackIntoTable(migrationBuilder, originalTable, cloneTable);
-            ResetIdColumn(migrationBuilder, originalTable);
-            DeleteCloneTable(migrationBuilder, cloneTable);
+            CloneExistingData(migrationBuilder);
+            DeleteExistingData(migrationBuilder);
+            RemoveAllExistingColumns(migrationBuilder);
+            ReAddAllColumns_IncludingNewColumns_InOrder(migrationBuilder);
+            CopyClonedDataBackIntoTable(migrationBuilder);
+            ResetIdColumn(migrationBuilder);
+            DeleteCloneTable(migrationBuilder);
         }
 
         #region UpMigrationSteps
-        private static void CloneExistingData(MigrationBuilder migrationBuilder, string cloneTable, string originalTable)
+        private static void CloneExistingData(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql($"SELECT * INTO {cloneTable} FROM {originalTable}");
+            migrationBuilder.Sql($"SELECT * INTO {CloneTable} FROM {OriginalTable}");
         }
 
-        private static void DeleteExistingData(MigrationBuilder migrationBuilder, string originalTable)
+        private static void DeleteExistingData(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql($"DELETE FROM {originalTable}");
+            migrationBuilder.Sql($"DELETE FROM {OriginalTable}");
         }
 
-        private static void RemoveAllExistingColumns(MigrationBuilder migrationBuilder, string originalTable)
+        private static void RemoveAllExistingColumns(MigrationBuilder migrationBuilder)
         {
             //Leave Id behind, since it should be first, isn't changing and is most complex.
-            migrationBuilder.DropColumn(name: "RefreshBeginUtc", table: originalTable);
-            migrationBuilder.DropColumn(name: "RefreshEndUtc", table: originalTable);
-            migrationBuilder.DropColumn(name: "Database", table: originalTable);
-            migrationBuilder.DropColumn(name: "HlaNomenclatureVersion", table: originalTable);
-            migrationBuilder.DropColumn(name: "WasSuccessful", table: originalTable);
-            migrationBuilder.DropColumn(name: "DataDeletionCompleted", table: originalTable);
-            migrationBuilder.DropColumn(name: "DatabaseScalingSetupCompleted", table: originalTable);
-            migrationBuilder.DropColumn(name: "DatabaseScalingTearDownCompleted", table: originalTable);
-            migrationBuilder.DropColumn(name: "DonorHlaProcessingCompleted", table: originalTable);
-            migrationBuilder.DropColumn(name: "DonorImportCompleted", table: originalTable);
-            migrationBuilder.DropColumn(name: "MetadataDictionaryRefreshCompleted", table: originalTable);
-            migrationBuilder.DropColumn(name: "QueuedDonorUpdatesCompleted", table: originalTable);
+            migrationBuilder.DropColumn(name: "RefreshBeginUtc", table: OriginalTable);
+            migrationBuilder.DropColumn(name: "RefreshEndUtc", table: OriginalTable);
+            migrationBuilder.DropColumn(name: "Database", table: OriginalTable);
+            migrationBuilder.DropColumn(name: "HlaNomenclatureVersion", table: OriginalTable);
+            migrationBuilder.DropColumn(name: "WasSuccessful", table: OriginalTable);
+            migrationBuilder.DropColumn(name: "DataDeletionCompleted", table: OriginalTable);
+            migrationBuilder.DropColumn(name: "DatabaseScalingSetupCompleted", table: OriginalTable);
+            migrationBuilder.DropColumn(name: "DatabaseScalingTearDownCompleted", table: OriginalTable);
+            migrationBuilder.DropColumn(name: "DonorHlaProcessingCompleted", table: OriginalTable);
+            migrationBuilder.DropColumn(name: "DonorImportCompleted", table: OriginalTable);
+            migrationBuilder.DropColumn(name: "MetadataDictionaryRefreshCompleted", table: OriginalTable);
+            migrationBuilder.DropColumn(name: "QueuedDonorUpdatesCompleted", table: OriginalTable);
         }
 
-        private static void ReAddAllColumns_IncludingNewColumns_InOrder(MigrationBuilder migrationBuilder, string originalTable)
+        private static void ReAddAllColumns_IncludingNewColumns_InOrder(MigrationBuilder migrationBuilder)
         {
             //Id already in place
-            migrationBuilder.AddColumn<string>(name: "Database", table: originalTable, nullable: false); // Note nullability has changed!
-            migrationBuilder.AddColumn<bool>(name: "WasSuccessful", table: originalTable, nullable: true);
-            migrationBuilder.AddColumn<string>(name: "SupportComments", table: originalTable, nullable: true); //New!
-            migrationBuilder.AddColumn<DateTime>(name: "RefreshBeginUtc", table: originalTable, nullable: false);
-            migrationBuilder.AddColumn<DateTime>(name: "RefreshContinueUtc", table: originalTable, nullable: true); //New!
-            migrationBuilder.AddColumn<DateTime>(name: "RefreshEndUtc", table: originalTable, nullable: true);
-            migrationBuilder.AddColumn<string>(name: "HlaNomenclatureVersion", table: originalTable, nullable: true);  //Moved!
-            migrationBuilder.AddColumn<DateTime>(name: "MetadataDictionaryRefreshCompleted", table: originalTable, nullable: true);
-            migrationBuilder.AddColumn<DateTime>(name: "IndexDeletionCompleted", table: originalTable, nullable: true); //New!
-            migrationBuilder.AddColumn<DateTime>(name: "DataDeletionCompleted", table: originalTable, nullable: true);
-            migrationBuilder.AddColumn<DateTime>(name: "DatabaseScalingSetupCompleted", table: originalTable, nullable: true);
-            migrationBuilder.AddColumn<DateTime>(name: "DonorImportCompleted", table: originalTable, nullable: true);
-            migrationBuilder.AddColumn<DateTime>(name: "DonorHlaProcessingCompleted", table: originalTable, nullable: true);
-            migrationBuilder.AddColumn<DateTime>(name: "IndexRecreationCompleted", table: originalTable, nullable: true); //New!
-            migrationBuilder.AddColumn<DateTime>(name: "DatabaseScalingTearDownCompleted", table: originalTable, nullable: true);
-            migrationBuilder.AddColumn<DateTime>(name: "QueuedDonorUpdatesCompleted", table: originalTable, nullable: true);
+            migrationBuilder.AddColumn<string>(name: "Database", table: OriginalTable, nullable: false); // Note nullability has changed!
+            migrationBuilder.AddColumn<bool>(name: "WasSuccessful", table: OriginalTable, nullable: true);
+            migrationBuilder.AddColumn<string>(name: "SupportComments", table: OriginalTable, nullable: true); //New!
+            migrationBuilder.AddColumn<DateTime>(name: "RefreshBeginUtc", table: OriginalTable, nullable: false);
+            migrationBuilder.AddColumn<DateTime>(name: "RefreshContinueUtc", table: OriginalTable, nullable: true); //New!
+            migrationBuilder.AddColumn<DateTime>(name: "RefreshEndUtc", table: OriginalTable, nullable: true);
+            migrationBuilder.AddColumn<string>(name: "HlaNomenclatureVersion", table: OriginalTable, nullable: true);  //Moved!
+            migrationBuilder.AddColumn<DateTime>(name: "MetadataDictionaryRefreshCompleted", table: OriginalTable, nullable: true);
+            migrationBuilder.AddColumn<DateTime>(name: "IndexDeletionCompleted", table: OriginalTable, nullable: true); //New!
+            migrationBuilder.AddColumn<DateTime>(name: "DataDeletionCompleted", table: OriginalTable, nullable: true);
+            migrationBuilder.AddColumn<DateTime>(name: "DatabaseScalingSetupCompleted", table: OriginalTable, nullable: true);
+            migrationBuilder.AddColumn<DateTime>(name: "DonorImportCompleted", table: OriginalTable, nullable: true);
+            migrationBuilder.AddColumn<DateTime>(name: "DonorHlaProcessingCompleted", table: OriginalTable, nullable: true);
+            migrationBuilder.AddColumn<DateTime>(name: "IndexRecreationCompleted", table: OriginalTable, nullable: true); //New!
+            migrationBuilder.AddColumn<DateTime>(name: "DatabaseScalingTearDownCompleted", table: OriginalTable, nullable: true);
+            migrationBuilder.AddColumn<DateTime>(name: "QueuedDonorUpdatesCompleted", table: OriginalTable, nullable: true);
         }
 
-        private static void CopyClonedDataBackIntoTable(MigrationBuilder migrationBuilder, string originalTable,
-            string cloneTable)
+        private static void CopyClonedDataBackIntoTable(MigrationBuilder migrationBuilder)
         {
             var currentColumns = @"
              [Id]
@@ -97,34 +96,34 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
 ";
 
             migrationBuilder.Sql($@"
-SET IDENTITY_INSERT {originalTable} ON
+SET IDENTITY_INSERT {OriginalTable} ON
 
-INSERT INTO {originalTable}(
+INSERT INTO {OriginalTable}(
   {currentColumns}
 )
 SELECT
   {currentColumns}
-FROM {cloneTable}
+FROM {CloneTable}
 
-SET IDENTITY_INSERT {originalTable} OFF");
+SET IDENTITY_INSERT {OriginalTable} OFF");
         }
 
-        private static void ResetIdColumn(MigrationBuilder migrationBuilder, string originalTable)
+        private static void ResetIdColumn(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql($@"
-DECLARE @max int = (SELECT COALESCE(MAX(Id), 1) FROM {originalTable});
-DBCC CHECKIDENT({originalTable}, RESEED, @max)"
+DECLARE @max int = (SELECT COALESCE(MAX(Id), 1) FROM {OriginalTable});
+DBCC CHECKIDENT({OriginalTable}, RESEED, @max)"
             );
         }
 
-        private static void DeleteCloneTable(MigrationBuilder migrationBuilder, string cloneTable)
+        private static void DeleteCloneTable(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql($"DROP TABLE {cloneTable}");
+            migrationBuilder.Sql($"DROP TABLE {CloneTable}");
         }
         #endregion
 
         /// <remarks>
-        /// Whilst the up-migration is very complex the down migration doesn't need to be, because we don't care about column order on the way down.
+        /// Whilst the up-migration is very complex the down-migration doesn't need to be, because we don't care about column order on the way down.
         /// A) The re-ordering above is idempotent, so we don't NEED to reset it precisely
         /// B) Mostly this is removing columns so it'll end up in almost exactly the same order anyway.
         /// </remarks>
