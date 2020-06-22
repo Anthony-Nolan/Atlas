@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Matching.Services;
+using Atlas.MatchPrediction.Services;
 using Atlas.MatchPrediction.Services.MatchCalculation;
-using Atlas.MatchPrediction.Services.Utility;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
@@ -14,7 +14,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchCalculation
     internal class MatchCalculationServiceTests
     {
         private ILocusMatchCalculator locusMatchCalculator;
-        private IHlaPerLocusExpander hlaPerLocusExpander;
+        private ILocusHlaConverter locusHlaConverter;
 
         private IMatchCalculationService matchCalculationService;
 
@@ -22,14 +22,14 @@ namespace Atlas.MatchPrediction.Test.Services.MatchCalculation
         public void SetUp()
         {
             locusMatchCalculator = Substitute.For<ILocusMatchCalculator>();
-            hlaPerLocusExpander = Substitute.For<IHlaPerLocusExpander>();
+            locusHlaConverter = Substitute.For<ILocusHlaConverter>();
 
-            hlaPerLocusExpander.Expand(default, default, default)
+            locusHlaConverter.ConvertHla(default, default, default)
                 .ReturnsForAnyArgs(new PhenotypeInfo<IReadOnlyCollection<string>>(new List<string> {"hla"}));
 
             locusMatchCalculator.MatchCount(Arg.Any<LocusInfo<IEnumerable<string>>>(), Arg.Any<LocusInfo<IEnumerable<string>>>()).Returns(2);
 
-            matchCalculationService = new MatchCalculationService(hlaPerLocusExpander, locusMatchCalculator);
+            matchCalculationService = new MatchCalculationService(locusHlaConverter, locusMatchCalculator);
         }
 
         [Test]

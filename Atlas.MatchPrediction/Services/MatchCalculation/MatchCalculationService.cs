@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Matching.Services;
@@ -41,13 +42,12 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
                 await locusHlaConverter.ConvertHla(donorGenotype, matchingResolution, hlaNomenclatureVersion);
 
             var allowedLoci = LocusSettings.MatchPredictionLoci.ToList();
->>>>>>> chore: ATLAS-217: Changed to use allowed Loci
 
             var matchCounts = new LociInfo<int>().Map((locus, matchCount) =>
                 allowedLoci.Contains(locus)
                     ? locusMatchCalculator.MatchCount(
-                        patientGenotypeAsPGroups.GetLocus(locus),
-                        donorGenotypeAsPGroups.GetLocus(locus))
+                        patientGenotypeAsPGroups.GetLocus(locus).Map(x => x as IEnumerable<string>),
+                        donorGenotypeAsPGroups.GetLocus(locus).Map(x => x as IEnumerable<string>))
                     : 0);
 
             return matchCounts;
