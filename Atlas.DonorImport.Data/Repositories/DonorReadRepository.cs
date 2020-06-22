@@ -10,8 +10,8 @@ namespace Atlas.DonorImport.Data.Repositories
     public interface IDonorReadRepository
     {
         public IEnumerable<Donor> StreamAllDonors();
-        public Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes);
-        public Task<Dictionary<string, int>> GetDonorIdsByExternalDonorCodes(IEnumerable<string> externalDonorCodes);
+        public Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(ICollection<string> externalDonorCodes);
+        public Task<Dictionary<string, int>> GetDonorIdsByExternalDonorCodes(ICollection<string> externalDonorCodes);
     }
 
     public class DonorReadRepository : DonorRepositoryBase, IDonorReadRepository
@@ -23,7 +23,7 @@ namespace Atlas.DonorImport.Data.Repositories
 
         public IEnumerable<Donor> StreamAllDonors()
         {
-            var sql = $"SELECT {Donor.InsertionDataTableColumnNames.StringJoin(",")} FROM Donors";
+            var sql = $"SELECT {Donor.DataTableColumnNamesForInsertion.StringJoin(",")} FROM Donors";
             using (var connection = NewConnection())
             {
                 // With "buffered: false" this should avoid loading all donors into memory before returning.
@@ -42,10 +42,10 @@ namespace Atlas.DonorImport.Data.Repositories
             }
         }
 
-        public async Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(IEnumerable<string> externalDonorCodes)
+        public async Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(ICollection<string> externalDonorCodes)
         {
             var sql = @$"
-SELECT {Donor.InsertionDataTableColumnNames.StringJoin(",")} FROM Donors
+SELECT {Donor.DataTableColumnNamesForInsertion.StringJoin(",")} FROM Donors
 WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
 ";
             await using (var connection = NewConnection())
@@ -55,7 +55,7 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
             }
         }
 
-        public async Task<Dictionary<string, int>> GetDonorIdsByExternalDonorCodes(IEnumerable<string> externalDonorCodes)
+        public async Task<Dictionary<string, int>> GetDonorIdsByExternalDonorCodes(ICollection<string> externalDonorCodes)
         {
             var sql = @$"
 SELECT {nameof(Donor.AtlasId)}, {nameof(Donor.ExternalDonorCode)} FROM Donors

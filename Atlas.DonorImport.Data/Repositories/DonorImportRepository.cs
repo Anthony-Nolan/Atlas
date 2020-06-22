@@ -15,7 +15,7 @@ namespace Atlas.DonorImport.Data.Repositories
     {
         public Task InsertDonorBatch(IEnumerable<Donor> donors);
         Task UpdateDonorBatch(List<Donor> editedDonorsWithAtlasIds);
-        Task DeleteDonorBatch(ICollection<int> deletedAtlasDonorIds);
+        Task DeleteDonorBatch(List<int> deletedAtlasDonorIds);
     }
 
     public class DonorImportRepository : DonorRepositoryBase, IDonorImportRepository
@@ -43,7 +43,7 @@ namespace Atlas.DonorImport.Data.Repositories
         public async Task UpdateDonorBatch(List<Donor> editedDonorsWithAtlasIds)
         {
             var columnUpdateStrings =
-                Donor.UpdateDbTableColumnNames
+                Donor.DbTableColumnNamesForUpdate
                     .Select(columnName => $"{columnName} = @{columnName}")
                     .StringJoin("," + Environment.NewLine);
 
@@ -54,7 +54,7 @@ namespace Atlas.DonorImport.Data.Repositories
                 WHERE {nameof(Donor.AtlasId)} = @{nameof(Donor.AtlasId)},
                 ";
 
-            using (var tran = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             await using (var conn = NewConnection())
             {
                 conn.Open();
@@ -62,13 +62,13 @@ namespace Atlas.DonorImport.Data.Repositories
                 {
                     await conn.ExecuteAsync(sql, donorEdit, commandTimeout: 600);
                 }
-                tran.Complete();
+                transaction.Complete();
                 conn.Close();
             }
         }
 
         /// <inheritdoc />
-        public async Task DeleteDonorBatch(ICollection<int> deletedAtlasDonorIds)
+        public async Task DeleteDonorBatch(List<int> deletedAtlasDonorIds)
         {
             var sql = @$"
                 DELETE FROM Donors
@@ -85,7 +85,7 @@ namespace Atlas.DonorImport.Data.Repositories
         {
             var sqlBulk = new SqlBulkCopy(ConnectionString) {BulkCopyTimeout = 3600, BatchSize = 10000, DestinationTableName = "Donors"};
 
-            foreach (var columnName in Donor.InsertionDataTableColumnNames)
+            foreach (var columnName in Donor.DataTableColumnNamesForInsertion)
             {
                 // Relies on setting up the data table with column names matching the database columns.
                 sqlBulk.ColumnMappings.Add(columnName, columnName);
@@ -97,7 +97,7 @@ namespace Atlas.DonorImport.Data.Repositories
         private DataTable BuildDonorInsertDataTable(IEnumerable<Donor> donors)
         {
             var dataTable = new DataTable();
-            foreach (var columnName in Donor.InsertionDataTableColumnNames)
+            foreach (var columnName in Donor.DataTableColumnNamesForInsertion)
             {
                 dataTable.Columns.Add(columnName);
             }
