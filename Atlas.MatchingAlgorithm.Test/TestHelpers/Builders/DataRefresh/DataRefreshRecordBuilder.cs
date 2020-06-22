@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh
         {
             return stage switch
             {
-                DataRefreshStage.MetadataDictionaryRefresh => builder.With(r => r.MetadataDictionaryRefreshCompleted, DateTime.UtcNow),
+                DataRefreshStage.MetadataDictionaryRefresh => builder.With(r => r.MetadataDictionaryRefreshCompleted, DateTime.UtcNow).With(r => r.HlaNomenclatureVersion, "version"),
                 DataRefreshStage.DataDeletion => builder.With(r => r.DataDeletionCompleted, DateTime.UtcNow),
                 DataRefreshStage.IndexRemoval => builder.With(r => r.IndexDeletionCompleted, DateTime.UtcNow),
                 DataRefreshStage.DatabaseScalingSetup => builder.With(r => r.DatabaseScalingSetupCompleted, DateTime.UtcNow),
