@@ -444,6 +444,52 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
+        public async Task RefreshData_WhenRunningMetadataDictionaryStep_RecordsLatestVersion()
+        {
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.Build()
+            );
+            var version = "latestHlaVersion";
+            hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest).Returns(version);
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await dataRefreshHistoryRepository.Received().UpdateExecutionDetails(Arg.Any<int>(), version);
+        }
+
+        [Test]
+        public async Task RefreshData_WhenRunningFromFresh_PassesLatestHlaVersionToLaterSteps()
+        {
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.Build()
+            );
+            var version = "latestHlaVersion";
+            hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest).Returns(version);
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await hlaProcessor.Received().UpdateDonorHla(version);
+        }
+
+        [Test]
+        public async Task RefreshData_WhenContinuingAfterMetadataDictionaryStep_WithNewLatestVersion_PassesStoredHlaVersionToLaterSteps()
+        {
+            var oldVersion = "olderHlaVersion";
+            var newVersion = "latestHlaVersion";
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New
+                    .WithStagesCompletedUpToAndIncluding(DataRefreshStage.MetadataDictionaryRefresh)
+                    .With(r => r.HlaNomenclatureVersion, oldVersion)
+                    .Build()
+            );
+            hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest).Returns(newVersion);
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await hlaProcessor.Received().UpdateDonorHla(oldVersion);
+        }
+
+        [Test]
         public async Task RefreshData_WhenContinuingFromDonorImport_ClearsAllData()
         {
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
