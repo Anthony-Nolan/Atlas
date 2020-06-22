@@ -18,14 +18,13 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
     public interface IDonorImportRepository
     {
         /// <summary>
-        /// Performs any upfront work necessary to run a full donor import with reasonable performance.
-        /// e.g. Removing indexes in a SQL implementation
+        /// Remove Indexes from the SQL Tables, so that a full donor import
+        /// can be run with reasonable performance.
         /// </summary>
         Task RemoveHlaTableIndexes();
 
         /// <summary>
-        /// Performs any work necessary after a full donor import has been run.
-        /// e.g. Re-adding indexes in a SQL implementation
+        /// Reinstate the indexes which were previously removed, to avoid performance hits during Refresh.
         /// </summary>
         Task CreateHlaTableIndexes();
 
@@ -67,11 +66,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         private static readonly string[] HlaTables = {"MatchingHlaAtA", "MatchingHlaAtB", "MatchingHlaAtC", "MatchingHlaAtDrb1", "MatchingHlaAtDqb1"};
         
         private const string DropAllDonorsSql = @"TRUNCATE TABLE [Donors]";
-        private string GetDropAllPreProcessedDonorHlaSql() => HlaTables.Select(table => $"TRUNCATE TABLE [{table}];").StringJoinWithNewline();
+        private string BuildDropAllPreProcessedDonorHlaSql() => HlaTables.Select(table => $"TRUNCATE TABLE [{table}];").StringJoinWithNewline();
 
-        private string GetPGroupIndexSqlFor(string tableName)
+        private string BuildPGroupIndexSqlFor(string tableName)
         {
-            return GetIndexCreationSqlFor(
+            return BuildIndexCreationSqlFor(
                 MatchingHlaTable_IndexName_PGroupIdAndDonorId,
                 tableName,
                 new[] { "DonorId", "PGroup_Id" },
@@ -79,9 +78,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             );
         }
 
-        private string GetDonorIdIndexSqlFor(string tableName)
+        private string BuildDonorIdIndexSqlFor(string tableName)
         {
-            return GetIndexCreationSqlFor(
+            return BuildIndexCreationSqlFor(
                 MatchingHlaTable_IndexName_DonorId,
                 tableName,
                 new[] {"DonorId"},
@@ -94,7 +93,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// <param name="indexColumns">Columns to be part of the index itself. Must not be null or empty.</param>
         /// <param name="includeColumns">Columns to be 'INCLUDE'd as secondary columns of the index. Must not be null or empty</param>
         /// <returns>Conditional CREATE statement, which will create the index if it doesn't already exist.</returns>
-        private string GetIndexCreationSqlFor(string indexName, string tableName, string[] indexColumns, string[] includeColumns)
+        private string BuildIndexCreationSqlFor(string indexName, string tableName, string[] indexColumns, string[] includeColumns)
         {
             var indexColumnsString = indexColumns.StringJoin(", ");
             var includeColumnsString = includeColumns.StringJoin(", ");
@@ -111,7 +110,7 @@ END
         /// <param name="indexName">Name to use for index</param>
         /// <param name="tableName">Name of table (in default schema) to create index on</param>
         /// <returns>Conditional DELETE IF EXISTS statement, which will delete the index if it currently exists.</returns>
-        private string GetIndexDeletionSqlFor(string indexName, string tableName)
+        private string BuildIndexDeletionSqlFor(string indexName, string tableName)
         {
             return $@"DROP INDEX IF EXISTS {indexName} ON [{tableName}];";
         }
@@ -122,10 +121,10 @@ END
             {
                 foreach (var table in HlaTables)
                 {
-                    var pGroupIndexSql = GetPGroupIndexSqlFor(table);
+                    var pGroupIndexSql = BuildPGroupIndexSqlFor(table);
                     await conn.ExecuteAsync(pGroupIndexSql, commandTimeout: 7200);
 
-                    var donorIdIndexSql = GetDonorIdIndexSqlFor(table);
+                    var donorIdIndexSql = BuildDonorIdIndexSqlFor(table);
                     await conn.ExecuteAsync(donorIdIndexSql, commandTimeout: 7200);
                 }
             }
@@ -137,10 +136,10 @@ END
             {
                 foreach (var table in HlaTables)
                 {
-                    var pGroupIndexSql = GetIndexDeletionSqlFor(MatchingHlaTable_IndexName_PGroupIdAndDonorId, table);
+                    var pGroupIndexSql = BuildIndexDeletionSqlFor(MatchingHlaTable_IndexName_PGroupIdAndDonorId, table);
                     await conn.ExecuteAsync(pGroupIndexSql, commandTimeout: 300);
 
-                    var donorIdIndexSql = GetIndexDeletionSqlFor(MatchingHlaTable_IndexName_DonorId, table);
+                    var donorIdIndexSql = BuildIndexDeletionSqlFor(MatchingHlaTable_IndexName_DonorId, table);
                     await conn.ExecuteAsync(donorIdIndexSql, commandTimeout: 300);
                 }
             }
@@ -150,7 +149,7 @@ END
         {
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                await conn.ExecuteAsync(GetDropAllPreProcessedDonorHlaSql(), commandTimeout: 300);
+                await conn.ExecuteAsync(BuildDropAllPreProcessedDonorHlaSql(), commandTimeout: 300);
                 await conn.ExecuteAsync(DropAllDonorsSql, commandTimeout: 300);
             }
         }
@@ -160,7 +159,7 @@ END
         {
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                await conn.ExecuteAsync(GetDropAllPreProcessedDonorHlaSql(), commandTimeout: 300);
+                await conn.ExecuteAsync(BuildDropAllPreProcessedDonorHlaSql(), commandTimeout: 300);
             }
         }
 
