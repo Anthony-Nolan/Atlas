@@ -50,7 +50,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchCalculation
 
             var matchCounts = await matchCalculationService.MatchAtPGroupLevel(default, default, default);
 
-            var actualTotal = matchCounts.A + matchCounts.B + matchCounts.C + matchCounts.Dpb1 + matchCounts.Dqb1 + matchCounts.Drb1;
+            // Not including Dpb1 as it's not included in match prediction
+            var actualTotal = matchCounts.A + matchCounts.B + matchCounts.C + matchCounts.Dqb1 + matchCounts.Drb1;
             actualTotal.Should().Be(expectedTotalMatchCount);
         }
     }
