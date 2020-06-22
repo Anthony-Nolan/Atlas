@@ -27,11 +27,14 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         private const string Drb11 = "03:124";
         private const string Drb12 = "11:129";
 
-        private static readonly LociInfo<int> TenOutOfTenMatch = new LociInfo<int>
-            {A = 2, B = 2, C = 2, Dqb1 = 2, Drb1 = 2};
+        private static readonly LociInfo<int?> TenOutOfTenMatch = new LociInfo<int?>
+            {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
 
-        private static readonly LociInfo<int> NineOutOfTenMatch = new LociInfo<int>
-            {A = 1, B = 2, C = 2, Dqb1 = 2, Drb1 = 2};
+        private static readonly LociInfo<int?> SingleMismatchAtA = new LociInfo<int?>
+            {A = 1, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
+
+        private static readonly LociInfo<int?> SingleMismatchAtB = new LociInfo<int?>
+            { A = 2, B = 1, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2 };
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -44,8 +47,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         public async Task MatchAtPGroupLevel_WhenIdenticalGenotypes_IsTenOutOfTenMatch()
         {
             var matchCount =
-                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), NewGenotype.Build(),
-                    HlaNomenclatureVersion);
+                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), NewGenotype.Build(), HlaNomenclatureVersion);
 
             matchCount.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -57,8 +59,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
                 .With(g => g.B, new LocusInfo<string> { Position1 = B1, Position2 = "15:228"}).Build();
 
             var matchCount =
-                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), NewGenotype.Build(),
-                    HlaNomenclatureVersion);
+                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), NewGenotype.Build(), HlaNomenclatureVersion);
 
             matchCount.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -70,8 +71,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
                 .With(g => g.A, new LocusInfo<string> {Position1 = A1, Position2 = "02:09"}).Build();
 
             var matchCount =
-                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype,
-                    HlaNomenclatureVersion);
+                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
 
             matchCount.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -80,39 +80,36 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         public async Task MatchAtPGroupLevel_WhenGenotypesDifferInPhase_IsTenOutOfTenMatch()
         {
             var donorGenotype = NewGenotype
-                .With(g => g.A, new LocusInfo<string> {Position1 = A1, Position2 = "02:09/04"}).Build();
+                .With(g => g.A, new LocusInfo<string> {Position1 = A2, Position2 = A1}).Build();
 
             var matchCount =
-                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype,
-                    HlaNomenclatureVersion);
+                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
 
             matchCount.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
 
         [Test]
-        public async Task MatchAtPGroupLevel_WhenMismatchIdentified_IsNotTenOutOfTenMatch()
+        public async Task MatchAtPGroupLevel_WhenPatientGenotypeHomozygous_AndMatchesExactlyOneOfPatientHla_IsNineOutOfTenMatch()
         {
-            var donorGenotype = NewGenotype
-                .With(g => g.A, new LocusInfo<string> { Position1 = A1, Position2 = "02:09/04" }).Build();
+            var patientGenotype = NewGenotype
+                .With(g => g.B, new LocusInfo<string> {Position1 = B1, Position2 = B1}).Build();
 
             var matchCount =
-                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype,
-                    HlaNomenclatureVersion);
+                await matchCalculationService.MatchAtPGroupLevel(patientGenotype, NewGenotype.Build(), HlaNomenclatureVersion);
 
-            matchCount.Should().BeEquivalentTo(TenOutOfTenMatch);
+            matchCount.Should().BeEquivalentTo(SingleMismatchAtB);
         }
 
         [Test]
-        public async Task MatchAtPGroupLevel_WhenGenotypesDifferInPhase_IsNotTenOutOfTenMatch()
+        public async Task MatchAtPGroupLevel_WhenDonorGenotypeHomozygous_AndMatchesExactlyOneOfDonorHla_IsNineOutOfTenMatch()
         {
             var donorGenotype = NewGenotype
-                .With(g => g.A, new LocusInfo<string> { Position1 = A1, Position2 = "23:17" }).Build();
+                .With(g => g.B, new LocusInfo<string> {Position1 = B1, Position2 = B1 }).Build();
 
             var matchCount =
-                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype,
-                    HlaNomenclatureVersion);
+                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
 
-            matchCount.Should().BeEquivalentTo(NineOutOfTenMatch);
+            matchCount.Should().BeEquivalentTo(SingleMismatchAtB);
         }
 
         private static Builder<PhenotypeInfo<string>> NewGenotype => Builder<PhenotypeInfo<string>>.New
