@@ -146,6 +146,18 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
         }
 
         [Test]
+        public async Task ExpandCompressedPhenotype_WhenMacPresent_ExpandsMac()
+        {
+            var phenotype = NewPhenotypeInfo
+                .With(d => d.A, new LocusInfo<string> { Position1 = "01:AHS", Position2 = A2 })
+                .Build();
+
+            var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
+
+            genotypes.Count().Should().Be(2);
+        }
+
+        [Test]
         public async Task ExpandCompressedPhenotype_WhenXXCodePresent_ExpandsXXCode()
         {
             var phenotype = NewPhenotypeInfo
@@ -162,8 +174,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
         // TODO: ATLAS-369 - Create tests for p-group alleles
 
         // TODO: ATLAS-368 - Create tests for serology alleles
-
-        // TODO: ATLAS-407 - Create tests for NMDP alleles
 
         private static Builder<PhenotypeInfo<string>> NewPhenotypeInfo => Builder<PhenotypeInfo<string>>.New
             .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})
