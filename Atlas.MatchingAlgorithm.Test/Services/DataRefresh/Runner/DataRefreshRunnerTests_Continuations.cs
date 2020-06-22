@@ -13,7 +13,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         // These tests are extensions of the Test setup defined in DataRefreshRunnerTests_Core
         // Separated for convenience, since there are a LOT of tests :)
 
-        [TestCase(DataRefreshStage.MetadataDictionaryRefresh)]
         [TestCase(DataRefreshStage.DatabaseScalingSetup)]
         [TestCase(DataRefreshStage.DatabaseScalingTearDown)]
         // TODO: ATLAS-249: Add a test case for Queued Update Processing
@@ -26,6 +25,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             await dataRefreshHistoryRepository.Received(1).MarkStageAsComplete(Arg.Any<int>(), refreshStage);
         }
 
+        [TestCase(DataRefreshStage.MetadataDictionaryRefresh)]
         [TestCase(DataRefreshStage.DataDeletion)]
         [TestCase(DataRefreshStage.IndexRemoval)]
         [TestCase(DataRefreshStage.DonorImport)]
@@ -41,7 +41,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         }
 
         [Test]
-        public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToDictionaryRefresh_RedoesDictionaryRefresh_AndContinuesFromDataDeletion()
+        public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToDictionaryRefresh_ContinuesFromDataDeletion()
         {
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
                 DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.MetadataDictionaryRefresh).Build()
@@ -49,7 +49,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await hlaMetadataDictionary.ReceivedWithAnyArgs(1).RecreateHlaMetadataDictionary(default);
+            await hlaMetadataDictionary.DidNotReceiveWithAnyArgs().RecreateHlaMetadataDictionary(default);
             await donorImportRepository.Received(1).RemoveAllDonorInformation();
         }
 
