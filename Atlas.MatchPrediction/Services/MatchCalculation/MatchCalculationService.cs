@@ -10,7 +10,10 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
 {
     public interface IMatchCalculationService
     {
-        public Task<LociInfo<int>> MatchAtPGroupLevel(
+        /// <returns>
+        /// null for non calculated, 0, 1, or 2 if calculated representing the match count.
+        /// </returns>
+        public Task<LociInfo<int?>> MatchAtPGroupLevel(
             PhenotypeInfo<string> patientGenotype,
             PhenotypeInfo<string> donorGenotype,
             string hlaNomenclatureVersion);
@@ -29,7 +32,7 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
             this.locusMatchCalculator = locusMatchCalculator;
         }
 
-        public async Task<LociInfo<int>> MatchAtPGroupLevel(
+        public async Task<LociInfo<int?>> MatchAtPGroupLevel(
             PhenotypeInfo<string> patientGenotype,
             PhenotypeInfo<string> donorGenotype,
             string hlaNomenclatureVersion)
@@ -43,12 +46,12 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
 
             var allowedLoci = LocusSettings.MatchPredictionLoci.ToList();
 
-            var matchCounts = new LociInfo<int>().Map((locus, matchCount) =>
+            var matchCounts = new LociInfo<int?>().Map((locus, matchCount) =>
                 allowedLoci.Contains(locus)
                     ? locusMatchCalculator.MatchCount(
                         patientGenotypeAsPGroups.GetLocus(locus).Map(x => x as IEnumerable<string>),
                         donorGenotypeAsPGroups.GetLocus(locus).Map(x => x as IEnumerable<string>))
-                    : 0);
+                    : (int?) null);
 
             return matchCounts;
         }
