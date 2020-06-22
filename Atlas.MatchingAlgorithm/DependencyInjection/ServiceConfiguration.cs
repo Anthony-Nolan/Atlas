@@ -56,6 +56,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterSettingsForMatchingAlgorithm();
             services.RegisterMatchingAlgorithmServices();
             services.RegisterDataServices();
+            services.RegisterHlaMetadataDictionary(
+                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
+                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
+                OptionsReaderFor<ApplicationInsightsSettings>());
             // TODO: ATLAS-327: Inject settings
             services.RegisterDonorReader(sp => sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["DonorImportSql"]);
         }
@@ -65,6 +69,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterSettingsForMatchingDonorManagement();
             services.RegisterMatchingAlgorithmServices();
             services.RegisterDataServices();
+            services.RegisterHlaMetadataDictionary(
+                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
+                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
+                OptionsReaderFor<ApplicationInsightsSettings>());
             services.RegisterDonorManagementServices();
         }
 
