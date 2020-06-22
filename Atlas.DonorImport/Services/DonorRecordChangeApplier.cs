@@ -120,7 +120,7 @@ namespace Atlas.DonorImport.Services
         {
             var deletedAtlasDonorIds = await donorInspectionRepository.GetDonorIdsByExternalDonorCodes(deletedExternalCodes);
 
-            await donorImportRepository.DeleteDonorBatch(deletedAtlasDonorIds.Values);
+            await donorImportRepository.DeleteDonorBatch(deletedAtlasDonorIds.Values.ToList());
 
             var deletionUpdates = deletedAtlasDonorIds.Values.Select(MapToDeletionUpdateMessage).ToList();
             await messagingServiceBusClient.PublishDonorUpdateMessages(deletionUpdates);

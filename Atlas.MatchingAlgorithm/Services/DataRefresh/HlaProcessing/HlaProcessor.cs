@@ -14,7 +14,6 @@ using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Donors;
-using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
@@ -157,8 +156,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 await dictionaryCacheControl.PreWarmAllCaches();
 
                 logger.SendTrace("HLA PROCESSOR: caching antigens from hla service", LogLevel.Info);
-                // All antigens are fetched from the HLA service. We use our cache for NMDP lookups to avoid too much load on the hla service
-                await macDictionary.GenerateMacCache();
 
                 logger.SendTrace("HLA PROCESSOR: inserting new p groups to database", LogLevel.Info);
                 // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the HlaMetadataDictionary, and new ones added to the SQL database

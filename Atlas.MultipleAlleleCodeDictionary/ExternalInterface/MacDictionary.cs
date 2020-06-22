@@ -19,10 +19,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         /// Fetch the HLA for a given MAC from the storage account, caching appropriately.
         /// </summary>
         public Task<Mac> GetMac(string macCode);
-        /// <summary>
-        /// A debug endpoint to regenerate the MAC Cache.
-        /// </summary>
-        public Task GenerateMacCache();
 
         /// <remarks>
         /// This does not guarantee that HLA generated will be valid.
@@ -61,11 +57,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         public async Task<Mac> GetMac(string macCode)
         {
             return await macCacheService.GetMacCode(macCode);
-        }
-
-        public async Task GenerateMacCache()
-        {
-            await macCacheService.GenerateMacCache();
         }
 
         /// <inheritdoc />
