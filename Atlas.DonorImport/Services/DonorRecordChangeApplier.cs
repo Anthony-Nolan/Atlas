@@ -89,8 +89,8 @@ namespace Atlas.DonorImport.Services
 
             foreach (var creation in creationsWithoutAtlasIds)
             {
-                PopulateAtlasId(creation, newAtlasDonorIds);
-                SearchableDonorUpdate updateMessage = MapToMatchingUpdateMessage(creation);
+                creation.AtlasId = GetAtlasIdFromCode(creation.ExternalDonorCode, newAtlasDonorIds);
+                var updateMessage = MapToMatchingUpdateMessage(creation);
                 await messagingServiceBusClient.PublishDonorUpdateMessage(updateMessage);
             }
         }
@@ -106,7 +106,7 @@ namespace Atlas.DonorImport.Services
             var editedDonorsWithAtlasIds = editUpdates.Select(edit =>
             {
                 var dbDonor = MapToDatabaseDonor(edit, fileLocation);
-                dbDonor.AtlasId = existingAtlasDonorIds[edit.RecordId];
+                dbDonor.AtlasId = GetAtlasIdFromCode(edit.RecordId, existingAtlasDonorIds);
                 return dbDonor;
             }).ToList();
 
@@ -122,19 +122,18 @@ namespace Atlas.DonorImport.Services
 
             await donorImportRepository.DeleteDonorBatch(deletedAtlasDonorIds.Values);
 
-            var deletionUpdates = deletedAtlasDonorIds.Values.Select(MapToDeletionUpdate).ToList();
+            var deletionUpdates = deletedAtlasDonorIds.Values.Select(MapToDeletionUpdateMessage).ToList();
             await messagingServiceBusClient.PublishDonorUpdateMessages(deletionUpdates);
         }
 
-        private void PopulateAtlasId(Donor creation, Dictionary<string, int> newAtlasDonorIds)
+        private int GetAtlasIdFromCode(string donorCode, Dictionary<string, int> codesToIdsDictionary)
         {
-            var donorCode = creation.ExternalDonorCode;
-            if (!newAtlasDonorIds.TryGetValue(donorCode, out var atlasDonorId))
+            if (!codesToIdsDictionary.TryGetValue(donorCode, out var atlasDonorId))
             {
-                throw new Exception($"Could not find added donor in Atlas database: {donorCode}");
+                throw new Exception($"Could not find expected donor in Atlas database: {donorCode}");
             }
 
-            creation.AtlasId = atlasDonorId;
+            return atlasDonorId;
         }
 
         private UpdateMode DetermineUpdateMode(IReadOnlyCollection<DonorUpdate> donorUpdates)
@@ -210,12 +209,7 @@ namespace Atlas.DonorImport.Services
             return fileLocation;
         }
 
-        private SearchableDonorUpdate MapToDeletionUpdate(Donor deletedDonor)
-        {
-            return MapToDeletionUpdate(deletedDonor.AtlasId);
-        }
-
-        private SearchableDonorUpdate MapToDeletionUpdate(int deletedDonorId)
+        private SearchableDonorUpdate MapToDeletionUpdateMessage(int deletedDonorId)
         {
             return new SearchableDonorUpdate
             {

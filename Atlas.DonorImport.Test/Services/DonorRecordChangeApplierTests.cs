@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Models;
@@ -17,6 +16,7 @@ using NUnit.Framework;
 
 namespace Atlas.DonorImport.Test.Services
 {
+    // TODO: ATLAS-427: Write unit (and integration) Tests for partial file updates.
     [TestFixture]
     internal class DonorRecordChangeApplierTests
     {
@@ -25,7 +25,7 @@ namespace Atlas.DonorImport.Test.Services
         private IDonorReadRepository donorInspectionRepository;
 
         private IDonorRecordChangeApplier donorOperationApplier;
-        private IImportedLocusInterpreter naiveDnalocusInterpretter;
+        private IImportedLocusInterpreter naiveDnaLocusInterpreter;
 
         [SetUp]
         public void SetUp()
@@ -33,8 +33,8 @@ namespace Atlas.DonorImport.Test.Services
             messagingServiceBusClient = Substitute.For<IMessagingServiceBusClient>();
             donorImportRepository = Substitute.For<IDonorImportRepository>();
             donorInspectionRepository = Substitute.For<IDonorReadRepository>();
-            naiveDnalocusInterpretter = Substitute.For<IImportedLocusInterpreter>();
-            naiveDnalocusInterpretter.Interpret(default, default).ReturnsForAnyArgs((call) =>
+            naiveDnaLocusInterpreter = Substitute.For<IImportedLocusInterpreter>();
+            naiveDnaLocusInterpreter.Interpret(default, default).ReturnsForAnyArgs((call) =>
             {
                 var arg = call.Arg<ImportedLocus>();
                 return new LocusInfo<string>(arg?.Dna?.Field1, arg?.Dna?.Field2);
@@ -42,7 +42,7 @@ namespace Atlas.DonorImport.Test.Services
 
             donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>());
 
-            donorOperationApplier = new DonorRecordChangeApplier(messagingServiceBusClient, donorImportRepository, donorInspectionRepository, naiveDnalocusInterpretter, Substitute.For<ILogger>());
+            donorOperationApplier = new DonorRecordChangeApplier(messagingServiceBusClient, donorImportRepository, donorInspectionRepository, naiveDnaLocusInterpreter, Substitute.For<ILogger>());
         }
 
         [Test]

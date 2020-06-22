@@ -15,7 +15,7 @@ namespace Atlas.DonorImport.Data.Repositories
     {
         public Task InsertDonorBatch(IEnumerable<Donor> donors);
         Task UpdateDonorBatch(List<Donor> editedDonorsWithAtlasIds);
-        Task DeleteDonorBatch(ICollection<int> deletedAtlasDonorIds);
+        Task DeleteDonorBatch(List<int> deletedAtlasDonorIds);
     }
 
     public class DonorImportRepository : DonorRepositoryBase, IDonorImportRepository
@@ -54,7 +54,7 @@ namespace Atlas.DonorImport.Data.Repositories
                 WHERE {nameof(Donor.AtlasId)} = @{nameof(Donor.AtlasId)},
                 ";
 
-            using (var tran = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             await using (var conn = NewConnection())
             {
                 conn.Open();
@@ -62,13 +62,13 @@ namespace Atlas.DonorImport.Data.Repositories
                 {
                     await conn.ExecuteAsync(sql, donorEdit, commandTimeout: 600);
                 }
-                tran.Complete();
+                transaction.Complete();
                 conn.Close();
             }
         }
 
         /// <inheritdoc />
-        public async Task DeleteDonorBatch(ICollection<int> deletedAtlasDonorIds)
+        public async Task DeleteDonorBatch(List<int> deletedAtlasDonorIds)
         {
             var sql = @$"
                 DELETE FROM Donors
