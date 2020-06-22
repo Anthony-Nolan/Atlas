@@ -21,8 +21,8 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
 
         public static void RegisterFileBasedHlaMetadataDictionaryForTesting(this IServiceCollection services, Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
         {
-            Func<IServiceProvider, string> blank = _ => "";
-            services.RegisterHlaMetadataDictionary(blank, blank, fetchApplicationInsightsSettings); //This is actually used.
+            Func<IServiceProvider, string> blank = _ => ""; 
+            services.RegisterHlaMetadataDictionary(blank, blank, fetchApplicationInsightsSettings, _ => null); //This is actually used.
             
             // Replace Repositories with File-Backed equivalents.
             services.AddScoped<IHlaScoringMetadataRepository, FileBackedHlaScoringMetadataRepository>();

@@ -4,7 +4,6 @@ using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus.BatchReceiving;
-using Atlas.Common.Settings;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
@@ -38,7 +37,6 @@ using Atlas.MatchingAlgorithm.Services.Utility;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 using Microsoft.ApplicationInsights;
@@ -59,7 +57,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterHlaMetadataDictionary(
                 sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
                 sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
-                OptionsReaderFor<ApplicationInsightsSettings>());
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<MacImportSettings>()
+                );
             // TODO: ATLAS-327: Inject settings
             services.RegisterDonorReader(sp => sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["DonorImportSql"]);
         }
@@ -72,7 +72,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterHlaMetadataDictionary(
                 sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
                 sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
-                OptionsReaderFor<ApplicationInsightsSettings>());
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<MacImportSettings>()
+            );
             services.RegisterDonorManagementServices();
         }
 
@@ -232,9 +234,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static void RegisterSharedSettings(this IServiceCollection services)
         {
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterOptions<MacImportSettings>("MacImport");
             services.RegisterOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
-            services.RegisterOptions<HlaServiceSettings>("Client:HlaService");
             services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
 
@@ -253,14 +255,5 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");
             services.RegisterOptions<DataRefreshSettings>("DataRefresh");
         }
-
-        private static void RegisterMacDictionary(this IServiceCollection services)
-        {
-            services.RegisterOptions<MacImportSettings>("MacImport");
-            services.RegisterMacDictionary(
-                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value, 
-                sp => sp.GetService<IOptions<MacImportSettings>>().Value);
-        }
-        
     }
 }
