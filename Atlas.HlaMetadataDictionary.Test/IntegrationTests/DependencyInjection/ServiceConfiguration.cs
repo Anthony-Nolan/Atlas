@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData;
-using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
@@ -32,7 +29,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             services.AddScoped<IHlaMatchingMetadataRepository, FileBackedHlaMatchingMetadataRepository>();
             services.AddScoped<IAlleleNamesMetadataRepository, FileBackedAlleleNamesMetadataRepository>();
             services.AddScoped<IDpb1TceGroupsMetadataRepository, FileBackedTceMetadataRepository>();
-
+            
             services.AddScoped(sp => Substitute.For<IMacDictionary>());
             // Mac Dictionary Stubs
             // TODO: ATLAS-320 Move this to MacDictionary Tests, along with any tests that actually belong over there.
