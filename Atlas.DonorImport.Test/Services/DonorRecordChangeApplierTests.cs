@@ -53,10 +53,10 @@ namespace Atlas.DonorImport.Test.Services
                 .Build(2)
                 .ToList();
 
-            donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>
+            donorInspectionRepository.GetDonorIdsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, int>
             {
-                {donorUpdates[0].RecordId, new Donor {AtlasId = 1, ExternalDonorCode = donorUpdates[0].RegistryCode}},
-                {donorUpdates[1].RecordId, new Donor {AtlasId = 2, ExternalDonorCode = donorUpdates[1].RegistryCode}},
+                {donorUpdates[0].RecordId, 1},
+                {donorUpdates[1].RecordId, 2},
             });
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, "file");
@@ -74,8 +74,8 @@ namespace Atlas.DonorImport.Test.Services
                 .Build(2)
                 .ToList();
 
-            donorInspectionRepository.GetDonorsByExternalDonorCodes(null)
-                .ReturnsForAnyArgs(donorUpdates.ToDictionary(d => d.RecordId, d => new Donor()));
+            donorInspectionRepository.GetDonorIdsByExternalDonorCodes(null)
+                .ReturnsForAnyArgs(donorUpdates.ToDictionary(d => d.RecordId, d => 0));
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, "file");
 
@@ -91,8 +91,8 @@ namespace Atlas.DonorImport.Test.Services
                 DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Differential).Build(),
             };
 
-            donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(
-                donorUpdates.ToDictionary(d => d.RecordId, d => new Donor {AtlasId = atlasId})
+            donorInspectionRepository.GetDonorIdsByExternalDonorCodes(null).ReturnsForAnyArgs(
+                donorUpdates.ToDictionary(d => d.RecordId, d => atlasId)
             );
 
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, "file");
