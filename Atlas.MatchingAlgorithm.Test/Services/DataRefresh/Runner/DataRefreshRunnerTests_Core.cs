@@ -23,7 +23,7 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
+namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 {
     [TestFixture]
     public partial class DataRefreshRunnerTests
