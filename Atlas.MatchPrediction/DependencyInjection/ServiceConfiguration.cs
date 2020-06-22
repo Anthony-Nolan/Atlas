@@ -1,7 +1,6 @@
 ﻿using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.Common.Settings;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Data.Context;
@@ -11,6 +10,7 @@ using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Settings;
 using Atlas.MatchPrediction.Settings.Azure;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,14 +31,16 @@ namespace Atlas.MatchPrediction.DependencyInjection
             services.RegisterHlaMetadataDictionary(
                 sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
                 sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
-                OptionsReaderFor<ApplicationInsightsSettings>());
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<MacImportSettings>()
+            );
         }
 
         private static void RegisterSettings(this IServiceCollection services)
         {
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterOptions<MacImportSettings>("MacImport");
             services.RegisterOptions<AzureStorageSettings>("AzureStorage");
-            services.RegisterOptions<HlaServiceSettings>("Client:HlaService");
             services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
 

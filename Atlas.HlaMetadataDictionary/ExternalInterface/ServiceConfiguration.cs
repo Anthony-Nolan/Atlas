@@ -15,7 +15,6 @@ using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
 {
@@ -24,7 +23,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         public static void RegisterHlaMetadataDictionary(this IServiceCollection services,
             Func<IServiceProvider, string> fetchAzureStorageConnectionString,
             Func<IServiceProvider, string> fetchWmdaHlaNomenclatureFilesUri,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, MacImportSettings> fetchMacImportSettings)
         {
             services.RegisterLifeTimeScopedCacheTypes();
             services.RegisterCommonGeneticServices();
@@ -35,8 +35,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             services.RegisterServices();
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterMacDictionary(
-                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value,
-                sp => sp.GetService<IOptions<MacImportSettings>>().Value);
+                fetchApplicationInsightsSettings,
+                fetchMacImportSettings);
         }
 
         private static void RegisterStorageTypes(this IServiceCollection services, Func<IServiceProvider, string> fetchAzureStorageConnectionString)
