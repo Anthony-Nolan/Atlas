@@ -23,7 +23,7 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
+namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 {
     [TestFixture]
     public partial class DataRefreshRunnerTests
@@ -61,7 +61,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             transientRepositoryFactory.GetDonorImportRepository().Returns(donorImportRepository);
             settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
 
-            dataRefreshRunner = new DataRefreshRunner(
+            dataRefreshRunner = new MatchingAlgorithm.Services.DataRefresh.DataRefreshRunner(
                 settingsOptions,
                 activeDatabaseProvider,
                 new AzureDatabaseNameProvider(settingsOptions),

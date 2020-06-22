@@ -1,24 +1,20 @@
 using System;
 using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
-using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
-using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
-using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
-using FluentAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
+namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 {
     [TestFixture]
     public partial class DataRefreshRunnerTests
     {
+        //These tests are extensions of the Test setup defined in DataRefreshRunnerTests_Core
+        // Separated for convenience, since there are a LOT of tests :)
 
         [Test]
         public async Task RefreshData_ScalesDormantDatabase()
@@ -32,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshRunner.RefreshData(default);
 
-            await azureDatabaseManager.UpdateDatabaseSize(settings.DatabaseAName, Arg.Any<AzureDatabaseSize>());
+            await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, Arg.Any<AzureDatabaseSize>());
         }
 
         [Test]
@@ -45,7 +41,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshRunner.RefreshData(default);
 
-            await azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15);
+            await azureDatabaseManager.Received().UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15);
         }
 
         [Test]
@@ -58,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshRunner.RefreshData(default);
 
-            await azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.S4);
+            await azureDatabaseManager.Received().UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.S4);
         }
 
         [Test]
