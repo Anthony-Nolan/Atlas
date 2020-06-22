@@ -91,6 +91,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             while (batchedQuery.HasMoreResults)
             {
                 var donorBatch = (await batchedQuery.RequestNextAsync()).ToList();
+                var donorsInBatch = donorBatch.Count;
 
                 // When continuing a donor import there will be some overlap of donors to ensure all donors are processed. 
                 // This ensures we do not end up with duplicate p-groups in the matching hla tables
@@ -100,8 +101,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 var failedDonorsFromBatch = await UpdateDonorBatch(donorBatch, hlaNomenclatureVersion, shouldRemovePGroups);
                 failedDonors.AddRange(failedDonorsFromBatch);
 
-                donorsProcessed += BatchSize;
-                // Note that in practice the donorsProcessed, can currently end up larger than the totalDonorCount measured at the beginning.
+                donorsProcessed += donorsInBatch;
                 logger.SendTrace($"Hla Processing {Decimal.Divide(donorsProcessed, totalDonorCount):0.00%} complete");
             }
 
