@@ -6,11 +6,11 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.Services;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.MatchCalculation;
-using Atlas.MatchPrediction.Services.Utility;
 using Atlas.MatchPrediction.Settings;
 using Atlas.MatchPrediction.Settings.Azure;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
@@ -87,7 +87,7 @@ namespace Atlas.MatchPrediction.DependencyInjection
 
             services.AddScoped<IMatchCalculationService, MatchCalculationService>();
 
-            services.AddScoped<IHlaPerLocusExpander, HlaPerLocusExpander>();
+            services.AddScoped<ILocusHlaConverter, LocusHlaConverter>();
         }
 
         private static string GetSqlConnectionString(IServiceProvider sp)

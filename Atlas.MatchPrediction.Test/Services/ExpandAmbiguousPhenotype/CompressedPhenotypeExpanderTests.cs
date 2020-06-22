@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
-using Atlas.MatchPrediction.Services.Utility;
+using Atlas.MatchPrediction.Services;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
@@ -15,7 +15,7 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
     {
         private IAmbiguousPhenotypeExpander ambiguousPhenotypeExpander;
         private IHlaMetadataDictionary hlaMetadataDictionary;
-        private IHlaPerLocusExpander hlaPerLocusExpander;
+        private ILocusHlaConverter hlaPerLocusExpander;
 
         private ICompressedPhenotypeExpander compressedPhenotypeExpander;
 
@@ -27,7 +27,7 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
             hlaMetadataDictionaryFactory.BuildDictionary(default).ReturnsForAnyArgs(hlaMetadataDictionary);
 
             ambiguousPhenotypeExpander = Substitute.For<IAmbiguousPhenotypeExpander>();
-            hlaPerLocusExpander = Substitute.For<IHlaPerLocusExpander>();
+            hlaPerLocusExpander = Substitute.For<ILocusHlaConverter>();
 
             compressedPhenotypeExpander = new CompressedPhenotypeExpander(ambiguousPhenotypeExpander, hlaPerLocusExpander);
         }
@@ -35,7 +35,7 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
         [Test]
         public async Task CalculateNumberOfPermutations_ForUnambiguousGenotype_ReturnsOne()
         {
-            hlaPerLocusExpander.Expand(default, default, default)
+            hlaPerLocusExpander.ConvertHla(default, default, default)
                 .ReturnsForAnyArgs(new PhenotypeInfo<IReadOnlyCollection<string>>(new List<string> {"hla"}));
 
             var numberOfPermutations = await compressedPhenotypeExpander.CalculateNumberOfPermutations(new PhenotypeInfo<string>(), default);
@@ -52,7 +52,7 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
             int numberOfAllelesAtEachPosition,
             long expectedNumberOfPermutations)
         {
-            hlaPerLocusExpander.Expand(default, default, default)
+            hlaPerLocusExpander.ConvertHla(default, default, default)
                 .ReturnsForAnyArgs(new PhenotypeInfo<IReadOnlyCollection<string>>(new string[numberOfAllelesAtEachPosition]));
 
             var numberOfPermutations = await compressedPhenotypeExpander.CalculateNumberOfPermutations(new PhenotypeInfo<string>(), default);
