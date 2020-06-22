@@ -44,14 +44,14 @@ namespace Atlas.MatchPrediction.Test.Services.MatchCalculation
         [TestCase(2, 10)]
         [TestCase(1, 5)]
         [TestCase(0, 0)]
-        public async Task MatchAtPGroupLevel_MatchCountsShouldAddUpToExpectedNumber(int matchCount, int total)
+        public async Task MatchAtPGroupLevel_MatchCountsShouldAddUpToExpectedNumber(int perLocusMatchCount, int expectedTotalMatchCount)
         {
-            locusMatchCalculator.MatchCount(Arg.Any<LocusInfo<IEnumerable<string>>>(), Arg.Any<LocusInfo<IEnumerable<string>>>()).Returns(matchCount);
+            locusMatchCalculator.MatchCount(Arg.Any<LocusInfo<IEnumerable<string>>>(), Arg.Any<LocusInfo<IEnumerable<string>>>()).Returns(perLocusMatchCount);
 
             var matchCounts = await matchCalculationService.MatchAtPGroupLevel(default, default, default);
 
             var actualTotal = matchCounts.A + matchCounts.B + matchCounts.C + matchCounts.Dpb1 + matchCounts.Dqb1 + matchCounts.Drb1;
-            actualTotal.Should().Be(total);
+            actualTotal.Should().Be(expectedTotalMatchCount);
         }
     }
 }
