@@ -56,14 +56,6 @@ variable "FUNCTION_HOST_KEY" {
   type = string
 }
 
-variable "HLA_SERVICE_APIKEY" {
-  type = string
-}
-
-variable "HLA_SERVICE_BASEURL" {
-  type = string
-}
-
 variable "MESSAGING_BUS_DONOR_BATCH_SIZE" {
   type = number
 }

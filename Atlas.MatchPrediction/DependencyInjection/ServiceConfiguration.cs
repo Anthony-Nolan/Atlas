@@ -2,7 +2,6 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
-using Atlas.Common.Settings;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Data.Context;
@@ -14,6 +13,7 @@ using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.Utility;
 using Atlas.MatchPrediction.Settings;
 using Atlas.MatchPrediction.Settings.Azure;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,20 +31,20 @@ namespace Atlas.MatchPrediction.DependencyInjection
             services.RegisterServices();
             services.RegisterDatabaseServices();
             services.RegisterClientServices();
+            services.RegisterCommonMatchingServices();
             services.RegisterHlaMetadataDictionary(
                 sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
                 sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
-                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.ApiKey,
-                sp => sp.GetService<IOptions<HlaServiceSettings>>().Value.BaseUrl,
-                OptionsReaderFor<ApplicationInsightsSettings>());
-            services.RegisterCommonMatchingServices();
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<MacImportSettings>()
+            );
         }
 
         private static void RegisterSettings(this IServiceCollection services)
         {
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterOptions<MacImportSettings>("MacImport");
             services.RegisterOptions<AzureStorageSettings>("AzureStorage");
-            services.RegisterOptions<HlaServiceSettings>("Client:HlaService");
             services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
 

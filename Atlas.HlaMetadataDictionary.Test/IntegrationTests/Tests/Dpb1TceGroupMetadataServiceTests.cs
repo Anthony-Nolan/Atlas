@@ -4,12 +4,13 @@ using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
-using Atlas.MultipleAlleleCodeDictionary.HlaService;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using FluentAssertions;
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 {
@@ -23,7 +24,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         private const string CacheKey = "NmdpCodeLookup_Dpb1";
 
         private IDpb1TceGroupMetadataService metadataService;
-        private IHlaServiceClient hlaServiceClient;
+        private IMacDictionary macDictionary;
         private IAppCache appCache;
 
         [OneTimeSetUp]
@@ -32,7 +33,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
                 metadataService = DependencyInjection.DependencyInjection.Provider.GetService<IDpb1TceGroupMetadataService>();
-                hlaServiceClient = DependencyInjection.DependencyInjection.Provider.GetService<IHlaServiceClient>();
+                macDictionary = DependencyInjection.DependencyInjection.Provider.GetService<IMacDictionary>();
                 appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
             });
         }
@@ -40,13 +41,14 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [SetUp]
         public void SetUp()
         {
-            hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(Dpb1MolecularLocusType, Arg.Any<string>())
+            macDictionary
+                .GetHlaFromMac(Arg.Any<string>())
                 .Returns(new List<string>());
 
             // clear NMDP code allele mappings between tests
             appCache.Remove(CacheKey);
         }
+
 
         [Test]
         public async Task GetDpb1TceGroup_WhenNmdpCodeMapsToSingleTceGroup_ReturnsTceGroup()
@@ -56,13 +58,15 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string secondAllele = "02:02";
             const string tceGroup = "3";
 
-            // NMDP code value does not matter, but does need to conform to the expected pattern
-            const string nmdpCode = "99:CODE";
-            hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(Dpb1MolecularLocusType, nmdpCode)
+            // MAC value does not matter, but does need to conform to the expected pattern
+            const string macWithFirstField = "99:CODE";
+            macDictionary
+                .GetHlaFromMac(macWithFirstField)
                 .Returns(new List<string> { firstAllele, secondAllele });
 
-            var result = await metadataService.GetDpb1TceGroup(nmdpCode, null);
+            macDictionary.GetHlaFromMac(default, default).Returns(new List<string> {firstAllele, secondAllele});
+
+            var result = await metadataService.GetDpb1TceGroup(macWithFirstField, null);
 
             result.Should().Be(tceGroup);
         }
@@ -74,13 +78,13 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string firstAllele = "02:01";
             const string secondAllele = "03:01";
 
-            // NMDP code value does not matter, but does need to conform to the expected pattern
-            const string nmdpCode = "99:CODE";
-            hlaServiceClient
-                .GetAllelesForDefinedNmdpCode(Dpb1MolecularLocusType, nmdpCode)
+            // MAC value does not matter, but does need to conform to the expected pattern
+            const string macWithFirstField = "99:CODE";
+            macDictionary
+                .GetHlaFromMac(macWithFirstField)
                 .Returns(new List<string> { firstAllele, secondAllele });
 
-            var result = await metadataService.GetDpb1TceGroup(nmdpCode, null);
+            var result = await metadataService.GetDpb1TceGroup(macWithFirstField, null);
 
             result.Should().BeNullOrEmpty();
         }

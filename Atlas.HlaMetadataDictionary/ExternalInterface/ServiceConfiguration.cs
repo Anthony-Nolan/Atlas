@@ -13,6 +13,7 @@ using Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface
@@ -22,9 +23,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         public static void RegisterHlaMetadataDictionary(this IServiceCollection services,
             Func<IServiceProvider, string> fetchAzureStorageConnectionString,
             Func<IServiceProvider, string> fetchWmdaHlaNomenclatureFilesUri,
-            Func<IServiceProvider, string> fetchHlaClientApiKey,
-            Func<IServiceProvider, string> fetchHlaClientBaseUrl,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, MacImportSettings> fetchMacImportSettings)
         {
             services.RegisterLifeTimeScopedCacheTypes();
             services.RegisterCommonGeneticServices();
@@ -34,12 +34,9 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             services.RegisterTypesRelatedToDictionaryRecreation(fetchWmdaHlaNomenclatureFilesUri);
             services.RegisterServices();
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
-
-            services.RegisterMacDictionaryUsageServices(
-                fetchHlaClientApiKey,
-                fetchHlaClientBaseUrl,
-                fetchApplicationInsightsSettings
-            );
+            services.RegisterMacDictionary(
+                fetchApplicationInsightsSettings,
+                fetchMacImportSettings);
         }
 
         private static void RegisterStorageTypes(this IServiceCollection services, Func<IServiceProvider, string> fetchAzureStorageConnectionString)

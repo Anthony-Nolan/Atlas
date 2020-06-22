@@ -26,11 +26,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjectio
                 DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<MacImportSettings>()
                 );
-            services.RegisterMacDictionaryUsageServices(
-                sp => "TODO: Remove HLA Service",
-                sp => "TODO: Remove HLA Service",
-                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value
-            );
             SetUpIntegrationTestServices(services);
             SetUpMockServices(services);
             return services.BuildServiceProvider();

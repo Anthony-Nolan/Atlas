@@ -49,6 +49,9 @@
     <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_SplitHasAssociated_PGroupsAreCorrect.approved.txt" />
     <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToPgroups\Approvals\SerologyToPGroupsMatchingTest.SerologyToAlleleMatching_SplitNoAssociated_PGroupsAreCorrect.approved.txt" />
     <None Remove="UnitTests\Services\DataGeneration\HlaMatchPreCalculation\SerologyToSerology\Approvals\SerologyToSerologyMatchingTest.MatchedSerologies_CollectionContainsAllExpectedSerology.approved.txt" />
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
