@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
@@ -39,7 +40,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshHistoryRepository.DidNotReceive().MarkStageAsComplete(Arg.Any<int>(), refreshStage);
         }
-
         [Test]
         public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToDictionaryRefresh_ContinuesFromDataDeletion()
         {
@@ -51,6 +51,24 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await hlaMetadataDictionary.DidNotReceiveWithAnyArgs().RecreateHlaMetadataDictionary(default);
             await donorImportRepository.Received(1).RemoveAllDonorInformation();
+        }
+
+        [Test]
+        public async Task RefreshData_WhenContinuingAfterMetadataDictionaryStep_WithNewLatestVersion_PassesStoredHlaVersionToLaterSteps()
+        {
+            var oldVersion = "olderHlaVersion";
+            var newVersion = "latestHlaVersion";
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New
+                    .WithStagesCompletedUpToAndIncluding(DataRefreshStage.MetadataDictionaryRefresh)
+                    .With(r => r.HlaNomenclatureVersion, oldVersion)
+                    .Build()
+            );
+            hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest).Returns(newVersion);
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await hlaProcessor.Received().UpdateDonorHla(oldVersion);
         }
 
         [Test]

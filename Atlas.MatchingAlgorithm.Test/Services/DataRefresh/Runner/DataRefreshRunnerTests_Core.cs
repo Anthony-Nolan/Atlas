@@ -108,10 +108,23 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         }
 
         [Test]
-        public async Task RefreshData_ProcessesDonorHla_WithRefreshHlaNomenclatureVersion()
+        public async Task RefreshData_WhenRunningMetadataDictionaryStep_RecordsLatestVersion()
+        {
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.Build()
+            );
+            var version = "latestHlaVersion";
+            hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest).Returns(version);
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await dataRefreshHistoryRepository.Received().UpdateExecutionDetails(Arg.Any<int>(), version);
+        }
+
+        [Test]
+        public async Task RefreshData_WhenRunningFromScratch_PassesRefreshHlaVersionToLaterSteps()
         {
             const string hlaNomenclatureVersion = "3390";
-            hlaMetadataDictionary.IsActiveVersionDifferentFromLatestVersion().Returns(true);
             hlaMetadataDictionary
                 .RecreateHlaMetadataDictionary(CreationBehaviour.Latest)
                 .Returns(hlaNomenclatureVersion);
