@@ -2,7 +2,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils.Extensions;
 using Atlas.Functions;
 using Atlas.MatchingAlgorithm.DependencyInjection;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;

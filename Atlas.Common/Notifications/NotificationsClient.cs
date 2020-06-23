@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Atlas.Common.Notifications.MessageModels;
 using Microsoft.Azure.ServiceBus;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace Atlas.Common.Notifications
@@ -18,10 +17,10 @@ namespace Atlas.Common.Notifications
         private readonly TopicClient notificationTopicClient;
         private readonly TopicClient alertTopicClient;
 
-        public NotificationsClient(IOptions<NotificationsServiceBusSettings> settings)
+        public NotificationsClient(NotificationsServiceBusSettings settings)
         {
-            notificationTopicClient = new TopicClient(settings.Value.ConnectionString, settings.Value.NotificationsTopic);
-            alertTopicClient = new TopicClient(settings.Value.ConnectionString, settings.Value.AlertsTopic);
+            notificationTopicClient = new TopicClient(settings.ConnectionString, settings.NotificationsTopic);
+            alertTopicClient = new TopicClient(settings.ConnectionString, settings.AlertsTopic);
         }
 
         public async Task SendAlert(Alert alert)
