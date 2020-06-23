@@ -76,7 +76,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                 );
             }
 
-            logger.SendTrace($"Match Timing: Donor repo. Manipulated data for locus: {locus} in {stopwatch.ElapsedMilliseconds}ms", LogLevel.Info);
+            logger.SendTrace($"Match Timing: Donor repo. Manipulated data for locus: {locus} in {stopwatch.ElapsedMilliseconds}ms");
             return groupedResults.SelectMany(g => g);
         }
 
@@ -122,7 +122,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 var matches = await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 300);
-                logger.SendTrace($"Match Timing: Donor repo. Fetched donors at locus: {locus} in {stopwatch.ElapsedMilliseconds}ms", LogLevel.Info);
+                logger.SendTrace($"Match Timing: Donor repo. Fetched donors at locus: {locus} in {stopwatch.ElapsedMilliseconds}ms");
                 return matches;
             }
         }

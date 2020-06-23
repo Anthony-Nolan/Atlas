@@ -37,7 +37,7 @@ namespace Atlas.DonorImport.Services
 
         public async Task ImportDonorFile(DonorImportFile file)
         {
-            logger.SendTrace($"Beginning Donor Import for file '{file.FileLocation}'.", LogLevel.Info);
+            logger.SendTrace($"Beginning Donor Import for file '{file.FileLocation}'.");
 
             var importedDonorCount = 0;
             var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents);
@@ -50,7 +50,7 @@ namespace Atlas.DonorImport.Services
                     await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file.FileLocation);
                     importedDonorCount += reifiedDonorBatch.Count;
                 }
-                logger.SendTrace($"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).", LogLevel.Info);
+                logger.SendTrace($"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).");
             }
             catch (Exception e)
             {

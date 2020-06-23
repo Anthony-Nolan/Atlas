@@ -70,8 +70,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 FindMatchesAtLocus(criteria.SearchType, l, criteria.MatchCriteriaForLocus(l)))
             );
 
-            logger.SendTrace($"MATCHING PHASE1: all donors from Db. {results.Sum(x => x.Count)} results in {stopwatch.ElapsedMilliseconds} ms",
-                LogLevel.Info);
+            logger.SendTrace($"MATCHING PHASE1: all donors from Db. {results.Sum(x => x.Count)} results in {stopwatch.ElapsedMilliseconds} ms");
             stopwatch.Restart();
 
             var matches = results
@@ -101,7 +100,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m, criteria))
                 .ToList();
 
-            logger.SendTrace($"MATCHING PHASE1: Manipulate + filter: {stopwatch.ElapsedMilliseconds}", LogLevel.Info);
+            logger.SendTrace($"MATCHING PHASE1: Manipulate + filter: {stopwatch.ElapsedMilliseconds}");
             stopwatch.Restart();
 
             return matches.ToDictionary(m => m.DonorId, m => m);
@@ -130,14 +129,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             stopwatch.Start();
             
             var matchesAtLocus = await donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions);
-            logger.SendTrace($"MATCHING PHASE1: SQL Requests, {stopwatch.ElapsedMilliseconds}", LogLevel.Info);
+            logger.SendTrace($"MATCHING PHASE1: SQL Requests, {stopwatch.ElapsedMilliseconds}");
             stopwatch.Restart();
             
             var matches = matchesAtLocus
                 .GroupBy(m => m.DonorId)
                 .ToDictionary(g => g.Key, g => DonorAndMatchFromGroup(g, locus));
 
-            logger.SendTrace($"MATCHING PHASE1: Direct/Cross analysis, {stopwatch.ElapsedMilliseconds}", LogLevel.Info);
+            logger.SendTrace($"MATCHING PHASE1: Direct/Cross analysis, {stopwatch.ElapsedMilliseconds}");
             
             return matches;
         }

@@ -50,14 +50,14 @@ namespace Atlas.MatchingAlgorithm.Services.AzureManagement
                 return;
             }
 
-            logger.SendTrace($"Initialising scaling of database: {databaseName} to size: {databaseSize}", LogLevel.Info);
+            logger.SendTrace($"Initialising scaling of database: {databaseName} to size: {databaseSize}");
             var operationStartTime = await databaseManagementClient.TriggerDatabaseScaling(databaseName, databaseSize);
 
             DatabaseOperation databaseOperation;
 
             do
             {
-                logger.SendTrace($"Waiting for scaling to complete: {databaseName} to size: {databaseSize}", LogLevel.Info);
+                logger.SendTrace($"Waiting for scaling to complete: {databaseName} to size: {databaseSize}");
                 threadSleeper.Sleep(OperationPollTimeMilliseconds);
                 databaseOperation = await GetDatabaseOperation(databaseName, operationStartTime);
             } while (databaseOperation.State == AzureDatabaseOperationState.InProgress ||
@@ -65,12 +65,12 @@ namespace Atlas.MatchingAlgorithm.Services.AzureManagement
 
             if (databaseOperation.State != AzureDatabaseOperationState.Succeeded)
             {
-                logger.SendTrace($"Error scaling {databaseName} to size: {databaseSize}. State: {databaseOperation.State}", LogLevel.Info);
+                logger.SendTrace($"Error scaling {databaseName} to size: {databaseSize}. State: {databaseOperation.State}");
                 throw new AzureManagementException(
                     $"Database scaling operation of {databaseName} to size {databaseSize} failed. Check Azure for details");
             }
 
-            logger.SendTrace($"Finished scaling {databaseName} to size: {databaseSize}", LogLevel.Info);
+            logger.SendTrace($"Finished scaling {databaseName} to size: {databaseSize}");
         }
 
         private async Task<DatabaseOperation> GetDatabaseOperation(string databaseName, DateTime operationStartTime)

@@ -87,17 +87,14 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
             if (ShouldRecreate(recreationBehaviour))
             {
-                logger.SendTrace($"HLA-METADATA-DICTIONARY REFRESH: Recreating HLA Metadata dictionary for desired HLA Nomenclature version.",
-                    LogLevel.Info);
+                logger.SendTrace($"HLA-METADATA-DICTIONARY REFRESH: Recreating HLA Metadata dictionary for desired HLA Nomenclature version.");
                 await recreateMetadataService.RefreshAllHlaMetadata(version);
-                logger.SendTrace($"HLA-METADATA-DICTIONARY REFRESH: HLA Metadata dictionary recreated at HLA Nomenclature version: {version}",
-                    LogLevel.Info);
+                logger.SendTrace($"HLA-METADATA-DICTIONARY REFRESH: HLA Metadata dictionary recreated at HLA Nomenclature version: {version}");
             }
             else
             {
                 logger.SendTrace(
-                    $"HLA-METADATA-DICTIONARY REFRESH: HLA Metadata dictionary was already using the desired HLA Nomenclature version, so did not update.",
-                    LogLevel.Info);
+                    $"HLA-METADATA-DICTIONARY REFRESH: HLA Metadata dictionary was already using the desired HLA Nomenclature version, so did not update.");
             }
 
             return version;

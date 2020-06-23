@@ -32,9 +32,9 @@ namespace Atlas.MatchingAlgorithm.Services.AzureManagement
                 return;
             }
 
-            logger.SendTrace($"Starting function: {functionName}", LogLevel.Info);
+            logger.SendTrace($"Starting function: {functionName}");
             await azureManagementClient.SetApplicationSetting(functionsAppName, GetDisabledAppSetting(functionName), "false");
-            logger.SendTrace($"Function started: {functionName}", LogLevel.Info);
+            logger.SendTrace($"Function started: {functionName}");
         }
 
         public async Task StopFunction(string functionsAppName, string functionName)
@@ -45,9 +45,9 @@ namespace Atlas.MatchingAlgorithm.Services.AzureManagement
                 return;
             }
 
-            logger.SendTrace($"Stopping function: {functionName}", LogLevel.Info);
+            logger.SendTrace($"Stopping function: {functionName}");
             await azureManagementClient.SetApplicationSetting(functionsAppName, GetDisabledAppSetting(functionName), "true");
-            logger.SendTrace($"Function stopped: {functionName}", LogLevel.Info);
+            logger.SendTrace($"Function stopped: {functionName}");
         }
 
         private static bool IsLocal(string functionsAppName)

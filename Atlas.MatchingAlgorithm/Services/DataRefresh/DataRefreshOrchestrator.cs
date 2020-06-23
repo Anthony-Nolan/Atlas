@@ -107,7 +107,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             }
 
             await RunNewDataRefresh();
-            logger.SendTrace("Data Refresh ended.", LogLevel.Info);
+            logger.SendTrace("Data Refresh ended.");
         }
 
         /// <inheritdoc />
