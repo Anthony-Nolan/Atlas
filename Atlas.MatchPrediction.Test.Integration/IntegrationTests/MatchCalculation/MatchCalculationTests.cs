@@ -77,7 +77,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         }
 
         [Test]
-        [Ignore("TODO: ATLAS-432: Re-enable test when file-backed HMD has been updated")]
         public async Task MatchAtPGroupLevel_WhenDonorIsSerologicallyTyped_AndDonorHasMatchingAllele_IsTenOutOfTenMatch()
         {
             var donorGenotype = NewGenotype
