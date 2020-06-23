@@ -26,6 +26,12 @@ variable "function_storage" {
   })
 }
 
+variable "mac_import_table" {
+  type = object({
+    name = string
+  })
+}
+
 variable "servicebus_namespace_authorization_rules" {
   type = object({
     read-write = object({ primary_connection_string = string })

@@ -26,6 +26,9 @@ locals {
     "DataRefresh:DonorFunctionsAppName"                         = azurerm_function_app.atlas_matching_algorithm_donor_management_function.name
     "DataRefresh:DormantDatabaseSize"                           = var.DATA_REFRESH_DB_SIZE_DORMANT
     "DataRefresh:RefreshDatabaseSize"                           = var.DATA_REFRESH_DB_SIZE_REFRESH
+    "MacImport:ConnectionString"                                = var.azure_storage.primary_connection_string
+    "MacImport:MacSourceUrl"                                    = var.MAC_SOURCE
+    "MacImport:TableName"                                       = var.mac_import_table.name,
     "MessagingServiceBus:ConnectionString"                      = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
     "MessagingServiceBus:SearchRequestsQueue"                   = azurerm_servicebus_queue.matching-requests.name
     "MessagingServiceBus:SearchResultsTopic"                    = azurerm_servicebus_topic.matching-results-ready.name
@@ -33,9 +36,6 @@ locals {
     "NotificationsServiceBus:AlertsTopic"                       = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:NotificationsTopic"                = var.servicebus_topics.notifications.name
     "Wmda:WmdaFileUri"                                          = var.WMDA_FILE_URL
-    "MacImport:ConnectionString"                                = var.azure_storage.primary_connection_string
-    "MacImport:TableName"                                       = var.mac_import_table.name,
-    "MacImport:MacSourceUrl"                                    = var.MAC_SOURCE
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"                 = "1"
     "WEBSITE_RUN_FROM_PACKAGE"                                  = var.WEBSITE_RUN_FROM_PACKAGE
   }
