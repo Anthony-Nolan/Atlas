@@ -17,6 +17,7 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
         private ILocusHlaMatchingMetadataService locus;
         private IHlaScoringMetadataService scoring;
         private IDpb1TceGroupMetadataService dpb1;
+        private IHlaMetadataService metadata;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private ILogger logger;
         private IHlaMetadataDictionary cannedResponse = null;
@@ -34,6 +35,7 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
             locus = Substitute.For<ILocusHlaMatchingMetadataService>();
             scoring = Substitute.For<IHlaScoringMetadataService>();
             dpb1 = Substitute.For<IDpb1TceGroupMetadataService>();
+            metadata = Substitute.For<IHlaMetadataService>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
             logger = Substitute.For<ILogger>();
         }
@@ -66,6 +68,9 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                 case IDpb1TceGroupMetadataService typedDependency:
                     dpb1 = typedDependency;
                     break;
+                case IHlaMetadataService typedDependency:
+                    metadata = typedDependency;
+                    break;
                 case IWmdaHlaNomenclatureVersionAccessor typedDependency:
                     wmdaHlaNomenclatureVersionAccessor = typedDependency;
                     break;
@@ -91,6 +96,7 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                 locus,
                 scoring,
                 dpb1,
+                metadata,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger
             );
