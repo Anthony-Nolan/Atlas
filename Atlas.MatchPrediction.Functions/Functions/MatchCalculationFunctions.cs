@@ -21,8 +21,8 @@ namespace Atlas.MatchPrediction.Functions.Functions
             this.matchCalculatorService = matchCalculatorService;
         }
 
-        [FunctionName(nameof(MatchAtGGroupLevelCalculation))]
-        public async Task<IActionResult> MatchAtGGroupLevelCalculation(
+        [FunctionName(nameof(CalculateMatch))]
+        public async Task<IActionResult> CalculateMatch(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(MatchCalculationInput), "match calculation")]
             HttpRequest request)
