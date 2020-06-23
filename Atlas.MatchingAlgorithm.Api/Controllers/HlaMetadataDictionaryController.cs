@@ -1,5 +1,6 @@
 ﻿using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -37,6 +38,18 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
         public async Task RecreateActiveHlaMetadataDictionary()
         {
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Active);
+        }
+
+        /// <summary>
+        /// Gets all pre-calculated HLA metadata to the specified version.
+        /// Note: none of the returned data is persisted.
+        /// Used when manually refreshing the contents of the file-backed HMD.
+        /// </summary>
+        [HttpGet]
+        [Route("all-metadata")]
+        public HlaMetadataCollection GetAllActiveHlaMetadata(string version)
+        {
+            return hlaMetadataDictionary.GetAllHlaMetadata(version);
         }
     }
 }

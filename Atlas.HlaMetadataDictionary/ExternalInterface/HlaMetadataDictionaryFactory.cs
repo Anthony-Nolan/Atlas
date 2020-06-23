@@ -42,6 +42,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
         private readonly IHlaScoringMetadataService hlaScoringMetadataService;
         private readonly IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
+        private readonly IHlaMetadataService hlaMetadataService;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
 
@@ -61,6 +62,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService,
             IHlaScoringMetadataService hlaScoringMetadataService,
             IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
+            IHlaMetadataService hlaMetadataService,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger,
 
@@ -80,6 +82,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.locusHlaMatchingMetadataService = locusHlaMatchingMetadataService;
             this.hlaScoringMetadataService = hlaScoringMetadataService;
             this.dpb1TceGroupMetadataService = dpb1TceGroupMetadataService;
+            this.hlaMetadataService = hlaMetadataService;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
 
@@ -140,6 +143,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 locusHlaMatchingMetadataService,
                 hlaScoringMetadataService,
                 dpb1TceGroupMetadataService,
+                hlaMetadataService,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger);
         }

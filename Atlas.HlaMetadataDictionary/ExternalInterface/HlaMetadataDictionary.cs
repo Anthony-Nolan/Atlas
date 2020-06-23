@@ -22,6 +22,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
         IEnumerable<string> GetAllPGroups();
+        HlaMetadataCollection GetAllHlaMetadata(string version);
 
         /// <summary>
         /// Indicates whether there's a discrepancy between the version of the HLA Nomenclature that we would use from WMDA,
@@ -44,6 +45,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
         private readonly IHlaScoringMetadataService hlaScoringMetadataService;
         private readonly IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
+        private readonly IHlaMetadataService hlaMetadataService;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
 
@@ -55,6 +57,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService,
             IHlaScoringMetadataService hlaScoringMetadataService,
             IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
+            IHlaMetadataService hlaMetadataService,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger)
         {
@@ -65,6 +68,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.locusHlaMatchingMetadataService = locusHlaMatchingMetadataService;
             this.hlaScoringMetadataService = hlaScoringMetadataService;
             this.dpb1TceGroupMetadataService = dpb1TceGroupMetadataService;
+            this.hlaMetadataService = hlaMetadataService;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
         }
@@ -149,6 +153,11 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         public IEnumerable<string> GetAllPGroups()
         {
             return hlaMatchingMetadataService.GetAllPGroups(ActiveHlaNomenclatureVersion);
+        }
+
+        public HlaMetadataCollection GetAllHlaMetadata(string version)
+        {
+            return hlaMetadataService.GetAllHlaMetadata(version).ToExternalCollection();
         }
     }
 }
