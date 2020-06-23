@@ -81,11 +81,11 @@ module "matching_algorithm" {
   DONOR_IMPORT_DATABASE_PASSWORD                   = var.MATCHING_PASSWORD_FOR_DONOR_IMPORT_DATABASE
   DONOR_IMPORT_DATABASE_USERNAME                   = var.MATCHING_USERNAME_FOR_DONOR_IMPORT_DATABASE
   FUNCTION_HOST_KEY                                = var.MATCHING_FUNCTION_HOST_KEY
+  MAC_SOURCE                                       = var.MAC_SOURCE
   MESSAGING_BUS_DONOR_BATCH_SIZE                   = var.MATCHING_MESSAGING_BUS_DONOR_BATCH_SIZE
   MESSAGING_BUS_DONOR_CRON_SCHEDULE                = var.MATCHING_MESSAGING_BUS_DONOR_CRON_SCHEDULE
   WEBSITE_RUN_FROM_PACKAGE                         = var.WEBSITE_RUN_FROM_PACKAGE
   WMDA_FILE_URL                                    = var.WMDA_FILE_URL
-  MAC_SOURCE                                       = var.MAC_SOURCE
 }
 
 module "match_prediction" {
@@ -100,6 +100,7 @@ module "match_prediction" {
   app_service_plan     = azurerm_app_service_plan.atlas
   sql_server           = azurerm_sql_server.atlas_sql_server
   function_storage     = azurerm_storage_account.function_storage
+  mac_import_table     = module.multiple_allele_code_lookup.storage_table
   azure_storage        = azurerm_storage_account.azure_storage
   application_insights = azurerm_application_insights.atlas
 
@@ -118,6 +119,7 @@ module "match_prediction" {
   APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
   DATABASE_PASSWORD              = var.MATCH_PREDICTION_DATABASE_PASSWORD
   DATABASE_USERNAME              = var.MATCH_PREDICTION_DATABASE_USERNAME
+  MAC_SOURCE                     = var.MAC_SOURCE
   WEBSITE_RUN_FROM_PACKAGE       = var.WEBSITE_RUN_FROM_PACKAGE
 }
 

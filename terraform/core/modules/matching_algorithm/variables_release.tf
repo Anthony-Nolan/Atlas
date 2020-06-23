@@ -56,6 +56,10 @@ variable "FUNCTION_HOST_KEY" {
   type = string
 }
 
+variable "MAC_SOURCE" {
+  type = string
+}
+
 variable "MESSAGING_BUS_DONOR_BATCH_SIZE" {
   type = number
 }
@@ -69,9 +73,5 @@ variable "WEBSITE_RUN_FROM_PACKAGE" {
 }
 
 variable "WMDA_FILE_URL" {
-  type = string
-}
-
-variable "MAC_SOURCE" {
   type = string
 }

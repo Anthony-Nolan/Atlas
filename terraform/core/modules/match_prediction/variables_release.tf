@@ -11,6 +11,10 @@ variable "DATABASE_USERNAME" {
   type = string
 }
 
+variable "MAC_SOURCE" {
+  type = string
+}
+
 variable "WEBSITE_RUN_FROM_PACKAGE" {
   type = string
 }
