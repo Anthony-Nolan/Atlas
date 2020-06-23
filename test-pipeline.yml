@@ -88,21 +88,20 @@ jobs:
       connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm-validation;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 
   - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
-    displayName: 'Set HLA service API Key'
-    inputs:
-      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
-      numberOfLevels: 3
-      keyname1: Client
-      keyname2: HlaService
-      keyname3: ApiKey
-      valueToSet: 'd10996af-42b2-4e90-8d33-06940c20d06d'
-
-  - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
     displayName: 'Set Azure Storage ConnectionString'
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
       numberOfLevels: 2
       keyname1: AzureStorage
+      keyname2: ConnectionString
+      valueToSet: '$(AZURE_STORAGE_CONNECTION_STRING)'
+      
+  - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
+    displayName: 'Set MAC Dictionary ConnectionString'
+    inputs:
+      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
+      numberOfLevels: 2
+      keyname1: MacImport
       keyname2: ConnectionString
       valueToSet: '$(AZURE_STORAGE_CONNECTION_STRING)'
 
