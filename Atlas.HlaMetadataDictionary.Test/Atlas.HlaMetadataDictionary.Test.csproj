@@ -52,6 +52,9 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="IntegrationTests\appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -118,6 +121,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="IntegrationTests\Resources\all_hla_metadata.json" />
+    <EmbeddedResource Include="IntegrationTests\Resources\Mac.csv" />
   </ItemGroup>
 
   <ItemGroup>

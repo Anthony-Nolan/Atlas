@@ -26,4 +26,8 @@
       <ProjectReference Include="..\Atlas.MultipleAlleleCodeDictionary\Atlas.MultipleAlleleCodeDictionary.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="TestHelpers" />
+    </ItemGroup>
+
 </Project>

@@ -23,3 +23,24 @@ The Multiple Allele Code Dictionary class collects up to date HLA information fr
    * Details of the Logging Settings.
    * The MAC Dictionary assumes that it is being run in Azure with an ApplicationInsight system attached. It will identify that system automatically, but you must provide the default LoggingLevel. Likely "Info".
  
+## Testing
+
+There are a number of options for testing the MAC Dictionary and its relation to the rest of ATLAS, depending on the type of testing required.
+
+### TestAtlasMultipleAlleleCodes
+
+There is an azure table storage table created to test the import functionality of the MAC Dictionary in integration tests. Important data must not be kept here as it will be deleted while running integration tests.
+
+### File Backed Mac Repository
+
+For integration tests of other parts of ATLAS there is a `FileBackedMacDictionaryRepository`, located in `Atlas.HlaMetaDataDictionary.Test.IntegrationTests`
+This uses a csv generated from azure storage with a similar structure. It is intended that such integration tests will use the entire MacDictionary with just the repository level mocked out.
+
+### Mocking the entire MAC Dictionary
+
+For unit tests of other parts of ATLAS, it is possibly to simply mock out the entire MACDictionary to return expected results.
+
+### AzureStorage
+
+For validation tests we want our data to be as close as possible to the real thing, so we use azure table storage. A full MAC Import should be run on this to ensure it contains the full MAC Data.
+

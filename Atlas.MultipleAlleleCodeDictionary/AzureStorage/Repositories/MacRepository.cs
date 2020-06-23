@@ -12,7 +12,7 @@ using QueryComparisons = Microsoft.WindowsAzure.Storage.Table.QueryComparisons;
 
 namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 {
-    internal interface IMacRepository
+    public interface IMacRepository
     {
         public Task<string> GetLastMacEntry();
         public Task InsertMacs(IEnumerable<Mac> macCodes);

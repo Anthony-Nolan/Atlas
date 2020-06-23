@@ -40,9 +40,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [SetUp]
         public void SetUp()
         {
-            macDictionary.GetHlaFromMac(Arg.Any<string>())
-                .Returns(new List<string>());
-
             // clear MAC allele mappings between tests
             appCache.Remove(CacheKey);
         }
@@ -53,13 +50,8 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             // each allele maps to a P group of the same name
             const string firstAllele = "01:133";
             const string secondAllele = "01:158";
-
-            // MAC value does not matter, but does need to conform to the expected pattern
-            const string macWithFirstField = "99:CODE";
-
-            macDictionary
-                .GetHlaFromMac(macWithFirstField)
-                .Returns(new List<string> {firstAllele, secondAllele});
+            
+            const string macWithFirstField = "01:XYZ";
 
             var result = await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, null);
 

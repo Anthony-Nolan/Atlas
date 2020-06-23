@@ -41,10 +41,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [SetUp]
         public void SetUp()
         {
-            macDictionary
-                .GetHlaFromMac(Arg.Any<string>())
-                .Returns(new List<string>());
-
             // clear NMDP code allele mappings between tests
             appCache.Remove(CacheKey);
         }
@@ -57,14 +53,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string firstAllele = "02:01";
             const string secondAllele = "02:02";
             const string tceGroup = "3";
-
-            // MAC value does not matter, but does need to conform to the expected pattern
-            const string macWithFirstField = "99:CODE";
-            macDictionary
-                .GetHlaFromMac(macWithFirstField)
-                .Returns(new List<string> { firstAllele, secondAllele });
-
-            macDictionary.GetHlaFromMac(default, default).Returns(new List<string> {firstAllele, secondAllele});
+            const string macWithFirstField = "02:ABC";
 
             var result = await metadataService.GetDpb1TceGroup(macWithFirstField, null);
 
@@ -77,12 +66,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             // alleles map to different TCE groups
             const string firstAllele = "02:01";
             const string secondAllele = "03:01";
-
-            // MAC value does not matter, but does need to conform to the expected pattern
-            const string macWithFirstField = "99:CODE";
-            macDictionary
-                .GetHlaFromMac(macWithFirstField)
-                .Returns(new List<string> { firstAllele, secondAllele });
+            const string macWithFirstField = "02:DEF";
 
             var result = await metadataService.GetDpb1TceGroup(macWithFirstField, null);
 

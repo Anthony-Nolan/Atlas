@@ -42,10 +42,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [SetUp]
         public void SetUp()
         {
-            macDictionary
-                .GetHlaFromMac(Arg.Any<string>())
-                .Returns(new List<string>());
-
             // clear NMDP code allele mappings between tests
             appCache.Remove(CacheKey);
         }
@@ -71,12 +67,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string firstAllele = "01:133";
             const string secondAllele = "01:158";
             var alleles = new[] { firstAllele, secondAllele };
-
-            // MAC value does not matter, but does need to conform to the expected pattern
-            const string macWithFirstField = "99:CODE";
-            macDictionary
-                .GetHlaFromMac(macWithFirstField)
-                .Returns(alleles.ToList());
+            const string macWithFirstField = "01:XYZ";
 
             var result = await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, null);
 
@@ -95,13 +86,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string nullAllele = "01:04:01:01N";
 
             var expressingAlleles = new[] { firstAllele, secondAllele };
-            var allAlleles = new List<string>(expressingAlleles) { nullAllele };
-
-            // MAC value does not matter, but does need to conform to the expected pattern
-            const string macWithFirstField = "99:CODE";
-            macDictionary
-                .GetHlaFromMac(macWithFirstField)
-                .Returns(allAlleles);
+            const string macWithFirstField = "01:XYZ";
 
             var result = await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, null);
 

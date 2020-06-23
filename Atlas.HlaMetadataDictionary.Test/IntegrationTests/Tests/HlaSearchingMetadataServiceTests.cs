@@ -45,10 +45,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [SetUp]
         public void SetUp()
         {
-            macDictionary
-                .GetHlaFromMac(Arg.Any<string>())
-                .Returns(new List<string>());
-
             // clear MAC allele mappings between tests
             appCache.Remove(CacheKey);
         }
@@ -66,12 +62,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         public void GetHlaMetadata_WhenNmdpCodeContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
         {
             const string missingAllele = "9999:9999";
-
-            // MAC value does not matter, but does need to conform to the expected pattern
-            const string macWithFirstField = "99:CODE";
-            macDictionary
-                .GetHlaFromMac(macWithFirstField)
-                .Returns(new List<string> { missingAllele });
+            const string macWithFirstField = "9999:FAKE";
 
             Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () => 
                 await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, null));
