@@ -30,11 +30,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         private static readonly LociInfo<int?> TenOutOfTenMatch = new LociInfo<int?>
             {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
 
-        private static readonly LociInfo<int?> SingleMismatchAtA = new LociInfo<int?>
-            {A = 1, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
-
         private static readonly LociInfo<int?> SingleMismatchAtB = new LociInfo<int?>
             { A = 2, B = 1, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2 };
+
+        private static readonly LociInfo<int?> DoubleMismatchAtB = new LociInfo<int?>
+            { A = 0, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2 };
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -117,12 +117,24 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         public async Task MatchAtPGroupLevel_WhenDonorGenotypeHomozygous_AndMatchesExactlyOneOfDonorHla_IsNineOutOfTenMatch()
         {
             var donorGenotype = NewGenotype
-                .With(g => g.B, new LocusInfo<string> {Position1 = B1, Position2 = B1 }).Build();
+                .With(g => g.B, new LocusInfo<string> {Position1 = B1, Position2 = B1}).Build();
 
             var matchCount =
                 await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
 
             matchCount.Should().BeEquivalentTo(SingleMismatchAtB);
+        }
+
+        [Test]
+        public async Task MatchAtPGroupLevel_WhenDonorGenotypeHasLocusMismatch_IsEightOutOfTenMatch()
+        {
+            var donorGenotype = NewGenotype
+                .With(g => g.A, new LocusInfo<string> {Position1 = "11:03", Position2 = "11:03"}).Build();
+
+            var matchCount =
+                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
+
+            matchCount.Should().BeEquivalentTo(DoubleMismatchAtB);
         }
 
         private static Builder<PhenotypeInfo<string>> NewGenotype => Builder<PhenotypeInfo<string>>.New
