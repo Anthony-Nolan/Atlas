@@ -22,6 +22,11 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
         IEnumerable<string> GetAllPGroups();
+
+        /// <summary>
+        /// This is not the intended entry point for consumption of the metadata;
+        /// the only expected use case is for manual recreation of the test HLA metadata dictionary.
+        /// </summary>
         HlaMetadataCollection GetAllHlaMetadata(string version);
 
         /// <summary>
@@ -157,7 +162,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         public HlaMetadataCollection GetAllHlaMetadata(string version)
         {
-            return hlaMetadataService.GetAllHlaMetadata(version).ToExternalCollection();
+            return hlaMetadataService.GetAllHlaMetadata(version);
         }
     }
 }

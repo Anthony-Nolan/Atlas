@@ -59,7 +59,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             }
         }
 
-        private async Task PersistHlaMetadataCollection(HlaMetadataCollectionForSerialisation metadataCollection, string hlaNomenclatureVersion)
+        private async Task PersistHlaMetadataCollection(HlaMetadataCollection metadataCollection, string hlaNomenclatureVersion)
         {
             // Metadata Dictionary lookups require an up-to-date collection of allele names,
             // so all collections must be recreated together; the order of execution is not important.

@@ -9,19 +9,14 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.Metadata
         string TceGroup { get; }
     }
 
-    internal class Dpb1TceGroupsMetadata : IDpb1TceGroupsMetadata
+    internal class Dpb1TceGroupsMetadata : SerialisableHlaMetadata, IDpb1TceGroupsMetadata
     {
-        public Locus Locus => Locus.Dpb1;
-        public string LookupName { get; }
-        public TypingMethod TypingMethod => TypingMethod.Molecular;
         public string TceGroup { get; }
-        public object HlaInfoToSerialise => TceGroup;
+        public override object HlaInfoToSerialise => TceGroup;
 
-        public Dpb1TceGroupsMetadata(
-            string lookupName,
-            string tceGroup)
+        public Dpb1TceGroupsMetadata( string lookupName, string tceGroup)
+            : base(Locus.Dpb1, lookupName, TypingMethod.Molecular)
         {
-            LookupName = lookupName;
             TceGroup = tceGroup;
         }
     }

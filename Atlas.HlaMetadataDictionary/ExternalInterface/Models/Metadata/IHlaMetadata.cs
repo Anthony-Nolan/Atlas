@@ -25,5 +25,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata
         /// Property containing HLA information to be stored as a serialised string.
         /// </summary>
         object HlaInfoToSerialise { get; }
+
+        string SerialisedHlaInfoType { get; }
     }
 }

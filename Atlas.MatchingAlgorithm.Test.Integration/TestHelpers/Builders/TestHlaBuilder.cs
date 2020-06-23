@@ -1,9 +1,8 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
-using System;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 {
@@ -13,9 +12,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         public string LookupName { get; set; }
         public IEnumerable<string> MatchingPGroups { get; set; }
         public Locus Locus { get; set; }
-
         public TypingMethod TypingMethod { get; }
         public object HlaInfoToSerialise { get; }
+        public string SerialisedHlaInfoType { get; }
         public bool IsNullExpressingTyping { get; }
     }
 
