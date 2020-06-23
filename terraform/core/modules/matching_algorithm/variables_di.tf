@@ -13,6 +13,12 @@ variable "donor_import_sql_database" {
   })
 }
 
+variable "mac_import_table" {
+  type = object({
+    name = string
+  })
+}
+
 variable "sql_server" {
   type = object({
     name                        = string

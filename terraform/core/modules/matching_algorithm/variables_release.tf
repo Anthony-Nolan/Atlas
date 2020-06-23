@@ -72,3 +72,6 @@ variable "WMDA_FILE_URL" {
   type = string
 }
 
+variable "MAC_SOURCE" {
+  type = string
+}

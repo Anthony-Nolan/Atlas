@@ -152,6 +152,12 @@ variable "WMDA_FILE_URL" {
   description = "A URL hosting HLA nomenclature in the expected format."
 }
 
+variable "MAC_SOURCE" {
+  type        = string
+  default     = "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip"
+  description = "A URL hosting NMDP MACs in the expected format."
+}
+
 variable "WEBSITE_RUN_FROM_PACKAGE" {
   type    = string
   default = "1"

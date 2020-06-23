@@ -48,6 +48,7 @@ module "matching_algorithm" {
 
   app_service_plan          = azurerm_app_service_plan.atlas
   donor_import_sql_database = module.donor_import.sql_database
+  mac_import_table          = module.multiple_allele_code_lookup.storage_table
   sql_server                = azurerm_sql_server.atlas_sql_server
   function_storage          = azurerm_storage_account.function_storage
   azure_storage             = azurerm_storage_account.azure_storage
@@ -84,6 +85,7 @@ module "matching_algorithm" {
   MESSAGING_BUS_DONOR_CRON_SCHEDULE                = var.MATCHING_MESSAGING_BUS_DONOR_CRON_SCHEDULE
   WEBSITE_RUN_FROM_PACKAGE                         = var.WEBSITE_RUN_FROM_PACKAGE
   WMDA_FILE_URL                                    = var.WMDA_FILE_URL
+  MAC_SOURCE                                       = var.MAC_SOURCE
 }
 
 module "match_prediction" {

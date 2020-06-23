@@ -33,6 +33,9 @@ locals {
     "NotificationsServiceBus:AlertsTopic"                       = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:NotificationsTopic"                = var.servicebus_topics.notifications.name
     "Wmda:WmdaFileUri"                                          = var.WMDA_FILE_URL
+    "MacImport:ConnectionString"                                = var.azure_storage.primary_connection_string
+    "MacImport:TableName"                                       = var.mac_import_table.name,
+    "MacImport:MacSourceUrl"                                    = var.MAC_SOURCE
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"                 = "1"
     "WEBSITE_RUN_FROM_PACKAGE"                                  = var.WEBSITE_RUN_FROM_PACKAGE
   }
