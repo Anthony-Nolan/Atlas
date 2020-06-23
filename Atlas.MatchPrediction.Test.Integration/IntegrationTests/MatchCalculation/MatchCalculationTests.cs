@@ -77,6 +77,18 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         }
 
         [Test]
+        public async Task MatchAtPGroupLevel_WhenDonorIsSerologicallyTyped_AndDonorHasMatchingAllele_IsTenOutOfTenMatch()
+        {
+            var donorGenotype = NewGenotype
+                .With(g => g.A, new LocusInfo<string> {Position1 = "2", Position2 = A2}).Build();
+
+            var matchCount =
+                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
+
+            matchCount.Should().BeEquivalentTo(TenOutOfTenMatch);
+        }
+
+        [Test]
         public async Task MatchAtPGroupLevel_WhenGenotypesDifferInPhase_IsTenOutOfTenMatch()
         {
             var donorGenotype = NewGenotype
