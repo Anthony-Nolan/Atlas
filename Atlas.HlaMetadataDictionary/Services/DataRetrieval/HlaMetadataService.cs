@@ -18,7 +18,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// </summary>
     internal interface IHlaMetadataService
     {
-        HlaMetadataCollectionForSerialisation GetAllHlaMetadata(string hlaNomenclatureVersion);
+        HlaMetadataCollection GetAllHlaMetadata(string hlaNomenclatureVersion);
     }
 
     internal class HlaMetadataService : IHlaMetadataService
@@ -46,7 +46,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             this.logger = logger;
         }
 
-        public HlaMetadataCollectionForSerialisation GetAllHlaMetadata(string hlaNomenclatureVersion)
+        public HlaMetadataCollection GetAllHlaMetadata(string hlaNomenclatureVersion)
         {
             try
             {
@@ -65,7 +65,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 logger.SendTrace("HlaMetadataDictionary: Processing TCE group lookup");
                 var dpb1TceGroupMetadata = GetDpb1TceGroupMetadata(hlaNomenclatureVersion);
 
-                return new HlaMetadataCollectionForSerialisation()
+                return new HlaMetadataCollection
                 {
                     AlleleNameMetadata = alleleNameMetadata,
                     HlaMatchingMetadata = matchingMetadata,

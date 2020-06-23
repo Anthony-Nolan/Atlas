@@ -29,7 +29,7 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows
             LocusAsString = metadata.Locus.ToString();
             TypingMethodAsString = metadata.TypingMethod.ToString();
             LookupName = metadata.LookupName;
-            SerialisedHlaInfoType = metadata.HlaInfoToSerialise.GetType().GetNeatCSharpName(); //See note below, in GetHlaInfo<T>()
+            SerialisedHlaInfoType = metadata.SerialisedHlaInfoType;
             SerialisedHlaInfo = SerialiseHlaInfo(metadata.HlaInfoToSerialise);
         }
 

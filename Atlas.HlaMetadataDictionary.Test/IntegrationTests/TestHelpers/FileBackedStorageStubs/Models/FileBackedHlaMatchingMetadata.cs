@@ -11,6 +11,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
         public object HlaInfoToSerialise => MatchingPGroups;
+        public string SerialisedHlaInfoType { get; }
         public IEnumerable<string> MatchingPGroups { get; }
         public bool IsNullExpressingTyping { get; }
 
@@ -19,13 +20,15 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
             string lookupName,
             TypingMethod typingMethod,
             List<string> matchingPGroups, 
-            bool isNullExpressingTyping)
+            bool isNullExpressingTyping,
+            string serialisedHlaInfoType)
         {
             Locus = locus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
             MatchingPGroups = matchingPGroups;
             IsNullExpressingTyping = isNullExpressingTyping;
+            SerialisedHlaInfoType = serialisedHlaInfoType;
         }
     }
 }

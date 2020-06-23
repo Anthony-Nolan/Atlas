@@ -11,18 +11,21 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
         public object HlaInfoToSerialise => CurrentAlleleNames;
+        public string SerialisedHlaInfoType { get; }
         public List<string> CurrentAlleleNames { get; }
 
         public FileBackedAlleleNameMetadata(
             Locus locus,
             string lookupName,
             TypingMethod typingMethod,
-            List<string> currentAlleleNames)
+            List<string> currentAlleleNames,
+            string serialisedHlaInfoType)
         {
             Locus = locus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
             CurrentAlleleNames = currentAlleleNames;
+            SerialisedHlaInfoType = serialisedHlaInfoType;
         }
     }
 }
