@@ -50,19 +50,19 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         {
             try
             {
-                logger.SendTrace("HlaMetadataDictionary: Processing Allele Names", LogLevel.Info);
+                logger.SendTrace("HlaMetadataDictionary: Processing Allele Names");
                 var alleleNameMetadata = GetAlleleNamesAndTheirVariants(hlaNomenclatureVersion);
                 
-                logger.SendTrace("HlaMetadataDictionary: Processing Pre-calculated match hla", LogLevel.Info);
+                logger.SendTrace("HlaMetadataDictionary: Processing Pre-calculated match hla");
                 var preCalculatedMatchedHla = GetPreCalculatedMatchedHla(hlaNomenclatureVersion).ToList();
                 
-                logger.SendTrace("HlaMetadataDictionary: Processing Matching lookup", LogLevel.Info);
+                logger.SendTrace("HlaMetadataDictionary: Processing Matching lookup");
                 var matchingMetadata = GetMatchingMetadata(preCalculatedMatchedHla);
 
-                logger.SendTrace("HlaMetadataDictionary: Processing Scoring lookup", LogLevel.Info);
+                logger.SendTrace("HlaMetadataDictionary: Processing Scoring lookup");
                 var scoringMetadata = GetScoringMetadata(preCalculatedMatchedHla);
 
-                logger.SendTrace("HlaMetadataDictionary: Processing TCE group lookup", LogLevel.Info);
+                logger.SendTrace("HlaMetadataDictionary: Processing TCE group lookup");
                 var dpb1TceGroupMetadata = GetDpb1TceGroupMetadata(hlaNomenclatureVersion);
 
                 return new HlaMetadataCollectionForSerialisation()

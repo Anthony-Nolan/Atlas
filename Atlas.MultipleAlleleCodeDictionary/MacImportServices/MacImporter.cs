@@ -34,11 +34,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportServices
         public async Task ImportLatestMacs()
         {
             const string tracePrefix = "Mac Import: ";
-            logger.SendTrace($"{tracePrefix}Mac Import started", LogLevel.Info);
+            logger.SendTrace($"{tracePrefix}Mac Import started");
             try
             {
                 var lastEntryBeforeInsert = await macRepository.GetLastMacEntry();
-                logger.SendTrace($"{tracePrefix}The last MAC entry found was: {lastEntryBeforeInsert}", LogLevel.Info);
+                logger.SendTrace($"{tracePrefix}The last MAC entry found was: {lastEntryBeforeInsert}");
 
                 List<Mac> newMacs;
                 await using (var macStream = await DownloadMacs())
@@ -46,7 +46,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportServices
                     newMacs = await macParser.GetMacsSinceLastEntry(macStream, lastEntryBeforeInsert);
                 }
 
-                logger.SendTrace($"{tracePrefix}Attempting to insert {newMacs.Count} new MACs", LogLevel.Info);
+                logger.SendTrace($"{tracePrefix}Attempting to insert {newMacs.Count} new MACs");
                 await macRepository.InsertMacs(newMacs);
             }
             catch (Exception e)
@@ -55,7 +55,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportServices
                 throw;
             }
 
-            logger.SendTrace($"{tracePrefix}Successfully finished MAC Import", LogLevel.Info);
+            logger.SendTrace($"{tracePrefix}Successfully finished MAC Import");
         }
 
         private async Task<Stream> DownloadMacs()

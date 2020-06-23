@@ -50,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         {
             var converterResults = await searchableDonorUpdateConverter.ConvertSearchableDonorUpdatesAsync(messageBatch);
 
-            logger.SendTrace($"{TraceMessagePrefix}: {converterResults.ProcessingResults.Count()} messages retrieved for processing.", LogLevel.Info);
+            logger.SendTrace($"{TraceMessagePrefix}: {converterResults.ProcessingResults.Count()} messages retrieved for processing.");
 
             if (converterResults.ProcessingResults.Any())
             {

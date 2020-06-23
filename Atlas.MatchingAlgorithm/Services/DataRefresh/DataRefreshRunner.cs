@@ -141,7 +141,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             }
             catch (Exception ex)
             {
-                logger.SendTrace($"{LoggingPrefix} Refresh failed. Exception: {ex}", LogLevel.Info);
+                logger.SendTrace($"{LoggingPrefix} Refresh failed. Exception: {ex}");
                 await FailureTearDown(refreshRecordId);
                 throw;
             }

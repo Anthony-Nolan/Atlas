@@ -68,8 +68,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             if (IsCleanupNecessary())
             {
                 logger.SendTrace(
-                    "DATA REFRESH: Manual Teardown requested. This indicates that the data refresh failed unexpectedly.",
-                    LogLevel.Info);
+                    "DATA REFRESH: Manual Teardown requested. This indicates that the data refresh failed unexpectedly.");
                 await notificationSender.SendRequestManualTeardownNotification();
 
                 await ScaleDatabase();
@@ -79,8 +78,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             else
             {
                 logger.SendTrace(
-                    "Data Refresh cleanup triggered, but no in progress jobs detected. Are you sure cleanup is necessary?",
-                    LogLevel.Info
+                    "Data Refresh cleanup triggered, but no in progress jobs detected. Are you sure cleanup is necessary?"
                 );
             }
         }
@@ -103,7 +101,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             var targetSize = dataRefreshSettings.Value.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>();
             var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetDormantDatabase());
-            logger.SendTrace($"DATA REFRESH CLEANUP: Scaling database: {databaseName} to size {targetSize}", LogLevel.Info);
+            logger.SendTrace($"DATA REFRESH CLEANUP: Scaling database: {databaseName} to size {targetSize}");
             await azureDatabaseManager.UpdateDatabaseSize(databaseName, targetSize);
         }
 
@@ -111,7 +109,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             var donorFunctionsAppName = dataRefreshSettings.Value.DonorFunctionsAppName;
             var donorImportFunctionName = dataRefreshSettings.Value.DonorImportFunctionName;
-            logger.SendTrace($"DATA REFRESH CLEANUP: Re-enabling donor import function with name: {donorImportFunctionName}", LogLevel.Info);
+            logger.SendTrace($"DATA REFRESH CLEANUP: Re-enabling donor import function with name: {donorImportFunctionName}");
             await azureFunctionManager.StartFunction(donorFunctionsAppName, donorImportFunctionName);
         }
 

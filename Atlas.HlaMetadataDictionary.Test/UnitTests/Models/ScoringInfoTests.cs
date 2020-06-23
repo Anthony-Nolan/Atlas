@@ -49,8 +49,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Models
                 "02:01",
                 new AlleleTypingStatus(SequenceStatus.Partial, DnaCategory.CDna),
                 "02:01P",
-                "02:01:01G",
-                null
+                "02:01:01G"
             );
 
             var infoAsString = JsonConvert.SerializeObject(info);

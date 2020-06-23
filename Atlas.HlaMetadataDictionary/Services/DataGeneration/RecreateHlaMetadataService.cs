@@ -47,10 +47,10 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
         {
             try
             {
-                logger.SendTrace("HlaMetadataDictionary: Fetching all Metadata", LogLevel.Info);
+                logger.SendTrace("HlaMetadataDictionary: Fetching all Metadata");
                 var allHlaMetadata = hlaMetadataService.GetAllHlaMetadata(hlaNomenclatureVersion);
                 
-                logger.SendTrace("HlaMetadataDictionary: Persisting all Metadata", LogLevel.Info);
+                logger.SendTrace("HlaMetadataDictionary: Persisting all Metadata");
                 await PersistHlaMetadataCollection(allHlaMetadata, hlaNomenclatureVersion);
             }
             catch (Exception ex)

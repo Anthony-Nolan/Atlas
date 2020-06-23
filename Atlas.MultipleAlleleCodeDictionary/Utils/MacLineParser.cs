@@ -28,7 +28,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
         /// <inheritdoc />
         public async Task<List<Mac>> GetMacsSinceLastEntry(Stream file, string lastMacEntry)
         {
-            logger.SendTrace($"Parsing MACs since: {lastMacEntry}", LogLevel.Info);
+            logger.SendTrace($"Parsing MACs since: {lastMacEntry}");
             var macCodes = new List<Mac>();
 
             using (var reader = new StreamReader(file))

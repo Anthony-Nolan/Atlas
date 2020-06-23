@@ -68,7 +68,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
                 }
 
                 await failedDonorsNotificationSender.SendFailedDonorsAlert(allFailedDonors, ImportFailureEventName, Priority.Medium);
-                logger.SendTrace("Donor import is complete", LogLevel.Info);
+                logger.SendTrace("Donor import is complete");
             }
             catch (Exception ex)
             {

@@ -39,7 +39,7 @@ namespace Atlas.Common.Notifications
 
             try
             {
-                logger.SendTrace($"{nameof(Notification)} sent from {notification.Originator}. Summary: {notification.Summary}. Detail: {notification.Description}", LogLevel.Info);
+                logger.SendTrace($"{nameof(Notification)} sent from {notification.Originator}. Summary: {notification.Summary}. Detail: {notification.Description}");
                 await notificationsClient.SendNotification(notification);
             }
             catch (Exception ex)

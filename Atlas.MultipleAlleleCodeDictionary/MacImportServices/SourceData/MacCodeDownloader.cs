@@ -33,9 +33,9 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData
         /// <inheritdoc />
         public async Task<Stream> DownloadAndUnzipStream()
         {
-            logger.SendTrace($"Downloading MACs from NMDP source", LogLevel.Info);
+            logger.SendTrace($"Downloading MACs from NMDP source");
             var stream = await DownloadToMemoryStream();
-            logger.SendTrace($"Downloaded MACs. Unzipping.", LogLevel.Info);
+            logger.SendTrace($"Downloaded MACs. Unzipping.");
             return UnzipStream(stream);
         }
 

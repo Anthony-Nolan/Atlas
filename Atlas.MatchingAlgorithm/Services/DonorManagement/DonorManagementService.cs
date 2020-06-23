@@ -132,7 +132,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         {
             var updatesList = updates.ToList();
 
-            logger.SendTrace($"{TraceMessagePrefix}: {updatesList.Count} donor updates to be applied.", LogLevel.Info);
+            logger.SendTrace($"{TraceMessagePrefix}: {updatesList.Count} donor updates to be applied.");
 
             // Note, the management log must be written to last to prevent the undesirable
             // scenario of the donor update failing after the log has been successfully updated.
@@ -150,7 +150,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 
             if (availableDonors.Any())
             {
-                logger.SendTrace($"{TraceMessagePrefix}: {availableDonors.Count} donors to be added or updated.", LogLevel.Info);
+                logger.SendTrace($"{TraceMessagePrefix}: {availableDonors.Count} donors to be added or updated.");
 
                 await donorService.CreateOrUpdateDonorBatch(availableDonors);
             }
@@ -165,7 +165,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 
             if (unavailableDonorIds.Any())
             {
-                logger.SendTrace($"{TraceMessagePrefix}: {unavailableDonorIds.Count} donors to be marked as unavailable for search.", LogLevel.Info);
+                logger.SendTrace($"{TraceMessagePrefix}: {unavailableDonorIds.Count} donors to be marked as unavailable for search.");
 
                 await donorService.SetDonorBatchAsUnavailableForSearch(unavailableDonorIds);
             }
