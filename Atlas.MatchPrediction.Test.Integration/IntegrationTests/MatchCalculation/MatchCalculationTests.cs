@@ -33,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         private static readonly LociInfo<int?> SingleMismatchAtB = new LociInfo<int?>
             { A = 2, B = 1, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2 };
 
-        private static readonly LociInfo<int?> DoubleMismatchAtB = new LociInfo<int?>
+        private static readonly LociInfo<int?> DoubleMismatchAtA = new LociInfo<int?>
             { A = 0, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2 };
 
         [OneTimeSetUp]
@@ -133,7 +133,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
             var matchCount =
                 await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
 
-            matchCount.Should().BeEquivalentTo(DoubleMismatchAtB);
+            matchCount.Should().BeEquivalentTo(DoubleMismatchAtA);
         }
 
         private static Builder<PhenotypeInfo<string>> NewGenotype => Builder<PhenotypeInfo<string>>.New
