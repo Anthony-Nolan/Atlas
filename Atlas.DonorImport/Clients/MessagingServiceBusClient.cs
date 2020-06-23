@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Atlas.DonorImport.Settings.ServiceBus;
+using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Microsoft.Azure.ServiceBus;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace Atlas.DonorImport.Clients
@@ -19,10 +18,10 @@ namespace Atlas.DonorImport.Clients
     {
         private readonly TopicClient donorUpdateTopicClient;
 
-        public MessagingServiceBusClient(IOptions<MessagingServiceBusSettings> messagingServiceBusSettings)
+        public MessagingServiceBusClient(MessagingServiceBusSettings messagingServiceBusSettings)
         {
-            var connectionString = messagingServiceBusSettings.Value.ConnectionString;
-            var donorUpdateTopicName = messagingServiceBusSettings.Value.MatchingDonorUpdateTopic;
+            var connectionString = messagingServiceBusSettings.ConnectionString;
+            var donorUpdateTopicName = messagingServiceBusSettings.MatchingDonorUpdateTopic;
 
             donorUpdateTopicClient = new TopicClient(connectionString, donorUpdateTopicName);
         }

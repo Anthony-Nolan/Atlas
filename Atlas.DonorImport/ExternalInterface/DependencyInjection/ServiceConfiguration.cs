@@ -2,15 +2,13 @@ using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Notifications;
-using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Repositories;
+using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
-using Atlas.DonorImport.Settings.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
 {
@@ -18,10 +16,12 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
     {
         public static void RegisterDonorImport(
             this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings)
         {
-            services.RegisterSettings();
-            services.RegisterClients(fetchApplicationInsightsSettings);
+            services.RegisterSettings(fetchMessagingServiceBusSettings);
+            services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices();
             // TODO: ATLAS-327: Inject settings
@@ -39,11 +39,11 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             );
         }
 
-        private static void RegisterSettings(this IServiceCollection services)
+        private static void RegisterSettings(
+            this IServiceCollection services,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
-            // TODO: ATLAS-327: Inject settings
-            services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
-            services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
+            services.AddScoped(fetchMessagingServiceBusSettings);
         }
 
         private static void RegisterServices(this IServiceCollection services)
@@ -62,13 +62,11 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
 
         private static void RegisterClients(
             this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings)
         {
             services.AddScoped<IMessagingServiceBusClient, MessagingServiceBusClient>();
-            services.RegisterNotificationSender(
-                OptionsReaderFor<NotificationsServiceBusSettings>(), //TODO: ATLAS-327
-                fetchApplicationInsightsSettings
-            );
+            services.RegisterNotificationSender(fetchNotificationsServiceBusSettings, fetchApplicationInsightsSettings);
         }
 
         private static void RegisterImportDatabaseTypes(

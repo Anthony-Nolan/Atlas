@@ -1,6 +1,6 @@
-namespace Atlas.DonorImport.Settings.ServiceBus
+namespace Atlas.DonorImport.ExternalInterface.Settings.ServiceBus
 {
-    internal class MessagingServiceBusSettings
+    public class MessagingServiceBusSettings
     {
         public string ConnectionString { get; set; }
         public string MatchingDonorUpdateTopic { get; set; }
