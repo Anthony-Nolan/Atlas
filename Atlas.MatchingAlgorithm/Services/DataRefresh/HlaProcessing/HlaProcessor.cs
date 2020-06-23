@@ -151,8 +151,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 var dictionaryCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaNomenclatureVersion);
                 await dictionaryCacheControl.PreWarmAllCaches();
 
-                logger.SendTrace("HLA PROCESSOR: caching antigens from hla service", LogLevel.Info);
-
                 logger.SendTrace("HLA PROCESSOR: inserting new p groups to database", LogLevel.Info);
                 // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the HlaMetadataDictionary, and new ones added to the SQL database
                 var hlaDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
