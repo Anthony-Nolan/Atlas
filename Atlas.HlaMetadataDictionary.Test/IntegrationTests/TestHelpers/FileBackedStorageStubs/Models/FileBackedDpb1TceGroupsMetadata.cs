@@ -11,11 +11,13 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         public TypingMethod TypingMethod => TypingMethod.Molecular;
         public string TceGroup { get; }
         public object HlaInfoToSerialise => TceGroup;
+        public string SerialisedHlaInfoType { get; }
 
-        public FileBackedDpb1TceGroupsMetadata(string lookupName, string tceGroup)
+        public FileBackedDpb1TceGroupsMetadata(string lookupName, string tceGroup, string serialisedHlaInfoType)
         {
             LookupName = lookupName;
             TceGroup = tceGroup;
+            SerialisedHlaInfoType = serialisedHlaInfoType;
         }
     }
 }

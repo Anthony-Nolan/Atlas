@@ -157,7 +157,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         public HlaMetadataCollection GetAllHlaMetadata(string version)
         {
-            return hlaMetadataService.GetAllHlaMetadata(version).ToExternalCollection();
+            return hlaMetadataService.GetAllHlaMetadata(version);
         }
     }
 }

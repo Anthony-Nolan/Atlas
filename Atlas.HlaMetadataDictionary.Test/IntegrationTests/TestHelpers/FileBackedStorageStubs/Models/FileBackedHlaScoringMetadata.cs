@@ -14,6 +14,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
         public object HlaInfoToSerialise => HlaScoringInfo;
+        public string SerialisedHlaInfoType { get; }
         public IHlaScoringInfo HlaScoringInfo { get; }
 
         /// <remarks>
@@ -28,13 +29,14 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
             Locus locus,                            //*******************
             string lookupName,                      //****    See    ****
             TypingMethod typingMethod,              //****  warning  ****
-            string hlaScoringInfoType,              //****   above   ****
+            string serialisedHlaInfoType,           //****   above   ****
             object hlaScoringInfo)                  //*******************
         {
             Locus = locus;
             LookupName = lookupName;
             TypingMethod = typingMethod;
-            HlaScoringInfo = GetHlaScoringInfo(hlaScoringInfoType, hlaScoringInfo.ToString());
+            SerialisedHlaInfoType = serialisedHlaInfoType;
+            HlaScoringInfo = GetHlaScoringInfo(serialisedHlaInfoType, hlaScoringInfo.ToString());
         }
 
         public IEnumerable<IHlaScoringMetadata> GetInTermsOfSingleAlleleScoringMetadata()
