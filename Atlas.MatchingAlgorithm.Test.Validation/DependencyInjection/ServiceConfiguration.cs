@@ -29,7 +29,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
 
             services.AddSingleton<IConfiguration>(sp => configuration);
             services.RegisterAsOptions<ValidationTestSettings>("Testing");
-            
             // As some of the meta donors are generated dynamically at runtime, the repository must be a singleton
             // Otherwise, the meta-donors will be regenerated on lookup, and no longer match the ones in the database
             services.AddSingleton<IMetaDonorsData, MetaDonorsData>();
@@ -40,28 +39,28 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
             // We do not use "AddScoped" here as the DI framework does not appear consider new tests a different scope
             services.AddTransient<IAlleleRepository, AlleleRepository>();
             services.AddTransient<ITestDataService, TestDataService>();
-            
+
             services.AddTransient<IPatientDataFactory, PatientDataFactory>();
             services.AddTransient<IMultiplePatientDataFactory, MultiplePatientDataFactory>();
             services.AddTransient<IStaticDataProvider, StaticDataProvider>();
-            
+
             services.AddTransient<IMetaDonorSelector, MetaDonorSelector>();
             services.AddTransient<IDatabaseDonorSelector, DatabaseDonorSelector>();
             services.AddTransient<IPatientHlaSelector, PatientHlaSelector>();
 
             RegisterDataServices(services);
-            
+
             return services.BuildServiceProvider();
         }
 
         private static void RegisterDataServices(IServiceCollection services)
         {
             services.AddScoped(sp =>
-                new ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"])
+                new ContextFactory().Create(DependencyInjectionUtils.ConnectionStringReader("SqlA")(sp))
             );
 
             services.AddScoped(sp =>
-                new Data.Persistent.Context.ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["PersistentSql"])
+                new Data.Persistent.Context.ContextFactory().Create(DependencyInjectionUtils.ConnectionStringReader("PersistentSql")(sp))
             );
 
             services.AddScoped<ITestDataRepository, TestDataRepository>();
