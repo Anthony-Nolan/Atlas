@@ -28,7 +28,8 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
                 _ => new AzureStorageSettings(),
                 _ => new HlaMetadataDictionarySettings(),
                 _ => new MacDictionarySettings(),
-                _ => new NotificationsServiceBusSettings()
+                _ => new NotificationsServiceBusSettings(),
+                SqlConnectionStringReader()
             );
             RegisterIntegrationTestServices(services);
             SetUpMockServices(services);
@@ -56,12 +57,12 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
         {
             services.AddScoped(sp =>
             {
-                var connectionString = GetSqlConnectionString(sp);
+                var connectionString = SqlConnectionStringReader()(sp);
                 return new ContextFactory().Create(connectionString);
             });
 
             services.AddScoped<IHaplotypeFrequencyInspectionRepository>(sp =>
-                new HaplotypeFrequencyInspectionRepository(GetSqlConnectionString(sp))
+                new HaplotypeFrequencyInspectionRepository(SqlConnectionStringReader()(sp))
             );
         }
 
@@ -70,9 +71,6 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             services.AddScoped(sp => Substitute.For<INotificationSender>());
         }
 
-        private static string GetSqlConnectionString(IServiceProvider serviceProvider)
-        {
-            return serviceProvider.GetService<IConfiguration>().GetSection("ConnectionStrings")["Sql"];
-        }
+        private static Func<IServiceProvider, string> SqlConnectionStringReader() => DependencyInjectionUtils.ConnectionStringReader("Sql");
     }
 }

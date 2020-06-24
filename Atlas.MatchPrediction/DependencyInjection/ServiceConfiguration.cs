@@ -15,7 +15,6 @@ using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Settings.Azure;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
@@ -29,13 +28,14 @@ namespace Atlas.MatchPrediction.DependencyInjection
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
-            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings
+            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
+            Func<IServiceProvider, string> fetchSqlConnectionString
         )
         {
             services.RegisterSettings(fetchAzureStorageSettings, fetchNotificationsServiceBusSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices();
-            services.RegisterDatabaseServices();
+            services.RegisterDatabaseServices(fetchSqlConnectionString);
             services.RegisterClientServices();
             services.RegisterCommonMatchingServices();
             services.RegisterHlaMetadataDictionary(
@@ -54,17 +54,16 @@ namespace Atlas.MatchPrediction.DependencyInjection
             services.MakeSettingsAvailableForUse(fetchNotificationsServiceBusSettings);
         }
 
-        private static void RegisterDatabaseServices(this IServiceCollection services)
+        private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)
         {
             services.AddDbContext<MatchPredictionContext>((sp, options) =>
             {
-                var connString = GetSqlConnectionString(sp);
-                options.UseSqlServer(connString);
+                options.UseSqlServer(fetchSqlConnectionString(sp));
             });
 
             services.AddScoped<IHaplotypeFrequencySetRepository, HaplotypeFrequencySetRepository>();
             services.AddScoped<IHaplotypeFrequenciesRepository, HaplotypeFrequenciesRepository>(sp =>
-                new HaplotypeFrequenciesRepository(GetSqlConnectionString(sp))
+                new HaplotypeFrequenciesRepository(fetchSqlConnectionString(sp))
             );
         }
 
@@ -96,11 +95,6 @@ namespace Atlas.MatchPrediction.DependencyInjection
             services.AddScoped<IMatchProbabilityService, MatchProbabilityService>();
 
             services.AddScoped<ILocusHlaConverter, LocusHlaConverter>();
-        }
-
-        private static string GetSqlConnectionString(IServiceProvider sp)
-        {
-            return sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["Sql"];
         }
     }
 }
