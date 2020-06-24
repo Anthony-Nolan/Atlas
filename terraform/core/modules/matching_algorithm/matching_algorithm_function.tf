@@ -26,6 +26,8 @@ locals {
     "DataRefresh:DonorFunctionsAppName"                         = azurerm_function_app.atlas_matching_algorithm_donor_management_function.name
     "DataRefresh:DormantDatabaseSize"                           = var.DATA_REFRESH_DB_SIZE_DORMANT
     "DataRefresh:RefreshDatabaseSize"                           = var.DATA_REFRESH_DB_SIZE_REFRESH
+    "HlaMetadataDictionary:AzureStorageConnectionString"        = var.azure_storage.primary_connection_string,
+    "HlaMetadataDictionary:HlaNomenclatureSourceUrl"            = var.WMDA_FILE_URL,
     "MacImport:ConnectionString"                                = var.azure_storage.primary_connection_string
     "MacImport:MacSourceUrl"                                    = var.MAC_SOURCE
     "MacImport:TableName"                                       = var.mac_import_table.name,

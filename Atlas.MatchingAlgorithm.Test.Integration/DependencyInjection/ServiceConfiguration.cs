@@ -3,7 +3,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
+using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
@@ -18,7 +20,7 @@ using NSubstitute;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 {
-    public class ServiceConfiguration
+    public static class ServiceConfiguration
     {
         public static IServiceProvider CreateProvider()
         {
@@ -27,14 +29,18 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 .AddJsonFile("appsettings.json")
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .Build();
-            
+
             services.AddSingleton<IConfiguration>(sp => configuration);
-            
-            services.RegisterMatchingAlgorithm();
-            services.RegisterMatchingAlgorithmDonorManagement();
-            
+
+            services.RegisterSettings();
+            services.RegisterMatchingAlgorithm(DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>());
+            services.RegisterMatchingAlgorithmDonorManagement(DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>());
+
             // This call must be made after `RegisterMatchingAlgorithm()`, as it overrides the non-mock dictionary set up in that method
-            services.RegisterFileBasedHlaMetadataDictionaryForTesting(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value); //These configuration values won't be used, because all they are all (indirectly) overridden, below.
+            services.RegisterFileBasedHlaMetadataDictionaryForTesting(
+                //These configuration values won't be used, because all they are all (indirectly) overridden, below.
+                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>()
+            );
 
             services.AddScoped(sp =>
                 new ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"])
@@ -42,8 +48,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 
             RegisterMockServices(services);
             RegisterIntegrationTestServices(services);
-            
+
             return services.BuildServiceProvider();
+        }
+
+        private static void RegisterSettings(this IServiceCollection services)
+        {
+            services.RegisterOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
         }
 
         private static void RegisterMockServices(IServiceCollection services)
@@ -58,7 +69,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.AddScoped(sp => mockSearchServiceBusClient);
 
             services.AddScoped(sp => Substitute.For<INotificationSender>());
-            
+
             services.AddScoped(sp => Substitute.For<IAzureDatabaseManager>());
             services.AddScoped(sp => Substitute.For<IAzureFunctionManager>());
         }

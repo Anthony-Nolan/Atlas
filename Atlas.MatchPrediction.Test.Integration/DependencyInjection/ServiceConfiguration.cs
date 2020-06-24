@@ -8,6 +8,7 @@ using NSubstitute;
 using System;
 using System.IO;
 using Atlas.Common.ApplicationInsights;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -20,12 +21,15 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             var services = new ServiceCollection();
 
             SetUpConfiguration(services);
-            services.RegisterMatchPredictionServices();
+            services.RegisterMatchPredictionServices(_ => new HlaMetadataDictionarySettings());
             RegisterIntegrationTestServices(services);
             SetUpMockServices(services);
 
             // This call must be made after `RegisterMatchPredictionServices()`, as it overrides the non-mock dictionary set up in that method
-            services.RegisterFileBasedHlaMetadataDictionaryForTesting(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value); //These configuration values won't be used, because all they are all (indirectly) overridden, below.
+            services.RegisterFileBasedHlaMetadataDictionaryForTesting(
+                //These configuration values won't be used, because all they are all (indirectly) overridden, below.
+                sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value
+            );
 
             return services.BuildServiceProvider();
         }
@@ -49,7 +53,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             });
 
             services.AddScoped<IHaplotypeFrequencyInspectionRepository>(sp =>
-              new HaplotypeFrequencyInspectionRepository(GetSqlConnectionString(sp))
+                new HaplotypeFrequencyInspectionRepository(GetSqlConnectionString(sp))
             );
         }
 

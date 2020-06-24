@@ -2,19 +2,20 @@ locals {
   donor_func_app_settings = {
     // APPINSIGHTS_INSTRUMENTATIONKEY
     //      The azure functions dashboard requires the instrumentation key with this name to integrate with application insights.
-    "APPINSIGHTS_INSTRUMENTATIONKEY"                   = var.application_insights.instrumentation_key
-    "ApplicationInsights:LogLevel"                     = var.APPLICATION_INSIGHTS_LOG_LEVEL
-    "AzureStorage:ConnectionString"                    = var.azure_storage.primary_connection_string
-    "MessagingServiceBus:ConnectionString"             = var.servicebus_namespace_authorization_rules.read-only.primary_connection_string
-    "MessagingServiceBus:DonorManagement:Topic"        = var.servicebus_topics.updated-searchable-donors.name
-    "MessagingServiceBus:DonorManagement:Subscription" = azurerm_servicebus_subscription.matching.name
-    "MessagingServiceBus:DonorManagement:BatchSize"    = var.MESSAGING_BUS_DONOR_BATCH_SIZE
-    "MessagingServiceBus:DonorManagement:CronSchedule" = var.MESSAGING_BUS_DONOR_CRON_SCHEDULE
-    "NotificationsServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
-    "NotificationsServiceBus:AlertsTopic"              = var.servicebus_topics.alerts.name
-    "NotificationsServiceBus:NotificationsTopic"       = var.servicebus_topics.notifications.name
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"        = "1"
-    "WEBSITE_RUN_FROM_PACKAGE"                         = var.WEBSITE_RUN_FROM_PACKAGE
+    "APPINSIGHTS_INSTRUMENTATIONKEY"                     = var.application_insights.instrumentation_key
+    "ApplicationInsights:LogLevel"                       = var.APPLICATION_INSIGHTS_LOG_LEVEL
+    "AzureStorage:ConnectionString"                      = var.azure_storage.primary_connection_string
+    "HlaMetadataDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string,
+    "MessagingServiceBus:ConnectionString"               = var.servicebus_namespace_authorization_rules.read-only.primary_connection_string
+    "MessagingServiceBus:DonorManagement:Topic"          = var.servicebus_topics.updated-searchable-donors.name
+    "MessagingServiceBus:DonorManagement:Subscription"   = azurerm_servicebus_subscription.matching.name
+    "MessagingServiceBus:DonorManagement:BatchSize"      = var.MESSAGING_BUS_DONOR_BATCH_SIZE
+    "MessagingServiceBus:DonorManagement:CronSchedule"   = var.MESSAGING_BUS_DONOR_CRON_SCHEDULE
+    "NotificationsServiceBus:ConnectionString"           = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:AlertsTopic"                = var.servicebus_topics.alerts.name
+    "NotificationsServiceBus:NotificationsTopic"         = var.servicebus_topics.notifications.name
+    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"          = "1"
+    "WEBSITE_RUN_FROM_PACKAGE"                           = var.WEBSITE_RUN_FROM_PACKAGE
   }
 }
 
