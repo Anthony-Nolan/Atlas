@@ -104,6 +104,15 @@ jobs:
       keyname1: MacDictionary
       keyname2: AzureStorageConnectionString
       valueToSet: '$(AZURE_STORAGE_CONNECTION_STRING)'
+      
+  - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
+    displayName: 'Set HLA Metadata Dictionary ConnectionString'
+    inputs:
+      filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
+      numberOfLevels: 2
+      keyname1: HlaMetadataDictionary
+      keyname2: AzureStorageConnectionString
+      valueToSet: '$(AZURE_STORAGE_CONNECTION_STRING)'
 
   - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
     displayName: 'Set Notification Service Bus ConnectionString'
