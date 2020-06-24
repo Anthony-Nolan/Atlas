@@ -7,6 +7,7 @@ using Atlas.MatchPrediction.Settings.Azure;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 [assembly: FunctionsStartup(typeof(Atlas.MatchPrediction.Functions.Startup))]
 
@@ -18,11 +19,11 @@ namespace Atlas.MatchPrediction.Functions
         {
             RegisterSettings(builder.Services);
             builder.Services.RegisterMatchPredictionServices(
-                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<AzureStorageSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<NotificationsServiceBusSettings>()
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                OptionsReaderFor<MacDictionarySettings>(),
+                OptionsReaderFor<NotificationsServiceBusSettings>()
             );
         }
 

@@ -10,6 +10,7 @@ using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
@@ -21,13 +22,13 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
         {
             RegisterSettings(builder.Services);
             builder.Services.RegisterMatchingAlgorithmDonorManagement(
-                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<AzureStorageSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<DonorManagementSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MessagingServiceBusSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<NotificationsServiceBusSettings>()
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<DonorManagementSettings>(),
+                OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                OptionsReaderFor<MacDictionarySettings>(),
+                OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<NotificationsServiceBusSettings>()
             );
         }
 

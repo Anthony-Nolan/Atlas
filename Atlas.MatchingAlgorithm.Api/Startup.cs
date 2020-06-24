@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.Api
 {
@@ -43,16 +44,16 @@ namespace Atlas.MatchingAlgorithm.Api
         {
             RegisterSettings(services);
             services.RegisterMatchingAlgorithm(
-                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<AzureAuthenticationSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<AzureAppServiceManagementSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<AzureDatabaseManagementSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<AzureStorageSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<DataRefreshSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MessagingServiceBusSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<NotificationsServiceBusSettings>()
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<AzureAuthenticationSettings>(),
+                OptionsReaderFor<AzureAppServiceManagementSettings>(),
+                OptionsReaderFor<AzureDatabaseManagementSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<DataRefreshSettings>(),
+                OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                OptionsReaderFor<MacDictionarySettings>(),
+                OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<NotificationsServiceBusSettings>()
             );
 
             services.ConfigureSwaggerService();

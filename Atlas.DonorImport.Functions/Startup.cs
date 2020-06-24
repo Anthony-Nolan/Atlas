@@ -6,6 +6,7 @@ using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Functions;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
@@ -17,9 +18,9 @@ namespace Atlas.DonorImport.Functions
         {
             RegisterSettings(builder.Services);
             builder.Services.RegisterDonorImport(
-                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MessagingServiceBusSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<NotificationsServiceBusSettings>()
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<NotificationsServiceBusSettings>()
             );
         }
 

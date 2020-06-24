@@ -1,4 +1,5 @@
 using System;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
@@ -24,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
-            services.AddScoped(fetchMessagingServiceBusSettings);
+            services.MakeOptionsAvailableForUse(fetchMessagingServiceBusSettings);
         }
 
         private static void RegisterServices(this IServiceCollection services)

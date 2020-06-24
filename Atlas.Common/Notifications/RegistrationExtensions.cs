@@ -1,5 +1,6 @@
 ﻿using System;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Utils.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.Common.Notifications
@@ -11,7 +12,7 @@ namespace Atlas.Common.Notifications
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationSettings,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchInsightsSettings)
         {
-            services.AddScoped(fetchNotificationSettings);
+            services.MakeOptionsAvailableForUse(fetchNotificationSettings);
             services.RegisterAtlasLogger(fetchInsightsSettings);
 
             services.AddScoped<INotificationsClient, NotificationsClient>();

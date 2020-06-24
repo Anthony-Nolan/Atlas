@@ -2,6 +2,7 @@ using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
@@ -27,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacImportSettings)
         {
-            services.AddScoped(fetchHlaMetadataDictionarySettings);
+            services.MakeOptionsAvailableForUse(fetchHlaMetadataDictionarySettings);
 
             services.RegisterServices();
             services.RegisterLifeTimeScopedCacheTypes();

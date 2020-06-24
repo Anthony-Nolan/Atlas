@@ -1,6 +1,7 @@
 ﻿using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.MacCacheService;
 using Atlas.MultipleAlleleCodeDictionary.MacImportServices;
@@ -30,8 +31,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjecti
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacImportSettings)
         {
-            services.AddScoped(fetchApplicationInsightsSettings);
-            services.AddScoped(fetchMacImportSettings);
+            services.MakeOptionsAvailableForUse(fetchApplicationInsightsSettings);
+            services.MakeOptionsAvailableForUse(fetchMacImportSettings);
         }
 
         private static void RegisterServices(this IServiceCollection services)

@@ -20,6 +20,7 @@ using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 {
@@ -37,31 +38,31 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 
             services.RegisterSettings();
             services.RegisterMatchingAlgorithm(
-                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<AzureAuthenticationSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<AzureAppServiceManagementSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<AzureDatabaseManagementSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<AzureStorageSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<DataRefreshSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MessagingServiceBusSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<NotificationsServiceBusSettings>()
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<AzureAuthenticationSettings>(),
+                OptionsReaderFor<AzureAppServiceManagementSettings>(),
+                OptionsReaderFor<AzureDatabaseManagementSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<DataRefreshSettings>(),
+                OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                OptionsReaderFor<MacDictionarySettings>(),
+                OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<NotificationsServiceBusSettings>()
             );
             services.RegisterMatchingAlgorithmDonorManagement(
-                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<AzureStorageSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<DonorManagementSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MessagingServiceBusSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<NotificationsServiceBusSettings>()
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<DonorManagementSettings>(),
+                OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                OptionsReaderFor<MacDictionarySettings>(),
+                OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<NotificationsServiceBusSettings>()
             );
 
             // This call must be made after `RegisterMatchingAlgorithm()`, as it overrides the non-mock dictionary set up in that method
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(
                 //These configuration values won't be used, because all they are all (indirectly) overridden, below.
-                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>()
+                OptionsReaderFor<ApplicationInsightsSettings>()
             );
 
             services.AddScoped(sp =>

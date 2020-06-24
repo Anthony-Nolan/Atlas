@@ -256,10 +256,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings
         )
         {
-            services.AddScoped(fetchApplicationInsightsSettings);
-            services.AddScoped(fetchAzureStorageSettings);
-            services.AddScoped(fetchMessagingServiceBusSettings);
-            services.AddScoped(fetchNotificationsServiceBusSettings);
+            services.MakeOptionsAvailableForUse(fetchApplicationInsightsSettings);
+            services.MakeOptionsAvailableForUse(fetchAzureStorageSettings);
+            services.MakeOptionsAvailableForUse(fetchMessagingServiceBusSettings);
+            services.MakeOptionsAvailableForUse(fetchNotificationsServiceBusSettings);
         }
 
         private static void RegisterSettingsForMatchingDonorManagement(
@@ -278,7 +278,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchNotificationsServiceBusSettings
             );
 
-            services.AddScoped(fetchDonorManagementSettings);
+            services.MakeOptionsAvailableForUse(fetchDonorManagementSettings);
         }
 
         private static void RegisterSettingsForMatchingAlgorithm(
@@ -299,10 +299,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchNotificationsServiceBusSettings
             );
 
-            services.AddScoped(fetchAzureAuthenticationSettings);
-            services.AddScoped(fetchAzureAppServiceManagementSettings);
-            services.AddScoped(fetchAzureDatabaseManagementSettings);
-            services.AddScoped(fetchDataRefreshSettings);
+            services.MakeOptionsAvailableForUse(fetchAzureAuthenticationSettings);
+            services.MakeOptionsAvailableForUse(fetchAzureAppServiceManagementSettings);
+            services.MakeOptionsAvailableForUse(fetchAzureDatabaseManagementSettings);
+            services.MakeOptionsAvailableForUse(fetchDataRefreshSettings);
         }
     }
 }

@@ -7,6 +7,7 @@ using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
@@ -17,10 +18,10 @@ namespace Atlas.Functions
         public override void Configure(IFunctionsHostBuilder builder)
         {
             RegisterSettings(builder.Services);
-            builder.Services.RegisterMatchingAlgorithmOrchestration(DependencyInjectionUtils.OptionsReaderFor<MessagingServiceBusSettings>());
+            builder.Services.RegisterMatchingAlgorithmOrchestration(OptionsReaderFor<MessagingServiceBusSettings>());
             builder.Services.RegisterMacDictionary(
-                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>()
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<MacDictionarySettings>()
             );
         }
 

@@ -2,6 +2,7 @@ using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Notifications;
+using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
@@ -43,7 +44,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
-            services.AddScoped(fetchMessagingServiceBusSettings);
+            services.MakeOptionsAvailableForUse(fetchMessagingServiceBusSettings);
         }
 
         private static void RegisterServices(this IServiceCollection services)
