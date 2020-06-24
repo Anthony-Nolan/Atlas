@@ -19,7 +19,8 @@ namespace Atlas.DonorImport.Functions
             builder.Services.RegisterDonorImport(
                 DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<MessagingServiceBusSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<NotificationsServiceBusSettings>()
+                DependencyInjectionUtils.OptionsReaderFor<NotificationsServiceBusSettings>(),
+                DependencyInjectionUtils.ConnectionStringReader("Sql")
             );
         }
 
