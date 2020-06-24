@@ -75,5 +75,16 @@ namespace Atlas.Common.Utils.Extensions
         {
             return sp => sp.GetService<IOptions<T>>().Value;
         }
+
+        /// <summary>
+        /// Builds an accessor which reads a specific connection string by name from the "ConnectionStrings" block of a configuration file.
+        /// <br/>
+        /// This method should ONLY be used in a raw entry-point project.
+        /// All other projects should be receiving their configuration from the invoking projects.
+        /// </summary>
+        public static Func<IServiceProvider, string> ConnectionStringReader(string connectionStringName)
+        {
+            return sp => sp.GetService<IConfiguration>().GetSection("ConnectionStrings")[connectionStringName];
+        }
     }
 }

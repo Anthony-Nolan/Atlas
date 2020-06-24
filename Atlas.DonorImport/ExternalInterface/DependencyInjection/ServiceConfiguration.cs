@@ -8,7 +8,6 @@ using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
@@ -19,14 +18,15 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
-            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings)
+            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
+            Func<IServiceProvider, string> fetchSqlConnectionString
+        )
         {
             services.RegisterSettings(fetchMessagingServiceBusSettings);
             services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices();
-            // TODO: ATLAS-327: Inject settings
-            services.RegisterImportDatabaseTypes(sp => sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["Sql"]);
+            services.RegisterImportDatabaseTypes(fetchSqlConnectionString);
         }
 
         public static void RegisterDonorReader(

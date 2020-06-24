@@ -20,7 +20,8 @@ namespace Atlas.DonorImport.Functions
             builder.Services.RegisterDonorImport(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
-                OptionsReaderFor<NotificationsServiceBusSettings>()
+                OptionsReaderFor<NotificationsServiceBusSettings>(),
+                ConnectionStringReader("Sql")
             );
         }
 
