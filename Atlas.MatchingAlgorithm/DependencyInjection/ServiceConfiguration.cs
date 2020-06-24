@@ -53,11 +53,19 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         public static void RegisterMatchingAlgorithm(
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings,
+            Func<IServiceProvider, AzureAppServiceManagementSettings> fetchAzureAppServiceManagementSettings,
+            Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
-            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings
-        )
+            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings)
         {
-            services.RegisterSettingsForMatchingAlgorithm();
+            services.RegisterSettingsForMatchingAlgorithm(
+                fetchAzureAuthenticationSettings,
+                fetchAzureAppServiceManagementSettings,
+                fetchAzureDatabaseManagementSettings,
+                fetchAzureStorageSettings
+            );
             services.RegisterMatchingAlgorithmServices();
             services.RegisterDataServices();
             services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
@@ -69,11 +77,12 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         public static void RegisterMatchingAlgorithmDonorManagement(
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings
         )
         {
-            services.RegisterSettingsForMatchingDonorManagement();
+            services.RegisterSettingsForMatchingDonorManagement(fetchAzureStorageSettings);
             services.RegisterMatchingAlgorithmServices();
             services.RegisterDataServices();
             services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
@@ -158,12 +167,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             });
             services.AddScoped<ISearchDispatcher, SearchDispatcher>();
             services.AddScoped<ISearchRunner, SearchRunner>();
-            services.AddScoped<IResultsBlobStorageClient, ResultsBlobStorageClient>(sp =>
-            {
-                var azureStorageSettings = sp.GetService<IOptions<AzureStorageSettings>>().Value;
-                var logger = sp.GetService<ILogger>();
-                return new ResultsBlobStorageClient(azureStorageSettings.ConnectionString, logger, azureStorageSettings.SearchResultsBlobContainer);
-            });
+            services.AddScoped<IResultsBlobStorageClient, ResultsBlobStorageClient>();
 
             services.AddScoped<IAzureDatabaseManagementClient, AzureDatabaseManagementClient>();
             services.AddScoped<IAzureAppServiceManagementClient, AzureAppServiceManagementClient>();
@@ -232,28 +236,37 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             });
         }
 
-        private static void RegisterSharedSettings(this IServiceCollection services)
+        private static void RegisterSharedSettings(
+            this IServiceCollection services,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
         {
+            services.AddScoped(fetchAzureStorageSettings);
+
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterOptions<MacDictionarySettings>("MacImport");
-            services.RegisterOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
 
-        private static void RegisterSettingsForMatchingDonorManagement(this IServiceCollection services)
+        private static void RegisterSettingsForMatchingDonorManagement(
+            this IServiceCollection services,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
         {
-            services.RegisterSharedSettings();
+            services.RegisterSharedSettings(fetchAzureStorageSettings);
             services.RegisterOptions<DonorManagementSettings>("MessagingServiceBus:DonorManagement");
         }
 
-        private static void RegisterSettingsForMatchingAlgorithm(this IServiceCollection services)
+        private static void RegisterSettingsForMatchingAlgorithm(
+            this IServiceCollection services,
+            Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings,
+            Func<IServiceProvider, AzureAppServiceManagementSettings> fetchAzureAppServiceManagementSettings,
+            Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings)
         {
-            services.RegisterSharedSettings();
-            services.RegisterOptions<WmdaSettings>("Wmda");
-            services.RegisterOptions<AzureAuthenticationSettings>("AzureManagement:Authentication");
-            services.RegisterOptions<AzureAppServiceManagementSettings>("AzureManagement:AppService");
-            services.RegisterOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");
+            services.RegisterSharedSettings(fetchAzureStorageSettings);
+            services.AddScoped(fetchAzureAuthenticationSettings);
+            services.AddScoped(fetchAzureAppServiceManagementSettings);
+            services.AddScoped(fetchAzureDatabaseManagementSettings);
             services.RegisterOptions<DataRefreshSettings>("DataRefresh");
         }
     }

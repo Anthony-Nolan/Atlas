@@ -8,7 +8,6 @@ using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.Utility;
 using Atlas.MatchingAlgorithm.Settings.Azure;
-using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -29,7 +28,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
         {
             azureManagementClient = Substitute.For<IAzureDatabaseManagementClient>();
             threadSleeper = Substitute.For<IThreadSleeper>();
-            var settingsOptions = Substitute.For<IOptions<AzureDatabaseManagementSettings>>();
             logger = Substitute.For<ILogger>();
 
             var defaultOperationTime = DateTime.UtcNow;
@@ -41,16 +39,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
                     State = AzureDatabaseOperationState.Succeeded, StartTime = defaultOperationTime
                 }
             });
-            settingsOptions.Value.Returns(new AzureDatabaseManagementSettings
-            {
-                ServerName = "server-name",
-                PollingRetryIntervalMilliseconds = "0"
-            });
 
             azureDatabaseManager = new AzureDatabaseManager(
                 azureManagementClient,
                 threadSleeper,
-                settingsOptions,
+                new AzureDatabaseManagementSettings
+                {
+                    ServerName = "server-name",
+                    PollingRetryIntervalMilliseconds = "0"
+                },
                 logger
             );
         }

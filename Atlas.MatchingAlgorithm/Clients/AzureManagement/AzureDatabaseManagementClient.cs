@@ -9,7 +9,6 @@ using Atlas.MatchingAlgorithm.Clients.AzureManagement.Extensions;
 using Atlas.MatchingAlgorithm.Exceptions.Azure;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Settings.Azure;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
@@ -29,10 +28,10 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
         private readonly string databaseServerName;
 
         public AzureDatabaseManagementClient(
-            IOptions<AzureDatabaseManagementSettings> azureSettings,
-            IAzureAuthenticationClient azureAuthenticationClient) : base(azureSettings.Value, azureAuthenticationClient)
+            AzureDatabaseManagementSettings azureSettings,
+            IAzureAuthenticationClient azureAuthenticationClient) : base(azureSettings, azureAuthenticationClient)
         {
-            databaseServerName = azureSettings.Value.ServerName;
+            databaseServerName = azureSettings.ServerName;
         }
 
         public async Task<DateTime> TriggerDatabaseScaling(string databaseName, AzureDatabaseSize databaseSize)

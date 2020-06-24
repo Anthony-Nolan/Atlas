@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Settings.Azure;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Clients.AzureStorage
@@ -16,10 +17,10 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureStorage
     {
         private readonly string resultsContainerName;
 
-        public ResultsBlobStorageClient(string azureStorageConnectionString, ILogger logger, string resultsContainerName) : base(
-            azureStorageConnectionString, logger)
+        public ResultsBlobStorageClient(AzureStorageSettings azureStorageSettings, ILogger logger)
+            : base(azureStorageSettings.ConnectionString, logger)
         {
-            this.resultsContainerName = resultsContainerName;
+            this.resultsContainerName = azureStorageSettings.SearchResultsBlobContainer;
         }
 
         public async Task UploadResults(string requestId, SearchResultSet searchResultSet)

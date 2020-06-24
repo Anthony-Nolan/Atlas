@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement.AzureApiModels;
 using Atlas.MatchingAlgorithm.Exceptions.Azure;
 using Atlas.MatchingAlgorithm.Settings.Azure;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
@@ -23,9 +22,9 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
         private readonly HttpClient httpClient;
         private readonly AzureAuthenticationSettings settings;
 
-        public AzureAuthenticationClient(IOptions<AzureAuthenticationSettings> azureFunctionOptions)
+        public AzureAuthenticationClient(AzureAuthenticationSettings azureFunctionOptions)
         {
-            settings = azureFunctionOptions.Value;
+            settings = azureFunctionOptions;
 
             httpClient = new HttpClient {BaseAddress = new Uri(OAuthBaseUrl)};
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/x-www-form-urlencoded"));

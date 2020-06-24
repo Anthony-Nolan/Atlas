@@ -12,6 +12,7 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
+using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.Configuration;
@@ -35,11 +36,16 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.RegisterSettings();
             services.RegisterMatchingAlgorithm(
                 DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<AzureAuthenticationSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<AzureAppServiceManagementSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<AzureDatabaseManagementSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<AzureStorageSettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>()
             );
             services.RegisterMatchingAlgorithmDonorManagement(
                 DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<AzureStorageSettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>()
             );
@@ -63,6 +69,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
         private static void RegisterSettings(this IServiceCollection services)
         {
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterOptions<AzureAuthenticationSettings>("AzureManagement:Authentication");
+            services.RegisterOptions<AzureAppServiceManagementSettings>("AzureManagement:AppService");
+            services.RegisterOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");
+            services.RegisterOptions<AzureDatabaseManagementSettings>("AzureStorage");
             services.RegisterOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterOptions<MacDictionarySettings>("MacDictionary");
         }
