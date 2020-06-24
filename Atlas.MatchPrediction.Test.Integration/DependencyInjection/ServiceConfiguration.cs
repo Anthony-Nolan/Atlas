@@ -24,21 +24,18 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
 
             SetUpConfiguration(services);
             services.RegisterMatchPredictionServices(
-                _ => new ApplicationInsightsSettings {LogLevel = "Info"},
+                ApplicationInsightsSettingsReader,
                 _ => new AzureStorageSettings(),
                 _ => new HlaMetadataDictionarySettings(),
                 _ => new MacDictionarySettings(),
                 _ => new NotificationsServiceBusSettings(),
-                SqlConnectionStringReader()
+                SqlConnectionStringReader
             );
             RegisterIntegrationTestServices(services);
             SetUpMockServices(services);
 
             // This call must be made after `RegisterMatchPredictionServices()`, as it overrides the non-mock dictionary set up in that method
-            services.RegisterFileBasedHlaMetadataDictionaryForTesting(
-                //These configuration values won't be used, because all they are all (indirectly) overridden, below.
-                OptionsReaderFor<ApplicationInsightsSettings>()
-            );
+            services.RegisterFileBasedHlaMetadataDictionaryForTesting(ApplicationInsightsSettingsReader);
 
             return services.BuildServiceProvider();
         }
@@ -57,12 +54,12 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
         {
             services.AddScoped(sp =>
             {
-                var connectionString = SqlConnectionStringReader()(sp);
+                var connectionString = SqlConnectionStringReader(sp);
                 return new ContextFactory().Create(connectionString);
             });
 
             services.AddScoped<IHaplotypeFrequencyInspectionRepository>(sp =>
-                new HaplotypeFrequencyInspectionRepository(SqlConnectionStringReader()(sp))
+                new HaplotypeFrequencyInspectionRepository(SqlConnectionStringReader(sp))
             );
         }
 
@@ -71,6 +68,9 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             services.AddScoped(sp => Substitute.For<INotificationSender>());
         }
 
-        private static Func<IServiceProvider, string> SqlConnectionStringReader() => DependencyInjectionUtils.ConnectionStringReader("Sql");
+        private static Func<IServiceProvider, string> SqlConnectionStringReader => DependencyInjectionUtils.ConnectionStringReader("Sql");
+
+        private static Func<IServiceProvider, ApplicationInsightsSettings> ApplicationInsightsSettingsReader =>
+            _ => new ApplicationInsightsSettings {LogLevel = "Info"};
     }
 }
