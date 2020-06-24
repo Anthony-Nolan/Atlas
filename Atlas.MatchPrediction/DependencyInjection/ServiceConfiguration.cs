@@ -11,6 +11,7 @@ using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchCalculation;
+using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Settings.Azure;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.EntityFrameworkCore;
@@ -91,6 +92,8 @@ namespace Atlas.MatchPrediction.DependencyInjection
             services.AddScoped<ICompressedPhenotypeExpander, CompressedPhenotypeExpander>();
 
             services.AddScoped<IMatchCalculationService, MatchCalculationService>();
+
+            services.AddScoped<IMatchProbabilityService, MatchProbabilityService>();
 
             services.AddScoped<ILocusHlaConverter, LocusHlaConverter>();
         }
