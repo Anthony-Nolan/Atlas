@@ -47,7 +47,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
-                OptionsReaderFor<NotificationsServiceBusSettings>()
+                OptionsReaderFor<NotificationsServiceBusSettings>(),
+                PersistentSqlConnectionStringReader,
+                TransientSqlAConnectionStringReader,
+                TransientSqlBConnectionStringReader,
+                DependencyInjectionUtils.ConnectionStringReader("DonorImportSql")
             );
             services.RegisterMatchingAlgorithmDonorManagement(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
@@ -56,7 +60,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
-                OptionsReaderFor<NotificationsServiceBusSettings>()
+                OptionsReaderFor<NotificationsServiceBusSettings>(),
+                PersistentSqlConnectionStringReader,
+                TransientSqlAConnectionStringReader,
+                TransientSqlBConnectionStringReader
             );
 
             // This call must be made after `RegisterMatchingAlgorithm()`, as it overrides the non-mock dictionary set up in that method
@@ -111,5 +118,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
         {
             services.AddScoped<ITestDataRefreshHistoryRepository, TestDataRefreshHistoryRepository>();
         }
+
+        private static Func<IServiceProvider, string> PersistentSqlConnectionStringReader =>
+            DependencyInjectionUtils.ConnectionStringReader("PersistentSql");
+
+        private static Func<IServiceProvider, string> TransientSqlAConnectionStringReader => DependencyInjectionUtils.ConnectionStringReader("SqlA");
+
+        private static Func<IServiceProvider, string> TransientSqlBConnectionStringReader => DependencyInjectionUtils.ConnectionStringReader("SqlB");
     }
 }
