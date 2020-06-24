@@ -1,9 +1,12 @@
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Notifications;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.Functions;
+using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
+using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,8 +26,11 @@ namespace Atlas.MatchingAlgorithm.Functions
                 DependencyInjectionUtils.OptionsReaderFor<AzureAppServiceManagementSettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<AzureDatabaseManagementSettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<AzureStorageSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<DataRefreshSettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>()
+                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<MessagingServiceBusSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<NotificationsServiceBusSettings>()
             );
         }
 
@@ -34,9 +40,12 @@ namespace Atlas.MatchingAlgorithm.Functions
             services.RegisterOptions<AzureAuthenticationSettings>("AzureManagement:Authentication");
             services.RegisterOptions<AzureAppServiceManagementSettings>("AzureManagement:AppService");
             services.RegisterOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");
-            services.RegisterOptions<AzureDatabaseManagementSettings>("AzureStorage");
+            services.RegisterOptions<AzureStorageSettings>("AzureStorage");
+            services.RegisterOptions<DataRefreshSettings>("DataRefresh");
             services.RegisterOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterOptions<MacDictionarySettings>("MacDictionary");
+            services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+            services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
     }
 }

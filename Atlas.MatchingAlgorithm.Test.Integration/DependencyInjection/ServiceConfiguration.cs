@@ -12,7 +12,9 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
+using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
+using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.Configuration;
@@ -40,14 +42,20 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 DependencyInjectionUtils.OptionsReaderFor<AzureAppServiceManagementSettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<AzureDatabaseManagementSettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<AzureStorageSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<DataRefreshSettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>()
+                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<MessagingServiceBusSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<NotificationsServiceBusSettings>()
             );
             services.RegisterMatchingAlgorithmDonorManagement(
                 DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<AzureStorageSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<DonorManagementSettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>()
+                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<MessagingServiceBusSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<NotificationsServiceBusSettings>()
             );
 
             // This call must be made after `RegisterMatchingAlgorithm()`, as it overrides the non-mock dictionary set up in that method
@@ -72,9 +80,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.RegisterOptions<AzureAuthenticationSettings>("AzureManagement:Authentication");
             services.RegisterOptions<AzureAppServiceManagementSettings>("AzureManagement:AppService");
             services.RegisterOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");
-            services.RegisterOptions<AzureDatabaseManagementSettings>("AzureStorage");
+            services.RegisterOptions<AzureStorageSettings>("AzureStorage");
+            services.RegisterOptions<DataRefreshSettings>("DataRefresh");
             services.RegisterOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterOptions<MacDictionarySettings>("MacDictionary");
+            services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+            services.RegisterOptions<DonorManagementSettings>("MessagingServiceBus:DonorManagement");
+            services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
 
         private static void RegisterMockServices(IServiceCollection services)
