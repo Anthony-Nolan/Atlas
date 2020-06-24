@@ -3,6 +3,7 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.Functions;
+using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,10 @@ namespace Atlas.MatchingAlgorithm.Functions
             RegisterSettings(builder.Services);
             builder.Services.RegisterMatchingAlgorithm(
                 DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<AzureAuthenticationSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<AzureAppServiceManagementSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<AzureDatabaseManagementSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<AzureStorageSettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>()
             );
@@ -26,6 +31,10 @@ namespace Atlas.MatchingAlgorithm.Functions
         private static void RegisterSettings(IServiceCollection services)
         {
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterOptions<AzureAuthenticationSettings>("AzureManagement:Authentication");
+            services.RegisterOptions<AzureAppServiceManagementSettings>("AzureManagement:AppService");
+            services.RegisterOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");
+            services.RegisterOptions<AzureDatabaseManagementSettings>("AzureStorage");
             services.RegisterOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterOptions<MacDictionarySettings>("MacDictionary");
         }

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement.AzureApiModels.AppSettings;
 using Atlas.MatchingAlgorithm.Exceptions.Azure;
 using Atlas.MatchingAlgorithm.Settings.Azure;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
@@ -20,9 +19,10 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
         protected override string AzureApiVersion => "2016-08-01";
 
         public AzureAppServiceManagementClient(
-            IOptions<AzureAppServiceManagementSettings> azureSettings,
+            // ReSharper disable once SuggestBaseTypeForParameter - needed for DI to distinguish settings objects
+            AzureAppServiceManagementSettings azureSettings,
             IAzureAuthenticationClient azureAuthenticationClient
-        ) : base(azureSettings.Value, azureAuthenticationClient)
+        ) : base(azureSettings, azureAuthenticationClient)
         {
         }
 

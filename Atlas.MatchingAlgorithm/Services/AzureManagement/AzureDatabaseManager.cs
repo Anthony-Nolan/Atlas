@@ -7,7 +7,6 @@ using Atlas.MatchingAlgorithm.Exceptions.Azure;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.Utility;
 using Atlas.MatchingAlgorithm.Settings.Azure;
-using Microsoft.Extensions.Options;
 using Polly;
 
 namespace Atlas.MatchingAlgorithm.Services.AzureManagement
@@ -31,14 +30,14 @@ namespace Atlas.MatchingAlgorithm.Services.AzureManagement
         public AzureDatabaseManager(
             IAzureDatabaseManagementClient databaseManagementClient,
             IThreadSleeper threadSleeper,
-            IOptions<AzureDatabaseManagementSettings> settings,
+            AzureDatabaseManagementSettings settings,
             ILogger logger)
         {
             this.databaseManagementClient = databaseManagementClient;
             this.threadSleeper = threadSleeper;
             this.logger = logger;
-            isLocal = settings.Value.ServerName == LocalServerName;
-            pollingRetryIntervalMilliseconds = long.Parse(settings.Value.PollingRetryIntervalMilliseconds);
+            isLocal = settings.ServerName == LocalServerName;
+            pollingRetryIntervalMilliseconds = long.Parse(settings.PollingRetryIntervalMilliseconds);
         }
 
         public async Task UpdateDatabaseSize(string databaseName, AzureDatabaseSize databaseSize)
