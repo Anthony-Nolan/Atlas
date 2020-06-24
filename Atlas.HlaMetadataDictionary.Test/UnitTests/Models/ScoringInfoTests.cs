@@ -65,6 +65,5 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Models
                 @"{""name"":""02:01"",""status"":{""seq"":1,""dna"":1},""pGrp"":""02:01P"",""gGrp"":""02:01:01G"",""ser"":[]}"
             );
         }
-
     }
 }

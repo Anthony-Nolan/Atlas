@@ -1,3 +1,4 @@
+using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.Models.FileSchema;
 using LochNessBuilder;
@@ -16,6 +17,16 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
         internal static Builder<DonorUpdate> WithRecordIdPrefix(this Builder<DonorUpdate> builder, string recordIdPrefix)
         {
             return builder.WithFactory(d => d.RecordId, IncrementingIdGenerator.NextStringIdFactory(recordIdPrefix));
+        }
+
+        internal static Builder<DonorUpdate> WithHla(this Builder<DonorUpdate> builder, ImportedHla hla)
+        {
+            return builder.With(d => d.Hla, hla);
+        }
+
+        internal static Builder<DonorUpdate> WithHomozygousHlaAt(this Builder<DonorUpdate> builder, Locus locus, string hla)
+        {
+            return builder.With(d => d.Hla, HlaBuilder.New.WithHomozygousMolecularHlaOnLocus(locus, hla).Build());
         }
     }
 }
