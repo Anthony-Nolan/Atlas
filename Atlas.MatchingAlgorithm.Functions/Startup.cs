@@ -31,7 +31,11 @@ namespace Atlas.MatchingAlgorithm.Functions
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
-                OptionsReaderFor<NotificationsServiceBusSettings>()
+                OptionsReaderFor<NotificationsServiceBusSettings>(),
+                DependencyInjectionUtils.ConnectionStringReader("PersistentSql"),
+                DependencyInjectionUtils.ConnectionStringReader("SqlA"),
+                DependencyInjectionUtils.ConnectionStringReader("SqlB"),
+                DependencyInjectionUtils.ConnectionStringReader("DonorImportSql")
             );
         }
 

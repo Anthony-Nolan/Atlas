@@ -53,7 +53,11 @@ namespace Atlas.MatchingAlgorithm.Api
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
-                OptionsReaderFor<NotificationsServiceBusSettings>()
+                OptionsReaderFor<NotificationsServiceBusSettings>(),
+                DependencyInjectionUtils.ConnectionStringReader("PersistentSql"),
+                DependencyInjectionUtils.ConnectionStringReader("SqlA"),
+                DependencyInjectionUtils.ConnectionStringReader("SqlB"),
+                DependencyInjectionUtils.ConnectionStringReader("DonorImportSql")
             );
 
             services.ConfigureSwaggerService();

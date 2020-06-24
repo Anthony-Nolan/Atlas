@@ -41,7 +41,6 @@ using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
@@ -60,7 +59,12 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
-            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings)
+            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
+            Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
+            Func<IServiceProvider, string> fetchTransientASqlConnectionString,
+            Func<IServiceProvider, string> fetchTransientBSqlConnectionString,
+            Func<IServiceProvider, string> fetchDonorImportSqlConnectionString
+        )
         {
             services.RegisterSettingsForMatchingAlgorithm(
                 fetchApplicationInsightsSettings,
@@ -72,12 +76,16 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchMessagingServiceBusSettings,
                 fetchNotificationsServiceBusSettings
             );
-            services.RegisterMatchingAlgorithmServices(fetchApplicationInsightsSettings);
-            services.RegisterDataServices();
+            services.RegisterMatchingAlgorithmServices(
+                fetchApplicationInsightsSettings,
+                fetchPersistentSqlConnectionString,
+                fetchTransientASqlConnectionString,
+                fetchTransientBSqlConnectionString
+            );
+            services.RegisterDataServices(fetchPersistentSqlConnectionString);
             services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
 
-            // TODO: ATLAS-327: Inject settings
-            services.RegisterDonorReader(sp => sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["DonorImportSql"]);
+            services.RegisterDonorReader(fetchDonorImportSqlConnectionString);
         }
 
         public static void RegisterMatchingAlgorithmDonorManagement(
@@ -88,7 +96,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
-            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings
+            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
+            Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
+            Func<IServiceProvider, string> fetchTransientASqlConnectionString,
+            Func<IServiceProvider, string> fetchTransientBSqlConnectionString
         )
         {
             services.RegisterSettingsForMatchingDonorManagement(
@@ -98,21 +109,32 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchMessagingServiceBusSettings,
                 fetchNotificationsServiceBusSettings
             );
-            services.RegisterMatchingAlgorithmServices(fetchApplicationInsightsSettings);
-            services.RegisterDataServices();
+
+            services.RegisterMatchingAlgorithmServices(
+                fetchApplicationInsightsSettings,
+                fetchPersistentSqlConnectionString,
+                fetchTransientASqlConnectionString,
+                fetchTransientBSqlConnectionString
+            );
+
+            services.RegisterDataServices(fetchPersistentSqlConnectionString);
             services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
             services.RegisterDonorManagementServices(fetchDonorManagementSettings, fetchMessagingServiceBusSettings);
         }
 
         private static void RegisterMatchingAlgorithmServices(
             this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
+            Func<IServiceProvider, string> fetchTransientASqlConnectionString,
+            Func<IServiceProvider, string> fetchTransientBSqlConnectionString
+        )
         {
             services.AddScoped(sp => new ConnectionStrings
             {
-                Persistent = sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["PersistentSql"],
-                TransientA = sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"],
-                TransientB = sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"],
+                Persistent = fetchPersistentSqlConnectionString(sp),
+                TransientA = fetchTransientASqlConnectionString(sp),
+                TransientB = fetchTransientBSqlConnectionString(sp),
             });
 
             services.AddSingleton<IMemoryCache, MemoryCache>(sp => new MemoryCache(new MemoryCacheOptions()));
@@ -192,16 +214,12 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IScoringCache, ScoringCache>();
         }
 
-        private static void RegisterDataServices(this IServiceCollection services)
+        private static void RegisterDataServices(this IServiceCollection services, Func<IServiceProvider, string> fetchPersistentSqlConnectionString)
         {
             services.AddScoped<IActiveRepositoryFactory, ActiveRepositoryFactory>();
             services.AddScoped<IDormantRepositoryFactory, DormantRepositoryFactory>();
             // Persistent storage
-            services.AddScoped(sp =>
-            {
-                var persistentConnectionString = sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["PersistentSql"];
-                return new ContextFactory().Create(persistentConnectionString);
-            });
+            services.AddScoped(sp => new ContextFactory().Create(fetchPersistentSqlConnectionString(sp)));
             services.AddScoped<IScoringWeightingRepository, ScoringWeightingRepository>();
             services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
         }
