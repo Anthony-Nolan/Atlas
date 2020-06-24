@@ -22,7 +22,8 @@ namespace Atlas.MatchPrediction.Functions
                 DependencyInjectionUtils.OptionsReaderFor<AzureStorageSettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<NotificationsServiceBusSettings>()
+                DependencyInjectionUtils.OptionsReaderFor<NotificationsServiceBusSettings>(),
+                DependencyInjectionUtils.ConnectionStringReader("Sql")
             );
         }
 
