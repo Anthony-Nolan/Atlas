@@ -13,9 +13,9 @@ using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using NSubstitute;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
@@ -33,8 +33,16 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.AddSingleton<IConfiguration>(sp => configuration);
 
             services.RegisterSettings();
-            services.RegisterMatchingAlgorithm(DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>());
-            services.RegisterMatchingAlgorithmDonorManagement(DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>());
+            services.RegisterMatchingAlgorithm(
+                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>()
+            );
+            services.RegisterMatchingAlgorithmDonorManagement(
+                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>()
+            );
 
             // This call must be made after `RegisterMatchingAlgorithm()`, as it overrides the non-mock dictionary set up in that method
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(
@@ -54,7 +62,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 
         private static void RegisterSettings(this IServiceCollection services)
         {
+            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
+            services.RegisterOptions<MacDictionarySettings>("MacDictionary");
         }
 
         private static void RegisterMockServices(IServiceCollection services)

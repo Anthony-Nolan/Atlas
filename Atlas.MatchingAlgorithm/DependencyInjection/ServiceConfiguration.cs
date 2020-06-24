@@ -5,7 +5,6 @@ using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus.BatchReceiving;
-using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
@@ -40,12 +39,12 @@ using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
-using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.DependencyInjection
 {
@@ -53,34 +52,31 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
     {
         public static void RegisterMatchingAlgorithm(
             this IServiceCollection services,
-            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
+            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings
         )
         {
             services.RegisterSettingsForMatchingAlgorithm();
             services.RegisterMatchingAlgorithmServices();
             services.RegisterDataServices();
-            services.RegisterHlaMetadataDictionary(
-                fetchHlaMetadataDictionarySettings,
-                OptionsReaderFor<ApplicationInsightsSettings>(), // TODO: ATLAS-327
-                OptionsReaderFor<MacImportSettings>() // TODO: ATLAS-327
-            );
+            services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
+
             // TODO: ATLAS-327: Inject settings
             services.RegisterDonorReader(sp => sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["DonorImportSql"]);
         }
 
         public static void RegisterMatchingAlgorithmDonorManagement(
             this IServiceCollection services,
-            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
+            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings
         )
         {
             services.RegisterSettingsForMatchingDonorManagement();
             services.RegisterMatchingAlgorithmServices();
             services.RegisterDataServices();
-            services.RegisterHlaMetadataDictionary(
-                fetchHlaMetadataDictionarySettings,
-                OptionsReaderFor<ApplicationInsightsSettings>(), // TODO: ATLAS-327
-                OptionsReaderFor<MacImportSettings>()  // TODO: ATLAS-327
-            );
+            services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
             services.RegisterDonorManagementServices();
         }
 
@@ -239,7 +235,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static void RegisterSharedSettings(this IServiceCollection services)
         {
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterOptions<MacImportSettings>("MacImport");
+            services.RegisterOptions<MacDictionarySettings>("MacImport");
             services.RegisterOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");

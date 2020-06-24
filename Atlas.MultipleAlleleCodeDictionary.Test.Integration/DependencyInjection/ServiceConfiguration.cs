@@ -13,24 +13,29 @@ using NSubstitute;
 
 namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjection
 {
-    internal class ServiceConfiguration
+    internal static class ServiceConfiguration
     {
         public static IServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
-            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterOptions<MacImportSettings>("MacImport");
-            SetUpConfiguration(services);
+            services.RegisterSettings();
+            services.SetUpConfiguration();
             services.RegisterMacDictionary(
                 DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MacImportSettings>()
-                );
-            SetUpIntegrationTestServices(services);
-            SetUpMockServices(services);
+                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>()
+            );
+            services.SetUpIntegrationTestServices();
+            services.SetUpMockServices();
             return services.BuildServiceProvider();
         }
 
-        private static void SetUpConfiguration(IServiceCollection services)
+        private static void RegisterSettings(this IServiceCollection services)
+        {
+            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterOptions<MacDictionarySettings>("MacDictionary");
+        }
+
+        private static void SetUpConfiguration(this IServiceCollection services)
         {
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
@@ -39,13 +44,13 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjectio
 
             services.AddSingleton<IConfiguration>(sp => configuration);
         }
-        
-        private static void SetUpIntegrationTestServices(IServiceCollection services)
+
+        private static void SetUpIntegrationTestServices(this IServiceCollection services)
         {
             services.AddScoped<ITestMacRepository, TestMacRepository>();
         }
-        
-        private static void SetUpMockServices(IServiceCollection services)
+
+        private static void SetUpMockServices(this IServiceCollection services)
         {
             services.AddScoped(sp => Substitute.For<IMacCodeDownloader>());
             services.AddScoped(sp => Substitute.For<INotificationSender>());

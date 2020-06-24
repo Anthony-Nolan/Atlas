@@ -25,7 +25,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, MacImportSettings> fetchMacImportSettings)
+            Func<IServiceProvider, MacDictionarySettings> fetchMacImportSettings)
         {
             services.AddScoped(fetchHlaMetadataDictionarySettings);
 

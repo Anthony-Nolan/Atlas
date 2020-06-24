@@ -4,9 +4,9 @@
     "ApplicationInsights:LogLevel": "Info",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "MacImport:ConnectionString": "UseDevelopmentStorage=true",
-    "MacImport:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
-    "MacImport:TableName": "AtlasMultipleAlleleCodes",
+    "MacDictionary:ConnectionString": "UseDevelopmentStorage=true",
+    "MacDictionary:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
+    "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
     "MessagingServiceBus:ConnectionString": "override-this",
     "MessagingServiceBus:SearchRequestsQueue": "matching-requests",
     "MessagingServiceBus:SearchResultsTopic": "matching-results-ready"

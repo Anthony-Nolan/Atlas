@@ -1,7 +1,9 @@
 ﻿using System.Reflection;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.DependencyInjection;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -36,8 +38,10 @@ namespace Atlas.MatchingAlgorithm.Api
         public void ConfigureServices(IServiceCollection services)
         {
             RegisterSettings(services);
-            // TODO: ATLAS-327: Inject settings
-            services.RegisterMatchingAlgorithm(DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>());
+            services.RegisterMatchingAlgorithm(
+                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>());
 
             services.ConfigureSwaggerService();
 
@@ -64,7 +68,9 @@ namespace Atlas.MatchingAlgorithm.Api
 
         private static void RegisterSettings(IServiceCollection services)
         {
+            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
+            services.RegisterOptions<MacDictionarySettings>("MacDictionary");
         }
     }
 }

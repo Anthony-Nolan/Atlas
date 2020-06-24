@@ -2,18 +2,15 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
-using Atlas.Common.Utils.Extensions;
-using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Services;
+using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
-using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.MatchCalculation;
-using Atlas.MatchPrediction.Settings;
 using Atlas.MatchPrediction.Settings.Azure;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.EntityFrameworkCore;
@@ -39,7 +36,7 @@ namespace Atlas.MatchPrediction.DependencyInjection
             services.RegisterHlaMetadataDictionary(
                 fetchHlaMetadataDictionarySettings,
                 OptionsReaderFor<ApplicationInsightsSettings>(), // TODO: ATLAS-327
-                OptionsReaderFor<MacImportSettings>() // TODO: ATLAS-327
+                OptionsReaderFor<MacDictionarySettings>() // TODO: ATLAS-327
             );
         }
 
@@ -48,7 +45,7 @@ namespace Atlas.MatchPrediction.DependencyInjection
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
-            services.RegisterOptions<MacImportSettings>("MacImport");
+            services.RegisterOptions<MacDictionarySettings>("MacImport");
             services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
 
