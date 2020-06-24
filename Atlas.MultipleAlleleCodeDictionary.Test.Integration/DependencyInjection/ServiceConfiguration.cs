@@ -10,6 +10,7 @@ using Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjection
 {
@@ -21,8 +22,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjectio
             services.RegisterSettings();
             services.SetUpConfiguration();
             services.RegisterMacDictionary(
-                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>()
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<MacDictionarySettings>()
             );
             services.SetUpIntegrationTestServices();
             services.SetUpMockServices();

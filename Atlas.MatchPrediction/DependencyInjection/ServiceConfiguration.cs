@@ -50,8 +50,8 @@ namespace Atlas.MatchPrediction.DependencyInjection
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings)
         {
-            services.AddScoped(fetchAzureStorageSettings);
-            services.AddScoped(fetchNotificationsServiceBusSettings);
+            services.MakeOptionsAvailableForUse(fetchAzureStorageSettings);
+            services.MakeOptionsAvailableForUse(fetchNotificationsServiceBusSettings);
         }
 
         private static void RegisterDatabaseServices(this IServiceCollection services)

@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 using Atlas.MatchPrediction.Data.Context;
@@ -13,6 +12,7 @@ using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
 {
@@ -36,7 +36,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             // This call must be made after `RegisterMatchPredictionServices()`, as it overrides the non-mock dictionary set up in that method
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(
                 //These configuration values won't be used, because all they are all (indirectly) overridden, below.
-                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>()
+                OptionsReaderFor<ApplicationInsightsSettings>()
             );
 
             return services.BuildServiceProvider();

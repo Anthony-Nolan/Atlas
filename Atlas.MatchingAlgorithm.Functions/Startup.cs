@@ -10,6 +10,7 @@ using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
@@ -21,16 +22,16 @@ namespace Atlas.MatchingAlgorithm.Functions
         {
             RegisterSettings(builder.Services);
             builder.Services.RegisterMatchingAlgorithm(
-                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<AzureAuthenticationSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<AzureAppServiceManagementSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<AzureDatabaseManagementSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<AzureStorageSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<DataRefreshSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<MessagingServiceBusSettings>(),
-                DependencyInjectionUtils.OptionsReaderFor<NotificationsServiceBusSettings>()
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<AzureAuthenticationSettings>(),
+                OptionsReaderFor<AzureAppServiceManagementSettings>(),
+                OptionsReaderFor<AzureDatabaseManagementSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<DataRefreshSettings>(),
+                OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                OptionsReaderFor<MacDictionarySettings>(),
+                OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<NotificationsServiceBusSettings>()
             );
         }
 
