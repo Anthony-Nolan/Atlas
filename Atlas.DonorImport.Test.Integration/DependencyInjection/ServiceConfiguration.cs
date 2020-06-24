@@ -26,7 +26,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
                 sp => new ApplicationInsightsSettings {LogLevel = "Info"},
                 sp => new MessagingServiceBusSettings(),
                 sp => new NotificationsServiceBusSettings(),
-                DependencyInjectionUtils.ConnectionStringReader("Sql")
+                SqlConnectionStringReader
             );
             RegisterIntegrationTestServices(services);
             SetUpMockServices(services);
@@ -35,15 +35,8 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
 
         private static void RegisterIntegrationTestServices(IServiceCollection services)
         {
-            services.AddScoped(sp =>
-            {
-                var connectionString = GetSqlConnectionString(sp);
-                return new ContextFactory().Create(connectionString);
-            });
-
-            services.AddScoped<IDonorInspectionRepository>(sp =>
-                new DonorInspectionRepository(GetSqlConnectionString(sp))
-            );
+            services.AddScoped(sp => new ContextFactory().Create(SqlConnectionStringReader(sp)));
+            services.AddScoped<IDonorInspectionRepository>(sp => new DonorInspectionRepository(SqlConnectionStringReader(sp)));
         }
 
         private static void SetUpConfiguration(IServiceCollection services)
@@ -67,9 +60,6 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
             services.AddScoped(sp => Substitute.For<INotificationSender>());
         }
 
-        private static string GetSqlConnectionString(IServiceProvider serviceProvider)
-        {
-            return serviceProvider.GetService<IConfiguration>().GetSection("ConnectionStrings")["Sql"];
-        }
+        private static Func<IServiceProvider, string> SqlConnectionStringReader => DependencyInjectionUtils.ConnectionStringReader("Sql");
     }
 }

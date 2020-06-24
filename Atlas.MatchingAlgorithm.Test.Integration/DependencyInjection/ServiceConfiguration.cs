@@ -73,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             );
 
             services.AddScoped(sp =>
-                new ContextFactory().Create(sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlA"])
+                new ContextFactory().Create(TransientSqlAConnectionStringReader(sp))
             );
 
             RegisterMockServices(services);
