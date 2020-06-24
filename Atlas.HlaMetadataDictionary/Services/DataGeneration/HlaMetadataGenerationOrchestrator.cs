@@ -6,22 +6,21 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
-using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversion;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 {
     /// <summary>
     /// Orchestrates the generation of the HLA Metadata dataset.
     /// The resulting data has not yet been persisted.
     /// </summary>
-    internal interface IHlaMetadataService
+    internal interface IHlaMetadataGenerationOrchestrator
     {
-        HlaMetadataCollection GetAllHlaMetadata(string hlaNomenclatureVersion);
+        HlaMetadataCollection GenerateAllHlaMetadata(string hlaNomenclatureVersion);
     }
 
-    internal class HlaMetadataService : IHlaMetadataService
+    internal class HlaMetadataGenerationOrchestrator : IHlaMetadataGenerationOrchestrator
     {
         private readonly IHlaMatchPreCalculationService matchPreCalculationService;
         private readonly IAlleleNamesService alleleNamesService;
@@ -30,7 +29,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         private readonly IDpb1TceGroupsService dpb1TceGroupsService;
         private readonly ILogger logger;
 
-        public HlaMetadataService(
+        public HlaMetadataGenerationOrchestrator(
             IHlaMatchPreCalculationService matchPreCalculationService,
             IAlleleNamesService alleleNamesService,
             IHlaToMatchingMetaDataConverter hlaToMatchingMetaDataConverter,
@@ -46,7 +45,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             this.logger = logger;
         }
 
-        public HlaMetadataCollection GetAllHlaMetadata(string hlaNomenclatureVersion)
+        public HlaMetadataCollection GenerateAllHlaMetadata(string hlaNomenclatureVersion)
         {
             try
             {
@@ -79,14 +78,14 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             }
         }
 
-        private IEnumerable<IMatchedHla> GetPreCalculatedMatchedHla(string hlaNomenclatureVersion)
-        {
-            return matchPreCalculationService.GetMatchedHla(hlaNomenclatureVersion);
-        }
-
         private IEnumerable<IAlleleNameMetadata> GetAlleleNamesAndTheirVariants(string hlaNomenclatureVersion)
         {
             return alleleNamesService.GetAlleleNamesAndTheirVariants(hlaNomenclatureVersion);
+        }
+
+        private IEnumerable<IMatchedHla> GetPreCalculatedMatchedHla(string hlaNomenclatureVersion)
+        {
+            return matchPreCalculationService.GetMatchedHla(hlaNomenclatureVersion);
         }
 
         private IEnumerable<ISerialisableHlaMetadata> GetMatchingMetadata(IEnumerable<IMatchedHla> matchedHla)

@@ -10,7 +10,7 @@ using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.MatchedHlaConversion
+namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.MatchedHlaConversion
 {
     internal abstract class MatchedHlaToMetaDataConverterTestBase<THlaDataConverter>
         where THlaDataConverter : IMatchedHlaToMetaDataConverterBase, new()
