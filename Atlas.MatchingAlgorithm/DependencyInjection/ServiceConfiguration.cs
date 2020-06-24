@@ -39,7 +39,6 @@ using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
-using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -145,10 +144,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.AddScoped<ISearchRequestContext, SearchRequestContext>();
             services.AddApplicationInsightsTelemetryWorkerService();
-            services.AddScoped<ILogger>(sp => new SearchRequestAwareLogger(
-                sp.GetService<ISearchRequestContext>(),
-                sp.GetService<TelemetryClient>(),
-                fetchApplicationInsightsSettings(sp).LogLevel.ToLogLevel()));
+            services.AddScoped<ILogger, SearchRequestAwareLogger>();
 
             services.RegisterLifeTimeScopedCacheTypes();
 

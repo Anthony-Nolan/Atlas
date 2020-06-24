@@ -14,17 +14,17 @@ namespace Atlas.Common.ApplicationInsights
     public class Logger : ILogger
     {
         private readonly TelemetryClient client;
-        private readonly LogLevel logLevel;
+        private readonly LogLevel configuredLogLevel;
 
-        public Logger(TelemetryClient client, LogLevel logLevel)
+        public Logger(TelemetryClient client, ApplicationInsightsSettings applicationInsightsSettings)
         {
             this.client = client;
-            this.logLevel = logLevel;
+            configuredLogLevel = applicationInsightsSettings.LogLevel.ToLogLevel();
         }
 
         public virtual void SendEvent(EventModel eventModel)
         {
-            if (eventModel.Level >= logLevel)
+            if (eventModel.Level >= configuredLogLevel)
             {
                 eventModel.Properties.Add("LogLevel", $"{eventModel.Level}");
                 client.TrackEvent(eventModel.Name, eventModel.Properties, eventModel.Metrics);
@@ -33,7 +33,7 @@ namespace Atlas.Common.ApplicationInsights
 
         public virtual void SendTrace(string message, LogLevel messageLogLevel, Dictionary<string, string> props)
         {
-            if (messageLogLevel >= logLevel)
+            if (messageLogLevel >= configuredLogLevel)
             {
                 client.TrackTrace(message, GetSeverityLevel(messageLogLevel), props);
             }
