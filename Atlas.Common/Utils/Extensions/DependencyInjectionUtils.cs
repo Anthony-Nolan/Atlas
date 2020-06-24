@@ -55,7 +55,7 @@ namespace Atlas.Common.Utils.Extensions
         /// <param name="fetcher">Func responsible for providing an instance of the Settings object. Likely the output of <see cref="OptionsReaderFor{T}"/></param>
         public static void MakeOptionsAvailableForUse<T>(this IServiceCollection services, Func<IServiceProvider, T> fetcher) where T : class
         {
-            services.AddScoped<T>(fetcher);
+            services.AddSingleton<T>(fetcher);
         }
 
         /// <summary>
