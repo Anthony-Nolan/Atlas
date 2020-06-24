@@ -27,6 +27,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
         private readonly IHlaToMatchingMetaDataConverter hlaToMatchingMetaDataConverter;
         private readonly IHlaToScoringMetaDataConverter hlaToScoringMetaDataConverter;
         private readonly IDpb1TceGroupsService dpb1TceGroupsService;
+        private readonly IAlleleGroupsService alleleGroupsService;
         private readonly ILogger logger;
 
         public HlaMetadataGenerationOrchestrator(
@@ -35,6 +36,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             IHlaToMatchingMetaDataConverter hlaToMatchingMetaDataConverter,
             IHlaToScoringMetaDataConverter hlaToScoringMetaDataConverter,
             IDpb1TceGroupsService dpb1TceGroupsService,
+            IAlleleGroupsService alleleGroupsService,
             ILogger logger)
         {
             this.matchPreCalculationService = matchPreCalculationService;
@@ -42,6 +44,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             this.hlaToMatchingMetaDataConverter = hlaToMatchingMetaDataConverter;
             this.hlaToScoringMetaDataConverter = hlaToScoringMetaDataConverter;
             this.dpb1TceGroupsService = dpb1TceGroupsService;
+            this.alleleGroupsService = alleleGroupsService;
             this.logger = logger;
         }
 
@@ -64,12 +67,16 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
                 logger.SendTrace("HlaMetadataDictionary: Processing TCE groups");
                 var dpb1TceGroupMetadata = GetDpb1TceGroupMetadata(hlaNomenclatureVersion);
 
+                logger.SendTrace("HlaMetadataDictionary: Processing Allele Groups metadata");
+                var alleleGroupsMetadata = GetAlleleGroupsMetadata(hlaNomenclatureVersion);
+
                 return new HlaMetadataCollection
                 {
                     AlleleNameMetadata = alleleNameMetadata,
                     HlaMatchingMetadata = matchingMetadata,
                     HlaScoringMetadata = scoringMetadata,
-                    Dpb1TceGroupMetadata = dpb1TceGroupMetadata
+                    Dpb1TceGroupMetadata = dpb1TceGroupMetadata,
+                    AlleleGroupMetadata = alleleGroupsMetadata
                 };
             }
             catch (Exception ex)
@@ -101,6 +108,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
         private IEnumerable<ISerialisableHlaMetadata> GetDpb1TceGroupMetadata(string hlaNomenclatureVersion)
         {
             return dpb1TceGroupsService.GetDpb1TceGroupMetadata(hlaNomenclatureVersion);
+        }
+
+        private IEnumerable<ISerialisableHlaMetadata> GetAlleleGroupsMetadata(string hlaNomenclatureVersion)
+        {
+            return alleleGroupsService.GetAlleleGroupsMetadata(hlaNomenclatureVersion);
         }
     }
 }
