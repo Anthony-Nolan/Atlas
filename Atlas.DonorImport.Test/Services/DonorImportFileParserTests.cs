@@ -1,6 +1,9 @@
+using System;
 using System.Linq;
+using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
+using EnumStringValues;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -22,10 +25,59 @@ namespace Atlas.DonorImport.Test.Services
         {
             const int donorCount = 100;
             var fileStream = DonorImportFileContentsBuilder.New.WithDonorCount(donorCount).Build().ToStream();
-            
+
             var donors = donorImportFileParser.PrepareToLazilyParseDonorUpdates(fileStream).ReadLazyDonorUpdates().ToList();
 
-            donors.Count().Should().Be(donorCount);
+            donors.Should().HaveCount(donorCount);
+        }
+
+        [Test]
+        public void ImportDonorFile_FullModeWithAdditionsOnly_DoesNotThrow()
+        {
+            var variedDonors =
+                DonorUpdateBuilder.New
+                    .With(donor => donor.ChangeType, ImportDonorChangeType.Create)
+                    .Build(10);
+            var fileStream = DonorImportFileContentsBuilder.New
+                .With(file => file.updateMode, UpdateMode.Full)
+                .WithDonors(variedDonors.ToArray())
+                .Build().ToStream();
+
+            var lazyParsedDonors = donorImportFileParser.PrepareToLazilyParseDonorUpdates(fileStream).ReadLazyDonorUpdates();
+
+            lazyParsedDonors.Invoking(lazyDonors => lazyDonors.ToList()).Should().NotThrow();
+        }
+
+        [Test]
+        public void ImportDonorFile_FullModeWithNonAdditions_Throws()
+        {
+            var variedDonors =
+                DonorUpdateBuilder.New
+                    .With(donor => donor.ChangeType, EnumExtensions.EnumerateValues<ImportDonorChangeType>())
+                    .Build(10);
+            var fileStream = DonorImportFileContentsBuilder.New
+                .With(file => file.updateMode, UpdateMode.Full)
+                .WithDonors(variedDonors.ToArray())
+                .Build().ToStream();
+
+            var lazyParsedDonors = donorImportFileParser.PrepareToLazilyParseDonorUpdates(fileStream).ReadLazyDonorUpdates();
+            lazyParsedDonors.Invoking(lazyDonors => lazyDonors.ToList()).Should().Throw<InvalidOperationException>();
+        }
+
+        [Test]
+        public void ImportDonorFile_FullModeWithNonAdditions_DoesNotThrow()
+        {
+            var variedDonors =
+                DonorUpdateBuilder.New
+                    .With(donor => donor.ChangeType, EnumExtensions.EnumerateValues<ImportDonorChangeType>())
+                    .Build(10);
+            var fileStream = DonorImportFileContentsBuilder.New
+                .With(file => file.updateMode, UpdateMode.Differential)
+                .WithDonors(variedDonors.ToArray())
+                .Build().ToStream();
+            var lazyParsedDonors = donorImportFileParser.PrepareToLazilyParseDonorUpdates(fileStream).ReadLazyDonorUpdates();
+
+            lazyParsedDonors.Invoking(lazyDonors => lazyDonors.ToList()).Should().NotThrow();
         }
     }
 }

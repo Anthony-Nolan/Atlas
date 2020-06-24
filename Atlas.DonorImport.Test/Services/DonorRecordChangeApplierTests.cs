@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
+using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -80,6 +82,47 @@ namespace Atlas.DonorImport.Test.Services
             await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, "file");
 
             await messagingServiceBusClient.Received(donorUpdates.Count).PublishDonorUpdateMessage(Arg.Any<SearchableDonorUpdate>());
+        }
+
+        [Test]
+        public async Task ApplyDonorOperationBatch_ForDifferentialUpdate_WithAMixOfOperations_PostsMatchingUpdatesForEachDonor()
+        {
+            //ARRANGE
+            var donorUpdates = DonorUpdateBuilder.New
+                .With(d => d.UpdateMode, UpdateMode.Differential)
+                .With(d => d.ChangeType, new[] {ImportDonorChangeType.Create, ImportDonorChangeType.Delete, ImportDonorChangeType.Edit})
+                .Build(21)
+                .ToList();
+
+            donorInspectionRepository.GetDonorIdsByExternalDonorCodes(default)
+                .ReturnsForAnyArgs(args => args.Arg<ICollection<string>>().ToDictionary(code => code, code => 0));
+
+            // Capture all the Calls to MessageServiceBus.
+            var sequenceOfMassCalls = new List<List<SearchableDonorUpdate>>();
+            var sequenceOfIndividualCalls = new List<SearchableDonorUpdate>();
+
+            messagingServiceBusClient.PublishDonorUpdateMessages(
+                Arg.Do<ICollection<SearchableDonorUpdate>>(messageCollection => { sequenceOfMassCalls.Add(messageCollection.ToList()); })
+            ).Returns(Task.CompletedTask);
+
+            messagingServiceBusClient.PublishDonorUpdateMessage(
+                Arg.Do<SearchableDonorUpdate>(messageCollection => { sequenceOfIndividualCalls.Add(messageCollection); })
+            ).Returns(Task.CompletedTask);
+            
+
+            //ACT
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, "file");
+            
+
+            //ASSERT
+            sequenceOfMassCalls.Add(sequenceOfIndividualCalls);
+            
+            //Should be batched up in 3 sets of 7. Each of which maps to one ChangeType. IsAvailableForSearch is the closest surrogate we have to ChangeType.
+            foreach (var massCall in sequenceOfMassCalls)
+            {
+                massCall.Select(call => call.IsAvailableForSearch).Should().AllBeEquivalentTo(massCall.First().IsAvailableForSearch);
+                massCall.Should().HaveCount(7);
+            }
         }
 
         [Test]
