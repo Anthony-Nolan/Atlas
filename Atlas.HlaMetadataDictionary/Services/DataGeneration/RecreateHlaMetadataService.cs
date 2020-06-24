@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
+﻿using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
-using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 {
@@ -20,7 +19,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 
     internal class RecreateHlaMetadataService : IRecreateHlaMetadataService
     {
-        private readonly IHlaMetadataService hlaMetadataService;
+        private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IAlleleNamesMetadataRepository alleleNamesMetadataRepository;
         private readonly IHlaMatchingMetadataRepository hlaMatchingMetadataRepository;
         private readonly IHlaScoringMetadataRepository hlaScoringMetadataRepository;
@@ -28,14 +27,14 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
         private readonly ILogger logger;
 
         public RecreateHlaMetadataService(
-            IHlaMetadataService hlaMetadataService,
+            IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IAlleleNamesMetadataRepository alleleNamesMetadataRepository,
             IHlaMatchingMetadataRepository hlaMatchingMetadataRepository,
             IHlaScoringMetadataRepository hlaScoringMetadataRepository,
             IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository,
             ILogger logger)
         {
-            this.hlaMetadataService = hlaMetadataService;
+            this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.alleleNamesMetadataRepository = alleleNamesMetadataRepository;
             this.hlaMatchingMetadataRepository = hlaMatchingMetadataRepository;
             this.hlaScoringMetadataRepository = hlaScoringMetadataRepository;
@@ -48,7 +47,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             try
             {
                 logger.SendTrace("HlaMetadataDictionary: Fetching all Metadata");
-                var allHlaMetadata = hlaMetadataService.GetAllHlaMetadata(hlaNomenclatureVersion);
+                var allHlaMetadata = hlaMetadataGenerationOrchestrator.GenerateAllHlaMetadata(hlaNomenclatureVersion);
                 
                 logger.SendTrace("HlaMetadataDictionary: Persisting all Metadata");
                 await PersistHlaMetadataCollection(allHlaMetadata, hlaNomenclatureVersion);
