@@ -1,16 +1,18 @@
-using Atlas.Common.Notifications;
-using Atlas.MatchPrediction.Data.Context;
-using Atlas.MatchPrediction.DependencyInjection;
-using Atlas.MatchPrediction.Test.Integration.TestHelpers;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
 using System;
 using System.IO;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
+using Atlas.MatchPrediction.Data.Context;
+using Atlas.MatchPrediction.DependencyInjection;
+using Atlas.MatchPrediction.Settings.Azure;
+using Atlas.MatchPrediction.Test.Integration.TestHelpers;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using NSubstitute;
 
 namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
 {
@@ -21,7 +23,13 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             var services = new ServiceCollection();
 
             SetUpConfiguration(services);
-            services.RegisterMatchPredictionServices(_ => new HlaMetadataDictionarySettings());
+            services.RegisterMatchPredictionServices(
+                _ => new ApplicationInsightsSettings {LogLevel = "Info"},
+                _ => new AzureStorageSettings(),
+                _ => new HlaMetadataDictionarySettings(),
+                _ => new MacDictionarySettings(),
+                _ => new NotificationsServiceBusSettings()
+            );
             RegisterIntegrationTestServices(services);
             SetUpMockServices(services);
 
