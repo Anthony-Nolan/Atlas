@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata
 {
@@ -9,5 +8,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata
         public IEnumerable<ISerialisableHlaMetadata> HlaMatchingMetadata { get; set; }
         public IEnumerable<ISerialisableHlaMetadata> HlaScoringMetadata { get; set; }
         public IEnumerable<ISerialisableHlaMetadata> Dpb1TceGroupMetadata { get; set; }
+        public IEnumerable<ISerialisableHlaMetadata> AlleleGroupMetadata { get; set; }
     }
 }

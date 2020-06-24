@@ -24,6 +24,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
         private readonly IHlaMatchingMetadataRepository hlaMatchingMetadataRepository;
         private readonly IHlaScoringMetadataRepository hlaScoringMetadataRepository;
         private readonly IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository;
+        private readonly IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository;
         private readonly ILogger logger;
 
         public RecreateHlaMetadataService(
@@ -32,6 +33,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             IHlaMatchingMetadataRepository hlaMatchingMetadataRepository,
             IHlaScoringMetadataRepository hlaScoringMetadataRepository,
             IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository,
+            IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository,
             ILogger logger)
         {
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
@@ -39,6 +41,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             this.hlaMatchingMetadataRepository = hlaMatchingMetadataRepository;
             this.hlaScoringMetadataRepository = hlaScoringMetadataRepository;
             this.dpb1TceGroupsMetadataRepository = dpb1TceGroupsMetadataRepository;
+            this.alleleGroupsMetadataRepository = alleleGroupsMetadataRepository;
             this.logger = logger;
         }
 
@@ -63,31 +66,17 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             // Metadata Dictionary lookups require an up-to-date collection of allele names,
             // so all collections must be recreated together; the order of execution is not important.
             await Task.WhenAll(
-                PersistAlleleNamesMetadata(metadataCollection.AlleleNameMetadata, hlaNomenclatureVersion),
-                PersistHlaMatchingMetadata(metadataCollection.HlaMatchingMetadata, hlaNomenclatureVersion),
-                PersistHlaScoringMetadata(metadataCollection.HlaScoringMetadata, hlaNomenclatureVersion),
-                PersistDpb1TceGroupMetadata(metadataCollection.Dpb1TceGroupMetadata, hlaNomenclatureVersion)
+                PersistMetadata(alleleNamesMetadataRepository, metadataCollection.AlleleNameMetadata, hlaNomenclatureVersion),
+                PersistMetadata(hlaMatchingMetadataRepository, metadataCollection.HlaMatchingMetadata, hlaNomenclatureVersion),
+                PersistMetadata(hlaScoringMetadataRepository, metadataCollection.HlaScoringMetadata, hlaNomenclatureVersion),
+                PersistMetadata(dpb1TceGroupsMetadataRepository, metadataCollection.Dpb1TceGroupMetadata, hlaNomenclatureVersion),
+                PersistMetadata(alleleGroupsMetadataRepository, metadataCollection.AlleleGroupMetadata, hlaNomenclatureVersion)
             );
         }
 
-        private async Task PersistAlleleNamesMetadata(IEnumerable<ISerialisableHlaMetadata> alleleNames, string hlaNomenclatureVersion)
+        private static async Task PersistMetadata(IHlaMetadataRepository repository, IEnumerable<ISerialisableHlaMetadata> metadata, string hlaNomenclatureVersion)
         {
-            await alleleNamesMetadataRepository.RecreateHlaMetadataTable(alleleNames, hlaNomenclatureVersion);
-        }
-
-        private async Task PersistHlaMatchingMetadata(IEnumerable<ISerialisableHlaMetadata> hlaMatchingMetadata, string hlaNomenclatureVersion)
-        {
-            await hlaMatchingMetadataRepository.RecreateHlaMetadataTable(hlaMatchingMetadata, hlaNomenclatureVersion);
-        }
-
-        private async Task PersistHlaScoringMetadata(IEnumerable<ISerialisableHlaMetadata> hlaScoringMetadata, string hlaNomenclatureVersion)
-        {
-            await hlaScoringMetadataRepository.RecreateHlaMetadataTable(hlaScoringMetadata, hlaNomenclatureVersion);
-        }
-
-        private async Task PersistDpb1TceGroupMetadata(IEnumerable<ISerialisableHlaMetadata> dpb1TceGroupMetadata, string hlaNomenclatureVersion)
-        {
-            await dpb1TceGroupsMetadataRepository.RecreateHlaMetadataTable(dpb1TceGroupMetadata, hlaNomenclatureVersion);
+            await repository.RecreateHlaMetadataTable(metadata, hlaNomenclatureVersion);
         }
     }
 }
