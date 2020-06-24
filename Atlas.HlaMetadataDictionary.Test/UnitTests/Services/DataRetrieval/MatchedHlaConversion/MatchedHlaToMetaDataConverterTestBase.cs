@@ -5,7 +5,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
-using Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversion;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;

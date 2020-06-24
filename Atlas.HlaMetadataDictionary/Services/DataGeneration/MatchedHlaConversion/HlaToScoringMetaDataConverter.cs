@@ -5,29 +5,34 @@ using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversion
 {
     /// <summary>
     /// Converts Matched HLA to model optimised for HLA Scoring lookups.
     /// </summary>
-    internal interface IHlaToMatchingMetaDataConverter : IMatchedHlaToMetaDataConverterBase
+    internal interface IHlaToScoringMetaDataConverter : IMatchedHlaToMetaDataConverterBase
     {
     }
 
-    internal class HlaToMatchingMetaDataConverter :
+    internal class HlaToScoringMetaDataConverter :
         MatchedHlaToMetaDataConverterBase,
-        IHlaToMatchingMetaDataConverter
+        IHlaToScoringMetaDataConverter
     {
-        protected override ISerialisableHlaMetadata GetSerologyMetadata(IHlaMetadataSource<SerologyTyping> metadataSource)
+        protected override ISerialisableHlaMetadata GetSerologyMetadata(
+            IHlaMetadataSource<SerologyTyping> metadataSource)
         {
-            return new HlaMatchingMetadata(
-                    metadataSource.TypingForHlaMetadata.Locus,
-                    metadataSource.TypingForHlaMetadata.Name,
-                    TypingMethod.Serology,
-                    metadataSource.MatchingPGroups);
+            var scoringInfo = SerologyScoringInfo.GetScoringInfo(metadataSource);
+
+            return new HlaScoringMetadata(
+                metadataSource.TypingForHlaMetadata.Locus,
+                metadataSource.TypingForHlaMetadata.Name,
+                scoringInfo,
+                TypingMethod.Serology
+            );
         }
 
         protected override ISerialisableHlaMetadata GetSingleAlleleMetadata(
@@ -35,8 +40,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversio
         {
             return GetMolecularMetadata(
                 new[] { metadataSource },
-                allele => allele.Name
-            );
+                allele => allele.Name,
+                sources => SingleAlleleScoringInfo.GetScoringInfoWithMatchingSerologies(sources.First()));
         }
 
         protected override ISerialisableHlaMetadata GetNmdpCodeAlleleMetadata(
@@ -45,8 +50,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversio
         {
             return GetMolecularMetadata(
                 metadataSources,
-                allele => nmdpLookupName
-            );
+                allele => nmdpLookupName,
+                MultipleAlleleScoringInfo.GetScoringInfo);
         }
 
         protected override ISerialisableHlaMetadata GetXxCodeMetadata(
@@ -54,13 +59,14 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversio
         {
             return GetMolecularMetadata(
                 metadataSources,
-                allele => allele.ToXxCodeLookupName()
-            );
+                allele => allele.ToXxCodeLookupName(),
+                ConsolidatedMolecularScoringInfo.GetScoringInfo);
         }
-        
-        private static ISerialisableHlaMetadata GetMolecularMetadata(
+
+        private static HlaScoringMetadata GetMolecularMetadata(
             IEnumerable<IHlaMetadataSource<AlleleTyping>> metadataSources,
-            Func<AlleleTyping, string> getLookupName)
+            Func<AlleleTyping, string> getLookupName,
+            Func<IEnumerable<IHlaMetadataSource<AlleleTyping>>, IHlaScoringInfo> getScoringInfo)
         {
             var sources = metadataSources.ToList();
 
@@ -68,16 +74,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversio
                 .First()
                 .TypingForHlaMetadata;
 
-            var pGroups = sources
-                .SelectMany(resultSource => resultSource.MatchingPGroups)
-                .Distinct();
-
-            return new HlaMatchingMetadata(
+            return new HlaScoringMetadata(
                 firstAllele.Locus,
                 getLookupName(firstAllele),
-                TypingMethod.Molecular,
-                pGroups
-                );
+                getScoringInfo(sources),
+                TypingMethod.Molecular
+            );
         }
     }
 }

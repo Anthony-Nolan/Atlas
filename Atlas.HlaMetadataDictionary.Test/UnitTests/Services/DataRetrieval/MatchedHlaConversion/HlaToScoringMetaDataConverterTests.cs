@@ -4,7 +4,7 @@ using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
-using Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversion;
 using FluentAssertions;
 using NUnit.Framework;
 
