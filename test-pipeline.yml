@@ -101,8 +101,8 @@ jobs:
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
       numberOfLevels: 2
-      keyname1: MacImport
-      keyname2: ConnectionString
+      keyname1: MacDictionary
+      keyname2: AzureStorageConnectionString
       valueToSet: '$(AZURE_STORAGE_CONNECTION_STRING)'
 
   - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
@@ -183,8 +183,8 @@ jobs:
       inputs:
         filename: '$(System.DefaultWorkingDirectory)/Atlas.MultipleAlleleCodeDictionary.Test.Integration/appsettings.json'
         numberOfLevels: 2
-        keyname1: MacImport
-        keyname2: ConnectionString
+        keyname1: MacDictionary
+        keyname2: AzureStorageConnectionString
         valueToSet: '$(AZURE_STORAGE_CONNECTION_STRING)'
     - task: DotNetCoreCLI@2
       displayName: 'MacDictionary Integration Tests'
