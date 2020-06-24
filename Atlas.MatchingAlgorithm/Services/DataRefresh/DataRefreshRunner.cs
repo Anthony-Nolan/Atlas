@@ -17,7 +17,6 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
 using Atlas.MatchingAlgorithm.Settings;
 using EnumStringValues;
-using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 {
@@ -37,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
     public class DataRefreshRunner : IDataRefreshRunner
     {
-        private readonly IOptions<DataRefreshSettings> settingsOptions;
+        private readonly DataRefreshSettings dataRefreshSettings;
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private readonly IAzureDatabaseManager azureDatabaseManager;
@@ -92,7 +91,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         };
 
         public DataRefreshRunner(
-            IOptions<DataRefreshSettings> dataRefreshSettingsOptions,
+            DataRefreshSettings dataRefreshSettings,
             IActiveDatabaseProvider activeDatabaseProvider,
             IAzureDatabaseNameProvider azureDatabaseNameProvider,
             IAzureDatabaseManager azureDatabaseManager,
@@ -114,7 +113,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.logger = logger;
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
-            settingsOptions = dataRefreshSettingsOptions;
+            this.dataRefreshSettings = dataRefreshSettings;
 
             // TODO: ATLAS-355: Remove the need for a hardcoded default value
             activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(
@@ -278,7 +277,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     await donorImportRepository.RemoveHlaTableIndexes();
                     break;
                 case DataRefreshStage.DatabaseScalingSetup:
-                    await ScaleDatabase(settingsOptions.Value.RefreshDatabaseSize.ParseToEnum<AzureDatabaseSize>());
+                    await ScaleDatabase(dataRefreshSettings.RefreshDatabaseSize.ParseToEnum<AzureDatabaseSize>());
                     break;
                 case DataRefreshStage.DonorImport:
                     if (executionMode == DataRefreshStageExecutionMode.Continuation)
@@ -303,7 +302,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     break;
 
                 case DataRefreshStage.DatabaseScalingTearDown:
-                    await ScaleDatabase(settingsOptions.Value.ActiveDatabaseSize.ParseToEnum<AzureDatabaseSize>());
+                    await ScaleDatabase(dataRefreshSettings.ActiveDatabaseSize.ParseToEnum<AzureDatabaseSize>());
                     break;
                 case DataRefreshStage.QueuedDonorUpdateProcessing:
                     // TODO: ATLAS-249: Implement new donor update workflow
@@ -325,7 +324,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             try
             {
-                await ScaleDatabase(settingsOptions.Value.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>());
+                await ScaleDatabase(dataRefreshSettings.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>());
             }
             catch (Exception e)
             {

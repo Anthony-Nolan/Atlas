@@ -23,7 +23,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 .With(s => s.DatabaseAName, "db-a")
                 .With(s => s.DatabaseBName, "db-b")
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
 
             await dataRefreshRunner.RefreshData(default);
@@ -37,7 +37,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             var settings = DataRefreshSettingsBuilder.New
                 .With(s => s.RefreshDatabaseSize, "P15")
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
 
             await dataRefreshRunner.RefreshData(default);
 
@@ -50,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             var settings = DataRefreshSettingsBuilder.New
                 .With(s => s.RefreshDatabaseSize, "S4")
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
 
             await dataRefreshRunner.RefreshData(default);
 
@@ -63,7 +63,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             var settings = DataRefreshSettingsBuilder.New
                 .With(s => s.RefreshDatabaseSize, "P15")
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
 
             await dataRefreshRunner.RefreshData(default);
 
@@ -80,7 +80,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             var settings = DataRefreshSettingsBuilder.New
                 .With(s => s.ActiveDatabaseSize, "S4")
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
 
             await dataRefreshRunner.RefreshData(default);
 
@@ -98,7 +98,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 .With(s => s.ActiveDatabaseSize, "S4")
                 .With(s => s.RefreshDatabaseSize, "P15")
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
 
             await dataRefreshRunner.RefreshData(default);
 
@@ -116,7 +116,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 .With(s => s.DatabaseAName, "db-a")
                 .With(s => s.DormantDatabaseSize, "S0")
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
             hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest).Throws(new Exception());
 
@@ -137,7 +137,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 .With(s => s.DatabaseAName, "db-a")
                 .With(s => s.DormantDatabaseSize, "S0")
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
             donorImporter.ImportDonors().Throws(new Exception());
 
@@ -158,7 +158,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 .With(s => s.DatabaseAName, "db-a")
                 .With(s => s.DormantDatabaseSize, "S0")
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
             hlaProcessor.UpdateDonorHla(Arg.Any<string>()).Throws(new Exception());
 

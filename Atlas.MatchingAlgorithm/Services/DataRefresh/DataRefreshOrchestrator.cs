@@ -13,7 +13,6 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Settings;
 using EnumStringValues;
-using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 {
@@ -39,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
     public class DataRefreshOrchestrator : IDataRefreshOrchestrator
     {
         private readonly ILogger logger;
-        private readonly IOptions<DataRefreshSettings> settingsOptions;
+        private readonly DataRefreshSettings dataRefreshSettings;
         private readonly IHlaMetadataDictionary activeVersionHlaMetadataDictionary;
         private readonly IDataRefreshRunner dataRefreshRunner;
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
@@ -51,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         public DataRefreshOrchestrator(
             ILogger logger,
-            IOptions<DataRefreshSettings> settingsOptions,
+            DataRefreshSettings dataRefreshSettings,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IActiveDatabaseProvider activeDatabaseProvider,
@@ -63,7 +62,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IDataRefreshNotificationSender dataRefreshNotificationSender)
         {
             this.logger = logger;
-            this.settingsOptions = settingsOptions;
+            this.dataRefreshSettings = dataRefreshSettings;
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.dataRefreshRunner = dataRefreshRunner;
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
@@ -178,23 +177,23 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         private async Task AzureFunctionsSetUp()
         {
-            var donorFunctionsAppName = settingsOptions.Value.DonorFunctionsAppName;
-            var donorImportFunctionName = settingsOptions.Value.DonorImportFunctionName;
+            var donorFunctionsAppName = dataRefreshSettings.DonorFunctionsAppName;
+            var donorImportFunctionName = dataRefreshSettings.DonorImportFunctionName;
             logger.SendTrace($"DATA REFRESH SET UP: Disabling donor import function with name: {donorImportFunctionName}");
             await azureFunctionManager.StopFunction(donorFunctionsAppName, donorImportFunctionName);
         }
 
         private async Task AzureFunctionsTearDown()
         {
-            var donorFunctionsAppName = settingsOptions.Value.DonorFunctionsAppName;
-            var donorImportFunctionName = settingsOptions.Value.DonorImportFunctionName;
+            var donorFunctionsAppName = dataRefreshSettings.DonorFunctionsAppName;
+            var donorImportFunctionName = dataRefreshSettings.DonorImportFunctionName;
             logger.SendTrace($"DATA REFRESH TEAR DOWN: Re-enabling donor import function with name: {donorImportFunctionName}");
             await azureFunctionManager.StartFunction(donorFunctionsAppName, donorImportFunctionName);
         }
 
         private async Task ScaleDownDatabaseToDormantLevel(string databaseName)
         {
-            var dormantSize = settingsOptions.Value.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>();
+            var dormantSize = dataRefreshSettings.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>();
             logger.SendTrace($"DATA REFRESH TEAR DOWN: Scaling down database: {databaseName} to dormant size: {dormantSize}");
             await azureDatabaseManager.UpdateDatabaseSize(databaseName, dormantSize);
         }

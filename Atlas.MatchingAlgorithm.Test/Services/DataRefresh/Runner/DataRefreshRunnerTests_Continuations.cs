@@ -77,7 +77,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             var settings = DataRefreshSettingsBuilder.New
                 .With(s => s.RefreshDatabaseSize, AzureDatabaseSize.P15.ToString())
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
 
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
                 DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DataDeletion).Build()
@@ -96,7 +96,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             var settings = DataRefreshSettingsBuilder.New
                 .With(s => s.RefreshDatabaseSize, AzureDatabaseSize.P15.ToString())
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
 
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
                 DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.IndexRemoval).Build()
@@ -115,7 +115,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             var settings = DataRefreshSettingsBuilder.New
                 .With(s => s.RefreshDatabaseSize, AzureDatabaseSize.P15.ToString())
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
 
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
                 DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DatabaseScalingSetup).Build()
@@ -148,7 +148,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             var settings = DataRefreshSettingsBuilder.New
                 .With(s => s.ActiveDatabaseSize, AzureDatabaseSize.S4.ToString())
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
 
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
                 DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DonorHlaProcessing).Build()
@@ -169,7 +169,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             var settings = DataRefreshSettingsBuilder.New
                 .With(s => s.ActiveDatabaseSize, AzureDatabaseSize.S4.ToString())
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
 
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
                 DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.IndexRecreation).Build()
@@ -190,7 +190,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             var settings = DataRefreshSettingsBuilder.New
                 .With(s => s.ActiveDatabaseSize, AzureDatabaseSize.S4.ToString())
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
 
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
                 DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DatabaseScalingTearDown).Build()
@@ -207,7 +207,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             var settings = DataRefreshSettingsBuilder.New
                 .With(s => s.RefreshDatabaseSize, AzureDatabaseSize.P15.ToString())
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
 
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
                 DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.IndexRecreation).Build()

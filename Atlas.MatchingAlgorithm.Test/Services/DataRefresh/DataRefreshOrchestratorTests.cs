@@ -14,7 +14,6 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
-using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -25,7 +24,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
     public class DataRefreshOrchestratorTests
     {
         private ILogger logger;
-        private IOptions<DataRefreshSettings> settingsOptions;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private IActiveDatabaseProvider activeDatabaseProvider;
         private IDataRefreshRunner dataRefreshRunner;
@@ -42,14 +40,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [SetUp]
         public void SetUp()
         {
-            settingsOptions = Substitute.For<IOptions<DataRefreshSettings>>();
-            settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
-
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
-            var activeHlaVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
-            activeHlaVersionAccessor.GetActiveHlaNomenclatureVersionOrDefault().Returns(ExistingHlaVersion);
 
-            var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(wmdaHlaNomenclatureVersionAccessor);
 
             logger = Substitute.For<ILogger>();
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
@@ -59,9 +51,21 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
             dataRefreshNotificationSender = Substitute.For<IDataRefreshNotificationSender>();
 
-            dataRefreshOrchestrator = new DataRefreshOrchestrator(
+            dataRefreshOrchestrator = BuildDataRefreshOrchestrator();
+        }
+
+        private DataRefreshOrchestrator BuildDataRefreshOrchestrator(DataRefreshSettings dataRefreshSettings = null)
+        {
+            var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(wmdaHlaNomenclatureVersionAccessor);
+            
+            var activeHlaVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
+            activeHlaVersionAccessor.GetActiveHlaNomenclatureVersionOrDefault().Returns(ExistingHlaVersion);
+
+            var settings = dataRefreshSettings ?? DataRefreshSettingsBuilder.New.Build();
+            
+            return new DataRefreshOrchestrator(
                 logger,
-                settingsOptions,
+                settings,
                 hlaMetadataDictionaryBuilder,
                 activeHlaVersionAccessor,
                 activeDatabaseProvider,
@@ -69,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 dataRefreshHistoryRepository,
                 azureFunctionManager,
                 azureDatabaseManager,
-                new AzureDatabaseNameProvider(settingsOptions),
+                new AzureDatabaseNameProvider(settings),
                 dataRefreshNotificationSender
             );
         }
@@ -244,7 +248,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .With(s => s.DonorFunctionsAppName, "functions-app")
                 .With(s => s.DonorImportFunctionName, "import-func")
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshOrchestrator = BuildDataRefreshOrchestrator(settings);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -258,7 +262,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .With(s => s.DonorFunctionsAppName, "functions-app")
                 .With(s => s.DonorImportFunctionName, "import-func")
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshOrchestrator = BuildDataRefreshOrchestrator(settings);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
@@ -272,7 +276,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .With(s => s.DatabaseAName, "db-a")
                 .With(s => s.DormantDatabaseSize, "S0")
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshOrchestrator = BuildDataRefreshOrchestrator(settings);
             activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
@@ -287,7 +291,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .With(s => s.DatabaseAName, "db-a")
                 .With(s => s.DormantDatabaseSize, "S0")
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshOrchestrator = BuildDataRefreshOrchestrator(settings);
             activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
 
             // Marking refresh record as complete will switch over which database is considered "active". Emulating this with mocks here.
@@ -308,7 +312,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .With(s => s.DatabaseAName, "db-a")
                 .With(s => s.DormantDatabaseSize, "S0")
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshOrchestrator = BuildDataRefreshOrchestrator(settings);
             activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
             dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception());
 
@@ -324,7 +328,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .With(s => s.DonorFunctionsAppName, "functions-app")
                 .With(s => s.DonorImportFunctionName, "import-func")
                 .Build();
-            settingsOptions.Value.Returns(settings);
+            dataRefreshOrchestrator = BuildDataRefreshOrchestrator(settings);
             dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception());
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();

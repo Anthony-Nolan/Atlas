@@ -18,7 +18,6 @@ using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 using FluentAssertions;
-using Microsoft.Extensions.Options;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -28,7 +27,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
     [TestFixture]
     public partial class DataRefreshRunnerTests
     {
-        private IOptions<DataRefreshSettings> settingsOptions;
         private IActiveDatabaseProvider activeDatabaseProvider;
         private IAzureDatabaseManager azureDatabaseManager;
         private IDonorImportRepository donorImportRepository;
@@ -45,7 +43,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         [SetUp]
         public void SetUp()
         {
-            settingsOptions = Substitute.For<IOptions<DataRefreshSettings>>();
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
             donorImportRepository = Substitute.For<IDonorImportRepository>();
@@ -59,22 +56,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.Build());
             transientRepositoryFactory.GetDonorImportRepository().Returns(donorImportRepository);
-            settingsOptions.Value.Returns(DataRefreshSettingsBuilder.New.Build());
 
-            dataRefreshRunner = new DataRefreshRunner(
-                settingsOptions,
-                activeDatabaseProvider,
-                new AzureDatabaseNameProvider(settingsOptions),
-                azureDatabaseManager,
-                transientRepositoryFactory,
-                new HlaMetadataDictionaryBuilder().Returning(hlaMetadataDictionary),
-                Substitute.For<IActiveHlaNomenclatureVersionAccessor>(),
-                donorImporter,
-                hlaProcessor,
-                logger,
-                dataRefreshNotificationSender,
-                dataRefreshHistoryRepository
-            );
+            dataRefreshRunner = BuildDataRefreshRunner();
         }
 
         [Test]
@@ -142,7 +125,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 .With(s => s.DatabaseAName, "db-a")
                 .With(s => s.DormantDatabaseSize, databaseSize.ToString())
                 .Build();
-            settingsOptions.Value.Returns(settings);
+
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
+
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
             hlaProcessor.UpdateDonorHla(Arg.Any<string>()).Throws(new Exception());
             azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), databaseSize).Throws(new Exception());
@@ -155,6 +140,25 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             {
                 await dataRefreshNotificationSender.ReceivedWithAnyArgs().SendTeardownFailureAlert(default);
             }
+        }
+
+        private IDataRefreshRunner BuildDataRefreshRunner(DataRefreshSettings dataRefreshSettings = null)
+        {
+            var settings = dataRefreshSettings ?? DataRefreshSettingsBuilder.New.Build();
+            return new DataRefreshRunner(
+                settings,
+                activeDatabaseProvider,
+                new AzureDatabaseNameProvider(settings),
+                azureDatabaseManager,
+                transientRepositoryFactory,
+                new HlaMetadataDictionaryBuilder().Returning(hlaMetadataDictionary),
+                Substitute.For<IActiveHlaNomenclatureVersionAccessor>(),
+                donorImporter,
+                hlaProcessor,
+                logger,
+                dataRefreshNotificationSender,
+                dataRefreshHistoryRepository
+            );
         }
     }
 }
