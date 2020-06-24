@@ -1,9 +1,8 @@
-using Atlas.Common.Utils.Extensions;
+using System;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchingAlgorithm.DependencyInjection
 {
@@ -13,30 +12,24 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
     /// </summary>
     public static class ProjectInterfaceServiceConfiguration
     {
-        public static void RegisterMatchingAlgorithmOrchestration(this IServiceCollection services)
+        public static void RegisterMatchingAlgorithmOrchestration(
+            this IServiceCollection services,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
-            services.RegisterSettings();
+            services.RegisterSettings(fetchMessagingServiceBusSettings);
             services.RegisterServices();
         }
 
-        private static void RegisterSettings(this IServiceCollection services)
+        private static void RegisterSettings(
+            this IServiceCollection services,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
-            services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+            services.AddScoped(fetchMessagingServiceBusSettings);
         }
 
-        // TODO: ATLAS-327: Inject settings from top level apps
         private static void RegisterServices(this IServiceCollection services)
         {
-            services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>(sp =>
-            {
-                var serviceBusSettings = sp.GetService<IOptions<MessagingServiceBusSettings>>().Value;
-                return new SearchServiceBusClient(
-                    serviceBusSettings.ConnectionString,
-                    serviceBusSettings.SearchRequestsQueue,
-                    serviceBusSettings.SearchResultsTopic
-                );
-            });
-
+            services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>();
             services.AddScoped<ISearchDispatcher, SearchDispatcher>();
         }
     }

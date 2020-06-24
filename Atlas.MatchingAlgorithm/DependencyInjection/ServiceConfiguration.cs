@@ -43,7 +43,6 @@ using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.DependencyInjection
@@ -73,7 +72,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchMessagingServiceBusSettings,
                 fetchNotificationsServiceBusSettings
             );
-            services.RegisterMatchingAlgorithmServices();
+            services.RegisterMatchingAlgorithmServices(fetchApplicationInsightsSettings);
             services.RegisterDataServices();
             services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
 
@@ -99,13 +98,15 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchMessagingServiceBusSettings,
                 fetchNotificationsServiceBusSettings
             );
-            services.RegisterMatchingAlgorithmServices();
+            services.RegisterMatchingAlgorithmServices(fetchApplicationInsightsSettings);
             services.RegisterDataServices();
             services.RegisterHlaMetadataDictionary(fetchHlaMetadataDictionarySettings, fetchApplicationInsightsSettings, fetchMacDictionarySettings);
-            services.RegisterDonorManagementServices();
+            services.RegisterDonorManagementServices(fetchDonorManagementSettings, fetchMessagingServiceBusSettings);
         }
 
-        private static void RegisterMatchingAlgorithmServices(this IServiceCollection services)
+        private static void RegisterMatchingAlgorithmServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
         {
             services.AddScoped(sp => new ConnectionStrings
             {
@@ -125,7 +126,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<ILogger>(sp => new SearchRequestAwareLogger(
                 sp.GetService<ISearchRequestContext>(),
                 sp.GetService<TelemetryClient>(),
-                sp.GetService<IOptions<ApplicationInsightsSettings>>().Value.LogLevel.ToLogLevel()));
+                fetchApplicationInsightsSettings(sp).LogLevel.ToLogLevel()));
 
             services.RegisterLifeTimeScopedCacheTypes();
 
@@ -172,15 +173,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.AddScoped<IActiveHlaNomenclatureVersionAccessor, ActiveHlaNomenclatureVersionAccessor>();
 
-            services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>(sp =>
-            {
-                var serviceBusSettings = sp.GetService<IOptions<MessagingServiceBusSettings>>().Value;
-                return new SearchServiceBusClient(
-                    serviceBusSettings.ConnectionString,
-                    serviceBusSettings.SearchRequestsQueue,
-                    serviceBusSettings.SearchResultsTopic
-                );
-            });
+            services.AddScoped<ISearchServiceBusClient, SearchServiceBusClient>();
             services.AddScoped<ISearchDispatcher, SearchDispatcher>();
             services.AddScoped<ISearchRunner, SearchRunner>();
             services.AddScoped<IResultsBlobStorageClient, ResultsBlobStorageClient>();
@@ -213,18 +206,21 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IDataRefreshHistoryRepository, DataRefreshHistoryRepository>();
         }
 
-        private static void RegisterDonorManagementServices(this IServiceCollection services)
+        private static void RegisterDonorManagementServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
             services.AddScoped<IDonorManagementService, DonorManagementService>();
             services.AddScoped<ISearchableDonorUpdateConverter, SearchableDonorUpdateConverter>();
 
             services.AddSingleton<IMessageReceiverFactory, MessageReceiverFactory>(sp =>
-                new MessageReceiverFactory(sp.GetService<IOptions<MessagingServiceBusSettings>>().Value.ConnectionString)
+                new MessageReceiverFactory(fetchMessagingServiceBusSettings(sp).ConnectionString)
             );
 
             services.AddScoped<IServiceBusMessageReceiver<SearchableDonorUpdate>, ServiceBusMessageReceiver<SearchableDonorUpdate>>(sp =>
             {
-                var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
+                var settings = fetchDonorManagementSettings(sp);
                 var factory = sp.GetService<IMessageReceiverFactory>();
                 return new ServiceBusMessageReceiver<SearchableDonorUpdate>(factory, settings.Topic, settings.Subscription);
             });
@@ -241,7 +237,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 var managementService = sp.GetService<IDonorManagementService>();
                 var updateConverter = sp.GetService<ISearchableDonorUpdateConverter>();
                 var logger = sp.GetService<ILogger>();
-                var settings = sp.GetService<IOptions<DonorManagementSettings>>().Value;
+                var settings = fetchDonorManagementSettings(sp);
 
                 return new DonorUpdateProcessor(
                     messageReceiverService,

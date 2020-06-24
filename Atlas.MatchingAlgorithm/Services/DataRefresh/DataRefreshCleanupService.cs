@@ -3,13 +3,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
-using Atlas.MatchingAlgorithm.Extensions;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Settings;
 using EnumStringValues;
-using Microsoft.Extensions.Options;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 {
@@ -37,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IAzureDatabaseManager azureDatabaseManager;
-        private readonly IOptions<DataRefreshSettings> dataRefreshSettings;
+        private readonly DataRefreshSettings dataRefreshSettings;
         private readonly IAzureFunctionManager azureFunctionManager;
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private readonly IDataRefreshNotificationSender notificationSender;
@@ -47,7 +45,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IAzureDatabaseNameProvider azureDatabaseNameProvider,
             IActiveDatabaseProvider activeDatabaseProvider,
             IAzureDatabaseManager azureDatabaseManager,
-            IOptions<DataRefreshSettings> dataRefreshSettings,
+            DataRefreshSettings dataRefreshSettings,
             IAzureFunctionManager azureFunctionManager,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
             IDataRefreshNotificationSender notificationSender
@@ -99,7 +97,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         private async Task ScaleDatabase()
         {
-            var targetSize = dataRefreshSettings.Value.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>();
+            var targetSize = dataRefreshSettings.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>();
             var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetDormantDatabase());
             logger.SendTrace($"DATA REFRESH CLEANUP: Scaling database: {databaseName} to size {targetSize}");
             await azureDatabaseManager.UpdateDatabaseSize(databaseName, targetSize);
@@ -107,8 +105,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         private async Task EnableDonorManagementFunction()
         {
-            var donorFunctionsAppName = dataRefreshSettings.Value.DonorFunctionsAppName;
-            var donorImportFunctionName = dataRefreshSettings.Value.DonorImportFunctionName;
+            var donorFunctionsAppName = dataRefreshSettings.DonorFunctionsAppName;
+            var donorImportFunctionName = dataRefreshSettings.DonorImportFunctionName;
             logger.SendTrace($"DATA REFRESH CLEANUP: Re-enabling donor import function with name: {donorImportFunctionName}");
             await azureFunctionManager.StartFunction(donorFunctionsAppName, donorImportFunctionName);
         }
