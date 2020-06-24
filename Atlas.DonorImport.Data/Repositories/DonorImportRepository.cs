@@ -51,7 +51,7 @@ namespace Atlas.DonorImport.Data.Repositories
                 UPDATE Donors
                 SET
                     {columnUpdateStrings}
-                WHERE {nameof(Donor.AtlasId)} = @{nameof(Donor.AtlasId)},
+                WHERE {nameof(Donor.AtlasId)} = @{nameof(Donor.AtlasId)}
                 ";
 
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
