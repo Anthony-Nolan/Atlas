@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 
 namespace Atlas.HlaMetadataDictionary.WmdaDataAccess
 {
     internal class WmdaFileDownloader : IWmdaFileReader
     {
-        private readonly string wmdaFileUri;
+        private readonly string hlaNomenclatureSourceUrl;
 
-        public WmdaFileDownloader(string wmdaFileUri)
+        public WmdaFileDownloader(HlaMetadataDictionarySettings settings)
         {
-            this.wmdaFileUri = wmdaFileUri;
+            hlaNomenclatureSourceUrl = settings.HlaNomenclatureSourceUrl;
         }
-        
+
         public IEnumerable<string> GetFileContentsWithoutHeader(string hlaNomenclatureVersion, string fileName)
         {
             return new WebClient()
@@ -51,7 +52,7 @@ namespace Atlas.HlaMetadataDictionary.WmdaDataAccess
 
         private string GetFileAddress(string hlaNomenclatureVersion, string fileName)
         {
-            return $"{wmdaFileUri}{hlaNomenclatureVersion}/{fileName}";
+            return $"{hlaNomenclatureSourceUrl}{hlaNomenclatureVersion}/{fileName}";
         }
 
         private static bool IsCommentLine(string line)

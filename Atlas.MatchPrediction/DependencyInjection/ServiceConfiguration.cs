@@ -4,6 +4,8 @@ using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Services;
@@ -24,7 +26,9 @@ namespace Atlas.MatchPrediction.DependencyInjection
 {
     public static class ServiceConfiguration
     {
-        public static void RegisterMatchPredictionServices(this IServiceCollection services)
+        public static void RegisterMatchPredictionServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings)
         {
             services.RegisterSettings();
             services.RegisterAtlasLogger(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value);
@@ -33,18 +37,18 @@ namespace Atlas.MatchPrediction.DependencyInjection
             services.RegisterClientServices();
             services.RegisterCommonMatchingServices();
             services.RegisterHlaMetadataDictionary(
-                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
-                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<MacImportSettings>()
+                fetchHlaMetadataDictionarySettings,
+                OptionsReaderFor<ApplicationInsightsSettings>(), // TODO: ATLAS-327
+                OptionsReaderFor<MacImportSettings>() // TODO: ATLAS-327
             );
         }
 
         private static void RegisterSettings(this IServiceCollection services)
         {
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterOptions<MacImportSettings>("MacImport");
             services.RegisterOptions<AzureStorageSettings>("AzureStorage");
+            services.RegisterOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
+            services.RegisterOptions<MacImportSettings>("MacImport");
             services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
 

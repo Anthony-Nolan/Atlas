@@ -1,10 +1,13 @@
 using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 
@@ -15,21 +18,26 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
         public static IServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
-            services.RegisterFileBasedHlaMetadataDictionaryForTesting(sp => new ApplicationInsightsSettings { LogLevel = "Info" });
+            services.RegisterFileBasedHlaMetadataDictionaryForTesting(sp => new ApplicationInsightsSettings {LogLevel = "Info"});
             return services.BuildServiceProvider();
         }
 
-        public static void RegisterFileBasedHlaMetadataDictionaryForTesting(this IServiceCollection services, Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
+        public static void RegisterFileBasedHlaMetadataDictionaryForTesting(
+            this IServiceCollection services,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
         {
-            Func<IServiceProvider, string> blank = _ => ""; 
-            services.RegisterHlaMetadataDictionary(blank, blank, fetchApplicationInsightsSettings, _ => null); //This is actually used.
-            
+            services.RegisterHlaMetadataDictionary(
+                _ => new HlaMetadataDictionarySettings(),
+                fetchApplicationInsightsSettings,
+                _ => new MacImportSettings()
+            );
+
             // Replace Repositories with File-Backed equivalents.
             services.AddScoped<IHlaScoringMetadataRepository, FileBackedHlaScoringMetadataRepository>();
             services.AddScoped<IHlaMatchingMetadataRepository, FileBackedHlaMatchingMetadataRepository>();
             services.AddScoped<IAlleleNamesMetadataRepository, FileBackedAlleleNamesMetadataRepository>();
             services.AddScoped<IDpb1TceGroupsMetadataRepository, FileBackedTceMetadataRepository>();
-            
+
             services.AddScoped(sp => Substitute.For<IMacDictionary>());
             // Mac Dictionary Stubs
             // TODO: ATLAS-320 Move this to MacDictionary Tests, along with any tests that actually belong over there.

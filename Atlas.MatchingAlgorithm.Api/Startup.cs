@@ -1,4 +1,6 @@
 ﻿using System.Reflection;
+using Atlas.Common.Utils.Extensions;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -28,13 +30,14 @@ namespace Atlas.MatchingAlgorithm.Api
                 this.configuration = configuration;
             }
         }
-        
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            RegisterSettings(services);
             // TODO: ATLAS-327: Inject settings
-            services.RegisterMatchingAlgorithm();
+            services.RegisterMatchingAlgorithm(DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>());
 
             services.ConfigureSwaggerService();
 
@@ -46,16 +49,22 @@ namespace Atlas.MatchingAlgorithm.Api
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.ConfigureSwagger();
-            
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
             app.UseMvc();
+        }
+
+        private static void RegisterSettings(IServiceCollection services)
+        {
+            services.RegisterOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
         }
     }
 }

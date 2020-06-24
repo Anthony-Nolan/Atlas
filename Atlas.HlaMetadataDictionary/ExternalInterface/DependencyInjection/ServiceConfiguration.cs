@@ -2,6 +2,7 @@ using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
@@ -16,36 +17,33 @@ using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Atlas.HlaMetadataDictionary.ExternalInterface
+namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
 {
     public static class ServiceConfiguration
     {
-        public static void RegisterHlaMetadataDictionary(this IServiceCollection services,
-            Func<IServiceProvider, string> fetchAzureStorageConnectionString,
-            Func<IServiceProvider, string> fetchWmdaHlaNomenclatureFilesUri,
+        public static void RegisterHlaMetadataDictionary(
+            this IServiceCollection services,
+            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MacImportSettings> fetchMacImportSettings)
         {
+            services.AddScoped(fetchHlaMetadataDictionarySettings);
+
+            services.RegisterServices();
             services.RegisterLifeTimeScopedCacheTypes();
             services.RegisterCommonGeneticServices();
             services.AddScoped<IHlaMetadataDictionaryFactory, HlaMetadataDictionaryFactory>();
             services.AddScoped<IHlaMetadataCacheControl, HlaMetadataCacheControl>();
-            services.RegisterStorageTypes(fetchAzureStorageConnectionString);
-            services.RegisterTypesRelatedToDictionaryRecreation(fetchWmdaHlaNomenclatureFilesUri);
+            services.RegisterStorageTypes();
+            services.RegisterTypesRelatedToDictionaryRecreation();
             services.RegisterServices();
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
-            services.RegisterMacDictionary(
-                fetchApplicationInsightsSettings,
-                fetchMacImportSettings);
+            services.RegisterMacDictionary(fetchApplicationInsightsSettings, fetchMacImportSettings);
         }
 
-        private static void RegisterStorageTypes(this IServiceCollection services, Func<IServiceProvider, string> fetchAzureStorageConnectionString)
+        private static void RegisterStorageTypes(this IServiceCollection services)
         {
-            services.AddSingleton<ICloudTableFactory, CloudTableFactory>(sp =>
-            {
-                var azureConnectionString = fetchAzureStorageConnectionString(sp);
-                return new CloudTableFactory(azureConnectionString);
-            });
+            services.AddSingleton<ICloudTableFactory, CloudTableFactory>();
             services.AddSingleton<ITableReferenceRepository, TableReferenceRepository>();
 
             services.AddScoped<IHlaMatchingMetadataRepository, HlaMatchingMetadataRepository>();
@@ -54,15 +52,10 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             services.AddScoped<IDpb1TceGroupsMetadataRepository, Dpb1TceGroupsMetadataRepository>();
         }
 
-        private static void RegisterTypesRelatedToDictionaryRecreation(this IServiceCollection services, Func<IServiceProvider, string> fetchWmdaHlaNomenclatureFilesUri)
+        private static void RegisterTypesRelatedToDictionaryRecreation(this IServiceCollection services)
         {
             services.AddScoped<IWmdaDataRepository, WmdaDataRepository>();
-
-            services.AddScoped<IWmdaFileReader, WmdaFileDownloader>(sp =>
-            {
-                var wmdaHlaNomenclatureFilesUri = fetchWmdaHlaNomenclatureFilesUri(sp);
-                return new WmdaFileDownloader(wmdaHlaNomenclatureFilesUri);
-            });
+            services.AddScoped<IWmdaFileReader, WmdaFileDownloader>();
             services.AddScoped<IWmdaHlaNomenclatureVersionAccessor, WmdaHlaNomenclatureVersionAccessor>();
 
             services.AddScoped<IAlleleNameHistoriesConsolidator, AlleleNameHistoriesConsolidator>();

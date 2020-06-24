@@ -21,13 +21,14 @@
     "DataRefresh:DonorFunctionsAppName": "local",
     "DataRefresh:DormantDatabaseSize": "S0",
     "DataRefresh:RefreshDatabaseSize": "S4",
+    "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
+    "HlaMetadataDictionary:HlaNomenclatureSourceUrl": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",
     "MessagingServiceBus:ConnectionString": "override-this",
     "MessagingServiceBus:SearchRequestsQueue": "matching-requests",
     "MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications",
-    "Wmda:WmdaFileUri": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",
     "FUNCTIONS.WORKER.RUNTIME": "dotnet"
   },
   "ConnectionStrings": {

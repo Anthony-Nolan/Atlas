@@ -1,3 +1,4 @@
+using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData.Hla.Services;
@@ -6,7 +7,8 @@ using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
-using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
@@ -49,31 +51,35 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 {
     public static class ServiceConfiguration
     {
-        public static void RegisterMatchingAlgorithm(this IServiceCollection services)
+        public static void RegisterMatchingAlgorithm(
+            this IServiceCollection services,
+            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings
+        )
         {
             services.RegisterSettingsForMatchingAlgorithm();
             services.RegisterMatchingAlgorithmServices();
             services.RegisterDataServices();
             services.RegisterHlaMetadataDictionary(
-                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
-                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<MacImportSettings>()
-                );
+                fetchHlaMetadataDictionarySettings,
+                OptionsReaderFor<ApplicationInsightsSettings>(), // TODO: ATLAS-327
+                OptionsReaderFor<MacImportSettings>() // TODO: ATLAS-327
+            );
             // TODO: ATLAS-327: Inject settings
             services.RegisterDonorReader(sp => sp.GetService<IConfiguration>().GetSection("ConnectionStrings")["DonorImportSql"]);
         }
 
-        public static void RegisterMatchingAlgorithmDonorManagement(this IServiceCollection services)
+        public static void RegisterMatchingAlgorithmDonorManagement(
+            this IServiceCollection services,
+            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings
+        )
         {
             services.RegisterSettingsForMatchingDonorManagement();
             services.RegisterMatchingAlgorithmServices();
             services.RegisterDataServices();
             services.RegisterHlaMetadataDictionary(
-                sp => sp.GetService<IOptions<AzureStorageSettings>>().Value.ConnectionString,
-                sp => sp.GetService<IOptions<WmdaSettings>>().Value.WmdaFileUri,
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<MacImportSettings>()
+                fetchHlaMetadataDictionarySettings,
+                OptionsReaderFor<ApplicationInsightsSettings>(), // TODO: ATLAS-327
+                OptionsReaderFor<MacImportSettings>()  // TODO: ATLAS-327
             );
             services.RegisterDonorManagementServices();
         }
