@@ -5,8 +5,9 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversion
 {
     internal interface IMatchedHlaToMetaDataConverterBase
     {

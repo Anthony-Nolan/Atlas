@@ -8,7 +8,7 @@ using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation;
-using Atlas.HlaMetadataDictionary.Services.DataRetrieval.MatchedHlaConversion;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversion;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
@@ -56,13 +56,13 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 logger.SendTrace("HlaMetadataDictionary: Processing Pre-calculated match hla");
                 var preCalculatedMatchedHla = GetPreCalculatedMatchedHla(hlaNomenclatureVersion).ToList();
                 
-                logger.SendTrace("HlaMetadataDictionary: Processing Matching lookup");
+                logger.SendTrace("HlaMetadataDictionary: Processing Matching metadata");
                 var matchingMetadata = GetMatchingMetadata(preCalculatedMatchedHla);
 
-                logger.SendTrace("HlaMetadataDictionary: Processing Scoring lookup");
+                logger.SendTrace("HlaMetadataDictionary: Processing Scoring metadata");
                 var scoringMetadata = GetScoringMetadata(preCalculatedMatchedHla);
 
-                logger.SendTrace("HlaMetadataDictionary: Processing TCE group lookup");
+                logger.SendTrace("HlaMetadataDictionary: Processing TCE groups");
                 var dpb1TceGroupMetadata = GetDpb1TceGroupMetadata(hlaNomenclatureVersion);
 
                 return new HlaMetadataCollection
