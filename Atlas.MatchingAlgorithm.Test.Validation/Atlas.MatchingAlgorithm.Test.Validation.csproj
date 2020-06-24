@@ -42,7 +42,7 @@
         <Content Include="ValidationTests\Features\Scoring\MatchGrades.feature" />
         <Content Include="ValidationTests\Features\Scoring\Ranking\MatchCountRanking.feature" />
         <Content Include="ValidationTests\Features\Scoring\TypedLociCount.feature" />
-        <Content Include="ValidationTests\Features\ValidationREADME.md" />
+        <Content Include="ValidationTests\Features\README_MatchingValidationTests.md" />
     </ItemGroup>
 
     <ItemGroup>
