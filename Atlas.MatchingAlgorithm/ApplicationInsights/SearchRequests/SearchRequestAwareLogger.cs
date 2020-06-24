@@ -13,7 +13,7 @@ namespace Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests
         public SearchRequestAwareLogger(
             ISearchRequestContext context,
             TelemetryClient client, 
-            LogLevel logLevel) : base(client, logLevel)
+            ApplicationInsightsSettings applicationInsightsSettings) : base(client, applicationInsightsSettings)
         {
             this.context = context;
         }
