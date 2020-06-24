@@ -59,7 +59,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
                 .With(g => g.B, new LocusInfo<string> { Position1 = B1, Position2 = "15:228"}).Build();
 
             var matchCount =
-                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), NewGenotype.Build(), HlaNomenclatureVersion);
+                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
 
             matchCount.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
