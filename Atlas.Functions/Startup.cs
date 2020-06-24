@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 [assembly: FunctionsStartup(typeof(Startup))]
-
 namespace Atlas.Functions
 {
     internal class Startup : FunctionsStartup
