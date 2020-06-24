@@ -26,7 +26,7 @@ namespace Atlas.Functions
         private static void RegisterSettings(IServiceCollection services)
         {
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterOptions<MacDictionarySettings>("MacImport");
+            services.RegisterOptions<MacDictionarySettings>("MacDictionary");
         }
     }
 }

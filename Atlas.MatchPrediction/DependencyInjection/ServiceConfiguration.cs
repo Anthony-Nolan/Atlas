@@ -16,7 +16,6 @@ using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchPrediction.DependencyInjection
@@ -25,28 +24,33 @@ namespace Atlas.MatchPrediction.DependencyInjection
     {
         public static void RegisterMatchPredictionServices(
             this IServiceCollection services,
-            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings)
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
+            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
+            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings
+        )
         {
-            services.RegisterSettings();
-            services.RegisterAtlasLogger(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value);
+            services.RegisterSettings(fetchAzureStorageSettings, fetchNotificationsServiceBusSettings);
+            services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices();
             services.RegisterDatabaseServices();
             services.RegisterClientServices();
             services.RegisterCommonMatchingServices();
             services.RegisterHlaMetadataDictionary(
                 fetchHlaMetadataDictionarySettings,
-                OptionsReaderFor<ApplicationInsightsSettings>(), // TODO: ATLAS-327
-                OptionsReaderFor<MacDictionarySettings>() // TODO: ATLAS-327
+                fetchApplicationInsightsSettings,
+                fetchMacDictionarySettings
             );
         }
 
-        private static void RegisterSettings(this IServiceCollection services)
+        private static void RegisterSettings(
+            this IServiceCollection services,
+            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings)
         {
-            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterOptions<AzureStorageSettings>("AzureStorage");
-            services.RegisterOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
-            services.RegisterOptions<MacDictionarySettings>("MacImport");
-            services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
+            services.AddScoped(fetchAzureStorageSettings);
+            services.AddScoped(fetchNotificationsServiceBusSettings);
         }
 
         private static void RegisterDatabaseServices(this IServiceCollection services)
