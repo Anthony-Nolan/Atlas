@@ -28,9 +28,8 @@ locals {
     "DataRefresh:RefreshDatabaseSize"                           = var.DATA_REFRESH_DB_SIZE_REFRESH
     "HlaMetadataDictionary:AzureStorageConnectionString"        = var.azure_storage.primary_connection_string,
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"            = var.WMDA_FILE_URL,
-    "MacImport:ConnectionString"                                = var.azure_storage.primary_connection_string
-    "MacImport:MacSourceUrl"                                    = var.MAC_SOURCE
-    "MacImport:TableName"                                       = var.mac_import_table.name,
+    "MacDictionary:AzureStorageConnectionString"                = var.azure_storage.primary_connection_string
+    "MacDictionary:TableName"                                   = var.mac_import_table.name,
     "MessagingServiceBus:ConnectionString"                      = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
     "MessagingServiceBus:SearchRequestsQueue"                   = azurerm_servicebus_queue.matching-requests.name
     "MessagingServiceBus:SearchResultsTopic"                    = azurerm_servicebus_topic.matching-results-ready.name

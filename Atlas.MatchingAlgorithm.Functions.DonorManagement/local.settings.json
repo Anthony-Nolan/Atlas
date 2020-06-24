@@ -6,6 +6,8 @@
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
+    "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
+    "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
     "MessagingServiceBus:ConnectionString": "override-this",
     "MessagingServiceBus:DonorManagement:BatchSize": 1000,
     "MessagingServiceBus:DonorManagement:CronSchedule": "0 */1 * * * *",

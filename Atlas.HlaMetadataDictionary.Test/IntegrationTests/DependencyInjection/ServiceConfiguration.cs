@@ -1,6 +1,5 @@
 using System;
 using Atlas.Common.ApplicationInsights;
-using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
@@ -29,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             services.RegisterHlaMetadataDictionary(
                 _ => new HlaMetadataDictionarySettings(),
                 fetchApplicationInsightsSettings,
-                _ => new MacImportSettings()
+                _ => new MacDictionarySettings()
             );
 
             // Replace Repositories with File-Backed equivalents.

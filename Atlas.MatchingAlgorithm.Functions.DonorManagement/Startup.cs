@@ -1,7 +1,9 @@
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.Functions.DonorManagement;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,14 +16,18 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
         public override void Configure(IFunctionsHostBuilder builder)
         {
             RegisterSettings(builder.Services);
-
-            // TODO: ATLAS-327: Inject settings
-            builder.Services.RegisterMatchingAlgorithmDonorManagement(DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>());
+            builder.Services.RegisterMatchingAlgorithmDonorManagement(
+                DependencyInjectionUtils.OptionsReaderFor<ApplicationInsightsSettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>()
+            );
         }
 
         private static void RegisterSettings(IServiceCollection services)
         {
+            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
+            services.RegisterOptions<MacDictionarySettings>("MacDictionary");
         }
     }
 }

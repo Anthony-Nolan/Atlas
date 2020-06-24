@@ -6,6 +6,8 @@
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:HaplotypeFrequencySetImportContainer": "haplotype-frequency-set-import",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
+    "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications",

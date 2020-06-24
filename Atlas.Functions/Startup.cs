@@ -20,13 +20,13 @@ namespace Atlas.Functions
             RegisterSettings(builder.Services);
             builder.Services.RegisterMacDictionary(
                 sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value, 
-                sp => sp.GetService<IOptions<MacImportSettings>>().Value);
+                sp => sp.GetService<IOptions<MacDictionarySettings>>().Value);
         }
 
         private static void RegisterSettings(IServiceCollection services)
         {
             services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterOptions<MacImportSettings>("MacImport");
+            services.RegisterOptions<MacDictionarySettings>("MacImport");
         }
     }
 }

@@ -16,9 +16,9 @@ resource "azurerm_function_app" "atlas_match_prediction_function" {
     "ApplicationInsights:LogLevel"                      = var.APPLICATION_INSIGHTS_LOG_LEVEL
     "AzureStorage:ConnectionString"                     = var.azure_storage.primary_connection_string
     "AzureStorage:HaplotypeFrequencySetImportContainer" = azurerm_storage_container.haplotype_frequency_set_blob_container.name
-    "MacImport:ConnectionString"                        = var.azure_storage.primary_connection_string
-    "MacImport:MacSourceUrl"                            = var.MAC_SOURCE
-    "MacImport:TableName"                               = var.mac_import_table.name,
+    "MacDictionary:AzureStorageConnectionString"        = var.azure_storage.primary_connection_string
+    "MacDictionary:MacSourceUrl"                        = var.MAC_SOURCE
+    "MacDictionary:TableName"                           = var.mac_import_table.name,
     "NotificationsServiceBus:ConnectionString"          = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:AlertsTopic"               = var.servicebus_topics.alerts.name
     "NotificationsServiceBus:NotificationsTopic"        = var.servicebus_topics.notifications.name

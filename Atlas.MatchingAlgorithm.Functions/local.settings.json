@@ -23,6 +23,8 @@
     "DataRefresh:RefreshDatabaseSize": "S4",
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",
+    "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
+    "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
     "MessagingServiceBus:ConnectionString": "override-this",
     "MessagingServiceBus:SearchRequestsQueue": "matching-requests",
     "MessagingServiceBus:SearchResultsTopic": "matching-results-ready",

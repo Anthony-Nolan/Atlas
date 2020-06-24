@@ -6,7 +6,6 @@ using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Cosmos.Table;
-using Microsoft.Extensions.Options;
 using MoreLinq;
 using QueryComparisons = Microsoft.WindowsAzure.Storage.Table.QueryComparisons;
 
@@ -29,10 +28,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
         protected readonly CloudTable Table;
 
-        public MacRepository(MacImportSettings macImportSettings)
+        public MacRepository(MacDictionarySettings macDictionarySettings)
         {
-            var connectionString = macImportSettings.ConnectionString;
-            var tableName = macImportSettings.TableName;
+            var connectionString = macDictionarySettings.AzureStorageConnectionString;
+            var tableName = macDictionarySettings.TableName;
             var storageAccount = CloudStorageAccount.Parse(connectionString);
             var tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
             Table = tableClient.GetTableReference(tableName);
