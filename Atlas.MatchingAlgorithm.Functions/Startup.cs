@@ -1,6 +1,5 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.Functions;
@@ -32,10 +31,10 @@ namespace Atlas.MatchingAlgorithm.Functions
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
-                DependencyInjectionUtils.ConnectionStringReader("PersistentSql"),
-                DependencyInjectionUtils.ConnectionStringReader("SqlA"),
-                DependencyInjectionUtils.ConnectionStringReader("SqlB"),
-                DependencyInjectionUtils.ConnectionStringReader("DonorImportSql")
+                ConnectionStringReader("PersistentSql"),
+                ConnectionStringReader("SqlA"),
+                ConnectionStringReader("SqlB"),
+                ConnectionStringReader("DonorImportSql")
             );
         }
 

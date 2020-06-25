@@ -1,5 +1,4 @@
 using System.Reflection;
-using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources;
@@ -9,6 +8,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelec
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.StaticDataSelection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
 {
@@ -56,11 +56,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
         private static void RegisterDataServices(IServiceCollection services)
         {
             services.AddScoped(sp =>
-                new ContextFactory().Create(DependencyInjectionUtils.ConnectionStringReader("SqlA")(sp))
+                new ContextFactory().Create(ConnectionStringReader("SqlA")(sp))
             );
 
             services.AddScoped(sp =>
-                new Data.Persistent.Context.ContextFactory().Create(DependencyInjectionUtils.ConnectionStringReader("PersistentSql")(sp))
+                new Data.Persistent.Context.ContextFactory().Create(ConnectionStringReader("PersistentSql")(sp))
             );
 
             services.AddScoped<ITestDataRepository, TestDataRepository>();

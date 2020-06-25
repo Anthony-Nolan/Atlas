@@ -14,6 +14,6 @@
     "Wmda:WmdaFileUri": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/"
   },
   "ConnectionStrings": {
-    "Sql": "Data Source=(local);Initial Catalog=AtlasMatchPrediction;Integrated Security=True;MultipleActiveResultSets=True;"
+    "MatchPredictionSql": "Data Source=(local);Initial Catalog=AtlasMatchPrediction;Integrated Security=True;MultipleActiveResultSets=True;"
   }
 }

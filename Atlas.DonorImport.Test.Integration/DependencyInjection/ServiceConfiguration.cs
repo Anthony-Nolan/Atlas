@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Context;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
@@ -13,11 +12,14 @@ using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.DonorImport.Test.Integration.DependencyInjection
 {
     internal static class ServiceConfiguration
     {
+        private const string DonorStoreSqlConnectionString = "DonorStoreSql";
+
         public static IServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
@@ -26,7 +28,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
                 sp => new ApplicationInsightsSettings {LogLevel = "Info"},
                 sp => new MessagingServiceBusSettings(),
                 sp => new NotificationsServiceBusSettings(),
-                SqlConnectionStringReader
+                ConnectionStringReader(DonorStoreSqlConnectionString)
             );
             RegisterIntegrationTestServices(services);
             SetUpMockServices(services);
@@ -35,8 +37,9 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
 
         private static void RegisterIntegrationTestServices(IServiceCollection services)
         {
-            services.AddScoped(sp => new ContextFactory().Create(SqlConnectionStringReader(sp)));
-            services.AddScoped<IDonorInspectionRepository>(sp => new DonorInspectionRepository(SqlConnectionStringReader(sp)));
+            services.AddScoped(sp => new ContextFactory().Create(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
+            services.AddScoped<IDonorInspectionRepository>(sp =>
+                new DonorInspectionRepository(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
         }
 
         private static void SetUpConfiguration(IServiceCollection services)
@@ -59,7 +62,5 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
             services.AddScoped(sp => mockSearchServiceBusClient);
             services.AddScoped(sp => Substitute.For<INotificationSender>());
         }
-
-        private static Func<IServiceProvider, string> SqlConnectionStringReader => DependencyInjectionUtils.ConnectionStringReader("Sql");
     }
 }
