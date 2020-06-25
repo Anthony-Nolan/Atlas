@@ -1,27 +1,26 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 {
-    internal class MacLookup : AlleleNamesLookupBase
+    internal class AlleleGroupLookup : AlleleNamesLookupBase
     {
-        private readonly IMacDictionary macDictionary;
+        private readonly IAlleleGroupMetadataService alleleGroupMetadataService;
 
-        public MacLookup(
+        public AlleleGroupLookup(
             IHlaMetadataRepository hlaMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
-            IMacDictionary macDictionary)
+            IAlleleGroupMetadataService alleleGroupMetadataService)
             : base(hlaMetadataRepository, alleleNamesMetadataService)
         {
-            this.macDictionary = macDictionary;
+            this.alleleGroupMetadataService = alleleGroupMetadataService;
         }
 
         protected override async Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            return await macDictionary.GetHlaFromMac(lookupName);
+            return await alleleGroupMetadataService.GetAllelesInGroup(locus, lookupName, hlaNomenclatureVersion);
         }
     }
 }

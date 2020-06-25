@@ -80,6 +80,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.AddScoped<IHlaConverter, HlaConverter>();
             services.AddScoped<IHlaNameToTwoFieldAlleleConverter, HlaNameToTwoFieldAlleleConverter>();
             services.AddScoped<IAlleleNamesMetadataService, AlleleNamesMetadataService>();
+            services.AddScoped<IAlleleGroupMetadataService, AlleleGroupMetadataService>();
             services.AddScoped<IHlaMetadataGenerationOrchestrator, HlaMetadataGenerationOrchestrator>();
             services.AddScoped<ILocusHlaMatchingMetadataService, LocusHlaMatchingMetadataService>();
             services.AddScoped<IHlaMatchingMetadataService, HlaMatchingMetadataService>();
