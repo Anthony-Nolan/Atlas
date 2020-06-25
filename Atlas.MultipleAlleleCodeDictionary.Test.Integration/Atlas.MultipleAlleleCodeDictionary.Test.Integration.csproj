@@ -26,4 +26,14 @@
       <ProjectReference Include="..\Atlas.MultipleAlleleCodeDictionary\Atlas.MultipleAlleleCodeDictionary.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="Atlas.HlaMetaDataDictionary.Test" />
+        <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Resources\Mac.csv" />
+    </ItemGroup>
+
+
 </Project>
