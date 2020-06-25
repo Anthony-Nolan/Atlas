@@ -188,17 +188,41 @@ Some of the files in the hla metadata dictionary tests are longer than the 260 c
 
 ### Local Settings
 
+#### Non Azure-Functions Settings
+
 Settings for each non-functions project are defined in the `appsettings.json` file.
 
 In some cases these settings will need overriding locally - either for secure values (e.g. api keys), or if you want to use a different service (e.g. azure storage account, service bus)
 
 This is achieved with User Secrets: <https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-2.2&tabs=windows>
 
-#### Azure Functions Settings
+#### Azure-Functions Settings
 
 Azure functions requires a different settings configuration. With the "Values" object in `local.settings.json`, it expects a collection of string app settings - these reflect a 1:1 mapping with the app settings configured in Azure for deployed environments
 
 > Warning! Attempting to use nested objects in this configuration file will prevent the app settings from loading, with no warning from the functions host
+
+In order to allow checking in of non-secret default settings, while dissuading accidental check-in of secrets, the following pattern is used: 
+
+- A `local.settings.template.json` is checked in with all default settings values populated. 
+    - Any new app settings should be added to these files
+    - Any secrets (e.g. service bus connection strings) should be checked in with an obviously dummy value (e.g. override-this)
+- On build of the functions projects, this template will be copied to a gitignored `local.settings.json`
+    - This file can be safely edited locally to override any secret settings without risk of accidental check-in
+    - This copying is done by manually amending the csproj and adding the following code: 
+    ```
+      <Target Name="Scaffold local settings file" BeforeTargets="BeforeCompile" Condition="!EXISTS('$(ProjectDir)\local.settings.json')">
+          <Copy SourceFiles="$(ProjectDir)\local.settings.template.json" DestinationFiles="$(ProjectDir)\local.settings.json" />
+      </Target>
+    ```
+- When someone else has added new settings, you will need to either: 
+    - (a) Add the new setting manually to `local.settings.json`
+    - (b) Delete `local.settings.json` and allow it to regenerate on build. Any local secret settings will then need to be re-applied. 
+
+*Warning* - when running a functions app for the first time on a machine, this copying may not have happened in time. If no settings are found, try rebuilding and running again. 
+
+
+#### Options Pattern
 
 To enable a shared configuration pattern across both the functions project, and api used for testing, the Options pattern is used:
 
