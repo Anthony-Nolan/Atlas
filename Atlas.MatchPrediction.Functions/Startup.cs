@@ -1,6 +1,5 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.DependencyInjection;
 using Atlas.MatchPrediction.Settings.Azure;
@@ -24,7 +23,7 @@ namespace Atlas.MatchPrediction.Functions
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
-                DependencyInjectionUtils.ConnectionStringReader("Sql")
+                ConnectionStringReader("MatchPredictionSql")
             );
         }
 

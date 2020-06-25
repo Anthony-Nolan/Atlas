@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.Common.ApplicationInsights
 {
@@ -14,8 +15,7 @@ namespace Atlas.Common.ApplicationInsights
             // Safe to call multiple times if consumers also want to call this for their own logger implementations.
             services.AddApplicationInsightsTelemetryWorkerService();
             
-            // Ensure settings available when creating Logger
-            services.AddScoped(fetchInsightsSettings);
+            services.MakeSettingsAvailableForUse(fetchInsightsSettings);
             
             // If ILogger has already been registered, then either, it's already been done here
             // (in which case there's no need to repeat), or someone's already registered a more

@@ -27,7 +27,7 @@ resource "azurerm_function_app" "atlas_match_prediction_function" {
   }
 
   connection_string {
-    name  = "Sql"
+    name  = "MatchPredictionSql"
     type  = "SQLAzure"
     value = local.match_prediction_database_connection_string
   }

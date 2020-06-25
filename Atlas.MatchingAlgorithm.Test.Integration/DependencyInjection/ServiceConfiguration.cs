@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
@@ -26,6 +25,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 {
     public static class ServiceConfiguration
     {
+        private const string PersistentSqlConnectionStringKey = "PersistentSql";
+        private const string TransientASqlConnectionStringKey = "SqlA";
+        private const string TransientBSqlConnectionStringKey = "SqlB";
+        private const string DonorImportSqlConnectionStringKey = "DonorImportSql";
+
         public static IServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
@@ -48,10 +52,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
-                PersistentSqlConnectionStringReader,
-                TransientSqlAConnectionStringReader,
-                TransientSqlBConnectionStringReader,
-                DependencyInjectionUtils.ConnectionStringReader("DonorImportSql")
+                ConnectionStringReader(PersistentSqlConnectionStringKey),
+                ConnectionStringReader(TransientASqlConnectionStringKey),
+                ConnectionStringReader(TransientBSqlConnectionStringKey),
+                ConnectionStringReader(DonorImportSqlConnectionStringKey)
             );
             services.RegisterMatchingAlgorithmDonorManagement(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
@@ -61,9 +65,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
-                PersistentSqlConnectionStringReader,
-                TransientSqlAConnectionStringReader,
-                TransientSqlBConnectionStringReader
+                ConnectionStringReader(PersistentSqlConnectionStringKey),
+                ConnectionStringReader(TransientASqlConnectionStringKey),
+                ConnectionStringReader(TransientBSqlConnectionStringKey)
             );
 
             // This call must be made after `RegisterMatchingAlgorithm()`, as it overrides the non-mock dictionary set up in that method
@@ -73,7 +77,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             );
 
             services.AddScoped(sp =>
-                new ContextFactory().Create(TransientSqlAConnectionStringReader(sp))
+                new ContextFactory().Create(ConnectionStringReader(TransientASqlConnectionStringKey)(sp))
             );
 
             RegisterMockServices(services);
@@ -118,12 +122,5 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
         {
             services.AddScoped<ITestDataRefreshHistoryRepository, TestDataRefreshHistoryRepository>();
         }
-
-        private static Func<IServiceProvider, string> PersistentSqlConnectionStringReader =>
-            DependencyInjectionUtils.ConnectionStringReader("PersistentSql");
-
-        private static Func<IServiceProvider, string> TransientSqlAConnectionStringReader => DependencyInjectionUtils.ConnectionStringReader("SqlA");
-
-        private static Func<IServiceProvider, string> TransientSqlBConnectionStringReader => DependencyInjectionUtils.ConnectionStringReader("SqlB");
     }
 }

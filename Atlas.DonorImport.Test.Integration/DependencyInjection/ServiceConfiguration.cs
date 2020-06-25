@@ -60,6 +60,6 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
             services.AddScoped(sp => Substitute.For<INotificationSender>());
         }
 
-        private static Func<IServiceProvider, string> SqlConnectionStringReader => DependencyInjectionUtils.ConnectionStringReader("Sql");
+        private static Func<IServiceProvider, string> SqlConnectionStringReader => DependencyInjectionUtils.ConnectionStringReader("DonorStoreSql");
     }
 }
