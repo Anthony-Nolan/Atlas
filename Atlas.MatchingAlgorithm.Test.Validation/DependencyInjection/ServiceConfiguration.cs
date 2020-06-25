@@ -1,4 +1,5 @@
 using System.Reflection;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources;
@@ -27,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
                 .Build();
 
             services.AddSingleton<IConfiguration>(sp => configuration);
-            services.Configure<ValidationTestSettings>(configuration.GetSection("Testing"));
+            services.RegisterOptions<ValidationTestSettings>("Testing");
             
             // As some of the meta donors are generated dynamically at runtime, the repository must be a singleton
             // Otherwise, the meta-donors will be regenerated on lookup, and no longer match the ones in the database
