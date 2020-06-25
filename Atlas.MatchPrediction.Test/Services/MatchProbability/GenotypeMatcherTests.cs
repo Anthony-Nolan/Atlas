@@ -35,10 +35,10 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         private static readonly PhenotypeInfo<string> DonorGenotype2 = PhenotypeInfoBuilder.New
             .With(d => d.A, new LocusInfo<string> {Position1 = DonorLocus2, Position2 = DonorLocus2}).Build();
 
-        private static readonly Match TenOutOfTenMatch = new Match
+        private static readonly GenotypeMatchDetails TenOutOfTenMatch = new GenotypeMatchDetails
             {MatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2}};
 
-        private static readonly Match Mismatch = new Match
+        private static readonly GenotypeMatchDetails Mismatch = new GenotypeMatchDetails
             {MatchCounts = new LociInfo<int?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0}};
 
         [SetUp]
@@ -52,8 +52,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         [Test]
         public async Task PairsWithTenOutOfTenMatch_WhenAllCombinationsOfGenotypesAreTenOutOfTenMatch_ReturnsListOfDonorPatientPairs()
         {
-            var patientGenotypes = new List<PhenotypeInfo<string>>{PatientGenotype1, PatientGenotype2};
-            var donorGenotypes = new List<PhenotypeInfo<string>>{DonorGenotype1, DonorGenotype2};
+            var patientGenotypes = new HashSet<PhenotypeInfo<string>>{PatientGenotype1, PatientGenotype2};
+            var donorGenotypes = new HashSet<PhenotypeInfo<string>>{DonorGenotype1, DonorGenotype2};
             
             var expectedPatientDonorPairs = new List<UnorderedPair<PhenotypeInfo<string>>>
             {
@@ -74,8 +74,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         [Test]
         public async Task PairsWithTenOutOfTenMatch_WhenAllCombinationsOfGenotypesAreMismatch_ReturnsEmptyListOfDonorPatientPairs()
         {
-            var patientGenotypes = new List<PhenotypeInfo<string>> { PatientGenotype1, PatientGenotype2 };
-            var donorGenotypes = new List<PhenotypeInfo<string>> { DonorGenotype1, DonorGenotype2 };
+            var patientGenotypes = new HashSet<PhenotypeInfo<string>> { PatientGenotype1, PatientGenotype2 };
+            var donorGenotypes = new HashSet<PhenotypeInfo<string>> { DonorGenotype1, DonorGenotype2 };
 
             var expectedPatientDonorPairs = new List<UnorderedPair<PhenotypeInfo<string>>>();
 
@@ -88,10 +88,10 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         }
 
         [Test]
-        public async Task PairsWithTenOutOfTenMatch_WhenMixtureOfMismatchesAndTenOutOfTenMatches_ReturnsListOfExpectedDonorPatientPairs()
+        public async Task PairsWithTenOutOfTenMatch_WhenMixtureOfMismatchesAndTenOutOfTenMatches_ReturnsListOfMatchingDonorPatientPairs()
         {
-            var patientGenotypes = new List<PhenotypeInfo<string>> { PatientGenotype1, PatientGenotype2 };
-            var donorGenotypes = new List<PhenotypeInfo<string>> { DonorGenotype1, DonorGenotype2 };
+            var patientGenotypes = new HashSet<PhenotypeInfo<string>> { PatientGenotype1, PatientGenotype2 };
+            var donorGenotypes = new HashSet<PhenotypeInfo<string>> { DonorGenotype1, DonorGenotype2 };
 
             var expectedPatientDonorPairs = new List<UnorderedPair<PhenotypeInfo<string>>>
             {

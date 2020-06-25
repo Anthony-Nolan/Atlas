@@ -46,10 +46,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         [Test]
         public async Task MatchAtPGroupLevel_WhenIdenticalGenotypes_IsTenOutOfTenMatch()
         {
-            var matchCount =
+            var matchDetails =
                 await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), NewGenotype.Build(), HlaNomenclatureVersion);
 
-            matchCount.Should().BeEquivalentTo(TenOutOfTenMatch);
+            matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
 
         [Test]
@@ -58,10 +58,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
             var donorGenotype = NewGenotype
                 .With(g => g.B, new LocusInfo<string> { Position1 = B1, Position2 = "15:228"}).Build();
 
-            var matchCount =
+            var matchDetails =
                 await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
 
-            matchCount.Should().BeEquivalentTo(TenOutOfTenMatch);
+            matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
 
         [Test]
@@ -70,10 +70,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
             var donorGenotype = NewGenotype
                 .With(g => g.A, new LocusInfo<string> {Position1 = A1, Position2 = "02:09"}).Build();
 
-            var matchCount =
+            var matchDetails =
                 await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
 
-            matchCount.Should().BeEquivalentTo(TenOutOfTenMatch);
+            matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
 
         [Test]
@@ -82,10 +82,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
             var donorGenotype = NewGenotype
                 .With(g => g.A, new LocusInfo<string> {Position1 = "2", Position2 = A2}).Build();
 
-            var matchCount =
+            var matchDetails =
                 await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
 
-            matchCount.Should().BeEquivalentTo(TenOutOfTenMatch);
+            matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
 
         [Test]
@@ -94,10 +94,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
             var donorGenotype = NewGenotype
                 .With(g => g.A, new LocusInfo<string> {Position1 = A2, Position2 = A1}).Build();
 
-            var matchCount =
+            var matchDetails =
                 await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
 
-            matchCount.Should().BeEquivalentTo(TenOutOfTenMatch);
+            matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
 
         [Test]
@@ -106,10 +106,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
             var patientGenotype = NewGenotype
                 .With(g => g.B, new LocusInfo<string> {Position1 = B1, Position2 = B1}).Build();
 
-            var matchCount =
+            var matchDetails =
                 await matchCalculationService.MatchAtPGroupLevel(patientGenotype, NewGenotype.Build(), HlaNomenclatureVersion);
 
-            matchCount.Should().BeEquivalentTo(SingleMismatchAtB);
+            matchDetails.MatchCounts.Should().BeEquivalentTo(SingleMismatchAtB);
         }
 
         [Test]
@@ -118,10 +118,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
             var donorGenotype = NewGenotype
                 .With(g => g.B, new LocusInfo<string> {Position1 = B1, Position2 = B1}).Build();
 
-            var matchCount =
+            var matchDetails =
                 await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
 
-            matchCount.Should().BeEquivalentTo(SingleMismatchAtB);
+            matchDetails.MatchCounts.Should().BeEquivalentTo(SingleMismatchAtB);
         }
 
         [Test]
@@ -130,10 +130,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
             var donorGenotype = NewGenotype
                 .With(g => g.A, new LocusInfo<string> {Position1 = "11:03", Position2 = "11:03"}).Build();
 
-            var matchCount =
+            var matchDetails =
                 await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
 
-            matchCount.Should().BeEquivalentTo(DoubleMismatchAtA);
+            matchDetails.MatchCounts.Should().BeEquivalentTo(DoubleMismatchAtA);
         }
 
         private static Builder<PhenotypeInfo<string>> NewGenotype => Builder<PhenotypeInfo<string>>.New

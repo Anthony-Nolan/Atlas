@@ -11,7 +11,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     public interface IGenotypeMatcher
     {
         /// <summary>
-        /// For a list of patient and donor genotypes returning a list of donor patient pairs with 10/10 match at the PGroup level.
+        /// Gets all possible combinations of donor and patient genotypes and returns a list of donor patient pairs where there is 10/10 match at the PGroup level
         /// </summary>
         /// <param name="patientGenotypes">List of unambiguous genotypes for a given patient</param>
         /// <param name="donorGenotypes">List of unambiguous genotypes for a given donor</param>
@@ -53,7 +53,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             return tenOutOfTenPatientDonorPairs;
         }
 
-        private async Task<(UnorderedPair<PhenotypeInfo<string>>, Match)> CalculateMatch(
+        private async Task<(UnorderedPair<PhenotypeInfo<string>>, GenotypeMatchDetails)> CalculateMatch(
             UnorderedPair<PhenotypeInfo<string>> patientDonorPair,
             string hlaNomenclatureVersion)
         {

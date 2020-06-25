@@ -2,7 +2,7 @@
 
 namespace Atlas.MatchPrediction.Models
 {
-    public class Match
+    public class GenotypeMatchDetails
     {
         public LociInfo<int?> MatchCounts { get; set; }
         public bool IsTenOutOfTenMatch =>
