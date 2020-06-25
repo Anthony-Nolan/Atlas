@@ -12,14 +12,14 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     public class MatchProbabilityService : IMatchProbabilityService
     {
         private readonly ICompressedPhenotypeExpander compressedPhenotypeExpander;
-        private readonly IMatchGenotypes matchGenotypes;
+        private readonly IGenotypeMatcher genotypeMatcher;
 
         public MatchProbabilityService(
             ICompressedPhenotypeExpander compressedPhenotypeExpander,
-            IMatchGenotypes matchGenotypes)
+            IGenotypeMatcher genotypeMatcher)
         {
             this.compressedPhenotypeExpander = compressedPhenotypeExpander;
-            this.matchGenotypes = matchGenotypes;
+            this.genotypeMatcher = genotypeMatcher;
         }
 
         public async Task<MatchProbabilityResponse> CalculateMatchProbability(MatchProbabilityInput matchProbabilityInput)
@@ -30,7 +30,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 await compressedPhenotypeExpander.ExpandCompressedPhenotype(matchProbabilityInput.DonorHla, matchProbabilityInput.HlaNomenclatureVersion);
 
             var matchingPairs = 
-                await matchGenotypes.PairsWithAlleleLevelMatch(patientGenotypes, donorGenotypes, matchProbabilityInput.HlaNomenclatureVersion);
+                await genotypeMatcher.PairsWithTenOutOfTenMatch(patientGenotypes, donorGenotypes, matchProbabilityInput.HlaNomenclatureVersion);
 
             return new MatchProbabilityResponse();
         }
