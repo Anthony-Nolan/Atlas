@@ -28,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacImportSettings)
         {
-            services.MakeOptionsAvailableForUse(fetchHlaMetadataDictionarySettings);
+            services.MakeSettingsAvailableForUse(fetchHlaMetadataDictionarySettings);
 
             services.RegisterServices();
             services.RegisterLifeTimeScopedCacheTypes();

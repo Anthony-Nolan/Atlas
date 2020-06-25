@@ -34,13 +34,13 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
 
         private static void RegisterSettings(IServiceCollection services)
         {
-            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterOptions<AzureStorageSettings>("AzureStorage");
-            services.RegisterOptions<DonorManagementSettings>("MessagingServiceBus:DonorManagement");
-            services.RegisterOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
-            services.RegisterOptions<MacDictionarySettings>("MacDictionary");
-            services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
-            services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
+            services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
+            services.RegisterAsOptions<DonorManagementSettings>("MessagingServiceBus:DonorManagement");
+            services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
+            services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
+            services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+            services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
     }
 }

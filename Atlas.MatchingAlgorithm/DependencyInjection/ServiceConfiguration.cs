@@ -256,10 +256,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings
         )
         {
-            services.MakeOptionsAvailableForUse(fetchApplicationInsightsSettings);
-            services.MakeOptionsAvailableForUse(fetchAzureStorageSettings);
-            services.MakeOptionsAvailableForUse(fetchMessagingServiceBusSettings);
-            services.MakeOptionsAvailableForUse(fetchNotificationsServiceBusSettings);
+            services.MakeSettingsAvailableForUse(fetchApplicationInsightsSettings);
+            services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
+            services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
+            services.MakeSettingsAvailableForUse(fetchNotificationsServiceBusSettings);
         }
 
         private static void RegisterSettingsForMatchingDonorManagement(
@@ -278,7 +278,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchNotificationsServiceBusSettings
             );
 
-            services.MakeOptionsAvailableForUse(fetchDonorManagementSettings);
+            services.MakeSettingsAvailableForUse(fetchDonorManagementSettings);
         }
 
         private static void RegisterSettingsForMatchingAlgorithm(
@@ -299,10 +299,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchNotificationsServiceBusSettings
             );
 
-            services.MakeOptionsAvailableForUse(fetchAzureAuthenticationSettings);
-            services.MakeOptionsAvailableForUse(fetchAzureAppServiceManagementSettings);
-            services.MakeOptionsAvailableForUse(fetchAzureDatabaseManagementSettings);
-            services.MakeOptionsAvailableForUse(fetchDataRefreshSettings);
+            services.MakeSettingsAvailableForUse(fetchAzureAuthenticationSettings);
+            services.MakeSettingsAvailableForUse(fetchAzureAppServiceManagementSettings);
+            services.MakeSettingsAvailableForUse(fetchAzureDatabaseManagementSettings);
+            services.MakeSettingsAvailableForUse(fetchDataRefreshSettings);
         }
     }
 }

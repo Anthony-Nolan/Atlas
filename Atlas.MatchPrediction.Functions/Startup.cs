@@ -29,11 +29,11 @@ namespace Atlas.MatchPrediction.Functions
 
         private static void RegisterSettings(IServiceCollection services)
         {
-            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterOptions<AzureStorageSettings>("AzureStorage");
-            services.RegisterOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
-            services.RegisterOptions<MacDictionarySettings>("MacDictionary");
-            services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
+            services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
+            services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
+            services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
+            services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
     }
 }

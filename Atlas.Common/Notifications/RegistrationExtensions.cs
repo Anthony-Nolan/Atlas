@@ -12,7 +12,7 @@ namespace Atlas.Common.Notifications
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationSettings,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchInsightsSettings)
         {
-            services.MakeOptionsAvailableForUse(fetchNotificationSettings);
+            services.MakeSettingsAvailableForUse(fetchNotificationSettings);
             services.RegisterAtlasLogger(fetchInsightsSettings);
 
             services.AddScoped<INotificationsClient, NotificationsClient>();
