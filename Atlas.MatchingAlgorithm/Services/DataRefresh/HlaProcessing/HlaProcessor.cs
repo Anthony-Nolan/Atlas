@@ -31,7 +31,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
     public class HlaProcessor : IHlaProcessor
     {
         private const int BatchSize = 1000;
-        private const string HlaFailureEventName = "Imported Donor Hla Processing Failure(s) in the Search Algorithm";
+        private const string HlaFailureEventName = "Imported Donor Hla Processing Failure(s) in the Matching Algorithm's DataRefresh";
 
         private readonly ILogger logger;
         private readonly IDonorHlaExpanderFactory donorHlaExpanderFactory;
