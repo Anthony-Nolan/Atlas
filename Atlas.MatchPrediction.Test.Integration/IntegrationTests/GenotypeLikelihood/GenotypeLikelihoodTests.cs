@@ -99,11 +99,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
         public async Task CalculateLikelihood_WhenLocusIsHomozygous_ReturnsExpectedLikelihood(Locus homozygousLocus, decimal expectedLikelihood)
         {
             var genotype = PhenotypeInfoBuilder.New
-                .With(d => d.A, new LocusInfo<string> { Position1 = A1, Position2 = A2 })
-                .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
+                .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})
+                .With(d => d.B, new LocusInfo<string> {Position1 = B1, Position2 = B2})
+                .With(d => d.C, new LocusInfo<string> {Position1 = C1, Position2 = C2})
+                .With(d => d.Dqb1, new LocusInfo<string> {Position1 = Dqb11, Position2 = Dqb12})
+                .With(d => d.Drb1, new LocusInfo<string> {Position1 = Drb11, Position2 = Drb12})
                 .Build();
 
             genotype.SetPosition(homozygousLocus, LocusPosition.Two,
@@ -123,11 +123,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
             decimal expectedLikelihood)
         {
             var genotype = PhenotypeInfoBuilder.New
-                .With(d => d.A, new LocusInfo<string> { Position1 = A1, Position2 = A2 })
-                .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
+                .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})
+                .With(d => d.B, new LocusInfo<string> {Position1 = B1, Position2 = B2})
+                .With(d => d.C, new LocusInfo<string> {Position1 = C1, Position2 = C2})
+                .With(d => d.Dqb1, new LocusInfo<string> {Position1 = Dqb11, Position2 = Dqb12})
+                .With(d => d.Drb1, new LocusInfo<string> {Position1 = Drb11, Position2 = Drb12})
                 .Build();
 
             foreach (var homozygousLocus in homozygousLoci)
@@ -147,11 +147,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
         public async Task CalculateLikelihood_WhenGenotypeHasNullLoci_ReturnsZeroLikelihood(Locus locusToBeNull)
         {
             var genotype = PhenotypeInfoBuilder.New
-                .With(d => d.A, new LocusInfo<string> { Position1 = A1, Position2 = A2 })
-                .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
+                .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})
+                .With(d => d.B, new LocusInfo<string> {Position1 = B1, Position2 = B2})
+                .With(d => d.C, new LocusInfo<string> {Position1 = C1, Position2 = C2})
+                .With(d => d.Dqb1, new LocusInfo<string> {Position1 = Dqb11, Position2 = Dqb12})
+                .With(d => d.Drb1, new LocusInfo<string> {Position1 = Drb11, Position2 = Drb12})
                 .Build();
 
             genotype.SetLocus(locusToBeNull, null);
@@ -171,11 +171,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
         public async Task CalculateLikelihood_WhenNoHaplotypesAreRepresentedInDatabase_ReturnsZeroLikelihood(Locus unrepresentedLocus)
         {
             var genotype = PhenotypeInfoBuilder.New
-                .With(d => d.A, new LocusInfo<string> { Position1 = A1, Position2 = A2 })
-                .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
+                .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})
+                .With(d => d.B, new LocusInfo<string> {Position1 = B1, Position2 = B2})
+                .With(d => d.C, new LocusInfo<string> {Position1 = C1, Position2 = C2})
+                .With(d => d.Dqb1, new LocusInfo<string> {Position1 = Dqb11, Position2 = Dqb12})
+                .With(d => d.Drb1, new LocusInfo<string> {Position1 = Drb11, Position2 = Drb12})
                 .Build();
 
             genotype.SetLocus(unrepresentedLocus, "un-represented");
@@ -200,11 +200,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
         public async Task CalculateLikelihood_WhenGenotypeHasThreeOrFourFieldAllele_ReturnsExpectedLikelihood(string fieldsToAdd, Locus locus)
         {
             var genotype = PhenotypeInfoBuilder.New
-                .With(d => d.A, new LocusInfo<string> { Position1 = A1, Position2 = A2 })
-                .With(d => d.B, new LocusInfo<string> { Position1 = B1, Position2 = B2 })
-                .With(d => d.C, new LocusInfo<string> { Position1 = C1, Position2 = C2 })
-                .With(d => d.Dqb1, new LocusInfo<string> { Position1 = Dqb11, Position2 = Dqb12 })
-                .With(d => d.Drb1, new LocusInfo<string> { Position1 = Drb11, Position2 = Drb12 })
+                .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})
+                .With(d => d.B, new LocusInfo<string> {Position1 = B1, Position2 = B2})
+                .With(d => d.C, new LocusInfo<string> {Position1 = C1, Position2 = C2})
+                .With(d => d.Dqb1, new LocusInfo<string> {Position1 = Dqb11, Position2 = Dqb12})
+                .With(d => d.Drb1, new LocusInfo<string> {Position1 = Drb11, Position2 = Drb12})
                 .Build();
 
             genotype.SetPosition(locus, LocusPosition.One, $"{genotype.GetPosition(locus, LocusPosition.One)}:{fieldsToAdd}");

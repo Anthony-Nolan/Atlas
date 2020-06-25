@@ -15,13 +15,16 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     public class MatchProbabilityService : IMatchProbabilityService
     {
         private readonly ICompressedPhenotypeExpander compressedPhenotypeExpander;
+        private readonly IGenotypeLikelihoods genotypeLikelihoods;
         private readonly IGenotypeMatcher genotypeMatcher;
 
         public MatchProbabilityService(
             ICompressedPhenotypeExpander compressedPhenotypeExpander,
+            IGenotypeLikelihoods genotypeLikelihoods,
             IGenotypeMatcher genotypeMatcher)
         {
             this.compressedPhenotypeExpander = compressedPhenotypeExpander;
+            this.genotypeLikelihoods = genotypeLikelihoods;
             this.genotypeMatcher = genotypeMatcher;
         }
 
@@ -34,6 +37,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 await compressedPhenotypeExpander.ExpandCompressedPhenotype(matchProbabilityInput.DonorHla, matchProbabilityInput.HlaNomenclatureVersion);
             var donorGenotypes = expandedDonorHla.ToHashSet();
 
+            var likelihoods = await genotypeLikelihoods.CalculateLikelihoods(patientGenotypes, donorGenotypes);
 
             var matchingPairs = 
                 await genotypeMatcher.PairsWithTenOutOfTenMatch(patientGenotypes, donorGenotypes, matchProbabilityInput.HlaNomenclatureVersion);

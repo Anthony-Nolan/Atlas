@@ -92,8 +92,9 @@ namespace Atlas.MatchPrediction.DependencyInjection
 
             services.AddScoped<IMatchCalculationService, MatchCalculationService>();
 
-            services.AddScoped<IMatchProbabilityService, MatchProbabilityService>();
+            services.AddScoped<IGenotypeLikelihoods, GenotypeLikelihoods>();
             services.AddScoped<IGenotypeMatcher, GenotypeMatcher>();
+            services.AddScoped<IMatchProbabilityService, MatchProbabilityService>();
 
             services.AddScoped<ILocusHlaConverter, LocusHlaConverter>();
         }

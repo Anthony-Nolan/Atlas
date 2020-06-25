@@ -2,74 +2,41 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.MatchPrediction.Data.Repositories;
-using Atlas.MatchPrediction.Models;
-using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
+using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 
-namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
+namespace Atlas.MatchPrediction.Services.MatchProbability
 {
-    public interface IGenotypeLikelihoodService
+    public interface IGenotypeLikelihoods
     {
-        public Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype);
+        public Task<Dictionary<PhenotypeInfo<string>, decimal>> CalculateLikelihoods(
+            ISet<PhenotypeInfo<string>> patientGenotypes,
+            ISet<PhenotypeInfo<string>> donorGenotypes);
     }
 
-    public class GenotypeLikelihoodService : IGenotypeLikelihoodService
+    public class GenotypeLikelihoods : IGenotypeLikelihoods
     {
-        private readonly IHaplotypeFrequencySetRepository setRepository;
-        private readonly IHaplotypeFrequenciesRepository frequencyRepository;
-        private readonly IUnambiguousGenotypeExpander unambiguousGenotypeExpander;
-        private readonly IGenotypeLikelihoodCalculator likelihoodCalculator;
-        private readonly IGenotypeAlleleTruncater alleleTruncater;
+        private readonly IGenotypeLikelihoodService genotypeLikelihoodService;
 
-        public GenotypeLikelihoodService(
-            IHaplotypeFrequencySetRepository setRepository,
-            IHaplotypeFrequenciesRepository frequencyRepository,
-            IUnambiguousGenotypeExpander unambiguousGenotypeExpander,
-            IGenotypeLikelihoodCalculator likelihoodCalculator,
-            IGenotypeAlleleTruncater alleleTruncater)
+        public GenotypeLikelihoods(IGenotypeLikelihoodService genotypeLikelihoodService)
         {
-            this.setRepository = setRepository;
-            this.frequencyRepository = frequencyRepository;
-            this.unambiguousGenotypeExpander = unambiguousGenotypeExpander;
-            this.likelihoodCalculator = likelihoodCalculator;
-            this.alleleTruncater = alleleTruncater;
+            this.genotypeLikelihoodService = genotypeLikelihoodService;
         }
 
-        public async Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype)
+        public async Task<Dictionary<PhenotypeInfo<string>, decimal>> CalculateLikelihoods(
+            ISet<PhenotypeInfo<string>> patientGenotypes,
+            ISet<PhenotypeInfo<string>> donorGenotypes)
         {
-            var truncatedGenotype = alleleTruncater.TruncateGenotypeAlleles(genotype);
+            var genotypes = patientGenotypes.Union(donorGenotypes);
+            var genotypesLikelihoods = await Task.WhenAll(genotypes.Select(CalculateLikelihood));
+            var genotypeLikelihoodDictionary = genotypesLikelihoods.ToDictionary(g => g.Key, g => g.Value);
 
-            var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(truncatedGenotype);
-            var haplotypesWithFrequencies = await GetHaplotypesWithFrequencies(expandedGenotype);
-
-            UpdateFrequenciesForDiplotype(haplotypesWithFrequencies, expandedGenotype.Diplotypes);
-            var likelihood = likelihoodCalculator.CalculateLikelihood(expandedGenotype);
-
-            return likelihood;
+            return genotypeLikelihoodDictionary;
         }
 
-        private async Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypesWithFrequencies(ExpandedGenotype expandedGenotype)
+        private async Task<KeyValuePair<PhenotypeInfo<string>, decimal>> CalculateLikelihood(PhenotypeInfo<string> genotype)
         {
-            var haplotypes = GetHaplotypes(expandedGenotype.Diplotypes);
-            var frequencySet = await setRepository.GetActiveSet(null, null);
-
-            return await frequencyRepository.GetHaplotypeFrequencies(haplotypes, frequencySet.Id);
-        }
-
-        public IEnumerable<HaplotypeHla> GetHaplotypes(IEnumerable<Diplotype> diplotypes)
-        {
-            return diplotypes.SelectMany(diplotype => new List<HaplotypeHla> { diplotype.Item1.Hla, diplotype.Item2.Hla });
-        }
-
-        private static void UpdateFrequenciesForDiplotype(
-            Dictionary<HaplotypeHla, decimal> haplotypesWithFrequencies,
-            IEnumerable<Diplotype> diplotypes)
-        {
-            foreach (var diplotype in diplotypes)
-            {
-                diplotype.Item1.Frequency = haplotypesWithFrequencies[diplotype.Item1.Hla];
-                diplotype.Item2.Frequency = haplotypesWithFrequencies[diplotype.Item2.Hla];
-            }
+            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotype);
+            return new KeyValuePair<PhenotypeInfo<string>, decimal>(genotype, likelihood);
         }
     }
 }
