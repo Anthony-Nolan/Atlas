@@ -17,8 +17,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         /// <param name="donorGenotypes">List of unambiguous genotypes for a given donor</param>
         /// <param name="hlaNomenclatureVersion">Same version used to get the genotype information</param>
         public Task<IEnumerable<UnorderedPair<PhenotypeInfo<string>>>> PairsWithTenOutOfTenMatch(
-            HashSet<PhenotypeInfo<string>> patientGenotypes,
-            HashSet<PhenotypeInfo<string>> donorGenotypes,
+            ISet<PhenotypeInfo<string>> patientGenotypes,
+            ISet<PhenotypeInfo<string>> donorGenotypes,
             string hlaNomenclatureVersion);
     }
 
@@ -32,8 +32,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         }
 
         public async Task<IEnumerable<UnorderedPair<PhenotypeInfo<string>>>> PairsWithTenOutOfTenMatch(
-            HashSet<PhenotypeInfo<string>> patientGenotypes,
-            HashSet<PhenotypeInfo<string>> donorGenotypes,
+            ISet<PhenotypeInfo<string>> patientGenotypes,
+            ISet<PhenotypeInfo<string>> donorGenotypes,
             string hlaNomenclatureVersion)
         {
             var allPatientDonorCombinations = patientGenotypes.SelectMany(patientHla =>
