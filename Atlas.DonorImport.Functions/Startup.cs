@@ -1,6 +1,5 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Functions;
@@ -21,7 +20,7 @@ namespace Atlas.DonorImport.Functions
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
-                ConnectionStringReader("Sql")
+                ConnectionStringReader("DonorStoreSql")
             );
         }
 

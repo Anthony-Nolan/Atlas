@@ -23,7 +23,7 @@ resource "azurerm_function_app" "atlas_donor_import_function" {
   }
 
   connection_string {
-    name  = "Sql"
+    name  = "DonorStoreSql"
     type  = "SQLAzure"
     value = local.donor_import_connection_string
   }

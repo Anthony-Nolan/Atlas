@@ -18,6 +18,8 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
 {
     internal static class ServiceConfiguration
     {
+        private const string MatchPredictionSqlConnectionString = "MatchPredictionSql";
+
         public static IServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
@@ -29,7 +31,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
                 _ => new HlaMetadataDictionarySettings(),
                 _ => new MacDictionarySettings(),
                 _ => new NotificationsServiceBusSettings(),
-                SqlConnectionStringReader
+                ConnectionStringReader(MatchPredictionSqlConnectionString)
             );
             RegisterIntegrationTestServices(services);
             SetUpMockServices(services);
@@ -54,12 +56,12 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
         {
             services.AddScoped(sp =>
             {
-                var connectionString = SqlConnectionStringReader(sp);
+                var connectionString = ConnectionStringReader(MatchPredictionSqlConnectionString)(sp);
                 return new ContextFactory().Create(connectionString);
             });
 
             services.AddScoped<IHaplotypeFrequencyInspectionRepository>(sp =>
-                new HaplotypeFrequencyInspectionRepository(SqlConnectionStringReader(sp))
+                new HaplotypeFrequencyInspectionRepository(ConnectionStringReader(MatchPredictionSqlConnectionString)(sp))
             );
         }
 
@@ -67,8 +69,6 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
         {
             services.AddScoped(sp => Substitute.For<INotificationSender>());
         }
-
-        private static Func<IServiceProvider, string> SqlConnectionStringReader => DependencyInjectionUtils.ConnectionStringReader("Sql");
 
         private static Func<IServiceProvider, ApplicationInsightsSettings> ApplicationInsightsSettingsReader =>
             _ => new ApplicationInsightsSettings {LogLevel = "Info"};
