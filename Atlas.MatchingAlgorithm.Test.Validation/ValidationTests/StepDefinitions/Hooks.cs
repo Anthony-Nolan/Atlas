@@ -10,12 +10,12 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelec
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.StaticDataSelection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
 using TechTalk.SpecFlow;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions
 {
@@ -103,7 +103,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             scenarioContext.TryGetValue<SearchAlgorithmApiResult>(out var singlePatientApiResult);
             scenarioContext.TryGetValue<List<PatientApiResult>>(out var patientApiResults);
 
-            var shouldLogSuccessfulTests = serviceProvider.GetService<IOptions<ValidationTestSettings>>().Value.LogSuccessfulTests;
+            var shouldLogSuccessfulTests = OptionsReaderFor<ValidationTestSettings>()(serviceProvider).LogSuccessfulTests;
             var successLogLevel = shouldLogSuccessfulTests ? LogLevel.Info : LogLevel.Off;
             var logLevel = scenarioContext.TestError == null ? successLogLevel : LogLevel.Error;
 

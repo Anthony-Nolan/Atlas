@@ -46,6 +46,9 @@ namespace Atlas.Common.Utils.Extensions
         /// Note that this is expected to be used primarily in a set with <see cref="RegisterOptions{T}"/> and <see cref="MakeOptionsAvailableForUse{T}"/>
         /// <br/>
         /// This is the ONLY method in the set that should be used in the logic Projects. The others should ONLY be used in raw entry-point projects.
+        /// <br/>
+        /// This method also ensures that all registered settings are defined at a singleton scope (since they might be wanted by a singleton class).
+        /// If for any reason you ACTIVELY need a request-scoped settings object, you will need to add a further method.
         /// </summary>
         /// <remarks>
         /// This extension is primarily defined so that all of the management of Settings can be tied back to this file, so that Devs read all the docs here.
