@@ -21,7 +21,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         DonorBatchProcessor<ServiceBusMessage<SearchableDonorUpdate>, DonorAvailabilityUpdate>,
         ISearchableDonorUpdateConverter
     {
-        private const string UpdateFailureEventName = "Searchable Donor Update Failure(s) in the Search Algorithm";
+        private const string UpdateFailureEventName = "Searchable Donor Update parsing Failure(s) in the Matching Algorithm's Continuous Donor Update sytem";
 
         public SearchableDonorUpdateConverter(ILogger logger) : base(logger)
         {

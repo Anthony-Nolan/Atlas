@@ -22,7 +22,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 
     public class DonorService : IDonorService
     {
-        private const string ExpansionFailureEventName = "HLA Expansion Failure(s) in Search Algorithm";
+        private const string ExpansionFailureEventName = "HLA Expansion Failure(s) in Matching Algorithm's Continuous Donor Update sytem";
 
         private readonly IDonorUpdateRepository donorUpdateRepository;
         private readonly IDonorInspectionRepository donorInspectionRepository;
