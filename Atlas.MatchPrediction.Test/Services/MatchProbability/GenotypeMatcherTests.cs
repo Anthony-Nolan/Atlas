@@ -119,8 +119,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             int numberOfPatientGenotypes,
             int numberOfPossibleCombinations)
         {
-            var patientGenotypes = Enumerable.Range(1, numberOfPatientGenotypes).Select(i => new PhenotypeInfo<string>()).ToList();
-            var donorGenotypes = Enumerable.Range(1, numberOfDonorGenotypes).Select(i => new PhenotypeInfo<string>()).ToList();
+            var patientGenotypes = Enumerable.Range(1, numberOfPatientGenotypes).Select(i => new PhenotypeInfo<string>($"patient${i}")).ToHashSet();
+            var donorGenotypes = Enumerable.Range(1, numberOfDonorGenotypes).Select(i => new PhenotypeInfo<string>($"donor${i}")).ToHashSet();
 
             matchCalculationService.MatchAtPGroupLevel(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<PhenotypeInfo<string>>(), Arg.Any<string>())
                 .Returns(TenOutOfTenMatch);
