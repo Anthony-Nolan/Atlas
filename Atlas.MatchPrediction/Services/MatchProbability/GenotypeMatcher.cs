@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
@@ -36,24 +37,29 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             string hlaNomenclatureVersion)
         {
             var allPatientDonorCombinations = patientGenotypes.SelectMany(patientHla =>
-                donorGenotypes.Select(donorHla => new UnorderedPair<PhenotypeInfo<string>> {Item1 = patientHla, Item2 = donorHla})).ToList();
+                donorGenotypes.Select(donorHla => 
+                    new UnorderedPair<PhenotypeInfo<string>> {Item1 = patientHla, Item2 = donorHla})).ToList();
 
-            var pairsWithAlleleLevelMatch = new List<UnorderedPair<PhenotypeInfo<string>>>();
+            var patientDonorMatchDetails =
+                await Task.WhenAll(
+                    allPatientDonorCombinations.Select(pd => CalculateMatch(pd, hlaNomenclatureVersion)));
 
-            foreach (var patientDonorPair in allPatientDonorCombinations)
-            {
-                var matchCounts = await matchCalculationService.MatchAtPGroupLevel(
-                    patientDonorPair.Item1,
-                    patientDonorPair.Item2,
-                    hlaNomenclatureVersion);
+            var tenOutOfTenPatientDonorMatchDetails =
+                patientDonorMatchDetails.Where(pd => pd.Item2.IsTenOutOfTenMatch);
 
-                if (matchCounts.IsTenOutOfTenMatch)
-                {
-                    pairsWithAlleleLevelMatch.Add(patientDonorPair);
-                }
-            }
+            var tenOutOfTenPatientDonorPairs =
+                tenOutOfTenPatientDonorMatchDetails.Select(pd => pd.Item1);
 
-            return pairsWithAlleleLevelMatch;
+            return tenOutOfTenPatientDonorPairs;
+        }
+
+        private async Task<(UnorderedPair<PhenotypeInfo<string>>, Match)> CalculateMatch(
+            UnorderedPair<PhenotypeInfo<string>> patientDonorPair,
+            string hlaNomenclatureVersion)
+        {
+            var matchDetails =
+                await matchCalculationService.MatchAtPGroupLevel(patientDonorPair.Item1, patientDonorPair.Item2, hlaNomenclatureVersion);
+                return (patientDonorPair, matchDetails);
         }
     }
 }
