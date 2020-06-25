@@ -21,8 +21,8 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
 
         public static void RegisterFileBasedHlaMetadataDictionaryForTesting(this IServiceCollection services, Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
         {
-            Func<IServiceProvider, string> blank = _ => ""; 
-            services.RegisterHlaMetadataDictionary(blank, blank, fetchApplicationInsightsSettings, _ => null); //This is actually used.
+            Func<IServiceProvider, string> blank = _ => ""; // These configs are not needed for their file-backed replacements, so we can use blank settings.
+            services.RegisterHlaMetadataDictionary(blank, blank, fetchApplicationInsightsSettings, _ => null);
             
             // Replace Repositories with File-Backed equivalents.
             services.AddScoped<IHlaScoringMetadataRepository, FileBackedHlaScoringMetadataRepository>();
@@ -31,11 +31,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             services.AddScoped<IDpb1TceGroupsMetadataRepository, FileBackedTceMetadataRepository>();
             
             services.AddScoped(sp => Substitute.For<IMacDictionary>());
-            // Mac Dictionary Stubs
-            // TODO: ATLAS-320 Move this to MacDictionary Tests, along with any tests that actually belong over there.
-            // After that migration, this may or may not still be needed in here, and/or in MatchingAlgorithm.Tests
-            // If it is, expose this as a Test Registration in the MacDictionary project.
-
 
             services.AddScoped(sp =>
             {
