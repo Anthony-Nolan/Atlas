@@ -10,7 +10,6 @@ using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
-using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 {
