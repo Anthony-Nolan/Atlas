@@ -1,11 +1,15 @@
 using System;
 using System.IO;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
 using Atlas.Common.Utils.Extensions;
+using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests.TestHelpers;
 using Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +20,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjectio
 {
     internal static class ServiceConfiguration
     {
-        public static IServiceProvider CreateProvider()
+        internal static IServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
             services.RegisterSettings();
@@ -55,6 +59,20 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjectio
         {
             services.AddScoped(sp => Substitute.For<IMacCodeDownloader>());
             services.AddScoped(sp => Substitute.For<INotificationSender>());
+        }
+
+        public static void SetUpMacDictionaryWithFileBackedRepository(this IServiceCollection services,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, MacImportSettings> fetchMacImportSettings)
+        {
+            
+            services.RegisterMacDictionary(
+                fetchApplicationInsightsSettings,
+                fetchMacImportSettings
+            );
+            
+            services.RegisterLifeTimeScopedCacheTypes();
+            services.AddScoped<IMacRepository, FileBackedMacDictionaryRepository>();
         }
     }
 }
