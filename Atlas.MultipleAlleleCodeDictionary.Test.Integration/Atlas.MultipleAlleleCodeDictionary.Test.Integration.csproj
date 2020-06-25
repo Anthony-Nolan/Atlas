@@ -27,7 +27,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="TestHelpers" />
+        <InternalsVisibleTo Include="Atlas.HlaMetaDataDictionary.Test" />
+        <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Resources\Mac.csv" />
+    </ItemGroup>
+
 
 </Project>

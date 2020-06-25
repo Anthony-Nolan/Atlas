@@ -3,13 +3,22 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Atlas.Common.Caching;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
+using LazyCache;
 
-namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs
+namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests.TestHelpers
 {
     public class FileBackedMacDictionaryRepository : IMacRepository
     {
+        private readonly IAppCache cache;
+
+        public FileBackedMacDictionaryRepository(IPersistentCacheProvider cacheProvider)
+        {
+            cache = cacheProvider.Cache;
+            GetAllMacs();
+        }
         public Task<string> GetLastMacEntry()
         {
             throw new System.NotImplementedException();
@@ -22,13 +31,17 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
 
         public async Task<Mac> GetMac(string macCode)
         {
-            var macs = await GetAllMacs();
-            return macs.Single(mac => mac.Code == macCode);
+            return cache.Get<Mac>(macCode);
         }
 
         public Task<IEnumerable<Mac>> GetAllMacs()
         {
-            return Task.FromResult(ReadFile().Select(ParseMac));
+            var macs = ReadFile().Select(ParseMac);
+            foreach (var mac in macs)
+            {
+                cache.GetOrAdd(mac.Code, () => mac);
+            }
+            return Task.FromResult(macs);
         }
 
         private static Mac ParseMac(string input)
@@ -48,7 +61,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         private static IEnumerable<string> ReadFile()
         {
             var assembly = Assembly.GetExecutingAssembly();
-                using (var stream = assembly.GetManifestResourceStream("Atlas.HlaMetadataDictionary.Test.IntegrationTests.Resources.Mac.csv"))
+                using (var stream = assembly.GetManifestResourceStream("Atlas.MultipleAlleleCodeDictionary.Test.Integration.Resources.Mac.csv"))
                 {
                     var stringList = new List<string>();
                     using (var reader = new StreamReader(stream))
