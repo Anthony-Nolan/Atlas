@@ -142,6 +142,7 @@
     <ProjectReference Include="..\Atlas.Common.Test\Atlas.Common.Test.csproj" />
     <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
     <ProjectReference Include="..\Atlas.HlaMetadataDictionary\Atlas.HlaMetadataDictionary.csproj" />
+    <ProjectReference Include="..\Atlas.MultipleAlleleCodeDictionary.Test.Integration\Atlas.MultipleAlleleCodeDictionary.Test.Integration.csproj" />
   </ItemGroup>
 
   <ItemGroup>

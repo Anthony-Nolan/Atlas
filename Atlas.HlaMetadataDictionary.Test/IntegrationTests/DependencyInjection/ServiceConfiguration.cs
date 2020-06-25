@@ -5,7 +5,11 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjection;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 
@@ -30,7 +34,16 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
                 _ => new MacDictionarySettings()
             );
 
+            
+            services.RegisterOptions<MacImportSettings>("MacImport");
+            services.RegisterConfiguration();
+
+            services.SetUpMacDictionaryWithFileBackedRepository(
+                fetchApplicationInsightsSettings,
+                DependencyInjectionUtils.OptionsReaderFor<MacImportSettings>());
+
             // Replace Repositories with File-Backed equivalents.
+            RegisterConfiguration(services);
             services.AddScoped<IHlaScoringMetadataRepository, FileBackedHlaScoringMetadataRepository>();
             services.AddScoped<IHlaMatchingMetadataRepository, FileBackedHlaMatchingMetadataRepository>();
             services.AddScoped<IAlleleNamesMetadataRepository, FileBackedAlleleNamesMetadataRepository>();
@@ -43,6 +56,16 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
                 wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(Constants.SnapshotHlaNomenclatureVersion);
                 return wmdaHlaNomenclatureVersionAccessor;
             });
+        }
+        
+        private static void RegisterConfiguration(this IServiceCollection services)
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .Build();
+
+            services.AddSingleton<IConfiguration>(sp => configuration);
         }
     }
 }
