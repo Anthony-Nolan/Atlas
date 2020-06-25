@@ -7,7 +7,11 @@
     <OutputPath>bin/</OutputPath>
     <UserSecretsId>df7a1f7f-7b93-4202-acb3-0e10369b64ef</UserSecretsId>
   </PropertyGroup>
-
+  
+  <Target Name="Scaffold local settings file" BeforeTargets="BeforeCompile" Condition="!EXISTS('$(ProjectDir)\local.settings.json')">
+    <Copy SourceFiles="$(ProjectDir)\local.settings.template.json" DestinationFiles="$(ProjectDir)\local.settings.json" />
+  </Target>
+  
   <ItemGroup>
     <PackageReference Include="AzureExtensions.Swashbuckle" Version="3.1.6" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
