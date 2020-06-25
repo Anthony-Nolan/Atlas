@@ -7,22 +7,32 @@
         <OutputPath>bin/</OutputPath>
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
+
+    <Target Name="Scaffold local settings file" BeforeTargets="BeforeCompile" Condition="!EXISTS('$(ProjectDir)\local.settings.json')">
+        <Copy SourceFiles="$(ProjectDir)\local.settings.template.json" DestinationFiles="$(ProjectDir)\local.settings.json" />
+    </Target>
+    
     <ItemGroup>
-        <PackageReference Include="AzureExtensions.Swashbuckle" Version="3.1.6"/>
-        <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.4"/>
-        <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.7"/>
+        <PackageReference Include="AzureExtensions.Swashbuckle" Version="3.1.6" />
+        <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.4" />
+        <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.7" />
     </ItemGroup>
+    
     <ItemGroup>
         <None Update="host.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-        <None Update="local.settings.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <None Update="local.settings.template.json">
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </None>
+        <None Update="local.settings.json">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
+    
+    
     <ItemGroup>
-        <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj"/>
+        <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
     </ItemGroup>
 </Project>
