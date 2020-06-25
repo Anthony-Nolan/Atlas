@@ -1,19 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
+﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups;
-using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
-    internal interface IHlaSearchingMetadataService<THlaMetadata>
-        where THlaMetadata : IHlaMetadata
+    internal interface IHlaSearchingMetadataService<THlaMetadata> where THlaMetadata : IHlaMetadata
     {
         Task<THlaMetadata> GetHlaMetadata(Locus locus, string hlaName, string hlaNomenclatureVersion);
     }
@@ -33,20 +31,22 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         private readonly IAlleleNamesMetadataService alleleNamesMetadataService;
         private readonly IAlleleStringSplitterService alleleSplitter;
         private readonly IMacDictionary macDictionary;
+        private readonly IAlleleGroupMetadataService alleleGroupMetadataService;
 
         protected HlaSearchingMetadataServiceBase(
             IHlaMetadataRepository hlaMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
-            IMacDictionary macDictionary
-        )
+            IMacDictionary macDictionary,
+            IAlleleGroupMetadataService alleleGroupMetadataService)
         {
             this.hlaMetadataRepository = hlaMetadataRepository;
             this.alleleNamesMetadataService = alleleNamesMetadataService;
             HlaCategorisationService = hlaCategorisationService;
             this.alleleSplitter = alleleSplitter;
             this.macDictionary = macDictionary;
+            this.alleleGroupMetadataService = alleleGroupMetadataService;
         }
 
         public async Task<THlaMetadata> GetHlaMetadata(Locus locus, string hlaName, string hlaNomenclatureVersion)
@@ -78,15 +78,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                     hlaMetadataRepository,
                     alleleNamesMetadataService,
                     alleleSplitter,
-                    macDictionary);
+                    macDictionary,
+                    alleleGroupMetadataService);
         }
 
-        protected abstract IEnumerable<THlaMetadata> ConvertMetadataRowsToMetadata(
-            IEnumerable<HlaMetadataTableRow> rows);
+        protected abstract IEnumerable<THlaMetadata> ConvertMetadataRowsToMetadata(IEnumerable<HlaMetadataTableRow> rows);
 
-        protected abstract THlaMetadata ConsolidateHlaMetadata(
-            Locus locus,
-            string lookupName,
-            List<THlaMetadata> metadata);
+        protected abstract THlaMetadata ConsolidateHlaMetadata(Locus locus, string lookupName, List<THlaMetadata> metadata);
     }
 }

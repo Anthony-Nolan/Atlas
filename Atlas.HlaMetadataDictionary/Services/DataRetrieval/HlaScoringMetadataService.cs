@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Atlas.Common.GeneticData;
+﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
-using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
@@ -31,14 +30,15 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IAlleleNamesMetadataService alleleNamesMetadataService,
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
-            IMacDictionary macDictionary
+            IMacDictionary macDictionary,
+            IAlleleGroupMetadataService alleleGroupMetadataService
         ) : base(
             hlaScoringMetadataRepository,
             alleleNamesMetadataService,
             hlaCategorisationService,
             alleleSplitter,
-            macDictionary
-        )
+            macDictionary,
+            alleleGroupMetadataService)
         {
         }
 

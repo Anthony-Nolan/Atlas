@@ -1,27 +1,26 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.Hla.Services;
+﻿using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 {
-    internal class AlleleStringLookup : AlleleNamesLookupBase
+    internal class AlleleGroupLookup : AlleleNamesLookupBase
     {
-        private readonly IAlleleStringSplitterService alleleSplitter;
-        
-        public AlleleStringLookup(
+        private readonly IAlleleGroupMetadataService alleleGroupMetadataService;
+
+        public AlleleGroupLookup(
             IHlaMetadataRepository hlaMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
-            IAlleleStringSplitterService alleleSplitter)
+            IAlleleGroupMetadataService alleleGroupMetadataService)
             : base(hlaMetadataRepository, alleleNamesMetadataService)
         {
-            this.alleleSplitter = alleleSplitter;
+            this.alleleGroupMetadataService = alleleGroupMetadataService;
         }
 
         protected override async Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            return await Task.Run(() => alleleSplitter.GetAlleleNamesFromAlleleString(lookupName));
+            return await alleleGroupMetadataService.GetAllelesInGroup(locus, lookupName, hlaNomenclatureVersion);
         }
     }
 }

@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
-using Atlas.Common.Caching;
+﻿using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
-using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 {
@@ -32,7 +32,15 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         {
             var row = await GetHlaMetadataRowIfExists(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
 
-            return row?.ToAlleleNameMetadata();
+            if (row == null)
+            {
+                return null;
+            }
+
+            return new AlleleNameMetadata(
+                row.Locus,
+                row.LookupName,
+                row.GetHlaInfo<List<string>>());
         }
     }
 }

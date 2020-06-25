@@ -26,11 +26,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 
         public override async Task<IEnumerable<HlaMetadataTableRow>> PerformLookupAsync(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            var alleleNamesToLookup = await GetAlleleLookupNames(locus, lookupName);
+            var alleleNamesToLookup = await GetAlleleLookupNames(locus, lookupName, hlaNomenclatureVersion);
             return await GetHlaMetadataRows(locus, alleleNamesToLookup, hlaNomenclatureVersion);
         }
 
-        protected abstract Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName);
+        protected abstract Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName, string hlaNomenclatureVersion);
 
         private async Task<IEnumerable<HlaMetadataTableRow>> GetHlaMetadataRows(
             Locus locus,

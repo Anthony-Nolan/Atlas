@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
+﻿using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
-using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 {
@@ -21,7 +19,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
             this.macDictionary = macDictionary;
         }
 
-        protected override async Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName)
+        protected override async Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName, string hlaNomenclatureVersio)
         {
             return await macDictionary.GetHlaFromMac(lookupName);
         }
