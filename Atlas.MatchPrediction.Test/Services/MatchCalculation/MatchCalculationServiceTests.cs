@@ -48,10 +48,10 @@ namespace Atlas.MatchPrediction.Test.Services.MatchCalculation
         {
             locusMatchCalculator.MatchCount(Arg.Any<LocusInfo<IEnumerable<string>>>(), Arg.Any<LocusInfo<IEnumerable<string>>>()).Returns(perLocusMatchCount);
 
-            var matchCounts = await matchCalculationService.MatchAtPGroupLevel(default, default, default);
+            var match = await matchCalculationService.MatchAtPGroupLevel(default, default, default);
 
             // Not including Dpb1 as it's not included in match prediction
-            var actualTotal = matchCounts.A + matchCounts.B + matchCounts.C + matchCounts.Dqb1 + matchCounts.Drb1;
+            var actualTotal = match.MatchCounts.A + match.MatchCounts.B + match.MatchCounts.C + match.MatchCounts.Dqb1 + match.MatchCounts.Drb1;
             actualTotal.Should().Be(expectedTotalMatchCount);
         }
     }

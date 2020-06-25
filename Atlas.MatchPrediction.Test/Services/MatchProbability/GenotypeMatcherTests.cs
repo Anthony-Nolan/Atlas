@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using FluentAssertions;
@@ -14,39 +14,43 @@ using NSubstitute;
 namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 {
     [TestFixture]
-    public class MatchGenotypesTests
+    public class GenotypeMatcherTests
     {
         private IMatchCalculationService matchCalculationService;
-        private IMatchGenotypes matchGenotypes;
+        private IGenotypeMatcher genotypeMatcher;
 
         private const string HlaNomenclatureVersion = "test";
 
+        private const string PatientLocus1 = "patientGenotype1";
+        private const string PatientLocus2 = "patientGenotype2";
+        private const string DonorLocus1 = "donorGenotype1";
+        private const string DonorLocus2 = "donorGenotype2";
+
         private static readonly PhenotypeInfo<string> PatientGenotype1 = PhenotypeInfoBuilder.New
-            .With(d => d.A, new LocusInfo<string> { Position1 = "patientGenotype1", Position2 = "patientGenotype1" }).Build();
+            .With(d => d.A, new LocusInfo<string> {Position1 = PatientLocus1, Position2 = PatientLocus1}).Build();
         private static readonly PhenotypeInfo<string> PatientGenotype2 = PhenotypeInfoBuilder.New
-            .With(d => d.A, new LocusInfo<string> { Position1 = "patientGenotype2", Position2 = "patientGenotype2" }).Build();
+            .With(d => d.A, new LocusInfo<string> {Position1 = PatientLocus2, Position2 = PatientLocus2}).Build();
         private static readonly PhenotypeInfo<string> DonorGenotype1 = PhenotypeInfoBuilder.New
-            .With(d => d.A, new LocusInfo<string> { Position1 = "donorGenotype1", Position2 = "donorGenotype1" }).Build();
+            .With(d => d.A, new LocusInfo<string> {Position1 = DonorLocus1, Position2 = DonorLocus1}).Build();
         private static readonly PhenotypeInfo<string> DonorGenotype2 = PhenotypeInfoBuilder.New
-            .With(d => d.A, new LocusInfo<string> { Position1 = "donorGenotype2", Position2 = "donorGenotype2" }).Build();
+            .With(d => d.A, new LocusInfo<string> {Position1 = DonorLocus2, Position2 = DonorLocus2}).Build();
 
-        private static readonly LociInfo<int?> TenOutOfTenMatch = new LociInfo<int?>
-            { A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2 };
+        private static readonly Match TenOutOfTenMatch = new Match
+            {MatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2}};
 
-
-        private static readonly LociInfo<int?> Mismatch = new LociInfo<int?>
-            { A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0 };
+        private static readonly Match Mismatch = new Match
+            {MatchCounts = new LociInfo<int?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0}};
 
         [SetUp]
         public void Setup()
         {
             matchCalculationService = Substitute.For<IMatchCalculationService>();
 
-            matchGenotypes = new MatchGenotypes(matchCalculationService);
+            genotypeMatcher = new GenotypeMatcher(matchCalculationService);
         }
 
         [Test]
-        public async Task PairsWithAlleleLevelMatch_WhenTenOutOfTenMatch_ReturnsListOfDonorPatientPairs()
+        public async Task PairsWithTenOutOfTenMatch_WhenAllCombinationsOfGenotypesAreTenOutOfTenMatch_ReturnsListOfDonorPatientPairs()
         {
             var patientGenotypes = new List<PhenotypeInfo<string>>{PatientGenotype1, PatientGenotype2};
             var donorGenotypes = new List<PhenotypeInfo<string>>{DonorGenotype1, DonorGenotype2};
@@ -62,13 +66,13 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             matchCalculationService.MatchAtPGroupLevel(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<PhenotypeInfo<string>>(), Arg.Any<string>())
                 .Returns(TenOutOfTenMatch);
 
-            var actualPatientDonorPairs = await matchGenotypes.PairsWithAlleleLevelMatch(patientGenotypes, donorGenotypes, HlaNomenclatureVersion);
+            var actualPatientDonorPairs = await genotypeMatcher.PairsWithTenOutOfTenMatch(patientGenotypes, donorGenotypes, HlaNomenclatureVersion);
 
             actualPatientDonorPairs.ToList().Should().BeEquivalentTo(expectedPatientDonorPairs);
         }
 
         [Test]
-        public async Task PairsWithAlleleLevelMatch_WhenMismatch_ReturnsEmptyListOfDonorPatientPairs()
+        public async Task PairsWithTenOutOfTenMatch_WhenAllCombinationsOfGenotypesAreMismatch_ReturnsEmptyListOfDonorPatientPairs()
         {
             var patientGenotypes = new List<PhenotypeInfo<string>> { PatientGenotype1, PatientGenotype2 };
             var donorGenotypes = new List<PhenotypeInfo<string>> { DonorGenotype1, DonorGenotype2 };
@@ -78,17 +82,39 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             matchCalculationService.MatchAtPGroupLevel(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<PhenotypeInfo<string>>(), Arg.Any<string>())
                 .Returns(Mismatch);
 
-            var actualPatientDonorPairs = await matchGenotypes.PairsWithAlleleLevelMatch(patientGenotypes, donorGenotypes, HlaNomenclatureVersion);
+            var actualPatientDonorPairs = await genotypeMatcher.PairsWithTenOutOfTenMatch(patientGenotypes, donorGenotypes, HlaNomenclatureVersion);
+
+            actualPatientDonorPairs.ToList().Should().BeEquivalentTo(expectedPatientDonorPairs);
+        }
+
+        [Test]
+        public async Task PairsWithTenOutOfTenMatch_WhenMixtureOfMismatchesAndTenOutOfTenMatches_ReturnsListOfExpectedDonorPatientPairs()
+        {
+            var patientGenotypes = new List<PhenotypeInfo<string>> { PatientGenotype1, PatientGenotype2 };
+            var donorGenotypes = new List<PhenotypeInfo<string>> { DonorGenotype1, DonorGenotype2 };
+
+            var expectedPatientDonorPairs = new List<UnorderedPair<PhenotypeInfo<string>>>
+            {
+                new UnorderedPair<PhenotypeInfo<string>>{Item1 = PatientGenotype1, Item2 = DonorGenotype1},
+                new UnorderedPair<PhenotypeInfo<string>>{Item1 = PatientGenotype2, Item2 = DonorGenotype2}
+            };
+
+            matchCalculationService.MatchAtPGroupLevel(PatientGenotype1, DonorGenotype1, Arg.Any<string>()).Returns(TenOutOfTenMatch);
+            matchCalculationService.MatchAtPGroupLevel(PatientGenotype2, DonorGenotype2, Arg.Any<string>()).Returns(TenOutOfTenMatch);
+            matchCalculationService.MatchAtPGroupLevel(PatientGenotype1, DonorGenotype2, Arg.Any<string>()).Returns(Mismatch);
+            matchCalculationService.MatchAtPGroupLevel(PatientGenotype2, DonorGenotype1, Arg.Any<string>()).Returns(Mismatch);
+
+            var actualPatientDonorPairs = await genotypeMatcher.PairsWithTenOutOfTenMatch(patientGenotypes, donorGenotypes, HlaNomenclatureVersion);
 
             actualPatientDonorPairs.ToList().Should().BeEquivalentTo(expectedPatientDonorPairs);
         }
 
 
-        [TestCase(4,1,4)]
+        [TestCase(4, 1, 4)]
         [TestCase(3, 2, 6)]
         [TestCase(2, 3, 6)]
         [TestCase(1, 4, 4)]
-        public async Task PairsWithAlleleLevelMatch_MatchCalculationServiceIsCalledTheExpectedAmountOfTimes(
+        public async Task PairsWithTenOutOfTenMatch_CalculatesMatchCountsForEachPatientDonorGenotypePair(
             int numberOfDonorGenotypes,
             int numberOfPatientGenotypes,
             int numberOfPossibleCombinations)
@@ -99,8 +125,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             matchCalculationService.MatchAtPGroupLevel(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<PhenotypeInfo<string>>(), Arg.Any<string>())
                 .Returns(TenOutOfTenMatch);
 
-            await matchGenotypes.PairsWithAlleleLevelMatch(patientGenotypes, donorGenotypes, HlaNomenclatureVersion);
-
+            await genotypeMatcher.PairsWithTenOutOfTenMatch(patientGenotypes, donorGenotypes, HlaNomenclatureVersion);
 
             await matchCalculationService.Received(numberOfPossibleCombinations)
                 .MatchAtPGroupLevel(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<PhenotypeInfo<string>>(), Arg.Any<string>());

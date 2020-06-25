@@ -31,12 +31,12 @@ namespace Atlas.MatchPrediction.Functions.Functions
 
             try
             {
-                var matchCounts = await matchCalculatorService.MatchAtPGroupLevel(
+                var match = await matchCalculatorService.MatchAtPGroupLevel(
                     matchCalculationInput.PatientHla,
                     matchCalculationInput.DonorHla,
                     matchCalculationInput.HlaNomenclatureVersion);
 
-                return new JsonResult(new MatchCalculationResponse { MatchCounts = matchCounts });
+                return new JsonResult(new MatchCalculationResponse {MatchCounts = match.MatchCounts, IsTenOutOfTenMatch = match.IsTenOutOfTenMatch});
             }
             catch (Exception exception)
             {
