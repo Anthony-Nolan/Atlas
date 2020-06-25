@@ -32,8 +32,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjectio
 
         private static void RegisterSettings(this IServiceCollection services)
         {
-            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterOptions<MacDictionarySettings>("MacDictionary");
+            services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
         }
 
         private static void SetUpConfiguration(this IServiceCollection services)

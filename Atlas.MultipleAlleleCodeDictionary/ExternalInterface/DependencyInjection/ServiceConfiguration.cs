@@ -31,8 +31,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjecti
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacImportSettings)
         {
-            services.MakeOptionsAvailableForUse(fetchApplicationInsightsSettings);
-            services.MakeOptionsAvailableForUse(fetchMacImportSettings);
+            services.MakeSettingsAvailableForUse(fetchApplicationInsightsSettings);
+            services.MakeSettingsAvailableForUse(fetchMacImportSettings);
         }
 
         private static void RegisterServices(this IServiceCollection services)

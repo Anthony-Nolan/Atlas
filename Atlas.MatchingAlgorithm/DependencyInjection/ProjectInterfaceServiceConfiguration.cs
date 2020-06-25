@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
-            services.MakeOptionsAvailableForUse(fetchMessagingServiceBusSettings);
+            services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
         }
 
         private static void RegisterServices(this IServiceCollection services)

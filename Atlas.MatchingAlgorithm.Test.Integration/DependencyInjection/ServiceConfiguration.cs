@@ -77,17 +77,17 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 
         private static void RegisterSettings(this IServiceCollection services)
         {
-            services.RegisterOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterOptions<AzureAuthenticationSettings>("AzureManagement:Authentication");
-            services.RegisterOptions<AzureAppServiceManagementSettings>("AzureManagement:AppService");
-            services.RegisterOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");
-            services.RegisterOptions<AzureStorageSettings>("AzureStorage");
-            services.RegisterOptions<DataRefreshSettings>("DataRefresh");
-            services.RegisterOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
-            services.RegisterOptions<MacDictionarySettings>("MacDictionary");
-            services.RegisterOptions<MessagingServiceBusSettings>("MessagingServiceBus");
-            services.RegisterOptions<DonorManagementSettings>("MessagingServiceBus:DonorManagement");
-            services.RegisterOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
+            services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterAsOptions<AzureAuthenticationSettings>("AzureManagement:Authentication");
+            services.RegisterAsOptions<AzureAppServiceManagementSettings>("AzureManagement:AppService");
+            services.RegisterAsOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");
+            services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
+            services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
+            services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
+            services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
+            services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+            services.RegisterAsOptions<DonorManagementSettings>("MessagingServiceBus:DonorManagement");
+            services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
 
         private static void RegisterMockServices(IServiceCollection services)
