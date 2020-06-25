@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Client.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
+using MoreLinq;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
@@ -26,10 +27,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
         public async Task<MatchProbabilityResponse> CalculateMatchProbability(MatchProbabilityInput matchProbabilityInput)
         {
-            var patientGenotypes = 
-                (HashSet<PhenotypeInfo<string>>) await compressedPhenotypeExpander.ExpandCompressedPhenotype(matchProbabilityInput.PatientHla, matchProbabilityInput.HlaNomenclatureVersion);
-            var donorGenotypes =
-                (HashSet<PhenotypeInfo<string>>) await compressedPhenotypeExpander.ExpandCompressedPhenotype(matchProbabilityInput.DonorHla, matchProbabilityInput.HlaNomenclatureVersion);
+            var expandedPatientHla = 
+                await compressedPhenotypeExpander.ExpandCompressedPhenotype(matchProbabilityInput.PatientHla, matchProbabilityInput.HlaNomenclatureVersion);
+            var patientGenotypes = expandedPatientHla.ToHashSet();
+            var expandedDonorHla =
+                await compressedPhenotypeExpander.ExpandCompressedPhenotype(matchProbabilityInput.DonorHla, matchProbabilityInput.HlaNomenclatureVersion);
+            var donorGenotypes = expandedDonorHla.ToHashSet();
+
 
             var matchingPairs = 
                 await genotypeMatcher.PairsWithTenOutOfTenMatch(patientGenotypes, donorGenotypes, matchProbabilityInput.HlaNomenclatureVersion);
