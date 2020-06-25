@@ -28,8 +28,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
         private List<Donor> InitialDonors;
         private const int InitialCount = 10;
-        private Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
-        private Builder<DonorUpdate> donorDeletionBuilder =
+        private readonly Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
+        private readonly Builder<DonorUpdate> donorDeletionBuilder =
             DonorUpdateBuilder.New
                 .WithRecordIdPrefix("external-donor-code-")
                 .With(upd => upd.ChangeType, ImportDonorChangeType.Delete);
@@ -69,7 +69,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task ImportDonors_ForDeletions_RecordsAreRemovedFromDatabase()
         {
-            var deletionCount = 3;
+            const int deletionCount = 3;
             var donorDeletes = donorDeletionBuilder
                 .With(update => update.RecordId, InitialDonors.Select(d => d.ExternalDonorCode).ToList())
                 .Build(deletionCount).ToArray();
@@ -84,9 +84,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task ImportDonors_ForDeletionsIfRecordIsNotFound_DoesNotThrow_AndDoesNotAffectExistingRecords_AndDoesNotSendMessages()
+        public async Task ImportDonors_ForDeletionsIfRecordsAreNotFound_DoesNotThrow_AndDoesNotAffectExistingRecords_AndDoesNotSendMessages()
         {
-            var deletionCount = 4;
+            const int deletionCount = 4;
             var donorDeletes = donorDeletionBuilder
                 .With(update => update.RecordId, "Unknown")
                 .Build(deletionCount).ToArray();
@@ -106,8 +106,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task ImportDonors_ForDeletions_WithMixOfRecordsFoundAndNotFound_FoundRecordsAreDeletedFromDatabase_AndSendsMessagesMatchingTheDeletedAtlasIds()
         {
-            var goodDeletesCount = 2;
-            var badDeletesCount = 6;
+            const int goodDeletesCount = 2;
+            const int badDeletesCount = 6;
             
             var (donorMixedDeleteFile, goodDeleteAtlasIds) = GenerateMixedDeletionFileWithMatchingAtlasIds(goodDeletesCount, badDeletesCount);
             var capturedUpdates = ConfigureCapturingOfUpdateMessages();

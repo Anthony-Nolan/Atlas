@@ -34,13 +34,13 @@ namespace Atlas.DonorImport.Test.Services
         [Test]
         public void ImportDonorFile_FullModeWithAdditionsOnly_DoesNotThrow()
         {
-            var variedDonors =
+            var donors =
                 DonorUpdateBuilder.New
                     .With(donor => donor.ChangeType, ImportDonorChangeType.Create)
                     .Build(10);
             var fileStream = DonorImportFileContentsBuilder.New
                 .With(file => file.updateMode, UpdateMode.Full)
-                .WithDonors(variedDonors.ToArray())
+                .WithDonors(donors.ToArray())
                 .Build().ToStream();
 
             var lazyParsedDonors = donorImportFileParser.PrepareToLazilyParseDonorUpdates(fileStream).ReadLazyDonorUpdates();
@@ -65,7 +65,7 @@ namespace Atlas.DonorImport.Test.Services
         }
 
         [Test]
-        public void ImportDonorFile_FullModeWithNonAdditions_DoesNotThrow()
+        public void ImportDonorFile_DiffModeWithNonAdditions_DoesNotThrow()
         {
             var variedDonors =
                 DonorUpdateBuilder.New
