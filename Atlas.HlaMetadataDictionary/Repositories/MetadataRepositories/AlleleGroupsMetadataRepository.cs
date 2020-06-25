@@ -1,10 +1,16 @@
 ﻿using Atlas.Common.Caching;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 {
     internal interface IAlleleGroupsMetadataRepository : IHlaMetadataRepository
     {
+        Task<IAlleleGroupMetadata> GetAlleleGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion);
     }
 
     internal class AlleleGroupsMetadataRepository : HlaMetadataRepositoryBase, IAlleleGroupsMetadataRepository
@@ -18,6 +24,21 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             IPersistentCacheProvider cacheProvider)
             : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey)
         {
+        }
+
+        public async Task<IAlleleGroupMetadata> GetAlleleGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
+        {
+            var row = await GetHlaMetadataRowIfExists(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
+            
+            if (row == null)
+            {
+                return null;
+            }
+
+            return new AlleleGroupMetadata(
+                row.Locus,
+                row.LookupName,
+                row.GetHlaInfo<List<string>>());
         }
     }
 }
