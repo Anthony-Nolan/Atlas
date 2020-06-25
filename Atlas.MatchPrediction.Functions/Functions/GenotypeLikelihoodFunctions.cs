@@ -27,8 +27,8 @@ namespace Atlas.MatchPrediction.Functions.Functions
         {
             var genotypeLikelihood = JsonConvert.DeserializeObject<GenotypeLikelihoodInput>(await new StreamReader(request.Body).ReadToEndAsync());
 
-            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotypeLikelihood);
-            return new JsonResult(likelihood);
+            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotypeLikelihood.Genotype);
+            return new JsonResult(new GenotypeLikelihoodResponse { Likelihood = likelihood });
         }
     }
 }
