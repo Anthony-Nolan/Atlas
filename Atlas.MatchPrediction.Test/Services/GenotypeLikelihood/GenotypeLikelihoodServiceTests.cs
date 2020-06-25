@@ -34,13 +34,13 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 .Returns(arg => arg[0]);
 
             setRepository.GetActiveSet(Arg.Any<string>(), Arg.Any<string>())
-                .Returns(new HaplotypeFrequencySet { Id = 1 });
+                .Returns(new HaplotypeFrequencySet {Id = 1});
 
             unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>())
-                .Returns(new ExpandedGenotype { Diplotypes = new List<Diplotype> { DiplotypeBuilder.New.Build() } });
+                .Returns(new ExpandedGenotype {Diplotypes = new List<Diplotype> {DiplotypeBuilder.New.Build()}});
 
             frequencyRepository.GetHaplotypeFrequencies(Arg.Any<IEnumerable<LociInfo<string>>>(), Arg.Any<int>())
-                .Returns(new Dictionary<LociInfo<string>, decimal> { { new LociInfo<string>(), 0 } });
+                .Returns(new Dictionary<LociInfo<string>, decimal> {{new LociInfo<string>(), 0}});
 
             genotypeLikelihoodCalculator.CalculateLikelihood(Arg.Any<ExpandedGenotype>())
                 .Returns(0);
@@ -58,7 +58,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         public async Task CalculateLikelihood_FrequencyRepositoryIsCalledOnce([Values(16, 8, 4, 2, 1)] int numberOfDiplotypes)
         {
             unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>())
-                .Returns(new ExpandedGenotype { Diplotypes = DiplotypeBuilder.New.Build(numberOfDiplotypes).ToList() });
+                .Returns(new ExpandedGenotype {Diplotypes = DiplotypeBuilder.New.Build(numberOfDiplotypes).ToList()});
 
             await genotypeLikelihoodService.CalculateLikelihood(new PhenotypeInfo<string>());
 
