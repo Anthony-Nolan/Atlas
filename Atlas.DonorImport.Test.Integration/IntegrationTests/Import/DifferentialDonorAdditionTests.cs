@@ -25,8 +25,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         private IDonorInspectionRepository donorRepository;
         private IMessagingServiceBusClient serviceBusClient;
         private IDonorFileImporter donorFileImporter;
-        private Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
-        private Builder<DonorUpdate> donorCreationBuilder =
+        private readonly Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
+        private readonly Builder<DonorUpdate> donorCreationBuilder =
             DonorUpdateBuilder.New
                 .WithRecordIdPrefix("external-donor-code-")
                 .With(upd => upd.ChangeType, ImportDonorChangeType.Create);
@@ -49,9 +49,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task ImportDonors_ForAllAdditions_AddDonorsToDatabase()
+        public async Task ImportDonors_ForEachAddition_AddsDonorToDatabase()
         {
-            var creationCount = 2;
+            const int creationCount = 2;
             const string donorCodePrefix = "test1";
             var donorUpdates = donorCreationBuilder.WithRecordIdPrefix(donorCodePrefix).Build(creationCount).ToArray();
             var donorUpdateFile = fileBuilder.WithDonors(donorUpdates).Build();
@@ -65,10 +65,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task ImportDonors_ForAnAddition_HlaDataIsRecordedOnDonorInDatabase()
         {
-            var hla1 = "*01:01";
-            var hla2 = "*01:02";
-            var hlaObject1 = HlaBuilder.New.WithHomozygousMolecularHlaOnAllLoci(hla1).Build();
-            var hlaObject2 = HlaBuilder.New.WithHomozygousMolecularHlaOnAllLoci(hla2).Build();
+            const string hla1 = "*01:01";
+            const string hla2 = "*01:02";
+            var hlaObject1 = HlaBuilder.New.WithHomozygousMolecularHlaAtAllLoci(hla1).Build();
+            var hlaObject2 = HlaBuilder.New.WithHomozygousMolecularHlaAtAllLoci(hla2).Build();
 
             const string donorCodePrefix = "test2";
             var donorUpdates =
@@ -89,9 +89,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task ImportDonors_ForAllAdditions_SendsMatchingMessage()
+        public async Task ImportDonors_ForEachAdditions_SendsMatchingMessage()
         {
-            var creationCount = 3;
+            const int creationCount = 3;
 
             var donorUpdates = donorCreationBuilder.Build(creationCount).ToArray();
             var donorUpdateFile = fileBuilder.WithDonors(donorUpdates).Build();
@@ -106,7 +106,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task ImportDonors_ForAllAdditions_SendsMatchingUpdateWithNewlyAssignedAtlasId()
+        public async Task ImportDonors_ForEachAddition_SendsMatchingUpdateWithNewlyAssignedAtlasId()
         {
             var donorUpdates = donorCreationBuilder.Build(2).ToArray();
             var donorUpdateFile = fileBuilder.WithDonors(donorUpdates).Build();
@@ -129,7 +129,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task ImportDonors_IfAdditionsAlreadyExists_ThrowsError_AndDoesNotAdd_NorSendMessages()
+        public async Task ImportDonors_IfAdditionsAlreadyExist_ThrowsError_AndDoesNotAdd_NorSendMessages()
         {
             const string donorCodePrefix = "test5";
             var donorUpdates = donorCreationBuilder.WithRecordIdPrefix(donorCodePrefix).Build(4).ToArray();
@@ -147,7 +147,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task ImportDonors_IfSomeAdditionsAlreadyExistsButOthersDoNot_ThrowsError_AndDoesNotAdd_NorChangeExisting_NorSendMessages()
+        public async Task ImportDonors_IfSomeAdditionsAlreadyExistButOthersDoNot_ThrowsError_AndDoesNotAdd_NorChangeExisting_NorSendMessages()
         {
             const string donorCodePrefix = "test6";
             var updateBuilder = donorCreationBuilder.WithRecordIdPrefix(donorCodePrefix);

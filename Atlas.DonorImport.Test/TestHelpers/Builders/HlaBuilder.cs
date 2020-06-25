@@ -20,19 +20,19 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
             .With(hla => hla.DQB1, DefaultLocus)
             .With(hla => hla.DRB1, DefaultLocus);
 
-        internal static Builder<ImportedHla> WithHomozygousMolecularHlaOnAllLoci(this Builder<ImportedHla> builder, string field) => builder.WithMolecularHlaOnAllLoci(field, field);
-        internal static Builder<ImportedHla> WithHomozygousMolecularHlaOnLocus(this Builder<ImportedHla> builder, Locus locus, string field) => builder.WithMolecularHlaOnLocus(locus, field, field);
+        internal static Builder<ImportedHla> WithHomozygousMolecularHlaAtAllLoci(this Builder<ImportedHla> builder, string field) => builder.WithMolecularHlaAtAllLoci(field, field);
+        internal static Builder<ImportedHla> WithHomozygousMolecularHlaAtLocus(this Builder<ImportedHla> builder, Locus locus, string field) => builder.WithMolecularHlaAtLocus(locus, field, field);
         
-        internal static Builder<ImportedHla> WithMolecularHlaOnAllLoci(this Builder<ImportedHla> builder, string field1, string field2) =>
+        internal static Builder<ImportedHla> WithMolecularHlaAtAllLoci(this Builder<ImportedHla> builder, string field1, string field2) =>
             builder
-                .WithMolecularHlaOnLocus(Locus.A, field1, field2)
-                .WithMolecularHlaOnLocus(Locus.B, field1, field2)
-                .WithMolecularHlaOnLocus(Locus.C, field1, field2)
-                .WithMolecularHlaOnLocus(Locus.Dpb1, field1, field2)
-                .WithMolecularHlaOnLocus(Locus.Dqb1, field1, field2)
-                .WithMolecularHlaOnLocus(Locus.Drb1, field1, field2);
+                .WithMolecularHlaAtLocus(Locus.A, field1, field2)
+                .WithMolecularHlaAtLocus(Locus.B, field1, field2)
+                .WithMolecularHlaAtLocus(Locus.C, field1, field2)
+                .WithMolecularHlaAtLocus(Locus.Dpb1, field1, field2)
+                .WithMolecularHlaAtLocus(Locus.Dqb1, field1, field2)
+                .WithMolecularHlaAtLocus(Locus.Drb1, field1, field2);
 
-        internal static Builder<ImportedHla> WithMolecularHlaOnLocus(this Builder<ImportedHla> builder, Locus locus, string field1, string field2)
+        internal static Builder<ImportedHla> WithMolecularHlaAtLocus(this Builder<ImportedHla> builder, Locus locus, string field1, string field2)
         {
             return locus switch
             {
