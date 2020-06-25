@@ -29,7 +29,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         private IDonorFileImporter donorFileImporter;
         private List<Donor> InitialDonors;
         private const int InitialCount = 10;
-        private Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
+        private readonly Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
         private Builder<DonorUpdate> donorEditBuilderForInitialDonors =>
             DonorUpdateBuilder.New
                 .With(update => update.RecordId, InitialDonors.Select(donor => donor.ExternalDonorCode))
@@ -38,9 +38,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         private const string hla1 = "*01:01";
         private const string hla2 = "*01:02";
         private const string hla3 = "*01:03";
-        private ImportedHla hlaObject1 = HlaBuilder.New.WithHomozygousMolecularHlaOnAllLoci(hla1).Build();
-        private ImportedHla hlaObject2 = HlaBuilder.New.WithHomozygousMolecularHlaOnAllLoci(hla2).Build();
-        private ImportedHla hlaObject3 = HlaBuilder.New.WithHomozygousMolecularHlaOnAllLoci(hla3).Build();
+        private readonly ImportedHla hlaObject1 = HlaBuilder.New.WithHomozygousMolecularHlaAtAllLoci(hla1).Build();
+        private readonly ImportedHla hlaObject2 = HlaBuilder.New.WithHomozygousMolecularHlaAtAllLoci(hla2).Build();
+        private readonly ImportedHla hlaObject3 = HlaBuilder.New.WithHomozygousMolecularHlaAtAllLoci(hla3).Build();
 
         [OneTimeSetUp]
         public void OneTimeSetUp()

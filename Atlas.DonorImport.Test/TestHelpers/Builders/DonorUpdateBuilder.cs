@@ -26,7 +26,7 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
 
         internal static Builder<DonorUpdate> WithHomozygousHlaAt(this Builder<DonorUpdate> builder, Locus locus, string hla)
         {
-            return builder.With(d => d.Hla, HlaBuilder.New.WithHomozygousMolecularHlaOnLocus(locus, hla).Build());
+            return builder.With(d => d.Hla, HlaBuilder.New.WithHomozygousMolecularHlaAtLocus(locus, hla).Build());
         }
     }
 }
