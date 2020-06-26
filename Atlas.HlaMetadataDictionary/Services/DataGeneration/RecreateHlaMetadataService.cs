@@ -3,7 +3,6 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
@@ -66,17 +65,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             // Metadata Dictionary lookups require an up-to-date collection of allele names,
             // so all collections must be recreated together; the order of execution is not important.
             await Task.WhenAll(
-                PersistMetadata(alleleNamesMetadataRepository, metadataCollection.AlleleNameMetadata, hlaNomenclatureVersion),
-                PersistMetadata(hlaMatchingMetadataRepository, metadataCollection.HlaMatchingMetadata, hlaNomenclatureVersion),
-                PersistMetadata(hlaScoringMetadataRepository, metadataCollection.HlaScoringMetadata, hlaNomenclatureVersion),
-                PersistMetadata(dpb1TceGroupsMetadataRepository, metadataCollection.Dpb1TceGroupMetadata, hlaNomenclatureVersion),
-                PersistMetadata(alleleGroupsMetadataRepository, metadataCollection.AlleleGroupMetadata, hlaNomenclatureVersion)
+                alleleNamesMetadataRepository.RecreateHlaMetadataTable(metadataCollection.AlleleNameMetadata, hlaNomenclatureVersion),
+                hlaMatchingMetadataRepository.RecreateHlaMetadataTable(metadataCollection.HlaMatchingMetadata, hlaNomenclatureVersion),
+                hlaScoringMetadataRepository.RecreateHlaMetadataTable(metadataCollection.HlaScoringMetadata, hlaNomenclatureVersion),
+                dpb1TceGroupsMetadataRepository.RecreateHlaMetadataTable(metadataCollection.Dpb1TceGroupMetadata, hlaNomenclatureVersion),
+                alleleGroupsMetadataRepository.RecreateHlaMetadataTable(metadataCollection.AlleleGroupMetadata, hlaNomenclatureVersion)
             );
-        }
-
-        private static async Task PersistMetadata(IHlaMetadataRepository repository, IEnumerable<ISerialisableHlaMetadata> metadata, string hlaNomenclatureVersion)
-        {
-            await repository.RecreateHlaMetadataTable(metadata, hlaNomenclatureVersion);
         }
     }
 }

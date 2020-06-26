@@ -18,18 +18,18 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
     /// Fixture testing the base functionality of HlaSearchingMetadataService
     /// via an arbitrarily chosen base class.
     /// </summary>
-    public class HlaSearchingMetadataServiceTests
+    public class SearchRelatedMetadataServiceTests
     {
         private const Locus DefaultLocus = Locus.A;
 
-        private IHlaSearchingMetadataService<IHlaMatchingMetadata> metadataService;
+        private ISearchRelatedMetadataService<IHlaMatchingMetadata> metadataService;
 
         private IHlaMatchingMetadataRepository hlaMetadataRepository;
         private IAlleleNamesMetadataService alleleNamesMetadataService;
         private IHlaCategorisationService hlaCategorisationService;
         private IAlleleStringSplitterService alleleStringSplitterService;
         private IMacDictionary macDictionary;
-        private IAlleleGroupMetadataService alleleGroupMetadataService;
+        private IAlleleGroupExpander alleleGroupExpander;
 
         [SetUp]
         public void SetUp()
@@ -39,7 +39,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
             hlaCategorisationService = Substitute.For<IHlaCategorisationService>();
             alleleStringSplitterService = Substitute.For<IAlleleStringSplitterService>();
             macDictionary = Substitute.For<IMacDictionary>();
-            alleleGroupMetadataService = Substitute.For<IAlleleGroupMetadataService>();
+            alleleGroupExpander = Substitute.For<IAlleleGroupExpander>();
 
             metadataService = new HlaMatchingMetadataService(
                 hlaMetadataRepository,
@@ -47,14 +47,14 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
                 hlaCategorisationService,
                 alleleStringSplitterService,
                 macDictionary,
-                alleleGroupMetadataService);
+                alleleGroupExpander);
 
             #region Set up to prevent exceptions that would incorrectly fail tests
             hlaMetadataRepository
                 .GetHlaMetadataRowIfExists(default, default, default, default)
                 .ReturnsForAnyArgs(BuildMetadataRowForSingleAllele("alleleName"));
 
-            alleleGroupMetadataService.GetAllelesInGroup(default, default, default)
+            alleleGroupExpander.ExpandAlleleGroup(default, default, default)
                 .ReturnsForAnyArgs(new[] { "allele" });
 
             macDictionary.GetHlaFromMac(default).ReturnsForAnyArgs(new[] { "allele" });
@@ -109,15 +109,15 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
 
         [TestCase(HlaTypingCategory.PGroup)]
         [TestCase(HlaTypingCategory.GGroup)]
-        public async Task GetHlaMetadata_WhenAlleleGroup_LooksUpAllelesInGroup(HlaTypingCategory typingCategory)
+        public async Task GetHlaMetadata_WhenAlleleGroup_ExpandsAlleleGroup(HlaTypingCategory typingCategory)
         {
             const string alleleGroupName = "group";
             hlaCategorisationService.GetHlaTypingCategory(default).ReturnsForAnyArgs(typingCategory);
 
             await metadataService.GetHlaMetadata(DefaultLocus, alleleGroupName, "hla-db-version");
 
-            await alleleGroupMetadataService.Received()
-                .GetAllelesInGroup(DefaultLocus, alleleGroupName, Arg.Any<string>());
+            await alleleGroupExpander.Received()
+                .ExpandAlleleGroup(DefaultLocus, alleleGroupName, Arg.Any<string>());
         }
 
         [TestCase(HlaTypingCategory.PGroup)]
@@ -126,7 +126,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
         {
             const string alleleInGroup = "allele";
             hlaCategorisationService.GetHlaTypingCategory(default).ReturnsForAnyArgs(typingCategory);
-            alleleGroupMetadataService.GetAllelesInGroup(default, default, default)
+            alleleGroupExpander.ExpandAlleleGroup(default, default, default)
                 .ReturnsForAnyArgs(new[] { alleleInGroup });
 
             await metadataService.GetHlaMetadata(DefaultLocus, "allele-group", "hla-db-version");

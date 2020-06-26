@@ -1,24 +1,25 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
+﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
-    internal interface IAlleleGroupMetadataService
+    internal interface IAlleleGroupExpander
     {
-        Task<IEnumerable<string>> GetAllelesInGroup(Locus locus, string alleleGroupLookupName, string hlaNomenclatureVersion);
+        /// <returns>All alleles represented by the provided P- or G-group.</returns>
+        Task<IEnumerable<string>> ExpandAlleleGroup(Locus locus, string alleleGroup, string hlaNomenclatureVersion);
     }
 
-    internal class AlleleGroupMetadataService : MetadataServiceBase<IEnumerable<string>>, IAlleleGroupMetadataService
+    internal class AlleleGroupExpander : MetadataServiceBase<IEnumerable<string>>, IAlleleGroupExpander
     {
         private readonly IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository;
         private readonly IHlaCategorisationService hlaCategorisationService;
 
-        public AlleleGroupMetadataService(
+        public AlleleGroupExpander(
             IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository, 
             IHlaCategorisationService hlaCategorisationService)
         {
@@ -26,9 +27,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             this.hlaCategorisationService = hlaCategorisationService;
         }
 
-        public async Task<IEnumerable<string>> GetAllelesInGroup(Locus locus, string alleleGroupLookupName, string hlaNomenclatureVersion)
+        public async Task<IEnumerable<string>> ExpandAlleleGroup(Locus locus, string alleleGroup, string hlaNomenclatureVersion)
         {
-            return await GetMetadata(locus, alleleGroupLookupName, hlaNomenclatureVersion);
+            return await GetMetadata(locus, alleleGroup, hlaNomenclatureVersion);
         }
 
         protected override bool LookupNameIsValid(string lookupName)

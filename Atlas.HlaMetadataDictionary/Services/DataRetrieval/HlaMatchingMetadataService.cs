@@ -12,13 +12,13 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// <summary>
     ///  Consolidates HLA info used in matching for all alleles that map to the hla name.
     /// </summary>
-    internal interface IHlaMatchingMetadataService : IHlaSearchingMetadataService<IHlaMatchingMetadata>
+    internal interface IHlaMatchingMetadataService : ISearchRelatedMetadataService<IHlaMatchingMetadata>
     {
         IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion);
     }
 
     internal class HlaMatchingMetadataService : 
-        HlaSearchingMetadataServiceBase<IHlaMatchingMetadata>, 
+        SearchRelatedMetadataServiceBase<IHlaMatchingMetadata>, 
         IHlaMatchingMetadataService
     {
         private readonly IHlaMatchingMetadataRepository typedMatchingRepository;
@@ -29,14 +29,14 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
             IMacDictionary macDictionary,
-            IAlleleGroupMetadataService alleleGroupMetadataService
+            IAlleleGroupExpander alleleGroupExpander
         ) : base(
             hlaMatchingMetadataRepository,
             alleleNamesMetadataService,
             hlaCategorisationService,
             alleleSplitter,
             macDictionary,
-            alleleGroupMetadataService)
+            alleleGroupExpander)
         {
             typedMatchingRepository = hlaMatchingMetadataRepository;
         }
