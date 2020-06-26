@@ -228,6 +228,9 @@ In order to allow checking in of non-secret default settings, while dissuading a
 - When someone else has added new settings, you will need to either: 
     - (a) Add the new setting manually to `local.settings.json`
     - (b) Delete `local.settings.json` and allow it to regenerate on build. Any local secret settings will then need to be re-applied. 
+        - *Warning* When deleting through an IDE, it may remove the "Copy always" functionality in the csproj, at which point the file
+        will not be copied to the build folder. 
+        - Either delete via file explorer, or remember to mark as "copy always" on recreation
 
 *Warning* - when running a functions app for the first time on a machine, this copying may not have happened in time. If no settings are found, try rebuilding and running again. 
 
