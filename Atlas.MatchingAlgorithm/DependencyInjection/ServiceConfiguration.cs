@@ -232,29 +232,36 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 new MessageReceiverFactory(fetchMessagingServiceBusSettings(sp).ConnectionString)
             );
 
-            services.AddScoped<IServiceBusMessageReceiver<SearchableDonorUpdate>, ServiceBusMessageReceiver<SearchableDonorUpdate>>(sp =>
+            services.AddScoped<IMessageProcessorForDbADonorUpdates, DonorUpdateMessageProcessor>(sp =>
             {
                 var settings = fetchDonorManagementSettings(sp);
                 var factory = sp.GetService<IMessageReceiverFactory>();
-                return new ServiceBusMessageReceiver<SearchableDonorUpdate>(factory, settings.Topic, settings.Subscription);
+                var messageReceiver = new ServiceBusMessageReceiver<SearchableDonorUpdate>(factory, settings.Topic, settings.SubscriptionForDbA);
+                return new DonorUpdateMessageProcessor(messageReceiver);
             });
 
-            services.AddScoped<IMessageProcessor<SearchableDonorUpdate>, MessageProcessor<SearchableDonorUpdate>>(sp =>
+            services.AddScoped<IMessageProcessorForDbBDonorUpdates, DonorUpdateMessageProcessor>(sp =>
             {
-                var messageReceiver = sp.GetService<IServiceBusMessageReceiver<SearchableDonorUpdate>>();
-                return new MessageProcessor<SearchableDonorUpdate>(messageReceiver);
+                var settings = fetchDonorManagementSettings(sp);
+                var factory = sp.GetService<IMessageReceiverFactory>();
+                var messageReceiver = new ServiceBusMessageReceiver<SearchableDonorUpdate>(factory, settings.Topic, settings.SubscriptionForDbA);
+                return new DonorUpdateMessageProcessor(messageReceiver);
             });
 
             services.AddScoped<IDonorUpdateProcessor, DonorUpdateProcessor>(sp =>
             {
-                var messageReceiverService = sp.GetService<IMessageProcessor<SearchableDonorUpdate>>();
+                var messageReceiverServiceForDbA = sp.GetService<IMessageProcessorForDbADonorUpdates>();
+                var messageReceiverServiceForDbB = sp.GetService<IMessageProcessorForDbBDonorUpdates>();
+                var refreshHistory = sp.GetService<IDataRefreshHistoryRepository>();
                 var managementService = sp.GetService<IDonorManagementService>();
                 var updateConverter = sp.GetService<ISearchableDonorUpdateConverter>();
                 var logger = sp.GetService<ILogger>();
                 var settings = fetchDonorManagementSettings(sp);
 
                 return new DonorUpdateProcessor(
-                    messageReceiverService,
+                    messageReceiverServiceForDbA,
+                    messageReceiverServiceForDbB,
+                    refreshHistory,
                     managementService,
                     updateConverter,
                     logger,

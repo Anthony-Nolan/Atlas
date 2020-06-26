@@ -9,7 +9,10 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
 {
     public interface IMessageProcessor<T>
     {
-        Task ProcessMessageBatch(int batchSize, Func<IEnumerable<ServiceBusMessage<T>>, Task> processMessagesFuncAsync, int prefetchCount = 0);
+        Task ProcessMessageBatchAsync(
+            Func<IEnumerable<ServiceBusMessage<T>>, Task> processMessagesFuncAsync,
+            int batchSize,
+            int prefetchCount = 0);
     }
 
     public class MessageProcessor<T> : IMessageProcessor<T>
@@ -24,13 +27,13 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
         /// <summary>
         /// Locks a batch of service bus messages, and performs processing based on the passed delegate
         /// </summary>
-        /// <param name="batchSize">Maximum number of messages to fetch at once</param>
         /// <param name="processMessagesFuncAsync">Function that will be run on the message batches</param>
+        /// <param name="batchSize">Maximum number of messages to fetch at once</param>
         /// <param name="prefetchCount">Number of messages to fetch in advance of processing</param>
         /// <exception cref="MessageBatchException{T}"></exception>
-        public async Task ProcessMessageBatch(
-            int batchSize,
+        public async Task ProcessMessageBatchAsync(
             Func<IEnumerable<ServiceBusMessage<T>>, Task> processMessagesFuncAsync,
+            int batchSize,
             int prefetchCount)
         {
             var messages = (await messageReceiver.ReceiveMessageBatchAsync(batchSize, prefetchCount)).ToList();
@@ -44,7 +47,7 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
                 catch (Exception ex)
                 {
                     await messageBatchLock.AbandonBatchAsync();
-                    throw new MessageBatchException<T>(nameof(ProcessMessageBatch), messages, ex);
+                    throw new MessageBatchException<T>(nameof(ProcessMessageBatchAsync), messages, ex);
                 }
 
                 await messageBatchLock.CompleteBatchAsync();

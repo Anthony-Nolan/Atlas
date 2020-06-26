@@ -1,5 +1,17 @@
-resource "azurerm_servicebus_subscription" "matching" {
-  name                                 = "matching"
+resource "azurerm_servicebus_subscription" "matching_transient_a" {
+  name                                 = "matching-transient-a"
+  resource_group_name                  = var.app_service_plan.resource_group_name
+  namespace_name                       = var.servicebus_namespace.name
+  topic_name                           = var.servicebus_topics.updated-searchable-donors.name
+  auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
+  default_message_ttl                  = var.default_servicebus_settings.long-expiry
+  lock_duration                        = var.default_servicebus_settings.default-read-lock
+  max_delivery_count                   = var.default_servicebus_settings.default-message-retries
+  dead_lettering_on_message_expiration = true
+}
+
+resource "azurerm_servicebus_subscription" "matching_transient_a" {
+  name                                 = "matching-transient-b"
   resource_group_name                  = var.app_service_plan.resource_group_name
   namespace_name                       = var.servicebus_namespace.name
   topic_name                           = var.servicebus_topics.updated-searchable-donors.name

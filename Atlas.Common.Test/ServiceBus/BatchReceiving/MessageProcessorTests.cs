@@ -24,7 +24,7 @@ namespace Atlas.Common.Test.ServiceBus.BatchReceiving
             const int batchSize = 123;
             const int prefetchCount = 456;
 
-            await messageProcessor.ProcessMessageBatch(batchSize, messages => Task.CompletedTask, prefetchCount);
+            await messageProcessor.ProcessMessageBatchAsync(messages => Task.CompletedTask, batchSize, prefetchCount);
 
             await messageReceiver.Received(1).ReceiveMessageBatchAsync(batchSize, prefetchCount);
         }

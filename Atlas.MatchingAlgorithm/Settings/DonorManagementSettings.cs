@@ -4,6 +4,7 @@
     {
         public string BatchSize { get; set; }
         public string Topic { get; set; }
-        public string Subscription { get; set; }
+        public string SubscriptionForDbA { get; set; }
+        public string SubscriptionForDbB { get; set; }
     }
 }

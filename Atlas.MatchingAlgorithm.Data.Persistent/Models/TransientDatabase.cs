@@ -1,3 +1,5 @@
+using System;
+
 namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
 {
     /// <summary>
@@ -7,5 +9,18 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
     {
         DatabaseA,
         DatabaseB
+    }
+
+    public static class Extension
+    {
+        public static TransientDatabase Other(this TransientDatabase thisDb)
+        {
+            return thisDb switch
+            {
+                TransientDatabase.DatabaseA => TransientDatabase.DatabaseB,
+                TransientDatabase.DatabaseB => TransientDatabase.DatabaseA,
+                _ => throw new ArgumentOutOfRangeException(nameof(thisDb), thisDb, null)
+            };
+        }
     }
 }

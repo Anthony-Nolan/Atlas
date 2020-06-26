@@ -5,6 +5,8 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.ServiceBus.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
+using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
@@ -29,11 +31,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         private IDonorUpdateProcessor donorUpdateProcessor;
 
         private IServiceBusMessageReceiver<SearchableDonorUpdate> messageReceiver;
-        private IMessageProcessor<SearchableDonorUpdate> messageProcessor;
+        private DonorUpdateMessageProcessor messageProcessor;
         private IDonorManagementService donorManagementService;
         private ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
         private ILogger logger;
         private int batchSize;
+        private TransientDatabase dbTarget = TransientDatabase.DatabaseA;
 
         [SetUp]
         public void SetUp()
@@ -41,8 +44,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var provider = DependencyInjection.DependencyInjection.Provider;
 
             messageReceiver = Substitute.For<IServiceBusMessageReceiver<SearchableDonorUpdate>>();
-            messageProcessor = new MessageProcessor<SearchableDonorUpdate>(messageReceiver);
+            messageProcessor = new DonorUpdateMessageProcessor(messageReceiver);
             
+            var refreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
             donorManagementService = Substitute.For<IDonorManagementService>();
             searchableDonorUpdateConverter = provider.GetService<ISearchableDonorUpdateConverter>();
             logger = Substitute.For<ILogger>();
@@ -51,6 +55,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
             donorUpdateProcessor = new DonorUpdateProcessor(
                 messageProcessor,
+                messageProcessor,
+                refreshHistoryRepository,
                 donorManagementService,
                 searchableDonorUpdateConverter,
                 logger,
@@ -66,7 +72,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
                 .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
                 .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> { message });
 
-            await donorUpdateProcessor.ProcessDonorUpdates();
+            await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
             await donorManagementService.Received().ManageDonorBatchByAvailability(
                 Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(
@@ -91,7 +97,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
                 .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
                 .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> { message });
 
-            await donorUpdateProcessor.ProcessDonorUpdates();
+            await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
             await donorManagementService.DidNotReceive().ManageDonorBatchByAvailability(
                 Arg.Any<IEnumerable<DonorAvailabilityUpdate>>());
@@ -115,7 +121,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
                 .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
                 .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> { message });
 
-            Assert.DoesNotThrowAsync(async () => await donorUpdateProcessor.ProcessDonorUpdates());
+            Assert.DoesNotThrowAsync(async () => await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget));
         }
 
         [TestCase(null)]
@@ -142,7 +148,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
                 .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
                 .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> { message });
 
-            await donorUpdateProcessor.ProcessDonorUpdates();
+            await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
             await donorManagementService.DidNotReceive().ManageDonorBatchByAvailability(
                 Arg.Any<IEnumerable<DonorAvailabilityUpdate>>());
@@ -172,7 +178,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
                 .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
                 .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> { message });
 
-            Assert.DoesNotThrowAsync(async () => await donorUpdateProcessor.ProcessDonorUpdates());
+            Assert.DoesNotThrowAsync(async () => await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget));
         }
 
         [TestCase(null)]
@@ -199,7 +205,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
                 .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
                 .Returns(new List<ServiceBusMessage<SearchableDonorUpdate>> { message });
 
-            await donorUpdateProcessor.ProcessDonorUpdates();
+            await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
             await donorManagementService.Received().ManageDonorBatchByAvailability(
                 Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(
@@ -215,7 +221,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
                 .ReceiveMessageBatchAsync(Arg.Any<int>(), Arg.Any<int>())
                 .Returns(messages);
 
-            await donorUpdateProcessor.ProcessDonorUpdates();
+            await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
             await donorManagementService.Received().ManageDonorBatchByAvailability(
                 Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(
@@ -246,7 +252,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
                     validMessage, invalidMessage
                 });
 
-            await donorUpdateProcessor.ProcessDonorUpdates();
+            await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
             await donorManagementService.Received().ManageDonorBatchByAvailability(
                 Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(

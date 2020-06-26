@@ -12,7 +12,8 @@
     "MessagingServiceBus:DonorManagement:BatchSize": 1000,
     "MessagingServiceBus:DonorManagement:CronSchedule": "0 */1 * * * *",
     "MessagingServiceBus:DonorManagement:Topic": "updated-searchable-donors",
-    "MessagingServiceBus:DonorManagement:Subscription": "matching",
+    "MessagingServiceBus:DonorManagement:SubscriptionForDbA": "matching-transient-a",
+    "MessagingServiceBus:DonorManagement:SubscriptionForDbB": "matching-transient-b",
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications"
