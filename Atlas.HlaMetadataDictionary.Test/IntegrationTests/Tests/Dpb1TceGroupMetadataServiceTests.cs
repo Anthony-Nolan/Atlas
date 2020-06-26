@@ -43,11 +43,36 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             macDictionary
                 .GetHlaFromMac(Arg.Any<string>())
                 .Returns(new List<string>());
+        }
 
-            // clear NMDP code allele mappings between tests
+        [TearDown]
+        public void TearDown()
+        {
+            // clear MAC allele mappings between tests
             appCache.Remove(CacheKey);
         }
 
+        [Test]
+        public async Task GetDpb1TceGroup_WhenPGroup_ReturnsTceGroup()
+        {
+            const string pGroup = "01:01P";
+            const string tceGroup = "3";
+
+            var result = await metadataService.GetDpb1TceGroup(pGroup, null);
+
+            result.Should().Be(tceGroup);
+        }
+
+        [Test]
+        public async Task GetDpb1TceGroup_WhenGGroup_ReturnsTceGroup()
+        {
+            const string pGroup = "01:01:01G";
+            const string tceGroup = "3";
+
+            var result = await metadataService.GetDpb1TceGroup(pGroup, null);
+
+            result.Should().Be(tceGroup);
+        }
 
         [Test]
         public async Task GetDpb1TceGroup_WhenNmdpCodeMapsToSingleTceGroup_ReturnsTceGroup()

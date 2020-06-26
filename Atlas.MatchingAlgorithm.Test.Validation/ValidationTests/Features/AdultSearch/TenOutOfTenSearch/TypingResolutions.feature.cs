@@ -36,7 +36,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
             TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Ten Out Of Ten Search - Typing Resolutions", "  As a member of the search team\r\n  I want to be able to run a 10/10 search\r\n  Fo" +
-                    "r a variety of different typing resolutions", ProgrammingLanguage.CSharp, ((string[])(null)));
+                    "r a variety of different typing resolutions\r\n\r\n  // TODO: ATLAS-57 - Add P & G g" +
+                    "roup tests", ProgrammingLanguage.CSharp, ((string[])(null)));
             testRunner.OnFeatureStart(featureInfo);
         }
         
@@ -80,7 +81,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a \'TGS derived data at four-field resolution\' typed match", null, ((string[])(null)));
-#line 6
+#line 8
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -100,17 +101,17 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 7
+#line 9
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 8
+#line 10
     testRunner.And("the matching donor is \'TGS derived data at four-field resolution\' typed at each l" +
                         "ocus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 9
+#line 11
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 10
+#line 12
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -123,7 +124,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a \'TGS derived data at three-field resolution\' typed match", null, ((string[])(null)));
-#line 12
+#line 14
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -143,17 +144,17 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 13
+#line 15
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 14
+#line 16
     testRunner.And("the matching donor is \'TGS derived data at three-field resolution\' typed at each " +
                         "locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 15
+#line 17
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 16
+#line 18
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -166,7 +167,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a \'TGS derived data at two-field resolution\' typed match", null, ((string[])(null)));
-#line 18
+#line 20
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -186,17 +187,17 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 19
+#line 21
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 20
+#line 22
     testRunner.And("the matching donor is \'TGS derived data at three-field resolution\' typed at each " +
                         "locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 21
+#line 23
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 22
+#line 24
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -209,7 +210,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a \'TGS derived data\' typed match", null, ((string[])(null)));
-#line 24
+#line 26
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -229,16 +230,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 25
+#line 27
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 26
+#line 28
     testRunner.And("the matching donor is \'TGS derived data\' typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 27
+#line 29
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 28
+#line 30
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -251,7 +252,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with untyped donor at C", null, ((string[])(null)));
-#line 30
+#line 32
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -271,16 +272,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 31
+#line 33
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 32
+#line 34
     testRunner.And("the matching donor is untyped at locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 33
+#line 35
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 34
+#line 36
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -293,7 +294,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with untyped donor at DQB1", null, ((string[])(null)));
-#line 36
+#line 38
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -313,16 +314,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 37
+#line 39
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 38
+#line 40
     testRunner.And("the matching donor is untyped at locus DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 39
+#line 41
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 40
+#line 42
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -335,7 +336,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with untyped donor at C and DQB1", null, ((string[])(null)));
-#line 42
+#line 44
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -355,19 +356,19 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 43
+#line 45
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 44
+#line 46
     testRunner.And("the matching donor is untyped at locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 45
+#line 47
     testRunner.And("the matching donor is untyped at locus DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 46
+#line 48
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 47
+#line 49
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -380,7 +381,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a three field truncated allele typed match", null, ((string[])(null)));
-#line 49
+#line 51
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -400,16 +401,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 50
+#line 52
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 51
+#line 53
     testRunner.And("the matching donor is three field truncated allele typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 52
+#line 54
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 53
+#line 55
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -422,7 +423,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a two field truncated allele typed match", null, ((string[])(null)));
-#line 55
+#line 57
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -442,16 +443,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 56
+#line 58
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 57
+#line 59
     testRunner.And("the matching donor is two field truncated allele typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 58
+#line 60
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 59
+#line 61
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -464,7 +465,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a XX code typed match", null, ((string[])(null)));
-#line 61
+#line 63
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -484,16 +485,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 62
+#line 64
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 63
+#line 65
     testRunner.And("the matching donor is XX code typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 64
+#line 66
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 65
+#line 67
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -506,7 +507,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a NMDP code typed match", null, ((string[])(null)));
-#line 67
+#line 69
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -526,16 +527,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 68
+#line 70
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 69
+#line 71
     testRunner.And("the matching donor is NMDP code typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 70
+#line 72
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 71
+#line 73
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -548,7 +549,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with an allele string (of names) typed match", null, ((string[])(null)));
-#line 73
+#line 75
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -568,16 +569,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 74
+#line 76
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 75
+#line 77
     testRunner.And("the matching donor is allele string (of names) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 76
+#line 78
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 77
+#line 79
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -590,7 +591,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with an allele string (of names) with different antigen groups", null, ((string[])(null)));
-#line 79
+#line 81
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -610,20 +611,20 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 80
+#line 82
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 81
+#line 83
     testRunner.And("the matching donor is allele string (of names) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 82
+#line 84
     testRunner.And("the matching donor\'s allele string contains different antigen groups at each locu" +
                         "s", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 83
+#line 85
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 84
+#line 86
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -636,7 +637,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with an allele string (of subtypes) typed match", null, ((string[])(null)));
-#line 86
+#line 88
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -656,16 +657,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 87
+#line 89
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 88
+#line 90
     testRunner.And("the matching donor is allele string (of subtypes) typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 89
+#line 91
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 90
+#line 92
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -678,7 +679,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a serology typed match", null, ((string[])(null)));
-#line 92
+#line 94
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -698,16 +699,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 93
+#line 95
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 94
+#line 96
     testRunner.And("the matching donor is serology typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 95
+#line 97
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 96
+#line 98
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -720,7 +721,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with a mixed typing resolution match", null, ((string[])(null)));
-#line 98
+#line 100
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -740,16 +741,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 99
+#line 101
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 100
+#line 102
     testRunner.And("the matching donor is differently typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 101
+#line 103
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 102
+#line 104
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -762,7 +763,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("10/10 Search with matches at multiple resolutions", null, ((string[])(null)));
-#line 104
+#line 106
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -782,13 +783,13 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Adult
             else
             {
                 this.ScenarioStart();
-#line 105
+#line 107
     testRunner.Given("a patient has multiple matches at different typing resolutions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 106
+#line 108
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 107
+#line 109
     testRunner.Then("the results should contain all specified donors", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
