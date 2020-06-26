@@ -27,8 +27,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         }
 
         [TestCase(DataRefreshStage.MetadataDictionaryRefresh)]
-        [TestCase(DataRefreshStage.DataDeletion)]
         [TestCase(DataRefreshStage.IndexRemoval)]
+        [TestCase(DataRefreshStage.DataDeletion)]
         [TestCase(DataRefreshStage.DonorImport)]
         [TestCase(DataRefreshStage.DonorHlaProcessing)]
         [TestCase(DataRefreshStage.IndexRecreation)]
@@ -41,7 +41,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             await dataRefreshHistoryRepository.DidNotReceive().MarkStageAsComplete(Arg.Any<int>(), refreshStage);
         }
         [Test]
-        public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToDictionaryRefresh_ContinuesFromDataDeletion()
+        public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToDictionaryRefresh_ContinuesFromIndexDeletion()
         {
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
                 DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.MetadataDictionaryRefresh).Build()
@@ -50,6 +50,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             await dataRefreshRunner.RefreshData(default);
 
             await hlaMetadataDictionary.DidNotReceiveWithAnyArgs().RecreateHlaMetadataDictionary(default);
+            await donorImportRepository.Received(1).RemoveHlaTableIndexes();
             await donorImportRepository.Received(1).RemoveAllDonorInformation();
         }
 
@@ -72,26 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         }
 
         [Test]
-        public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToDataDeletion_ContinuesFromIndexDeletion()
-        {
-            var settings = DataRefreshSettingsBuilder.New
-                .With(s => s.RefreshDatabaseSize, AzureDatabaseSize.P15.ToString())
-                .Build();
-            dataRefreshRunner = BuildDataRefreshRunner(settings);
-
-            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
-                DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DataDeletion).Build()
-            );
-
-            await dataRefreshRunner.RefreshData(default);
-
-            await donorImportRepository.DidNotReceive().RemoveAllDonorInformation();
-            await donorImportRepository.Received(1).RemoveHlaTableIndexes();
-            await azureDatabaseManager.Received(1).UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15);
-        }
-
-        [Test]
-        public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToIndexDeletion_ContinuesFromDatabaseScaling()
+        public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToIndexDeletion_ContinuesFromDataDeletion()
         {
             var settings = DataRefreshSettingsBuilder.New
                 .With(s => s.RefreshDatabaseSize, AzureDatabaseSize.P15.ToString())
@@ -100,6 +82,25 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
                 DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.IndexRemoval).Build()
+            );
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await donorImportRepository.DidNotReceive().RemoveHlaTableIndexes();
+            await donorImportRepository.Received(1).RemoveAllDonorInformation();
+            await azureDatabaseManager.Received(1).UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15);
+        }
+
+        [Test]
+        public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToDataDeletion_ContinuesFromDatabaseScaling()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.RefreshDatabaseSize, AzureDatabaseSize.P15.ToString())
+                .Build();
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
+
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DataDeletion).Build()
             );
 
             await dataRefreshRunner.RefreshData(default);

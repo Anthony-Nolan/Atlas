@@ -60,13 +60,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             // We MUST skip the Metadata Refresh step, if we've already progressed past it, as we have to ensure that the Version doesn't change mid-refresh. 
             {DataRefreshStage.MetadataDictionaryRefresh, true},
 
-            // Data deletion *must* be skipped for continued updates to work.
-            // If we have imported donor data but dropped out during HLA refresh, we should not delete the donor data.
-            {DataRefreshStage.DataDeletion, true},
-
             // Index removal *must* be skipped for certain continued updates to work.
             // If we have re-created donor HLA Indexes, but then failed later, then we should not delete those Indexes.
             {DataRefreshStage.IndexRemoval, true},
+
+            // Data deletion *must* be skipped for continued updates to work.
+            // If we have imported donor data but dropped out during HLA refresh, we should not delete the donor data.
+            {DataRefreshStage.DataDeletion, true},
 
             // Failing to scale up the Database will cause the refresh to take a VERY long time, and it is possible for someone to manually scale the DB back down between interruption and retry.
             // Re-performing this stage if the database is already at the required level is very quick.
@@ -270,11 +270,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             {
                 case DataRefreshStage.MetadataDictionaryRefresh:
                     throw new NotImplementedException($"{nameof(DataRefreshStage.MetadataDictionaryRefresh)} cannot be performed atomically.");
-                case DataRefreshStage.DataDeletion:
-                    await donorImportRepository.RemoveAllDonorInformation();
-                    break;
                 case DataRefreshStage.IndexRemoval:
                     await donorImportRepository.RemoveHlaTableIndexes();
+                    break;
+                case DataRefreshStage.DataDeletion:
+                    await donorImportRepository.RemoveAllDonorInformation();
                     break;
                 case DataRefreshStage.DatabaseScalingSetup:
                     await ScaleDatabase(dataRefreshSettings.RefreshDatabaseSize.ParseToEnum<AzureDatabaseSize>());
