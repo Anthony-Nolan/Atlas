@@ -17,12 +17,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// The relationship of info-to-typing is preserved within the result
     /// for typing categories that require it; else the data is consolidated.
     /// </summary>
-    internal interface IHlaScoringMetadataService : IHlaSearchingMetadataService<IHlaScoringMetadata>
+    internal interface IHlaScoringMetadataService : ISearchRelatedMetadataService<IHlaScoringMetadata>
     {
     }
 
     internal class HlaScoringMetadataService :
-        HlaSearchingMetadataServiceBase<IHlaScoringMetadata>,
+        SearchRelatedMetadataServiceBase<IHlaScoringMetadata>,
         IHlaScoringMetadataService
     {
         public HlaScoringMetadataService(
@@ -31,14 +31,14 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
             IMacDictionary macDictionary,
-            IAlleleGroupMetadataService alleleGroupMetadataService
+            IAlleleGroupExpander alleleGroupExpander
         ) : base(
             hlaScoringMetadataRepository,
             alleleNamesMetadataService,
             hlaCategorisationService,
             alleleSplitter,
             macDictionary,
-            alleleGroupMetadataService)
+            alleleGroupExpander)
         {
         }
 

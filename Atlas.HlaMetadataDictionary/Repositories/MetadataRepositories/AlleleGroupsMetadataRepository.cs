@@ -29,16 +29,10 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         public async Task<IAlleleGroupMetadata> GetAlleleGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
             var row = await GetHlaMetadataRowIfExists(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
-            
-            if (row == null)
-            {
-                return null;
-            }
 
-            return new AlleleGroupMetadata(
-                row.Locus,
-                row.LookupName,
-                row.GetHlaInfo<List<string>>());
+            return row == null
+                ? null
+                : new AlleleGroupMetadata(row.Locus, row.LookupName, row.GetHlaInfo<List<string>>());
         }
     }
 }
