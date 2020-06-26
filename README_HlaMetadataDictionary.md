@@ -61,6 +61,6 @@ The Parameters are all of the form: `Func<IServiceProvider, T>`. They will be pa
 Some of the files in the hla metadata dictionary tests are longer than the 260 character limit that Windows expects. This causes problems in the IDE and in Git for Windows:
 
 - For your IDE, use Visual Studio 2019, or Rider, as there are known issues trying to load the Test project in Visual Studio 2017 due to this. The issue is not present in more recent IDEs.
-- For your git, we use the `core.longpaths` git setting, as described in the zero-to-hero section above. If you cloned your repo prior to reading this README, it would be wise to delete and reclone it with the modified git setting.
+- For your git, we use the `core.longpaths` git setting, as described in the zero-to-hero section in the [core Readme](README.md). If you cloned your repo prior to reading this README, it would be wise to delete and reclone it with the modified git setting.
 
 

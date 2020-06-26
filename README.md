@@ -11,7 +11,7 @@ For deployment instructions, see [README_Deployment](README_Deployment.md)
 Responsible for maintaining a master store of donor information. Assigns internal donor IDs, and will be used as a source of information by both the matching and 
 match prediction components.
 
-Storage: 
+Infrastructure: 
 - SQL Donor Store
 - Azure blob storage for uploading source data
 - Donor Import Functions App 
@@ -30,14 +30,14 @@ Responsible for maintaining a pre-processed store of donors, on which searches c
 patient HLA according to configurable matching preferences   
 
 Infrastructure: 
-- 3x SQL Databases for storaing pre-processed donor state
+- 3x SQL Databases for storing pre-processed donor state
 - 2x Functions Apps, for running searches, and maintaining data store
 - Azure blob storage used for search results
 - Azure service bus used for results notifications
 
 ###[Match Prediction Algorithm](README_MatchPredictionAlgorithm.md)
 
-Responsible for maintaining a collection of haplotype frequency sets, using which match predictions can be calculated for donor/patient pairs.
+Responsible for maintaining a collection of haplotype frequency sets, from which match predictions can be calculated for donor/patient pairs.
 
 Infrastructure: 
 - SQL database for storing haplotype frequency data
@@ -269,7 +269,7 @@ comprehensive list:
     - [Donor Import](README_DonorImport.md) 
     - [HLA Metadata Dictionary](README_HlaMetadataDictionary.md) 
     - [Matching Algorithm](README_MatchingAlgorithm.md)
-        - [Validation Test (Non-Technical)](Atlas.MatchingAlgorithm.Test.Validation/ValidationTests/Features/README_MatchingValidationTests.md)
+        - [Validation Test (Non-Technical BDD Testing)](Atlas.MatchingAlgorithm.Test.Validation/ValidationTests/Features/README_MatchingValidationTests.md)
     - [Match Prediction Algorithm](README_MatchPredictionAlgorithm.md) 
     - [MAC Dictionary](README_MultipleAlleleCodeDictionary.md)
 - [Test and Debug Resources](MiscTestingAndDebuggingResources/README_TestAndDebug.md)
