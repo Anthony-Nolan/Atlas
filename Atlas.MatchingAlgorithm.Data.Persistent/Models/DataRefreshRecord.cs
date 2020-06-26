@@ -44,8 +44,8 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
             stage switch
             {
                 DataRefreshStage.MetadataDictionaryRefresh => MetadataDictionaryRefreshCompleted,
-                DataRefreshStage.DataDeletion => DataDeletionCompleted,
                 DataRefreshStage.IndexRemoval => IndexDeletionCompleted,
+                DataRefreshStage.DataDeletion => DataDeletionCompleted,
                 DataRefreshStage.DatabaseScalingSetup => DatabaseScalingSetupCompleted,
                 DataRefreshStage.DonorImport => DonorImportCompleted,
                 DataRefreshStage.DonorHlaProcessing => DonorHlaProcessingCompleted,
@@ -62,11 +62,11 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
                 case DataRefreshStage.MetadataDictionaryRefresh:
                     MetadataDictionaryRefreshCompleted = value;
                     break;
-                case DataRefreshStage.DataDeletion:
-                    DataDeletionCompleted = value;
-                    break;
                 case DataRefreshStage.IndexRemoval:
                     IndexDeletionCompleted = value;
+                    break;
+                case DataRefreshStage.DataDeletion:
+                    DataDeletionCompleted = value;
                     break;
                 case DataRefreshStage.DatabaseScalingSetup:
                     DatabaseScalingSetupCompleted = value;

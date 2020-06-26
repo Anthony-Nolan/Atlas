@@ -11,14 +11,14 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         /// </summary>
         MetadataDictionaryRefresh = 0,
         /// <summary>
-        /// Deletion of all existing donor data 
-        /// </summary>
-        DataDeletion = 10,
-        /// <summary>
         /// Deletion of Indexes on (previously) existing donor data.
         /// Done prior to DB scaling for efficiency.
         /// </summary>
-        IndexRemoval = 20,
+        IndexRemoval = 10,
+        /// <summary>
+        /// Deletion of all existing donor data 
+        /// </summary>
+        DataDeletion = 20,
         /// <summary>
         /// Scaling of database to appropriate size for data refresh
         /// </summary>
