@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.ServiceBus.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
-using Atlas.MatchingAlgorithm.Models;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
+using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using NSubstitute;
 using NUnit.Framework;
@@ -17,7 +17,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
     {
         private const int BatchSize = 100;
 
-        private IMessageProcessor<SearchableDonorUpdate> messageProcessorService;
+        private IMessageProcessorForDbADonorUpdates messageProcessorServiceForA;
+        private IMessageProcessorForDbBDonorUpdates messageProcessorServiceForB;
         private IDonorManagementService donorManagementService;
         private IDonorUpdateProcessor donorUpdateProcessor;
         private ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
@@ -25,13 +26,17 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         [SetUp]
         public void Setup()
         {
-            messageProcessorService = Substitute.For<IMessageProcessor<SearchableDonorUpdate>>();
+            messageProcessorServiceForA = Substitute.For<IMessageProcessorForDbADonorUpdates>();
+            messageProcessorServiceForB = Substitute.For<IMessageProcessorForDbBDonorUpdates>();
+            var refreshHistory = Substitute.For<IDataRefreshHistoryRepository>();
             donorManagementService = Substitute.For<IDonorManagementService>();
             searchableDonorUpdateConverter = Substitute.For<ISearchableDonorUpdateConverter>();
             var logger = Substitute.For<ILogger>();
 
             donorUpdateProcessor = new DonorUpdateProcessor(
-                messageProcessorService,
+                messageProcessorServiceForA,
+                messageProcessorServiceForB,
+                refreshHistory,
                 donorManagementService,
                 searchableDonorUpdateConverter,
                 logger,
@@ -41,22 +46,38 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         [Test]
         public async Task ProcessDonorUpdates_ProcessesMessageBatch()
         {
-            await donorUpdateProcessor.ProcessDonorUpdates();
+            messageProcessorServiceForA.ClearReceivedCalls();
 
-            await messageProcessorService.Received(1).ProcessMessageBatch(
-                BatchSize,
+            await donorUpdateProcessor.ProcessDifferentialDonorUpdates(TransientDatabase.DatabaseA);
+
+            await messageProcessorServiceForA.Received(1).ProcessMessageBatchAsync(
                 Arg.Any<Func<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>, Task>>(),
+                BatchSize,
                 Arg.Any<int>());
+        }
+
+        [Test]
+        public async Task ProcessDonorUpdates_ProcessesMessageBatchFromCorrectFeed()
+        {
+            messageProcessorServiceForA.ClearReceivedCalls();
+            messageProcessorServiceForB.ClearReceivedCalls();
+
+            await donorUpdateProcessor.ProcessDifferentialDonorUpdates(TransientDatabase.DatabaseB);
+
+            await messageProcessorServiceForA.DidNotReceiveWithAnyArgs().ProcessMessageBatchAsync(default, default);
+            await messageProcessorServiceForB.ReceivedWithAnyArgs().ProcessMessageBatchAsync(default, default);
         }
 
         [Test]
         public async Task ProcessDonorUpdates_ProcessesMessageBatch_WithPrefetchCountGreaterThanBatchSize()
         {
-            await donorUpdateProcessor.ProcessDonorUpdates();
+            messageProcessorServiceForA.ClearReceivedCalls();
+            
+            await donorUpdateProcessor.ProcessDifferentialDonorUpdates(TransientDatabase.DatabaseA);
 
-            await messageProcessorService.Received(1).ProcessMessageBatch(
-                Arg.Any<int>(),
+            await messageProcessorServiceForA.Received(1).ProcessMessageBatchAsync(
                 Arg.Any<Func<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>, Task>>(),
+                BatchSize,
                 Arg.Is<int>(b => b > BatchSize));
         }
     }
