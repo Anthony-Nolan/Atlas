@@ -5,6 +5,9 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
     public interface IGenotypeAlleleTruncater
     {
+        /// <summary>
+        /// This will only be used when we implement 2-field HF sets.
+        /// </summary>
         public PhenotypeInfo<string> TruncateGenotypeAlleles(PhenotypeInfo<string> genotype);
     }
 

@@ -49,8 +49,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 setRepository,
                 frequencyRepository,
                 unambiguousGenotypeExpander,
-                genotypeLikelihoodCalculator,
-                alleleTruncater
+                genotypeLikelihoodCalculator
             );
         }
 
@@ -73,15 +72,6 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
 
             genotypeLikelihoodCalculator.Received(1)
                 .CalculateLikelihood(Arg.Any<ExpandedGenotype>());
-        }
-
-        [Test]
-        public async Task CalculateLikelihood_TruncateGenotypeAllelesIsCalledOnce()
-        {
-            await genotypeLikelihoodService.CalculateLikelihood(new PhenotypeInfo<string>());
-
-            alleleTruncater.Received(1)
-                .TruncateGenotypeAlleles(Arg.Any<PhenotypeInfo<string>>());
         }
     }
 }

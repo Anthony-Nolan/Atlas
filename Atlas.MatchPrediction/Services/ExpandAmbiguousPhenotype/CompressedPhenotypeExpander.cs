@@ -8,7 +8,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 {
     public interface ICompressedPhenotypeExpander
     {
-        public Task<IEnumerable<PhenotypeInfo<string>>> ExpandCompressedPhenotype(PhenotypeInfo<string> phenotype, string hlaNomenclatureVersion);
+        public Task<ISet<PhenotypeInfo<string>>> ExpandCompressedPhenotype(PhenotypeInfo<string> phenotype, string hlaNomenclatureVersion);
 
         /// <returns>
         /// The number of genotypes that would be returned if <see cref="ExpandCompressedPhenotype"/> were to be called on this phenotype.
@@ -31,7 +31,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             this.locusHlaConverter = locusHlaConverter;
         }
 
-        public async Task<IEnumerable<PhenotypeInfo<string>>> ExpandCompressedPhenotype(
+        public async Task<ISet<PhenotypeInfo<string>>> ExpandCompressedPhenotype(
             PhenotypeInfo<string> phenotype,
             string hlaNomenclatureVersion)
         {

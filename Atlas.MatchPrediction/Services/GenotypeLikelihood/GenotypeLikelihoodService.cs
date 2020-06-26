@@ -19,33 +19,26 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         private readonly IHaplotypeFrequenciesRepository frequencyRepository;
         private readonly IUnambiguousGenotypeExpander unambiguousGenotypeExpander;
         private readonly IGenotypeLikelihoodCalculator likelihoodCalculator;
-        private readonly IGenotypeAlleleTruncater alleleTruncater;
 
         public GenotypeLikelihoodService(
             IHaplotypeFrequencySetRepository setRepository,
             IHaplotypeFrequenciesRepository frequencyRepository,
             IUnambiguousGenotypeExpander unambiguousGenotypeExpander,
-            IGenotypeLikelihoodCalculator likelihoodCalculator,
-            IGenotypeAlleleTruncater alleleTruncater)
+            IGenotypeLikelihoodCalculator likelihoodCalculator)
         {
             this.setRepository = setRepository;
             this.frequencyRepository = frequencyRepository;
             this.unambiguousGenotypeExpander = unambiguousGenotypeExpander;
             this.likelihoodCalculator = likelihoodCalculator;
-            this.alleleTruncater = alleleTruncater;
         }
 
         public async Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype)
         {
-            var truncatedGenotype = alleleTruncater.TruncateGenotypeAlleles(genotype);
-
-            var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(truncatedGenotype);
+            var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype);
             var haplotypesWithFrequencies = await GetHaplotypesWithFrequencies(expandedGenotype);
 
             UpdateFrequenciesForDiplotype(haplotypesWithFrequencies, expandedGenotype.Diplotypes);
-            var likelihood = likelihoodCalculator.CalculateLikelihood(expandedGenotype);
-
-            return likelihood;
+            return likelihoodCalculator.CalculateLikelihood(expandedGenotype);
         }
 
         private async Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypesWithFrequencies(ExpandedGenotype expandedGenotype)

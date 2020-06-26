@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Atlas.Common.Utils.Extensions
@@ -29,6 +30,12 @@ namespace Atlas.Common.Utils.Extensions
             }
 
             return dictionary;
+        }
+
+        public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(
+            this IEnumerable<KeyValuePair<TKey, TValue>>  keyValuePair)
+        {
+            return keyValuePair.ToDictionary(p => p.Key, p => p.Value);
         }
     }
 }

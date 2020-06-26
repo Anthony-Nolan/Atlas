@@ -30,12 +30,10 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
         public async Task<MatchProbabilityResponse> CalculateMatchProbability(MatchProbabilityInput matchProbabilityInput)
         {
-            var expandedPatientHla = 
+            var patientGenotypes = 
                 await compressedPhenotypeExpander.ExpandCompressedPhenotype(matchProbabilityInput.PatientHla, matchProbabilityInput.HlaNomenclatureVersion);
-            var patientGenotypes = expandedPatientHla.ToHashSet();
-            var expandedDonorHla =
+            var donorGenotypes =
                 await compressedPhenotypeExpander.ExpandCompressedPhenotype(matchProbabilityInput.DonorHla, matchProbabilityInput.HlaNomenclatureVersion);
-            var donorGenotypes = expandedDonorHla.ToHashSet();
 
             var likelihoods = await genotypeLikelihoods.CalculateLikelihoods(patientGenotypes, donorGenotypes);
 
