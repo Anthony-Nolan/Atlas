@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
@@ -35,7 +34,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
         public async Task<IEnumerable<string>> GetHlaFromMac(string macCode, string firstField)
         {
             var mac = await GetMacCode(macCode);
-            logger.SendTrace($"Attempting to expand Hla for Mac: {mac.Code}");
+            logger.SendTrace($"Attempting to expand Hla for Mac: {mac.Code}", LogLevel.Trace);
             return macExpander.ExpandMac(mac, firstField);
         }
 

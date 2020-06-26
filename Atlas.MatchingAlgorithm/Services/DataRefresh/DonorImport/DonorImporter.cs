@@ -89,7 +89,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
                 },
                 "Imported donor batch.",
                 logger,
-                customProperties: new Dictionary<string, string> {{"BatchSize", BatchSize.ToString()}}
+                LogLevel.Trace,
+                new Dictionary<string, string> {{"BatchSize", BatchSize.ToString()}}
             );
         }
     }
