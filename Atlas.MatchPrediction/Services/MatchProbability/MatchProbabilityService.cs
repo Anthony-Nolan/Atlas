@@ -38,8 +38,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 await compressedPhenotypeExpander.ExpandCompressedPhenotype(matchProbabilityInput.DonorHla, matchProbabilityInput.HlaNomenclatureVersion);
 
             var genotypes = patientGenotypes.Union(donorGenotypes);
-            var genotypesLikelihoods = await Task.WhenAll(genotypes.Select(CalculateLikelihood));
-            genotypesLikelihoods.ToDictionary();
+            var genotypesLikelihoods = (await Task.WhenAll(genotypes.Select(CalculateLikelihood))).ToDictionary();
 
             var matchingPairs = 
                 await genotypeMatcher.PairsWithTenOutOfTenMatch(patientGenotypes, donorGenotypes, matchProbabilityInput.HlaNomenclatureVersion);
