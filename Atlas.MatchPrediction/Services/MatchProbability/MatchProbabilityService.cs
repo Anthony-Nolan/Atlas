@@ -2,10 +2,10 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Client.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
-using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
@@ -33,22 +33,22 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             this.matchProbabilityCalculator = matchProbabilityCalculator;
         }
 
+        // TODO: ATLAS-236: Add some logging to this process 
         public async Task<MatchProbabilityResponse> CalculateMatchProbability(MatchProbabilityInput matchProbabilityInput)
         {
-            var patientGenotypes = 
-                await compressedPhenotypeExpander.ExpandCompressedPhenotype(
-                    matchProbabilityInput.PatientHla,
-                    matchProbabilityInput.HlaNomenclatureVersion);
-            var donorGenotypes =
-                await compressedPhenotypeExpander.ExpandCompressedPhenotype(
-                    matchProbabilityInput.DonorHla,
-                    matchProbabilityInput.HlaNomenclatureVersion);
+            var patientGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(
+                matchProbabilityInput.PatientHla,
+                matchProbabilityInput.HlaNomenclatureVersion
+            );
+            var donorGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(
+                matchProbabilityInput.DonorHla,
+               matchProbabilityInput.HlaNomenclatureVersion);
 
             var matchingPairs =
                 (await genotypeMatcher.PairsWithTenOutOfTenMatch(
                     patientGenotypes,
-                    donorGenotypes,
-                    matchProbabilityInput.HlaNomenclatureVersion));
+                    donorGenotypes, matchProbabilityInput.HlaNomenclatureVersion
+            ));
 
             // Returns early when patient/donor pair are guaranteed to either be a match or not
             if (patientGenotypes.Count * donorGenotypes.Count == matchingPairs.Count)
