@@ -4,11 +4,34 @@
     "ApplicationInsights:LogLevel": "Info",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    
+    "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
+    "HlaMetadataDictionary:HlaNomenclatureSourceUrl": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",
+    
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
-    "MessagingServiceBus:ConnectionString": "override-this",
-    "MessagingServiceBus:SearchRequestsQueue": "matching-requests",
-    "MessagingServiceBus:SearchResultsTopic": "matching-results-ready"
+    
+    "Matching:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
+    "Matching:AzureStorage:SearchResultsBlobContainer": "search-algorithm-results",
+    "Matching:MessagingServiceBus:ConnectionString": "override-this",
+    "Matching:MessagingServiceBus:SearchRequestsQueue": "matching-requests",
+    "Matching:MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
+    
+    "MatchPrediction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
+    "MatchPrediction:AzureStorage:HaplotypeFrequencySetImportContainer": "haplotype-frequency-set-import",
+    
+    "NotificationsServiceBus:AlertsTopic": "alerts",
+    "NotificationsServiceBus:ConnectionString": "override-this",
+    "NotificationsServiceBus:NotificationsTopic": "notifications"
+  },
+  "ConnectionStrings": {
+    "DonorImport:Sql": "Data Source=(local);Initial Catalog=AtlasDonorImport;Integrated Security=True;MultipleActiveResultSets=True;",
+
+    "Matching:Sql:Persistent": "Data Source=(local);Initial Catalog=AtlasMatchingPersistent;Integrated Security=True;MultipleActiveResultSets=True;",
+    "Matching:Sql:A": "Data Source=(local);Initial Catalog=AtlasMatchingA;Integrated Security=True;MultipleActiveResultSets=True;",
+    "Matching:Sql:B": "Data Source=(local);Initial Catalog=AtlasMatchingB;Integrated Security=True;MultipleActiveResultSets=True;",
+
+    "MatchPrediction:Sql": "Data Source=(local);Initial Catalog=AtlasMatchPrediction;Integrated Security=True;MultipleActiveResultSets=True;"
   }
 }

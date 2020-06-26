@@ -1,31 +1,31 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Functions.DurableFunctions.Search.Activity;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Common.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 
 namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 {
-    public class SearchOrchestrationFunctions
+    /// <summary>
+    /// Note that orchestration triggered functions will be run multiple times per-request scope, so need to be completely deterministic.
+    /// Any expensive or non-deterministic code should be called from an Activity function.
+    /// </summary>
+    public static class SearchOrchestrationFunctions
     {
         [FunctionName(nameof(SearchOrchestrator))]
-        public async Task<List<string>> SearchOrchestrator([OrchestrationTrigger] IDurableOrchestrationContext context)
+        public static async Task<List<string>> SearchOrchestrator([OrchestrationTrigger] IDurableOrchestrationContext context)
         {
-            var input = context.GetInput<SearchRequest>();
-            
-            var outputs = new List<string>
-            {
-                await context.CallActivityAsync<string>(nameof(SearchActivityFunctions.SayHello), "Tokyo"),
-                await context.CallActivityAsync<string>(nameof(SearchActivityFunctions.SayHello), "Seattle"),
-                await context.CallActivityAsync<string>(nameof(SearchActivityFunctions.SayHello), "London")
-            };
+            var searchRequest = context.GetInput<SearchRequest>();
+            var searchResults = await context.CallActivityAsync<SearchResultSet>(
+                nameof(SearchActivityFunctions.RunMatchingAlgorithm),
+                new IdentifiedSearchRequest {Id = context.InstanceId, SearchRequest = searchRequest}
+            );
 
-            // Replace "hello" with the name of your Durable Activity Function.
-
-            // returns ["Hello Tokyo!", "Hello Seattle!", "Hello London!"]
-            return outputs;
-            
+            return searchResults.SearchResults.Select(r => r.DonorId.ToString()).ToList();
         }
     }
 }
