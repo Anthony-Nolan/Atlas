@@ -14,7 +14,6 @@ using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Settings.Azure;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
@@ -56,13 +55,10 @@ namespace Atlas.MatchPrediction.DependencyInjection
 
         private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)
         {
-            services.AddDbContext<MatchPredictionContext>((sp, options) =>
-            {
-                options.UseSqlServer(fetchSqlConnectionString(sp));
-            });
-
-            services.AddScoped<IHaplotypeFrequencySetRepository, HaplotypeFrequencySetRepository>();
-            services.AddScoped<IHaplotypeFrequenciesRepository, HaplotypeFrequenciesRepository>(sp =>
+            services.AddTransient<IHaplotypeFrequencySetRepository, HaplotypeFrequencySetRepository>(sp =>
+                new HaplotypeFrequencySetRepository(fetchSqlConnectionString(sp), new ContextFactory())
+            );
+            services.AddTransient<IHaplotypeFrequenciesRepository, HaplotypeFrequenciesRepository>(sp =>
                 new HaplotypeFrequenciesRepository(fetchSqlConnectionString(sp))
             );
         }
