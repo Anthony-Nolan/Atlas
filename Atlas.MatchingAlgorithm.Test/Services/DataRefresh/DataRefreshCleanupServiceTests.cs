@@ -21,7 +21,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private IActiveDatabaseProvider activeDatabaseProvider;
         private IAzureDatabaseManager azureDatabaseManager;
-        private IAzureFunctionManager azureFunctionManager;
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private IDataRefreshNotificationSender notificationSender;
 
@@ -34,7 +33,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             azureDatabaseNameProvider = Substitute.For<IAzureDatabaseNameProvider>();
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
-            azureFunctionManager = Substitute.For<IAzureFunctionManager>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
             notificationSender = Substitute.For<IDataRefreshNotificationSender>();
 
@@ -49,16 +47,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             await dataRefreshCleanupService.RunDataRefreshCleanup();
 
             await azureDatabaseManager.DidNotReceive().UpdateDatabaseSize(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>());
-        }
-
-        [Test]
-        public async Task RunDataRefreshCleanup_WhenNoJobsInProgress_DoesNotEnableFunctions()
-        {
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord>());
-
-            await dataRefreshCleanupService.RunDataRefreshCleanup();
-
-            await azureFunctionManager.DidNotReceive().StartFunction(Arg.Any<string>(), Arg.Any<string>());
         }
 
         [Test]
@@ -82,24 +70,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             await dataRefreshCleanupService.RunDataRefreshCleanup();
 
             await azureDatabaseManager.Received().UpdateDatabaseSize(databaseName, AzureDatabaseSize.S1);
-        }
-
-        [Test]
-        public async Task RunDataRefreshCleanup_EnablesDonorUpdateFunction()
-        {
-            const string donorFunctionsAppName = "donor-functions-app-name";
-            const string donorImportFunctionName = "donor-import";
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
-            dataRefreshCleanupService = BuildDataRefreshCleanupService(new DataRefreshSettings
-            {
-                DormantDatabaseSize = "Basic",
-                DonorFunctionsAppName = donorFunctionsAppName,
-                DonorImportFunctionName = donorImportFunctionName
-            });
-
-            await dataRefreshCleanupService.RunDataRefreshCleanup();
-
-            await azureFunctionManager.Received().StartFunction(donorFunctionsAppName, donorImportFunctionName);
         }
 
         [Test]
@@ -176,7 +146,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 activeDatabaseProvider,
                 azureDatabaseManager,
                 settings,
-                azureFunctionManager,
                 dataRefreshHistoryRepository,
                 notificationSender);
         }

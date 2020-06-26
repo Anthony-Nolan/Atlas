@@ -108,7 +108,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.AddScoped(sp => Substitute.For<INotificationSender>());
 
             services.AddScoped(sp => Substitute.For<IAzureDatabaseManager>());
-            services.AddScoped(sp => Substitute.For<IAzureFunctionManager>());
         }
 
         private static void RegisterIntegrationTestServices(IServiceCollection services)

@@ -194,9 +194,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IResultsBlobStorageClient, ResultsBlobStorageClient>();
 
             services.AddScoped<IAzureDatabaseManagementClient, AzureDatabaseManagementClient>();
-            services.AddScoped<IAzureAppServiceManagementClient, AzureAppServiceManagementClient>();
             services.AddScoped<IAzureAuthenticationClient, AzureAuthenticationClient>();
-            services.AddScoped<IAzureFunctionManager, AzureFunctionManager>();
             services.AddScoped<IAzureDatabaseManager, AzureDatabaseManager>();
 
             services.RegisterNotificationSender(

@@ -36,7 +36,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IAzureDatabaseManager azureDatabaseManager;
         private readonly DataRefreshSettings dataRefreshSettings;
-        private readonly IAzureFunctionManager azureFunctionManager;
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private readonly IDataRefreshNotificationSender notificationSender;
 
@@ -46,7 +45,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IActiveDatabaseProvider activeDatabaseProvider,
             IAzureDatabaseManager azureDatabaseManager,
             DataRefreshSettings dataRefreshSettings,
-            IAzureFunctionManager azureFunctionManager,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
             IDataRefreshNotificationSender notificationSender
         )
@@ -56,7 +54,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.azureDatabaseManager = azureDatabaseManager;
             this.dataRefreshSettings = dataRefreshSettings;
-            this.azureFunctionManager = azureFunctionManager;
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
             this.notificationSender = notificationSender;
         }
@@ -65,19 +62,15 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             if (IsCleanupNecessary())
             {
-                logger.SendTrace(
-                    "DATA REFRESH: Manual Teardown requested. This indicates that the data refresh failed unexpectedly.");
+                logger.SendTrace("DATA REFRESH: Manual Teardown requested. This indicates that the data refresh failed unexpectedly.");
                 await notificationSender.SendRequestManualTeardownNotification();
 
                 await ScaleDatabase();
-                await EnableDonorManagementFunction();
                 await UpdateStalledDataRefreshHistoryRecords();
             }
             else
             {
-                logger.SendTrace(
-                    "Data Refresh cleanup triggered, but no in progress jobs detected. Are you sure cleanup is necessary?"
-                );
+                logger.SendTrace("Data Refresh cleanup triggered, but no in progress jobs detected. Cleanup is not necessary.");
             }
         }
 
@@ -101,14 +94,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetDormantDatabase());
             logger.SendTrace($"DATA REFRESH CLEANUP: Scaling database: {databaseName} to size {targetSize}");
             await azureDatabaseManager.UpdateDatabaseSize(databaseName, targetSize);
-        }
-
-        private async Task EnableDonorManagementFunction()
-        {
-            var donorFunctionsAppName = dataRefreshSettings.DonorFunctionsAppName;
-            var donorImportFunctionName = dataRefreshSettings.DonorImportFunctionName;
-            logger.SendTrace($"DATA REFRESH CLEANUP: Re-enabling donor import function with name: {donorImportFunctionName}");
-            await azureFunctionManager.StartFunction(donorFunctionsAppName, donorImportFunctionName);
         }
 
         private async Task UpdateStalledDataRefreshHistoryRecords()

@@ -42,7 +42,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IHlaMetadataDictionary activeVersionHlaMetadataDictionary;
         private readonly IDataRefreshRunner dataRefreshRunner;
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
-        private readonly IAzureFunctionManager azureFunctionManager;
         private readonly IAzureDatabaseManager azureDatabaseManager;
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
@@ -56,7 +55,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IActiveDatabaseProvider activeDatabaseProvider,
             IDataRefreshRunner dataRefreshRunner,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
-            IAzureFunctionManager azureFunctionManager,
             IAzureDatabaseManager azureDatabaseManager,
             IAzureDatabaseNameProvider azureDatabaseNameProvider,
             IDataRefreshNotificationSender dataRefreshNotificationSender)
@@ -66,7 +64,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.dataRefreshRunner = dataRefreshRunner;
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
-            this.azureFunctionManager = azureFunctionManager;
             this.azureDatabaseManager = azureDatabaseManager;
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
@@ -155,7 +152,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             try
             {
-                await AzureFunctionsSetUp();
                 var newWmdaHlaNomenclatureVersion = await dataRefreshRunner.RefreshData(dataRefreshRecordId);
                 var previouslyActiveDatabase = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetActiveDatabase());
                 await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, true, newWmdaHlaNomenclatureVersion);
@@ -169,26 +165,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 await dataRefreshNotificationSender.SendFailureAlert(dataRefreshRecordId);
                 await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, false, null);
             }
-            finally
-            {
-                await AzureFunctionsTearDown();
-            }
-        }
-
-        private async Task AzureFunctionsSetUp()
-        {
-            var donorFunctionsAppName = dataRefreshSettings.DonorFunctionsAppName;
-            var donorImportFunctionName = dataRefreshSettings.DonorImportFunctionName;
-            logger.SendTrace($"DATA REFRESH SET UP: Disabling donor import function with name: {donorImportFunctionName}");
-            await azureFunctionManager.StopFunction(donorFunctionsAppName, donorImportFunctionName);
-        }
-
-        private async Task AzureFunctionsTearDown()
-        {
-            var donorFunctionsAppName = dataRefreshSettings.DonorFunctionsAppName;
-            var donorImportFunctionName = dataRefreshSettings.DonorImportFunctionName;
-            logger.SendTrace($"DATA REFRESH TEAR DOWN: Re-enabling donor import function with name: {donorImportFunctionName}");
-            await azureFunctionManager.StartFunction(donorFunctionsAppName, donorImportFunctionName);
         }
 
         private async Task ScaleDownDatabaseToDormantLevel(string databaseName)
