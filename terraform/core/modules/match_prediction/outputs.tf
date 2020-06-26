@@ -12,6 +12,7 @@ output "storage" {
 
 output "sql_database" {
   value = {
-    name = azurerm_sql_database.atlas-match-prediction.name
+    connection_string = local.match_prediction_database_connection_string
+    name              = azurerm_sql_database.atlas-match-prediction.name
   }
 }
