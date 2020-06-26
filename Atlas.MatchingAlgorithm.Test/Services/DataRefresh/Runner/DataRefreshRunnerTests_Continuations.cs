@@ -268,5 +268,30 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             await donorImportRepository.Received(1).RemoveAllDonorInformation();
             await donorImportRepository.DidNotReceive().RemoveAllProcessedDonorHla();
         }
+
+        [Test]
+        public async Task ContinuedRefreshData_WhenAPreviousContinuationHasAlreadyBeenAttempted_ContinuesAppropriately()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.ActiveDatabaseSize, AzureDatabaseSize.S4.ToString())
+                .Build();
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
+
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New
+                    .WithStagesCompletedUpToAndIncluding(DataRefreshStage.DonorHlaProcessing)
+                    .WithSetup(r => { r.RefreshContinueUtc = r.RefreshBeginUtc.AddSeconds(1); })
+                    .Build()
+            );
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await donorImportRepository.DidNotReceive().RemoveAllDonorInformation();
+            await donorImportRepository.DidNotReceive().RemoveAllProcessedDonorHla();
+            await hlaProcessor.DidNotReceiveWithAnyArgs().UpdateDonorHla(default);
+            await donorImportRepository.Received(1).CreateHlaTableIndexes();
+            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4);
+        }
+
     }
 }

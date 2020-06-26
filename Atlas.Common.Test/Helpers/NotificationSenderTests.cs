@@ -26,11 +26,11 @@ namespace Atlas.Common.Test.Helpers
         }
 
         [Test]
-        public void SendFailedDonorsAlert_ExceptionThrownByNotificationsClient_DoesNotRethrowException()
+        public async Task SendFailedDonorsAlert_ExceptionThrownByNotificationsClient_DoesNotRethrowException()
         {
             client.SendAlert(default).ThrowsForAnyArgs(new Exception());
 
-            sender
+            await sender
                 .Invoking(s => s.SendAlert("summary", "description", Priority.Medium, "source"))
                 .Should().NotThrowAsync();
         }
