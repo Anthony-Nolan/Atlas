@@ -278,6 +278,11 @@ These tests are primarily for the benefit of non-developers, intended to confirm
 
 See [The Validation Test README](Atlas.MatchingAlgorithm.Test.Validation/ValidationTests/Features/README_MatchingValidationTests.md) for a more detailed, non-technical overview
 
+*Test Data Errors*
+
+- Note that there is a known, but infrequent, situation in which invalid test data can be selected.
+    - TODO: ATLAS-465: Fix this invalid case
+
 ### Secure Settings
 
 The following keys must be set as user secrets in the api project:
