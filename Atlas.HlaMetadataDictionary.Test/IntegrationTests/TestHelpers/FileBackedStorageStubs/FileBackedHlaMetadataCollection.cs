@@ -12,5 +12,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         public IEnumerable<FileBackedHlaMatchingMetadata> HlaMatchingMetadata { get; set; }
         public IEnumerable<FileBackedHlaScoringMetadata> HlaScoringMetadata { get; set; }
         public IEnumerable<FileBackedDpb1TceGroupsMetadata> Dpb1TceGroupMetadata { get; set; }
+        public IEnumerable<FileBackedAlleleGroupMetadata> AlleleGroupMetadata { get; set; }
     }
 }

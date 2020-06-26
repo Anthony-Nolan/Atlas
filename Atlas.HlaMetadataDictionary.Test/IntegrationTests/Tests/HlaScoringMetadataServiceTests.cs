@@ -47,8 +47,12 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             macDictionary
                 .GetHlaFromMac(Arg.Any<string>())
                 .Returns(new List<string>());
+        }
 
-            // clear NMDP code allele mappings between tests
+        [TearDown]
+        public void TearDown()
+        {
+            // clear MAC allele mappings between tests
             appCache.Remove(CacheKey);
         }
 
@@ -82,6 +86,40 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<MultipleAlleleScoringInfo>();
             ((MultipleAlleleScoringInfo)scoringInfo).AlleleScoringInfos.Count().Should().Be(expectedAlleleCount);
+        }
+
+        // TODO: ATLAS-454: Confirm scoring metadata lookup strategy for P groups
+        [Test]
+        public async Task GetHlaMetadata_WhenPGroup_ReturnsConsolidatedScoringInfo()
+        {
+            const string pGroup = "01:09P";
+            var expectedGGroups = new List<string> { "01:09:01G", "01:09:02" };
+            var expectedSerologies = new List<SerologyEntry> { new SerologyEntry("1", SerologySubtype.NotSplit, true) };
+
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, pGroup, null);
+
+            var scoringInfo = result.HlaScoringInfo;
+            scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
+            scoringInfo.MatchingPGroups.Should().BeEquivalentTo(pGroup);
+            ((ConsolidatedMolecularScoringInfo)scoringInfo).MatchingGGroups.Should().BeEquivalentTo(expectedGGroups);
+            ((ConsolidatedMolecularScoringInfo)scoringInfo).MatchingSerologies.Should().BeEquivalentTo(expectedSerologies);
+        }
+
+        // TODO: ATLAS-454: Confirm scoring metadata lookup strategy for G groups
+        [Test]
+        public async Task GetHlaMetadata_WhenGGroup_ReturnsConsolidatedScoringInfo()
+        {
+            const string gGroup = "01:01:01G";
+            const string expectedPGroup = "01:01P";
+            var expectedSerologies = new List<SerologyEntry> { new SerologyEntry("1", SerologySubtype.NotSplit, true) };
+
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, gGroup, null);
+
+            var scoringInfo = result.HlaScoringInfo;
+            scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
+            scoringInfo.MatchingPGroups.Should().BeEquivalentTo(expectedPGroup);
+            ((ConsolidatedMolecularScoringInfo)scoringInfo).MatchingGGroups.Should().BeEquivalentTo(gGroup);
+            ((ConsolidatedMolecularScoringInfo)scoringInfo).MatchingSerologies.Should().BeEquivalentTo(expectedSerologies);
         }
 
         [Test]

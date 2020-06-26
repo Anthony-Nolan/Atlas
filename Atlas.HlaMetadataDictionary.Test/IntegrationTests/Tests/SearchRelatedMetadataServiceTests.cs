@@ -48,7 +48,11 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             macDictionary
                 .GetHlaFromMac(Arg.Any<string>())
                 .Returns(new List<string>());
+        }
 
+        [TearDown]
+        public void TearDown()
+        {
             // clear MAC allele mappings between tests
             appCache.Remove(CacheKey);
         }
