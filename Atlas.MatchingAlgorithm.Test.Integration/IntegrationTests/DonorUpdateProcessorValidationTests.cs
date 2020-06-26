@@ -24,7 +24,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
     /// validator logic is extensively covered by unit tests.
     /// </summary>
     [TestFixture]
-    public class DonorUpdateProcessorTests
+    public class DonorUpdateProcessorValidationTests
     {
         private readonly string invalidHlaAtRequiredLocus = null;
         
@@ -47,6 +47,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             messageProcessor = new DonorUpdateMessageProcessor(messageReceiver);
             
             var refreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
+            refreshHistoryRepository.GetActiveDatabase().Returns(dbTarget);
+            refreshHistoryRepository.GetInProgressJobs().Returns(Enumerable.Empty<DataRefreshRecord>());
+
             donorManagementService = Substitute.For<IDonorManagementService>();
             searchableDonorUpdateConverter = provider.GetService<ISearchableDonorUpdateConverter>();
             logger = Substitute.For<ILogger>();

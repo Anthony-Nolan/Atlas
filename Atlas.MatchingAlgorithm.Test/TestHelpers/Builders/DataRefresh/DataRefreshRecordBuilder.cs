@@ -9,7 +9,15 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh
     [Builder]
     internal static class DataRefreshRecordBuilder
     {
-        public static Builder<DataRefreshRecord> New => Builder<DataRefreshRecord>.New;
+        public static Builder<DataRefreshRecord> New =>
+            Builder<DataRefreshRecord>.New
+                .With(r => r.WasSuccessful, false)
+                .With(r => r.RefreshBeginUtc, DateTime.UtcNow.AddSeconds(-1));
+
+        public static Builder<DataRefreshRecord> WithDatabase(this Builder<DataRefreshRecord> builder, TransientDatabase db)
+        {
+            return builder.With(r => r.Database, db.GetStringValue());
+        }
 
         public static Builder<DataRefreshRecord> SuccessfullyCompleted(this Builder<DataRefreshRecord> builder)
         {
