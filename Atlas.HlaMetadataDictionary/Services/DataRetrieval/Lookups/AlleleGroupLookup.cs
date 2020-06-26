@@ -7,20 +7,20 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 {
     internal class AlleleGroupLookup : AlleleNamesLookupBase
     {
-        private readonly IAlleleGroupMetadataService alleleGroupMetadataService;
+        private readonly IAlleleGroupExpander alleleGroupExpander;
 
         public AlleleGroupLookup(
             IHlaMetadataRepository hlaMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
-            IAlleleGroupMetadataService alleleGroupMetadataService)
+            IAlleleGroupExpander alleleGroupExpander)
             : base(hlaMetadataRepository, alleleNamesMetadataService)
         {
-            this.alleleGroupMetadataService = alleleGroupMetadataService;
+            this.alleleGroupExpander = alleleGroupExpander;
         }
 
         protected override async Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            return await alleleGroupMetadataService.GetAllelesInGroup(locus, lookupName, hlaNomenclatureVersion);
+            return await alleleGroupExpander.ExpandAlleleGroup(locus, lookupName, hlaNomenclatureVersion);
         }
     }
 }

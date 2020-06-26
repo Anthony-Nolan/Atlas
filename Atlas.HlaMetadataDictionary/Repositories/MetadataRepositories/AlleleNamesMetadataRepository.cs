@@ -13,7 +13,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         Task<IAlleleNameMetadata> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion);
     }
 
-    internal class AlleleNamesMetadataRepository : 
+    internal class AlleleNamesMetadataRepository :
         HlaMetadataRepositoryBase,
         IAlleleNamesMetadataRepository
     {
@@ -32,15 +32,9 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         {
             var row = await GetHlaMetadataRowIfExists(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
 
-            if (row == null)
-            {
-                return null;
-            }
-
-            return new AlleleNameMetadata(
-                row.Locus,
-                row.LookupName,
-                row.GetHlaInfo<List<string>>());
+            return row == null
+                ? null
+                : new AlleleNameMetadata(row.Locus, row.LookupName, row.GetHlaInfo<List<string>>());
         }
     }
 }

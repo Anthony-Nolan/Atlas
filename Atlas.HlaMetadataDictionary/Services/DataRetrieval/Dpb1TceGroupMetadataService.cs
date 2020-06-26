@@ -13,13 +13,13 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// <summary>
     ///  Consolidates TCE group assignments for DPB1 alleles.
     /// </summary>
-    internal interface IDpb1TceGroupMetadataService : IHlaSearchingMetadataService<IDpb1TceGroupsMetadata>
+    internal interface IDpb1TceGroupMetadataService : ISearchRelatedMetadataService<IDpb1TceGroupsMetadata>
     {
         Task<string> GetDpb1TceGroup(string dpb1HlaName, string hlaNomenclatureVersion);
     }
 
     internal class Dpb1TceGroupMetadataService : 
-        HlaSearchingMetadataServiceBase<IDpb1TceGroupsMetadata>, 
+        SearchRelatedMetadataServiceBase<IDpb1TceGroupsMetadata>, 
         IDpb1TceGroupMetadataService
     {
         private const string NoTceGroupAssignment = "";
@@ -30,14 +30,14 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
             IMacDictionary macDictionary,
-            IAlleleGroupMetadataService alleleGroupMetadataService
+            IAlleleGroupExpander alleleGroupExpander
         ) : base(
             dpb1TceGroupsMetadataRepository,
             alleleNamesMetadataService,
             hlaCategorisationService,
             alleleSplitter,
             macDictionary,
-            alleleGroupMetadataService)
+            alleleGroupExpander)
         {
         }
 
