@@ -15,7 +15,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 {
     public interface ISearchRunner
     {
-        Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest);
+        Task<SearchResultSet> RunSearch(IdentifiedSearchRequest identifiedSearchRequest);
     }
 
     public class SearchRunner : ISearchRunner
@@ -43,11 +43,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
         }
 
-        public async Task RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
+        public async Task<SearchResultSet> RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
         {
             var searchRequestId = identifiedSearchRequest.Id;
             searchRequestContext.SearchRequestId = searchRequestId;
-            var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
 
             try
@@ -56,12 +56,13 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 stopwatch.Start();
                 var results = (await searchService.Search(identifiedSearchRequest.SearchRequest)).ToList();
                 stopwatch.Stop();
-
-                await resultsBlobStorageClient.UploadResults(searchRequestId, new SearchResultSet
+                var searchResultSet = new SearchResultSet
                 {
                     SearchResults = results,
                     TotalResults = results.Count
-                });
+                };
+
+                await resultsBlobStorageClient.UploadResults(searchRequestId, searchResultSet);
                 var notification = new SearchResultsNotification
                 {
                     SearchRequestId = searchRequestId,
@@ -73,6 +74,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     SearchTimeInMilliseconds = stopwatch.ElapsedMilliseconds
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
+                return searchResultSet;
             }
             catch (Exception e)
             {
@@ -85,6 +87,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     HlaNomenclatureVersion = hlaNomenclatureVersion
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
+                throw;
             }
         }
     }
