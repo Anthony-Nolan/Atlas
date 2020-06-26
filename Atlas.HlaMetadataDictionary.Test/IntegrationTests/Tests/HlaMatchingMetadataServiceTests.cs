@@ -42,9 +42,34 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         {
             macDictionary.GetHlaFromMac(Arg.Any<string>())
                 .Returns(new List<string>());
+        }
 
+        [TearDown]
+        public void TearDown()
+        {
             // clear MAC allele mappings between tests
             appCache.Remove(CacheKey);
+        }
+
+        [Test]
+        public async Task GetHlaMetadata_WhenPGroup_MatchingHlaOnlyContainsSamePGroup()
+        {
+            const string pGroup = "01:01P";
+
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, pGroup, null);
+
+            result.MatchingPGroups.Should().BeEquivalentTo(pGroup);
+        }
+
+        [Test]
+        public async Task GetHlaMetadata_WhenGGroup_MatchingHlaOnlyContainsExpectedPGroup()
+        {
+            const string gGroup = "01:01:01G";
+            const string expectedPGroup = "01:01P";
+
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, gGroup, null);
+
+            result.MatchingPGroups.Should().BeEquivalentTo(expectedPGroup);
         }
 
         [Test]
@@ -63,7 +88,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 
             var result = await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, null);
 
-            result.MatchingPGroups.Should().BeEquivalentTo(new[] { firstAllele, secondAllele });
+            result.MatchingPGroups.Should().BeEquivalentTo(firstAllele, secondAllele);
         }
 
         [Test]
@@ -76,7 +101,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 
             var result = await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null);
 
-            result.MatchingPGroups.Should().BeEquivalentTo(new[] { firstAllele, secondAllele });
+            result.MatchingPGroups.Should().BeEquivalentTo(firstAllele, secondAllele);
         }
 
         [Test]
@@ -89,7 +114,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 
             var result = await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null);
 
-            result.MatchingPGroups.Should().BeEquivalentTo(new[] { firstAllele, secondAllele });
+            result.MatchingPGroups.Should().BeEquivalentTo(firstAllele, secondAllele);
         }
     }
 }

@@ -233,6 +233,10 @@ The results will be ordered by a number of factors, including:
 N.B. The search team may want to account for other factors when viewing results, such as donor age/ethnicity.
 This is currently not planned to occur in this service, but could be added in future.
 
+#### Additional
+
+Scoring of P- and G-group typings has been implemented, but not yet been scientifically validated (TODO: ATLAS-454).
+
 ## Testing
 
 The matching component has three levels of testing: Unit, Integration, Validation
