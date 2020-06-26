@@ -231,7 +231,7 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
 
             for (var i = 0; i < numberOfAllelesPerLocus; i++)
             {
-                alleles.Add(Hla1);
+                alleles.Add($"Hla${i}");
             }
 
             var allelesPerLocus = new PhenotypeInfo<IReadOnlyCollection<string>>

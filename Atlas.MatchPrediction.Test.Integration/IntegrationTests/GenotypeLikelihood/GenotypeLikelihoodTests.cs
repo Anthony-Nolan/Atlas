@@ -187,36 +187,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
 
-        [TestCase("ExtraField", Locus.A)]
-        [TestCase("ExtraField:ExtraField", Locus.A)]
-        [TestCase("ExtraField", Locus.B)]
-        [TestCase("ExtraField:ExtraField", Locus.B)]
-        [TestCase("ExtraField", Locus.C)]
-        [TestCase("ExtraField:ExtraField", Locus.C)]
-        [TestCase("ExtraField", Locus.Dqb1)]
-        [TestCase("ExtraField:ExtraField", Locus.Dqb1)]
-        [TestCase("ExtraField", Locus.Drb1)]
-        [TestCase("ExtraField:ExtraField", Locus.Drb1)]
-        public async Task CalculateLikelihood_WhenGenotypeHasThreeOrFourFieldAllele_ReturnsExpectedLikelihood(string fieldsToAdd, Locus locus)
-        {
-            var genotype = PhenotypeInfoBuilder.New
-                .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})
-                .With(d => d.B, new LocusInfo<string> {Position1 = B1, Position2 = B2})
-                .With(d => d.C, new LocusInfo<string> {Position1 = C1, Position2 = C2})
-                .With(d => d.Dqb1, new LocusInfo<string> {Position1 = Dqb11, Position2 = Dqb12})
-                .With(d => d.Drb1, new LocusInfo<string> {Position1 = Drb11, Position2 = Drb12})
-                .Build();
-
-            genotype.SetPosition(locus, LocusPosition.One, $"{genotype.GetPosition(locus, LocusPosition.One)}:{fieldsToAdd}");
-            genotype.SetPosition(locus, LocusPosition.Two, $"{genotype.GetPosition(locus, LocusPosition.Two)}:{fieldsToAdd}");
-
-            const decimal expectedLikelihood = 3.28716m;
-
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype);
-
-            likelihoodResponse.Should().Be(expectedLikelihood);
-        }
-
         [Test]
         public async Task CalculateLikelihood_WhenOnlySomeHaplotypesAreRepresentedInDatabase_ReturnsExpectedLikelihood()
         {
