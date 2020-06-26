@@ -2,7 +2,6 @@
 {
     public enum LogLevel
     {
-        Trace = 0,
         Verbose = 1,
         Info = 2,
         Warn = 3,
@@ -10,14 +9,12 @@
         Critical = 5
     }
 
-    public static class LogLevelExtensions
+    internal static class LogLevelExtensions
     {
         public static LogLevel ToLogLevel(this string name)
         {
             switch (name.ToUpperInvariant())
             {
-                case "TRACE":
-                    return LogLevel.Trace;
                 case "VERBOSE":
                     return LogLevel.Verbose;
                 case "INFO":

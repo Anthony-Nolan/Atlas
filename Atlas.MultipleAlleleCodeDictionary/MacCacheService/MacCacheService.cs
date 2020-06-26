@@ -34,7 +34,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.MacCacheService
         public async Task<IEnumerable<string>> GetHlaFromMac(string macCode, string firstField)
         {
             var mac = await GetMacCode(macCode);
-            logger.SendTrace($"Attempting to expand Hla for Mac: {mac.Code}", LogLevel.Trace);
+            logger.SendTrace($"Attempting to expand Hla for Mac: {mac.Code}", LogLevel.Verbose);
             return macExpander.ExpandMac(mac, firstField);
         }
 
