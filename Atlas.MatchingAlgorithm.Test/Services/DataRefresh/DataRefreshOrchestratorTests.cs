@@ -30,7 +30,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IDataRefreshRunner dataRefreshRunner;
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
 
-        private IAzureFunctionManager azureFunctionManager;
         private IAzureDatabaseManager azureDatabaseManager;
         private IDataRefreshNotificationSender dataRefreshNotificationSender;
 
@@ -48,7 +47,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             dataRefreshRunner = Substitute.For<IDataRefreshRunner>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
-            azureFunctionManager = Substitute.For<IAzureFunctionManager>();
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
             dataRefreshNotificationSender = Substitute.For<IDataRefreshNotificationSender>();
 
@@ -72,7 +70,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 activeDatabaseProvider,
                 dataRefreshRunner,
                 dataRefreshHistoryRepository,
-                azureFunctionManager,
                 azureDatabaseManager,
                 new AzureDatabaseNameProvider(settings),
                 dataRefreshNotificationSender
@@ -243,34 +240,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task RefreshData_StopsDonorImportFunction()
-        {
-            var settings = DataRefreshSettingsBuilder.New
-                .With(s => s.DonorFunctionsAppName, "functions-app")
-                .With(s => s.DonorImportFunctionName, "import-func")
-                .Build();
-            dataRefreshOrchestrator = BuildDataRefreshOrchestrator(settings);
-
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await azureFunctionManager.Received().StopFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName);
-        }
-
-        [Test]
-        public async Task RefreshData_RestartsDonorImportFunction()
-        {
-            var settings = DataRefreshSettingsBuilder.New
-                .With(s => s.DonorFunctionsAppName, "functions-app")
-                .With(s => s.DonorImportFunctionName, "import-func")
-                .Build();
-            dataRefreshOrchestrator = BuildDataRefreshOrchestrator(settings);
-
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await azureFunctionManager.Received().StartFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName);
-        }
-
-        [Test]
         public async Task RefreshData_ScalesActiveDatabaseToDormantSize()
         {
             var settings = DataRefreshSettingsBuilder.New
@@ -320,21 +289,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
             await azureDatabaseManager.DidNotReceive().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
-        }
-
-        [Test]
-        public async Task RefreshData_WhenRefreshFails_RestartsDonorImportFunction()
-        {
-            var settings = DataRefreshSettingsBuilder.New
-                .With(s => s.DonorFunctionsAppName, "functions-app")
-                .With(s => s.DonorImportFunctionName, "import-func")
-                .Build();
-            dataRefreshOrchestrator = BuildDataRefreshOrchestrator(settings);
-            dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception());
-
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await azureFunctionManager.Received().StartFunction(settings.DonorFunctionsAppName, settings.DonorImportFunctionName);
         }
 
         [Test]
