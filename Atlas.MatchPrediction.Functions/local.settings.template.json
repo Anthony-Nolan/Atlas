@@ -12,7 +12,6 @@
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications",
-    "Wmda:WmdaFileUri": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/"
   },
   "ConnectionStrings": {
     "MatchPredictionSql": "Data Source=(local);Initial Catalog=AtlasMatchPrediction;Integrated Security=True;MultipleActiveResultSets=True;"
