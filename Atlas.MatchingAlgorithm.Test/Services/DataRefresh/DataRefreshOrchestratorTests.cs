@@ -14,6 +14,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
+using FluentAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -363,19 +364,37 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public void ContinueDataRefresh_WhenNoJobsInProgress_ThrowsException()
+        public async Task ContinueDataRefresh_WhenNoJobsInProgress_ThrowsException()
         {
             dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord>());
 
-            Assert.ThrowsAsync<AtlasHttpException>(async () => await dataRefreshOrchestrator.ContinueDataRefresh());
+            await dataRefreshOrchestrator.Invoking(r => r.ContinueDataRefresh()).Should().ThrowAsync<AtlasHttpException>();
         }
 
         [Test]
-        public void ContinueDataRefresh_WithMultipleJobsInProgress_ThrowsException()
+        public async Task ContinueDataRefresh_WhenOneJobStarted_DoesNotThrow()
+        {
+            var record = DataRefreshRecordBuilder.New.Build();
+            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new[]{ record });
+
+            await dataRefreshOrchestrator.Invoking(r => r.ContinueDataRefresh()).Should().NotThrowAsync();
+        }
+
+        [Test]
+        public async Task ContinueDataRefresh_WhenOneJobPreviouslyContinuedButIncomplete_DoesNotThrow()
+        {
+            var record = DataRefreshRecordBuilder.New.With(r => r.RefreshContinueUtc, DateTime.UtcNow).Build();
+            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new[] { record });
+
+            await dataRefreshOrchestrator.Invoking(r => r.ContinueDataRefresh()).Should().NotThrowAsync();
+        }
+
+        [Test]
+        public async Task ContinueDataRefresh_WithMultipleJobsInProgress_ThrowsException()
         {
             dataRefreshHistoryRepository.GetInProgressJobs().Returns(DataRefreshRecordBuilder.New.Build(2));
 
-            Assert.ThrowsAsync<AtlasHttpException>(async () => await dataRefreshOrchestrator.ContinueDataRefresh());
+            await dataRefreshOrchestrator.Invoking(r => r.ContinueDataRefresh()).Should().ThrowAsync<AtlasHttpException>();
         }
 
         [Test]
