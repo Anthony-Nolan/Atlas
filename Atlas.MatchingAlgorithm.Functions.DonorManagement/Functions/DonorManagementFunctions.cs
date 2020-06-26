@@ -7,6 +7,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus.Exceptions;
 using Atlas.Common.Utils;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Microsoft.Azure.WebJobs;
@@ -27,14 +28,28 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(ManageDonorByAvailability))]
-        public async Task ManageDonorByAvailability(
+        [FunctionName(nameof(ProcessDifferentialDonorUpdatesForMatchingDbA))]
+        public async Task ProcessDifferentialDonorUpdatesForMatchingDbA(
             [TimerTrigger("%MessagingServiceBus:DonorManagement:CronSchedule%")]
             TimerInfo myTimer)
         {
+            await ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase.DatabaseB);
+        }
+
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
+        [FunctionName(nameof(ProcessDifferentialDonorUpdatesForMatchingDbB))]
+        public async Task ProcessDifferentialDonorUpdatesForMatchingDbB(
+            [TimerTrigger("%MessagingServiceBus:DonorManagement:CronSchedule%")]
+            TimerInfo myTimer)
+        {
+            await ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase.DatabaseA);
+        }
+
+        private async Task ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase targetDatabase)
+        {
             try
             {
-                await donorUpdateProcessor.ProcessDonorUpdates();
+                await donorUpdateProcessor.ProcessDifferentialDonorUpdates(targetDatabase);
             }
             catch (MessageBatchException<SearchableDonorUpdate> ex)
             {
