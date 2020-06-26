@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Client.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
-using MoreLinq;
+using Atlas.MatchPrediction.Services.GenotypeLikelihood;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
@@ -15,16 +17,16 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     public class MatchProbabilityService : IMatchProbabilityService
     {
         private readonly ICompressedPhenotypeExpander compressedPhenotypeExpander;
-        private readonly IGenotypeLikelihoods genotypeLikelihoods;
+        private readonly IGenotypeLikelihoodService genotypeLikelihoodService;
         private readonly IGenotypeMatcher genotypeMatcher;
 
         public MatchProbabilityService(
             ICompressedPhenotypeExpander compressedPhenotypeExpander,
-            IGenotypeLikelihoods genotypeLikelihoods,
+            IGenotypeLikelihoodService genotypeLikelihoodService,
             IGenotypeMatcher genotypeMatcher)
         {
             this.compressedPhenotypeExpander = compressedPhenotypeExpander;
-            this.genotypeLikelihoods = genotypeLikelihoods;
+            this.genotypeLikelihoodService = genotypeLikelihoodService;
             this.genotypeMatcher = genotypeMatcher;
         }
 
@@ -35,12 +37,20 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var donorGenotypes =
                 await compressedPhenotypeExpander.ExpandCompressedPhenotype(matchProbabilityInput.DonorHla, matchProbabilityInput.HlaNomenclatureVersion);
 
-            var likelihoods = await genotypeLikelihoods.CalculateLikelihoods(patientGenotypes, donorGenotypes);
+            var genotypes = patientGenotypes.Union(donorGenotypes);
+            var genotypesLikelihoods = await Task.WhenAll(genotypes.Select(CalculateLikelihood));
+            genotypesLikelihoods.ToDictionary();
 
             var matchingPairs = 
                 await genotypeMatcher.PairsWithTenOutOfTenMatch(patientGenotypes, donorGenotypes, matchProbabilityInput.HlaNomenclatureVersion);
 
             return new MatchProbabilityResponse();
+        }
+
+        private async Task<KeyValuePair<PhenotypeInfo<string>, decimal>> CalculateLikelihood(PhenotypeInfo<string> genotype)
+        {
+            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotype);
+            return new KeyValuePair<PhenotypeInfo<string>, decimal>(genotype, likelihood);
         }
     }
 }
