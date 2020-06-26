@@ -27,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Services.AzureManagement
         {
             if (IsLocal(functionsAppName))
             {
-                logger.SendTrace("Running locally - will not update functions app", LogLevel.Trace);
+                logger.SendTrace("Running locally - will not update functions app", LogLevel.Verbose);
                 // If running locally, we don't want to make changes to Azure infrastructure
                 return;
             }

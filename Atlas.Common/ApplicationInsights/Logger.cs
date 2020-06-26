@@ -43,7 +43,6 @@ namespace Atlas.Common.ApplicationInsights
         {
             switch (logLevel)
             {
-                case LogLevel.Trace:
                 case LogLevel.Verbose:
                     return SeverityLevel.Verbose;
                 case LogLevel.Info:

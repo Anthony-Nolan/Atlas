@@ -44,7 +44,7 @@ namespace Atlas.MatchingAlgorithm.Services.AzureManagement
         {
             if (isLocal)
             {
-                logger.SendTrace("Running locally - will not update database", LogLevel.Trace);
+                logger.SendTrace("Running locally - will not update database", LogLevel.Verbose);
                 // If running locally, we don't want to make changes to Azure infrastructure
                 return;
             }
