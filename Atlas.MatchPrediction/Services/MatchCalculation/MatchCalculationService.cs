@@ -20,7 +20,7 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
             string hlaNomenclatureVersion);
     }
 
-    public class MatchCalculationService : IMatchCalculationService
+    internal class MatchCalculationService : IMatchCalculationService
     {
         private readonly ILocusHlaConverter locusHlaConverter;
         private readonly ILocusMatchCalculator locusMatchCalculator;

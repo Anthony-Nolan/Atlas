@@ -8,7 +8,7 @@ using Atlas.MatchPrediction.Config;
 
 namespace Atlas.MatchPrediction.Services
 {
-    public interface ILocusHlaConverter
+    internal interface ILocusHlaConverter
     {
         /// <summary>
         /// HLA type at each locus within the provided phenotype will be converted to the target HLA category.
@@ -19,7 +19,7 @@ namespace Atlas.MatchPrediction.Services
             string hlaNomenclatureVersion);
     }
 
-    public class LocusHlaConverter : ILocusHlaConverter
+    internal class LocusHlaConverter : ILocusHlaConverter
     {
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
 

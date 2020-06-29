@@ -16,7 +16,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         public Task<long> CalculateNumberOfPermutations(PhenotypeInfo<string> phenotype, string hlaNomenclatureVersion);
     }
 
-    public class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
+    internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     {
         private const TargetHlaCategory FrequencyResolution = TargetHlaCategory.GGroup;
 

@@ -24,7 +24,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\Atlas.MatchPrediction.Client.Models\Atlas.MatchPrediction.Client.Models.csproj" />
     <ProjectReference Include="..\Atlas.MatchPrediction\Atlas.MatchPrediction.csproj" />
     <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
   </ItemGroup>

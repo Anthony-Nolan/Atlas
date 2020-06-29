@@ -8,12 +8,12 @@ using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
-    public interface IUnambiguousGenotypeExpander
+    internal interface IUnambiguousGenotypeExpander
     {
         public ExpandedGenotype ExpandGenotype(PhenotypeInfo<string> genotype);
     }
 
-    public class UnambiguousGenotypeExpander : IUnambiguousGenotypeExpander
+    internal class UnambiguousGenotypeExpander : IUnambiguousGenotypeExpander
     {
         public ExpandedGenotype ExpandGenotype(PhenotypeInfo<string> genotype)
         {

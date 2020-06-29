@@ -2,8 +2,8 @@ using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.Search;
-using Atlas.MatchPrediction.Client.Models.MatchProbability;
-using Atlas.MatchPrediction.Services.MatchProbability;
+using Atlas.MatchPrediction.ExternalInterface;
+using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 
@@ -12,12 +12,12 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
     public class SearchActivityFunctions
     {
         private readonly ISearchRunner searchRunner;
-        private readonly IMatchProbabilityService matchProbabilityService;
+        private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
 
-        public SearchActivityFunctions(ISearchRunner searchRunner, IMatchProbabilityService matchProbabilityService)
+        public SearchActivityFunctions(ISearchRunner searchRunner, IMatchPredictionAlgorithm matchPredictionAlgorithm)
         {
             this.searchRunner = searchRunner;
-            this.matchProbabilityService = matchProbabilityService;
+            this.matchPredictionAlgorithm = matchPredictionAlgorithm;
         }
         
         [FunctionName(nameof(RunMatchingAlgorithm))]
@@ -29,7 +29,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         [FunctionName(nameof(RunMatchPrediction))]
         public async Task<MatchProbabilityResponse> RunMatchPrediction([ActivityTrigger] MatchProbabilityInput matchProbabilityInput)
         {
-            return await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            return await matchPredictionAlgorithm.RunMatchPredictionAlgorithm(matchProbabilityInput);
         }
     }
 }
