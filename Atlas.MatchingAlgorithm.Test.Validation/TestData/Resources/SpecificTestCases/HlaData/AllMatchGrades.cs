@@ -5,7 +5,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.SpecificTestCases.HlaData
 {
     /// <summary>
-    /// No DQB data was found that has botha p-group and protein level match possible.
+    /// No DQB data was found that has both a p-group and protein level match possible.
     /// We have not ruled out the possibility of such test data - but an 8/8 search is enough to run the ranking tests, so it is not necessary
     /// </summary>
     public class AllMatchGrades
