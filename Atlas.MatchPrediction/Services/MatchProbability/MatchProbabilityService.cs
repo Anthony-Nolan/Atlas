@@ -19,18 +19,18 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         private readonly ICompressedPhenotypeExpander compressedPhenotypeExpander;
         private readonly IGenotypeLikelihoodService genotypeLikelihoodService;
         private readonly IGenotypeMatcher genotypeMatcher;
-        private readonly IProbabilityCalculator probabilityCalculator;
+        private readonly IMatchProbabilityCalculator matchProbabilityCalculator;
 
         public MatchProbabilityService(
             ICompressedPhenotypeExpander compressedPhenotypeExpander,
             IGenotypeLikelihoodService genotypeLikelihoodService,
             IGenotypeMatcher genotypeMatcher,
-            IProbabilityCalculator probabilityCalculator)
+            IMatchProbabilityCalculator matchProbabilityCalculator)
         {
             this.compressedPhenotypeExpander = compressedPhenotypeExpander;
             this.genotypeLikelihoodService = genotypeLikelihoodService;
             this.genotypeMatcher = genotypeMatcher;
-            this.probabilityCalculator = probabilityCalculator;
+            this.matchProbabilityCalculator = matchProbabilityCalculator;
         }
 
         public async Task<MatchProbabilityResponse> CalculateMatchProbability(MatchProbabilityInput matchProbabilityInput)
@@ -63,7 +63,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var genotypes = patientGenotypes.Union(donorGenotypes);
             var genotypesLikelihoods = (await Task.WhenAll(genotypes.Select(CalculateLikelihood))).ToDictionary();
 
-            var probability = probabilityCalculator.CalculateMatchProbability(patientGenotypes, donorGenotypes, matchingPairs, genotypesLikelihoods);
+            var probability = matchProbabilityCalculator.CalculateMatchProbability(patientGenotypes, donorGenotypes, matchingPairs, genotypesLikelihoods);
 
             return new MatchProbabilityResponse{ZeroMismatchProbability = probability};
         }
