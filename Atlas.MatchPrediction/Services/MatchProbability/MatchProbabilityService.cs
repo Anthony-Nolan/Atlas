@@ -3,9 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
-using Atlas.MatchPrediction.Client.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
+using MatchProbabilityInput = Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability.MatchProbabilityInput;
+using MatchProbabilityResponse = Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability.MatchProbabilityResponse;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
@@ -14,7 +15,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         public Task<MatchProbabilityResponse> CalculateMatchProbability(MatchProbabilityInput matchProbabilityInput);
     }
 
-    public class MatchProbabilityService : IMatchProbabilityService
+    internal class MatchProbabilityService : IMatchProbabilityService
     {
         private readonly ICompressedPhenotypeExpander compressedPhenotypeExpander;
         private readonly IGenotypeLikelihoodService genotypeLikelihoodService;

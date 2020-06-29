@@ -1,8 +1,8 @@
 ﻿using Atlas.Common.GeneticData.PhenotypeInfo;
 
-namespace Atlas.MatchPrediction.Client.Models.MatchCalculation
+namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 {
-    public class MatchCalculationInput
+    public class MatchProbabilityInput
     {
         public PhenotypeInfo<string> DonorHla { get; set; }
         public PhenotypeInfo<string> PatientHla { get; set; }

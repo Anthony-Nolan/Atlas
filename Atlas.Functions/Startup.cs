@@ -30,7 +30,7 @@ namespace Atlas.Functions
                 _ => new AzureAppServiceManagementSettings(),
                 _ => new AzureDatabaseManagementSettings(),
                 OptionsReaderFor<AzureStorageSettings>(),
-                _ => new DataRefreshSettings(), 
+                _ => new DataRefreshSettings(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
@@ -48,7 +48,7 @@ namespace Atlas.Functions
 
             builder.Services.RegisterMatchPredictionServices(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<Atlas.MatchPrediction.Settings.Azure.AzureStorageSettings>(),
+                OptionsReaderFor<Atlas.MatchPrediction.ExternalInterface.Settings.Azure.AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
@@ -71,7 +71,7 @@ namespace Atlas.Functions
             services.RegisterAsOptions<MessagingServiceBusSettings>("Matching:MessagingServiceBus");
 
             // Match Prediction Algorithm
-            services.RegisterAsOptions<Atlas.MatchPrediction.Settings.Azure.AzureStorageSettings>("MatchPrediction:AzureStorage");
+            services.RegisterAsOptions<Atlas.MatchPrediction.ExternalInterface.Settings.Azure.AzureStorageSettings>("MatchPrediction:AzureStorage");
         }
     }
 }

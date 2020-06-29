@@ -6,18 +6,18 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.ExternalInterface.Settings.Azure;
 using Atlas.MatchPrediction.Services;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
-using Atlas.MatchPrediction.Settings.Azure;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
-namespace Atlas.MatchPrediction.DependencyInjection
+namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 {
     public static class ServiceConfiguration
     {
@@ -73,6 +73,8 @@ namespace Atlas.MatchPrediction.DependencyInjection
 
         private static void RegisterServices(this IServiceCollection services)
         {
+            services.AddScoped<IMatchPredictionAlgorithm, MatchPredictionAlgorithm>();
+            
             services.AddScoped<IFrequencySetMetadataExtractor, FrequencySetMetadataExtractor>();
             services.AddScoped<IFrequencySetImporter, FrequencySetImporter>();
             services.AddScoped<IFrequencyCsvReader, FrequencyCsvReader>();
