@@ -13,7 +13,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         public Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype);
     }
 
-    public class GenotypeLikelihoodService : IGenotypeLikelihoodService
+    internal class GenotypeLikelihoodService : IGenotypeLikelihoodService
     {
         private readonly IHaplotypeFrequencySetRepository setRepository;
         private readonly IHaplotypeFrequenciesRepository frequencyRepository;

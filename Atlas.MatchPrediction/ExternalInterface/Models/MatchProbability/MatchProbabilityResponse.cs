@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchPrediction.Client.Models.MatchProbability
+﻿namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 {
     public class MatchProbabilityResponse
     {

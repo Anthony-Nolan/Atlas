@@ -5,7 +5,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
-    public interface IMatchProbabilityCalculator
+    internal interface IMatchProbabilityCalculator
     {
         decimal CalculateMatchProbability(
             ISet<PhenotypeInfo<string>> patientGenotypes,
@@ -14,7 +14,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             Dictionary<PhenotypeInfo<string>, decimal> genotypesLikelihoods);
     }
 
-    public class MatchProbabilityCalculator : IMatchProbabilityCalculator
+    internal class MatchProbabilityCalculator : IMatchProbabilityCalculator
     {
         public decimal CalculateMatchProbability(
             ISet<PhenotypeInfo<string>> patientGenotypes,

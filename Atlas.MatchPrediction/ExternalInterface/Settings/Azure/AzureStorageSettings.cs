@@ -1,4 +1,4 @@
-namespace Atlas.MatchPrediction.Settings.Azure
+namespace Atlas.MatchPrediction.ExternalInterface.Settings.Azure
 {
     public class AzureStorageSettings
     {

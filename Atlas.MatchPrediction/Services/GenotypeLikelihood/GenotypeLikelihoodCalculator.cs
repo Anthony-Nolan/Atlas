@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
-    public interface IGenotypeLikelihoodCalculator
+    internal interface IGenotypeLikelihoodCalculator
     {
         /// <summary>
         /// Calculate genotype likelihood using the haplotype frequencies contained within a list of diplotypes.
@@ -12,7 +12,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         public decimal CalculateLikelihood(ExpandedGenotype expandedGenotype);
     }
 
-    public class GenotypeLikelihoodCalculator : IGenotypeLikelihoodCalculator
+    internal class GenotypeLikelihoodCalculator : IGenotypeLikelihoodCalculator
     {
         public decimal CalculateLikelihood(ExpandedGenotype expandedGenotype)
         {

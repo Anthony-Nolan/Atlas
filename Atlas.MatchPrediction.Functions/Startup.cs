@@ -1,8 +1,8 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
-using Atlas.MatchPrediction.DependencyInjection;
-using Atlas.MatchPrediction.Settings.Azure;
+using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
+using Atlas.MatchPrediction.ExternalInterface.Settings.Azure;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
