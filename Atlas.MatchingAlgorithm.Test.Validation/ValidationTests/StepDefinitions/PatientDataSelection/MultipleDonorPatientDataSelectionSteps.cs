@@ -35,6 +35,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                 HlaTypingResolution.NmdpCode,
                 HlaTypingResolution.XxCode,
                 HlaTypingResolution.Serology,
+                HlaTypingResolution.PGroup,
+                HlaTypingResolution.GGroup,
                 HlaTypingResolution.Arbitrary,
                 HlaTypingResolution.AlleleStringOfNames,
             };

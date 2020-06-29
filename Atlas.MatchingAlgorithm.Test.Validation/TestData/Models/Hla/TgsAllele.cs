@@ -27,9 +27,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
         ///     Should contain Serology and NMDP code if these resolutions are to be used
         /// </param>
         /// <param name="alleleStringOptions">Alleles to use in the various generated allele strings</param>
-        public static TgsAllele FromTestDataAllele(
-            AlleleTestData allele, 
-            AlleleStringOptions alleleStringOptions)
+        public static TgsAllele FromTestDataAllele(AlleleTestData allele, AlleleStringOptions alleleStringOptions)
         {
             TgsAllele tgsAllele;
 
@@ -63,10 +61,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
             return FromTestDataAllele(allele, new AlleleStringOptions());
         }
 
-        private static TgsAllele FromFourFieldAllele(
-            AlleleTestData fourFieldAllele,
-            IEnumerable<AlleleTestData> otherAllelesInSubtypeString
-        )
+        private static TgsAllele FromFourFieldAllele(AlleleTestData fourFieldAllele, IEnumerable<AlleleTestData> otherAllelesInSubtypeString)
         {
             var threeFieldAllele = new AlleleTestData
             {
@@ -81,10 +76,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
             return tgsAllele;
         }
 
-        private static TgsAllele FromThreeFieldAllele(
-            AlleleTestData threeFieldAllele,
-            IEnumerable<AlleleTestData> otherAllelesInSubtypeString
-        )
+        private static TgsAllele FromThreeFieldAllele(AlleleTestData threeFieldAllele, IEnumerable<AlleleTestData> otherAllelesInSubtypeString)
         {
             var twoFieldAllele = new AlleleTestData
             {
@@ -99,16 +91,15 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
             return tgsAllele;
         }
 
-        private static TgsAllele FromTwoFieldAllele(
-            AlleleTestData twoFieldAllele,
-            IEnumerable<AlleleTestData> otherAllelesInSubtypeString
-        )
+        private static TgsAllele FromTwoFieldAllele(AlleleTestData twoFieldAllele, IEnumerable<AlleleTestData> otherAllelesInSubtypeString)
         {
             return new TgsAllele
             {
                 TwoFieldAllele = twoFieldAllele.AlleleName,
                 NmdpCode = twoFieldAllele.NmdpCode,
                 Serology = twoFieldAllele.Serology,
+                PGroup = twoFieldAllele.PGroup,
+                GGroup = twoFieldAllele.GGroup,
                 XxCode = $"{AlleleSplitter.FirstField(twoFieldAllele.AlleleName)}:XX",
                 AlleleStringOfSubtypes = GenerateAlleleStringOfSubtypes(twoFieldAllele, otherAllelesInSubtypeString),
             };
@@ -127,7 +118,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
             {
                 return null;
             }
-            
+
             if (!otherAllelesInAlleleString.All(a => AlleleSplitter.FirstField(a.AlleleName) == AlleleSplitter.FirstField(twoFieldAllele.AlleleName)))
             {
                 throw new InvalidTestDataException("Cannot create allele string of subtypes from alleles that do not share a first field");
@@ -145,12 +136,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
         private string FourFieldAllele { get; set; }
         private string ThreeFieldAllele { get; set; }
         private string TwoFieldAllele { get; set; }
-
         private string NmdpCode { get; set; }
         private string XxCode { get; set; }
-
         private string Serology { get; set; }
-
+        private string PGroup { get; set; }
+        private string GGroup { get; set; }
         private string AlleleStringOfNames { get; set; }
         private string AlleleStringOfNamesWithSinglePGroup { get; set; }
         private string AlleleStringOfNamesWithMultiplePGroups { get; set; }
@@ -158,53 +148,51 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
 
         public string GetHlaForResolution(HlaTypingResolution typingResolution)
         {
-            switch (typingResolution)
+            return typingResolution switch
             {
-                case HlaTypingResolution.Tgs:
-                    return TgsTypedAllele;
-                case HlaTypingResolution.ThreeFieldTruncatedAllele:
-                    // If the TGS allele is three field, the 'truncated three field' version cannot exist
-                    return FourFieldAllele != null ? ThreeFieldAllele : null;
-                case HlaTypingResolution.TwoFieldTruncatedAllele:
-                    // If the TGS allele is two field, the 'truncated two field' version cannot exist
-                    return ThreeFieldAllele != null ? TwoFieldAllele : null;
-                case HlaTypingResolution.XxCode:
-                    return XxCode;
-                case HlaTypingResolution.NmdpCode:
-                    return NmdpCode;
-                case HlaTypingResolution.Serology:
-                    return Serology;
-                case HlaTypingResolution.Untyped:
-                    return null;
-                case HlaTypingResolution.Arbitrary:
-                    // TODO: NOVA-1665: Weight this such that NMDP codes / XX codes are less frequent, to reduce time spent running hla update
-                    var options = new List<string>
-                    {
-                        FourFieldAllele,
-                        ThreeFieldAllele,
-                        TwoFieldAllele,
-                        Serology,
-                        NmdpCode,
-                        XxCode,
-                        AlleleStringOfNames,
-                        AlleleStringOfSubtypes
-                    }.Where(x => x != null).ToList();
+                // If the TGS allele is three field, the 'truncated three field' version cannot exist
+                HlaTypingResolution.ThreeFieldTruncatedAllele => FourFieldAllele != null ? ThreeFieldAllele : null,
 
-                    return options.GetRandomElement();
-                case HlaTypingResolution.AlleleStringOfNames:
-                    return AlleleStringOfNames;
-                case HlaTypingResolution.AlleleStringOfSubtypes:
-                    return AlleleStringOfSubtypes;
-                case HlaTypingResolution.Unambiguous:
-                    // only name guaranteed to be unambiguous
-                    return FourFieldAllele;
-                case HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup:
-                    return AlleleStringOfNamesWithSinglePGroup;
-                case HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups:
-                    return AlleleStringOfNamesWithMultiplePGroups;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(typingResolution), typingResolution, null);
-            }
+                // If the TGS allele is two field, the 'truncated two field' version cannot exist
+                HlaTypingResolution.TwoFieldTruncatedAllele => ThreeFieldAllele != null ? TwoFieldAllele : null,
+
+                // Only name guaranteed to be unambiguous
+                HlaTypingResolution.Unambiguous => FourFieldAllele,
+
+                HlaTypingResolution.Tgs => TgsTypedAllele,
+                HlaTypingResolution.XxCode => XxCode,
+                HlaTypingResolution.NmdpCode => NmdpCode,
+                HlaTypingResolution.Serology => Serology,
+                HlaTypingResolution.PGroup => PGroup,
+                HlaTypingResolution.GGroup => GGroup,
+                HlaTypingResolution.Untyped => null,
+                HlaTypingResolution.AlleleStringOfNames => AlleleStringOfNames,
+                HlaTypingResolution.AlleleStringOfSubtypes => AlleleStringOfSubtypes,
+                HlaTypingResolution.AlleleStringOfNamesWithSinglePGroup => AlleleStringOfNamesWithSinglePGroup,
+                HlaTypingResolution.AlleleStringOfNamesWithMultiplePGroups => AlleleStringOfNamesWithMultiplePGroups,
+                HlaTypingResolution.Arbitrary => RandomTypingResolution(),
+                _ => throw new ArgumentOutOfRangeException(nameof(typingResolution), typingResolution, null)
+            };
+        }
+
+        private string RandomTypingResolution()
+        {
+            // TODO: NOVA-1665: Weight this such that NMDP codes / XX codes are less frequent, to reduce time spent running hla update
+            var options = new List<string>
+            {
+                FourFieldAllele,
+                ThreeFieldAllele,
+                TwoFieldAllele,
+                Serology,
+                NmdpCode,
+                XxCode,
+                AlleleStringOfNames,
+                AlleleStringOfSubtypes,
+                PGroup,
+                GGroup
+            }.Where(x => x != null).ToList();
+
+            return options.GetRandomElement();
         }
     }
 }

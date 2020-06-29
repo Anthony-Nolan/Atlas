@@ -317,6 +317,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                 case "serology":
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.Serology);
                     break;
+                case "P-group":
+                    factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.PGroup);
+                    break;
+                case "G-group":
+                    factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.GGroup);
+                    break;
                 case "allele string":
                 case "allele string (of names)":
                     factory.UpdateMatchingDonorTypingResolutionsAtAllLoci(HlaTypingResolution.AlleleStringOfNames);

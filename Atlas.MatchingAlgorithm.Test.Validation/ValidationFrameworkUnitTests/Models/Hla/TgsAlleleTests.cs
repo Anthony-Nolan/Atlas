@@ -173,6 +173,36 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.M
         }
 
         [Test]
+        public void FromTestDataAllele_WithProvidedPGroup_SetsPGroup()
+        {
+            const string pGroup = "01:01P";
+            var testData = new AlleleTestData
+            {
+                AlleleName = "01:01",
+                PGroup = pGroup
+            };
+
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData);
+
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.PGroup).Should().Be(pGroup);
+        }
+
+        [Test]
+        public void FromTestDataAllele_WithProvidedGGroup_SetsGGroup()
+        {
+            const string gGroup = "01:01:01G";
+            var testData = new AlleleTestData
+            {
+                AlleleName = "01:01",
+                GGroup = gGroup
+            };
+
+            var tgsAllele = TgsAllele.FromTestDataAllele(testData);
+
+            tgsAllele.GetHlaForResolution(HlaTypingResolution.GGroup).Should().Be(gGroup);
+        }
+
+        [Test]
         public void FromTestDataAllele_SetsXxCodeFromFirstField()
         {
             const string alleleString = "01:01:01:01";
