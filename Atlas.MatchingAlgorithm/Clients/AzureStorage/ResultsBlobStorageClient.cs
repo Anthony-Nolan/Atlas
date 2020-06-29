@@ -26,7 +26,7 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureStorage
         public async Task UploadResults(string requestId, SearchResultSet searchResultSet)
         {
             var serialisedResults = JsonConvert.SerializeObject(searchResultSet);
-            await Upload(resultsContainerName, requestId, serialisedResults);
+            await Upload(resultsContainerName, $"{requestId}.json", serialisedResults);
         }
 
         public string GetResultsContainerName()
