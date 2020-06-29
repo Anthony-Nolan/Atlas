@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.Client.Models.ExpandAmbiguousPhenotype;
+using Atlas.MatchPrediction.ExternalInterface.Models.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;

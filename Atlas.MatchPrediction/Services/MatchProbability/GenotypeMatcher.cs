@@ -8,7 +8,7 @@ using Atlas.MatchPrediction.Services.MatchCalculation;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
-    public interface IGenotypeMatcher
+    internal interface IGenotypeMatcher
     {
         /// <summary>
         /// Gets all possible combinations of donor and patient genotypes and returns a list of donor patient pairs where there is 10/10 match at the PGroup level
@@ -22,7 +22,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             string hlaNomenclatureVersion);
     }
 
-    public class GenotypeMatcher : IGenotypeMatcher
+    internal class GenotypeMatcher : IGenotypeMatcher
     {
         private readonly IMatchCalculationService matchCalculationService;
 

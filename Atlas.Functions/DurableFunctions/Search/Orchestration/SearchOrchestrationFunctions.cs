@@ -8,7 +8,7 @@ using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Extensions;
-using Atlas.MatchPrediction.Client.Models.MatchProbability;
+using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 
@@ -51,14 +51,12 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     // TODO: ATLAS-236: Get donor HLA from result model
                     DonorHla = new PhenotypeInfo<string>
                     {
-                        // TODO: ATLAS-236: Send all 5 loci, only 5 loci supported just now.
                         A = new LocusInfo<string>("*01:01:01"),
                         B = new LocusInfo<string>("*08:182"),
                         C = new LocusInfo<string>("*07:02:80"),
                         Dqb1 = new LocusInfo<string>("*06:01:03"),
                         Drb1 = new LocusInfo<string>("*11:129"),
                     },
-                    // TODO: ATLAS-236: Just use PhenotypeInfo directly on client model
                     PatientHla = searchRequest.SearchHlaData.ToPhenotypeInfo(),
                     // TODO: ATLAS-236: Get nomenclature version from search results
                     HlaNomenclatureVersion = "3400"
