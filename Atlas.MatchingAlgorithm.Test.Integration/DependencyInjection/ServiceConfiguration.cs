@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
+using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
@@ -60,10 +61,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.RegisterMatchingAlgorithmDonorManagement(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
-                _ => new DonorManagementSettings(), 
+                OptionsReaderFor<DonorManagementSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 _ => new MacDictionarySettings(),
-                _ => new MessagingServiceBusSettings(),
+                OptionsReaderFor<MessagingServiceBusSettings>(),
                 _ => new NotificationsServiceBusSettings(),
                 ConnectionStringReader(PersistentSqlConnectionStringKey),
                 ConnectionStringReader(TransientASqlConnectionStringKey),
@@ -92,12 +93,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
+            services.RegisterAsOptions<DonorManagementSettings>("DonorManagement");
+            services.RegisterAsOptions<MessagingServiceBusSettings>("DonorManagementMessagingServiceBus");
         }
 
         private static void RegisterMockServices(IServiceCollection services)
         {
-            services.AddScoped(sp => Substitute.For<IDonorReader>());
-
             // Clients
             var mockSearchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
             mockSearchServiceBusClient
@@ -105,8 +106,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 .Returns(Task.CompletedTask);
             services.AddScoped(sp => mockSearchServiceBusClient);
 
+            services.AddScoped(sp => Substitute.For<IDonorReader>());
+            services.AddScoped(sp => Substitute.For<IMessageReceiverFactory>());
             services.AddScoped(sp => Substitute.For<INotificationSender>());
-
             services.AddScoped(sp => Substitute.For<IAzureDatabaseManager>());
         }
 

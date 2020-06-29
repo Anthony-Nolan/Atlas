@@ -38,8 +38,9 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
     public interface IDonorUpdateProcessor
     {
         Task ProcessDifferentialDonorUpdates(TransientDatabase targetDatabase);
+        Task ApplyDifferentialDonorUpdatesDuringRefresh(TransientDatabase targetDatabase);
     }
-    
+
     public class DonorUpdateProcessor : IDonorUpdateProcessor
     {
         private const string TraceMessagePrefix = nameof(ProcessDifferentialDonorUpdates);
@@ -70,6 +71,28 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             this.batchSize = batchSize;
         }
 
+        /// <remarks>
+        /// It is intended that this method will be invoked by the Data Refresh process.
+        /// </remarks>
+        public async Task ApplyDifferentialDonorUpdatesDuringRefresh(TransientDatabase targetDatabase)
+        {
+            var targetDatabaseState = DetermineDatabaseState(targetDatabase);
+            if (targetDatabaseState != DatabaseStateWithRespectToDonorUpdates.Refreshing)
+            {
+                throw new InvalidOperationException($"The method {nameof(ApplyDifferentialDonorUpdatesDuringRefresh)} was called an analysis of the DataRefreshHistory table implies that '{targetDatabase.GetStringValue()}' is not currently Refreshing");
+            }
+
+            var messageProcessorService = ChooseMessagesToProcess(targetDatabase);
+
+            await messageProcessorService.ProcessMessageBatchAsync(
+                async batch => await ProcessMessages(batch, targetDatabase),
+                batchSize,
+                batchSize * 2);
+        }
+
+        /// <remarks>
+        /// It is intended that this method will be invoked by a cron timer, against both databases including when a DataRefresh is taking place.
+        /// </remarks>
         public async Task ProcessDifferentialDonorUpdates(TransientDatabase targetDatabase)
         {
             var targetDatabaseState = DetermineDatabaseState(targetDatabase);
@@ -180,14 +203,6 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 
             if (converterResults.ProcessingResults.Any())
             {
-                // Currently the donorManagementService acquires a 'hardcoded' connection to the database.
-                // This is fine, since this code should only EVER be running against the active Database in the first place.
-                // But let's verify that first ... just in case.
-                var activeDb = refreshHistoryRepository.GetActiveDatabase();
-                if (activeDb != targetDatabase)
-                {
-                    throw new InvalidOperationException("We shouldn't ever be running this code whilst pointing at a ");
-                }
                 await donorManagementService.ApplyDonorUpdatesToDatabase(converterResults.ProcessingResults, targetDatabase);
             }
         }

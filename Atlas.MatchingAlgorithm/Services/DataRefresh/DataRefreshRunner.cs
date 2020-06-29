@@ -15,6 +15,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
+using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Settings;
 using EnumStringValues;
 
@@ -48,6 +49,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         private readonly IDonorImporter donorImporter;
         private readonly IHlaProcessor hlaProcessor;
+        private readonly IDonorUpdateProcessor differentialDonorUpdateProcessor;
         private readonly ILogger logger;
 
         private const string LoggingPrefix = "DATA REFRESH:";
@@ -100,6 +102,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IDonorImporter donorImporter,
             IHlaProcessor hlaProcessor,
+            IDonorUpdateProcessor differentialDonorUpdateProcessor,
             ILogger logger,
             IDataRefreshNotificationSender dataRefreshNotificationSender,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository)
@@ -110,6 +113,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             this.donorImporter = donorImporter;
             this.hlaProcessor = hlaProcessor;
+            this.differentialDonorUpdateProcessor = differentialDonorUpdateProcessor;
             this.logger = logger;
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
@@ -184,9 +188,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             }
 
             AvoidScalingDbUpAndImmediatelyBackDown(modes);
-
-            modes[DataRefreshStage.QueuedDonorUpdateProcessing] = DataRefreshStageExecutionMode.NotApplicable; //This step is not yet implemented.  TODO: ATLAS-249. Remove this special case.
-
+            
             return modes;
         }
 
@@ -285,7 +287,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     await ScaleDatabase(dataRefreshSettings.ActiveDatabaseSize.ParseToEnum<AzureDatabaseSize>());
                     break;
                 case DataRefreshStage.QueuedDonorUpdateProcessing:
-                    // TODO: ATLAS-249: Implement new donor update workflow
+                    var dbBeingRefreshed = refreshRecord.Database.ParseToEnum<TransientDatabase>();
+                    await differentialDonorUpdateProcessor.ApplyDifferentialDonorUpdatesDuringRefresh(dbBeingRefreshed);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dataRefreshStage), dataRefreshStage, null);
