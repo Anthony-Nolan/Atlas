@@ -10,7 +10,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
     ///
     /// N.B. `Alleles with third field difference` !== `Protein level matches`.
     /// To be a protein level match, there must be a two field match *and* a full sequence.
-    /// This data happens to fulfil both crieria, but it is possible to have a two field match with a different match grade
+    /// This data happens to fulfil both criteria, but it is possible to have a two field match with a different match grade
     /// 
     /// No NMDP codes are selected for the selected alleles, it is assumed this data will only be used for allele level resolution.
     /// If NMDP resolution tests are necessary, a new dataset will need to be curated
