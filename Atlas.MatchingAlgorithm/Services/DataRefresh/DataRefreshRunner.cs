@@ -128,15 +128,15 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 var refreshRecord = await dataRefreshHistoryRepository.GetRecord(refreshRecordId);
                 var stageExecutionModes = DetermineStageExecutionModes(refreshRecord);
 
-                var newHlaNomenclatureVersion = await RefreshHlaMetadataDictionary(refreshRecord, stageExecutionModes[DataRefreshStage.MetadataDictionaryRefresh]);
+                await RefreshHlaMetadataDictionary(refreshRecord);
 
                 foreach (var dataRefreshStage in orderedRefreshStages.Except(new[] {DataRefreshStage.MetadataDictionaryRefresh}))
                 {
                     var executionMode = stageExecutionModes[dataRefreshStage];
-                    await ExecuteDataRefreshStage(dataRefreshStage, executionMode, refreshRecord.Id, newHlaNomenclatureVersion);
+                    await ExecuteDataRefreshStage(dataRefreshStage, executionMode, refreshRecord);
                 }
 
-                return newHlaNomenclatureVersion;
+                return refreshRecord.HlaNomenclatureVersion;
             }
             catch (Exception ex)
             {
@@ -199,59 +199,39 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// </summary>
         private void AvoidScalingDbUpAndImmediatelyBackDown(Dictionary<DataRefreshStage, DataRefreshStageExecutionMode> modes)
         {
-            var stagesBetweenDBScaling = orderedRefreshStages.Where(stage => stage > DataRefreshStage.DatabaseScalingSetup && stage < DataRefreshStage.DatabaseScalingTearDown);
-            var areWeSkippingEveryStageBetweenDbScaling = stagesBetweenDBScaling.All(stage => modes[stage] == DataRefreshStageExecutionMode.Skip);
+            var stagesBetweenDbScaling = orderedRefreshStages.Where(stage => stage > DataRefreshStage.DatabaseScalingSetup && stage < DataRefreshStage.DatabaseScalingTearDown);
+            var areWeSkippingEveryStageBetweenDbScaling = stagesBetweenDbScaling.All(stage => modes[stage] == DataRefreshStageExecutionMode.Skip);
             if (areWeSkippingEveryStageBetweenDbScaling)
             {
                 modes[DataRefreshStage.DatabaseScalingSetup] = DataRefreshStageExecutionMode.Skip;
             }
         }
 
-        // Hla Metadata Dictionary Refresh can't be treated identically to the other steps, since it produces an output that the other steps require.
-        private async Task<string> RefreshHlaMetadataDictionary(DataRefreshRecord refreshRecord, DataRefreshStageExecutionMode mode)
+        // We expect to extract this to somewhere else in the future.
+        private async Task RefreshHlaMetadataDictionary(DataRefreshRecord refreshRecord)
         {
-            // TODO: ATLAS-355: Move this code somewhere independent from the Donor Data Refresh.
-            switch (mode)
+            if (string.IsNullOrEmpty(refreshRecord.HlaNomenclatureVersion))
             {
-                case DataRefreshStageExecutionMode.NotApplicable:
-                case DataRefreshStageExecutionMode.Continuation:
-                    throw new NotSupportedException($"{nameof(DataRefreshStageExecutionMode.Continuation)} and {nameof(DataRefreshStageExecutionMode.NotApplicable)} are not suitable modes for HMD refresh stage");
-                
-                case DataRefreshStageExecutionMode.Skip:
-                    if (!string.IsNullOrEmpty(refreshRecord.HlaNomenclatureVersion))
-                    {
-                        // We are continuing an existing run and we already have an HLA Nomenclature for this run.
-                        // We MUST continue with the same version, (which fortunately we know must already exist, so no need to re-create it)
-                        return refreshRecord.HlaNomenclatureVersion;
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException($"You can't {nameof(DataRefreshStageExecutionMode.Skip)} HMD Refresh if you don't already have a version stored.");
-                    }
-
-                case DataRefreshStageExecutionMode.FromScratch:
-
-                    var newHlaNomenclatureVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
-                    await dataRefreshHistoryRepository.UpdateExecutionDetails(refreshRecord.Id, newHlaNomenclatureVersion);
-                    await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecord.Id, DataRefreshStage.MetadataDictionaryRefresh);
-                    return newHlaNomenclatureVersion;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
+                var newHlaNomenclatureVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
+                refreshRecord.HlaNomenclatureVersion = newHlaNomenclatureVersion; //Later steps will make use of this value.
+                await dataRefreshHistoryRepository.UpdateExecutionDetails(refreshRecord.Id, newHlaNomenclatureVersion);
+                await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecord, DataRefreshStage.MetadataDictionaryRefresh);
             }
+
+            // If the Hla version is already populated, then we are continuing an existing run and we already have an HLA Nomenclature for this run.
+            // We MUST continue with that same version, (which fortunately we know must already exist, so no need to re-create it)
         }
 
         private async Task ExecuteDataRefreshStage(
             DataRefreshStage dataRefreshStage,
             DataRefreshStageExecutionMode executionMode,
-            int refreshRecordId,
-            string newHlaNomenclatureVersion)
+            DataRefreshRecord refreshRecord)
         {
             switch (executionMode)
             {
                 //Note the distinction between `break`s and `return`s here!
                 case DataRefreshStageExecutionMode.NotApplicable:
-                    logger.SendTrace($"{LoggingPrefix} Stage {dataRefreshStage} is not Applicable to the atomic execution loop.", LogLevel.Verbose);
+                    logger.SendTrace($"{LoggingPrefix} Stage {dataRefreshStage} is not Applicable to the 'All Stages' execution loop.", LogLevel.Verbose);
                     return;
                 case DataRefreshStageExecutionMode.Skip:
                     logger.SendTrace($"{LoggingPrefix} Stage {dataRefreshStage} is already complete and can be skipped. Skipping.");
@@ -269,7 +249,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             switch (dataRefreshStage)
             {
                 case DataRefreshStage.MetadataDictionaryRefresh:
-                    throw new NotImplementedException($"{nameof(DataRefreshStage.MetadataDictionaryRefresh)} cannot be performed atomically.");
+                    throw new NotImplementedException($"{nameof(DataRefreshStage.MetadataDictionaryRefresh)} is performed separately.");
                 case DataRefreshStage.IndexRemoval:
                     await donorImportRepository.RemoveHlaTableIndexes();
                     break;
@@ -288,14 +268,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     await donorImporter.ImportDonors();
                     break;
                 case DataRefreshStage.DonorHlaProcessing:
-                    logger.SendTrace($"{LoggingPrefix} Using HLA Nomenclature version: {newHlaNomenclatureVersion}");
+                    logger.SendTrace($"{LoggingPrefix} Using HLA Nomenclature version: {refreshRecord.HlaNomenclatureVersion}");
                     if (executionMode == DataRefreshStageExecutionMode.Continuation)
                     {
                         // TODO: ATLAS-251: Allow continuation mid-hla processing.
                         // For now, resuming mid-hla processing is not yet supported, instead we will restart the whole stage.
                         await donorImportRepository.RemoveAllProcessedDonorHla();
                     }
-                    await hlaProcessor.UpdateDonorHla(newHlaNomenclatureVersion);
+                    await hlaProcessor.UpdateDonorHla(refreshRecord.HlaNomenclatureVersion);
                     break;
                 case DataRefreshStage.IndexRecreation:
                     await donorImportRepository.CreateHlaTableIndexes();
@@ -311,7 +291,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     throw new ArgumentOutOfRangeException(nameof(dataRefreshStage), dataRefreshStage, null);
             }
 
-            await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecordId, dataRefreshStage);
+            await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecord, dataRefreshStage);
         }
 
         private async Task ScaleDatabase(AzureDatabaseSize targetSize)

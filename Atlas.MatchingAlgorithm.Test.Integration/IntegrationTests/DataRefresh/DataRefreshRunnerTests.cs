@@ -37,7 +37,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
                 DataRefreshStage.QueuedDonorUpdateProcessing
             });
 
-            var refreshRecord = new DataRefreshRecord {Database = "DatabaseA", HlaNomenclatureVersion = Constants.SnapshotHlaNomenclatureVersion};
+            var refreshRecord = new DataRefreshRecord {Database = "DatabaseA"};
             var refreshRecordId = await dataRefreshHistoryRepository.Create(refreshRecord);
 
             await dataRefreshRunner.RefreshData(refreshRecordId);
