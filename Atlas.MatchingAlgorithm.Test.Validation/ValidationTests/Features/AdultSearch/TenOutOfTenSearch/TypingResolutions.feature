@@ -3,8 +3,6 @@ Feature: Ten Out Of Ten Search - Typing Resolutions
   I want to be able to run a 10/10 search
   For a variety of different typing resolutions
 
-  // TODO: ATLAS-57 - Add P & G group tests
-
   Scenario: 10/10 Search with a 'TGS derived data at four-field resolution' typed match
     Given a patient has a match
     And the matching donor is 'TGS derived data at four-field resolution' typed at each locus
@@ -94,6 +92,18 @@ Feature: Ten Out Of Ten Search - Typing Resolutions
   Scenario: 10/10 Search with a serology typed match
     Given a patient has a match
     And the matching donor is serology typed at each locus
+    When I run a 10/10 search
+    Then the results should contain the specified donor
+
+  Scenario: 10/10 Search with a P-group typed match
+    Given a patient has a match
+    And the matching donor is P-group typed at each locus
+    When I run a 10/10 search
+    Then the results should contain the specified donor
+
+  Scenario: 10/10 Search with a G-group typed match
+    Given a patient has a match
+    And the matching donor is G-group typed at each locus
     When I run a 10/10 search
     Then the results should contain the specified donor
 

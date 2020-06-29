@@ -31,6 +31,8 @@
         // e.g. 01:01/02/03
         AlleleStringOfSubtypes,
         Serology,
+        PGroup,
+        GGroup,
         Untyped,
         // Used to indicate that any underlying typing resolution is acceptable
         // When comparing enum values, 'arbitary' should only match 'arbitrary', not any other values

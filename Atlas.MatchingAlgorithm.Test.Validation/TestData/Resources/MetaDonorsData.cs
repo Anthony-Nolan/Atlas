@@ -53,6 +53,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.XxCode).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.PGroup).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.GGroup).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNames).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.C).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().UntypedAtLocus(Locus.Dqb1).Build(),
@@ -74,6 +76,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.XxCode).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.NmdpCode).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.Serology).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.PGroup).Build(),
+                    new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.GGroup).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.ThreeFieldTruncatedAllele).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.TwoFieldTruncatedAllele).Build(),
                     new DatabaseDonorSelectionCriteriaBuilder().WithAllLociAtTypingResolution(HlaTypingResolution.AlleleStringOfNames).Build(),
@@ -315,14 +319,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources
                 }
             });
 
-        public IEnumerable<MetaDonor> MetaDonors
-        {
-            get => IndividualMetaDonors
+        public IEnumerable<MetaDonor> MetaDonors =>
+            IndividualMetaDonors
                 .Concat(FourFieldDonorRange)
                 .Concat(ThreeFieldDonorRange)
                 .Concat(TwoFieldDonorRange)
                 .Concat(ArbitraryFieldCountDonorRange)
                 .Concat(ArbitraryResolutionDonorRange);
-        }
     }
 }
