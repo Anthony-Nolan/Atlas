@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
@@ -34,8 +35,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
             logRepository = Substitute.For<IDonorManagementLogRepository>();
             logRepository.GetDonorManagementLogBatch(Arg.Any<IEnumerable<int>>()).Returns(new DonorManagementLog[] { });
 
-            var repositoryFactory = Substitute.For<IActiveRepositoryFactory>();
-            repositoryFactory.GetDonorManagementLogRepository().Returns(logRepository);
+            var repositoryFactory = Substitute.For<IStaticallyChosenDatabaseRepositoryFactory>();
+            repositoryFactory.GetDonorManagementLogRepositoryForDatabase(default).ReturnsForAnyArgs(logRepository);
 
             donorService = Substitute.For<IDonorService>();
             logger = Substitute.For<ILogger>();
@@ -45,12 +46,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_DonorIsAvailableForSearch_AddsOrUpdatesDonor()
+        public async Task UpdateAvailabilityOfDonorsInBatch_DonorIsAvailableForSearch_AddsOrUpdatesDonor()
         {
             const int donorId = 456;
             const DonorType donorType = DonorType.Adult;
 
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
+            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
@@ -60,21 +61,23 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                         DonorType = donorType
                     },
                     IsAvailableForSearch = true
-                }});
+                }},
+                default);
 
             await donorService
                 .Received(1)
                 .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<DonorInfo>>(x =>
                     x.Single().DonorId == donorId &&
-                    x.Single().DonorType == donorType));
+                    x.Single().DonorType == donorType),
+                    Arg.Any<TransientDatabase>());
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_DonorIsAvailableForSearch_DoesNotSetDonorAsUnavailable()
+        public async Task UpdateAvailabilityOfDonorsInBatch_DonorIsAvailableForSearch_DoesNotSetDonorAsUnavailable()
         {
             const int donorId = 456;
 
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
+            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
@@ -84,49 +87,54 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                         DonorType = DonorType.Adult
                     },
                     IsAvailableForSearch = true
-                }});
+                }},
+                default);
 
             await donorService
-                .Received(0)
-                .SetDonorBatchAsUnavailableForSearch(Arg.Any<IEnumerable<int>>());
+                .DidNotReceiveWithAnyArgs()
+                .SetDonorBatchAsUnavailableForSearch(default, default);
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_DonorIsNotAvailableForSearch_SetsDonorAsUnavailable()
+        public async Task UpdateAvailabilityOfDonorsInBatch_DonorIsNotAvailableForSearch_SetsDonorAsUnavailable()
         {
             const int donorId = 789;
 
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
+            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
                     IsAvailableForSearch = false
-                }});
+                }},
+                default);
 
             await donorService
                 .Received(1)
-                .SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
+                .SetDonorBatchAsUnavailableForSearch(
+                    Arg.Is<IEnumerable<int>>(x => x.Single() == donorId),
+                    Arg.Any<TransientDatabase>());
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_DonorIsNotAvailableForSearch_DoesNotAddOrUpdateDonor()
+        public async Task UpdateAvailabilityOfDonorsInBatch_DonorIsNotAvailableForSearch_DoesNotAddOrUpdateDonor()
         {
             const int donorId = 789;
 
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
+            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
                     IsAvailableForSearch = false
-                }});
+                }},
+                default);
 
             await donorService
-                .Received(0)
-                .CreateOrUpdateDonorBatch(Arg.Any<IEnumerable<DonorInfo>>());
+                .DidNotReceiveWithAnyArgs()
+                .CreateOrUpdateDonorBatch(default, default);
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_MultipleUpdatesPerDonor_AndDonorIsAvailableInLatest_AddsOrUpdatesDonor()
+        public async Task UpdateAvailabilityOfDonorsInBatch_MultipleUpdatesPerDonor_AndDonorIsAvailableInLatest_AddsOrUpdatesDonor()
         {
             const int donorId = 456;
             const DonorType donorType = DonorType.Adult;
@@ -150,18 +158,20 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1))
             };
 
-            await donorManagementService.ManageDonorBatchByAvailability(
-                new[] { olderUnavailableUpdate, newerAvailableUpdate });
+            await donorManagementService.ApplyDonorUpdatesToDatabase(
+                new[] { olderUnavailableUpdate, newerAvailableUpdate },
+                default);
 
             await donorService
                 .Received(1)
                 .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<DonorInfo>>(x =>
                     x.Single().DonorId == donorId &&
-                    x.Single().DonorType == donorType));
+                    x.Single().DonorType == donorType),
+                    Arg.Any<TransientDatabase>());
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_MultipleUpdatesPerDonor_AndDonorIsAvailableInLatest_DoesNotSetDonorAsUnavailable()
+        public async Task UpdateAvailabilityOfDonorsInBatch_MultipleUpdatesPerDonor_AndDonorIsAvailableInLatest_DoesNotSetDonorAsUnavailable()
         {
             const int donorId = 456;
 
@@ -184,16 +194,17 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1))
             };
 
-            await donorManagementService.ManageDonorBatchByAvailability(
-                new[] { olderUnavailableUpdate, newerAvailableUpdate });
+            await donorManagementService.ApplyDonorUpdatesToDatabase(
+                new[] { olderUnavailableUpdate, newerAvailableUpdate },
+                default);
 
             await donorService
-                .Received(0)
-                .SetDonorBatchAsUnavailableForSearch(Arg.Any<IEnumerable<int>>());
+                .DidNotReceiveWithAnyArgs()
+                .SetDonorBatchAsUnavailableForSearch(default, default);
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_MultipleUpdatesPerDonor_AndDonorIsUnavailableInLatest_SetsDonorAsUnavailable()
+        public async Task UpdateAvailabilityOfDonorsInBatch_MultipleUpdatesPerDonor_AndDonorIsUnavailableInLatest_SetsDonorAsUnavailable()
         {
             const int donorId = 789;
 
@@ -216,16 +227,19 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1))
             };
 
-            await donorManagementService.ManageDonorBatchByAvailability(
-                new[] { olderAvailableUpdate, newerUnavailableUpdate });
+            await donorManagementService.ApplyDonorUpdatesToDatabase(
+                new[] { olderAvailableUpdate, newerUnavailableUpdate },
+                default);
 
             await donorService
                 .Received(1)
-                .SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
+                .SetDonorBatchAsUnavailableForSearch(
+                    Arg.Is<IEnumerable<int>>(x => x.Single() == donorId),
+                    Arg.Any<TransientDatabase>());
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_MultipleUpdatesPerDonor_AndDonorIsUnavailableInLatest_DoesNotAddOrUpdateDonor()
+        public async Task UpdateAvailabilityOfDonorsInBatch_MultipleUpdatesPerDonor_AndDonorIsUnavailableInLatest_DoesNotAddOrUpdateDonor()
         {
             const int donorId = 789;
 
@@ -248,16 +262,17 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 UpdateDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1))
             };
 
-            await donorManagementService.ManageDonorBatchByAvailability(
-                new[] { olderAvailableUpdate, newerUnavailableUpdate });
+            await donorManagementService.ApplyDonorUpdatesToDatabase(
+                new[] { olderAvailableUpdate, newerUnavailableUpdate },
+                default);
 
             await donorService
-                .Received(0)
-                .CreateOrUpdateDonorBatch(Arg.Any<IEnumerable<DonorInfo>>());
+                .DidNotReceiveWithAnyArgs()
+                .CreateOrUpdateDonorBatch(default, default);
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_DonorIsAvailable_AndUpdateIsNewerThanThatLastApplied_AddsOrUpdatesDonor()
+        public async Task UpdateAvailabilityOfDonorsInBatch_DonorIsAvailable_AndUpdateIsNewerThanThatLastApplied_AddsOrUpdatesDonor()
         {
             const int donorId = 456;
             var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
@@ -273,22 +288,23 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     }
                 });
 
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
+            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
                     DonorInfo = new DonorInfo(),
                     IsAvailableForSearch = true,
                     UpdateDateTime = newerTimestamp
-                }});
+                }},
+                default);
 
             await donorService
-                .Received(1)
-                .CreateOrUpdateDonorBatch(Arg.Any<IEnumerable<DonorInfo>>());
+                .ReceivedWithAnyArgs(1)
+                .CreateOrUpdateDonorBatch(default, default);
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_DonorIsAvailable_AndUpdateIsOlderThanThatLastApplied_DoesNotAddOrUpdateDonor()
+        public async Task UpdateAvailabilityOfDonorsInBatch_DonorIsAvailable_AndUpdateIsOlderThanThatLastApplied_DoesNotAddOrUpdateDonor()
         {
             const int donorId = 456;
             var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
@@ -304,22 +320,23 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     }
                 });
 
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
+            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
                     DonorInfo = new DonorInfo(),
                     IsAvailableForSearch = true,
                     UpdateDateTime = olderTimestamp
-                }});
+                }},
+                default);
 
             await donorService
-                .Received(0)
-                .CreateOrUpdateDonorBatch(Arg.Any<IEnumerable<DonorInfo>>());
+                .DidNotReceiveWithAnyArgs()
+                .CreateOrUpdateDonorBatch(default, default);
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_DonorIsNotAvailable_AndUpdateIsNewerThanThatLastApplied_SetsDonorAsUnavailable()
+        public async Task UpdateAvailabilityOfDonorsInBatch_DonorIsNotAvailable_AndUpdateIsNewerThanThatLastApplied_SetsDonorAsUnavailable()
         {
             const int donorId = 789;
             var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
@@ -335,21 +352,22 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     }
                 });
 
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
+            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
                     IsAvailableForSearch = false,
                     UpdateDateTime = newerTimestamp
-                }});
+                }},
+                default);
 
             await donorService
-                .Received(1)
-                .SetDonorBatchAsUnavailableForSearch(Arg.Any<IEnumerable<int>>());
+                .ReceivedWithAnyArgs(1)
+                .SetDonorBatchAsUnavailableForSearch(default, default);
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_DonorIsNotAvailable_AndUpdateIsOlderThanThatLastApplied_DoesNotSetDonorAsUnavailable()
+        public async Task UpdateAvailabilityOfDonorsInBatch_DonorIsNotAvailable_AndUpdateIsOlderThanThatLastApplied_DoesNotSetDonorAsUnavailable()
         {
             const int donorId = 789;
             var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
@@ -365,21 +383,22 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     }
                 });
 
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
+            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId,
                     IsAvailableForSearch = false,
                     UpdateDateTime = olderTimestamp
-                }});
+                }},
+                default);
 
             await donorService
-                .Received(0)
-                .SetDonorBatchAsUnavailableForSearch(Arg.Any<IEnumerable<int>>());
+                .DidNotReceiveWithAnyArgs()
+                .SetDonorBatchAsUnavailableForSearch(default, default);
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_SomeUpdatesOlderThanThoseLastApplied_LogsEventForEachNonApplicableUpdate()
+        public async Task UpdateAvailabilityOfDonorsInBatch_SomeUpdatesOlderThanThoseLastApplied_LogsEventForEachNonApplicableUpdate()
         {
             const int donorId1 = 456;
             const int donorId2 = 789;
@@ -402,7 +421,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     }
                 });
 
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
+            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId1,
@@ -416,21 +435,21 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 new DonorAvailabilityUpdate
                 {
                     DonorId = donorId3
-                }
-            });
+                }},
+                default);
 
             // third donor update is applicable; only 2 events should be logged
             logger.Received(2).SendEvent(Arg.Any<DonorUpdateNotAppliedEventModel>());
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_UpdatesContainAvailableAndUnavailableDonors_ModifiesDonorsCorrectly()
+        public async Task UpdateAvailabilityOfDonorsInBatch_UpdatesContainAvailableAndUnavailableDonors_ModifiesDonorsCorrectly()
         {
             const int availableDonorId = 123;
             const int unavailableDonorId = 456;
             const DonorType donorType = DonorType.Adult;
 
-            await donorManagementService.ManageDonorBatchByAvailability(new[] {
+            await donorManagementService.ApplyDonorUpdatesToDatabase(new[] {
                 new DonorAvailabilityUpdate
                 {
                     DonorId = unavailableDonorId,
@@ -445,21 +464,25 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                         DonorType = donorType
                     },
                     IsAvailableForSearch = true
-                }});
+                }},
+                default);
 
             await donorService
                 .Received(1)
-                .SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == unavailableDonorId));
+                .SetDonorBatchAsUnavailableForSearch(
+                    Arg.Is<IEnumerable<int>>(x => x.Single() == unavailableDonorId),
+                    Arg.Any<TransientDatabase>());
 
             await donorService
                 .Received(1)
                 .CreateOrUpdateDonorBatch(Arg.Is<IEnumerable<DonorInfo>>(x =>
                     x.Single().DonorId == availableDonorId &&
-                    x.Single().DonorType == donorType));
+                    x.Single().DonorType == donorType),
+                    Arg.Any<TransientDatabase>());
         }
 
         [Test]
-        public async Task ManageDonorBatchByAvailability_CreatesOrUpdatesDonorManagementLog()
+        public async Task UpdateAvailabilityOfDonorsInBatch_CreatesOrUpdatesDonorManagementLog()
         {
             const int donorId = 789;
             const int sequenceNumber = 123456789;
@@ -477,8 +500,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     }
                 });
 
-            await donorManagementService.ManageDonorBatchByAvailability(
-                new[] { new DonorAvailabilityUpdate { DonorId = donorId } });
+            await donorManagementService.ApplyDonorUpdatesToDatabase(
+                new[] { new DonorAvailabilityUpdate { DonorId = donorId } },
+                default);
 
             await logRepository
                 .Received(1)

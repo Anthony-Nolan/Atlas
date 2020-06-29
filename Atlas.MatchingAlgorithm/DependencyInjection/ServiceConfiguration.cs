@@ -147,6 +147,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.AddScoped<ActiveTransientSqlConnectionStringProvider>();
             services.AddScoped<DormantTransientSqlConnectionStringProvider>();
+            services.AddScoped<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
             services.AddScoped<IActiveDatabaseProvider, ActiveDatabaseProvider>();
             services.AddScoped<IAzureDatabaseNameProvider, AzureDatabaseNameProvider>();
 
@@ -209,6 +210,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         {
             services.AddScoped<IActiveRepositoryFactory, ActiveRepositoryFactory>();
             services.AddScoped<IDormantRepositoryFactory, DormantRepositoryFactory>();
+            services.AddScoped<IStaticallyChosenDatabaseRepositoryFactory, StaticallyChosenDatabaseRepositoryFactory>();
             // Persistent storage
             services.AddScoped(sp => new ContextFactory().Create(fetchPersistentSqlConnectionString(sp)));
             services.AddScoped<IScoringWeightingRepository, ScoringWeightingRepository>();

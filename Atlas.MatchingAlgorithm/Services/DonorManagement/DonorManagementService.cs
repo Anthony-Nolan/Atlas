@@ -5,6 +5,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
@@ -18,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
     /// </summary>
     public interface IDonorManagementService
     {
-        Task ManageDonorBatchByAvailability(IEnumerable<DonorAvailabilityUpdate> donorAvailabilityUpdates);
+        Task ApplyDonorUpdatesToDatabase(IEnumerable<DonorAvailabilityUpdate> donorAvailabilityUpdates, TransientDatabase targetDatabase);
     }
 
     public class DonorManagementService : IDonorManagementService
@@ -35,35 +36,35 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             }
         }
 
-        private const string TraceMessagePrefix = nameof(ManageDonorBatchByAvailability);
+        private const string TraceMessagePrefix = nameof(ApplyDonorUpdatesToDatabase);
 
-        private readonly IDonorManagementLogRepository logRepository;
+        private readonly IStaticallyChosenDatabaseRepositoryFactory repositoryFactory;
         private readonly IDonorService donorService;
         private readonly ILogger logger;
         private readonly IMapper mapper;
 
         public DonorManagementService(
-            IActiveRepositoryFactory repositoryFactory,
+            IStaticallyChosenDatabaseRepositoryFactory repositoryFactory,
             IDonorService donorService,
             ILogger logger,
             IMapper mapper)
         {
-            logRepository = repositoryFactory.GetDonorManagementLogRepository();
+            this.repositoryFactory = repositoryFactory;
             this.donorService = donorService;
             this.logger = logger;
             this.mapper = mapper;
         }
 
-        public async Task ManageDonorBatchByAvailability(IEnumerable<DonorAvailabilityUpdate> donorAvailabilityUpdates)
+        public async Task ApplyDonorUpdatesToDatabase(IEnumerable<DonorAvailabilityUpdate> donorAvailabilityUpdates, TransientDatabase targetDatabase)
         {
-            var filteredUpdates = await FilterUpdates(donorAvailabilityUpdates);
-            await ApplyDonorUpdates(filteredUpdates);
+            var filteredUpdates = await FilterUpdates(donorAvailabilityUpdates, targetDatabase);
+            await ApplyDonorUpdates(filteredUpdates, targetDatabase);
         }
 
-        private async Task<IEnumerable<DonorAvailabilityUpdate>> FilterUpdates(IEnumerable<DonorAvailabilityUpdate> updates)
+        private async Task<IEnumerable<DonorAvailabilityUpdate>> FilterUpdates(IEnumerable<DonorAvailabilityUpdate> updates, TransientDatabase targetDatabase)
         {
             var latestUpdateInBatchPerDonorId = GetLatestUpdateInBatchPerDonorId(updates);
-            return await GetApplicableUpdates(latestUpdateInBatchPerDonorId);
+            return await GetApplicableUpdates(latestUpdateInBatchPerDonorId, targetDatabase);
         }
 
         private static IEnumerable<DonorAvailabilityUpdate> GetLatestUpdateInBatchPerDonorId(IEnumerable<DonorAvailabilityUpdate> updates)
@@ -75,10 +76,11 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 
         /// <returns>Only returns those updates that are newer than the last update recorded in the
         /// donor management log, or those where the donor has no record of a previous update.</returns>
-        private async Task<IEnumerable<DonorAvailabilityUpdate>> GetApplicableUpdates(IEnumerable<DonorAvailabilityUpdate> updates)
+        private async Task<IEnumerable<DonorAvailabilityUpdate>> GetApplicableUpdates(IEnumerable<DonorAvailabilityUpdate> updates, TransientDatabase targetDatabase)
         {
             var allUpdates = updates.ToList();
 
+            var logRepository = repositoryFactory.GetDonorManagementLogRepositoryForDatabase(targetDatabase);
             var existingLogs = await logRepository.GetDonorManagementLogBatch(allUpdates.Select(u => u.DonorId));
 
             // GroupJoin is equivalent to a LEFT OUTER JOIN
@@ -128,7 +130,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             return new DonorUpdateNotAppliedEventModel(update.DonorManagementLog.LastUpdateDateTime, update.DonorAvailabilityUpdate);
         }
 
-        private async Task ApplyDonorUpdates(IEnumerable<DonorAvailabilityUpdate> updates)
+        private async Task ApplyDonorUpdates(IEnumerable<DonorAvailabilityUpdate> updates, TransientDatabase targetDatabase)
         {
             var updatesList = updates.ToList();
 
@@ -136,12 +138,12 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 
             // Note, the management log must be written to last to prevent the undesirable
             // scenario of the donor update failing after the log has been successfully updated.
-            await AddOrUpdateDonors(updatesList);
-            await SetDonorsAsUnavailableForSearch(updatesList);
-            await CreateOrUpdateManagementLogBatch(updatesList);
+            await AddOrUpdateDonors(updatesList, targetDatabase);
+            await SetDonorsAsUnavailableForSearch(updatesList, targetDatabase);
+            await CreateOrUpdateManagementLogBatch(updatesList, targetDatabase);
         }
 
-        private async Task AddOrUpdateDonors(IEnumerable<DonorAvailabilityUpdate> updates)
+        private async Task AddOrUpdateDonors(IEnumerable<DonorAvailabilityUpdate> updates, TransientDatabase targetDatabase)
         {
             var availableDonors = updates
                 .Where(update => update.IsAvailableForSearch && update.DonorInfo != null)
@@ -152,11 +154,11 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             {
                 logger.SendTrace($"{TraceMessagePrefix}: {availableDonors.Count} donors to be added or updated.");
 
-                await donorService.CreateOrUpdateDonorBatch(availableDonors);
+                await donorService.CreateOrUpdateDonorBatch(availableDonors, targetDatabase);
             }
         }
 
-        private async Task SetDonorsAsUnavailableForSearch(IEnumerable<DonorAvailabilityUpdate> updates)
+        private async Task SetDonorsAsUnavailableForSearch(IEnumerable<DonorAvailabilityUpdate> updates, TransientDatabase targetDatabase)
         {
             var unavailableDonorIds = updates
                 .Where(update => !update.IsAvailableForSearch)
@@ -167,11 +169,11 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             {
                 logger.SendTrace($"{TraceMessagePrefix}: {unavailableDonorIds.Count} donors to be marked as unavailable for search.");
 
-                await donorService.SetDonorBatchAsUnavailableForSearch(unavailableDonorIds);
+                await donorService.SetDonorBatchAsUnavailableForSearch(unavailableDonorIds, targetDatabase);
             }
         }
 
-        private async Task CreateOrUpdateManagementLogBatch(IEnumerable<DonorAvailabilityUpdate> appliedUpdates)
+        private async Task CreateOrUpdateManagementLogBatch(IEnumerable<DonorAvailabilityUpdate> appliedUpdates, TransientDatabase targetDatabase)
         {
             if (!appliedUpdates.Any())
             {
@@ -179,6 +181,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             }
 
             var infos = mapper.Map<IEnumerable<DonorManagementInfo>>(appliedUpdates);
+            var logRepository = repositoryFactory.GetDonorManagementLogRepositoryForDatabase(targetDatabase);
             await logRepository.CreateOrUpdateDonorManagementLogBatch(infos);
         }
     }

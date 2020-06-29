@@ -33,7 +33,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         public async Task CreateOrUpdateDonorBatch_DonorDoesNotExist_CreatesDonorInDatabase()
         {
             var donorInfo = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo }, default);
 
             var donor = await donorInspectionRepository.GetDonor(donorInfo.DonorId);
             donor.Should().NotBeNull();
@@ -43,7 +43,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         public async Task CreateOrUpdateDonorBatch_DonorDoesNotExist_PopulatesPGroupsForDonorHla()
         {
             var donorInfo = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo }, default);
 
             var pGroupCount = await GetPGroupCount(donorInfo.DonorId, Locus.A, LocusPosition.One);
             pGroupCount.Should().NotBe(0);
@@ -56,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
                 .WithHlaAtLocus(Locus.A, LocusPosition.One, "invalid-hla-name")
                 .Build();
 
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo }, default);
 
             var donor = await donorInspectionRepository.GetDonor(donorInfo.DonorId);
             donor.Should().BeNull();
@@ -67,9 +67,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         {
             var donorInfo = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
 
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo }, default);
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo }, default);
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo }, default);
 
             var donors = await donorInspectionRepository.GetDonors(new[] { donorInfo.DonorId });
             donors.Count().Should().Be(1);
@@ -80,10 +80,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         {
             var donorId = DonorIdGenerator.NextId();
             var donorInfo = new DonorInfoBuilder(donorId).WithDonorType(DonorType.Adult).Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo }, default);
 
             var updatedDonor = new DonorInfoBuilder(donorId).WithDonorType(DonorType.Cord).Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor }, default);
 
             var donors = await donorInspectionRepository.GetDonors(new[] { donorId });
             donors.Count().Should().Be(1);
@@ -94,11 +94,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         {
             var donorId = DonorIdGenerator.NextId();
             var donorInfo = new DonorInfoBuilder(donorId).WithDonorType(DonorType.Adult).Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo }, default);
 
             const DonorType newDonorType = DonorType.Cord;
             var updatedDonor = new DonorInfoBuilder(donorId).WithDonorType(newDonorType).Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor }, default);
 
             var donor = await donorInspectionRepository.GetDonor(donorId);
             donor.DonorType.Should().Be(newDonorType);
@@ -112,13 +112,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             const LocusPosition position = LocusPosition.One;
 
             var donorInfo = new DonorInfoBuilder(donorId).WithHlaAtLocus(locus, position, "*01:01").Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo }, default);
             var initialPGroupsCount = await GetPGroupCount(donorId, locus, position);
 
             // XX code will always have more p-groups than a single allele
             var updatedDonor = new DonorInfoBuilder(donorId).WithHlaAtLocus(locus, position, "*01:XX").Build();
 
-            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor }, default);
             var updatedPGroupsCount = await GetPGroupCount(donorId, locus, position);
 
             updatedPGroupsCount.Should().BeGreaterThan(initialPGroupsCount);
@@ -132,12 +132,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
             var donorId = DonorIdGenerator.NextId();
             var donorInfo = new DonorInfoBuilder(donorId).WithDonorType(oldDonorType).Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo }, default);
 
             var updatedDonor = new DonorInfoBuilder(donorId).WithDonorType(newDonorType)
                 .WithHlaAtLocus(Locus.A, LocusPosition.One, "invalid-hla-name")
                 .Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor }, default);
 
             var donor = await donorInspectionRepository.GetDonor(donorId);
             donor.DonorType.Should().Be(oldDonorType);
@@ -154,13 +154,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var donorInfo = new DonorInfoBuilder(donorId)
                 .WithHlaAtLocus(locus, position, "*01:01")
                 .Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo }, default);
             var initialPGroupsCount = await GetPGroupCount(donorId, locus, position);
 
             var updatedDonor = new DonorInfoBuilder(donorId)
                 .WithHlaAtLocus(locus, position, "invalid-hla-name")
                 .Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor }, default);
             var updatedPGroupsCount = await GetPGroupCount(donorId, locus, position);
 
             updatedPGroupsCount.Should().Be(initialPGroupsCount);
@@ -171,8 +171,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         {
             var donorInfo1 = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
             var donorInfo2 = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2
-            });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2}, default);
 
             var donor1 = await donorInspectionRepository.GetDonor(donorInfo1.DonorId);
             var donor2 = await donorInspectionRepository.GetDonor(donorInfo2.DonorId);
@@ -185,7 +184,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         {
             var donorInfo1 = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
             var donorInfo2 = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2 });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2 }, default);
 
             var pGroupCounts = (await GetPGroupCounts(new[] { donorInfo1.DonorId, donorInfo2.DonorId }, Locus.A, LocusPosition.One)).ToList();
             pGroupCounts.First().Should().NotBe(0);
@@ -200,12 +199,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var donorId2 = DonorIdGenerator.NextId();
             var donorInfo1 = new DonorInfoBuilder(donorId1).WithDonorType(oldDonorType).Build();
             var donorInfo2 = new DonorInfoBuilder(donorId2).WithDonorType(oldDonorType).Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2 });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2 }, default);
 
             const DonorType newDonorType = DonorType.Cord;
             var updatedDonor1 = new DonorInfoBuilder(donorId1).WithDonorType(newDonorType).Build();
             var updatedDonor2 = new DonorInfoBuilder(donorId2).WithDonorType(newDonorType).Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor1, updatedDonor2 });
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor1, updatedDonor2 }, default);
 
             var donor1 = await donorInspectionRepository.GetDonor(donorId1);
             var donor2 = await donorInspectionRepository.GetDonor(donorId2);
@@ -223,14 +222,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
             var donorInfo1 = new DonorInfoBuilder(donorId1).WithHlaAtLocus(locus, position, "*01:01").Build();
             var donorInfo2 = new DonorInfoBuilder(donorId2).WithHlaAtLocus(locus, position, "*01:01:01").Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2 });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2 }, default);
             var initialPGroupsCounts = (await GetPGroupCounts(new[] { donorId1, donorId2 }, locus, position)).ToList();
 
             // XX code will always have more p-groups than a single allele
             var updatedDonor1 = new DonorInfoBuilder(donorId1).WithHlaAtLocus(locus, position, "*01:XX").Build();
             var updatedDonor2 = new DonorInfoBuilder(donorId2).WithHlaAtLocus(locus, position, "*01:XX").Build();
 
-            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor1, updatedDonor2 });
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor1, updatedDonor2 }, default);
             var updatedPGroupsCounts = (await GetPGroupCounts(new[] { donorId1, donorId2 }, locus, position)).ToList();
 
             updatedPGroupsCounts.First().Should().BeGreaterThan(initialPGroupsCounts.First());
@@ -245,7 +244,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var donorId2 = DonorIdGenerator.NextId();
             var donorInfo1 = new DonorInfoBuilder(donorId1).WithDonorType(oldDonorType).Build();
             var donorInfo2 = new DonorInfoBuilder(donorId2).WithDonorType(oldDonorType).Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2 });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2 }, default);
 
             var donorId3 = DonorIdGenerator.NextId();
             var donorId4 = DonorIdGenerator.NextId();
@@ -256,7 +255,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var updatedDonor1 = new DonorInfoBuilder(donorId1).WithDonorType(newDonorType).Build();
             var updatedDonor2 = new DonorInfoBuilder(donorId2).WithDonorType(newDonorType).Build();
 
-            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor1, updatedDonor2, donorInfo3, donorInfo4 });
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor1, updatedDonor2, donorInfo3, donorInfo4 }, default);
 
             var donor1 = await donorInspectionRepository.GetDonor(donorId1);
             var donor2 = await donorInspectionRepository.GetDonor(donorId2);
@@ -273,7 +272,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         {
             var donorInfo1 = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
             var donorInfo2 = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2 });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2 }, default);
 
             var donors = (await donorInspectionRepository.GetDonors(new[] { donorInfo1.DonorId, donorInfo2.DonorId })).ToList();
             donors.First().Value.IsAvailableForSearch.Should().BeTrue();
@@ -286,9 +285,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var donorInfo1 = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
             var donorInfo2 = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
             var donorInfoIds = new[] { donorInfo1.DonorId, donorInfo2.DonorId };
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2 });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2 }, default);
 
-            await donorService.SetDonorBatchAsUnavailableForSearch(donorInfoIds);
+            await donorService.SetDonorBatchAsUnavailableForSearch(donorInfoIds, default);
 
             var donors = (await donorInspectionRepository.GetDonors(donorInfoIds)).ToList();
             donors.First().Value.IsAvailableForSearch.Should().BeFalse();
@@ -303,10 +302,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var donorInfo2 = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
             var donorInfos = new[] { donorInfo1, donorInfo2 };
             var donorInfoIds = new[] { donorInfo1.DonorId, donorInfo2.DonorId };
-            await donorService.CreateOrUpdateDonorBatch(donorInfos);
-            await donorService.SetDonorBatchAsUnavailableForSearch(donorInfoIds);
+            await donorService.CreateOrUpdateDonorBatch(donorInfos, default);
+            await donorService.SetDonorBatchAsUnavailableForSearch(donorInfoIds, default);
 
-            await donorService.CreateOrUpdateDonorBatch(donorInfos);
+            await donorService.CreateOrUpdateDonorBatch(donorInfos, default);
 
             var donors = (await donorInspectionRepository.GetDonors(donorInfoIds)).ToList();
             donors.First().Value.IsAvailableForSearch.Should().BeTrue();
@@ -330,14 +329,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
                 .WithDonorType(oldDonorType)
                 .WithHlaAtLocus(locus, position, oldHla)
                 .Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo });
+            await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo }, default);
             var initialPGroupsCount = await GetPGroupCount(donorId, locus, position);
 
             var updatedDonor = new DonorInfoBuilder(donorId)
                 .WithDonorType(newDonorType)
                 .WithHlaAtLocus(locus, position, newHla)
                 .Build();
-            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor });
+            await donorService.CreateOrUpdateDonorBatch(new[] { updatedDonor }, default);
 
             var donor = await donorInspectionRepository.GetDonor(donorId);
             var updatedPGroupsCount = await GetPGroupCount(donorId, locus, position);

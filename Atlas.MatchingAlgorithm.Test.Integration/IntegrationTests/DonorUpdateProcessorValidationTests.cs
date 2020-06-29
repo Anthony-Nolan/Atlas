@@ -77,9 +77,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
-            await donorManagementService.Received().ManageDonorBatchByAvailability(
-                Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(
-                    x => x.Count() == 1));
+            await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
+                Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(x => x.Count() == 1),
+                Arg.Any<TransientDatabase>());
         }
 
         [Test]
@@ -102,8 +102,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
-            await donorManagementService.DidNotReceive().ManageDonorBatchByAvailability(
-                Arg.Any<IEnumerable<DonorAvailabilityUpdate>>());
+            await donorManagementService.DidNotReceiveWithAnyArgs().ApplyDonorUpdatesToDatabase(default, default);
         }
 
         [Test]
@@ -153,8 +152,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
-            await donorManagementService.DidNotReceive().ManageDonorBatchByAvailability(
-                Arg.Any<IEnumerable<DonorAvailabilityUpdate>>());
+            await donorManagementService.DidNotReceiveWithAnyArgs().ApplyDonorUpdatesToDatabase(default, default);
         }
 
         [TestCase(null)]
@@ -210,9 +208,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
-            await donorManagementService.Received().ManageDonorBatchByAvailability(
-                Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(
-                    x => x.Count() == 1));
+            await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
+                Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(x => x.Count() == 1),
+                Arg.Any<TransientDatabase>());
         }
 
         [Test]
@@ -226,9 +224,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
-            await donorManagementService.Received().ManageDonorBatchByAvailability(
-                Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(
-                    x => x.Count() == updateCount));
+            await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
+                Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(x => x.Count() == updateCount),
+                Arg.Any<TransientDatabase>());
         }
 
         [Test]
@@ -257,9 +255,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
-            await donorManagementService.Received().ManageDonorBatchByAvailability(
-                Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(
-                    x => x.Count() == 1));
+            await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
+                Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(x => x.Count() == 1),
+                Arg.Any<TransientDatabase>());
         }
     }
 }

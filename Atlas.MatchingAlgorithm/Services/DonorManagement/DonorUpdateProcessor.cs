@@ -80,14 +80,14 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
                 case DatabaseStateWithRespectToDonorUpdates.Active:
                     await messageProcessorService.ProcessMessageBatchAsync(
                         async batch => await ProcessMessages(batch, targetDatabase),
-                        batchSize, prefetchCount:
+                        batchSize,
                         batchSize * 2);
                     return;
 
                 case DatabaseStateWithRespectToDonorUpdates.Dormant:
                     await messageProcessorService.ProcessMessageBatchAsync(
                         async batch => await DiscardMessages(batch),
-                        batchSize * 10, prefetchCount:
+                        batchSize * 10,
                         batchSize * 20);
                     return;
 
@@ -188,7 +188,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
                 {
                     throw new InvalidOperationException("We shouldn't ever be running this code whilst pointing at a ");
                 }
-                await donorManagementService.ManageDonorBatchByAvailability(converterResults.ProcessingResults);
+                await donorManagementService.ApplyDonorUpdatesToDatabase(converterResults.ProcessingResults, targetDatabase);
             }
         }
 

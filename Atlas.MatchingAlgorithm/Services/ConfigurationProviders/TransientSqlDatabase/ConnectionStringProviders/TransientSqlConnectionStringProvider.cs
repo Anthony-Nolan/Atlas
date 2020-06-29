@@ -11,14 +11,11 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
     /// </summary>
     public abstract class TransientSqlConnectionStringProvider : IConnectionStringProvider
     {
-        protected readonly IActiveDatabaseProvider ActiveDatabaseProvider;
-
         private readonly ConnectionStrings connectionStrings;
 
-        protected TransientSqlConnectionStringProvider(ConnectionStrings connectionStrings, IActiveDatabaseProvider activeDatabaseProvider)
+        protected TransientSqlConnectionStringProvider(ConnectionStrings connectionStrings)
         {
             this.connectionStrings = connectionStrings;
-            ActiveDatabaseProvider = activeDatabaseProvider;
         }
 
         public string GetConnectionString()
@@ -29,7 +26,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 
         protected abstract TransientDatabase DatabaseType();
 
-        private string GetConnectionString(TransientDatabase database)
+        protected string GetConnectionString(TransientDatabase database)
         {
             switch (database)
             {
