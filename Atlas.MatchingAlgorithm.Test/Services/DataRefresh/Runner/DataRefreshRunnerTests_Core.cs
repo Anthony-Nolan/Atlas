@@ -15,6 +15,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
+using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 using FluentAssertions;
@@ -33,6 +34,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         private IHlaMetadataDictionary hlaMetadataDictionary;
         private IDonorImporter donorImporter;
         private IHlaProcessor hlaProcessor;
+        private IDonorUpdateProcessor donorUpdateProcessor;
         private IDataRefreshNotificationSender dataRefreshNotificationSender;
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
 
@@ -50,6 +52,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             hlaMetadataDictionary = Substitute.For<IHlaMetadataDictionary>();
             donorImporter = Substitute.For<IDonorImporter>();
             hlaProcessor = Substitute.For<IHlaProcessor>();
+            donorUpdateProcessor = Substitute.For<IDonorUpdateProcessor>();
             logger = Substitute.For<ILogger>();
             dataRefreshNotificationSender = Substitute.For<IDataRefreshNotificationSender>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
@@ -155,6 +158,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 Substitute.For<IActiveHlaNomenclatureVersionAccessor>(),
                 donorImporter,
                 hlaProcessor,
+                donorUpdateProcessor,
                 logger,
                 dataRefreshNotificationSender,
                 dataRefreshHistoryRepository

@@ -16,7 +16,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
         [TestCase(DataRefreshStage.DatabaseScalingSetup)]
         [TestCase(DataRefreshStage.DatabaseScalingTearDown)]
-        // TODO: ATLAS-249: Add a test case for Queued Update Processing
+        [TestCase(DataRefreshStage.QueuedDonorUpdateProcessing)]
         public async Task ContinuedRefreshData_WhenUnskippableStageIsAlreadyComplete_DoesNotSkipStage(DataRefreshStage refreshStage)
         {
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(refreshStage).Build());
@@ -186,7 +186,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         }
 
         [Test]
-        public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToDatabaseScaling_RedoesDownScaling()
+        public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToDatabaseScaling_RedoesDownScaling_AndContinuesToDonorUpdates()
         {
             var settings = DataRefreshSettingsBuilder.New
                 .With(s => s.ActiveDatabaseSize, AzureDatabaseSize.S4.ToString())
@@ -200,6 +200,25 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             await dataRefreshRunner.RefreshData(default);
 
             await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4);
+            await donorUpdateProcessor.ReceivedWithAnyArgs(1).ApplyDifferentialDonorUpdatesDuringRefresh(default);
+        }
+
+        [Test]
+        public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToQueuedDonorUpdates_RedoesScaleDown_AndRedoesDonorUpdates()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.ActiveDatabaseSize, AzureDatabaseSize.S4.ToString())
+                .Build();
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
+
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.QueuedDonorUpdateProcessing).Build()
+            );
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4);
+            await donorUpdateProcessor.ReceivedWithAnyArgs(1).ApplyDifferentialDonorUpdatesDuringRefresh(default);
         }
 
         [Test]
@@ -212,6 +231,23 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
                 DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.IndexRecreation).Build()
+            );
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await azureDatabaseManager.DidNotReceive().UpdateDatabaseSize(default, AzureDatabaseSize.P15);
+        }
+
+        [Test]
+        public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToDbScaleDown_DoesNotPerformInitialUpScalingOfDatabase()
+        {
+            var settings = DataRefreshSettingsBuilder.New
+                .With(s => s.RefreshDatabaseSize, AzureDatabaseSize.P15.ToString())
+                .Build();
+            dataRefreshRunner = BuildDataRefreshRunner(settings);
+
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DatabaseScalingTearDown).Build()
             );
 
             await dataRefreshRunner.RefreshData(default);

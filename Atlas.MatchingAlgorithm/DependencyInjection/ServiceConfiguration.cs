@@ -103,7 +103,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterSettingsForMatchingDonorManagement(
                 fetchApplicationInsightsSettings,
                 fetchAzureStorageSettings,
-                fetchDonorManagementSettings,
                 fetchMessagingServiceBusSettings,
                 fetchNotificationsServiceBusSettings
             );
@@ -241,7 +240,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             {
                 var settings = fetchDonorManagementSettings(sp);
                 var factory = sp.GetService<IMessageReceiverFactory>();
-                var messageReceiver = new ServiceBusMessageReceiver<SearchableDonorUpdate>(factory, settings.Topic, settings.SubscriptionForDbA);
+                var messageReceiver = new ServiceBusMessageReceiver<SearchableDonorUpdate>(factory, settings.Topic, settings.SubscriptionForDbB);
                 return new DonorUpdateMessageProcessor(messageReceiver);
             });
 
@@ -284,7 +283,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings
         )
@@ -295,8 +293,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchMessagingServiceBusSettings,
                 fetchNotificationsServiceBusSettings
             );
-
-            services.MakeSettingsAvailableForUse(fetchDonorManagementSettings);
         }
 
         private static void RegisterSettingsForMatchingAlgorithm(
