@@ -101,40 +101,44 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             }
         }
 
-        //QQ @Reviewer. I can't decide which version of this method I prefer. Please decide for me.
         private DatabaseStateWithRespectToDonorUpdates DetermineDatabaseState(TransientDatabase targetDatabase)
         {
             var activeDb = refreshHistoryRepository.GetActiveDatabase();
             var refreshJobs = refreshHistoryRepository.GetInProgressJobs().ToList();
-            var refreshesAreRunning = refreshJobs.Any();
-            var multipleRefreshesAreRunning = refreshJobs.Count > 1;
             var dbBeingRefreshed = refreshJobs.FirstOrDefault()?.Database?.ParseToEnum<TransientDatabase>();
+            
+            var targetDbIsActive = (activeDb == targetDatabase);
+            var otherDbIsActive = (activeDb != null && activeDb != targetDatabase);
+            var noActiveDbExists = (activeDb == null);
+            var refreshesAreRunning = refreshJobs.Any();
+            var targetIsBeingRefreshed = (dbBeingRefreshed == targetDatabase);
+            var multipleRefreshesAreRunning = refreshJobs.Count > 1;
 
-            if (activeDb == targetDatabase /* && Don't care whether refresh is running*/ && dbBeingRefreshed != targetDatabase && !multipleRefreshesAreRunning)
+            if (targetDbIsActive                        && !targetIsBeingRefreshed && !multipleRefreshesAreRunning)
             {
                 //Mainline Active DB case.
                 return DatabaseStateWithRespectToDonorUpdates.Active;
             }
 
-            if (activeDb != null && activeDb != targetDatabase && !refreshesAreRunning && dbBeingRefreshed != targetDatabase && !multipleRefreshesAreRunning)
+            if (otherDbIsActive && !refreshesAreRunning && !targetIsBeingRefreshed && !multipleRefreshesAreRunning)
             {
                 //Mainline Dormant DB case.
                 return DatabaseStateWithRespectToDonorUpdates.Dormant;
             }
 
-            if (activeDb != null && activeDb != targetDatabase && refreshesAreRunning && dbBeingRefreshed == targetDatabase && !multipleRefreshesAreRunning)
+            if (otherDbIsActive && refreshesAreRunning && targetIsBeingRefreshed && !multipleRefreshesAreRunning)
             {
                 //Mainline Refreshing DB case.
                 return DatabaseStateWithRespectToDonorUpdates.Refreshing;
             }
 
-            if (activeDb == null && refreshesAreRunning && dbBeingRefreshed != targetDatabase && !multipleRefreshesAreRunning)
+            if (noActiveDbExists && refreshesAreRunning && !targetIsBeingRefreshed && !multipleRefreshesAreRunning)
             {
                 //Secondary Dormant DB case (When initial refresh targets other database.)
                 return DatabaseStateWithRespectToDonorUpdates.Dormant;
             }
 
-            if (activeDb == null && refreshesAreRunning && dbBeingRefreshed == targetDatabase && !multipleRefreshesAreRunning)
+            if (noActiveDbExists && refreshesAreRunning && targetIsBeingRefreshed && !multipleRefreshesAreRunning)
             {
                 //Secondary Refreshing DB case (When initial refresh targets this database.)
                 return DatabaseStateWithRespectToDonorUpdates.Refreshing;
@@ -144,75 +148,19 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             // Any other combination of options is weird and unexpected.
             // We shouldn't really ever get to here, but if we do, then let's just leave the messages alone.
             // No value in throwing or logging here - that'll just produce vast amounts of spam in the logs for little benefit. Other processes should be in charge of worrying about this.
+            logger.SendTrace($@"Observed a DataRefreshHistory state that was not expected: 
+{nameof(targetDbIsActive)}: {targetDbIsActive}.
+{nameof(otherDbIsActive)}: {otherDbIsActive}.
+{nameof(noActiveDbExists)}: {noActiveDbExists}.
+{nameof(refreshesAreRunning)}: {refreshesAreRunning}.
+{nameof(targetIsBeingRefreshed)}: {targetIsBeingRefreshed}.
+{nameof(multipleRefreshesAreRunning)}: {multipleRefreshesAreRunning}.
+", LogLevel.Verbose);
+
             return DatabaseStateWithRespectToDonorUpdates.Refreshing;
         }
 
 
-        //QQ @Reviewer. I can't decide which version of this method I prefer. Please decide for me.
-        private DatabaseStateWithRespectToDonorUpdates DetermineDatabaseState2(TransientDatabase targetDatabase)
-        {
-            var activeDb = refreshHistoryRepository.GetActiveDatabase();
-            var refreshJobs = refreshHistoryRepository.GetInProgressJobs().ToList();
-            var refreshesAreRunning = refreshJobs.Any();
-            var multipleRefreshesAreRunning = refreshJobs.Count > 1;
-            var dbBeingRefreshed = refreshJobs.FirstOrDefault()?.Database.ParseToEnum<TransientDatabase>();
-
-            if (multipleRefreshesAreRunning)
-            {
-                // This should NEVER be true, so let's just leave the messages alone until things make more sense.
-                return DatabaseStateWithRespectToDonorUpdates.Refreshing;
-            }
-
-            if (activeDb == null)
-            {
-                if (!refreshesAreRunning)
-                {
-                    // System setup state?
-                    // Again just leave the messages until things make more sense.
-                    return DatabaseStateWithRespectToDonorUpdates.Refreshing;
-                }
-
-                if (dbBeingRefreshed == targetDatabase)
-                {
-                    // First time refresh, and we're the subject, so hold the messages until they're applied.
-                    return DatabaseStateWithRespectToDonorUpdates.Refreshing;
-                }
-
-                // The OTHER database is the subject of the first-time refresh.
-                // So we can (and SHOULD!) discard these messages.
-                return DatabaseStateWithRespectToDonorUpdates.Dormant;
-            }
-
-            //These are the mainline cases...
-            if (activeDb == targetDatabase)
-            {
-                if (refreshesAreRunning && dbBeingRefreshed == targetDatabase)
-                {
-                    //Surprised by this - we'd expect the refreshing DB to be the OTHER one, but sure, whatever.
-                    return DatabaseStateWithRespectToDonorUpdates.Refreshing;
-                }
-
-                //Mainline Active DB case.
-                return DatabaseStateWithRespectToDonorUpdates.Active;
-            }
-
-            //By the time we're here, we know: "ActiveDb" is defined, but not us.
-            if (!refreshesAreRunning)
-            {
-                // Mainline Dormant DB case
-                return DatabaseStateWithRespectToDonorUpdates.Dormant;
-            }
-
-            //By the time we're here, we know: "ActiveDb" is defined, but not us, and exactly 1 refresh IS running.
-            if (dbBeingRefreshed == targetDatabase)
-            {
-                //Mainline Refreshing DB case.
-                return DatabaseStateWithRespectToDonorUpdates.Refreshing;
-            }
-
-            // ... What? Urmmm ... another weird state that we don't understand. So again, just leave the messages where they are.
-            return DatabaseStateWithRespectToDonorUpdates.Refreshing; //QQ
-        }
 
         public IMessageProcessor<SearchableDonorUpdate> ChooseMessagesToProcess(TransientDatabase targetDatabase)
         {
@@ -232,7 +180,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 
             if (converterResults.ProcessingResults.Any())
             {
-                // Currently the donorManagmentService acquires a 'hardcoded' connection to the database.
+                // Currently the donorManagementService acquires a 'hardcoded' connection to the database.
                 // This is fine, since this code should only EVER be running against the active Database in the first place.
                 // But let's verify that first ... just in case.
                 var activeDb = refreshHistoryRepository.GetActiveDatabase();
@@ -246,7 +194,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 
         private Task DiscardMessages(IEnumerable<ServiceBusMessage<SearchableDonorUpdate>> messageBatch)
         {
-            logger.SendTrace($"{TraceMessagePrefix}: Read and discarded {messageBatch.Count()} messages since the target Database is currently dormant.");
+            logger.SendTrace($"{TraceMessagePrefix}: Read and discarded {messageBatch.Count()} messages since the target Database is currently dormant.", LogLevel.Verbose);
             return Task.CompletedTask;
         }
     }

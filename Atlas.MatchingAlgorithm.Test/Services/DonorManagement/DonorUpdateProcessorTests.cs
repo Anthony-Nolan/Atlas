@@ -55,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task ProcessDonorUpdates_ProcessesMessageBatch_IfTargetDbIsActive()
+        public async Task ProcessDonorUpdates_IfTargetDbIsActive_ThenProcessesMessageBatch()
         {
             messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetActiveDatabase().Returns(DatabaseA);
@@ -66,7 +66,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task ProcessDonorUpdates_ProcessesMessageBatch_IfTargetDbIsDormant()
+        public async Task ProcessDonorUpdates_IfTargetDbIsDormant_ThenProcessesMessageBatch()
         {
             messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetActiveDatabase().Returns(DatabaseB);
@@ -77,7 +77,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task ProcessDonorUpdates_DoesNotProcessMessages_IfTargetDbIsRefreshing()
+        public async Task ProcessDonorUpdates_IfTargetDbIsRefreshing_ThenDoesNotProcessMessages()
         {
             messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetInProgressJobs().Returns(new [] { dbARefreshing });
@@ -89,7 +89,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task ProcessDonorUpdates_ProcessesMessages_IfOtherDbIsRefreshing()
+        public async Task ProcessDonorUpdates_IfOtherDbIsRefreshing_ThenProcessesMessages()
         {
             messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetInProgressJobs().Returns(new[] { dbBRefreshing });
@@ -101,7 +101,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task ProcessDonorUpdates_DoesNotProcessMessages_IfTargetDbIsPerformingInitialRefresh()
+        public async Task ProcessDonorUpdates_IfTargetDbIsPerformingInitialRefresh_ThenDoesNotProcessMessages()
         {
             messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetInProgressJobs().Returns(new[] { dbARefreshing });
@@ -113,7 +113,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task ProcessesDonorUpdates_ProcessesMessages_IfOtherDbIsPerformingInitialRefresh()
+        public async Task ProcessesDonorUpdates_IfOtherDbIsPerformingInitialRefresh_ThenProcessesMessages()
         {
             messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetInProgressJobs().Returns(new[] { dbBRefreshing });
@@ -125,7 +125,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task ProcessesDonorUpdates_DoesNotProcessMessages_IfHistoryStateIsBlank()
+        public async Task ProcessesDonorUpdates_IfHistoryStateIsBlank_ThenDoesNotProcessMessages()
         {
             messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetInProgressJobs().Returns(Enumerable.Empty<DataRefreshRecord>());
@@ -137,7 +137,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task ProcessesDonorUpdates_DoesNotProcessMessages_IfHistoryStateIsConfusing()
+        public async Task ProcessesDonorUpdates_IfHistoryStateIsUnexpected_ThenDoesNotProcessMessages()
         {
             messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetInProgressJobs().Returns(new[] { dbARefreshing, dbBRefreshing });
