@@ -50,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         {
             var searchRequest = new SearchRequest();
 
-            await searchRunner.RunSearch(new IdentifiedSearchRequest { SearchRequest = searchRequest });
+            await searchRunner.RunSearch(new IdentifiedSearchRequest {SearchRequest = searchRequest});
 
             await searchService.Received().Search(searchRequest);
         }
@@ -60,7 +60,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         {
             const string id = "id";
 
-            await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id });
+            await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = id});
 
             await resultsBlobStorageClient.Received().UploadResults(id, Arg.Any<SearchResultSet>());
         }
@@ -70,7 +70,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         {
             const string id = "id";
 
-            await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id });
+            await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = id});
 
             await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
                 r.WasSuccessful && r.SearchRequestId == id
@@ -83,7 +83,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             const string hlaNomenclatureVersion = "hla-nomenclature-version";
             hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion().Returns(hlaNomenclatureVersion);
 
-            await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = "id" });
+            await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = "id"});
 
             await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
                 r.HlaNomenclatureVersion == hlaNomenclatureVersion
@@ -94,13 +94,21 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         public async Task RunSearch_WhenSearchFails_PublishesFailureNotification()
         {
             const string id = "id";
-            searchService.Search(Arg.Any<SearchRequest>()).Throws(new AtlasHttpException(HttpStatusCode.InternalServerError, ""));
+            searchService.Search(Arg.Any<SearchRequest>()).Throws(new AtlasHttpException(HttpStatusCode.InternalServerError, "dummy error message"));
 
-            await searchRunner.RunSearch(new IdentifiedSearchRequest { Id = id });
-
-            await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
-                !r.WasSuccessful && r.SearchRequestId == id
-            ));
+            try
+            {
+                await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = id});
+            }
+            catch (AtlasHttpException)
+            {
+            }
+            finally
+            {
+                await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
+                    !r.WasSuccessful && r.SearchRequestId == id
+                ));
+            }
         }
     }
 }
