@@ -1,6 +1,6 @@
 ﻿using Atlas.Common.GeneticData.PhenotypeInfo;
 
-namespace Atlas.MatchPrediction.Client.Models.ExpandAmbiguousPhenotype
+namespace Atlas.MatchPrediction.ExternalInterface.Models.ExpandAmbiguousPhenotype
 {
     public class ExpandAmbiguousPhenotypeInput
     {

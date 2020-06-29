@@ -4,7 +4,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 {
-    public interface IAmbiguousPhenotypeExpander
+    internal interface IAmbiguousPhenotypeExpander
     {
         /// <summary>
         ///  Returns all possible unambiguous genotypes by calculating the cartesian product of a set of possible alleles at each position.
@@ -12,7 +12,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         public ISet<PhenotypeInfo<string>> ExpandPhenotype(PhenotypeInfo<IReadOnlyCollection<string>> allelesPerLocus);
     }
 
-    public class AmbiguousPhenotypeExpander : IAmbiguousPhenotypeExpander
+    internal class AmbiguousPhenotypeExpander : IAmbiguousPhenotypeExpander
     {
         public ISet<PhenotypeInfo<string>> ExpandPhenotype(PhenotypeInfo<IReadOnlyCollection<string>> allelesPerLocus)
         {

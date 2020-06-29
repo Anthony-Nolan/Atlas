@@ -3,7 +3,7 @@ using Atlas.Common.Helpers;
 
 namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
-    public interface IGenotypeAlleleTruncater
+    internal interface IGenotypeAlleleTruncater
     {
         /// <summary>
         /// This will only be used when we implement 2-field HF sets.
@@ -11,7 +11,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         public PhenotypeInfo<string> TruncateGenotypeAlleles(PhenotypeInfo<string> genotype);
     }
 
-    public class GenotypeAlleleTruncater : IGenotypeAlleleTruncater
+    internal class GenotypeAlleleTruncater : IGenotypeAlleleTruncater
     {
         public PhenotypeInfo<string> TruncateGenotypeAlleles(PhenotypeInfo<string> genotype)
         {
