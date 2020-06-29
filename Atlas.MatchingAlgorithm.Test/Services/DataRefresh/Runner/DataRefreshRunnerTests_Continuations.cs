@@ -23,7 +23,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await dataRefreshHistoryRepository.Received(1).MarkStageAsComplete(Arg.Any<int>(), refreshStage);
+            await dataRefreshHistoryRepository.Received(1).MarkStageAsComplete(Arg.Any<DataRefreshRecord>(), refreshStage);
         }
 
         [TestCase(DataRefreshStage.MetadataDictionaryRefresh)]
@@ -38,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await dataRefreshHistoryRepository.DidNotReceive().MarkStageAsComplete(Arg.Any<int>(), refreshStage);
+            await dataRefreshHistoryRepository.DidNotReceive().MarkStageAsComplete(Arg.Any<DataRefreshRecord>(), refreshStage);
         }
         [Test]
         public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToDictionaryRefresh_ContinuesFromIndexDeletion()
