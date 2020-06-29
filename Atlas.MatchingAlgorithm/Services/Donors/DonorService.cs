@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Notifications;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
-using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 
@@ -16,42 +16,41 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
     /// </summary>
     public interface IDonorService
     {
-        Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds);
-        Task CreateOrUpdateDonorBatch(IEnumerable<DonorInfo> donorInfos);
+        Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds, TransientDatabase targetDatabase);
+        Task CreateOrUpdateDonorBatch(IEnumerable<DonorInfo> donorInfos, TransientDatabase targetDatabase);
     }
 
     public class DonorService : IDonorService
     {
         private const string ExpansionFailureEventName = "HLA Expansion Failure(s) in Matching Algorithm's Continuous Donor Update sytem";
 
-        private readonly IDonorUpdateRepository donorUpdateRepository;
-        private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IDonorHlaExpander donorHlaExpander;
+        private readonly IStaticallyChosenDatabaseRepositoryFactory repositoryFactory;
         private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
 
         public DonorService(
-            // ReSharper disable once SuggestBaseTypeForParameter
-            IActiveRepositoryFactory repositoryFactory,
+            IStaticallyChosenDatabaseRepositoryFactory repositoryFactory,
             IDonorHlaExpanderFactory donorHlaExpanderFactory,
             IFailedDonorsNotificationSender failedDonorsNotificationSender)
         {
-            donorUpdateRepository = repositoryFactory.GetDonorUpdateRepository();
-            donorInspectionRepository = repositoryFactory.GetDonorInspectionRepository();
             donorHlaExpander = donorHlaExpanderFactory.BuildForActiveHlaNomenclatureVersion();
+            this.repositoryFactory = repositoryFactory;
             this.failedDonorsNotificationSender = failedDonorsNotificationSender;
         }
 
-        public async Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds)
+        public async Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds, TransientDatabase targetDatabase)
         {
             donorIds = donorIds.ToList();
 
             if (donorIds.Any())
             {
+                var donorUpdateRepository = repositoryFactory.GetDonorUpdateRepositoryForDatabase(targetDatabase);
+
                 await donorUpdateRepository.SetDonorBatchAsUnavailableForSearch(donorIds);
             }
         }
 
-        public async Task CreateOrUpdateDonorBatch(IEnumerable<DonorInfo> donorInfos)
+        public async Task CreateOrUpdateDonorBatch(IEnumerable<DonorInfo> donorInfos, TransientDatabase targetDatabase)
         {
             donorInfos = donorInfos.ToList();
 
@@ -62,12 +61,12 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 
             var expansionResult = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorInfos, ExpansionFailureEventName);
 
-            await CreateOrUpdateDonorsWithHla(expansionResult);
+            await CreateOrUpdateDonorsWithHla(expansionResult, targetDatabase);
 
             await SendFailedDonorsAlert(expansionResult);
         }
 
-        private async Task CreateOrUpdateDonorsWithHla(DonorBatchProcessingResult<DonorInfoWithExpandedHla> expansionResult)
+        private async Task CreateOrUpdateDonorsWithHla(DonorBatchProcessingResult<DonorInfoWithExpandedHla> expansionResult, TransientDatabase targetDatabase)
         {
             var donorsWithHla = expansionResult.ProcessingResults.ToList();
 
@@ -76,36 +75,42 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
                 return;
             }
 
-            var existingDonorIds = (await GetExistingDonorIds(donorsWithHla)).ToList();
+            var existingDonorIds = (await GetExistingDonorIds(donorsWithHla, targetDatabase)).ToList();
             var newDonors = donorsWithHla.Where(id => !existingDonorIds.Contains(id.DonorId));
             var updateDonors = donorsWithHla.Where(id => existingDonorIds.Contains(id.DonorId));
 
-            await CreateDonorBatch(newDonors);
-            await UpdateDonorBatch(updateDonors);
+            await CreateDonorBatch(newDonors, targetDatabase);
+            await UpdateDonorBatch(updateDonors, targetDatabase);
         }
 
-        private async Task<IEnumerable<int>> GetExistingDonorIds(IEnumerable<DonorInfoWithExpandedHla> donorInfos)
+        private async Task<IEnumerable<int>> GetExistingDonorIds(IEnumerable<DonorInfoWithExpandedHla> donorInfos, TransientDatabase targetDatabase)
         {
+            var donorInspectionRepository = repositoryFactory.GetDonorInspectionRepositoryForDatabase(targetDatabase);
+
             var existingDonors = await donorInspectionRepository.GetDonors(donorInfos.Select(d => d.DonorId));
             return existingDonors.Keys;
         }
 
-        private async Task CreateDonorBatch(IEnumerable<DonorInfoWithExpandedHla> newDonors)
+        private async Task CreateDonorBatch(IEnumerable<DonorInfoWithExpandedHla> newDonors, TransientDatabase targetDatabase)
         {
             newDonors = newDonors.ToList();
 
             if (newDonors.Any())
             {
+                var donorUpdateRepository = repositoryFactory.GetDonorUpdateRepositoryForDatabase(targetDatabase);
+
                 await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(newDonors.AsEnumerable());
             }
         }
 
-        private async Task UpdateDonorBatch(IEnumerable<DonorInfoWithExpandedHla> updateDonors)
+        private async Task UpdateDonorBatch(IEnumerable<DonorInfoWithExpandedHla> updateDonors, TransientDatabase targetDatabase)
         {
             updateDonors = updateDonors.ToList();
 
             if (updateDonors.Any())
             {
+                var donorUpdateRepository = repositoryFactory.GetDonorUpdateRepositoryForDatabase(targetDatabase);
+
                 await donorUpdateRepository.UpdateDonorBatch(updateDonors.AsEnumerable());
             }
         }

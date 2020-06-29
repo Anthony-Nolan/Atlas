@@ -33,17 +33,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 
         public TransientDatabase GetDormantDatabase()
         {
-            var activeDatabase = GetActiveDatabase();
-
-            switch (activeDatabase)
-            {
-                case TransientDatabase.DatabaseA:
-                    return TransientDatabase.DatabaseB;
-                case TransientDatabase.DatabaseB:
-                    return TransientDatabase.DatabaseA;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            return GetActiveDatabase().Other();
         }
     }
 }
