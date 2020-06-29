@@ -14,7 +14,6 @@ using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Donors;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 {
@@ -37,7 +36,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         private readonly IDonorHlaExpanderFactory donorHlaExpanderFactory;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
-        private readonly IMacDictionary macDictionary;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IPGroupRepository pGroupRepository;
@@ -47,14 +45,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             IDonorHlaExpanderFactory donorHlaExpanderFactory,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             IFailedDonorsNotificationSender failedDonorsNotificationSender,
-            IMacDictionary macDictionary,
             IDormantRepositoryFactory repositoryFactory)
         {
             this.logger = logger;
             this.donorHlaExpanderFactory = donorHlaExpanderFactory;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
             this.failedDonorsNotificationSender = failedDonorsNotificationSender;
-            this.macDictionary = macDictionary;
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
             pGroupRepository = repositoryFactory.GetPGroupRepository();
