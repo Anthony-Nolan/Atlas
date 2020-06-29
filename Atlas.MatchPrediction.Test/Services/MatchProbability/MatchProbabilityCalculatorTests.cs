@@ -61,7 +61,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             var donorGenotypes = new HashSet<PhenotypeInfo<string>>
             {
                 donorGenotype1,
-                donorGenotype1
+                donorGenotype2
             };
 
             const decimal expectedProbability = 0.25m;

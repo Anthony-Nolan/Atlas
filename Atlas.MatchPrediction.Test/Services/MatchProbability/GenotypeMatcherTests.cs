@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
@@ -55,12 +56,12 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             var patientGenotypes = new HashSet<PhenotypeInfo<string>>{PatientGenotype1, PatientGenotype2};
             var donorGenotypes = new HashSet<PhenotypeInfo<string>>{DonorGenotype1, DonorGenotype2};
             
-            var expectedPatientDonorPairs = new List<UnorderedPair<PhenotypeInfo<string>>>
+            var expectedPatientDonorPairs = new List<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>>
             {
-                new UnorderedPair<PhenotypeInfo<string>>{Item1 = PatientGenotype1, Item2 = DonorGenotype1},
-                new UnorderedPair<PhenotypeInfo<string>>{Item1 = PatientGenotype1, Item2 = DonorGenotype2},
-                new UnorderedPair<PhenotypeInfo<string>>{Item1 = PatientGenotype2, Item2 = DonorGenotype1},
-                new UnorderedPair<PhenotypeInfo<string>>{Item1 = PatientGenotype2, Item2 = DonorGenotype2}
+                new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(PatientGenotype1, DonorGenotype1),
+                new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(PatientGenotype1, DonorGenotype2),
+                new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(PatientGenotype2, DonorGenotype1),
+                new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(PatientGenotype2, DonorGenotype2)
             };
 
             matchCalculationService.MatchAtPGroupLevel(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<PhenotypeInfo<string>>(), Arg.Any<string>())
@@ -93,10 +94,10 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             var patientGenotypes = new HashSet<PhenotypeInfo<string>> { PatientGenotype1, PatientGenotype2 };
             var donorGenotypes = new HashSet<PhenotypeInfo<string>> { DonorGenotype1, DonorGenotype2 };
 
-            var expectedPatientDonorPairs = new List<UnorderedPair<PhenotypeInfo<string>>>
+            var expectedPatientDonorPairs = new List<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>>
             {
-                new UnorderedPair<PhenotypeInfo<string>>{Item1 = PatientGenotype1, Item2 = DonorGenotype1},
-                new UnorderedPair<PhenotypeInfo<string>>{Item1 = PatientGenotype2, Item2 = DonorGenotype2}
+                new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(PatientGenotype1, DonorGenotype1),
+                new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(PatientGenotype2, DonorGenotype2)
             };
 
             matchCalculationService.MatchAtPGroupLevel(PatientGenotype1, DonorGenotype1, Arg.Any<string>()).Returns(TenOutOfTenMatch);
