@@ -3,10 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
+using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
-using MatchProbabilityInput = Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability.MatchProbabilityInput;
-using MatchProbabilityResponse = Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability.MatchProbabilityResponse;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
@@ -34,7 +33,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             this.matchProbabilityCalculator = matchProbabilityCalculator;
         }
 
-        // TODO: ATLAS-236: Add some logging to this process 
+        // TODO: ATLAS-236: Add some step-by-step logging to this process 
         public async Task<MatchProbabilityResponse> CalculateMatchProbability(MatchProbabilityInput matchProbabilityInput)
         {
             var patientGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(
