@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.MatchCalculation;
@@ -16,7 +16,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         /// <param name="patientGenotypes">List of unambiguous genotypes for a given patient</param>
         /// <param name="donorGenotypes">List of unambiguous genotypes for a given donor</param>
         /// <param name="hlaNomenclatureVersion">Same version used to get the genotype information</param>
-        public Task<IEnumerable<UnorderedPair<PhenotypeInfo<string>>>> PairsWithTenOutOfTenMatch(
+        public Task<ISet<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>>> PairsWithTenOutOfTenMatch(
             ISet<PhenotypeInfo<string>> patientGenotypes,
             ISet<PhenotypeInfo<string>> donorGenotypes,
             string hlaNomenclatureVersion);
@@ -31,18 +31,16 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             this.matchCalculationService = matchCalculationService;
         }
 
-        public async Task<IEnumerable<UnorderedPair<PhenotypeInfo<string>>>> PairsWithTenOutOfTenMatch(
+        public async Task<ISet<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>>> PairsWithTenOutOfTenMatch(
             ISet<PhenotypeInfo<string>> patientGenotypes,
             ISet<PhenotypeInfo<string>> donorGenotypes,
             string hlaNomenclatureVersion)
         {
             var allPatientDonorCombinations = patientGenotypes.SelectMany(patientHla =>
-                donorGenotypes.Select(donorHla => 
-                    new UnorderedPair<PhenotypeInfo<string>> {Item1 = patientHla, Item2 = donorHla})).ToList();
+                donorGenotypes.Select(donorHla => new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla, donorHla)));
 
             var patientDonorMatchDetails =
-                await Task.WhenAll(
-                    allPatientDonorCombinations.Select(pd => CalculateMatch(pd, hlaNomenclatureVersion)));
+                await Task.WhenAll(allPatientDonorCombinations.Select(pd => CalculateMatch(pd, hlaNomenclatureVersion)));
 
             var tenOutOfTenPatientDonorMatchDetails =
                 patientDonorMatchDetails.Where(pd => pd.Item2.IsTenOutOfTenMatch);
@@ -50,16 +48,17 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var tenOutOfTenPatientDonorPairs =
                 tenOutOfTenPatientDonorMatchDetails.Select(pd => pd.Item1);
 
-            return tenOutOfTenPatientDonorPairs;
+            return tenOutOfTenPatientDonorPairs.ToHashSet();
         }
 
-        private async Task<(UnorderedPair<PhenotypeInfo<string>>, GenotypeMatchDetails)> CalculateMatch(
-            UnorderedPair<PhenotypeInfo<string>> patientDonorPair,
+        private async Task<(Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>, GenotypeMatchDetails)> CalculateMatch(
+            Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>> patientDonorPair,
             string hlaNomenclatureVersion)
         {
             var matchDetails =
                 await matchCalculationService.MatchAtPGroupLevel(patientDonorPair.Item1, patientDonorPair.Item2, hlaNomenclatureVersion);
-                return (patientDonorPair, matchDetails);
+
+            return (patientDonorPair, matchDetails);
         }
     }
 }
