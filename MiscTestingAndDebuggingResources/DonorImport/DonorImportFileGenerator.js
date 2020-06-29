@@ -1,14 +1,14 @@
 var fs = require('fs');
 
 const config = {
-    donorIdPrefix: "ATLAS-57-batch-5-",
+    donorIdPrefix: "donor-prefix-",
     // diff or full
     updateMode: "diff",
     // N = new, D = delete, U = update
     changeType: "N",
     // D = adult (donor), C = cord
     donorType: "D",
-    fileName: "ATLAS-57-P-And-G-Groups"
+    fileName: "custom-filename"
 }
 
 let currentDonorId = 0;
