@@ -1,4 +1,6 @@
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Utils;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.MatchProbability;
 
@@ -12,16 +14,22 @@ namespace Atlas.MatchPrediction.ExternalInterface
     internal class MatchPredictionAlgorithm : IMatchPredictionAlgorithm
     {
         private readonly IMatchProbabilityService matchProbabilityService;
+        private readonly ILogger logger;
 
-        public MatchPredictionAlgorithm(IMatchProbabilityService matchProbabilityService)
+        public MatchPredictionAlgorithm(IMatchProbabilityService matchProbabilityService, ILogger logger)
         {
             this.matchProbabilityService = matchProbabilityService;
+            this.logger = logger;
         }
-        
+
         /// <inheritdoc />
         public async Task<MatchProbabilityResponse> RunMatchPredictionAlgorithm(MatchProbabilityInput matchProbabilityInput)
         {
-            return await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            return await TimingLogger.RunTimedAsync(
+                async () => await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput),
+                "Match Prediction Algorithm Completed",
+                logger
+            );
         }
     }
 }
