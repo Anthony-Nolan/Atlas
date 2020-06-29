@@ -5,7 +5,6 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -29,6 +28,9 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
                 _ => new HlaMetadataDictionarySettings(),
                 fetchApplicationInsightsSettings,
                 _ => new MacDictionarySettings()
+                {
+                    AzureStorageConnectionString = ""
+                }
             );
 
             // Replace Repositories with File-Backed equivalents.
