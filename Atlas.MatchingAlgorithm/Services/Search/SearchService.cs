@@ -30,21 +30,18 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly IDonorScoringService donorScoringService;
         private readonly IMatchingService matchingService;
         private readonly ILogger logger;
-        private readonly IActiveHlaNomenclatureVersionAccessor activeHlaNomenclatureVersionAccessor;
 
         public SearchService(
             IHlaMetadataDictionaryFactory factory,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IDonorScoringService donorScoringService,
             IMatchingService matchingService,
-            ILogger logger,
-            IActiveHlaNomenclatureVersionAccessor activeHlaNomenclatureVersionAccessor
+            ILogger logger
         )
         {
             this.donorScoringService = donorScoringService;
             this.matchingService = matchingService;
             this.logger = logger;
-            this.activeHlaNomenclatureVersionAccessor = activeHlaNomenclatureVersionAccessor;
             hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
@@ -72,8 +69,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 $"{LoggingPrefix}Scoring complete"
             );
 
-            var hlaNomenclatureVersionUsed = activeHlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
-            return scoredMatches.Select(m => MapSearchResultToApiSearchResult(m, hlaNomenclatureVersionUsed));
+            return scoredMatches.Select(MapSearchResultToApiSearchResult);
         }
 
         private async Task<AlleleLevelMatchCriteria> GetMatchCriteria(SearchRequest searchRequest)
@@ -123,7 +119,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             };
         }
 
-        private static SearchResult MapSearchResultToApiSearchResult(MatchAndScoreResult result, string hlaNomenclatureVersion)
+        private static SearchResult MapSearchResultToApiSearchResult(MatchAndScoreResult result)
         {
             return new SearchResult
             {
@@ -141,8 +137,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 SearchResultAtLocusDpb1 = MapSearchResultToApiLocusSearchResult(result, Locus.Dpb1),
                 SearchResultAtLocusDqb1 = MapSearchResultToApiLocusSearchResult(result, Locus.Dqb1),
                 SearchResultAtLocusDrb1 = MapSearchResultToApiLocusSearchResult(result, Locus.Drb1),
-                DonorHla = result.MatchResult.DonorInfo.HlaNames,
-                HlaNomenclatureVersion = hlaNomenclatureVersion
+                DonorHla = result.MatchResult.DonorInfo.HlaNames
             };
         }
 

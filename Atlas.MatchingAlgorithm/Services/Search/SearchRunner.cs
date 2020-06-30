@@ -56,13 +56,20 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 stopwatch.Start();
                 var results = (await searchService.Search(identifiedSearchRequest.SearchRequest)).ToList();
                 stopwatch.Stop();
+
+                var blobContainerName = resultsBlobStorageClient.GetResultsContainerName();
+
                 var searchResultSet = new SearchResultSet
                 {
+                    SearchRequestId = searchRequestId,
                     SearchResults = results,
-                    TotalResults = results.Count
+                    TotalResults = results.Count,
+                    HlaNomenclatureVersion = hlaNomenclatureVersion,
+                    BlobStorageContainerName = blobContainerName,
                 };
 
-                await resultsBlobStorageClient.UploadResults(searchRequestId, searchResultSet);
+                await resultsBlobStorageClient.UploadResults(searchResultSet);
+
                 var notification = new SearchResultsNotification
                 {
                     SearchRequestId = searchRequestId,
@@ -70,7 +77,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
                     WasSuccessful = true,
                     NumberOfResults = results.Count,
-                    BlobStorageContainerName = resultsBlobStorageClient.GetResultsContainerName(),
+                    BlobStorageContainerName = blobContainerName,
                     SearchTimeInMilliseconds = stopwatch.ElapsedMilliseconds
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
