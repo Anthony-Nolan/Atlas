@@ -28,9 +28,9 @@ resource "azurerm_function_app" "atlas_function" {
     "Matching:MessagingServiceBus:SearchRequestsQueue" = module.matching_algorithm.service_bus.search_requests_queue
     "Matching:MessagingServiceBus:SearchResultsTopic"  = module.matching_algorithm.service_bus.search_results_topic
 
-    "NotificationsServiceBus:AlertsTopic" = module.support.general.alerts_servicebus_topic
+    "NotificationsServiceBus:AlertsTopic" = module.support.general.alerts_servicebus_topic.name
     "NotificationsServiceBus:ConnectionString" : azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
-    "NotificationsServiceBus:NotificationsTopic" : module.support.general.notifications_servicebus_topic
+    "NotificationsServiceBus:NotificationsTopic" : module.support.general.notifications_servicebus_topic.name
 
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "1"
     "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
