@@ -6,7 +6,6 @@ using Atlas.Common.Notifications;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests.TestHelpers;
@@ -18,7 +17,7 @@ using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjection
 {
-    internal static class ServiceConfiguration
+    public static class ServiceConfiguration
     {
         internal static IServiceProvider CreateProvider()
         {
@@ -63,12 +62,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjectio
 
         public static void SetUpMacDictionaryWithFileBackedRepository(this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, MacImportSettings> fetchMacImportSettings)
+            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings)
         {
             
             services.RegisterMacDictionary(
                 fetchApplicationInsightsSettings,
-                fetchMacImportSettings
+                fetchMacDictionarySettings
             );
             
             services.RegisterLifeTimeScopedCacheTypes();

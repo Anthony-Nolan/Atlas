@@ -20,27 +20,27 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
         public static IServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
-            services.RegisterFileBasedHlaMetadataDictionaryForTesting(sp => new ApplicationInsightsSettings {LogLevel = "Info"});
+            services.RegisterFileBasedHlaMetadataDictionaryForTesting(
+                sp => new ApplicationInsightsSettings {LogLevel = "INFO"},
+                DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>());
             return services.BuildServiceProvider();
         }
 
         public static void RegisterFileBasedHlaMetadataDictionaryForTesting(
             this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings)
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings)
         {
             services.RegisterHlaMetadataDictionary(
                 _ => new HlaMetadataDictionarySettings(),
                 fetchApplicationInsightsSettings,
                 _ => new MacDictionarySettings()
             );
-
             
-            services.RegisterOptions<MacImportSettings>("MacImport");
             services.RegisterConfiguration();
-
             services.SetUpMacDictionaryWithFileBackedRepository(
                 fetchApplicationInsightsSettings,
-                DependencyInjectionUtils.OptionsReaderFor<MacImportSettings>());
+                fetchMacDictionarySettings);
 
             // Replace Repositories with File-Backed equivalents.
             RegisterConfiguration(services);
