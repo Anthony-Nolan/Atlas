@@ -15,7 +15,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 {
     public interface ISearchRunner
     {
-        Task<SearchResultSet> RunSearch(IdentifiedSearchRequest identifiedSearchRequest);
+        Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedSearchRequest identifiedSearchRequest);
     }
 
     public class SearchRunner : ISearchRunner
@@ -43,7 +43,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
         }
 
-        public async Task<SearchResultSet> RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
+        public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
         {
             var searchRequestId = identifiedSearchRequest.Id;
             searchRequestContext.SearchRequestId = searchRequestId;
@@ -59,7 +59,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 var blobContainerName = resultsBlobStorageClient.GetResultsContainerName();
 
-                var searchResultSet = new SearchResultSet
+                var searchResultSet = new MatchingAlgorithmResultSet
                 {
                     SearchRequestId = searchRequestId,
                     SearchResults = results,

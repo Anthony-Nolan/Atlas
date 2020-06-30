@@ -77,7 +77,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             var higherResult = ParseResultType(results, higherResultType);
             var lowerResult = ParseResultType(results, lowerResultType);
 
-            results.Should().ContainInOrder(new List<SearchResult> { higherResult, lowerResult });
+            results.Should().ContainInOrder(new List<MatchingAlgorithmResult> { higherResult, lowerResult });
         }
 
         [Then(@"the match confidence should be (.*) at (.*) at (.*)")]
@@ -123,7 +123,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             donorResult.TypedLociCount.Should().Be(typedLociCount);
         }
 
-        private SearchResult GetSearchResultForSingleDonor()
+        private MatchingAlgorithmResult GetSearchResultForSingleDonor()
         {
             var expectedDonorProvider = scenarioContext.Get<IExpectedDonorProvider>();
             var apiResult = scenarioContext.Get<SearchAlgorithmApiResult>();
@@ -260,7 +260,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             }
         }
 
-        private SearchResult ParseResultType(List<SearchResult> results, string resultType)
+        private MatchingAlgorithmResult ParseResultType(List<MatchingAlgorithmResult> results, string resultType)
         {
             switch (resultType)
             {
@@ -302,17 +302,17 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             }
         }
 
-        private static bool IsMatchGradeAtMatchedLoci(SearchResult result, MatchGrade matchGrade)
+        private static bool IsMatchGradeAtMatchedLoci(MatchingAlgorithmResult result, MatchGrade matchGrade)
         {
             return IsOneOfMatchGradesAtMatchedLoci(result, new[] { matchGrade });
         }
 
-        private static bool IsMatchConfidenceAtMatchedLoci(SearchResult result, MatchConfidence matchConfidence)
+        private static bool IsMatchConfidenceAtMatchedLoci(MatchingAlgorithmResult result, MatchConfidence matchConfidence)
         {
             return IsOneOfMatchConfidencesAtMatchedLoci(result, new[] { matchConfidence });
         }
 
-        private static bool IsOneOfMatchGradesAtMatchedLoci(SearchResult result, IEnumerable<MatchGrade> matchGrades)
+        private static bool IsOneOfMatchGradesAtMatchedLoci(MatchingAlgorithmResult result, IEnumerable<MatchGrade> matchGrades)
         {
             var positionResults = new[]
             {
@@ -336,7 +336,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             );
         }
 
-        private static bool IsOneOfMatchConfidencesAtMatchedLoci(SearchResult result, IEnumerable<MatchConfidence> matchConfidences)
+        private static bool IsOneOfMatchConfidencesAtMatchedLoci(MatchingAlgorithmResult result, IEnumerable<MatchConfidence> matchConfidences)
         {
             var positionResults = new[]
             {
@@ -360,15 +360,15 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             );
         }
 
-        private static int NumberOfLociSearched(SearchResult searchResult)
+        private static int NumberOfLociSearched(MatchingAlgorithmResult matchingAlgorithmResult)
         {
             var loci = new[]
             {
-                searchResult.SearchResultAtLocusA.IsLocusMatchCountIncludedInTotal,
-                searchResult.SearchResultAtLocusB.IsLocusMatchCountIncludedInTotal,
-                searchResult.SearchResultAtLocusC.IsLocusMatchCountIncludedInTotal,
-                searchResult.SearchResultAtLocusDqb1.IsLocusMatchCountIncludedInTotal,
-                searchResult.SearchResultAtLocusDrb1.IsLocusMatchCountIncludedInTotal,
+                matchingAlgorithmResult.SearchResultAtLocusA.IsLocusMatchCountIncludedInTotal,
+                matchingAlgorithmResult.SearchResultAtLocusB.IsLocusMatchCountIncludedInTotal,
+                matchingAlgorithmResult.SearchResultAtLocusC.IsLocusMatchCountIncludedInTotal,
+                matchingAlgorithmResult.SearchResultAtLocusDqb1.IsLocusMatchCountIncludedInTotal,
+                matchingAlgorithmResult.SearchResultAtLocusDrb1.IsLocusMatchCountIncludedInTotal,
             };
             return loci.Count(x => x);
         }

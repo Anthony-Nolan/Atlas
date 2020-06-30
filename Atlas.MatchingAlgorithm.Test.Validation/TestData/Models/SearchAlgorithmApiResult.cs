@@ -8,6 +8,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models
         public HttpStatusCode StatusCode { get; set; }
         public bool IsSuccess { get; set; }
         public string ErrorMessage { get; set; }
-        public SearchResultSet Results { get; set; }
+        public MatchingAlgorithmResultSet Results { get; set; }
     }
 }

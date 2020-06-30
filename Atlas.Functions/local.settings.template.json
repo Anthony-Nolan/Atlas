@@ -2,6 +2,8 @@
   "IsEncrypted": false,
   "Values": {
     "ApplicationInsights:LogLevel": "Verbose",
+    "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
+    "AzureStorage:SearchResultsBlobContainer": "atlas-search-results",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     

@@ -12,8 +12,10 @@ resource "azurerm_function_app" "atlas_function" {
   app_settings = {
     // APPINSIGHTS_INSTRUMENTATIONKEY
     //      The azure functions dashboard requires the instrumentation key with this name to integrate with application insights.
-    "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.atlas.instrumentation_key
-    "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
+    "APPINSIGHTS_INSTRUMENTATIONKEY"          = azurerm_application_insights.atlas.instrumentation_key
+    "ApplicationInsights:LogLevel"            = var.APPLICATION_INSIGHTS_LOG_LEVEL
+    "AzureStorage:ConnectionString"           = azurerm_storage_account.azure_storage.primary_connection_string
+    "AzureStorage:SearchResultsBlobContainer" = azurerm_storage_container.search_results_blob_container.name
 
     "HlaMetadataDictionary:AzureStorageConnectionString" = azurerm_storage_account.azure_storage.primary_connection_string
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"     = var.WMDA_FILE_URL
