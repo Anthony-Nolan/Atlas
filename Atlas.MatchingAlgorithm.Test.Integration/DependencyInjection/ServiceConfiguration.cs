@@ -42,22 +42,18 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.AddSingleton<IConfiguration>(sp => configuration);
 
             services.RegisterSettings();
-            services.RegisterMatchingAlgorithm(
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                _ => new AzureAuthenticationSettings(),
+            services.RegisterMatchingAlgorithm(_ => new AzureAuthenticationSettings(),
                 _ => new AzureAppServiceManagementSettings(),
                 _ => new AzureDatabaseManagementSettings(),
-                OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<DataRefreshSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 _ => new MacDictionarySettings(),
                 _ => new MessagingServiceBusSettings(),
                 _ => new NotificationsServiceBusSettings(),
                 ConnectionStringReader(PersistentSqlConnectionStringKey),
-                ConnectionStringReader(TransientASqlConnectionStringKey),
-                ConnectionStringReader(TransientBSqlConnectionStringKey),
-                ConnectionStringReader(DonorImportSqlConnectionStringKey)
-            );
+                ConnectionStringReader(TransientASqlConnectionStringKey), ConnectionStringReader(TransientBSqlConnectionStringKey), ConnectionStringReader(DonorImportSqlConnectionStringKey));
             services.RegisterMatchingAlgorithmDonorManagement(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),

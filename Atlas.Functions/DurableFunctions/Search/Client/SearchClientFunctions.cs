@@ -10,6 +10,13 @@ using Newtonsoft.Json;
 
 namespace Atlas.Functions.DurableFunctions.Search.Client
 {
+    /// <summary>
+    /// See https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-types-features-overview for the types of durable functions available
+    /// We are using:
+    ///     - Client = entry points.
+    ///     - Orchestrator = orchestration. DETERMINISTIC (https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-code-constraints)
+    ///     - Activity = business logic. IDEMPOTENT (may be called multiple times, only at least once execution is guaranteed by Azure)
+    /// </summary>
     public class SearchClientFunctions
     {
         private readonly ILogger logger;
@@ -32,6 +39,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             
             logger.SendTrace($"Started search orchestration with ID = '{instanceId}'.");
 
+            // returns response including GET URL to fetch status, and eventual output, of orchestration function
             return starter.CreateCheckStatusResponse(request, instanceId);
         }
     }

@@ -6,7 +6,6 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
-using Atlas.MatchPrediction.ExternalInterface.Settings.Azure;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.Configuration;
@@ -27,7 +26,6 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             SetUpConfiguration(services);
             services.RegisterMatchPredictionServices(
                 ApplicationInsightsSettingsReader,
-                _ => new AzureStorageSettings(),
                 _ => new HlaMetadataDictionarySettings(),
                 _ => new MacDictionarySettings(),
                 _ => new NotificationsServiceBusSettings(),
