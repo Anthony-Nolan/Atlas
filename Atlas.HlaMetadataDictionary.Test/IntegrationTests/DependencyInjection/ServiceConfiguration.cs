@@ -28,9 +28,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
                 _ => new HlaMetadataDictionarySettings(),
                 fetchApplicationInsightsSettings,
                 _ => new MacDictionarySettings()
-                {
-                    AzureStorageConnectionString = ""
-                }
             );
 
             // Replace Repositories with File-Backed equivalents.
