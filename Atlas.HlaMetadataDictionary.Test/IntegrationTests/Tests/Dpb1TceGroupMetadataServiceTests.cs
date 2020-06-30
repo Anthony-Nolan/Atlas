@@ -23,28 +23,18 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         private const string CacheKey = "NmdpCodeLookup_Dpb1";
 
         private IDpb1TceGroupMetadataService metadataService;
-        private IMacDictionary macDictionary;
         private IAppCache appCache;
 
-        [OneTimeSetUp]
+        [SetUp]
         public void OneTimeSetUp()
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
                 metadataService = DependencyInjection.DependencyInjection.Provider.GetService<IDpb1TceGroupMetadataService>();
-                macDictionary = DependencyInjection.DependencyInjection.Provider.GetService<IMacDictionary>();
                 appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
             });
         }
-
-        [SetUp]
-        public void SetUp()
-        {
-            macDictionary
-                .GetHlaFromMac(Arg.Any<string>())
-                .Returns(new List<string>());
-        }
-
+        
         [TearDown]
         public void TearDown()
         {
@@ -84,11 +74,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 
             // MAC value does not matter, but does need to conform to the expected pattern
             const string macWithFirstField = "99:CODE";
-            macDictionary
-                .GetHlaFromMac(macWithFirstField)
-                .Returns(new List<string> { firstAllele, secondAllele });
-
-            macDictionary.GetHlaFromMac(default, default).Returns(new List<string> {firstAllele, secondAllele});
 
             var result = await metadataService.GetDpb1TceGroup(macWithFirstField, null);
 
@@ -104,9 +89,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 
             // MAC value does not matter, but does need to conform to the expected pattern
             const string macWithFirstField = "99:CODE";
-            macDictionary
-                .GetHlaFromMac(macWithFirstField)
-                .Returns(new List<string> { firstAllele, secondAllele });
 
             var result = await metadataService.GetDpb1TceGroup(macWithFirstField, null);
 
