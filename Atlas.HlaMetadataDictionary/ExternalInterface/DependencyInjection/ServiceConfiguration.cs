@@ -16,7 +16,6 @@ using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
-using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
