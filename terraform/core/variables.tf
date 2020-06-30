@@ -81,12 +81,6 @@ variable "MATCHING_DATA_REFRESH_DB_SIZE_REFRESH" {
   description = "Size to temproarily scale the dormant Azure Database to, whilst refreshing the matching database. Allowed values according to the Azure DTU model service tiers. Premium tier is recommended due to a large IO throughput."
 }
 
-variable "MATCHING_DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME" {
-  type        = string
-  default     = "ManageDonorByAvailability"
-  description = "Name of the donor import function that should be disabled during the full matching data refresh."
-}
-
 variable "MATCHING_DATA_REFRESH_CRONTAB" {
   type        = string
   default     = "0 0 0 * * Monday"

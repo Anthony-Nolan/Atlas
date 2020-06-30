@@ -22,8 +22,6 @@ locals {
     "DataRefresh:CronTab"                                       = var.DATA_REFRESH_CRONTAB
     "DataRefresh:DatabaseAName"                                 = azurerm_sql_database.atlas-matching-transient-a.name
     "DataRefresh:DatabaseBName"                                 = azurerm_sql_database.atlas-matching-transient-b.name
-    "DataRefresh:DonorImportFunctionName"                       = var.DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME
-    "DataRefresh:DonorFunctionsAppName"                         = azurerm_function_app.atlas_matching_algorithm_donor_management_function.name
     "DataRefresh:DormantDatabaseSize"                           = var.DATA_REFRESH_DB_SIZE_DORMANT
     "DataRefresh:RefreshDatabaseSize"                           = var.DATA_REFRESH_DB_SIZE_REFRESH
     "HlaMetadataDictionary:AzureStorageConnectionString"        = var.azure_storage.primary_connection_string,
