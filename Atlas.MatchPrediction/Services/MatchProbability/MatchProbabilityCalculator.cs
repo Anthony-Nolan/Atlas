@@ -28,7 +28,9 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var sumOfPatientLikelihoods = patientGenotypes.Select(d => genotypesLikelihoods[d]).Sum();
             var sumOfDonorLikelihoods = donorGenotypes.Select(d => genotypesLikelihoods[d]).Sum();
 
-            return sumOfMatchingLikelihoods / (sumOfPatientLikelihoods * sumOfDonorLikelihoods);
+            return sumOfMatchingLikelihoods == 0 || sumOfPatientLikelihoods == 0 || sumOfDonorLikelihoods == 0
+                ? 0m 
+                : sumOfMatchingLikelihoods / (sumOfPatientLikelihoods * sumOfDonorLikelihoods);
         }
     }
 }
