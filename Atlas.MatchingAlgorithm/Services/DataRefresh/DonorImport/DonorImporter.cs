@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.Common.Utils;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
@@ -81,14 +80,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         /// <returns>Details of donors in the batch that failed import</returns>
         private async Task<IEnumerable<FailedDonorInfo>> InsertDonorBatch(List<SearchableDonorInformation> donors)
         {
-            return await TimingLogger.RunTimedAsync(async () =>
+            return await logger.RunTimedAsync(async () =>
                 {
                     var donorInfoConversionResult = await donorInfoConverter.ConvertDonorInfoAsync(donors, ImportFailureEventName);
                     await matchingDonorImportRepository.InsertBatchOfDonors(donorInfoConversionResult.ProcessingResults);
                     return donorInfoConversionResult.FailedDonors;
                 },
                 "Imported donor batch.",
-                logger,
                 LogLevel.Verbose,
                 new Dictionary<string, string> {{"BatchSize", BatchSize.ToString()}}
             );
