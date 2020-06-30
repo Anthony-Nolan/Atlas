@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.Functions.DurableFunctions.Search.Activity;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
@@ -55,18 +54,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 nameof(SearchActivityFunctions.RunMatchPrediction),
                 new MatchProbabilityInput
                 {
-                    // TODO: ATLAS-236: Get donor HLA from result model
-                    DonorHla = new PhenotypeInfo<string>
-                    {
-                        A = new LocusInfo<string>("*01:01:01"),
-                        B = new LocusInfo<string>("*08:182"),
-                        C = new LocusInfo<string>("*07:02:80"),
-                        Dqb1 = new LocusInfo<string>("*06:01:03"),
-                        Drb1 = new LocusInfo<string>("*11:129"),
-                    },
+                    DonorHla = matchingResult.DonorHla,
                     PatientHla = searchRequest.SearchHlaData.ToPhenotypeInfo(),
-                    // TODO: ATLAS-236: Get nomenclature version from search results
-                    HlaNomenclatureVersion = "3400"
+                    HlaNomenclatureVersion = matchingResult.HlaNomenclatureVersion
                 }
             );
             return new KeyValuePair<int, MatchProbabilityResponse>(matchingResult.DonorId, matchPredictionResult);

@@ -17,12 +17,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         }
 
         [Test]
-        public void Validator_WhenMissingDonorMismatchCount_ShouldHaveValidationError()
-        {
-            validator.ShouldHaveValidationErrorFor(x => x.DonorMismatchCount, (int?) null);
-        }
-
-        [Test]
         public void Validator_WhenDonorMismatchCountLessThanZero_ShouldHaveValidationError()
         {
             validator.ShouldHaveValidationErrorFor(x => x.DonorMismatchCount, -1);

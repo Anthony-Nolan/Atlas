@@ -1,4 +1,5 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models.Donors;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 
 namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults
@@ -97,5 +98,18 @@ namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults
         /// The details of the match at locus DRB1.
         /// </summary>
         public LocusSearchResult SearchResultAtLocusDrb1 { get; set; }
+        
+        /// <summary>
+        /// The donor HLA at the time the search was run.
+        /// Useful in two cases:
+        ///     - when further analysis is performed on results (e.g. match prediction), and we must ensure the same HLA is used as for matching
+        ///     - when donor details are updated between running a search and viewing the results.  
+        /// </summary>
+        public PhenotypeInfo<string> DonorHla { get; set; }
+        
+        /// <summary>
+        /// The version of HLA nomenclature that was used to perform the search. 
+        /// </summary>
+        public string HlaNomenclatureVersion { get; set; }
     }
 }
