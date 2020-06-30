@@ -35,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
                     throw new Exception($"Search request failed: {content}");
                 }
             
-                var deserialisedContent = JsonConvert.DeserializeObject<SearchResultSet>(content);
+                var deserialisedContent = JsonConvert.DeserializeObject<MatchingAlgorithmResultSet>(content);
 
                 return new SearchMetrics
                 {

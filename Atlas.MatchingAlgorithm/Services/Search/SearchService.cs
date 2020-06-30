@@ -19,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 {
     public interface ISearchService
     {
-        Task<IEnumerable<SearchResult>> Search(SearchRequest searchRequest);
+        Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest searchRequest);
     }
 
     public class SearchService : ISearchService
@@ -45,7 +45,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
-        public async Task<IEnumerable<SearchResult>> Search(SearchRequest searchRequest)
+        public async Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest searchRequest)
         {
             var criteria = await logger.RunTimedAsync(
                 async () => await GetMatchCriteria(searchRequest),
@@ -119,9 +119,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             };
         }
 
-        private static SearchResult MapSearchResultToApiSearchResult(MatchAndScoreResult result)
+        private static MatchingAlgorithmResult MapSearchResultToApiSearchResult(MatchAndScoreResult result)
         {
-            return new SearchResult
+            return new MatchingAlgorithmResult
             {
                 DonorId = result.MatchResult.DonorInfo.DonorId,
                 DonorType = result.MatchResult.DonorInfo.DonorType,

@@ -63,7 +63,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = id});
 
-            await resultsBlobStorageClient.Received().UploadResults(Arg.Any<SearchResultSet>());
+            await resultsBlobStorageClient.Received().UploadResults(Arg.Any<MatchingAlgorithmResultSet>());
         }
 
         [Test]

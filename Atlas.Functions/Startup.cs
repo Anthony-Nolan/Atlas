@@ -1,6 +1,7 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.Functions;
+using Atlas.Functions.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.Settings;
@@ -22,6 +23,7 @@ namespace Atlas.Functions
         public override void Configure(IFunctionsHostBuilder builder)
         {
             RegisterSettings(builder.Services);
+            RegisterTopLevelFunctionServices(builder.Services);
 
             // TODO: ATLAS-472: Allow registration of matching with no data refresh functionality
             builder.Services.RegisterMatchingAlgorithm(
@@ -57,6 +59,9 @@ namespace Atlas.Functions
 
         private static void RegisterSettings(IServiceCollection services)
         {
+            // Atlas Function settings
+            services.RegisterAsOptions<Settings.AzureStorageSettings>("AzureStorage");
+
             // Shared settings
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
@@ -68,6 +73,12 @@ namespace Atlas.Functions
             // Matching Algorithm
             services.RegisterAsOptions<AzureStorageSettings>("Matching:AzureStorage");
             services.RegisterAsOptions<MessagingServiceBusSettings>("Matching:MessagingServiceBus");
+        }
+
+        private static void RegisterTopLevelFunctionServices(IServiceCollection services)
+        {
+            services.RegisterAtlasLogger(OptionsReaderFor<ApplicationInsightsSettings>());
+            services.AddScoped<IResultsUploader, ResultsUploader>();
         }
     }
 }

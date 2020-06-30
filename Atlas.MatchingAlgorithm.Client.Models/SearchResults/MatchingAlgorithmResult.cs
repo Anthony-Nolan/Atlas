@@ -4,7 +4,7 @@ using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 
 namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults
 {
-    public class SearchResult
+    public class MatchingAlgorithmResult
     {
         /// <summary>
         /// The ID of the donor for lookup in donor registries.

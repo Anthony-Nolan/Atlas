@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,16 +29,20 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         )
         {
             var searchRequest = context.GetInput<SearchRequest>();
-            var searchResults = await context.CallActivityAsync<SearchResultSet>(
+            var searchResults = await context.CallActivityAsync<MatchingAlgorithmResultSet>(
                 nameof(SearchActivityFunctions.RunMatchingAlgorithm),
                 new IdentifiedSearchRequest {Id = context.InstanceId, SearchRequest = searchRequest}
             );
 
-            // TODO: ATLAS-236: Persist full result set
             var matchPredictionResults = (await Task.WhenAll(
                 searchResults.SearchResults.Select(r => RunMatchPrediction(context, searchRequest, r, searchResults.HlaNomenclatureVersion))
             )).ToDictionary();
 
+            await context.CallActivityAsync(
+                nameof(SearchActivityFunctions.PersistSearchResults),
+                new Tuple<MatchingAlgorithmResultSet, IDictionary<int, MatchProbabilityResponse>>(searchResults, matchPredictionResults)
+            );
+            
             // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
             return new SearchOrchestrationOutput
             {
@@ -52,7 +57,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         private static async Task<KeyValuePair<int, MatchProbabilityResponse>> RunMatchPrediction(
             IDurableOrchestrationContext context,
             SearchRequest searchRequest,
-            SearchResult matchingResult,
+            MatchingAlgorithmResult matchingResult,
             string hlaNomenclatureVersion)
         {
             var matchPredictionResult = await context.CallActivityAsync<MatchProbabilityResponse>(

@@ -20,13 +20,13 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
     
         [HttpPost]
         [Route("search")]
-        public async Task<SearchResultSet> Search([FromBody] SearchRequest searchRequest)
+        public async Task<MatchingAlgorithmResultSet> Search([FromBody] SearchRequest searchRequest)
         {
             try
             {
                 var results = (await searchService.Search(searchRequest)).ToList();
 
-                return new SearchResultSet
+                return new MatchingAlgorithmResultSet
                 {
                     TotalResults = results.Count(),
                     SearchResults = results
