@@ -24,10 +24,6 @@ variable "DATA_REFRESH_DB_SIZE_REFRESH" {
   type = string
 }
 
-variable "DATA_REFRESH_DONOR_IMPORT_FUNCTION_NAME" {
-  type = string
-}
-
 variable "DATA_REFRESH_CRONTAB" {
   type = string
 }
