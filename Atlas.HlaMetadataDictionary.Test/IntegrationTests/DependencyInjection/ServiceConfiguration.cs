@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
@@ -37,7 +39,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
                 _ => new MacDictionarySettings()
             );
             
-            services.RegisterConfiguration();
             services.SetUpMacDictionaryWithFileBackedRepository(
                 fetchApplicationInsightsSettings,
                 fetchMacDictionarySettings);

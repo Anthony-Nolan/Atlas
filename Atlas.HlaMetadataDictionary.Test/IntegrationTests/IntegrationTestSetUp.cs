@@ -1,5 +1,4 @@
-﻿using System;
-using Atlas.Common.Test.SharedTestHelpers;
+﻿using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 using NUnit.Framework;
 
