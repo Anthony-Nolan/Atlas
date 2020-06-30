@@ -10,7 +10,7 @@ resource "azurerm_servicebus_subscription" "matching_transient_a" {
   dead_lettering_on_message_expiration = true
 }
 
-resource "azurerm_servicebus_subscription" "matching_transient_a" {
+resource "azurerm_servicebus_subscription" "matching_transient_b" {
   name                                 = "matching-transient-b"
   resource_group_name                  = var.app_service_plan.resource_group_name
   namespace_name                       = var.servicebus_namespace.name
