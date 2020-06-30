@@ -234,7 +234,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             return modifiedPhenotype;
         }
 
-        private async Task<SearchResult> RunSixOutOfSixSearchWithPatientPhenotypeOf(PhenotypeInfo<string> patientPhenotype)
+        private async Task<MatchingAlgorithmResult> RunSixOutOfSixSearchWithPatientPhenotypeOf(PhenotypeInfo<string> patientPhenotype)
         {
             var searchRequest = new SearchRequestFromHlasBuilder(patientPhenotype)
                 .SixOutOfSix()

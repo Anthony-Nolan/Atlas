@@ -946,14 +946,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             return testDonor.DonorId;
         }
 
-        private async Task<SearchResult> SixOutOfSixSearch(AlleleTestData patientAllele, AlleleTestData donorAllele)
+        private async Task<MatchingAlgorithmResult> SixOutOfSixSearch(AlleleTestData patientAllele, AlleleTestData donorAllele)
         {
             var searchRequest = new SearchRequestFromHlasBuilder(patientAllele.Phenotype).SixOutOfSix().Build();
             var searchResults = await searchService.Search(searchRequest);
             return searchResults.Single(d => d.DonorId == donorAllele.DonorId);
         }
 
-        private async Task<SearchResult> FiveOutOfSixSearch(AlleleTestData patientAllele, AlleleTestData donorAllele)
+        private async Task<MatchingAlgorithmResult> FiveOutOfSixSearch(AlleleTestData patientAllele, AlleleTestData donorAllele)
         {
             var searchRequest = new SearchRequestFromHlasBuilder(patientAllele.Phenotype)
                 .FiveOutOfSix()
