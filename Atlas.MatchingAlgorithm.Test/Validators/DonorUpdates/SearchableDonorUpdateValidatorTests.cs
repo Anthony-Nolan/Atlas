@@ -1,5 +1,4 @@
-﻿using System;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
+﻿using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Validators.DonorInfo;
 using FluentAssertions;
 using FluentValidation.TestHelper;

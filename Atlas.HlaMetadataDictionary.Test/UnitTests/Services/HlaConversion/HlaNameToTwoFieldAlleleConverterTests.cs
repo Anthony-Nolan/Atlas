@@ -3,7 +3,6 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
-using Atlas.MultipleAlleleCodeDictionary;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;

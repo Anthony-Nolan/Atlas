@@ -6,7 +6,6 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
-using Atlas.MultipleAlleleCodeDictionary;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 
 namespace Atlas.HlaMetadataDictionary.Services.HlaConversion

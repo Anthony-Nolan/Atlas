@@ -4,11 +4,9 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using FluentAssertions;
 using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
 using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguousPhenotype

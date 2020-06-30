@@ -1,5 +1,4 @@
 ﻿using Atlas.Common.Notifications;
-using Atlas.Common.Notifications.MessageModels;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;

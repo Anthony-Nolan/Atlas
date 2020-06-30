@@ -1,5 +1,4 @@
 ﻿using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using LochNessBuilder;
 
 namespace Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders

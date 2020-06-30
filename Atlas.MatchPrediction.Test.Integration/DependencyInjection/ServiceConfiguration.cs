@@ -8,7 +8,6 @@ using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
-using Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;

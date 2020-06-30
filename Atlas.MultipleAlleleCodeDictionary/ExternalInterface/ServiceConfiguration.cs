@@ -10,8 +10,6 @@ using Atlas.MultipleAlleleCodeDictionary.Services;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.MultipleAlleleCodeDictionary.utils;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 
 namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
 {

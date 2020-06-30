@@ -4,7 +4,6 @@ using Atlas.DonorImport.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Atlas.DonorImport.Data.Migrations
 {

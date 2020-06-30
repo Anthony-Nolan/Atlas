@@ -1,12 +1,9 @@
-﻿using Atlas.Common.ApplicationInsights;
-using Atlas.Common.Notifications;
+﻿using Atlas.Common.Notifications;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Microsoft.AspNetCore.Http;

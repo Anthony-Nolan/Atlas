@@ -1,14 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Atlas.Common.Caching;
-using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using FluentAssertions;
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
 using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
