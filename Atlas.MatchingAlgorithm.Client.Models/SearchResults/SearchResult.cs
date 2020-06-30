@@ -106,10 +106,5 @@ namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults
         ///     - when donor details are updated between running a search and viewing the results.  
         /// </summary>
         public PhenotypeInfo<string> DonorHla { get; set; }
-        
-        /// <summary>
-        /// The version of HLA nomenclature that was used to perform the search. 
-        /// </summary>
-        public string HlaNomenclatureVersion { get; set; }
     }
 }

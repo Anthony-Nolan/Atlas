@@ -9,7 +9,7 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureStorage
 {
     public interface IResultsBlobStorageClient
     {
-        Task UploadResults(string requestId, SearchResultSet searchResultSet);
+        Task UploadResults(SearchResultSet searchResultSet);
         string GetResultsContainerName();
     }
 
@@ -23,10 +23,10 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureStorage
             this.resultsContainerName = azureStorageSettings.SearchResultsBlobContainer;
         }
 
-        public async Task UploadResults(string requestId, SearchResultSet searchResultSet)
+        public async Task UploadResults(SearchResultSet searchResultSet)
         {
             var serialisedResults = JsonConvert.SerializeObject(searchResultSet);
-            await Upload(resultsContainerName, $"{requestId}.json", serialisedResults);
+            await Upload(resultsContainerName, searchResultSet.ResultsFileName, serialisedResults);
         }
 
         public string GetResultsContainerName()
