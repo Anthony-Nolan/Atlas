@@ -20,22 +20,18 @@ namespace Atlas.MatchingAlgorithm.Functions
         public override void Configure(IFunctionsHostBuilder builder)
         {
             RegisterSettings(builder.Services);
-            builder.Services.RegisterMatchingAlgorithm(
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<AzureAuthenticationSettings>(),
+            builder.Services.RegisterMatchingAlgorithm(OptionsReaderFor<AzureAuthenticationSettings>(),
                 OptionsReaderFor<AzureAppServiceManagementSettings>(),
                 OptionsReaderFor<AzureDatabaseManagementSettings>(),
-                OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<DataRefreshSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 ConnectionStringReader("PersistentSql"),
-                ConnectionStringReader("SqlA"),
-                ConnectionStringReader("SqlB"),
-                ConnectionStringReader("DonorImportSql")
-            );
+                ConnectionStringReader("SqlA"), ConnectionStringReader("SqlB"), ConnectionStringReader("DonorImportSql"));
         }
 
         private static void RegisterSettings(IServiceCollection services)

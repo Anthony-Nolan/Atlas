@@ -3,8 +3,6 @@
   "Values": {
     "ApplicationInsights:LogLevel": "Info",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
-    "AzureStorage:HaplotypeFrequencySetImportContainer": "haplotype-frequency-set-import",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
