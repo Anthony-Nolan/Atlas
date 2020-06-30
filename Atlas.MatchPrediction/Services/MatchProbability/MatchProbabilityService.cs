@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
@@ -16,39 +17,55 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
     internal class MatchProbabilityService : IMatchProbabilityService
     {
+        private const string LoggingPrefix = "MatchPrediction: ";
+
         private readonly ICompressedPhenotypeExpander compressedPhenotypeExpander;
         private readonly IGenotypeLikelihoodService genotypeLikelihoodService;
         private readonly IGenotypeMatcher genotypeMatcher;
         private readonly IMatchProbabilityCalculator matchProbabilityCalculator;
+        private readonly ILogger logger;
 
         public MatchProbabilityService(
             ICompressedPhenotypeExpander compressedPhenotypeExpander,
             IGenotypeLikelihoodService genotypeLikelihoodService,
             IGenotypeMatcher genotypeMatcher,
-            IMatchProbabilityCalculator matchProbabilityCalculator)
+            IMatchProbabilityCalculator matchProbabilityCalculator,
+            ILogger logger)
         {
             this.compressedPhenotypeExpander = compressedPhenotypeExpander;
             this.genotypeLikelihoodService = genotypeLikelihoodService;
             this.genotypeMatcher = genotypeMatcher;
             this.matchProbabilityCalculator = matchProbabilityCalculator;
+            this.logger = logger;
         }
 
-        // TODO: ATLAS-236: Add some step-by-step logging to this process 
         public async Task<MatchProbabilityResponse> CalculateMatchProbability(MatchProbabilityInput matchProbabilityInput)
         {
-            var patientGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(
-                matchProbabilityInput.PatientHla,
-                matchProbabilityInput.HlaNomenclatureVersion
+            var patientGenotypes = await logger.RunTimedAsync(
+                async () => await compressedPhenotypeExpander.ExpandCompressedPhenotype(
+                    matchProbabilityInput.PatientHla,
+                    matchProbabilityInput.HlaNomenclatureVersion
+                ),
+                $"{LoggingPrefix}Expanded patient phenotype",
+                LogLevel.Verbose
             );
 
-            var donorGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(
-                matchProbabilityInput.DonorHla,
-                matchProbabilityInput.HlaNomenclatureVersion
+            var donorGenotypes = await logger.RunTimedAsync(
+                async () => await compressedPhenotypeExpander.ExpandCompressedPhenotype(
+                    matchProbabilityInput.DonorHla,
+                    matchProbabilityInput.HlaNomenclatureVersion
+                ),
+                $"{LoggingPrefix}Expanded donor phenotype",
+                LogLevel.Verbose
             );
 
-            var matchingPairs = await genotypeMatcher.PairsWithTenOutOfTenMatch(
-                patientGenotypes,
-                donorGenotypes, matchProbabilityInput.HlaNomenclatureVersion
+            var matchingPairs = await logger.RunTimedAsync(
+                async () => await genotypeMatcher.PairsWithTenOutOfTenMatch(
+                    patientGenotypes,
+                    donorGenotypes, matchProbabilityInput.HlaNomenclatureVersion
+                ),
+                $"{LoggingPrefix}Calculated genotype matches",
+                LogLevel.Verbose
             );
 
             // Returns early when patient/donor pair are guaranteed to either be a match or not
@@ -63,7 +80,14 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             }
 
             var genotypes = patientGenotypes.Union(donorGenotypes);
-            var genotypesLikelihoods = (await Task.WhenAll(genotypes.Select(CalculateLikelihood))).ToDictionary();
+
+
+            var genotypesLikelihoods = (await logger.RunTimedAsync(
+                    async () => await Task.WhenAll(genotypes.Select(CalculateLikelihood)),
+                    $"{LoggingPrefix}Calculated likelihoods for genotypes",
+                    LogLevel.Verbose
+                ))
+                .ToDictionary();
 
             var probability =
                 matchProbabilityCalculator.CalculateMatchProbability(patientGenotypes, donorGenotypes, matchingPairs, genotypesLikelihoods);

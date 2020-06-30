@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
@@ -41,11 +42,12 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             genotypeLikelihoodService = Substitute.For<IGenotypeLikelihoodService>();
             genotypeMatcher = Substitute.For<IGenotypeMatcher>();
             matchProbabilityCalculator = Substitute.For<IMatchProbabilityCalculator>();
+            var logger = Substitute.For<ILogger>();
 
             genotypeMatcher.PairsWithTenOutOfTenMatch(
-                Arg.Any<HashSet<PhenotypeInfo<string>>>(),
-                Arg.Any<HashSet<PhenotypeInfo<string>>>(),
-                HlaNomenclatureVersion)
+                    Arg.Any<HashSet<PhenotypeInfo<string>>>(),
+                    Arg.Any<HashSet<PhenotypeInfo<string>>>(),
+                    HlaNomenclatureVersion)
                 .Returns(new HashSet<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>>());
 
             genotypeLikelihoodService.CalculateLikelihood(Arg.Any<PhenotypeInfo<string>>()).Returns(0.5m);
@@ -53,8 +55,9 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             matchProbabilityService = new MatchProbabilityService(
                 compressedPhenotypeExpander,
                 genotypeLikelihoodService,
-                genotypeMatcher, 
-                matchProbabilityCalculator);
+                genotypeMatcher,
+                matchProbabilityCalculator,
+                logger);
         }
 
         [Test]
@@ -77,7 +80,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                     Arg.Any<HashSet<PhenotypeInfo<string>>>(),
                     Arg.Any<HashSet<PhenotypeInfo<string>>>(),
                     HlaNomenclatureVersion)
-                .Returns(new HashSet<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>> 
+                .Returns(new HashSet<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>>
                     {new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(PatientHla, PatientHla)});
 
             const decimal probability = 0.5m;
@@ -126,10 +129,10 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             };
 
             compressedPhenotypeExpander.ExpandCompressedPhenotype(DonorGenotype, HlaNomenclatureVersion)
-                .Returns(new HashSet<PhenotypeInfo<string>>{DonorGenotype});
+                .Returns(new HashSet<PhenotypeInfo<string>> {DonorGenotype});
 
             compressedPhenotypeExpander.ExpandCompressedPhenotype(PatientHla, HlaNomenclatureVersion)
-                .Returns(new HashSet<PhenotypeInfo<string>>{PatientHla});
+                .Returns(new HashSet<PhenotypeInfo<string>> {PatientHla});
 
             var actualResponse = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
