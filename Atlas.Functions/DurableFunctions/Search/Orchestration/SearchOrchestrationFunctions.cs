@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
 using Atlas.Functions.DurableFunctions.Search.Activity;
+using Atlas.Functions.Models;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Common.Models;
@@ -22,8 +23,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
     public static class SearchOrchestrationFunctions
     {
         [FunctionName(nameof(SearchOrchestrator))]
-        // TODO: ATLAS-236: Return strongly typed objects
-        public static async Task<List<object>> SearchOrchestrator(
+        public static async Task<SearchOrchestrationOutput> SearchOrchestrator(
             [OrchestrationTrigger] IDurableOrchestrationContext context
         )
         {
@@ -33,22 +33,27 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 new IdentifiedSearchRequest {Id = context.InstanceId, SearchRequest = searchRequest}
             );
 
+            // TODO: ATLAS-236: Persist full result set
             var matchPredictionResults = (await Task.WhenAll(
-                searchResults.SearchResults.Select(r => RunMatchPrediction(context, searchRequest, r))
+                searchResults.SearchResults.Select(r => RunMatchPrediction(context, searchRequest, r, searchResults.HlaNomenclatureVersion))
             )).ToDictionary();
 
-            // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework 
-            return searchResults.SearchResults
-                // TODO: ATLAS-236: Return strongly typed objects
-                .Select(r => new {MatchResult = r, MPAResult = matchPredictionResults[r.DonorId]} as object)
-                .ToList();
+            // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
+            return new SearchOrchestrationOutput
+            {
+                NumberOfDonors = searchResults.TotalResults,
+                MatchingResultFileName = searchResults.ResultsFileName,
+                MatchingResultBlobContainer = searchResults.BlobStorageContainerName,
+                HlaNomenclatureVersion = searchResults.HlaNomenclatureVersion
+            };
         }
 
         /// <returns>A Task returning a Key Value pair of Atlas Donor ID, and match prediction response.</returns>
         private static async Task<KeyValuePair<int, MatchProbabilityResponse>> RunMatchPrediction(
             IDurableOrchestrationContext context,
             SearchRequest searchRequest,
-            SearchResult matchingResult)
+            SearchResult matchingResult,
+            string hlaNomenclatureVersion)
         {
             var matchPredictionResult = await context.CallActivityAsync<MatchProbabilityResponse>(
                 nameof(SearchActivityFunctions.RunMatchPrediction),
@@ -56,7 +61,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 {
                     DonorHla = matchingResult.DonorHla,
                     PatientHla = searchRequest.SearchHlaData.ToPhenotypeInfo(),
-                    HlaNomenclatureVersion = matchingResult.HlaNomenclatureVersion
+                    HlaNomenclatureVersion = hlaNomenclatureVersion
                 }
             );
             return new KeyValuePair<int, MatchProbabilityResponse>(matchingResult.DonorId, matchPredictionResult);
