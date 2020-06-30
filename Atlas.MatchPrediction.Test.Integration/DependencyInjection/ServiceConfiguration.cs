@@ -30,7 +30,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
                 ApplicationInsightsSettingsReader,
                 _ => new AzureStorageSettings(),
                 _ => new HlaMetadataDictionarySettings(),
-                _ => new MacDictionarySettings(),
+                MacDictionarySettingsReader,
                 _ => new NotificationsServiceBusSettings(),
                 ConnectionStringReader(MatchPredictionSqlConnectionString)
             );
@@ -40,8 +40,8 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             // This call must be made after `RegisterMatchPredictionServices()`, as it overrides the non-mock dictionary set up in that method
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(ApplicationInsightsSettingsReader, _ => new MacDictionarySettings());
             services.SetUpMacDictionaryWithFileBackedRepository(
-                _ => new ApplicationInsightsSettings{ LogLevel = "Info"}, 
-                _ => new MacDictionarySettings());
+                ApplicationInsightsSettingsReader, 
+                MacDictionarySettingsReader);
 
             return services.BuildServiceProvider();
         }
@@ -76,5 +76,8 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
 
         private static Func<IServiceProvider, ApplicationInsightsSettings> ApplicationInsightsSettingsReader =>
             _ => new ApplicationInsightsSettings {LogLevel = "Info"};
+        
+        private static Func<IServiceProvider, MacDictionarySettings> MacDictionarySettingsReader => 
+        _ => new MacDictionarySettings();
     }
 }
