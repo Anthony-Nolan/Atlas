@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.ServiceBus.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
+using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
-using EnumStringValues;
+using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using static Atlas.MatchingAlgorithm.Data.Persistent.Models.TransientDatabase;
@@ -42,6 +44,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             donorManagementService = Substitute.For<IDonorManagementService>();
             searchableDonorUpdateConverter = Substitute.For<ISearchableDonorUpdateConverter>();
+            ConfigureMocksToPassThroughToDonorService();
+
             var logger = Substitute.For<ILogger>();
 
             donorUpdateProcessor = new DonorUpdateProcessor(
@@ -52,107 +56,135 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 searchableDonorUpdateConverter,
                 logger,
                 BatchSize);
+
+            messageProcessorServiceForA.ClearReceivedCalls();
+            messageProcessorServiceForB.ClearReceivedCalls();
+            donorManagementService.ClearReceivedCalls();
+        }
+
+        private void ConfigureMocksToPassThroughToDonorService()
+        {
+            searchableDonorUpdateConverter.ConvertSearchableDonorUpdatesAsync(default).ReturnsForAnyArgs(
+                Task.FromResult(
+                    new DonorBatchProcessingResult<DonorAvailabilityUpdate>
+                    {
+                        ProcessingResults = new[] {new DonorAvailabilityUpdate()}
+                    }));
+            ConfigureMockMessageProcessorToPassThrough(messageProcessorServiceForA);
+            ConfigureMockMessageProcessorToPassThrough(messageProcessorServiceForB);
+        }
+
+        private void ConfigureMockMessageProcessorToPassThrough(IMessageProcessor<SearchableDonorUpdate> messageProcessorMock)
+        {
+            messageProcessorMock
+                .ProcessMessageBatchAsync(default, default)
+                .ReturnsForAnyArgs(Task.CompletedTask)
+                .AndDoes(args =>
+                {
+                    var processingAction =
+                        args.Arg<Func<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>, Task>>();
+                    var blankInput = Enumerable.Empty<ServiceBusMessage<SearchableDonorUpdate>>();
+                    processingAction(blankInput);
+                });
         }
 
         [Test]
-        public async Task ProcessDonorUpdates_IfTargetDbIsActive_ThenProcessesMessageBatch()
+        public async Task ProcessDonorUpdates_IfTargetDbIsActive_ThenProcessesMessages()
         {
-            messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetActiveDatabase().Returns(DatabaseA);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
             await messageProcessorServiceForA.ReceivedWithAnyArgs(1).ProcessMessageBatchAsync(default, default);
+            donorManagementService.ReceivedCalls().Should().NotBeEmpty();
         }
 
         [Test]
-        public async Task ProcessDonorUpdates_IfTargetDbIsDormant_ThenProcessesMessageBatch()
+        public async Task ProcessDonorUpdates_IfTargetDbIsDormant_ThenProcessesMessages_ButDiscardsThem()
         {
-            messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetActiveDatabase().Returns(DatabaseB);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
             await messageProcessorServiceForA.ReceivedWithAnyArgs(1).ProcessMessageBatchAsync(default, default);
+            donorManagementService.ReceivedCalls().Should().BeEmpty();
         }
 
         [Test]
         public async Task ProcessDonorUpdates_IfTargetDbIsRefreshing_ThenDoesNotProcessMessages()
         {
-            messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetInProgressJobs().Returns(new [] { dbARefreshing });
             refreshHistory.GetActiveDatabase().Returns(DatabaseB);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
             await messageProcessorServiceForA.DidNotReceiveWithAnyArgs().ProcessMessageBatchAsync(default, default);
+            donorManagementService.ReceivedCalls().Should().BeEmpty();
         }
 
         [Test]
         public async Task ProcessDonorUpdates_IfOtherDbIsRefreshing_ThenProcessesMessages()
         {
-            messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetInProgressJobs().Returns(new[] { dbBRefreshing });
             refreshHistory.GetActiveDatabase().Returns(DatabaseA);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
             await messageProcessorServiceForA.ReceivedWithAnyArgs(1).ProcessMessageBatchAsync(default, default);
+            donorManagementService.ReceivedCalls().Should().NotBeEmpty();
         }
 
         [Test]
         public async Task ProcessDonorUpdates_IfTargetDbIsPerformingInitialRefresh_ThenDoesNotProcessMessages()
         {
-            messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetInProgressJobs().Returns(new[] { dbARefreshing });
             refreshHistory.GetActiveDatabase().Returns((TransientDatabase?)null);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
             await messageProcessorServiceForA.DidNotReceiveWithAnyArgs().ProcessMessageBatchAsync(default, default);
+            donorManagementService.ReceivedCalls().Should().BeEmpty();
         }
 
         [Test]
-        public async Task ProcessesDonorUpdates_IfOtherDbIsPerformingInitialRefresh_ThenProcessesMessages()
+        public async Task ProcessesDonorUpdates_IfOtherDbIsPerformingInitialRefresh_ThenProcessesMessages_ButDiscardsThem()
         {
-            messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetInProgressJobs().Returns(new[] { dbBRefreshing });
             refreshHistory.GetActiveDatabase().Returns((TransientDatabase?)null);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
             await messageProcessorServiceForA.ReceivedWithAnyArgs(1).ProcessMessageBatchAsync(default, default);
+            donorManagementService.ReceivedCalls().Should().BeEmpty();
         }
 
         [Test]
         public async Task ProcessesDonorUpdates_IfHistoryStateIsBlank_ThenDoesNotProcessMessages()
         {
-            messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetInProgressJobs().Returns(Enumerable.Empty<DataRefreshRecord>());
             refreshHistory.GetActiveDatabase().Returns((TransientDatabase?)null);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
             await messageProcessorServiceForA.DidNotReceiveWithAnyArgs().ProcessMessageBatchAsync(default, default);
+            donorManagementService.ReceivedCalls().Should().BeEmpty();
         }
 
         [Test]
         public async Task ProcessesDonorUpdates_IfHistoryStateIsUnexpected_ThenDoesNotProcessMessages()
         {
-            messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetInProgressJobs().Returns(new[] { dbARefreshing, dbBRefreshing });
             refreshHistory.GetActiveDatabase().Returns(DatabaseA);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
             await messageProcessorServiceForA.DidNotReceiveWithAnyArgs().ProcessMessageBatchAsync(default, default);
+            donorManagementService.ReceivedCalls().Should().BeEmpty();
         }
 
         [Test]
         public async Task ProcessDonorUpdates_ProcessesMessageBatchFromCorrectFeed_OnDbA()
         {
-            messageProcessorServiceForA.ClearReceivedCalls();
-            messageProcessorServiceForB.ClearReceivedCalls();
             refreshHistory.GetActiveDatabase().Returns(DatabaseA);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
@@ -164,8 +196,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         [Test]
         public async Task ProcessDonorUpdates_ProcessesMessageBatchFromCorrectFeed_OnDbB()
         {
-            messageProcessorServiceForA.ClearReceivedCalls();
-            messageProcessorServiceForB.ClearReceivedCalls();
             refreshHistory.GetActiveDatabase().Returns(DatabaseB);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseB);
@@ -177,7 +207,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         [Test]
         public async Task ProcessDonorUpdates_ProcessesMessages_InBatches()
         {
-            messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetActiveDatabase().Returns(DatabaseA);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
@@ -191,7 +220,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         [Test]
         public async Task ProcessDonorUpdates_ProcessesMessageBatch_WithPrefetchCountGreaterThanBatchSize()
         {
-            messageProcessorServiceForA.ClearReceivedCalls();
             refreshHistory.GetActiveDatabase().Returns(DatabaseA);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
