@@ -150,12 +150,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
         [Test]
         public async Task ExpandCompressedPhenotype_WhenMacPresent_ExpandsMac()
         {
-            var macDictionary = DependencyInjection.DependencyInjection.Provider.GetService<IMacDictionary>();
-            
-            // Realistic data has been chosen to be mocked here, in anticipation of switching to a file-backed MAC Dictionary
-            // TODO: ATLAS-54: When switching to file-backed mac dictionary, ensure we use a represented MAC
+            // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Resources.Mac.csv
             const string mac = "01:AC";
-            macDictionary.GetHlaFromMac(mac).Returns(new[] {"01:01", "01:03"});
 
             var phenotype = NewPhenotypeInfo
                 .With(d => d.A, new LocusInfo<string> {Position1 = mac, Position2 = A2})

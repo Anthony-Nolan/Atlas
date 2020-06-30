@@ -9,6 +9,7 @@ using Atlas.MatchPrediction.DependencyInjection;
 using Atlas.MatchPrediction.Settings.Azure;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -35,9 +36,12 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             );
             RegisterIntegrationTestServices(services);
             SetUpMockServices(services);
-
+            
             // This call must be made after `RegisterMatchPredictionServices()`, as it overrides the non-mock dictionary set up in that method
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(ApplicationInsightsSettingsReader, _ => new MacDictionarySettings());
+            services.SetUpMacDictionaryWithFileBackedRepository(
+                _ => new ApplicationInsightsSettings{ LogLevel = "Info"}, 
+                _ => new MacDictionarySettings());
 
             return services.BuildServiceProvider();
         }

@@ -45,8 +45,8 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
                 fetchApplicationInsightsSettings,
                 fetchMacDictionarySettings);
 
+            services.RegisterConfiguration();
             // Replace Repositories with File-Backed equivalents.
-            RegisterConfiguration(services);
             services.AddScoped<IHlaScoringMetadataRepository, FileBackedHlaScoringMetadataRepository>();
             services.AddScoped<IHlaMatchingMetadataRepository, FileBackedHlaMatchingMetadataRepository>();
             services.AddScoped<IAlleleNamesMetadataRepository, FileBackedAlleleNamesMetadataRepository>();
