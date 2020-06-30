@@ -6,7 +6,6 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
-using Atlas.MatchPrediction.ExternalInterface.Settings.Azure;
 using Atlas.MatchPrediction.Services;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
@@ -24,14 +23,13 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
         public static void RegisterMatchPredictionServices(
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, string> fetchSqlConnectionString
         )
         {
-            services.RegisterSettings(fetchAzureStorageSettings, fetchNotificationsServiceBusSettings);
+            services.RegisterSettings(fetchNotificationsServiceBusSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices();
             services.RegisterDatabaseServices(fetchSqlConnectionString);
@@ -46,10 +44,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 
         private static void RegisterSettings(
             this IServiceCollection services,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings)
         {
-            services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
             services.MakeSettingsAvailableForUse(fetchNotificationsServiceBusSettings);
         }
 

@@ -7,7 +7,7 @@ using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,14 +23,14 @@ namespace Atlas.Functions
         {
             RegisterSettings(builder.Services);
 
-            // TODO: ATLAS-236: Split out data refresh from matching? Maybe not while Mike works on refresh, TechDebt card?
+            // TODO: ATLAS-472: Allow registration of matching with no data refresh functionality
             builder.Services.RegisterMatchingAlgorithm(
-                OptionsReaderFor<ApplicationInsightsSettings>(),
                 _ => new AzureAuthenticationSettings(),
                 _ => new AzureAppServiceManagementSettings(),
                 _ => new AzureDatabaseManagementSettings(),
-                OptionsReaderFor<AzureStorageSettings>(),
                 _ => new DataRefreshSettings(),
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
@@ -48,7 +48,6 @@ namespace Atlas.Functions
 
             builder.Services.RegisterMatchPredictionServices(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<Atlas.MatchPrediction.ExternalInterface.Settings.Azure.AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
@@ -69,9 +68,6 @@ namespace Atlas.Functions
             // Matching Algorithm
             services.RegisterAsOptions<AzureStorageSettings>("Matching:AzureStorage");
             services.RegisterAsOptions<MessagingServiceBusSettings>("Matching:MessagingServiceBus");
-
-            // Match Prediction Algorithm
-            services.RegisterAsOptions<Atlas.MatchPrediction.ExternalInterface.Settings.Azure.AzureStorageSettings>("MatchPrediction:AzureStorage");
         }
     }
 }

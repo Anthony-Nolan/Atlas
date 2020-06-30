@@ -42,22 +42,18 @@ namespace Atlas.MatchingAlgorithm.Api
         public void ConfigureServices(IServiceCollection services)
         {
             RegisterSettings(services);
-            services.RegisterMatchingAlgorithm(
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<AzureAuthenticationSettings>(),
+            services.RegisterMatchingAlgorithm(OptionsReaderFor<AzureAuthenticationSettings>(),
                 OptionsReaderFor<AzureAppServiceManagementSettings>(),
                 OptionsReaderFor<AzureDatabaseManagementSettings>(),
-                OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<DataRefreshSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 ConnectionStringReader("PersistentSql"),
-                ConnectionStringReader("SqlA"),
-                ConnectionStringReader("SqlB"),
-                ConnectionStringReader("DonorImportSql")
-            );
+                ConnectionStringReader("SqlA"), ConnectionStringReader("SqlB"), ConnectionStringReader("DonorImportSql"));
 
             services.ConfigureSwaggerService();
 

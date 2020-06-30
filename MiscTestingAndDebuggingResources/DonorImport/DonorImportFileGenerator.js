@@ -11,6 +11,15 @@ const config = {
     fileName: "custom-filename"
 }
 
+// USAGE INSTRUCTIONS
+// This method is designed for hla copied directly from the matching donor database. 
+// The expected locus order is A-B-C-DPB1-DQB1-DRB1, separated by whitespace
+// The easiest way to use is to copy these columns directly from a `SELECT * FROM DONORS` query of the matching donor store, then edit loci as appropriate 
+// The output is the JSON upload to the donor import component.
+const fileContent = generateInputFromHlaData([
+    "*01:01:01:01	*02:01:11	*15:146	*08:182	*04:82	*03:04:02	*01:01:02	*09:01:01	*03:19:01	*03:03:02:01	*15:03:01:01	*13:01:01:01",
+]);
+
 let currentDonorId = 0;
 
 function generateInputFromHlaData(rawDonors) {
@@ -63,12 +72,4 @@ function buildMolecularLocus(hla1, hla2) {
     }`
 }
 
-// USAGE INSTRUCTIONS
-// This method is designed for hla copied directly from the matching donor database. 
-// The expected locus order is A-B-C-DPB1-DQB1-DRB1, separated by whitespace
-// The easiest way to use is to copy these columns directly from a `SELECT * FROM DONORS` query of the matching donor store, then edit loci as appropriate 
-// The output is the JSON upload to the donor import component.
-const fileContent = generateInputFromHlaData([
-    "*01:01:01:01	*02:01:11	*15:146	*08:182	*04:82	*03:04:02	*01:01:02	*09:01:01	*03:19:01	*03:03:02:01	*15:03:01:01	*13:01:01:01",
-]);
 fs.writeFile(`${config.fileName}.json`, fileContent, () => {})

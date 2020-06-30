@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Utils;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
@@ -48,31 +47,28 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
         public async Task<IEnumerable<SearchResult>> Search(SearchRequest searchRequest)
         {
-            var criteria = await TimingLogger.RunTimedAsync(
+            var criteria = await logger.RunTimedAsync(
                 async () => await GetMatchCriteria(searchRequest),
-                $"{LoggingPrefix}Expanded patient HLA.",
-                logger
+                $"{LoggingPrefix}Expanded patient HLA."
             );
 
-            var matches = await TimingLogger.RunTimedAsync(
+            var matches = await logger.RunTimedAsync(
                 async () => (await matchingService.GetMatches(criteria)).ToList(),
-                $"{LoggingPrefix}Matching complete",
-                logger
+                $"{LoggingPrefix}Matching complete"
             );
 
             logger.SendTrace($"{LoggingPrefix}Matched {matches.Count} donors.");
 
-            var scoredMatches = await TimingLogger.RunTimedAsync(
+            var scoredMatches = await logger.RunTimedAsync(
                 async () =>
                 {
                     var lociToExcludeFromAggregateScoring = searchRequest.LociToExcludeFromAggregateScore.ToList();
                     var patientHla = searchRequest.SearchHlaData.ToPhenotypeInfo();
                     return await donorScoringService.ScoreMatchesAgainstHla(matches, patientHla, lociToExcludeFromAggregateScoring);
                 },
-                $"{LoggingPrefix}Scoring complete",
-                logger
+                $"{LoggingPrefix}Scoring complete"
             );
-            
+
             return scoredMatches.Select(MapSearchResultToApiSearchResult);
         }
 

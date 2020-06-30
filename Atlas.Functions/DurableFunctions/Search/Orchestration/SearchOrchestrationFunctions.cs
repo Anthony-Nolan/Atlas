@@ -15,13 +15,18 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 {
     /// <summary>
-    /// Note that orchestration triggered functions will be run multiple times per-request scope, so need to be completely deterministic.
+    /// Note that orchestration triggered functions will be run multiple times per-request scope, so need to follow the code constraints
+    /// as documented by Microsoft https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-code-constraints.
+    /// Logging should be avoided in this function due to this.
     /// Any expensive or non-deterministic code should be called from an Activity function.
     /// </summary>
     public static class SearchOrchestrationFunctions
     {
         [FunctionName(nameof(SearchOrchestrator))]
-        public static async Task<List<object>> SearchOrchestrator([OrchestrationTrigger] IDurableOrchestrationContext context)
+        // TODO: ATLAS-236: Return strongly typed objects
+        public static async Task<List<object>> SearchOrchestrator(
+            [OrchestrationTrigger] IDurableOrchestrationContext context
+        )
         {
             var searchRequest = context.GetInput<SearchRequest>();
             var searchResults = await context.CallActivityAsync<SearchResultSet>(
@@ -33,7 +38,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 searchResults.SearchResults.Select(r => RunMatchPrediction(context, searchRequest, r))
             )).ToDictionary();
 
-           return searchResults.SearchResults
+            // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework 
+            return searchResults.SearchResults
+                // TODO: ATLAS-236: Return strongly typed objects
                 .Select(r => new {MatchResult = r, MPAResult = matchPredictionResults[r.DonorId]} as object)
                 .ToList();
         }
