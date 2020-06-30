@@ -24,7 +24,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         private const string CacheKey = "NmdpCodeLookup_A";
 
         private ISearchRelatedMetadataService<IHlaMatchingMetadata> metadataService;
-        private IMacDictionary macDictionary;
         private IAppCache appCache;
 
         [OneTimeSetUp]
@@ -37,17 +36,8 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
                 // of the concrete implementations (the Matching implementation, as it happens), and apply our tests to that.
                 // We could have used *any* of the concrete implementations of HlaSearchingMetadataServiceBase<THlaMetadata>.
                 metadataService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMatchingMetadataService>();
-                macDictionary = DependencyInjection.DependencyInjection.Provider.GetService<IMacDictionary>();
                 appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
             });
-        }
-
-        [SetUp]
-        public void SetUp()
-        {
-            macDictionary
-                .GetHlaFromMac(Arg.Any<string>())
-                .Returns(new List<string>());
         }
 
         [TearDown]
@@ -72,10 +62,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string missingAllele = "9999:9999";
 
             // MAC value does not matter, but does need to conform to the expected pattern
-            const string macWithFirstField = "99:CODE";
-            macDictionary
-                .GetHlaFromMac(macWithFirstField)
-                .Returns(new List<string> { missingAllele });
+            const string macWithFirstField = "9999:FAKE";
 
             Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () => 
                 await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, null));
