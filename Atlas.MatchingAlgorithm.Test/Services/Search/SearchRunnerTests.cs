@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -10,6 +11,7 @@ using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
+using FluentAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
@@ -109,6 +111,17 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                     !r.WasSuccessful && r.SearchRequestId == id
                 ));
             }
+        }
+
+        [Test]
+        public async Task RunSearch_WhenSearchFails_ReThrowsException()
+        {
+            const string id = "id";
+            searchService.Search(Arg.Any<SearchRequest>()).Throws(new AtlasHttpException(HttpStatusCode.InternalServerError, "dummy error message"));
+
+            Func<Task> action = async () => await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = id}); 
+            
+            await action.Should().ThrowAsync<AtlasHttpException>();
         }
     }
 }

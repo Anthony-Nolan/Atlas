@@ -1,3 +1,10 @@
+// USAGE INSTRUCTIONS
+// This method is designed for hla copied directly from the donor database. 
+// The expected locus order is A-B-C-DQB1-DRB1
+// The easiest way to use is to copy these columns directly from a `SELECT * FROM DONORS` query of the donor store 
+// The output is the JSON to POST to the {{MPAFunctionBaseUrl}}/ExpandAmbiguousPhenotype and {{MPAFunctionBaseUrl}}/NumberOfPermutationsOfAmbiguousPhenotype endpoints of match prediction
+console.log(generateInputFromHlaData("*02:01\t*24:02\t*27:02\t*35:02\t*02:02\t*04:01\t*03:01\t*05:02\t*11:04\t*11:04"));
+
 function generateInputFromHlaData(rawData) {
     const columns = rawData.split(/\s/);
     const hlaNomenclatureVersion = "3400";
@@ -28,10 +35,3 @@ function generateInputFromHlaData(rawData) {
     }
 }`
 }
-
-// USAGE INSTRUCTIONS
-// This method is designed for hla copied directly from the donor database. 
-// The expected locus order is A-B-C-DQB1-DRB1
-// The easiest way to use is to copy these columns directly from a `SELECT * FROM DONORS` query of the donor store 
-// The output is the JSON to POST to the {{MPAFunctionBaseUrl}}/ExpandAmbiguousPhenotype and {{MPAFunctionBaseUrl}}/NumberOfPermutationsOfAmbiguousPhenotype endpoints of match prediction
-console.log(generateInputFromHlaData("*02:01\t*24:02\t*27:02\t*35:02\t*02:02\t*04:01\t*03:01\t*05:02\t*11:04\t*11:04"));

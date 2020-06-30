@@ -2,19 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
 
-namespace Atlas.Common.Utils
+namespace Atlas.Common.ApplicationInsights
 {
-    public static class TimingLogger
+    public static class LoggerTimingExtensions
     {
+        
         /// <summary>
         /// Runs the provided action, tracking how long it takes to operate, then logs the elapsed time along with a provided message. 
         /// </summary>
         public static T RunTimed<T>(
+            this ILogger logger,
             Func<T> action,
             string completionMessage,
-            ILogger logger,
             LogLevel logLevel = LogLevel.Info,
             Dictionary<string, string> customProperties = null)
         {
@@ -32,9 +32,9 @@ namespace Atlas.Common.Utils
         /// Runs the provided action, tracking how long it takes to operate, then logs the elapsed time along with a provided message. 
         /// </summary>
         public static async Task<T> RunTimedAsync<T>(
+            this ILogger logger,
             Func<Task<T>> action,
             string completionMessage,
-            ILogger logger,
             LogLevel logLevel = LogLevel.Info,
             Dictionary<string, string> customProperties = null)
         {

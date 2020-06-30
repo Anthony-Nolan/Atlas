@@ -40,32 +40,35 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 matchProbabilityInput.PatientHla,
                 matchProbabilityInput.HlaNomenclatureVersion
             );
+
             var donorGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(
                 matchProbabilityInput.DonorHla,
-               matchProbabilityInput.HlaNomenclatureVersion);
+                matchProbabilityInput.HlaNomenclatureVersion
+            );
 
-            var matchingPairs =
-                (await genotypeMatcher.PairsWithTenOutOfTenMatch(
-                    patientGenotypes,
-                    donorGenotypes, matchProbabilityInput.HlaNomenclatureVersion
-            ));
+            var matchingPairs = await genotypeMatcher.PairsWithTenOutOfTenMatch(
+                patientGenotypes,
+                donorGenotypes, matchProbabilityInput.HlaNomenclatureVersion
+            );
 
             // Returns early when patient/donor pair are guaranteed to either be a match or not
             if (patientGenotypes.Count * donorGenotypes.Count == matchingPairs.Count)
             {
                 return new MatchProbabilityResponse {ZeroMismatchProbability = 1m};
             }
+
             if (matchingPairs.Count == 0)
             {
-                return new MatchProbabilityResponse { ZeroMismatchProbability = 0m};
+                return new MatchProbabilityResponse {ZeroMismatchProbability = 0m};
             }
 
             var genotypes = patientGenotypes.Union(donorGenotypes);
             var genotypesLikelihoods = (await Task.WhenAll(genotypes.Select(CalculateLikelihood))).ToDictionary();
 
-            var probability = matchProbabilityCalculator.CalculateMatchProbability(patientGenotypes, donorGenotypes, matchingPairs, genotypesLikelihoods);
+            var probability =
+                matchProbabilityCalculator.CalculateMatchProbability(patientGenotypes, donorGenotypes, matchingPairs, genotypesLikelihoods);
 
-            return new MatchProbabilityResponse{ZeroMismatchProbability = probability};
+            return new MatchProbabilityResponse {ZeroMismatchProbability = probability};
         }
 
         private async Task<KeyValuePair<PhenotypeInfo<string>, decimal>> CalculateLikelihood(PhenotypeInfo<string> genotype)

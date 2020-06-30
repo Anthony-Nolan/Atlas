@@ -18,6 +18,8 @@ namespace Atlas.MatchPrediction.Data.Repositories
         private readonly string connectionString;
         private readonly ContextFactory contextFactory;
 
+        // EF Context is not thread safe: In order to make requests from multi-threaded code, we cannot share a DbContext.
+        // Elsewhere we use Dapper, creating a new connection for each request - this is the equivalent for EFCore.
         private MatchPredictionContext NewContext() => contextFactory.Create(connectionString);
 
         public HaplotypeFrequencySetRepository(string connectionString, ContextFactory contextFactory)
@@ -31,7 +33,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
             await using (var context = NewContext())
             {
                 return await context.HaplotypeFrequencySets
-                    .Where(set => set.Active == true && set.RegistryCode == registry && set.EthnicityCode == ethnicity)
+                    .Where(set => set.Active && set.RegistryCode == registry && set.EthnicityCode == ethnicity)
                     .SingleOrDefaultAsync();
             }
         }

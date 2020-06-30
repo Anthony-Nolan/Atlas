@@ -75,7 +75,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchMessagingServiceBusSettings,
                 fetchNotificationsServiceBusSettings
             );
-            services.RegisterMatchingAlgorithmServices(fetchPersistentSqlConnectionString,
+            
+            services.RegisterMatchingAlgorithmServices(
+                fetchPersistentSqlConnectionString,
                 fetchTransientASqlConnectionString,
                 fetchTransientBSqlConnectionString
             );
@@ -106,7 +108,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchNotificationsServiceBusSettings
             );
 
-            services.RegisterMatchingAlgorithmServices(fetchPersistentSqlConnectionString,
+            services.RegisterMatchingAlgorithmServices(
+                fetchPersistentSqlConnectionString,
                 fetchTransientASqlConnectionString,
                 fetchTransientBSqlConnectionString
             );

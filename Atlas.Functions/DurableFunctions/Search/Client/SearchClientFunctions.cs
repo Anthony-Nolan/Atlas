@@ -32,6 +32,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             
             logger.SendTrace($"Started search orchestration with ID = '{instanceId}'.");
 
+            // returns response including GET URL to fetch status, and eventual output, of orchestration function
             return starter.CreateCheckStatusResponse(request, instanceId);
         }
     }

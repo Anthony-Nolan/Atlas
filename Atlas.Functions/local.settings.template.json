@@ -18,9 +18,6 @@
     "Matching:MessagingServiceBus:SearchRequestsQueue": "matching-requests",
     "Matching:MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
     
-    "MatchPrediction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
-    "MatchPrediction:AzureStorage:HaplotypeFrequencySetImportContainer": "haplotype-frequency-set-import",
-    
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications"

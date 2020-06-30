@@ -17,7 +17,6 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Atlas.MatchPrediction.Test" />
     <InternalsVisibleTo Include="Atlas.MatchPrediction.Test.Integration" />
-    <InternalsVisibleTo Include="Atlas.MatchPrediction.Functions" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
   
