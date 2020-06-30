@@ -14,7 +14,7 @@ using Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversion;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
@@ -28,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, MacDictionarySettings> fetchMacImportSettings)
+            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings)
         {
             services.MakeSettingsAvailableForUse(fetchHlaMetadataDictionarySettings);
 
@@ -41,7 +41,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.RegisterTypesRelatedToDictionaryRecreation();
             services.RegisterServices();
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
-            services.RegisterMacDictionary(fetchApplicationInsightsSettings, fetchMacImportSettings);
+            services.RegisterMacDictionary(fetchApplicationInsightsSettings, fetchMacDictionarySettings);
         }
 
         private static void RegisterStorageTypes(this IServiceCollection services)
