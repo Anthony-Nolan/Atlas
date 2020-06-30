@@ -19,13 +19,12 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
     [TestFixture]
     public class Dpb1TceGroupMetadataServiceTests
     {
-        private const Locus Dpb1MolecularLocusType = Locus.Dpb1;
         private const string CacheKey = "NmdpCodeLookup_Dpb1";
 
         private IDpb1TceGroupMetadataService metadataService;
         private IAppCache appCache;
 
-        [SetUp]
+        [OneTimeSetUp]
         public void OneTimeSetUp()
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
@@ -68,12 +67,10 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         public async Task GetDpb1TceGroup_WhenNmdpCodeMapsToSingleTceGroup_ReturnsTceGroup()
         {
             // both alleles map to same TCE group
-            const string firstAllele = "02:01";
-            const string secondAllele = "02:02";
             const string tceGroup = "3";
 
-            // MAC value does not matter, but does need to conform to the expected pattern
-            const string macWithFirstField = "99:CODE";
+            // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Resources.Mac.csv
+            const string macWithFirstField = "02:ABC";
 
             var result = await metadataService.GetDpb1TceGroup(macWithFirstField, null);
 
@@ -84,11 +81,8 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         public async Task GetDpb1TceGroup_WhenNmdpCodeMapsToMoreThanOneTceGroup_DoesNotReturnTceGroup()
         {
             // alleles map to different TCE groups
-            const string firstAllele = "02:01";
-            const string secondAllele = "03:01";
-
-            // MAC value does not matter, but does need to conform to the expected pattern
-            const string macWithFirstField = "99:CODE";
+            // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Resources.Mac.csv
+            const string macWithFirstField = "02:DEF";
 
             var result = await metadataService.GetDpb1TceGroup(macWithFirstField, null);
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.MacCacheService;
 using Atlas.MultipleAlleleCodeDictionary.MacImportServices;
@@ -23,6 +24,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
         {
             services.RegisterSettings(fetchApplicationInsightsSettings, fetchMacDictionarySettings);
             services.RegisterServices();
+            services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterLifeTimeScopedCacheTypes();
         }
 
@@ -31,8 +33,9 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings)
         {
-            services.AddScoped(fetchApplicationInsightsSettings);
-            services.AddScoped(fetchMacDictionarySettings);
+            
+            services.MakeSettingsAvailableForUse(fetchApplicationInsightsSettings);
+            services.MakeSettingsAvailableForUse(fetchMacDictionarySettings);
         }
         
         private static void RegisterServices(this IServiceCollection services)
@@ -41,7 +44,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
             services.AddScoped<IMacParser, MacLineParser>();
             services.AddScoped<IMacImporter, MacImporter>();
             services.AddScoped<IMacCodeDownloader, MacCodeDownloader>();
-            services.RegisterAtlasLogger(sp => sp.GetService<IOptions<ApplicationInsightsSettings>>().Value);
             services.AddScoped<IMacCacheService, MacCacheService.MacCacheService>();
             services.AddScoped<IMacDictionary, MacDictionary>();
             services.AddScoped<IMacExpander, MacExpander>();

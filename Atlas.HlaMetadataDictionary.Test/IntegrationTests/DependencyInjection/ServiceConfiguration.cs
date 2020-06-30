@@ -23,7 +23,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
         {
             var services = new ServiceCollection();
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(
-                sp => new ApplicationInsightsSettings {LogLevel = "INFO"},
+                _ => new ApplicationInsightsSettings(){LogLevel = "Info"}, 
                 DependencyInjectionUtils.OptionsReaderFor<MacDictionarySettings>());
             return services.BuildServiceProvider();
         }
@@ -33,6 +33,8 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings)
         {
+            
+
             services.RegisterHlaMetadataDictionary(
                 _ => new HlaMetadataDictionarySettings(),
                 fetchApplicationInsightsSettings,

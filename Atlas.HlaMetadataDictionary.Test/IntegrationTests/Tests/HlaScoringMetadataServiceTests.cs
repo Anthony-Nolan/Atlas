@@ -27,7 +27,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         private const string CacheKey = "NmdpCodeLookup_A";
 
         private IHlaScoringMetadataService metadataService;
-        private IMacDictionary macDictionary;
         private IAppCache appCache;
 
         [OneTimeSetUp]
@@ -36,17 +35,8 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
                 metadataService = DependencyInjection.DependencyInjection.Provider.GetService<IHlaScoringMetadataService>();
-                macDictionary = DependencyInjection.DependencyInjection.Provider.GetService<IMacDictionary>();
                 appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
             });
-        }
-
-        [SetUp]
-        public void SetUp()
-        {
-            macDictionary
-                .GetHlaFromMac(Arg.Any<string>())
-                .Returns(new List<string>());
         }
 
         [TearDown]
@@ -123,18 +113,15 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
-        public async Task GetHlaMetadata_WhenNmdpCode_ReturnsConsolidatedScoringInfo()
+        public async Task GetHlaMetadata_WhenMac_ReturnsConsolidatedScoringInfo()
         {
             // each allele maps to a G and P group of the same name
             const string firstAllele = "01:133";
             const string secondAllele = "01:158";
             var alleles = new[] { firstAllele, secondAllele };
 
-            // MAC value does not matter, but does need to conform to the expected pattern
-            const string macWithFirstField = "99:CODE";
-            macDictionary
-                .GetHlaFromMac(macWithFirstField)
-                .Returns(alleles.ToList());
+            // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Resources.Mac.csv
+            const string macWithFirstField = "01:XYZ";
 
             var result = await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, null);
 
@@ -155,11 +142,8 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             var expressingAlleles = new[] { firstAllele, secondAllele };
             var allAlleles = new List<string>(expressingAlleles) { nullAllele };
 
-            // MAC value does not matter, but does need to conform to the expected pattern
-            const string macWithFirstField = "99:CODE";
-            macDictionary
-                .GetHlaFromMac(macWithFirstField)
-                .Returns(allAlleles);
+            // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Resources.Mac.csv
+            const string macWithFirstField = "01:XYZ";
 
             var result = await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, null);
 
