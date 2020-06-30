@@ -30,18 +30,21 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly IDonorScoringService donorScoringService;
         private readonly IMatchingService matchingService;
         private readonly ILogger logger;
+        private readonly IActiveHlaNomenclatureVersionAccessor activeHlaNomenclatureVersionAccessor;
 
         public SearchService(
             IHlaMetadataDictionaryFactory factory,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IDonorScoringService donorScoringService,
             IMatchingService matchingService,
-            ILogger logger
+            ILogger logger,
+            IActiveHlaNomenclatureVersionAccessor activeHlaNomenclatureVersionAccessor
         )
         {
             this.donorScoringService = donorScoringService;
             this.matchingService = matchingService;
             this.logger = logger;
+            this.activeHlaNomenclatureVersionAccessor = activeHlaNomenclatureVersionAccessor;
             hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
@@ -69,7 +72,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 $"{LoggingPrefix}Scoring complete"
             );
 
-            return scoredMatches.Select(MapSearchResultToApiSearchResult);
+            var hlaNomenclatureVersionUsed = activeHlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
+            return scoredMatches.Select(m => MapSearchResultToApiSearchResult(m, hlaNomenclatureVersionUsed));
         }
 
         private async Task<AlleleLevelMatchCriteria> GetMatchCriteria(SearchRequest searchRequest)
@@ -82,17 +86,16 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 MapLocusInformationToMatchCriteria(Locus.Drb1, matchCriteria.LocusMismatchDrb1, searchRequest.SearchHlaData.LocusSearchHlaDrb1),
                 MapLocusInformationToMatchCriteria(Locus.Dqb1, matchCriteria.LocusMismatchDqb1, searchRequest.SearchHlaData.LocusSearchHlaDqb1));
 
-            var criteria = new AlleleLevelMatchCriteria
+            return new AlleleLevelMatchCriteria
             {
                 SearchType = searchRequest.SearchType,
-                DonorMismatchCount = (int) matchCriteria.DonorMismatchCount,
+                DonorMismatchCount = matchCriteria.DonorMismatchCount,
                 LocusMismatchA = criteriaMappings[0],
                 LocusMismatchB = criteriaMappings[1],
                 LocusMismatchC = criteriaMappings[2],
                 LocusMismatchDrb1 = criteriaMappings[3],
                 LocusMismatchDqb1 = criteriaMappings[4]
             };
-            return criteria;
         }
 
         private async Task<AlleleLevelLocusMatchCriteria> MapLocusInformationToMatchCriteria(
@@ -120,7 +123,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             };
         }
 
-        private static SearchResult MapSearchResultToApiSearchResult(MatchAndScoreResult result)
+        private static SearchResult MapSearchResultToApiSearchResult(MatchAndScoreResult result, string hlaNomenclatureVersion)
         {
             return new SearchResult
             {
@@ -138,6 +141,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 SearchResultAtLocusDpb1 = MapSearchResultToApiLocusSearchResult(result, Locus.Dpb1),
                 SearchResultAtLocusDqb1 = MapSearchResultToApiLocusSearchResult(result, Locus.Dqb1),
                 SearchResultAtLocusDrb1 = MapSearchResultToApiLocusSearchResult(result, Locus.Drb1),
+                DonorHla = result.MatchResult.DonorInfo.HlaNames,
+                HlaNomenclatureVersion = hlaNomenclatureVersion
             };
         }
 

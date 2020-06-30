@@ -6,7 +6,7 @@
         /// Number of mismatches permitted per donor.
         /// Required.
         /// </summary>
-        public int? DonorMismatchCount { get; set; }
+        public int DonorMismatchCount { get; set; }
 
         /// <summary>
         /// Mismatch preferences for HLA at locus A.
