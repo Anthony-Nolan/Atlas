@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Utils;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
@@ -25,6 +25,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
     public class SearchService : ISearchService
     {
+        private const string LoggingPrefix = "Matching Algorithm: ";
+
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
         private readonly IDonorScoringService donorScoringService;
         private readonly IMatchingService matchingService;
@@ -41,41 +43,36 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.donorScoringService = donorScoringService;
             this.matchingService = matchingService;
             this.logger = logger;
-            this.hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
+            hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
         public async Task<IEnumerable<SearchResult>> Search(SearchRequest searchRequest)
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+            var criteria = await TimingLogger.RunTimedAsync(
+                async () => await GetMatchCriteria(searchRequest),
+                $"{LoggingPrefix}Expanded patient HLA.",
+                logger
+            );
 
-            var criteria = await GetMatchCriteria(searchRequest);
-            var patientHla = GetPatientHla(searchRequest);
+            var matches = await TimingLogger.RunTimedAsync(
+                async () => (await matchingService.GetMatches(criteria)).ToList(),
+                $"{LoggingPrefix}Matching complete",
+                logger
+            );
 
-            logger.SendTrace("Search timing: Looked up patient hla", LogLevel.Info, new Dictionary<string, string>
-            {
-                {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()}
-            });
-            stopwatch.Restart();
+            logger.SendTrace($"{LoggingPrefix}Matched {matches.Count} donors.");
 
-            var matches = (await matchingService.GetMatches(criteria)).ToList();
-
-            logger.SendTrace("Search timing: Matching complete", LogLevel.Info, new Dictionary<string, string>
-            {
-                {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
-                {"MatchedDonors", matches.Count().ToString()}
-            });
-            stopwatch.Restart();
-
-            var lociToExcludeFromAggregateScoring = searchRequest.LociToExcludeFromAggregateScore.ToList();
-            var scoredMatches = await donorScoringService.ScoreMatchesAgainstHla(matches, patientHla, lociToExcludeFromAggregateScoring);
-
-            logger.SendTrace("Search timing: Scoring complete", LogLevel.Info, new Dictionary<string, string>
-            {
-                {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
-                {"MatchedDonors", matches.Count().ToString()}
-            });
-
+            var scoredMatches = await TimingLogger.RunTimedAsync(
+                async () =>
+                {
+                    var lociToExcludeFromAggregateScoring = searchRequest.LociToExcludeFromAggregateScore.ToList();
+                    var patientHla = searchRequest.SearchHlaData.ToPhenotypeInfo();
+                    return await donorScoringService.ScoreMatchesAgainstHla(matches, patientHla, lociToExcludeFromAggregateScoring);
+                },
+                $"{LoggingPrefix}Scoring complete",
+                logger
+            );
+            
             return scoredMatches.Select(MapSearchResultToApiSearchResult);
         }
 
@@ -125,11 +122,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 PGroupsToMatchInPositionOne = metadata.Position1.MatchingPGroups,
                 PGroupsToMatchInPositionTwo = metadata.Position2.MatchingPGroups
             };
-        }
-
-        private static PhenotypeInfo<string> GetPatientHla(SearchRequest searchRequest)
-        {
-            return searchRequest.SearchHlaData.ToPhenotypeInfo();
         }
 
         private static SearchResult MapSearchResultToApiSearchResult(MatchAndScoreResult result)
