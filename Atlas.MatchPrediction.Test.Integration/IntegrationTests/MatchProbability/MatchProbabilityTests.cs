@@ -67,7 +67,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchProbabili
         }
 
         [Test]
-        public async Task CalculateMatchProbability_WhenDifferentGenotypes_ZeroPercentProbability()
+        public async Task CalculateMatchProbability_WhenGenotypesAreNonMatching_ZeroPercentProbability()
         {
             var donorHla = NewHla.With(h => h.A, new LocusInfo<string> {Position1 = "23:17", Position2 = "23:18"});
 
@@ -85,7 +85,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchProbabili
         }
 
         [Test]
-        public async Task CalculateMatchProbability_WhenAmbiguousHlaReturnsProbability()
+        public async Task CalculateMatchProbability_WhenAmbiguousHla_ReturnsProbability()
         {
             var allPossibleHaplotypes = new List<HaplotypeFrequency>
             {
