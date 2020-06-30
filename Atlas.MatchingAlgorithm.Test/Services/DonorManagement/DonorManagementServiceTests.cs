@@ -46,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task UpdateAvailabilityOfDonorsInBatch_DonorIsAvailableForSearch_AddsOrUpdatesDonor()
+        public async Task ApplyDonorUpdatesToDatabase_DonorIsAvailableForSearch_AddsOrUpdatesDonor()
         {
             const int donorId = 456;
             const DonorType donorType = DonorType.Adult;
@@ -73,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task UpdateAvailabilityOfDonorsInBatch_DonorIsAvailableForSearch_DoesNotSetDonorAsUnavailable()
+        public async Task ApplyDonorUpdatesToDatabase_DonorIsAvailableForSearch_DoesNotSetDonorAsUnavailable()
         {
             const int donorId = 456;
 
@@ -96,7 +96,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task UpdateAvailabilityOfDonorsInBatch_DonorIsNotAvailableForSearch_SetsDonorAsUnavailable()
+        public async Task ApplyDonorUpdatesToDatabase_DonorIsNotAvailableForSearch_SetsDonorAsUnavailable()
         {
             const int donorId = 789;
 
@@ -116,7 +116,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task UpdateAvailabilityOfDonorsInBatch_DonorIsNotAvailableForSearch_DoesNotAddOrUpdateDonor()
+        public async Task ApplyDonorUpdatesToDatabase_DonorIsNotAvailableForSearch_DoesNotAddOrUpdateDonor()
         {
             const int donorId = 789;
 
@@ -134,7 +134,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task UpdateAvailabilityOfDonorsInBatch_MultipleUpdatesPerDonor_AndDonorIsAvailableInLatest_AddsOrUpdatesDonor()
+        public async Task ApplyDonorUpdatesToDatabase_MultipleUpdatesPerDonor_AndDonorIsAvailableInLatest_AddsOrUpdatesDonor()
         {
             const int donorId = 456;
             const DonorType donorType = DonorType.Adult;
@@ -171,7 +171,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task UpdateAvailabilityOfDonorsInBatch_MultipleUpdatesPerDonor_AndDonorIsAvailableInLatest_DoesNotSetDonorAsUnavailable()
+        public async Task ApplyDonorUpdatesToDatabase_MultipleUpdatesPerDonor_AndDonorIsAvailableInLatest_DoesNotSetDonorAsUnavailable()
         {
             const int donorId = 456;
 
@@ -204,7 +204,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task UpdateAvailabilityOfDonorsInBatch_MultipleUpdatesPerDonor_AndDonorIsUnavailableInLatest_SetsDonorAsUnavailable()
+        public async Task ApplyDonorUpdatesToDatabase_MultipleUpdatesPerDonor_AndDonorIsUnavailableInLatest_SetsDonorAsUnavailable()
         {
             const int donorId = 789;
 
@@ -239,7 +239,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task UpdateAvailabilityOfDonorsInBatch_MultipleUpdatesPerDonor_AndDonorIsUnavailableInLatest_DoesNotAddOrUpdateDonor()
+        public async Task ApplyDonorUpdatesToDatabase_MultipleUpdatesPerDonor_AndDonorIsUnavailableInLatest_DoesNotAddOrUpdateDonor()
         {
             const int donorId = 789;
 
@@ -272,7 +272,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task UpdateAvailabilityOfDonorsInBatch_DonorIsAvailable_AndUpdateIsNewerThanThatLastApplied_AddsOrUpdatesDonor()
+        public async Task ApplyDonorUpdatesToDatabase_DonorIsAvailable_AndUpdateIsNewerThanThatLastApplied_AddsOrUpdatesDonor()
         {
             const int donorId = 456;
             var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
@@ -304,7 +304,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task UpdateAvailabilityOfDonorsInBatch_DonorIsAvailable_AndUpdateIsOlderThanThatLastApplied_DoesNotAddOrUpdateDonor()
+        public async Task ApplyDonorUpdatesToDatabase_DonorIsAvailable_AndUpdateIsOlderThanThatLastApplied_DoesNotAddOrUpdateDonor()
         {
             const int donorId = 456;
             var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
@@ -336,7 +336,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task UpdateAvailabilityOfDonorsInBatch_DonorIsNotAvailable_AndUpdateIsNewerThanThatLastApplied_SetsDonorAsUnavailable()
+        public async Task ApplyDonorUpdatesToDatabase_DonorIsNotAvailable_AndUpdateIsNewerThanThatLastApplied_SetsDonorAsUnavailable()
         {
             const int donorId = 789;
             var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
@@ -367,7 +367,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task UpdateAvailabilityOfDonorsInBatch_DonorIsNotAvailable_AndUpdateIsOlderThanThatLastApplied_DoesNotSetDonorAsUnavailable()
+        public async Task ApplyDonorUpdatesToDatabase_DonorIsNotAvailable_AndUpdateIsOlderThanThatLastApplied_DoesNotSetDonorAsUnavailable()
         {
             const int donorId = 789;
             var newerTimestamp = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
@@ -398,7 +398,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task UpdateAvailabilityOfDonorsInBatch_SomeUpdatesOlderThanThoseLastApplied_LogsEventForEachNonApplicableUpdate()
+        public async Task ApplyDonorUpdatesToDatabase_SomeUpdatesOlderThanThoseLastApplied_LogsEventForEachNonApplicableUpdate()
         {
             const int donorId1 = 456;
             const int donorId2 = 789;
@@ -443,7 +443,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task UpdateAvailabilityOfDonorsInBatch_UpdatesContainAvailableAndUnavailableDonors_ModifiesDonorsCorrectly()
+        public async Task ApplyDonorUpdatesToDatabase_UpdatesContainAvailableAndUnavailableDonors_ModifiesDonorsCorrectly()
         {
             const int availableDonorId = 123;
             const int unavailableDonorId = 456;
@@ -482,7 +482,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         }
 
         [Test]
-        public async Task UpdateAvailabilityOfDonorsInBatch_CreatesOrUpdatesDonorManagementLog()
+        public async Task ApplyDonorUpdatesToDatabase_CreatesOrUpdatesDonorManagementLog()
         {
             const int donorId = 789;
             const int sequenceNumber = 123456789;
