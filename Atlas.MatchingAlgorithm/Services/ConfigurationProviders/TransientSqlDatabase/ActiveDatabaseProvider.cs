@@ -1,4 +1,3 @@
-using System;
 using Atlas.Common.Caching;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;

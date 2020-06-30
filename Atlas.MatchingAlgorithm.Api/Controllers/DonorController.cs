@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
-using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Microsoft.AspNetCore.Mvc;
