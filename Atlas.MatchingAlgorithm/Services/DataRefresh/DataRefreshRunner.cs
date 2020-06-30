@@ -209,7 +209,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             }
         }
 
-        // We expect to extract this to somewhere else in the future.
+        // TODO: ATLAS-355: We expect to extract this to somewhere else in the future.
         private async Task RefreshHlaMetadataDictionary(DataRefreshRecord refreshRecord)
         {
             if (string.IsNullOrEmpty(refreshRecord.HlaNomenclatureVersion))

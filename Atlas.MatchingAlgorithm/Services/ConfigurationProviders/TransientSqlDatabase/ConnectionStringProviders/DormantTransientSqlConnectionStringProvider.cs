@@ -5,7 +5,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 {
     /// <summary>
     /// Provides the connection string needed to query the Dormant (non-active) non-persistent sql database.
-    /// This database can be switched at runtime, hence "which DB to use" needs to be resolved dynamically, rather than just using and AppSetting.
+    /// This database can be switched at runtime, hence "which DB to use" needs to be resolved dynamically, rather than just using an AppSetting.
     /// </summary>
     public class DormantTransientSqlConnectionStringProvider : DynamicallyChosenTransientSqlConnectionStringProvider
     {
