@@ -188,11 +188,22 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguou
 
             var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
 
-            genotypes.Count().Should().Be(4);
+            genotypes.Count.Should().Be(4);
         }
-        // TODO: ATLAS-370 - Create tests for g-group alleles
 
-        // TODO: ATLAS-369 - Create tests for p-group alleles
+        [Test]
+        public async Task ExpandCompressedPhenotype_WhenPGroupPresent_ExpandsPGroup()
+        {
+            var phenotype = NewPhenotypeInfo
+                .With(d => d.A, new LocusInfo<string> { Position1 = "23:03P", Position2 = A2 })
+                .Build();
+
+            var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
+
+            genotypes.Count().Should().Be(2);
+        }
+
+        // TODO: ATLAS-370 - Create tests for g-group alleles
 
         private static Builder<PhenotypeInfo<string>> NewPhenotypeInfo => Builder<PhenotypeInfo<string>>.New
             .With(d => d.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})
