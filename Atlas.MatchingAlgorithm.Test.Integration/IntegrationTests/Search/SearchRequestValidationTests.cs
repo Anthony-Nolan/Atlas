@@ -150,10 +150,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 async () => await searchDispatcher.DispatchSearch(searchRequest));
         }
 
-        [TestCase(null)]
         [TestCase(-1)]
         [TestCase(5)]
-        public void DispatchSearch_DonorMismatchCountIsInvalid_ThrowsValidationError(int? donorMismatchCount)
+        public void DispatchSearch_DonorMismatchCountIsInvalid_ThrowsValidationError(int donorMismatchCount)
         {
             searchRequest.MatchCriteria.DonorMismatchCount = donorMismatchCount;
 
