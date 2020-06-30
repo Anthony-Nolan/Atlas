@@ -18,6 +18,18 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         private const string DonorLocus1 = "donorGenotype1";
         private const string DonorLocus2 = "donorGenotype2";
 
+        private readonly PhenotypeInfo<string> patientGenotype1 = PhenotypeInfoBuilder.New
+            .With(d => d.A, new LocusInfo<string> { Position1 = PatientLocus1, Position2 = PatientLocus1 }).Build();
+
+        private readonly PhenotypeInfo<string> patientGenotype2 = PhenotypeInfoBuilder.New
+            .With(d => d.A, new LocusInfo<string> { Position1 = PatientLocus2, Position2 = PatientLocus2 }).Build();
+
+        private readonly PhenotypeInfo<string> donorGenotype1 = PhenotypeInfoBuilder.New
+            .With(d => d.A, new LocusInfo<string> { Position1 = DonorLocus1, Position2 = DonorLocus1 }).Build();
+
+        private readonly PhenotypeInfo<string> donorGenotype2 = PhenotypeInfoBuilder.New
+            .With(d => d.A, new LocusInfo<string> { Position1 = DonorLocus2, Position2 = DonorLocus2 }).Build();
+
         [SetUp]
         public void Setup()
         {
@@ -27,18 +39,6 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         [Test]
         public void CalculateMatchProbability_ReturnsMatchProbability()
         {
-            var patientGenotype1 = PhenotypeInfoBuilder.New
-                .With(d => d.A, new LocusInfo<string> { Position1 = PatientLocus1, Position2 = PatientLocus1 }).Build();
-
-            var patientGenotype2 = PhenotypeInfoBuilder.New
-                .With(d => d.A, new LocusInfo<string> { Position1 = PatientLocus2, Position2 = PatientLocus2 }).Build();
-
-            var donorGenotype1 = PhenotypeInfoBuilder.New
-                .With(d => d.A, new LocusInfo<string> { Position1 = DonorLocus1, Position2 = DonorLocus1 }).Build();
-
-            var donorGenotype2 = PhenotypeInfoBuilder.New
-                .With(d => d.A, new LocusInfo<string> { Position1 = DonorLocus2, Position2 = DonorLocus2 }).Build();
-
             var genotypesLikelihoods = new Dictionary<PhenotypeInfo<string>, decimal>
             {
                 {patientGenotype1, 0.5m},
@@ -48,23 +48,10 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             };
 
             var matchingPairs = new HashSet<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>>
-            {
-                new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientGenotype1, donorGenotype1)
-            };
+                {new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientGenotype1, donorGenotype1)};
 
-            var patientGenotypes = new HashSet<PhenotypeInfo<string>>
-            {
-                patientGenotype1,
-                patientGenotype2
-            };
-
-            var donorGenotypes = new HashSet<PhenotypeInfo<string>>
-            {
-                donorGenotype1,
-                donorGenotype2
-            };
-
-            const decimal expectedProbability = 0.25m;
+            var patientGenotypes = new HashSet<PhenotypeInfo<string>> {patientGenotype1, patientGenotype2};
+            var donorGenotypes = new HashSet<PhenotypeInfo<string>> {donorGenotype1, donorGenotype2};
 
             var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(
                 patientGenotypes,
@@ -72,7 +59,33 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 matchingPairs,
                 genotypesLikelihoods);
 
-            actualProbability.Should().Be(expectedProbability);
+            actualProbability.Should().Be(0.25m);
+        }
+
+        [Test]
+        public void CalculateMatchProbability_WithUnrepresentedPhenotypes_HasZeroProbability()
+        {
+            var genotypesLikelihoods = new Dictionary<PhenotypeInfo<string>, decimal>
+            {
+                {patientGenotype1, 0m},
+                {patientGenotype2, 0m},
+                {donorGenotype1, 0m},
+                {donorGenotype2, 0m}
+            };
+
+            var matchingPairs = new HashSet<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>>
+                {new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientGenotype1, donorGenotype1)};
+
+            var patientGenotypes = new HashSet<PhenotypeInfo<string>> { patientGenotype1, patientGenotype2 };
+            var donorGenotypes = new HashSet<PhenotypeInfo<string>> { donorGenotype1, donorGenotype2 };
+
+            var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(
+                patientGenotypes,
+                donorGenotypes,
+                matchingPairs,
+                genotypesLikelihoods);
+
+            actualProbability.Should().Be(0m);
         }
     }
 }
