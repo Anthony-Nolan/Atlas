@@ -11,6 +11,7 @@ namespace Atlas.DonorImport.Data.Repositories
     {
         public IEnumerable<Donor> StreamAllDonors();
         public Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(ICollection<string> externalDonorCodes);
+        public Task<Dictionary<int, Donor>> GetDonorsByIds(ICollection<int> donorIds);
         public Task<Dictionary<string, int>> GetDonorIdsByExternalDonorCodes(ICollection<string> externalDonorCodes);
     }
 
@@ -52,6 +53,20 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
             {
                 var donors = await connection.QueryAsync<Donor>(sql, new { codes = externalDonorCodes });
                 return donors.ToDictionary(d => d.ExternalDonorCode, d => d);
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<Dictionary<int, Donor>> GetDonorsByIds(ICollection<int> donorIds)
+        {
+            var sql = @$"
+SELECT {Donor.DataTableColumnNamesForInsertion.StringJoin(",")} FROM Donors
+WHERE {nameof(Donor.AtlasId)} IN @ids
+";
+            await using (var connection = NewConnection())
+            {
+                var donors = await connection.QueryAsync<Donor>(sql, new { ids = donorIds });
+                return donors.ToDictionary(d => d.AtlasId, d => d);
             }
         }
 
