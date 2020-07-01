@@ -88,7 +88,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 
             var messageProcessorService = ChooseMessagesToProcess(targetDatabase);
 
-            await messageProcessorService.ProcessMessageBatchAsync(
+            await messageProcessorService.ProcessAllMessagesInBatches_Async(
                 async batch => await ProcessMessages(batch, targetDatabase, hlaNomenclatureVersionFromRefresh),
                 batchSize,
                 batchSize * 2);
@@ -106,14 +106,14 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             {
                 case DatabaseStateWithRespectToDonorUpdates.Active:
                     var activeHlaVersion = activeHlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
-                    await messageProcessorService.ProcessMessageBatchAsync(
+                    await messageProcessorService.ProcessAllMessagesInBatches_Async(
                         async batch => await ProcessMessages(batch, targetDatabase, activeHlaVersion),
                         batchSize,
                         batchSize * 2);
                     return;
 
                 case DatabaseStateWithRespectToDonorUpdates.Dormant:
-                    await messageProcessorService.ProcessMessageBatchAsync(
+                    await messageProcessorService.ProcessAllMessagesInBatches_Async(
                         async batch => await DiscardMessages(batch),
                         batchSize * 10,
                         batchSize * 20);

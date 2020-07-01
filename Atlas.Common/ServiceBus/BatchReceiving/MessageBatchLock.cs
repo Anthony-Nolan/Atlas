@@ -10,7 +10,8 @@ using Atlas.Common.ServiceBus.Models;
 namespace Atlas.Common.ServiceBus.BatchReceiving
 {
     /// <summary>
-    /// Controls flow of actions made by the Message Receiver on the Message Batch.
+    /// Maintains a lock on a collection of messages retrieved from an Azure ServiceBus.
+    /// Will renew the lock before it expires, for the duration of that lock.
     /// </summary>
     public class MessageBatchLock<T> : IDisposable
     {
@@ -22,7 +23,9 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
         private Timer locksRenewalTimer;
         private bool messageBatchHasBeenReleased;
 
+        /// <param name="messageBatch">The message batch that has been retrieved from </param>
         /// <param name="lockTimeFraction">Fraction of message lock time to use in lock renewal rate calculation.</param>
+        /// <param name="messageReceiver">The object responsible for communicating with Azure regarding the messages in this batch.</param>
         public MessageBatchLock(
             IServiceBusMessageReceiver<T> messageReceiver,
             IEnumerable<ServiceBusMessage<T>> messageBatch,
