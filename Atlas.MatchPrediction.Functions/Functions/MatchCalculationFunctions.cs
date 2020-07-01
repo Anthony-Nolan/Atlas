@@ -24,7 +24,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
         [FunctionName(nameof(CalculateMatch))]
         public async Task<IActionResult> CalculateMatch(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(MatchCalculationInput), "match calculation")]
+            [RequestBodyType(typeof(MatchCalculationInput), nameof(MatchCalculationInput))]
             HttpRequest request)
         {
             var matchCalculationInput = JsonConvert.DeserializeObject<MatchCalculationInput>(await new StreamReader(request.Body).ReadToEndAsync());
