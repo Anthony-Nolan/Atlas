@@ -1,11 +1,10 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Client.Models.Scoring
 {
     public class ScoringRequest
     {
-        // TODO: ATLAS-236: Use PhenotypeInfo?
-        public SearchHlaData DonorHla { get; set; }
-        public SearchHlaData PatientHla { get; set; }
+        public PhenotypeInfo<string> DonorHla { get; set; }
+        public PhenotypeInfo<string> PatientHla { get; set; }
     }
 }
