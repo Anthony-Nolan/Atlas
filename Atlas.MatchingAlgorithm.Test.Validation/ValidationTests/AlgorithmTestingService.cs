@@ -41,11 +41,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
             server.Dispose();
         }
 
-        public static async Task<SearchAlgorithmApiResult> Search(SearchRequest searchRequest)
+        public static async Task<SearchAlgorithmApiResult> Search(MatchingRequest matchingRequest)
         {
             var result = await server.CreateRequest("/search")
                 .AddHeader(ApiKeyHeader, ApiKey)
-                .And(request => request.Content = SerialiseToJson(searchRequest))
+                .And(request => request.Content = SerialiseToJson(matchingRequest))
                 .PostAsync();
 
             var content = await result.Content.ReadAsStringAsync();

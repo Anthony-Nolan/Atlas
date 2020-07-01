@@ -78,7 +78,7 @@ namespace Atlas.Functions.Services
                     EthnicityCode = donorInfo.EthnicityCode,
                     RegistryCode = donorInfo.RegistryCode
                 },
-                PatientHla = searchRequest.SearchHlaData.ToMatchingAlgorithmSearchHla().ToPhenotypeInfo(),
+                PatientHla = searchRequest.SearchHlaData.ToPhenotypeInfo(),
                 HlaNomenclatureVersion = hlaNomenclatureVersion
             };
         }

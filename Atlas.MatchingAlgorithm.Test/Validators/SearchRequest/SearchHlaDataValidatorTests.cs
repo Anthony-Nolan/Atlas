@@ -1,4 +1,5 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using FluentValidation.TestHelper;
 using NUnit.Framework;
@@ -9,47 +10,47 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
     public class SearchHlaDataValidatorTests
     {
         private SearchHlaDataValidator validator;
-        
+
         [SetUp]
         public void SetUp()
         {
             validator = new SearchHlaDataValidator();
         }
-        
+
         [Test]
         public void Validator_WhenMissingLocusSearchHlaA_ShouldHaveValidationError()
         {
-            validator.ShouldHaveValidationErrorFor(x => x.LocusSearchHlaA, (LocusSearchHla) null);
+            validator.ShouldHaveValidationErrorFor(x => x.A, (LocusInfo<string>) null);
         }
 
         [Test]
         public void Validator_WhenMissingLocusSearchHlaB_ShouldHaveValidationError()
         {
-            validator.ShouldHaveValidationErrorFor(x => x.LocusSearchHlaB, (LocusSearchHla) null);
+            validator.ShouldHaveValidationErrorFor(x => x.B, (LocusInfo<string>) null);
         }
 
         [Test]
         public void Validator_WhenMissingLocusSearchHlaDrb1_ShouldHaveValidationError()
         {
-            validator.ShouldHaveValidationErrorFor(x => x.LocusSearchHlaDrb1, (LocusSearchHla) null);
+            validator.ShouldHaveValidationErrorFor(x => x.Drb1, (LocusInfo<string>) null);
         }
 
         [Test]
         public void Validator_WhenMissingLocusSearchHlaC_ShouldNotHaveValidationError()
         {
-            validator.ShouldNotHaveValidationErrorFor(x => x.LocusSearchHlaC, (LocusSearchHla) null);
+            validator.ShouldNotHaveValidationErrorFor(x => x.C, (LocusInfo<string>) null);
         }
 
         [Test]
         public void Validator_WhenMissingLocusSearchHlaDqb1_ShouldNotHaveValidationError()
         {
-            validator.ShouldNotHaveValidationErrorFor(x => x.LocusSearchHlaDqb1, (LocusSearchHla)null);
+            validator.ShouldNotHaveValidationErrorFor(x => x.Dqb1, (LocusInfo<string>) null);
         }
 
         [Test]
         public void Validator_WhenMissingLocusSearchHlaDpb1_ShouldNotHaveValidationError()
         {
-            validator.ShouldNotHaveValidationErrorFor(x => x.LocusSearchHlaDpb1, (LocusSearchHla)null);
+            validator.ShouldNotHaveValidationErrorFor(x => x.Dpb1, (LocusInfo<string>) null);
         }
     }
 }
