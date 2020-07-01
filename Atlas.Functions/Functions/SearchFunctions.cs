@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
+using Atlas.Functions.Models.Search.Requests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Helpers;
 using Atlas.MatchingAlgorithm.Services.Search;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
+using SearchRequest = Atlas.Functions.Models.Search.Requests.SearchRequest;
 
 namespace Atlas.Functions.Functions
 {
@@ -30,7 +32,7 @@ namespace Atlas.Functions.Functions
             var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
             try
             {
-                var id = await searchDispatcher.DispatchSearch(searchRequest);
+                var id = await searchDispatcher.DispatchSearch(searchRequest.ToMatchingRequest());
                 return new JsonResult(new SearchInitiationResponse {SearchIdentifier = id});
             }
             catch (ValidationException e)

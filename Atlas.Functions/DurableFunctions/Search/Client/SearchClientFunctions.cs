@@ -2,7 +2,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Functions.DurableFunctions.Search.Orchestration;
-using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
+using Atlas.Functions.Models.Search.Requests;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
