@@ -1,20 +1,27 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Data.Models;
+using Atlas.MatchPrediction.ExternalInterface;
+using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 
 namespace Atlas.MatchPrediction.Functions.Functions
 {
     public class HaplotypeFrequencySetFunctions
     {
         private readonly IFrequencySetService frequencySetService;
+        private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
 
-        public HaplotypeFrequencySetFunctions(IFrequencySetService frequencySetService)
+        public HaplotypeFrequencySetFunctions(IFrequencySetService frequencySetService, IMatchPredictionAlgorithm matchPredictionAlgorithm)
         {
             this.frequencySetService = frequencySetService;
+            this.matchPredictionAlgorithm = matchPredictionAlgorithm;
         }
 
         /// IMPORTANT: Do not rename this function without careful consideration. This function is called by event grid, which has the function name set by terraform.
@@ -35,6 +42,16 @@ namespace Atlas.MatchPrediction.Functions.Functions
             {
                 await frequencySetService.ImportFrequencySet(file);
             }
+        }
+
+        [FunctionName((nameof(GetHaplotypeFrequencySet)))]
+        [StorageAccount("AzureStorage:ConnectionString")]
+        public async Task<HaplotypeFrequencySet> GetHaplotypeFrequencySet([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest request)
+        {
+            var donorInfo = new IndividualMetaData(request.Query["donorEthnicity"], request.Query["donorRegistry"]);
+            var patientInfo = new IndividualMetaData(request.Query["patientEthnicity"], request.Query["patientRegistry"]);
+            return await matchPredictionAlgorithm.GetHaplotypeFrequencySet(
+                new HaplotypeFrequencySetInput(donorInfo, patientInfo));
         }
     }
 }
