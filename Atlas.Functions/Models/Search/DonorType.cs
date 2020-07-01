@@ -1,0 +1,23 @@
+using System;
+
+namespace Atlas.Functions.Models.Search
+{
+    public enum DonorType
+    {
+        Adult,
+        Cord
+    }
+
+    internal static class DonorTypeMappings
+    {
+        public static MatchingAlgorithm.Client.Models.Donors.DonorType ToMatchingAlgorithmDonorType(this DonorType donorType)
+        {
+            return donorType switch
+            {
+                DonorType.Adult => MatchingAlgorithm.Client.Models.Donors.DonorType.Adult,
+                DonorType.Cord => MatchingAlgorithm.Client.Models.Donors.DonorType.Cord,
+                _ => throw new ArgumentOutOfRangeException(nameof(donorType))
+            };
+        }
+    }
+}

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
-using Atlas.Functions.Models;
+using Atlas.Functions.Models.Search.Results;
 using Atlas.Functions.Settings;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
