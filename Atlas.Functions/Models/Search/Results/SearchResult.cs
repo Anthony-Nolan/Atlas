@@ -1,4 +1,4 @@
-namespace Atlas.Functions.Models
+namespace Atlas.Functions.Models.Search.Results
 {
     public class SearchResult
     {
