@@ -10,6 +10,7 @@ using Atlas.MatchPrediction.Services;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencySets;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
@@ -75,6 +76,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.AddScoped<IFrequencySetImporter, FrequencySetImporter>();
             services.AddScoped<IFrequencyCsvReader, FrequencyCsvReader>();
             services.AddScoped<IFrequencySetService, FrequencySetService>();
+            services.AddScoped<IHaplotypeFrequencySetService, HaplotypeFrequencySetService>();
 
             services.AddScoped<IGenotypeLikelihoodService, GenotypeLikelihoodService>();
             services.AddScoped<IUnambiguousGenotypeExpander, UnambiguousGenotypeExpander>();
