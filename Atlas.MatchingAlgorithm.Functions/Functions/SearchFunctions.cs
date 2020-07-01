@@ -32,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         [FunctionName(nameof(InitiateSearch))]
         public async Task<IActionResult> InitiateSearch([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request)
         {
-            var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+            var searchRequest = JsonConvert.DeserializeObject<MatchingRequest>(await new StreamReader(request.Body).ReadToEndAsync());
             try
             {
                 var id = await searchDispatcher.DispatchSearch(searchRequest);

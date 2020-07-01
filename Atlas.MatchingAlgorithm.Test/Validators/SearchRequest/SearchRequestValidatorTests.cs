@@ -1,4 +1,5 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models.Donors;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using FluentAssertions;
@@ -27,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         [Test]
         public void Validator_WhenSearchTypeMissing_ShouldHaveValidationError()
         {
-            var result = validator.Validate(new Client.Models.SearchRequests.SearchRequest
+            var result = validator.Validate(new Client.Models.SearchRequests.MatchingRequest
             {
                 MatchCriteria = new MismatchCriteria()
             });
@@ -43,7 +44,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         [Test]
         public void Validator_WithMatchCriteriaForLocusCAndNoHlaDataAtC_ShouldHaveValidationError()
         {
-            var result = validator.Validate(new Client.Models.SearchRequests.SearchRequest
+            var result = validator.Validate(new Client.Models.SearchRequests.MatchingRequest
             {
                 SearchType = DonorType.Adult,
                 MatchCriteria = new MismatchCriteria
@@ -53,11 +54,14 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
                     LocusMismatchDrb1 = new LocusMismatchCriteria(),
                     LocusMismatchC = new LocusMismatchCriteria(),
                 },
-                SearchHlaData = new SearchHlaData
+                SearchHlaData = new PhenotypeInfo<string>
                 {
-                    LocusSearchHlaA = new LocusSearchHla {SearchHla1 = "hla", SearchHla2 = "hla"},
-                    LocusSearchHlaB = new LocusSearchHla {SearchHla1 = "hla", SearchHla2 = "hla"},
-                    LocusSearchHlaDrb1 = new LocusSearchHla {SearchHla1 = "hla", SearchHla2 = "hla"},
+                    A = new LocusInfo<string>("hla"),
+                    B = new LocusInfo<string>("hla"),
+                    Drb1 = new LocusInfo<string>("hla"),
+                    C = null,
+                    Dpb1 = null,
+                    Dqb1 = null
                 }
             });
             result.IsValid.Should().BeFalse();
@@ -66,7 +70,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         [Test]
         public void Validator_WithMatchCriteriaForLocusDqb1AndNoHlaDataAtDqb1_ShouldHaveValidationError()
         {
-            var result = validator.Validate(new Client.Models.SearchRequests.SearchRequest
+            var result = validator.Validate(new MatchingRequest
             {
                 SearchType = DonorType.Adult,
                 MatchCriteria = new MismatchCriteria
@@ -76,11 +80,14 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
                     LocusMismatchDrb1 = new LocusMismatchCriteria(),
                     LocusMismatchDqb1 = new LocusMismatchCriteria(),
                 },
-                SearchHlaData = new SearchHlaData
+                SearchHlaData = new PhenotypeInfo<string>
                 {
-                    LocusSearchHlaA = new LocusSearchHla {SearchHla1 = "hla", SearchHla2 = "hla"},
-                    LocusSearchHlaB = new LocusSearchHla {SearchHla1 = "hla", SearchHla2 = "hla"},
-                    LocusSearchHlaDrb1 = new LocusSearchHla {SearchHla1 = "hla", SearchHla2 = "hla"},
+                    A = new LocusInfo<string>("hla"),
+                    B = new LocusInfo<string>("hla"),
+                    Drb1 = new LocusInfo<string>("hla"),
+                    C = null,
+                    Dpb1 = null,
+                    Dqb1 = null
                 }
             });
             result.IsValid.Should().BeFalse();

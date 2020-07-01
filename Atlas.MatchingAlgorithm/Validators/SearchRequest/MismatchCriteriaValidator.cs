@@ -15,4 +15,12 @@ namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
             RuleFor(x => x.DonorMismatchCount).NotNull().GreaterThanOrEqualTo(0).LessThanOrEqualTo(4);
         }
     }
+    
+    public class LocusMismatchCriteriaValidator : AbstractValidator<LocusMismatchCriteria>
+    {
+        public LocusMismatchCriteriaValidator()
+        {
+            RuleFor(x => x.MismatchCount).GreaterThanOrEqualTo(0).LessThanOrEqualTo(2);
+        }
+    }
 }

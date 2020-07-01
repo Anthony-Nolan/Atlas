@@ -49,9 +49,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_RunsSearch()
         {
-            var searchRequest = new SearchRequest();
+            var searchRequest = new MatchingRequest();
 
-            await searchRunner.RunSearch(new IdentifiedSearchRequest {SearchRequest = searchRequest});
+            await searchRunner.RunSearch(new IdentifiedSearchRequest {MatchingRequest = searchRequest});
 
             await searchService.Received().Search(searchRequest);
         }
