@@ -90,6 +90,11 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
+        public LociInfo<R> Map<R>(Func<T, R> mapping)
+        {
+            return Map((locusType, locusInfo) => mapping(locusInfo));
+        }
+
         public async Task<LociInfo<R>> MapAsync<R>(Func<Locus, T, Task<R>> mapping)
         {
             var a = mapping(Locus.A, A);
@@ -110,11 +115,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 Dqb1 = dqb1.Result,
                 Drb1 = drb1.Result,
             };
-        }
-
-        public LociInfo<R> Map<R>(Func<T, R> mapping)
-        {
-            return Map((locusType, locusInfo) => mapping(locusInfo));
         }
 
         public R Reduce<R>(Func<Locus, T, R, R> reducer, R initialValue = default)

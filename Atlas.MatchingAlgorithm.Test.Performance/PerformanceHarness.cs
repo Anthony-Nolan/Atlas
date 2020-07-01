@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.Performance.Models;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using CsvHelper;
 
 namespace Atlas.MatchingAlgorithm.Test.Performance
@@ -41,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
             return new TestOutput(testInput, metrics, TestCases.Notes);
         }
 
-        private static SearchRequest BuildSearchRequest(TestInput testInput)
+        private static MatchingRequest BuildSearchRequest(TestInput testInput)
         {
             var searchRequestBuilder = new SearchRequestBuilder()
                 .WithSearchHla(testInput.Hla);

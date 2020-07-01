@@ -4,7 +4,7 @@ namespace Atlas.MatchingAlgorithm.Common.Models
 {
     public class IdentifiedSearchRequest
     {
-        public SearchRequest SearchRequest { get; set; }
+        public MatchingRequest MatchingRequest { get; set; }
         public string Id { get; set; }
     }
 }

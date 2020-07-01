@@ -10,93 +10,69 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 {
     public class SearchRequestBuilder
     {
-        private readonly SearchRequest searchRequest;
+        private readonly MatchingRequest matchingRequest;
 
         public SearchRequestBuilder()
         {
-            searchRequest = new SearchRequest()
+            matchingRequest = new MatchingRequest
             {
                 SearchType = DonorType.Adult,
                 MatchCriteria = new MismatchCriteria
                 {
                     LocusMismatchA = new LocusMismatchCriteria(),
                     LocusMismatchB = new LocusMismatchCriteria(),
-                    LocusMismatchDrb1 = new LocusMismatchCriteria()
+                    LocusMismatchDrb1 = new LocusMismatchCriteria(),
+                    LocusMismatchC = null,
+                    LocusMismatchDqb1 = null
                 },
-                SearchHlaData = new SearchHlaData
+                SearchHlaData = new PhenotypeInfo<string>
                 {
-                    LocusSearchHlaA = new LocusSearchHla(),
-                    LocusSearchHlaB = new LocusSearchHla(),
-                    LocusSearchHlaDrb1 = new LocusSearchHla(),
+                    A = new LocusInfo<string>(),
+                    B = new LocusInfo<string>(),
+                    Drb1 = new LocusInfo<string>(),
+                    C = null,
+                    Dpb1 = null,
+                    Dqb1 = null
                 },
                 LociToExcludeFromAggregateScore = new List<Locus>()
             };
         }
 
+        #region Match Criteria
+
         public SearchRequestBuilder WithTotalMismatchCount(int mismatchCount)
         {
-            searchRequest.MatchCriteria.DonorMismatchCount = mismatchCount;
+            matchingRequest.MatchCriteria.DonorMismatchCount = mismatchCount;
             return this;
         }
 
-        public SearchRequestBuilder WithLocusMatchCriteria(Locus locus, LocusMismatchCriteria locusMatchCriteria)
-        {
-            switch (locus)
-            {
-                case Locus.A:
-                    searchRequest.MatchCriteria.LocusMismatchA = locusMatchCriteria;
-                    break;
-                case Locus.B:
-                    searchRequest.MatchCriteria.LocusMismatchB = locusMatchCriteria;
-                    break;
-                case Locus.C:
-                    searchRequest.MatchCriteria.LocusMismatchC = locusMatchCriteria;
-                    break;
-                case Locus.Dpb1:
-                    throw new NotImplementedException();
-                case Locus.Dqb1:
-                    searchRequest.MatchCriteria.LocusMismatchDqb1 = locusMatchCriteria;
-                    break;
-                case Locus.Drb1:
-                    searchRequest.MatchCriteria.LocusMismatchDrb1 = locusMatchCriteria;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
-            }
-
-            return this;
-        }
+        // TODO: ATLAS-236: PhenotypeInfo for matching criteria
 
         public SearchRequestBuilder WithLocusMismatchCount(Locus locus, int locusMismatchCount)
         {
             switch (locus)
             {
                 case Locus.A:
-                    searchRequest.MatchCriteria.LocusMismatchA.MismatchCount = locusMismatchCount;
+                    matchingRequest.MatchCriteria.LocusMismatchA ??= new LocusMismatchCriteria();
+                    matchingRequest.MatchCriteria.LocusMismatchA.MismatchCount = locusMismatchCount;
                     break;
                 case Locus.B:
-                    searchRequest.MatchCriteria.LocusMismatchB.MismatchCount = locusMismatchCount;
+                    matchingRequest.MatchCriteria.LocusMismatchB ??= new LocusMismatchCriteria();
+                    matchingRequest.MatchCriteria.LocusMismatchB.MismatchCount = locusMismatchCount;
                     break;
                 case Locus.C:
-                    if (searchRequest.MatchCriteria.LocusMismatchC == null)
-                    {
-                        searchRequest.MatchCriteria.LocusMismatchC = new LocusMismatchCriteria();
-                    }
-
-                    searchRequest.MatchCriteria.LocusMismatchC.MismatchCount = locusMismatchCount;
+                    matchingRequest.MatchCriteria.LocusMismatchC ??= new LocusMismatchCriteria();
+                    matchingRequest.MatchCriteria.LocusMismatchC.MismatchCount = locusMismatchCount;
                     break;
                 case Locus.Dpb1:
                     throw new NotImplementedException();
                 case Locus.Dqb1:
-                    if (searchRequest.MatchCriteria.LocusMismatchDqb1 == null)
-                    {
-                        searchRequest.MatchCriteria.LocusMismatchDqb1 = new LocusMismatchCriteria();
-                    }
-
-                    searchRequest.MatchCriteria.LocusMismatchDqb1.MismatchCount = locusMismatchCount;
+                    matchingRequest.MatchCriteria.LocusMismatchDqb1 ??= new LocusMismatchCriteria();
+                    matchingRequest.MatchCriteria.LocusMismatchDqb1.MismatchCount = locusMismatchCount;
                     break;
                 case Locus.Drb1:
-                    searchRequest.MatchCriteria.LocusMismatchDrb1.MismatchCount = locusMismatchCount;
+                    matchingRequest.MatchCriteria.LocusMismatchDrb1 ??= new LocusMismatchCriteria();
+                    matchingRequest.MatchCriteria.LocusMismatchDrb1.MismatchCount = locusMismatchCount;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
@@ -110,157 +86,78 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             return loci.Aggregate(this, (current, locus) => current.WithLocusMismatchCount(locus, locusMismatchCount));
         }
 
-        public SearchRequestBuilder WithLocusMatchHla(Locus locus, LocusPosition position, string hlaString)
+        #endregion
+
+        #region Patient Hla
+
+        private SearchRequestBuilder WithNullLocusSearchHla(Locus locus, LocusPosition position)
+        {
+            matchingRequest.SearchHlaData.SetPosition(locus, position, null);
+            return this;
+        }
+
+        public SearchRequestBuilder WithNullLocusSearchHla(Locus locus)
+        {
+            return WithNullLocusSearchHla(locus, LocusPosition.One)
+                .WithNullLocusSearchHla(locus, LocusPosition.Two);
+        }
+
+        /// <summary>
+        /// Sets the HLA at given locus/position, ignoring any nulls. To explicitly set nulls within a non-empty LocusInfo, use <see cref="WithNullLocusSearchHla"/> 
+        /// </summary>
+        public SearchRequestBuilder WithLocusSearchHla(Locus locus, LocusPosition position, string hlaString)
         {
             // API level validation will fail if individual hla are null, but not if the locus is omitted altogether. 
-            // If tests need to be added which set individual values to null (i.e. to test that validation), another builder method should bve added
+            // If tests need to be added which set individual values to null (i.e. to test that validation), another builder method should be used
             if (hlaString == null)
             {
                 return this;
             }
-            
-            switch (locus)
+
+            // If locus is specified, but currently null, initialise that locus. 
+            matchingRequest.SearchHlaData = new PhenotypeInfo<string>(matchingRequest.SearchHlaData.Map((l, hla) =>
             {
-                case Locus.A:
-                    if (searchRequest.SearchHlaData.LocusSearchHlaA == null)
-                    {
-                        searchRequest.SearchHlaData.LocusSearchHlaA = new LocusSearchHla();
-                    }
-                    switch (position)
-                    {
-                        case LocusPosition.One:
-                            searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla1 = hlaString;
-                            break;
-                        case LocusPosition.Two:
-                            searchRequest.SearchHlaData.LocusSearchHlaA.SearchHla2 = hlaString;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(position), position, null);
-                    }
+                if (l == locus)
+                {
+                    return hla ?? new LocusInfo<string>();
+                }
 
-                    break;
-                case Locus.B:
-                    if (searchRequest.SearchHlaData.LocusSearchHlaB == null)
-                    {
-                        searchRequest.SearchHlaData.LocusSearchHlaB = new LocusSearchHla();
-                    }
-                    switch (position)
-                    {
-                        case LocusPosition.One:
-                            searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla1 = hlaString;
-                            break;
-                        case LocusPosition.Two:
-                            searchRequest.SearchHlaData.LocusSearchHlaB.SearchHla2 = hlaString;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(position), position, null);
-                    }
+                return hla;
+            }));
 
-                    break;
-                case Locus.C:
-                    if (searchRequest.SearchHlaData.LocusSearchHlaC == null)
-                    {
-                        searchRequest.SearchHlaData.LocusSearchHlaC = new LocusSearchHla();
-                    }
-                    switch (position)
-                    {
-                        case LocusPosition.One:
-                            searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla1 = hlaString;
-                            break;
-                        case LocusPosition.Two:
-                            searchRequest.SearchHlaData.LocusSearchHlaC.SearchHla2 = hlaString;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(position), position, null);
-                    }
-
-                    break;
-                case Locus.Dpb1:
-                    if (searchRequest.SearchHlaData.LocusSearchHlaDpb1 == null)
-                    {
-                        searchRequest.SearchHlaData.LocusSearchHlaDpb1 = new LocusSearchHla();
-                    }
-                    switch (position)
-                    {
-                        case LocusPosition.One:
-                            searchRequest.SearchHlaData.LocusSearchHlaDpb1.SearchHla1 = hlaString;
-                            break;
-                        case LocusPosition.Two:
-                            searchRequest.SearchHlaData.LocusSearchHlaDpb1.SearchHla2 = hlaString;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(position), position, null);
-                    }
-
-                    break;
-                case Locus.Dqb1:
-                    if (searchRequest.SearchHlaData.LocusSearchHlaDqb1 == null)
-                    {
-                        searchRequest.SearchHlaData.LocusSearchHlaDqb1 = new LocusSearchHla();
-                    }
-                    switch (position)
-                    {
-                        case LocusPosition.One:
-                            searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla1 = hlaString;
-                            break;
-                        case LocusPosition.Two:
-                            searchRequest.SearchHlaData.LocusSearchHlaDqb1.SearchHla2 = hlaString;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(position), position, null);
-                    }
-
-                    break;
-                case Locus.Drb1:
-                    if (searchRequest.SearchHlaData.LocusSearchHlaDrb1 == null)
-                    {
-                        searchRequest.SearchHlaData.LocusSearchHlaDrb1 = new LocusSearchHla();
-                    }
-                    switch (position)
-                    {
-                        case LocusPosition.One:
-                            searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla1 = hlaString;
-                            break;
-                        case LocusPosition.Two:
-                            searchRequest.SearchHlaData.LocusSearchHlaDrb1.SearchHla2 = hlaString;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(position), position, null);
-                    }
-
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
-            }
-
+            matchingRequest.SearchHlaData.SetPosition(locus, position, hlaString);
             return this;
         }
 
-        public SearchRequestBuilder WithSearchType(DonorType donorType)
+        public SearchRequestBuilder WithEmptyLocusSearchHlaAt(Locus locus)
         {
-            searchRequest.SearchType = donorType;
+            matchingRequest.SearchHlaData.SetLocus(locus, (LocusInfo<string>) null);
             return this;
         }
 
         public SearchRequestBuilder WithSearchHla(PhenotypeInfo<string> searchHla)
         {
-            return WithLocusMatchHla(Locus.A, LocusPosition.One, searchHla.A.Position1)
-                .WithLocusMatchHla(Locus.A, LocusPosition.Two, searchHla.A.Position2)
-                .WithLocusMatchHla(Locus.B, LocusPosition.One, searchHla.B.Position1)
-                .WithLocusMatchHla(Locus.B, LocusPosition.Two, searchHla.B.Position2)
-                .WithLocusMatchHla(Locus.C, LocusPosition.One, searchHla.C.Position1)
-                .WithLocusMatchHla(Locus.C, LocusPosition.Two, searchHla.C.Position2)
-                .WithLocusMatchHla(Locus.Dpb1, LocusPosition.One, searchHla.Dpb1.Position1)
-                .WithLocusMatchHla(Locus.Dpb1, LocusPosition.Two, searchHla.Dpb1.Position2)
-                .WithLocusMatchHla(Locus.Dqb1, LocusPosition.One, searchHla.Dqb1.Position1)
-                .WithLocusMatchHla(Locus.Dqb1, LocusPosition.Two, searchHla.Dqb1.Position2)
-                .WithLocusMatchHla(Locus.Drb1, LocusPosition.One, searchHla.Drb1.Position1)
-                .WithLocusMatchHla(Locus.Drb1, LocusPosition.Two, searchHla.Drb1.Position2);
+            matchingRequest.SearchHlaData = searchHla;
+            return this;
         }
 
-        public SearchRequest Build()
+        #endregion
+
+        public SearchRequestBuilder WithSearchType(DonorType donorType)
         {
-            return searchRequest;
+            matchingRequest.SearchType = donorType;
+            return this;
+        }
+
+        public SearchRequestBuilder WithLociExcludedFromScoringAggregates(IEnumerable<Locus> loci)
+        {
+            matchingRequest.LociToExcludeFromAggregateScore = loci;
+            return this;
+        }
+
+        public MatchingRequest Build()
+        {
+            return matchingRequest;
         }
     }
 }

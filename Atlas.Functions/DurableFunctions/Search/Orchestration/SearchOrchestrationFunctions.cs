@@ -32,7 +32,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             var searchRequest = context.GetInput<SearchRequest>();
             var searchResults = await context.CallActivityAsync<MatchingAlgorithmResultSet>(
                 nameof(SearchActivityFunctions.RunMatchingAlgorithm),
-                new IdentifiedSearchRequest {Id = context.InstanceId, SearchRequest = searchRequest.ToMatchingRequest()}
+                new IdentifiedSearchRequest {Id = context.InstanceId, MatchingRequest = searchRequest.ToMatchingRequest()}
             );
 
             var donorInformation = await context.CallActivityAsync<Dictionary<int, Donor>>(

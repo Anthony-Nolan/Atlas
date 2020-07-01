@@ -19,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 {
     public interface ISearchService
     {
-        Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest searchRequest);
+        Task<IEnumerable<MatchingAlgorithmResult>> Search(MatchingRequest matchingRequest);
     }
 
     public class SearchService : ISearchService
@@ -45,10 +45,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
-        public async Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest searchRequest)
+        public async Task<IEnumerable<MatchingAlgorithmResult>> Search(MatchingRequest matchingRequest)
         {
             var criteria = await logger.RunTimedAsync(
-                async () => await GetMatchCriteria(searchRequest),
+                async () => await GetMatchCriteria(matchingRequest),
                 $"{LoggingPrefix}Expanded patient HLA."
             );
 
@@ -62,8 +62,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var scoredMatches = await logger.RunTimedAsync(
                 async () =>
                 {
-                    var lociToExcludeFromAggregateScoring = searchRequest.LociToExcludeFromAggregateScore.ToList();
-                    var patientHla = searchRequest.SearchHlaData.ToPhenotypeInfo();
+                    var lociToExcludeFromAggregateScoring = matchingRequest.LociToExcludeFromAggregateScore.ToList();
+                    // Scoring makes use of per-position map functionality of PhenotypeInfo, which requires all nested "LocusInfo"s to be non-null 
+                    var patientHla = matchingRequest.SearchHlaData.MapByLocus(hla => hla ?? new LocusInfo<string>());
                     return await donorScoringService.ScoreMatchesAgainstHla(matches, patientHla, lociToExcludeFromAggregateScoring);
                 },
                 $"{LoggingPrefix}Scoring complete"
@@ -72,19 +73,19 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             return scoredMatches.Select(MapSearchResultToApiSearchResult);
         }
 
-        private async Task<AlleleLevelMatchCriteria> GetMatchCriteria(SearchRequest searchRequest)
+        private async Task<AlleleLevelMatchCriteria> GetMatchCriteria(MatchingRequest matchingRequest)
         {
-            var matchCriteria = searchRequest.MatchCriteria;
+            var matchCriteria = matchingRequest.MatchCriteria;
             var criteriaMappings = await Task.WhenAll(
-                MapLocusInformationToMatchCriteria(Locus.A, matchCriteria.LocusMismatchA, searchRequest.SearchHlaData.LocusSearchHlaA),
-                MapLocusInformationToMatchCriteria(Locus.B, matchCriteria.LocusMismatchB, searchRequest.SearchHlaData.LocusSearchHlaB),
-                MapLocusInformationToMatchCriteria(Locus.C, matchCriteria.LocusMismatchC, searchRequest.SearchHlaData.LocusSearchHlaC),
-                MapLocusInformationToMatchCriteria(Locus.Drb1, matchCriteria.LocusMismatchDrb1, searchRequest.SearchHlaData.LocusSearchHlaDrb1),
-                MapLocusInformationToMatchCriteria(Locus.Dqb1, matchCriteria.LocusMismatchDqb1, searchRequest.SearchHlaData.LocusSearchHlaDqb1));
+                MapLocusInformationToMatchCriteria(Locus.A, matchCriteria.LocusMismatchA, matchingRequest.SearchHlaData.A),
+                MapLocusInformationToMatchCriteria(Locus.B, matchCriteria.LocusMismatchB, matchingRequest.SearchHlaData.B),
+                MapLocusInformationToMatchCriteria(Locus.C, matchCriteria.LocusMismatchC, matchingRequest.SearchHlaData.C),
+                MapLocusInformationToMatchCriteria(Locus.Drb1, matchCriteria.LocusMismatchDrb1, matchingRequest.SearchHlaData.Drb1),
+                MapLocusInformationToMatchCriteria(Locus.Dqb1, matchCriteria.LocusMismatchDqb1, matchingRequest.SearchHlaData.Dqb1));
 
             return new AlleleLevelMatchCriteria
             {
-                SearchType = searchRequest.SearchType,
+                SearchType = matchingRequest.SearchType,
                 DonorMismatchCount = matchCriteria.DonorMismatchCount,
                 LocusMismatchA = criteriaMappings[0],
                 LocusMismatchB = criteriaMappings[1],
@@ -97,14 +98,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private async Task<AlleleLevelLocusMatchCriteria> MapLocusInformationToMatchCriteria(
             Locus locus,
             LocusMismatchCriteria mismatchCriteria,
-            LocusSearchHla searchHla)
+            LocusInfo<string> searchHla)
         {
             if (mismatchCriteria == null)
             {
                 return null;
             }
 
-            var searchTerm = new LocusInfo<string>(searchHla.SearchHla1, searchHla.SearchHla2);
+            var searchTerm = new LocusInfo<string>(searchHla.Position1, searchHla.Position2);
 
             var metadata = await hlaMetadataDictionary.GetLocusHlaMatchingMetadata(
                 locus,
