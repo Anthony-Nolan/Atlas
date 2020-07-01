@@ -80,7 +80,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         private void ConfigureMockMessageProcessorToPassThrough(IMessageProcessor<SearchableDonorUpdate> messageProcessorMock)
         {
             messageProcessorMock
-                .ProcessMessageBatchAsync(default, default)
+                .ProcessAllMessagesInBatches_Async(default, default)
                 .ReturnsForAnyArgs(Task.CompletedTask)
                 .AndDoes(args =>
                 {
@@ -98,7 +98,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
-            await messageProcessorServiceForA.ReceivedWithAnyArgs(1).ProcessMessageBatchAsync(default, default);
+            await messageProcessorServiceForA.ReceivedWithAnyArgs(1).ProcessAllMessagesInBatches_Async(default, default);
             donorManagementService.ReceivedCalls().Should().NotBeEmpty();
         }
 
@@ -109,7 +109,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
-            await messageProcessorServiceForA.ReceivedWithAnyArgs(1).ProcessMessageBatchAsync(default, default);
+            await messageProcessorServiceForA.ReceivedWithAnyArgs(1).ProcessAllMessagesInBatches_Async(default, default);
             donorManagementService.ReceivedCalls().Should().BeEmpty();
         }
 
@@ -121,7 +121,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
-            await messageProcessorServiceForA.DidNotReceiveWithAnyArgs().ProcessMessageBatchAsync(default, default);
+            await messageProcessorServiceForA.DidNotReceiveWithAnyArgs().ProcessAllMessagesInBatches_Async(default, default);
             donorManagementService.ReceivedCalls().Should().BeEmpty();
         }
 
@@ -133,7 +133,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
-            await messageProcessorServiceForA.ReceivedWithAnyArgs(1).ProcessMessageBatchAsync(default, default);
+            await messageProcessorServiceForA.ReceivedWithAnyArgs(1).ProcessAllMessagesInBatches_Async(default, default);
             donorManagementService.ReceivedCalls().Should().NotBeEmpty();
         }
 
@@ -145,7 +145,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
-            await messageProcessorServiceForA.DidNotReceiveWithAnyArgs().ProcessMessageBatchAsync(default, default);
+            await messageProcessorServiceForA.DidNotReceiveWithAnyArgs().ProcessAllMessagesInBatches_Async(default, default);
             donorManagementService.ReceivedCalls().Should().BeEmpty();
         }
 
@@ -157,7 +157,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
-            await messageProcessorServiceForA.ReceivedWithAnyArgs(1).ProcessMessageBatchAsync(default, default);
+            await messageProcessorServiceForA.ReceivedWithAnyArgs(1).ProcessAllMessagesInBatches_Async(default, default);
             donorManagementService.ReceivedCalls().Should().BeEmpty();
         }
 
@@ -169,7 +169,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
-            await messageProcessorServiceForA.DidNotReceiveWithAnyArgs().ProcessMessageBatchAsync(default, default);
+            await messageProcessorServiceForA.DidNotReceiveWithAnyArgs().ProcessAllMessagesInBatches_Async(default, default);
             donorManagementService.ReceivedCalls().Should().BeEmpty();
         }
 
@@ -181,7 +181,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
-            await messageProcessorServiceForA.DidNotReceiveWithAnyArgs().ProcessMessageBatchAsync(default, default);
+            await messageProcessorServiceForA.DidNotReceiveWithAnyArgs().ProcessAllMessagesInBatches_Async(default, default);
             donorManagementService.ReceivedCalls().Should().BeEmpty();
         }
 
@@ -192,8 +192,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
-            await messageProcessorServiceForB.DidNotReceiveWithAnyArgs().ProcessMessageBatchAsync(default, default);
-            await messageProcessorServiceForA.ReceivedWithAnyArgs().ProcessMessageBatchAsync(default, default);
+            await messageProcessorServiceForB.DidNotReceiveWithAnyArgs().ProcessAllMessagesInBatches_Async(default, default);
+            await messageProcessorServiceForA.ReceivedWithAnyArgs().ProcessAllMessagesInBatches_Async(default, default);
         }
 
         [Test]
@@ -203,8 +203,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseB);
 
-            await messageProcessorServiceForA.DidNotReceiveWithAnyArgs().ProcessMessageBatchAsync(default, default);
-            await messageProcessorServiceForB.ReceivedWithAnyArgs().ProcessMessageBatchAsync(default, default);
+            await messageProcessorServiceForA.DidNotReceiveWithAnyArgs().ProcessAllMessagesInBatches_Async(default, default);
+            await messageProcessorServiceForB.ReceivedWithAnyArgs().ProcessAllMessagesInBatches_Async(default, default);
         }
 
         [Test]
@@ -214,7 +214,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
-            await messageProcessorServiceForA.Received(1).ProcessMessageBatchAsync(
+            await messageProcessorServiceForA.Received(1).ProcessAllMessagesInBatches_Async(
                 Arg.Any<Func<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>, Task>>(),
                 BatchSize,
                 Arg.Any<int>());
@@ -227,7 +227,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
 
-            await messageProcessorServiceForA.Received(1).ProcessMessageBatchAsync(
+            await messageProcessorServiceForA.Received(1).ProcessAllMessagesInBatches_Async(
                 Arg.Any<Func<IEnumerable<ServiceBusMessage<SearchableDonorUpdate>>, Task>>(),
                 BatchSize,
                 Arg.Is<int>(b => b > BatchSize));

@@ -9,7 +9,7 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
 {
     public interface IMessageProcessor<T>
     {
-        Task ProcessMessageBatchAsync(
+        Task ProcessAllMessagesInBatches_Async(
             Func<IEnumerable<ServiceBusMessage<T>>, Task> processMessagesFuncAsync,
             int batchSize,
             int prefetchCount = 0);
@@ -31,7 +31,7 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
         /// <param name="batchSize">Maximum number of messages to fetch at once</param>
         /// <param name="prefetchCount">Number of messages to fetch in advance of processing</param>
         /// <exception cref="MessageBatchException{T}"></exception>
-        public async Task ProcessMessageBatchAsync(
+        public async Task ProcessAllMessagesInBatches_Async(
             Func<IEnumerable<ServiceBusMessage<T>>, Task> processMessagesFuncAsync,
             int batchSize,
             int prefetchCount)
@@ -47,7 +47,7 @@ namespace Atlas.Common.ServiceBus.BatchReceiving
                 catch (Exception ex)
                 {
                     await messageBatchLock.AbandonBatchAsync();
-                    throw new MessageBatchException<T>(nameof(ProcessMessageBatchAsync), messages, ex);
+                    throw new MessageBatchException<T>(nameof(ProcessAllMessagesInBatches_Async), messages, ex);
                 }
 
                 await messageBatchLock.CompleteBatchAsync();
