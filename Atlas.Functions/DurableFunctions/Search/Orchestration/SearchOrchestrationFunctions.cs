@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.DurableFunctions.Search.Activity;
-using Atlas.Functions.Models;
+using Atlas.Functions.Models.Search.Requests;
+using Atlas.Functions.Models.Search.Results;
 using Atlas.Functions.Services;
-using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
@@ -50,7 +50,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         {
             return await context.CallActivityAsync<MatchingAlgorithmResultSet>(
                 nameof(SearchActivityFunctions.RunMatchingAlgorithm),
-                new IdentifiedSearchRequest {Id = context.InstanceId, SearchRequest = searchRequest}
+                new IdentifiedSearchRequest {Id = context.InstanceId, SearchRequest = searchRequest.ToMatchingRequest()}
             );
         }
 

@@ -1,6 +1,6 @@
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 
-namespace Atlas.Functions.Models
+namespace Atlas.Functions.Models.Search.Results
 {
     public class SearchResult
     {
