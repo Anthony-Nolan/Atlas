@@ -22,7 +22,8 @@ namespace Atlas.MatchPrediction.Functions.Functions
 
         [FunctionName(nameof(CalculateZeroMismatchProbability))]
         public async Task<IActionResult> CalculateZeroMismatchProbability(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] [RequestBodyType(typeof(MatchProbabilityInput), "match probability")]
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(MatchProbabilityInput), nameof(MatchProbabilityInput))]
             HttpRequest request)
         {
             var matchProbabilityInput = JsonConvert.DeserializeObject<MatchProbabilityInput>(await new StreamReader(request.Body).ReadToEndAsync());

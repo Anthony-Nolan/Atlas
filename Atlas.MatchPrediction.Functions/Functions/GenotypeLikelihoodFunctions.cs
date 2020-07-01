@@ -22,7 +22,8 @@ namespace Atlas.MatchPrediction.Functions.Functions
 
         [FunctionName(nameof(CalculateGenotypeLikelihood))]
         public async Task<IActionResult> CalculateGenotypeLikelihood(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] [RequestBodyType(typeof(GenotypeLikelihoodInput), "genotype input")]
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(GenotypeLikelihoodInput), nameof(GenotypeLikelihoodInput))]
             HttpRequest request)
         {
             var genotypeLikelihood = JsonConvert.DeserializeObject<GenotypeLikelihoodInput>(await new StreamReader(request.Body).ReadToEndAsync());

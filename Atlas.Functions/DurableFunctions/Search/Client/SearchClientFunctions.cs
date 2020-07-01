@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Functions.DurableFunctions.Search.Orchestration;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
+using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -29,6 +30,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
         [FunctionName(nameof(Search))]
         public async Task<HttpResponseMessage> Search(
             [HttpTrigger(AuthorizationLevel.Function,  "post")]
+            [RequestBodyType(typeof(SearchRequest), nameof(SearchRequest))]
             HttpRequestMessage request,
             [DurableClient] IDurableOrchestrationClient starter)
         {

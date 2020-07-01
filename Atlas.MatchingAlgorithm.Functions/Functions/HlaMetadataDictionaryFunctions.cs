@@ -5,6 +5,7 @@ using Atlas.Common.Utils;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -43,7 +44,10 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(RefreshHlaMetadataDictionaryToSpecificVersion))]
-        public async Task RefreshHlaMetadataDictionaryToSpecificVersion([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
+        public async Task RefreshHlaMetadataDictionaryToSpecificVersion(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(VersionRequest), nameof(VersionRequest))]
+            HttpRequest httpRequest)
         {
             var version = JsonConvert.DeserializeObject<VersionRequest>(await new StreamReader(httpRequest.Body).ReadToEndAsync()).Version;
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(version));
