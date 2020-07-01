@@ -27,6 +27,7 @@
       <ProjectReference Include="..\Atlas.HlaMetadataDictionary.Test\Atlas.HlaMetadataDictionary.Test.csproj" />
       <ProjectReference Include="..\Atlas.HlaMetadataDictionary\Atlas.HlaMetadataDictionary.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Data\Atlas.MatchingAlgorithm.Data.csproj" />
+      <ProjectReference Include="..\Atlas.MatchingAlgorithm.Test\Atlas.MatchingAlgorithm.Test.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Common\Atlas.MatchingAlgorithm.Common.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Data.Persistent\Atlas.MatchingAlgorithm.Data.Persistent.csproj" />

@@ -14,7 +14,7 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
 {
     public static class SearchTimingService
     {
-        public static async Task<SearchMetrics> TimeSearchRequest(SearchRequest request, AlgorithmInstanceInfo algorithmInstanceInfo)
+        public static async Task<SearchMetrics> TimeSearchRequest(MatchingRequest request, AlgorithmInstanceInfo algorithmInstanceInfo)
         {
             var client = GetClient(algorithmInstanceInfo);
             var stopwatch = new Stopwatch();

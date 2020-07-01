@@ -71,6 +71,7 @@
         <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
         <ProjectReference Include="..\Atlas.MatchingAlgorithm.Api\Atlas.MatchingAlgorithm.Api.csproj" />
         <ProjectReference Include="..\Atlas.MatchingAlgorithm.Data\Atlas.MatchingAlgorithm.Data.csproj" />
+        <ProjectReference Include="..\Atlas.MatchingAlgorithm.Test.Integration\Atlas.MatchingAlgorithm.Test.Integration.csproj" />
         <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
         <ProjectReference Include="..\Atlas.MatchingAlgorithm.Common\Atlas.MatchingAlgorithm.Common.csproj" />
     </ItemGroup>

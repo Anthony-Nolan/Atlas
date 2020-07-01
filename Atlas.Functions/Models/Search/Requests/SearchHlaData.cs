@@ -1,4 +1,6 @@
-﻿namespace Atlas.Functions.Models.Search.Requests
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+
+namespace Atlas.Functions.Models.Search.Requests
 {
     public class SearchHlaData
     {
@@ -54,25 +56,23 @@
 
     public static class SearchHlaMappings
     {
-        public static MatchingAlgorithm.Client.Models.SearchRequests.SearchHlaData ToMatchingAlgorithmSearchHla(this SearchHlaData hlaData)
+        public static PhenotypeInfo<string> ToPhenotypeInfo(this SearchHlaData hlaData)
         {
-            return new MatchingAlgorithm.Client.Models.SearchRequests.SearchHlaData
+            return new PhenotypeInfo<string>
             {
-                LocusSearchHlaA = hlaData.LocusSearchHlaA.ToMatchingAlgorithmLocusSearchHla(),
-                LocusSearchHlaB = hlaData.LocusSearchHlaB.ToMatchingAlgorithmLocusSearchHla(),
-                LocusSearchHlaC = hlaData.LocusSearchHlaC.ToMatchingAlgorithmLocusSearchHla(),
-                LocusSearchHlaDqb1 = hlaData.LocusSearchHlaDqb1.ToMatchingAlgorithmLocusSearchHla(),
-                LocusSearchHlaDrb1 = hlaData.LocusSearchHlaDrb1.ToMatchingAlgorithmLocusSearchHla(),
+                A = hlaData.LocusSearchHlaA.ToLocusInfo(),
+                B = hlaData.LocusSearchHlaB.ToLocusInfo(),
+                C = hlaData.LocusSearchHlaC.ToLocusInfo(),
+                Dqb1 = hlaData.LocusSearchHlaDqb1.ToLocusInfo(),
+                Drb1 = hlaData.LocusSearchHlaDrb1.ToLocusInfo(),
             };
         }
 
-        private static MatchingAlgorithm.Client.Models.SearchRequests.LocusSearchHla ToMatchingAlgorithmLocusSearchHla(
-            this LocusSearchHla locusSearchHla)
+        private static LocusInfo<string> ToLocusInfo(this LocusSearchHla locusSearchHla)
         {
-            return new MatchingAlgorithm.Client.Models.SearchRequests.LocusSearchHla
-            {
-                SearchHla1 = locusSearchHla.SearchHla1,
-                SearchHla2 = locusSearchHla.SearchHla2
+            return new LocusInfo<string>{
+                Position1 = locusSearchHla.SearchHla1,
+                Position2 = locusSearchHla.SearchHla2
             };
         }
     }

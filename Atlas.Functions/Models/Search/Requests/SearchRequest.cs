@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 
 namespace Atlas.Functions.Models.Search.Requests
 {
@@ -32,13 +33,13 @@ namespace Atlas.Functions.Models.Search.Requests
 
     public static class SearchRequestMappings
     {
-        public static MatchingAlgorithm.Client.Models.SearchRequests.SearchRequest ToMatchingRequest(this SearchRequest searchRequest)
+        public static MatchingRequest ToMatchingRequest(this SearchRequest searchRequest)
         {
-            return new MatchingAlgorithm.Client.Models.SearchRequests.SearchRequest
+            return new MatchingRequest
             {
                 SearchType = searchRequest.SearchType.ToMatchingAlgorithmDonorType(),
                 MatchCriteria = searchRequest.MatchCriteria.ToMatchingAlgorithmMatchCriteria(),
-                SearchHlaData = searchRequest.SearchHlaData.ToMatchingAlgorithmSearchHla(),
+                SearchHlaData = searchRequest.SearchHlaData.ToPhenotypeInfo(),
                 LociToExcludeFromAggregateScore = searchRequest.LociToExcludeFromAggregateScore
             };
         }
