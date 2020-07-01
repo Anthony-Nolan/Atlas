@@ -23,8 +23,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         
         public async Task<ScoringResult> Score(ScoringRequest scoringRequest)
         {
-            var donorHla = scoringRequest.DonorHla.ToPhenotypeInfo();
-            var patientHla = scoringRequest.PatientHla.ToPhenotypeInfo();
+            var donorHla = scoringRequest.DonorHla;
+            var patientHla = scoringRequest.PatientHla;
 
             var scoringResult = await donorScoringService.ScoreDonorHlaAgainstPatientHla(donorHla, patientHla);
 

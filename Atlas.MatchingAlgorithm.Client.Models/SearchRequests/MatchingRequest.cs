@@ -21,6 +21,8 @@ namespace Atlas.MatchingAlgorithm.Client.Models.SearchRequests
         /// Search HLA to search on at supported loci.
         /// Even if locus should not be used for matching (no match criteria provided),
         /// the HLA data should still be provided if possible for use in scoring results.
+        ///
+        /// A, B, DRB1 required. Others optional - and should be provided as a null <see cref="LocusInfo"/> if not present.
         /// </summary>
         public PhenotypeInfo<string> SearchHlaData { get; set; }
         

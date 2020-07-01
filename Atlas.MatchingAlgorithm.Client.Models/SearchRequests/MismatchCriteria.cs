@@ -13,7 +13,7 @@
         /// Required.
         /// </summary>
         public LocusMismatchCriteria LocusMismatchA { get; set; }
-        
+
         /// <summary>
         /// Mismatch preferences for HLA at locus B.
         /// Required.
@@ -37,5 +37,13 @@
         /// Required.
         /// </summary>
         public LocusMismatchCriteria LocusMismatchDrb1 { get; set; }
+    }
+
+    public class LocusMismatchCriteria
+    {
+        /// <summary>
+        /// Total number of mismatches permitted, either 0, 1 or 2.
+        /// </summary>
+        public int MismatchCount { get; set; }
     }
 }
