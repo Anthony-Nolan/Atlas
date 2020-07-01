@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.DurableFunctions.Search.Activity;
 using Atlas.Functions.Models;
+using Atlas.Functions.Services;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Extensions;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -34,15 +35,29 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 new IdentifiedSearchRequest {Id = context.InstanceId, SearchRequest = searchRequest}
             );
 
+            var donorInformation = await context.CallActivityAsync<Dictionary<int, Donor>>(
+                nameof(SearchActivityFunctions.FetchDonorInformation),
+                searchResults.SearchResults.Select(r => r.DonorId)
+            );
+
+            var matchPredictionInputs = await context.CallActivityAsync<IEnumerable<MatchProbabilityInput>>(
+                nameof(SearchActivityFunctions.BuildMatchPredictionInputs),
+                new MatchPredictionInputParameters
+                {
+                    SearchRequest = searchRequest,
+                    MatchingAlgorithmResults = searchResults,
+                    DonorDictionary = donorInformation
+                });
+
             var matchPredictionResults = (await Task.WhenAll(
-                searchResults.SearchResults.Select(r => RunMatchPrediction(context, searchRequest, r, searchResults.HlaNomenclatureVersion))
+                matchPredictionInputs.Select(r => RunMatchPrediction(context, r))
             )).ToDictionary();
 
             await context.CallActivityAsync(
                 nameof(SearchActivityFunctions.PersistSearchResults),
                 new Tuple<MatchingAlgorithmResultSet, IDictionary<int, MatchProbabilityResponse>>(searchResults, matchPredictionResults)
             );
-            
+
             // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
             return new SearchOrchestrationOutput
             {
@@ -56,20 +71,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         /// <returns>A Task returning a Key Value pair of Atlas Donor ID, and match prediction response.</returns>
         private static async Task<KeyValuePair<int, MatchProbabilityResponse>> RunMatchPrediction(
             IDurableOrchestrationContext context,
-            SearchRequest searchRequest,
-            MatchingAlgorithmResult matchingResult,
-            string hlaNomenclatureVersion)
+            MatchProbabilityInput matchProbabilityInput
+        )
         {
             var matchPredictionResult = await context.CallActivityAsync<MatchProbabilityResponse>(
                 nameof(SearchActivityFunctions.RunMatchPrediction),
-                new MatchProbabilityInput
-                {
-                    DonorHla = matchingResult.DonorHla,
-                    PatientHla = searchRequest.SearchHlaData.ToPhenotypeInfo(),
-                    HlaNomenclatureVersion = hlaNomenclatureVersion
-                }
+                matchProbabilityInput
             );
-            return new KeyValuePair<int, MatchProbabilityResponse>(matchingResult.DonorId, matchPredictionResult);
+            return new KeyValuePair<int, MatchProbabilityResponse>(matchProbabilityInput.DonorId, matchPredictionResult);
         }
     }
 }

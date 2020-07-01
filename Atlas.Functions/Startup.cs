@@ -79,6 +79,7 @@ namespace Atlas.Functions
         {
             services.RegisterAtlasLogger(OptionsReaderFor<ApplicationInsightsSettings>());
             services.AddScoped<IResultsUploader, ResultsUploader>();
+            services.AddScoped<IMatchPredictionInputBuilder, MatchPredictionInputBuilder>();
         }
     }
 }
