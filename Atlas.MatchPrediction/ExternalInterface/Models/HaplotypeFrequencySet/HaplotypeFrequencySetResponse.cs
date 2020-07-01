@@ -2,6 +2,6 @@
 {
     public class HaplotypeFrequencySetResponse
     {
-        public Data.Models.HaplotypeFrequencySet HaplotypeFrequencySet { get; set; }
+        public HaplotypeFrequencySet HaplotypeFrequencySet { get; set; }
     }
 }
