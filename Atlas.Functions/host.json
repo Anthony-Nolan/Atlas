@@ -1,10 +1,11 @@
 {
-    "version": "2.0",
-    "logging": {
-        "applicationInsights": {
-            "snapshotConfiguration": {
-                "IsEnabled": true
-            }
-        }
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "snapshotConfiguration": {
+        "IsEnabled": true
+      }
     }
+  },
+  "functionTimeout": "10:00:00"
 }
