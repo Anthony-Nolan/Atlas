@@ -14,6 +14,7 @@ resource "azurerm_function_app" "atlas_match_prediction_function" {
     //      The azure functions dashboard requires the instrumentation key with this name to integrate with application insights.
     "APPINSIGHTS_INSTRUMENTATIONKEY"                     = var.application_insights.instrumentation_key
     "ApplicationInsights:LogLevel"                       = var.APPLICATION_INSIGHTS_LOG_LEVEL
+    "AzureStorage:ConnectionString"                      = var.azure_storage.primary_connection_string
     "HlaMetadataDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
     "MacDictionary:AzureStorageConnectionString"         = var.azure_storage.primary_connection_string
     "MacDictionary:MacSourceUrl"                         = var.MAC_SOURCE
