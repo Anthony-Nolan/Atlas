@@ -29,12 +29,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         /// </summary>
         public PhenotypeInfo(LociInfo<LocusInfo<T>> source)
         {
-            A = new LocusInfo<T>(source.A.Position1, source.A.Position2);
-            B = new LocusInfo<T>(source.B.Position1, source.B.Position2);
-            C = new LocusInfo<T>(source.C.Position1, source.C.Position2);
-            Dpb1 = new LocusInfo<T>(source.Dpb1.Position1, source.Dpb1.Position2);
-            Dqb1 = new LocusInfo<T>(source.Dqb1.Position1, source.Dqb1.Position2);
-            Drb1 = new LocusInfo<T>(source.Drb1.Position1, source.Drb1.Position2);
+            A = source.A == null ? null : new LocusInfo<T>(source.A.Position1, source.A.Position2);
+            B = source.B == null ? null : new LocusInfo<T>(source.B.Position1, source.B.Position2);
+            C = source.C == null ? null : new LocusInfo<T>(source.C.Position1, source.C.Position2);
+            Dpb1 = source.Dpb1 == null ? null : new LocusInfo<T>(source.Dpb1.Position1, source.Dpb1.Position2);
+            Dqb1 = source.Dqb1 == null ? null : new LocusInfo<T>(source.Dqb1.Position1, source.Dqb1.Position2);
+            Drb1 = source.Drb1 == null ? null : new LocusInfo<T>(source.Drb1.Position1, source.Drb1.Position2);
         }
 
         /// <summary>
@@ -103,6 +103,11 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 Dqb1 = new LocusInfo<R>(dqb1_1.Result, dqb1_2.Result),
                 Drb1 = new LocusInfo<R>(drb1_1.Result, drb1_2.Result),
             };
+        }
+
+        public PhenotypeInfo<R> MapByLocus<R>(Func<LocusInfo<T>, LocusInfo<R>> mapping)
+        {
+            return MapByLocus((locus, x) => mapping(x));
         }
 
         public PhenotypeInfo<R> MapByLocus<R>(Func<Locus, LocusInfo<T>, LocusInfo<R>> mapping)

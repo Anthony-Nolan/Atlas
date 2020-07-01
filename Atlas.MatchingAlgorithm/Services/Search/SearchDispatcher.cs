@@ -10,7 +10,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 {
     public interface ISearchDispatcher
     {
-        Task<string> DispatchSearch(SearchRequest searchRequest);
+        Task<string> DispatchSearch(MatchingRequest matchingRequest);
     }
 
     public class SearchDispatcher : ISearchDispatcher
@@ -23,14 +23,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         }
 
         /// <returns>A unique identifier for the dispatched search request</returns>
-        public async Task<string> DispatchSearch(SearchRequest searchRequest)
+        public async Task<string> DispatchSearch(MatchingRequest matchingRequest)
         {
-            new SearchRequestValidator().ValidateAndThrow(searchRequest);
+            new SearchRequestValidator().ValidateAndThrow(matchingRequest);
             var searchRequestId = Guid.NewGuid().ToString();
 
             var identifiedSearchRequest = new IdentifiedSearchRequest
             {
-                SearchRequest = searchRequest,
+                MatchingRequest = matchingRequest,
                 Id = searchRequestId
             };
             await searchServiceBusClient.PublishToSearchQueue(identifiedSearchRequest);

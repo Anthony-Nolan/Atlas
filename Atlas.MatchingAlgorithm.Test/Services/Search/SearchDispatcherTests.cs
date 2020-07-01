@@ -41,7 +41,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public void DispatchSearch_ValidatesSearchRequest()
         {
-            var invalidSearchRequest = new SearchRequest();
+            var invalidSearchRequest = new MatchingRequest();
 
             Assert.ThrowsAsync<ValidationException>(() => searchDispatcher.DispatchSearch(invalidSearchRequest));
         }
