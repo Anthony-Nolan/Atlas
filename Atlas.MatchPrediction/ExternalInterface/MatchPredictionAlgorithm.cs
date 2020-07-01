@@ -5,6 +5,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencySets;
 using Atlas.MatchPrediction.Services.MatchProbability;
+using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 
 namespace Atlas.MatchPrediction.ExternalInterface
 {
@@ -40,8 +41,9 @@ namespace Atlas.MatchPrediction.ExternalInterface
 
         public async Task<HaplotypeFrequencySet> GetHaplotypeFrequencySet(HaplotypeFrequencySetInput haplotypeFrequencySetInput)
         {
-            return await haplotypeFrequencySetService.GetHaplotypeFrequencySetId(haplotypeFrequencySetInput.DonorInfo,
-                haplotypeFrequencySetInput.PatientInfo);
+            return new HaplotypeFrequencySet(
+                await haplotypeFrequencySetService.GetHaplotypeFrequencySetId(haplotypeFrequencySetInput.DonorInfo,
+                haplotypeFrequencySetInput.PatientInfo));
         }
     }
 }

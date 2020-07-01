@@ -10,6 +10,7 @@ using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 
 namespace Atlas.MatchPrediction.Functions.Functions
 {
@@ -48,10 +49,23 @@ namespace Atlas.MatchPrediction.Functions.Functions
         [StorageAccount("AzureStorage:ConnectionString")]
         public async Task<HaplotypeFrequencySet> GetHaplotypeFrequencySet([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest request)
         {
-            var donorInfo = new IndividualMetaData(request.Query["donorEthnicity"], request.Query["donorRegistry"]);
-            var patientInfo = new IndividualMetaData(request.Query["patientEthnicity"], request.Query["patientRegistry"]);
+            var donorInfo = new IndividualPopulationData
+            {
+                EthnicityId = request.Query["donorEthnicity"],
+                RegistryId = request.Query["donorRegistry"]
+            };
+            
+            var patientInfo = new IndividualPopulationData
+            {
+                EthnicityId = request.Query["patientEthnicity"],
+                RegistryId = request.Query["patientRegistry"]
+            };
             return await matchPredictionAlgorithm.GetHaplotypeFrequencySet(
-                new HaplotypeFrequencySetInput(donorInfo, patientInfo));
+                new HaplotypeFrequencySetInput
+                {
+                    DonorInfo = donorInfo,
+                    PatientInfo = patientInfo
+                }     );
         }
     }
 }

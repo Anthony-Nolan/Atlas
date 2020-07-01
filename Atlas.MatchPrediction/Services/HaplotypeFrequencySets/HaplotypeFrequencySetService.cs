@@ -8,7 +8,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencySets
 {
     internal interface IHaplotypeFrequencySetService
     {
-        Task<HaplotypeFrequencySet> GetHaplotypeFrequencySetId(IndividualMetaData donorInfo, IndividualMetaData patientInfo);
+        Task<HaplotypeFrequencySet> GetHaplotypeFrequencySetId(IndividualPopulationData donorInfo, IndividualPopulationData patientInfo);
     }
     
     internal class HaplotypeFrequencySetService : IHaplotypeFrequencySetService
@@ -20,7 +20,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencySets
             this.repository = repository;
         }
         
-        public async Task<HaplotypeFrequencySet> GetHaplotypeFrequencySetId(IndividualMetaData donorInfo, IndividualMetaData patientInfo)
+        public async Task<HaplotypeFrequencySet> GetHaplotypeFrequencySetId(IndividualPopulationData donorInfo, IndividualPopulationData patientInfo)
         {
             return await repository.GetActiveSet(donorInfo.RegistryId, donorInfo.EthnicityId);
         }
