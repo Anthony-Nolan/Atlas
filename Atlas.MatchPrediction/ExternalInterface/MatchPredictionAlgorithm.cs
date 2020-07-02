@@ -13,7 +13,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
     {
         public Task<MatchProbabilityResponse> RunMatchPredictionAlgorithm(MatchProbabilityInput matchProbabilityInput);
 
-        public Task<HaplotypeFrequencySet> GetHaplotypeFrequencySet(
+        public Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet(
             HaplotypeFrequencySetInput haplotypeFrequencySetInput);
     }
 
@@ -39,11 +39,10 @@ namespace Atlas.MatchPrediction.ExternalInterface
             );
         }
 
-        public async Task<HaplotypeFrequencySet> GetHaplotypeFrequencySet(HaplotypeFrequencySetInput haplotypeFrequencySetInput)
+        public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet(HaplotypeFrequencySetInput haplotypeFrequencySetInput)
         {
-            return new HaplotypeFrequencySet(
-                await haplotypeFrequencySetService.GetHaplotypeFrequencySetId(haplotypeFrequencySetInput.DonorInfo,
-                haplotypeFrequencySetInput.PatientInfo));
+            return await haplotypeFrequencySetService.GetHaplotypeFrequencySets(haplotypeFrequencySetInput.DonorInfo,
+                haplotypeFrequencySetInput.PatientInfo);
         }
     }
 }
