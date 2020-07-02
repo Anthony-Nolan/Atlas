@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
         public override void Configure(IFunctionsHostBuilder builder)
         {
             RegisterSettings(builder.Services);
-            builder.Services.RegisterMatchingAlgorithmDonorManagement(
+            builder.Services.RegisterMatchingAlgorithmDonorManagementOnly(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<DonorManagementSettings>(),
