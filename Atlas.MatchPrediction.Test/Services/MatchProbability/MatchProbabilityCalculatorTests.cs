@@ -1,9 +1,9 @@
-﻿using System;
-using Atlas.Common.GeneticData.PhenotypeInfo;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Atlas.MatchPrediction.Models;
 using FluentAssertions;
 
 namespace Atlas.MatchPrediction.Test.Services.MatchProbability
@@ -18,17 +18,16 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         private const string DonorLocus1 = "donorGenotype1";
         private const string DonorLocus2 = "donorGenotype2";
 
+        private readonly LociInfo<int?> tenOutOfTenMatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
+
         private readonly PhenotypeInfo<string> patientGenotype1 = PhenotypeInfoBuilder.New
-            .With(d => d.A, new LocusInfo<string> { Position1 = PatientLocus1, Position2 = PatientLocus1 }).Build();
-
+        .With(d => d.A, new LocusInfo<string> { Position1 = PatientLocus1, Position2 = PatientLocus1 }).Build();
         private readonly PhenotypeInfo<string> patientGenotype2 = PhenotypeInfoBuilder.New
-            .With(d => d.A, new LocusInfo<string> { Position1 = PatientLocus2, Position2 = PatientLocus2 }).Build();
-
+        .With(d => d.A, new LocusInfo<string> { Position1 = PatientLocus2, Position2 = PatientLocus2 }).Build();
         private readonly PhenotypeInfo<string> donorGenotype1 = PhenotypeInfoBuilder.New
-            .With(d => d.A, new LocusInfo<string> { Position1 = DonorLocus1, Position2 = DonorLocus1 }).Build();
-
+        .With(d => d.A, new LocusInfo<string> { Position1 = DonorLocus1, Position2 = DonorLocus1 }).Build();
         private readonly PhenotypeInfo<string> donorGenotype2 = PhenotypeInfoBuilder.New
-            .With(d => d.A, new LocusInfo<string> { Position1 = DonorLocus2, Position2 = DonorLocus2 }).Build();
+        .With(d => d.A, new LocusInfo<string> { Position1 = DonorLocus2, Position2 = DonorLocus2 }).Build();
 
         [SetUp]
         public void Setup()
@@ -47,8 +46,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 {donorGenotype2, 0.5m}
             };
 
-            var matchingPairs = new HashSet<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>>
-                {new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientGenotype1, donorGenotype1)};
+            var matchingPairs = new HashSet<GenotypeMatchDetails>
+                {new GenotypeMatchDetails{PatientGenotype = patientGenotype1, DonorGenotype = donorGenotype1, MatchCounts = tenOutOfTenMatchCounts}};
 
             var patientGenotypes = new HashSet<PhenotypeInfo<string>> {patientGenotype1, patientGenotype2};
             var donorGenotypes = new HashSet<PhenotypeInfo<string>> {donorGenotype1, donorGenotype2};
@@ -59,7 +58,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 matchingPairs,
                 genotypesLikelihoods);
 
-            actualProbability.Should().Be(0.25m);
+            actualProbability.ZeroMismatchProbability.Should().Be(0.25m);
         }
 
         [Test]
@@ -73,8 +72,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 {donorGenotype2, 0m}
             };
 
-            var matchingPairs = new HashSet<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>>
-                {new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientGenotype1, donorGenotype1)};
+            var matchingPairs = new HashSet<GenotypeMatchDetails>
+                {new GenotypeMatchDetails{PatientGenotype = patientGenotype1, DonorGenotype = donorGenotype1, MatchCounts = tenOutOfTenMatchCounts}};
 
             var patientGenotypes = new HashSet<PhenotypeInfo<string>> { patientGenotype1, patientGenotype2 };
             var donorGenotypes = new HashSet<PhenotypeInfo<string>> { donorGenotype1, donorGenotype2 };
@@ -85,7 +84,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 matchingPairs,
                 genotypesLikelihoods);
 
-            actualProbability.Should().Be(0m);
+            actualProbability.ZeroMismatchProbability.Should().Be(0m);
         }
     }
 }
