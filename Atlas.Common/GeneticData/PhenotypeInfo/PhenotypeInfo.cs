@@ -16,6 +16,98 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
     /// <typeparam name="T">The type of the information that is required for each loci position.</typeparam>
     public class PhenotypeInfo<T> : LociInfo<LocusInfo<T>>
     {
+        private const string LocusInfoNullExceptionMessage =
+            "LocusInfo<T> cannot be null in a PhenotypeInfo<T>. Set the nested values to null instead.";
+
+        #region Overrides of LociInfo<LocusInfo<T>>
+
+        /// <inheritdoc />
+        public override LocusInfo<T> A
+        {
+            get => a;
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value), LocusInfoNullExceptionMessage);
+                }
+
+                a = value;
+            }
+        }
+        /// <inheritdoc />
+        public override LocusInfo<T> B
+        {
+            get => b;
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value), LocusInfoNullExceptionMessage);
+                }
+
+                b = value;
+            }
+        }
+        /// <inheritdoc />
+        public override LocusInfo<T> C
+        {
+            get => c;
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value), LocusInfoNullExceptionMessage);
+                }
+
+                c = value;
+            }
+        }
+        /// <inheritdoc />
+        public override LocusInfo<T> Dpb1
+        {
+            get => dpb1;
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value), LocusInfoNullExceptionMessage);
+                }
+
+                dpb1 = value;
+            }
+        }
+        /// <inheritdoc />
+        public override LocusInfo<T> Dqb1
+        {
+            get => dqb1;
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value), LocusInfoNullExceptionMessage);
+                }
+
+                dqb1 = value;
+            }
+        }
+        /// <inheritdoc />
+        public override LocusInfo<T> Drb1
+        {
+            get => drb1;
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value), LocusInfoNullExceptionMessage);
+                }
+
+                drb1 = value;
+            }
+        }
+
+        #endregion
+
         /// <summary>
         /// Creates a new PhenotypeInfo with no inner values set.
         /// </summary>
@@ -29,12 +121,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         /// </summary>
         public PhenotypeInfo(LociInfo<LocusInfo<T>> source)
         {
-            A = source.A == null ? null : new LocusInfo<T>(source.A.Position1, source.A.Position2);
-            B = source.B == null ? null : new LocusInfo<T>(source.B.Position1, source.B.Position2);
-            C = source.C == null ? null : new LocusInfo<T>(source.C.Position1, source.C.Position2);
-            Dpb1 = source.Dpb1 == null ? null : new LocusInfo<T>(source.Dpb1.Position1, source.Dpb1.Position2);
-            Dqb1 = source.Dqb1 == null ? null : new LocusInfo<T>(source.Dqb1.Position1, source.Dqb1.Position2);
-            Drb1 = source.Drb1 == null ? null : new LocusInfo<T>(source.Drb1.Position1, source.Drb1.Position2);
+            a = new LocusInfo<T>(source.A.Position1, source.A.Position2);
+            b = new LocusInfo<T>(source.B.Position1, source.B.Position2);
+            c = new LocusInfo<T>(source.C.Position1, source.C.Position2);
+            dpb1 = new LocusInfo<T>(source.Dpb1.Position1, source.Dpb1.Position2);
+            dqb1 = new LocusInfo<T>(source.Dqb1.Position1, source.Dqb1.Position2);
+            drb1 = new LocusInfo<T>(source.Drb1.Position1, source.Drb1.Position2);
         }
 
         /// <summary>
@@ -44,18 +136,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         public PhenotypeInfo(T initialValue)
         {
             Initialise();
-            A.Position1 = initialValue;
-            A.Position2 = initialValue;
-            B.Position1 = initialValue;
-            B.Position2 = initialValue;
-            C.Position1 = initialValue;
-            C.Position2 = initialValue;
-            Dpb1.Position1 = initialValue;
-            Dpb1.Position2 = initialValue;
-            Dqb1.Position1 = initialValue;
-            Dqb1.Position2 = initialValue;
-            Drb1.Position1 = initialValue;
-            Drb1.Position2 = initialValue;
+            SetLocus(Locus.A, initialValue);
+            SetLocus(Locus.B, initialValue);
+            SetLocus(Locus.C, initialValue);
+            SetLocus(Locus.Dpb1, initialValue);
+            SetLocus(Locus.Dqb1, initialValue);
+            SetLocus(Locus.Drb1, initialValue);
         }
 
         public PhenotypeInfo<R> Map<R>(Func<Locus, LocusPosition, T, R> mapping)
@@ -255,10 +341,10 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         {
             A = new LocusInfo<T>();
             B = new LocusInfo<T>();
+            C = new LocusInfo<T>();
             Dpb1 = new LocusInfo<T>();
             Dqb1 = new LocusInfo<T>();
             Drb1 = new LocusInfo<T>();
-            C = new LocusInfo<T>();
         }
 
         public async Task WhenAllLoci(Func<Locus, LocusInfo<T>, Task> action)
