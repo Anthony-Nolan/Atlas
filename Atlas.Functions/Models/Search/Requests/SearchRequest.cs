@@ -24,6 +24,18 @@ namespace Atlas.Functions.Models.Search.Requests
         public SearchHlaData SearchHlaData { get; set; }
 
         /// <summary>
+        /// Used to choose frequency data for use in match prediction.
+        /// Must match ethnicity code format uploaded with haplotype frequency sets.
+        /// </summary>
+        public string PatientEthnicityCode { get; set; }
+        
+        /// <summary>
+        /// Determines which haplotype frequency data to use for match prediction.
+        /// Must match registry code format uploaded with haplotype frequency sets.  
+        /// </summary>
+        public string PatientRegistryCode { get; set; }
+        
+        /// <summary>
         /// By default the algorithm will use scoring information available at all loci to aggregate into some overall values to use for ranking.
         /// e.g. MatchCategory, GradeScore, ConfidenceScore
         /// Any loci specified here can be excluded from these aggregates.
