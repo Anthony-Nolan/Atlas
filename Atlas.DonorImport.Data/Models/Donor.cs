@@ -63,6 +63,9 @@ namespace Atlas.DonorImport.Data.Models
             nameof(DQB1_2),
             nameof(DRB1_1),
             nameof(DRB1_2),
+            nameof(Hash),
+            nameof(UpdateFile),
+            nameof(LastUpdated),
         };
 
         internal static readonly string[] DbTableColumnNamesForUpdate = DataTableColumnNamesForInsertion.Except(new[]{nameof(AtlasId)}).ToArray();
