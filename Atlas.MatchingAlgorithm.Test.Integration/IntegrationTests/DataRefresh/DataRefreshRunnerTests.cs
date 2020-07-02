@@ -4,6 +4,7 @@ using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 using EnumStringValues;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,15 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
             dataRefreshRunner = DependencyInjection.DependencyInjection.Provider.GetService<IDataRefreshRunner>();
         }
 
+        [Test]
+        public async Task DataRefresh_WhenDatabaseHasNoRefreshRecords_DoesNotThrow()
+        {
+            await dataRefreshHistoryRepository.RemoveAllDataRefreshRecords();
+            var refreshRecordId = await dataRefreshHistoryRepository.Create(DataRefreshRecordBuilder.New.Build());
+
+            await dataRefreshRunner.Invoking(r => r.RefreshData(refreshRecordId)).Should().NotThrowAsync();
+        }
+        
         [Test]
         public async Task DataRefresh_PopulatesAllStageFlagInOrder()
         {
