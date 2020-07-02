@@ -5,6 +5,7 @@ using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
@@ -44,7 +45,10 @@ namespace Atlas.MatchPrediction.Functions.Functions
                 await frequencySetService.ImportFrequencySet(file);
             }
         }
-
+        
+        [QueryStringParameter("donorEthnicity", "Ethnicity ID of the donor", DataType = typeof(string))]
+        [QueryStringParameter("donorRegistry", "Registry ID of the donor", DataType = typeof(string))]
+        [QueryStringParameter("patientEthnicity", "Ethnicity ID of the patient", DataType = typeof(string))]
         [FunctionName((nameof(GetHaplotypeFrequencySet)))]
         [StorageAccount("AzureStorage:ConnectionString")]
         public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest request)
@@ -58,7 +62,6 @@ namespace Atlas.MatchPrediction.Functions.Functions
             var patientInfo = new IndividualPopulationData
             {
                 EthnicityId = request.Query["patientEthnicity"],
-                RegistryId = request.Query["patientRegistry"]
             };
             return await matchPredictionAlgorithm.GetHaplotypeFrequencySet(
                 new HaplotypeFrequencySetInput
