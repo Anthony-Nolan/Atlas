@@ -28,9 +28,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         [Test]
         public void Validator_WhenSearchTypeMissing_ShouldHaveValidationError()
         {
-            var result = validator.Validate(new Client.Models.SearchRequests.MatchingRequest
+            var result = validator.Validate(new MatchingRequest
             {
-                MatchCriteria = new MismatchCriteria()
+                MatchCriteria = new MismatchCriteria
+                {
+                    LocusMismatchCounts = new LociInfo<int?>()
+                }
             });
             result.IsValid.Should().BeFalse();
         }
@@ -44,15 +47,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         [Test]
         public void Validator_WithMatchCriteriaForLocusCAndNoHlaDataAtC_ShouldHaveValidationError()
         {
-            var result = validator.Validate(new Client.Models.SearchRequests.MatchingRequest
+            var result = validator.Validate(new MatchingRequest
             {
                 SearchType = DonorType.Adult,
                 MatchCriteria = new MismatchCriteria
                 {
-                    LocusMismatchA = new LocusMismatchCriteria(),
-                    LocusMismatchB = new LocusMismatchCriteria(),
-                    LocusMismatchDrb1 = new LocusMismatchCriteria(),
-                    LocusMismatchC = new LocusMismatchCriteria(),
+                    LocusMismatchCounts = new LociInfo<int?>(0)
                 },
                 SearchHlaData = new PhenotypeInfo<string>
                 {
@@ -75,10 +75,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
                 SearchType = DonorType.Adult,
                 MatchCriteria = new MismatchCriteria
                 {
-                    LocusMismatchA = new LocusMismatchCriteria(),
-                    LocusMismatchB = new LocusMismatchCriteria(),
-                    LocusMismatchDrb1 = new LocusMismatchCriteria(),
-                    LocusMismatchDqb1 = new LocusMismatchCriteria(),
+                    LocusMismatchCounts = new LociInfo<int?>(0)
                 },
                 SearchHlaData = new PhenotypeInfo<string>
                 {

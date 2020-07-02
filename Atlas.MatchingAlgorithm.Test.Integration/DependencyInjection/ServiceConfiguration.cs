@@ -53,7 +53,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 _ => new MessagingServiceBusSettings(),
                 _ => new NotificationsServiceBusSettings(),
                 ConnectionStringReader(PersistentSqlConnectionStringKey),
-                ConnectionStringReader(TransientASqlConnectionStringKey), ConnectionStringReader(TransientBSqlConnectionStringKey), ConnectionStringReader(DonorImportSqlConnectionStringKey));
+                ConnectionStringReader(TransientASqlConnectionStringKey),
+                ConnectionStringReader(TransientBSqlConnectionStringKey),
+                ConnectionStringReader(DonorImportSqlConnectionStringKey)
+            );
+
             services.RegisterMatchingAlgorithmDonorManagement(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),

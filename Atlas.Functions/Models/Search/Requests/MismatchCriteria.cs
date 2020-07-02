@@ -1,4 +1,6 @@
-﻿namespace Atlas.Functions.Models.Search.Requests
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+
+namespace Atlas.Functions.Models.Search.Requests
 {
     public class MismatchCriteria
     {
@@ -55,20 +57,14 @@
             return new MatchingAlgorithm.Client.Models.SearchRequests.MismatchCriteria
             {
                 DonorMismatchCount = mismatchCriteria.DonorMismatchCount,
-                LocusMismatchA = mismatchCriteria.LocusMismatchA.ToMatchingAlgorithmLocusMismatchCriteria(),
-                LocusMismatchB = mismatchCriteria.LocusMismatchB.ToMatchingAlgorithmLocusMismatchCriteria(),
-                LocusMismatchC = mismatchCriteria.LocusMismatchC.ToMatchingAlgorithmLocusMismatchCriteria(),
-                LocusMismatchDqb1 = mismatchCriteria.LocusMismatchDqb1.ToMatchingAlgorithmLocusMismatchCriteria(),
-                LocusMismatchDrb1 = mismatchCriteria.LocusMismatchDrb1.ToMatchingAlgorithmLocusMismatchCriteria(),
-            };
-        }
-
-        private static MatchingAlgorithm.Client.Models.SearchRequests.LocusMismatchCriteria ToMatchingAlgorithmLocusMismatchCriteria(
-            this LocusMismatchCriteria locusMismatchCriteria)
-        {
-            return new MatchingAlgorithm.Client.Models.SearchRequests.LocusMismatchCriteria
-            {
-                MismatchCount = locusMismatchCriteria.MismatchCount
+                LocusMismatchCounts = new LociInfo<int?>
+                {
+                    A = mismatchCriteria.LocusMismatchA.MismatchCount,
+                    B = mismatchCriteria.LocusMismatchB.MismatchCount,
+                    C = mismatchCriteria.LocusMismatchC.MismatchCount,
+                    Dqb1 = mismatchCriteria.LocusMismatchDqb1.MismatchCount,
+                    Drb1 = mismatchCriteria.LocusMismatchDrb1.MismatchCount,
+                }
             };
         }
     }
