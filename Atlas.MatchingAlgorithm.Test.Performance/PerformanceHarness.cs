@@ -44,7 +44,7 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
 
         private static MatchingRequest BuildSearchRequest(TestInput testInput)
         {
-            var searchRequestBuilder = new SearchRequestBuilder()
+            var searchRequestBuilder = new MatchingRequestBuilder()
                 .WithSearchHla(testInput.Hla);
 
             switch (testInput.SearchType)

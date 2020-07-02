@@ -1,4 +1,5 @@
-﻿using Atlas.Common.GeneticData;
+﻿using System;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using FluentAssertions;
 using NUnit.Framework;
@@ -8,6 +9,18 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
     [TestFixture]
     public class PhenotypeInfoTests
     {
+        [Test]
+        public void Set_LocusProperty_CannotBeNull()
+        {
+            var phenotypeInfo = new PhenotypeInfo<string>("default");
+            phenotypeInfo.Invoking(p => p.A = null).Should().Throw<ArgumentNullException>();
+            phenotypeInfo.Invoking(p => p.B = null).Should().Throw<ArgumentNullException>();
+            phenotypeInfo.Invoking(p => p.C = null).Should().Throw<ArgumentNullException>();
+            phenotypeInfo.Invoking(p => p.Dpb1 = null).Should().Throw<ArgumentNullException>();
+            phenotypeInfo.Invoking(p => p.Dqb1 = null).Should().Throw<ArgumentNullException>();
+            phenotypeInfo.Invoking(p => p.Drb1 = null).Should().Throw<ArgumentNullException>();
+        }
+        
         [Test]
         public void GetAtPosition_GetsValuesAtSpecifiedPositionForAllLoci()
         {
