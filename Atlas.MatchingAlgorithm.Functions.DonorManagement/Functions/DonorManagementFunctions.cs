@@ -33,7 +33,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
             [TimerTrigger("%MessagingServiceBus:DonorManagement:CronSchedule%")]
             TimerInfo myTimer)
         {
-            await ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase.DatabaseB);
+            await ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase.DatabaseA);
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -42,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
             [TimerTrigger("%MessagingServiceBus:DonorManagement:CronSchedule%")]
             TimerInfo myTimer)
         {
-            await ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase.DatabaseA);
+            await ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase.DatabaseB);
         }
 
         private async Task ProcessDifferentialDonorUpdatesForSpecifiedDb(TransientDatabase targetDatabase)
