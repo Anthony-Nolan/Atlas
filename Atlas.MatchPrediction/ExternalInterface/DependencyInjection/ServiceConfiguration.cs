@@ -86,7 +86,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 
             services.AddScoped<IMatchCalculationService, MatchCalculationService>();
 
-            services.AddScoped<IGenotypeMatcher, GenotypeMatcher>();
             services.AddScoped<IMatchProbabilityService, MatchProbabilityService>();
             services.AddScoped<IMatchProbabilityCalculator, MatchProbabilityCalculator>();
 
