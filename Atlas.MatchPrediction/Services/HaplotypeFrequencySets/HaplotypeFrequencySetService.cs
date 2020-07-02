@@ -6,7 +6,7 @@ using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencySets
 {
-    internal interface IHaplotypeFrequencySetService
+    public interface IHaplotypeFrequencySetService
     {
         Task<HaplotypeFrequencySet> GetHaplotypeFrequencySetId(IndividualPopulationData donorInfo, IndividualPopulationData patientInfo);
     }
