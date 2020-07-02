@@ -11,7 +11,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     internal interface IGenotypeMatcher
     {
         /// <summary>
-        /// Gets all possible combinations of donor and patient genotypes and returns a list of donor patient pairs where there is 10/10 match at the PGroup level
+        /// Returns all possible combinations of donor and patient genotypes with their matchCounts at the PGroup level
         /// </summary>
         /// <param name="patientGenotypes">List of unambiguous genotypes for a given patient</param>
         /// <param name="donorGenotypes">List of unambiguous genotypes for a given donor</param>

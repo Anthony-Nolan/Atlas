@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
+using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.MatchProbability;
@@ -44,11 +44,11 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             matchProbabilityCalculator = Substitute.For<IMatchProbabilityCalculator>();
             var logger = Substitute.For<ILogger>();
 
-            genotypeMatcher.PairsWithTenOutOfTenMatch(
-                    Arg.Any<HashSet<PhenotypeInfo<string>>>(),
-                    Arg.Any<HashSet<PhenotypeInfo<string>>>(),
-                    HlaNomenclatureVersion)
-                .Returns(new HashSet<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>>());
+            genotypeMatcher.PairsWithMatch(
+                Arg.Any<HashSet<PhenotypeInfo<string>>>(),
+                Arg.Any<HashSet<PhenotypeInfo<string>>>(),
+                HlaNomenclatureVersion)
+                .Returns(new HashSet<GenotypeMatchDetails>());
 
             genotypeLikelihoodService.CalculateLikelihood(Arg.Any<PhenotypeInfo<string>>()).Returns(0.5m);
 
@@ -76,25 +76,28 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             compressedPhenotypeExpander.ExpandCompressedPhenotype(PatientHla, HlaNomenclatureVersion)
                 .Returns(new HashSet<PhenotypeInfo<string>> {PatientHla});
 
-            genotypeMatcher.PairsWithTenOutOfTenMatch(
+            genotypeMatcher.PairsWithMatch(
                     Arg.Any<HashSet<PhenotypeInfo<string>>>(),
                     Arg.Any<HashSet<PhenotypeInfo<string>>>(),
                     HlaNomenclatureVersion)
-                .Returns(new HashSet<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>>
-                    {new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(PatientHla, PatientHla)});
-
-            const decimal probability = 0.5m;
+                .Returns(new HashSet<GenotypeMatchDetails> 
+                    {new GenotypeMatchDetails
+                    {
+                        PatientGenotype = PatientHla,
+                        DonorGenotype = PatientHla,
+                        MatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2}
+                    }});
 
             matchProbabilityCalculator.CalculateMatchProbability(
                     Arg.Any<HashSet<PhenotypeInfo<string>>>(),
                     Arg.Any<HashSet<PhenotypeInfo<string>>>(),
-                    Arg.Any<HashSet<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>>>(),
+                    Arg.Any<HashSet<GenotypeMatchDetails>>(),
                     Arg.Any<Dictionary<PhenotypeInfo<string>, decimal>>())
-                .Returns(probability);
+                .Returns(new MatchProbabilityResponse {ZeroMismatchProbability = 0.5m});
 
             var actualResponse = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            actualResponse.ZeroMismatchProbability.Should().Be(probability);
+            actualResponse.ZeroMismatchProbability.Should().Be(0.5m);
         }
 
         [Test]
