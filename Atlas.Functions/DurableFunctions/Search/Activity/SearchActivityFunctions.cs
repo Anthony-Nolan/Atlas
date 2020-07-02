@@ -16,12 +16,16 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 {
     public class SearchActivityFunctions
     {
+        // Matching Algorithm Services
         private readonly ISearchRunner searchRunner;
 
+        // Donor Import services
         private readonly IDonorReader donorReader;
-
+        
+        // Match Prediction services
         private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
 
+        // Atlas.Functions services
         private readonly IResultsUploader searchResultsBlobUploader;
         private readonly IMatchPredictionInputBuilder matchPredictionInputBuilder;
 
@@ -55,7 +59,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             return await donorReader.GetDonors(donorIds);
         }
 
-        [FunctionName(nameof(FetchDonorInformation))]
+        [FunctionName(nameof(BuildMatchPredictionInputs))]
         public IEnumerable<MatchProbabilityInput> BuildMatchPredictionInputs(
             [ActivityTrigger] MatchPredictionInputParameters matchPredictionInputParameters
         )

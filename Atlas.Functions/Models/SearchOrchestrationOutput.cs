@@ -6,7 +6,7 @@ namespace Atlas.Functions.Models
     /// </summary>
     public class SearchOrchestrationOutput
     {
-        public int NumberOfDonors { get; set; }
+        public int MatchingDonorCount { get; set; }
         public string MatchingResultBlobContainer { get; set; }
         public string MatchingResultFileName { get; set; }
         public string HlaNomenclatureVersion { get; set; }

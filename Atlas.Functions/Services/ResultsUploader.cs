@@ -33,12 +33,12 @@ namespace Atlas.Functions.Services
         {
             var combinedResults = new SearchResultSet
             {
-                SearchResults = matchingResults.SearchResults.Select(r => new SearchResult
+                SearchResults = matchingResults.MatchingAlgorithmResults.Select(r => new SearchResult
                 {
                     MatchingResult = r,
                     MatchPredictionResult = matchPredictionResults[r.DonorId].ZeroMismatchProbability
                 }),
-                TotalResults = matchingResults.TotalResults,
+                TotalResults = matchingResults.ResultCount,
                 HlaNomenclatureVersion = matchingResults.HlaNomenclatureVersion,
                 SearchRequestId = matchingResults.SearchRequestId,
                 BlobStorageContainerName = resultsContainer,

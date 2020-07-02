@@ -62,8 +62,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 var searchResultSet = new MatchingAlgorithmResultSet
                 {
                     SearchRequestId = searchRequestId,
-                    SearchResults = results,
-                    TotalResults = results.Count,
+                    MatchingAlgorithmResults = results,
+                    ResultCount = results.Count,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
                     BlobStorageContainerName = blobContainerName,
                 };
