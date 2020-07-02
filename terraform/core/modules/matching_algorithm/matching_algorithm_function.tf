@@ -10,8 +10,6 @@ locals {
     "ApplicationInsights:LogLevel"                              = var.APPLICATION_INSIGHTS_LOG_LEVEL
     "AzureManagement:Authentication:ClientId"                   = var.AZURE_CLIENT_ID
     "AzureManagement:Authentication:ClientSecret"               = var.AZURE_CLIENT_SECRET
-    "AzureManagement:AppService:ResourceGroupName"              = var.app_service_plan.resource_group_name
-    "AzureManagement:AppService:SubscriptionId"                 = var.general.subscription_id
     "AzureManagement:Database:ServerName"                       = var.sql_server.name
     "AzureManagement:Database:PollingRetryIntervalMilliseconds" = var.DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS
     "AzureManagement:Database:ResourceGroupName"                = var.app_service_plan.resource_group_name
