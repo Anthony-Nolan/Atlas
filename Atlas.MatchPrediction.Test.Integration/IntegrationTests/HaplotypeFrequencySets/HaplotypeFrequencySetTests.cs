@@ -31,8 +31,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         {
             var data = new List<IndividualPopulationData>
             {
-                // Note: Generic Population data is not added here to allow us to check error state 
-                // This is instead added in the relevant test.
                 new IndividualPopulationData { EthnicityId = "01", RegistryId = "12" },
                 new IndividualPopulationData { EthnicityId = "02", RegistryId = "12" },
                 new IndividualPopulationData { EthnicityId = "03", RegistryId = "22" },
