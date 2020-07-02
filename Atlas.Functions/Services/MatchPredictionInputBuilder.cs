@@ -4,7 +4,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.Models.Search.Requests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Extensions;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 
@@ -79,6 +78,11 @@ namespace Atlas.Functions.Services
                     RegistryCode = donorInfo.RegistryCode
                 },
                 PatientHla = searchRequest.SearchHlaData.ToPhenotypeInfo(),
+                PatientFrequencySetSelectionInput = new FrequencySetSelectionInput
+                {
+                    EthnicityCode = searchRequest.PatientEthnicityCode,
+                    RegistryCode = searchRequest.PatientRegistryCode
+                },
                 HlaNomenclatureVersion = hlaNomenclatureVersion
             };
         }
