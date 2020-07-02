@@ -47,7 +47,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
 
         [FunctionName((nameof(GetHaplotypeFrequencySet)))]
         [StorageAccount("AzureStorage:ConnectionString")]
-        public async Task<HaplotypeFrequencySet> GetHaplotypeFrequencySet([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest request)
+        public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest request)
         {
             var donorInfo = new IndividualPopulationData
             {
