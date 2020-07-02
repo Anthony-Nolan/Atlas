@@ -46,26 +46,17 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 _ => new AzureAppServiceManagementSettings(),
                 _ => new AzureDatabaseManagementSettings(),
                 OptionsReaderFor<DataRefreshSettings>(),
-                OptionsReaderFor<AzureStorageSettings>(),
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                _ => new MacDictionarySettings(),
-                _ => new MessagingServiceBusSettings(),
-                _ => new NotificationsServiceBusSettings(),
-                ConnectionStringReader(PersistentSqlConnectionStringKey),
-                ConnectionStringReader(TransientASqlConnectionStringKey), ConnectionStringReader(TransientBSqlConnectionStringKey), ConnectionStringReader(DonorImportSqlConnectionStringKey));
-            services.RegisterMatchingAlgorithmDonorManagement(
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<DonorManagementSettings>(),
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 _ => new MacDictionarySettings(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 _ => new NotificationsServiceBusSettings(),
                 ConnectionStringReader(PersistentSqlConnectionStringKey),
-                ConnectionStringReader(TransientASqlConnectionStringKey),
-                ConnectionStringReader(TransientBSqlConnectionStringKey)
-            );
+                ConnectionStringReader(TransientASqlConnectionStringKey), 
+                ConnectionStringReader(TransientBSqlConnectionStringKey),
+                ConnectionStringReader(DonorImportSqlConnectionStringKey));
 
             // This call must be made after `RegisterMatchingAlgorithm()`, as it overrides the non-mock dictionary set up in that method
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(
