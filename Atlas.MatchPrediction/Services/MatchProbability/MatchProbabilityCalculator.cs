@@ -12,7 +12,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         MatchProbabilityResponse CalculateMatchProbability(
             ISet<PhenotypeInfo<string>> patientGenotypes,
             ISet<PhenotypeInfo<string>> donorGenotypes,
-            ISet<GenotypeMatchDetails> matchingPairs,
+            ISet<GenotypeMatchDetails> patientDonorMatchDetails,
             Dictionary<PhenotypeInfo<string>, decimal> genotypesLikelihoods);
     }
 
@@ -21,7 +21,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         public MatchProbabilityResponse CalculateMatchProbability(
             ISet<PhenotypeInfo<string>> patientGenotypes,
             ISet<PhenotypeInfo<string>> donorGenotypes,
-            ISet<GenotypeMatchDetails> matchingPairs,
+            ISet<GenotypeMatchDetails> patientDonorMatchDetails,
             Dictionary<PhenotypeInfo<string>, decimal> genotypesLikelihoods)
         {
             var sumOfPatientLikelihoods = patientGenotypes.Select(d => genotypesLikelihoods[d]).Sum();
@@ -29,7 +29,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             if (sumOfPatientLikelihoods == 0 || sumOfDonorLikelihoods == 0)
             {
-                return new MatchProbabilityResponse {ZeroMismatchProbability = 0m};
+                return new MatchProbabilityResponse
+                {
+                    ZeroMismatchProbability = 0m,
+                    ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
+                        {A = 0m, B = 0m, C = 0m, Dpb1 = 0m, Dqb1 = 0m, Drb1 = 0m}
+                };
             }
 
             var allowedLoci = LocusSettings.MatchPredictionLoci.ToList();
@@ -41,19 +46,27 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     return (decimal?) null;
                 }
                 
-                var twoOutOfTwoMatch = matchingPairs.Where(g => g.MatchCounts.GetLocus(locus) == 2);
-                var sumOfTwoOutOfTwoLikelihoods = 
-                    twoOutOfTwoMatch.Select(g => genotypesLikelihoods[g.PatientGenotype] * genotypesLikelihoods[g.DonorGenotype]).Sum();
+                var twoOutOfTwoMatches = patientDonorMatchDetails.Where(g => g.MatchCounts.GetLocus(locus) == 2);
 
-                return sumOfTwoOutOfTwoLikelihoods / (sumOfPatientLikelihoods * sumOfDonorLikelihoods);
+                return CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, twoOutOfTwoMatches, genotypesLikelihoods);  
             });
 
-            var sumOfMatchingLikelihoods = matchingPairs.Where(g => g.IsTenOutOfTenMatch)
-                    .Select(g => genotypesLikelihoods[g.PatientGenotype] * genotypesLikelihoods[g.DonorGenotype]).Sum();
+            var tenOutOfTenMatches = patientDonorMatchDetails.Where(g => g.IsTenOutOfTenMatch);
+            var matchProbability = CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, tenOutOfTenMatches, genotypesLikelihoods);
 
-            var matchProbability = sumOfMatchingLikelihoods / (sumOfPatientLikelihoods * sumOfDonorLikelihoods);
+            return new MatchProbabilityResponse {ZeroMismatchProbabilityPerLocus = probabilityPerLocus, ZeroMismatchProbability = matchProbability};
+        }
 
-            return new MatchProbabilityResponse {MatchProbabilityPerLocus = probabilityPerLocus, ZeroMismatchProbability = matchProbability};
+        private static decimal CalculateProbability(
+            decimal patientLikelihood,
+            decimal donorLikelihood,
+            IEnumerable<GenotypeMatchDetails> matchingLikelihoods,
+            Dictionary<PhenotypeInfo<string>, decimal> genotypesLikelihoods)
+        {
+            var sumOfMatchingLikelihoods =
+                matchingLikelihoods.Select(g => genotypesLikelihoods[g.PatientGenotype] * genotypesLikelihoods[g.DonorGenotype]).Sum();
+
+            return sumOfMatchingLikelihoods / (patientLikelihood * donorLikelihood);
         }
     }
 }
