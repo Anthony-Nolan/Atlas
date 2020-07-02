@@ -42,8 +42,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.AddSingleton<IConfiguration>(sp => configuration);
 
             services.RegisterSettings();
-            services.RegisterMatchingAlgorithm(_ => new AzureAuthenticationSettings(),
-                _ => new AzureAppServiceManagementSettings(),
+            services.RegisterMatchingAlgorithm(
+                _ => new AzureAuthenticationSettings(),
                 _ => new AzureDatabaseManagementSettings(),
                 OptionsReaderFor<DataRefreshSettings>(),
                 OptionsReaderFor<DonorManagementSettings>(),

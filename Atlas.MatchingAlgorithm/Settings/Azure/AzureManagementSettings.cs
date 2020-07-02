@@ -12,10 +12,6 @@ namespace Atlas.MatchingAlgorithm.Settings.Azure
         public string SubscriptionId { get; set; }
     }
 
-    public class AzureAppServiceManagementSettings : AzureManagementSettings
-    {
-    }
-
     public class AzureDatabaseManagementSettings : AzureManagementSettings
     {
         public string ServerName { get; set; }

@@ -28,7 +28,6 @@ namespace Atlas.Functions
             // TODO: ATLAS-472: Allow registration of matching with no data refresh functionality
             builder.Services.RegisterMatchingAlgorithm(
                 _ => new AzureAuthenticationSettings(),
-                _ => new AzureAppServiceManagementSettings(),
                 _ => new AzureDatabaseManagementSettings(),
                 _ => new DataRefreshSettings(),
                 _ => new DonorManagementSettings(),

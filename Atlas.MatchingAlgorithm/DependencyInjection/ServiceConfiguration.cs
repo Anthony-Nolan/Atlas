@@ -53,7 +53,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             // Data refresh only 
             // TODO: ATLAS-472: Split registration of data refresh/matching usages
             Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings,
-            Func<IServiceProvider, AzureAppServiceManagementSettings> fetchAzureAppServiceManagementSettings,
             Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
             Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
             Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
@@ -71,7 +70,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         {
             services.RegisterSettingsForDataRefresh(
                 fetchAzureAuthenticationSettings,
-                fetchAzureAppServiceManagementSettings,
                 fetchAzureDatabaseManagementSettings,
                 fetchDataRefreshSettings
             );
@@ -92,7 +90,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterDonorReader(fetchDonorImportSqlConnectionString);
         }
 
-        // TODO: ATLAS-QQ. This is still kind of a mess. "DonorManagementOnly" registers loads of things that aren't related to Don.Mgmt.
+        // TODO: ATLAS-472. This is still kind of a mess. "DonorManagementOnly" registers loads of things that aren't related to Don.Mgmt.
         // But this is (temporarily) better than the alternative, given that the main registration needs to register everything for Don.Mgmt, in order to do DataRefresh.
         public static void RegisterMatchingAlgorithmDonorManagementOnly(
             this IServiceCollection services,
@@ -290,12 +288,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static void RegisterSettingsForDataRefresh(
             this IServiceCollection services,
             Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings,
-            Func<IServiceProvider, AzureAppServiceManagementSettings> fetchAzureAppServiceManagementSettings,
             Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
             Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings)
         {
             services.MakeSettingsAvailableForUse(fetchAzureAuthenticationSettings);
-            services.MakeSettingsAvailableForUse(fetchAzureAppServiceManagementSettings);
             services.MakeSettingsAvailableForUse(fetchAzureDatabaseManagementSettings);
             services.MakeSettingsAvailableForUse(fetchDataRefreshSettings);
         }
