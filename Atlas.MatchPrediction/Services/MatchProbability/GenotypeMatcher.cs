@@ -16,7 +16,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         /// <param name="patientGenotypes">List of unambiguous genotypes for a given patient</param>
         /// <param name="donorGenotypes">List of unambiguous genotypes for a given donor</param>
         /// <param name="hlaNomenclatureVersion">Same version used to get the genotype information</param>
-        public Task<ISet<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>>> PairsWithTenOutOfTenMatch(
+        public Task<ISet<GenotypeMatchDetails>> PairsWithMatch(
             ISet<PhenotypeInfo<string>> patientGenotypes,
             ISet<PhenotypeInfo<string>> donorGenotypes,
             string hlaNomenclatureVersion);
@@ -31,7 +31,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             this.matchCalculationService = matchCalculationService;
         }
 
-        public async Task<ISet<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>>> PairsWithTenOutOfTenMatch(
+        public async Task<ISet<GenotypeMatchDetails>> PairsWithMatch(
             ISet<PhenotypeInfo<string>> patientGenotypes,
             ISet<PhenotypeInfo<string>> donorGenotypes,
             string hlaNomenclatureVersion)
@@ -42,23 +42,14 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var patientDonorMatchDetails =
                 await Task.WhenAll(allPatientDonorCombinations.Select(pd => CalculateMatch(pd, hlaNomenclatureVersion)));
 
-            var tenOutOfTenPatientDonorMatchDetails =
-                patientDonorMatchDetails.Where(pd => pd.Item2.IsTenOutOfTenMatch);
-
-            var tenOutOfTenPatientDonorPairs =
-                tenOutOfTenPatientDonorMatchDetails.Select(pd => pd.Item1);
-
-            return tenOutOfTenPatientDonorPairs.ToHashSet();
+            return patientDonorMatchDetails.ToHashSet();
         }
 
-        private async Task<(Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>, GenotypeMatchDetails)> CalculateMatch(
+        private async Task<GenotypeMatchDetails> CalculateMatch(
             Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>> patientDonorPair,
             string hlaNomenclatureVersion)
         {
-            var matchDetails =
-                await matchCalculationService.MatchAtPGroupLevel(patientDonorPair.Item1, patientDonorPair.Item2, hlaNomenclatureVersion);
-
-            return (patientDonorPair, matchDetails);
+            return await matchCalculationService.MatchAtPGroupLevel(patientDonorPair.Item1, patientDonorPair.Item2, hlaNomenclatureVersion);
         }
     }
 }

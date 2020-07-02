@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
@@ -53,20 +54,15 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 return new MatchProbabilityResponse {ZeroMismatchProbability = 1m};
             }
 
-            if (matchingPairs.Count == 0)
+            if (!matchingPairs.Any(p => p.IsTenOutOfTenMatch))
             {
                 return new MatchProbabilityResponse {ZeroMismatchProbability = 0m};
             }
 
             var genotypes = patientGenotypes.Union(donorGenotypes);
 
-
             var genotypesLikelihoods = await CalculateGenotypeLikelihoods(genotypes);
-
-            var probability =
-                matchProbabilityCalculator.CalculateMatchProbability(patientGenotypes, donorGenotypes, matchingPairs, genotypesLikelihoods);
-
-            return new MatchProbabilityResponse {ZeroMismatchProbability = probability};
+            return matchProbabilityCalculator.CalculateMatchProbability(patientGenotypes, donorGenotypes, matchingPairs, genotypesLikelihoods);
         }
 
         private async Task<ISet<PhenotypeInfo<string>>> ExpandPatientPhenotype(MatchProbabilityInput matchProbabilityInput)
