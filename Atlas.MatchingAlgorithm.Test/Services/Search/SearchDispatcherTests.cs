@@ -30,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         public async Task DispatchSearch_DispatchesSearchWithId()
         {
             await searchDispatcher.DispatchSearch(
-                new SearchRequestBuilder()
+                new MatchingRequestBuilder()
                     .WithSearchHla(new PhenotypeInfo<string>("hla-type"))
                     .WithTotalMismatchCount(0)
                     .Build());

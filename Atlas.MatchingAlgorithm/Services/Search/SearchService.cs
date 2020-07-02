@@ -10,7 +10,6 @@ using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Extensions;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
@@ -63,8 +62,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 async () =>
                 {
                     var lociToExcludeFromAggregateScoring = matchingRequest.LociToExcludeFromAggregateScore.ToList();
-                    // Scoring makes use of per-position map functionality of PhenotypeInfo, which requires all nested "LocusInfo"s to be non-null 
-                    var patientHla = matchingRequest.SearchHlaData.MapByLocus(hla => hla ?? new LocusInfo<string>());
+                    var patientHla = matchingRequest.SearchHlaData;
                     return await donorScoringService.ScoreMatchesAgainstHla(matches, patientHla, lociToExcludeFromAggregateScoring);
                 },
                 $"{LoggingPrefix}Scoring complete"
