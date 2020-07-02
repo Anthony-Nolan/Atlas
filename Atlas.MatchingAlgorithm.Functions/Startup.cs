@@ -24,8 +24,9 @@ namespace Atlas.MatchingAlgorithm.Functions
                 OptionsReaderFor<AzureAppServiceManagementSettings>(),
                 OptionsReaderFor<AzureDatabaseManagementSettings>(),
                 OptionsReaderFor<DataRefreshSettings>(),
-                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<DonorManagementSettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
@@ -42,6 +43,7 @@ namespace Atlas.MatchingAlgorithm.Functions
             services.RegisterAsOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
+            services.RegisterAsOptions<DonorManagementSettings>("DataRefresh:DonorManagement");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
