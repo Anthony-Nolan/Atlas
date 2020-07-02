@@ -47,14 +47,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var patientGenotypes = await ExpandPatientPhenotype(matchProbabilityInput);
             var donorGenotypes = await ExpandDonorPhenotype(matchProbabilityInput);
 
-            var matchingPairs = await CalculateMatchingPairs(matchProbabilityInput, patientGenotypes, donorGenotypes);
 
             var allPatientDonorCombinations = patientGenotypes.SelectMany(patientHla =>
                 donorGenotypes.Select(donorHla => new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla, donorHla)));
 
-            var patientDonorMatchDetails =
-                (await Task.WhenAll(allPatientDonorCombinations
-                    .Select(pd => CalculateMatch(pd, matchProbabilityInput.HlaNomenclatureVersion)))).ToHashSet();
+            var patientDonorMatchDetails = await CalculateMatchingPairs(matchProbabilityInput, allPatientDonorCombinations);
 
             // Returns early when patient/donor pair are guaranteed to either be a match or not
             if (patientDonorMatchDetails.Any() && patientDonorMatchDetails.All(p => p.IsTenOutOfTenMatch))
@@ -67,8 +64,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             }
 
             var genotypes = patientGenotypes.Union(donorGenotypes);
-
             var genotypesLikelihoods = await CalculateGenotypeLikelihoods(genotypes);
+
             return matchProbabilityCalculator.CalculateMatchProbability(patientGenotypes, donorGenotypes, patientDonorMatchDetails, genotypesLikelihoods);
         }
 
@@ -96,16 +93,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             );
         }
 
-        private async Task<ISet<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>>> CalculateMatchingPairs(
+        private async Task<ISet<GenotypeMatchDetails>> CalculateMatchingPairs(
             MatchProbabilityInput matchProbabilityInput,
-            ISet<PhenotypeInfo<string>> patientGenotypes,
-            ISet<PhenotypeInfo<string>> donorGenotypes)
+            IEnumerable<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>> allPatientDonorCombinations)
         {
             return await logger.RunTimedAsync(
-                async () => await genotypeMatcher.PairsWithTenOutOfTenMatch(
-                    patientGenotypes,
-                    donorGenotypes, matchProbabilityInput.HlaNomenclatureVersion
-                ),
+                async () => (await Task.WhenAll(allPatientDonorCombinations
+                    .Select(pd => CalculateMatch(pd, matchProbabilityInput.HlaNomenclatureVersion)))).ToHashSet(),
                 $"{LoggingPrefix}Calculated genotype matches",
                 LogLevel.Verbose
             );
