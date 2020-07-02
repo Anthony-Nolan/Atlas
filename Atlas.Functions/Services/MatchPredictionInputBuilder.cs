@@ -5,8 +5,8 @@ using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Extensions;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
-using Atlas.MatchPrediction.Models;
 
 namespace Atlas.Functions.Services
 {
@@ -42,7 +42,7 @@ namespace Atlas.Functions.Services
             var searchRequest = matchPredictionInputParameters.SearchRequest;
             var donorDictionary = matchPredictionInputParameters.DonorDictionary;
 
-            return matchingAlgorithmResultSet.SearchResults.Select(matchingResult =>
+            return matchingAlgorithmResultSet.MatchingAlgorithmResults.Select(matchingResult =>
                     BuildMatchPredictionInput(matchingResult, searchRequest, donorDictionary, matchingAlgorithmResultSet.HlaNomenclatureVersion)
                 )
                 .Where(r => r != null);
@@ -73,7 +73,7 @@ namespace Atlas.Functions.Services
             {
                 DonorId = matchingAlgorithmResult.DonorId,
                 DonorHla = matchingAlgorithmResult.DonorHla,
-                DonorPopulationData = new IndividualPopulationData
+                DonorFrequencySetSelectionInput = new FrequencySetSelectionInput
                 {
                     EthnicityCode = donorInfo.EthnicityCode,
                     RegistryCode = donorInfo.RegistryCode
