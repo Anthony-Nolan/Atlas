@@ -15,13 +15,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
     public class SearchRequestFromHlasBuilder
     {
         private readonly PhenotypeInfo<string> nonMatchingHlas;
-        private SearchRequestBuilder searchRequestBuilder;
+        private MatchingRequestBuilder matchingRequestBuilder;
 
         /// <param name="searchHlas">A selection of valid HLA data.</param>
         /// <param name="nonMatchingHlas">A selection of valid hla strings that do not match the search HLA.</param>
         public SearchRequestFromHlasBuilder(PhenotypeInfo<string> searchHlas, PhenotypeInfo<string> nonMatchingHlas = null)
         {
-            searchRequestBuilder = new SearchRequestBuilder()
+            matchingRequestBuilder = new MatchingRequestBuilder()
                 .WithSearchType(DonorType.Adult)
                 .WithLociExcludedFromScoringAggregates(new List<Locus>())
                 .WithSearchHla(searchHlas);
@@ -30,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 
         public SearchRequestFromHlasBuilder TenOutOfTen()
         {
-            searchRequestBuilder = searchRequestBuilder
+            matchingRequestBuilder = matchingRequestBuilder
                 .WithTotalMismatchCount(0)
                 .WithLocusMismatchCount(Locus.A, 0)
                 .WithLocusMismatchCount(Locus.B, 0)
@@ -42,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 
         public SearchRequestFromHlasBuilder SixOutOfSix()
         {
-            searchRequestBuilder = searchRequestBuilder
+            matchingRequestBuilder = matchingRequestBuilder
                 .WithTotalMismatchCount(0)
                 .WithLocusMismatchCount(Locus.A, 0)
                 .WithLocusMismatchCount(Locus.B, 0)
@@ -52,19 +52,19 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 
         public SearchRequestFromHlasBuilder FiveOutOfSix()
         {
-            searchRequestBuilder = searchRequestBuilder.WithTotalMismatchCount(1);
+            matchingRequestBuilder = matchingRequestBuilder.WithTotalMismatchCount(1);
             return this;
         }
 
         public SearchRequestFromHlasBuilder FourOutOfSix()
         {
-            searchRequestBuilder = searchRequestBuilder.WithTotalMismatchCount(2);
+            matchingRequestBuilder = matchingRequestBuilder.WithTotalMismatchCount(2);
             return this;
         }
 
         public SearchRequestFromHlasBuilder WithSingleMismatchRequestedAt(Locus locus)
         {
-            searchRequestBuilder = searchRequestBuilder
+            matchingRequestBuilder = matchingRequestBuilder
                 .WithLocusMismatchCount(Locus.A, locus == Locus.A ? 1 : 0)
                 .WithLocusMismatchCount(Locus.B, locus == Locus.B ? 1 : 0)
                 .WithLocusMismatchCount(Locus.Drb1, locus == Locus.Drb1 ? 1 : 0);
@@ -73,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 
         public SearchRequestFromHlasBuilder WithDoubleMismatchRequestedAt(Locus locus)
         {
-            searchRequestBuilder = searchRequestBuilder
+            matchingRequestBuilder = matchingRequestBuilder
                 .WithLocusMismatchCount(Locus.A, locus == Locus.A ? 2 : 0)
                 .WithLocusMismatchCount(Locus.B, locus == Locus.B ? 2 : 0)
                 .WithLocusMismatchCount(Locus.Drb1, locus == Locus.Drb1 ? 2 : 0);
@@ -87,32 +87,26 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
                 throw new InvalidOperationException("Non-matching HLA data has not been provided.");
             }
 
-            searchRequestBuilder = searchRequestBuilder
+            matchingRequestBuilder = matchingRequestBuilder
                 .WithLocusSearchHla(locus, LocusPosition.One, nonMatchingHlas.GetLocus(locus).Position1);
             return this;
         }
 
         public SearchRequestFromHlasBuilder WithDpb1ExcludedFromScoringAggregation()
         {
-            searchRequestBuilder.WithLociExcludedFromScoringAggregates(new List<Locus> {Locus.Dpb1});
-            return this;
-        }
-
-        public SearchRequestFromHlasBuilder WithEmptyLocusSearchHlaAt(Locus locus)
-        {
-            searchRequestBuilder.WithEmptyLocusSearchHlaAt(locus);
+            matchingRequestBuilder.WithLociExcludedFromScoringAggregates(new List<Locus> {Locus.Dpb1});
             return this;
         }
 
         public SearchRequestFromHlasBuilder WithNullLocusSearchHlasAt(Locus locus)
         {
-            searchRequestBuilder.WithNullLocusSearchHla(locus);
+            matchingRequestBuilder.WithNullLocusSearchHla(locus);
             return this;
         }
 
         public MatchingRequest Build()
         {
-            return searchRequestBuilder.Build();
+            return matchingRequestBuilder.Build();
         }
     }
 }

@@ -79,7 +79,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         {
             var patientDataFactory = serviceProvider.GetService<IPatientDataFactory>();
 
-            scenarioContext.Set(new SearchRequestBuilder());
+            scenarioContext.Set(new MatchingRequestBuilder());
             scenarioContext.Set(patientDataFactory);
             scenarioContext.Set(serviceProvider.GetService<IStaticDataProvider>());
             scenarioContext.Set(serviceProvider.GetService<IMultiplePatientDataFactory>());

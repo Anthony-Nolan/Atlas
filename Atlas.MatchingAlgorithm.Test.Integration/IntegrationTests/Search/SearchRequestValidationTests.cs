@@ -29,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 
             searchDispatcher = new SearchDispatcher(searchServiceBusClient);
 
-            matchingRequest = new SearchRequestBuilder()
+            matchingRequest = new MatchingRequestBuilder()
                 .WithSearchType(DonorType.Adult)
                 .WithTotalMismatchCount(0)
                 .WithMismatchCountAtLoci(new List<Locus> {Locus.A, Locus.B, Locus.Drb1}, 0)

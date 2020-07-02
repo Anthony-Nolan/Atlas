@@ -1,9 +1,9 @@
 ﻿using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.MatchingAlgorithm.Validators.DonorInfo;
+using Atlas.MatchingAlgorithm.Validators.Hla;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Validators.DonorInfo
+namespace Atlas.MatchingAlgorithm.Test.Validators.Hla
 {
     [TestFixture]
     public class RequiredLocusHlaNamesValidatorTests

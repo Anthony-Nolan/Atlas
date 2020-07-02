@@ -16,6 +16,15 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
     /// <typeparam name="T">The type of the information that is required for each locus.</typeparam>
     public class LociInfo<T>
     {
+        // ReSharper disable InconsistentNaming - recommended name clashes with property!
+        protected T a;
+        protected T b;
+        protected T c;
+        protected T dpb1;
+        protected T dqb1;
+        protected T drb1;
+        // ReSharper restore InconsistentNaming
+
         /// <summary>
         /// Creates a new LociInfo with no inner values set.
         /// </summary>
@@ -29,43 +38,67 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         /// <param name="initialValue">The initial value all inner locus values should be given.</param>
         public LociInfo(T initialValue)
         {
-            A = initialValue;
-            B = initialValue;
-            C = initialValue;
-            Dpb1 = initialValue;
-            Dqb1 = initialValue;
-            Drb1 = initialValue;
+            a = initialValue;
+            b = initialValue;
+            c = initialValue;
+            dpb1 = initialValue;
+            dqb1 = initialValue;
+            drb1 = initialValue;
         }
 
         /// <summary>
         /// Locus A. Used in all search implementations.
         /// </summary>
-        public T A { get; set; }
+        public virtual T A
+        {
+            get => a;
+            set => a = value;
+        }
 
         /// <summary>
         /// Locus B. Used in all search implementations.
         /// </summary>
-        public T B { get; set; }
+        public virtual T B
+        {
+            get => b;
+            set => b = value;
+        }
 
         /// <summary>
         /// Locus C. Used in newer search implementations.
         /// </summary>
-        public T C { get; set; }
+        public virtual T C
+        {
+            get => c;
+            set => c = value;
+        }
 
         /// <summary>
         /// Locus Dpb1. Used in newer search implementations.
         /// </summary>
-        public T Dpb1 { get; set; }
+        public virtual T Dpb1
+        {
+            get => dpb1;
+            set => dpb1 = value;
+        }
 
         /// <summary>
         /// Locus Dqb1. Used in newer search implementations.
         /// </summary>
-        public T Dqb1 { get; set; }
+        public virtual T Dqb1
+        {
+            get => dqb1;
+            set => dqb1 = value;
+        }
 
         /// <summary>
         /// Locus Drb1. Used in most search implementations.
         /// </summary>
-        public T Drb1 { get; set; }
+        public virtual T Drb1
+        {
+            get => drb1;
+            set => drb1 = value;
+        }
 
         public static bool operator ==(LociInfo<T> left, LociInfo<T> right)
         {
