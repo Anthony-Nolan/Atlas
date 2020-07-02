@@ -2,6 +2,7 @@
 {
     public class HaplotypeFrequencySetResponse
     {
-        public HaplotypeFrequencySet HaplotypeFrequencySet { get; set; }
+        public HaplotypeFrequencySet DonorSet { get; set; }
+        public HaplotypeFrequencySet PatientSet { get; set; }
     }
 }
