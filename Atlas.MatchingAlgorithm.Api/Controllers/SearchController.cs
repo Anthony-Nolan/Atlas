@@ -28,8 +28,8 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
 
                 return new MatchingAlgorithmResultSet
                 {
-                    TotalResults = results.Count(),
-                    SearchResults = results
+                    ResultCount = results.Count(),
+                    MatchingAlgorithmResults = results
                 };
             }
             catch (Exception e)

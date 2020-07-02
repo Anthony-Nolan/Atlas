@@ -30,17 +30,52 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         )
         {
             var searchRequest = context.GetInput<SearchRequest>();
-            var searchResults = await context.CallActivityAsync<MatchingAlgorithmResultSet>(
+
+            var searchResults = await RunMatchingAlgorithm(context, searchRequest);
+            var donorInformation = await FetchDonorInformation(context, searchResults);
+            var matchPredictionResults = await RunMatchPredictionAlgorithm(context, searchRequest, searchResults, donorInformation);
+            await PersistSearchResults(context, searchResults, matchPredictionResults);
+
+            // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
+            return new SearchOrchestrationOutput
+            {
+                MatchingDonorCount = searchResults.ResultCount,
+                MatchingResultFileName = searchResults.ResultsFileName,
+                MatchingResultBlobContainer = searchResults.BlobStorageContainerName,
+                HlaNomenclatureVersion = searchResults.HlaNomenclatureVersion
+            };
+        }
+
+        private static async Task<MatchingAlgorithmResultSet> RunMatchingAlgorithm(IDurableOrchestrationContext context, SearchRequest searchRequest)
+        {
+            return await context.CallActivityAsync<MatchingAlgorithmResultSet>(
                 nameof(SearchActivityFunctions.RunMatchingAlgorithm),
                 new IdentifiedSearchRequest {Id = context.InstanceId, SearchRequest = searchRequest}
             );
+        }
 
-            var donorInformation = await context.CallActivityAsync<Dictionary<int, Donor>>(
-                nameof(SearchActivityFunctions.FetchDonorInformation),
-                searchResults.SearchResults.Select(r => r.DonorId)
-            );
+        private static async Task<Dictionary<int, MatchProbabilityResponse>> RunMatchPredictionAlgorithm(
+            IDurableOrchestrationContext context,
+            SearchRequest searchRequest,
+            MatchingAlgorithmResultSet searchResults,
+            Dictionary<int, Donor> donorInformation)
+        {
+            var matchPredictionInputs = await BuildMatchPredictionInputs(context, searchRequest, searchResults, donorInformation);
 
-            var matchPredictionInputs = await context.CallActivityAsync<IEnumerable<MatchProbabilityInput>>(
+
+            var matchPredictionResults = (await Task.WhenAll(
+                matchPredictionInputs.Select(r => RunMatchPredictionForDonor(context, r))
+            )).ToDictionary();
+            return matchPredictionResults;
+        }
+
+        private static async Task<IEnumerable<MatchProbabilityInput>> BuildMatchPredictionInputs(
+            IDurableOrchestrationContext context,
+            SearchRequest searchRequest,
+            MatchingAlgorithmResultSet searchResults,
+            Dictionary<int, Donor> donorInformation)
+        {
+            return await context.CallActivityAsync<IEnumerable<MatchProbabilityInput>>(
                 nameof(SearchActivityFunctions.BuildMatchPredictionInputs),
                 new MatchPredictionInputParameters
                 {
@@ -48,28 +83,20 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     MatchingAlgorithmResults = searchResults,
                     DonorDictionary = donorInformation
                 });
+        }
 
-            var matchPredictionResults = (await Task.WhenAll(
-                matchPredictionInputs.Select(r => RunMatchPrediction(context, r))
-            )).ToDictionary();
-
-            await context.CallActivityAsync(
-                nameof(SearchActivityFunctions.PersistSearchResults),
-                new Tuple<MatchingAlgorithmResultSet, IDictionary<int, MatchProbabilityResponse>>(searchResults, matchPredictionResults)
+        private static async Task<Dictionary<int, Donor>> FetchDonorInformation(
+            IDurableOrchestrationContext context,
+            MatchingAlgorithmResultSet searchResults)
+        {
+            return await context.CallActivityAsync<Dictionary<int, Donor>>(
+                nameof(SearchActivityFunctions.FetchDonorInformation),
+                searchResults.MatchingAlgorithmResults.Select(r => r.DonorId)
             );
-
-            // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
-            return new SearchOrchestrationOutput
-            {
-                NumberOfDonors = searchResults.TotalResults,
-                MatchingResultFileName = searchResults.ResultsFileName,
-                MatchingResultBlobContainer = searchResults.BlobStorageContainerName,
-                HlaNomenclatureVersion = searchResults.HlaNomenclatureVersion
-            };
         }
 
         /// <returns>A Task returning a Key Value pair of Atlas Donor ID, and match prediction response.</returns>
-        private static async Task<KeyValuePair<int, MatchProbabilityResponse>> RunMatchPrediction(
+        private static async Task<KeyValuePair<int, MatchProbabilityResponse>> RunMatchPredictionForDonor(
             IDurableOrchestrationContext context,
             MatchProbabilityInput matchProbabilityInput
         )
@@ -79,6 +106,17 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 matchProbabilityInput
             );
             return new KeyValuePair<int, MatchProbabilityResponse>(matchProbabilityInput.DonorId, matchPredictionResult);
+        }
+
+        private static async Task PersistSearchResults(
+            IDurableOrchestrationContext context,
+            MatchingAlgorithmResultSet searchResults,
+            Dictionary<int, MatchProbabilityResponse> matchPredictionResults)
+        {
+            await context.CallActivityAsync(
+                nameof(SearchActivityFunctions.PersistSearchResults),
+                new Tuple<MatchingAlgorithmResultSet, IDictionary<int, MatchProbabilityResponse>>(searchResults, matchPredictionResults)
+            );
         }
     }
 }

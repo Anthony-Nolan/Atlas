@@ -130,7 +130,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
 
                 var donors = serviceProvider.GetService<ITestDataRepository>()
                     .GetDonors(patientApiResults.Single(r =>
-                        r.ExpectedDonorProvider == patientDataFactory).ApiResult.Results.SearchResults.Select(r => r.DonorId))
+                        r.ExpectedDonorProvider == patientDataFactory).ApiResult.Results.MatchingAlgorithmResults.Select(r => r.DonorId))
                     .ToList();
 
                 logger.Log(logLevel, "PATIENT HLA:");
@@ -152,14 +152,14 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             var expectedDonors = scenarioContext.Get<IExpectedDonorProvider>().GetExpectedMatchingDonorIds();
 
             var donors = serviceProvider.GetService<ITestDataRepository>()
-                .GetDonors(singlePatientApiResult.Results.SearchResults.Select(r => r.DonorId)).ToList();
+                .GetDonors(singlePatientApiResult.Results.MatchingAlgorithmResults.Select(r => r.DonorId)).ToList();
 
             logger.Log(logLevel, "PATIENT HLA:");
             logger.Log(logLevel, JsonConvert.SerializeObject(patientHla));
             logger.Log(logLevel, "EXPECTED DONOR IDS:");
             logger.Log(logLevel, JsonConvert.SerializeObject(expectedDonors));
             logger.Log(logLevel, "DONOR RESULTS:");
-            foreach (var match in singlePatientApiResult.Results.SearchResults)
+            foreach (var match in singlePatientApiResult.Results.MatchingAlgorithmResults)
             {
                 logger.Log(logLevel, JsonConvert.SerializeObject(match));
                 logger.Log(logLevel, JsonConvert.SerializeObject(donors.Single(d => d.DonorId == match.DonorId)));
