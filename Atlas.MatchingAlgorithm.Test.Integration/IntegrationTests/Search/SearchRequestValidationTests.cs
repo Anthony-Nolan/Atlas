@@ -41,8 +41,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public void DispatchSearch_AllMandatoryFieldsHaveValidValues_DoesNotThrowValidationError()
         {
-            Assert.DoesNotThrowAsync(
-                async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.DoesNotThrowAsync(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
 
         [Test]
@@ -55,8 +54,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 LociToExcludeFromAggregateScore = matchingRequest.LociToExcludeFromAggregateScore
             };
 
-            Assert.ThrowsAsync<ValidationException>(
-                async () => await searchDispatcher.DispatchSearch(searchRequestWithoutSearchType));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(searchRequestWithoutSearchType));
         }
 
         [Test]
@@ -64,91 +62,76 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         {
             matchingRequest.MatchCriteria = null;
 
-            Assert.ThrowsAsync<ValidationException>(
-                async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
 
         [Test]
         public void DispatchSearch_MatchCriteriaIsEmptyAtLocusA_ThrowsValidationError()
         {
-            matchingRequest.MatchCriteria.LocusMismatchA = null;
+            matchingRequest.MatchCriteria.LocusMismatchCounts.A = null;
 
-            Assert.ThrowsAsync<ValidationException>(
-                async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
 
         [TestCase(-1)]
         [TestCase(3)]
         public void DispatchSearch_MismatchCountInvalidAtLocusA_ThrowsValidationError(int mismatchCount)
         {
-            matchingRequest.MatchCriteria.LocusMismatchA.MismatchCount = mismatchCount;
+            matchingRequest.MatchCriteria.LocusMismatchCounts.A = mismatchCount;
 
-            Assert.ThrowsAsync<ValidationException>(
-                async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
 
         [Test]
         public void DispatchSearch_MatchCriteriaIsEmptyAtLocusB_ThrowsValidationError()
         {
-            matchingRequest.MatchCriteria.LocusMismatchB = null;
+            matchingRequest.MatchCriteria.LocusMismatchCounts.B = null;
 
-            Assert.ThrowsAsync<ValidationException>(
-                async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
 
         [TestCase(-1)]
         [TestCase(3)]
         public void DispatchSearch_MismatchCountInvalidAtLocusB_ThrowsValidationError(int mismatchCount)
         {
-            matchingRequest.MatchCriteria.LocusMismatchB.MismatchCount = mismatchCount;
+            matchingRequest.MatchCriteria.LocusMismatchCounts.B = mismatchCount;
 
-            Assert.ThrowsAsync<ValidationException>(
-                async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
 
         [Test]
         public void DispatchSearch_MatchCriteriaIsEmptyAtLocusDrb1_ThrowsValidationError()
         {
-            matchingRequest.MatchCriteria.LocusMismatchDrb1 = null;
+            matchingRequest.MatchCriteria.LocusMismatchCounts.Drb1 = null;
 
-            Assert.ThrowsAsync<ValidationException>(
-                async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
 
         [TestCase(-1)]
         [TestCase(3)]
         public void DispatchSearch_MismatchCountInvalidAtLocusDrb1_ThrowsValidationError(int mismatchCount)
         {
-            matchingRequest.MatchCriteria.LocusMismatchDrb1.MismatchCount = mismatchCount;
+            matchingRequest.MatchCriteria.LocusMismatchCounts.Drb1 = mismatchCount;
 
-            Assert.ThrowsAsync<ValidationException>(
-                async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
 
         [TestCase(-1)]
         [TestCase(3)]
         public void DispatchSearch_MismatchCountInvalidAtLocusC_ThrowsValidationError(int mismatchCount)
         {
-            matchingRequest.MatchCriteria.LocusMismatchC = new LocusMismatchCriteria
-            {
-                MismatchCount = mismatchCount
-            };
+            matchingRequest.MatchCriteria.LocusMismatchCounts.C = mismatchCount;
 
-            Assert.ThrowsAsync<ValidationException>(
-                async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
 
         [TestCase(-1)]
         [TestCase(3)]
         public void DispatchSearch_MismatchCountInvalidAtLocusDqb1_ThrowsValidationError(int mismatchCount)
         {
-            matchingRequest.MatchCriteria.LocusMismatchDqb1 = new LocusMismatchCriteria
-            {
-                MismatchCount = mismatchCount
-            };
+            matchingRequest.MatchCriteria.LocusMismatchCounts.Dqb1 = mismatchCount;
 
-            Assert.ThrowsAsync<ValidationException>(
-                async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
 
         [TestCase(-1)]
@@ -157,8 +140,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         {
             matchingRequest.MatchCriteria.DonorMismatchCount = donorMismatchCount;
 
-            Assert.ThrowsAsync<ValidationException>(
-                async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
 
         [Test]
@@ -166,8 +148,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         {
             matchingRequest.LociToExcludeFromAggregateScore = null;
 
-            Assert.ThrowsAsync<ValidationException>(
-                async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
 
         [Test]
@@ -175,8 +156,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         {
             matchingRequest.LociToExcludeFromAggregateScore = new List<Locus> { Locus.Dpb1};
 
-            Assert.DoesNotThrowAsync(
-                async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.DoesNotThrowAsync(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
     }
 }

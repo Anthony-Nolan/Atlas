@@ -1,4 +1,6 @@
-﻿namespace Atlas.MatchingAlgorithm.Client.Models.SearchRequests
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+
+namespace Atlas.MatchingAlgorithm.Client.Models.SearchRequests
 {
     public class MismatchCriteria
     {
@@ -9,41 +11,10 @@
         public int DonorMismatchCount { get; set; }
 
         /// <summary>
-        /// Mismatch preferences for HLA at locus A.
-        /// Required.
+        /// Mismatch preferences per locus.
+        /// A, B, DRB1 required.
+        /// Others optional. Null = any number of mismatches allowed  
         /// </summary>
-        public LocusMismatchCriteria LocusMismatchA { get; set; }
-
-        /// <summary>
-        /// Mismatch preferences for HLA at locus B.
-        /// Required.
-        /// </summary>
-        public LocusMismatchCriteria LocusMismatchB { get; set; }
-
-        /// <summary>
-        /// Mismatch preferences for HLA at locus C.
-        /// Optional.
-        /// </summary>
-        public LocusMismatchCriteria LocusMismatchC { get; set; }
-
-        /// <summary>
-        /// Mismatch preferences for HLA at locus DQB1.
-        /// Optional.
-        /// </summary>
-        public LocusMismatchCriteria LocusMismatchDqb1 { get; set; }
-
-        /// <summary>
-        /// Mismatch preferences for HLA at locus DRB1.
-        /// Required.
-        /// </summary>
-        public LocusMismatchCriteria LocusMismatchDrb1 { get; set; }
-    }
-
-    public class LocusMismatchCriteria
-    {
-        /// <summary>
-        /// Total number of mismatches permitted, either 0, 1 or 2.
-        /// </summary>
-        public int MismatchCount { get; set; }
+        public LociInfo<int?> LocusMismatchCounts { get; set; }
     }
 }

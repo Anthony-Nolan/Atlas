@@ -77,11 +77,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         {
             var matchCriteria = matchingRequest.MatchCriteria;
             var criteriaMappings = await Task.WhenAll(
-                MapLocusInformationToMatchCriteria(Locus.A, matchCriteria.LocusMismatchA, matchingRequest.SearchHlaData.A),
-                MapLocusInformationToMatchCriteria(Locus.B, matchCriteria.LocusMismatchB, matchingRequest.SearchHlaData.B),
-                MapLocusInformationToMatchCriteria(Locus.C, matchCriteria.LocusMismatchC, matchingRequest.SearchHlaData.C),
-                MapLocusInformationToMatchCriteria(Locus.Drb1, matchCriteria.LocusMismatchDrb1, matchingRequest.SearchHlaData.Drb1),
-                MapLocusInformationToMatchCriteria(Locus.Dqb1, matchCriteria.LocusMismatchDqb1, matchingRequest.SearchHlaData.Dqb1));
+                MapLocusInformationToMatchCriteria(Locus.A, matchCriteria.LocusMismatchCounts.A, matchingRequest.SearchHlaData.A),
+                MapLocusInformationToMatchCriteria(Locus.B, matchCriteria.LocusMismatchCounts.B, matchingRequest.SearchHlaData.B),
+                MapLocusInformationToMatchCriteria(Locus.C, matchCriteria.LocusMismatchCounts.C, matchingRequest.SearchHlaData.C),
+                MapLocusInformationToMatchCriteria(Locus.Drb1, matchCriteria.LocusMismatchCounts.Drb1, matchingRequest.SearchHlaData.Drb1),
+                MapLocusInformationToMatchCriteria(Locus.Dqb1, matchCriteria.LocusMismatchCounts.Dqb1, matchingRequest.SearchHlaData.Dqb1));
 
             return new AlleleLevelMatchCriteria
             {
@@ -97,10 +97,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
         private async Task<AlleleLevelLocusMatchCriteria> MapLocusInformationToMatchCriteria(
             Locus locus,
-            LocusMismatchCriteria mismatchCriteria,
+            int? allowedMismatches,
             LocusInfo<string> searchHla)
         {
-            if (mismatchCriteria == null)
+            if (allowedMismatches == null)
             {
                 return null;
             }
@@ -114,7 +114,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             return new AlleleLevelLocusMatchCriteria
             {
-                MismatchCount = mismatchCriteria.MismatchCount,
+                MismatchCount = allowedMismatches.Value,
                 PGroupsToMatchInPositionOne = metadata.Position1.MatchingPGroups,
                 PGroupsToMatchInPositionTwo = metadata.Position2.MatchingPGroups
             };
