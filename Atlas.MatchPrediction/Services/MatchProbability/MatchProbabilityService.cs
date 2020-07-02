@@ -51,16 +51,25 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var allPatientDonorCombinations = patientGenotypes.SelectMany(patientHla =>
                 donorGenotypes.Select(donorHla => new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla, donorHla)));
 
-            var patientDonorMatchDetails = await CalculateMatchingPairs(matchProbabilityInput, allPatientDonorCombinations);
+            var patientDonorMatchDetails = await CalculatePairsMatchCounts(matchProbabilityInput, allPatientDonorCombinations);
 
             // Returns early when patient/donor pair are guaranteed to either be a match or not
             if (patientDonorMatchDetails.Any() && patientDonorMatchDetails.All(p => p.IsTenOutOfTenMatch))
             {
-                return new MatchProbabilityResponse {ZeroMismatchProbability = 1m};
+                return new MatchProbabilityResponse
+                {
+                    ZeroMismatchProbability = 1m,
+                    ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
+                        {A = 1m, B = 1m, C = 1m, Dpb1 = null, Dqb1 = 1m, Drb1 = 1m}
+                };
             }
             if (!patientDonorMatchDetails.Any(p => p.IsTenOutOfTenMatch))
             {
-                return new MatchProbabilityResponse {ZeroMismatchProbability = 0m};
+                return new MatchProbabilityResponse {
+                    ZeroMismatchProbability = 0m,
+                    ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
+                        {A = 0m, B = 0m, C = 0m, Dpb1 = null, Dqb1 = 0m, Drb1 = 0m}
+                };
             }
 
             var genotypes = patientGenotypes.Union(donorGenotypes);
@@ -93,7 +102,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             );
         }
 
-        private async Task<ISet<GenotypeMatchDetails>> CalculateMatchingPairs(
+        private async Task<ISet<GenotypeMatchDetails>> CalculatePairsMatchCounts(
             MatchProbabilityInput matchProbabilityInput,
             IEnumerable<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>> allPatientDonorCombinations)
         {

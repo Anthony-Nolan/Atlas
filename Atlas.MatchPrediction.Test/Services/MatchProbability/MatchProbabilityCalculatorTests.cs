@@ -66,7 +66,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 genotypesLikelihoods);
 
             actualProbability.ZeroMismatchProbability.Should().Be(0.25m);
-            actualProbability.MatchProbabilityPerLocus.Should().Be(expectedMatchProbabilityPerLocus);
+            actualProbability.ZeroMismatchProbabilityPerLocus.Should().Be(expectedMatchProbabilityPerLocus);
         }
 
         [Test]
