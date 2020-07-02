@@ -43,7 +43,6 @@ namespace Atlas.MatchingAlgorithm.Api
         {
             RegisterSettings(services);
             services.RegisterMatchingAlgorithm(OptionsReaderFor<AzureAuthenticationSettings>(),
-                OptionsReaderFor<AzureAppServiceManagementSettings>(),
                 OptionsReaderFor<AzureDatabaseManagementSettings>(),
                 OptionsReaderFor<DataRefreshSettings>(),
                 OptionsReaderFor<DonorManagementSettings>(),
@@ -83,7 +82,6 @@ namespace Atlas.MatchingAlgorithm.Api
         {
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<AzureAuthenticationSettings>("AzureManagement:Authentication");
-            services.RegisterAsOptions<AzureAppServiceManagementSettings>("AzureManagement:AppService");
             services.RegisterAsOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");
             services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");

@@ -53,7 +53,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             // Data refresh only 
             // TODO: ATLAS-472: Split registration of data refresh/matching usages
             Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings,
-            Func<IServiceProvider, AzureAppServiceManagementSettings> fetchAzureAppServiceManagementSettings,
             Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
             Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
             Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
@@ -71,7 +70,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         {
             services.RegisterSettingsForDataRefresh(
                 fetchAzureAuthenticationSettings,
-                fetchAzureAppServiceManagementSettings,
                 fetchAzureDatabaseManagementSettings,
                 fetchDataRefreshSettings
             );
@@ -290,12 +288,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static void RegisterSettingsForDataRefresh(
             this IServiceCollection services,
             Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings,
-            Func<IServiceProvider, AzureAppServiceManagementSettings> fetchAzureAppServiceManagementSettings,
             Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
             Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings)
         {
             services.MakeSettingsAvailableForUse(fetchAzureAuthenticationSettings);
-            services.MakeSettingsAvailableForUse(fetchAzureAppServiceManagementSettings);
             services.MakeSettingsAvailableForUse(fetchAzureDatabaseManagementSettings);
             services.MakeSettingsAvailableForUse(fetchDataRefreshSettings);
         }
