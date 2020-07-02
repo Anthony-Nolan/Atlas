@@ -121,9 +121,6 @@ It's highly recommended that you read the sections below the ZtH in parallel wit
       ```
 
   - In that `secrets.json` file configure:
-    - the NMDP Code lookup API key.
-      - Talk to your Tech Lead, in order to acquire an api key. (This should be a guid)
-      - Create a `Client.HlaService.ApiKey` setting with that value.
     - the appropriate ServiceBus connection strings
       - Acquire the connection strings for the Azure ServiceBus being used for local development, from the Azure Portal.
         - The connection strings can be found under the `Shared Access Policies` of the ServiceBus Namespace
@@ -160,7 +157,6 @@ The end-to-end tests, however, contact external dependencies, and require connec
   - Re-use the values used to run the API project.
   - The specific values needed are:
     - `NotificationsServiceBus.ConnectionString`
-    - `Client.HlaService.ApiKey`
   - But just copying all secrets from the API project will work fine.
 - Ensure that the Azure Storage Emulator is running
 
