@@ -19,11 +19,15 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 SearchType = DonorType.Adult,
                 MatchCriteria = new MismatchCriteria
                 {
-                    LocusMismatchA = new LocusMismatchCriteria(),
-                    LocusMismatchB = new LocusMismatchCriteria(),
-                    LocusMismatchDrb1 = new LocusMismatchCriteria(),
-                    LocusMismatchC = null,
-                    LocusMismatchDqb1 = null
+                    DonorMismatchCount = 0,
+                    LocusMismatchCounts = new LociInfo<int?>
+                    {
+                        A = 0,
+                        B = 0,
+                        Drb1 = 0,
+                        C = null,
+                        Dqb1 = null
+                    }
                 },
                 SearchHlaData = new PhenotypeInfo<string>
                 {
@@ -46,38 +50,13 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             return this;
         }
 
-        // TODO: ATLAS-236: PhenotypeInfo for matching criteria
-
         public SearchRequestBuilder WithLocusMismatchCount(Locus locus, int locusMismatchCount)
         {
-            switch (locus)
+            if (locus == Locus.Dpb1)
             {
-                case Locus.A:
-                    matchingRequest.MatchCriteria.LocusMismatchA ??= new LocusMismatchCriteria();
-                    matchingRequest.MatchCriteria.LocusMismatchA.MismatchCount = locusMismatchCount;
-                    break;
-                case Locus.B:
-                    matchingRequest.MatchCriteria.LocusMismatchB ??= new LocusMismatchCriteria();
-                    matchingRequest.MatchCriteria.LocusMismatchB.MismatchCount = locusMismatchCount;
-                    break;
-                case Locus.C:
-                    matchingRequest.MatchCriteria.LocusMismatchC ??= new LocusMismatchCriteria();
-                    matchingRequest.MatchCriteria.LocusMismatchC.MismatchCount = locusMismatchCount;
-                    break;
-                case Locus.Dpb1:
-                    throw new NotImplementedException();
-                case Locus.Dqb1:
-                    matchingRequest.MatchCriteria.LocusMismatchDqb1 ??= new LocusMismatchCriteria();
-                    matchingRequest.MatchCriteria.LocusMismatchDqb1.MismatchCount = locusMismatchCount;
-                    break;
-                case Locus.Drb1:
-                    matchingRequest.MatchCriteria.LocusMismatchDrb1 ??= new LocusMismatchCriteria();
-                    matchingRequest.MatchCriteria.LocusMismatchDrb1.MismatchCount = locusMismatchCount;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
+                throw new NotImplementedException();
             }
-
+            matchingRequest.MatchCriteria.LocusMismatchCounts.SetLocus(locus, locusMismatchCount);
             return this;
         }
 

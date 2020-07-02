@@ -7,7 +7,7 @@ using LochNessBuilder;
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh
 {
     [Builder]
-    internal static class DataRefreshRecordBuilder
+    public static class DataRefreshRecordBuilder
     {
         public static Builder<DataRefreshRecord> New =>
             Builder<DataRefreshRecord>.New
