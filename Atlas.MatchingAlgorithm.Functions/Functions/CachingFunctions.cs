@@ -1,8 +1,9 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Microsoft.Azure.WebJobs;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
@@ -10,12 +11,22 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
     public class CachingFunctions
     {
         private readonly IHlaMetadataCacheControl hlaMetadataCacheControl;
-        private readonly IMacDictionary macDictionary;
 
-        public CachingFunctions(IHlaMetadataCacheControl hlaMetadataCacheControl, IMacDictionary macDictionary)
+        public CachingFunctions(
+            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor
+        )
         {
-            this.hlaMetadataCacheControl = hlaMetadataCacheControl;
-            this.macDictionary = macDictionary;
+            try
+            {
+                var activeHlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
+                hlaMetadataCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(activeHlaNomenclatureVersion);
+            }
+            catch (ArgumentNullException)
+            {
+                //No active version is defined. No cache warming is necessary.
+                hlaMetadataCacheControl = null;
+            }
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -24,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             [TimerTrigger("00 00 02 * * *", RunOnStartup = true)]
             TimerInfo timerInfo)
         {
-            await hlaMetadataCacheControl.PreWarmAllCaches();
+            await (hlaMetadataCacheControl?.PreWarmAlleleNameCache() ?? Task.CompletedTask);
         }
     }
 }
