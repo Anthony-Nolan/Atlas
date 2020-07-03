@@ -8,25 +8,25 @@ using Newtonsoft.Json;
 
 namespace Atlas.Functions.Services
 {
-    public interface IResultsNotificationSender
+    public interface ISearchCompletionMessageSender
     {
-        Task PublishResultsNotificationMessage(SearchResultSet searchResultSet);
-        Task PublishFailureNotificationMessage(string searchId, string failureMessage);
+        Task PublishResultsMessage(SearchResultSet searchResultSet);
+        Task PublishFailureMessage(string searchId, string failureMessage);
     }
 
-    internal class ResultsNotificationSender : IResultsNotificationSender
+    internal class SearchCompletionMessageSender : ISearchCompletionMessageSender
     {
         private readonly string connectionString;
         private readonly string resultsNotificationTopicName;
 
-        public ResultsNotificationSender(IOptions<MessagingServiceBusSettings> messagingServiceBusSettings)
+        public SearchCompletionMessageSender(IOptions<MessagingServiceBusSettings> messagingServiceBusSettings)
         {
             connectionString = messagingServiceBusSettings.Value.ConnectionString;
             resultsNotificationTopicName = messagingServiceBusSettings.Value.SearchResultsTopic;
         }
 
         /// <inheritdoc />
-        public async Task PublishResultsNotificationMessage(SearchResultSet searchResultSet)
+        public async Task PublishResultsMessage(SearchResultSet searchResultSet)
         {
             var searchResultsNotification = new SearchResultsNotification
             {
@@ -42,7 +42,7 @@ namespace Atlas.Functions.Services
         }
 
         /// <inheritdoc />
-        public async Task PublishFailureNotificationMessage(string searchId, string failureMessage)
+        public async Task PublishFailureMessage(string searchId, string failureMessage)
         {
             var searchResultsNotification = new SearchResultsNotification
             {
