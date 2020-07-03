@@ -60,7 +60,8 @@ namespace Atlas.Functions
         private static void RegisterSettings(IServiceCollection services)
         {
             // Atlas Function settings
-            services.RegisterAsOptions<Settings.AzureStorageSettings>("AzureStorage");
+            services.RegisterAsOptions<Settings.AzureStorageSettings>("AtlasFunction:AzureStorage");
+            services.RegisterAsOptions<Settings.MessagingServiceBusSettings>("AtlasFunction:MessagingServiceBus");
 
             // Shared settings
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
@@ -78,8 +79,10 @@ namespace Atlas.Functions
         private static void RegisterTopLevelFunctionServices(IServiceCollection services)
         {
             services.RegisterAtlasLogger(OptionsReaderFor<ApplicationInsightsSettings>());
-            services.AddScoped<IResultsUploader, ResultsUploader>();
             services.AddScoped<IMatchPredictionInputBuilder, MatchPredictionInputBuilder>();
+            services.AddScoped<IResultsCombiner, ResultsCombiner>();
+            services.AddScoped<IResultsUploader, ResultsUploader>();
+            services.AddScoped<IResultsNotificationSender, ResultsNotificationSender>();
         }
     }
 }

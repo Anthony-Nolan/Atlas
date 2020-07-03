@@ -28,6 +28,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         // Atlas.Functions services
         private readonly IResultsUploader searchResultsBlobUploader;
         private readonly IMatchPredictionInputBuilder matchPredictionInputBuilder;
+        private readonly IResultsCombiner resultsCombiner;
+        private readonly IResultsNotificationSender resultsNotificationSender;
 
         public SearchActivityFunctions(
             // Matching Algorithm Services
@@ -38,13 +40,17 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             IMatchPredictionAlgorithm matchPredictionAlgorithm,
             // Atlas.Functions services
             IResultsUploader searchResultsBlobUploader,
-            IMatchPredictionInputBuilder matchPredictionInputBuilder)
+            IMatchPredictionInputBuilder matchPredictionInputBuilder,
+            IResultsCombiner resultsCombiner,
+            IResultsNotificationSender resultsNotificationSender)
         {
             this.searchRunner = searchRunner;
             this.donorReader = donorReader;
             this.matchPredictionAlgorithm = matchPredictionAlgorithm;
             this.searchResultsBlobUploader = searchResultsBlobUploader;
             this.matchPredictionInputBuilder = matchPredictionInputBuilder;
+            this.resultsCombiner = resultsCombiner;
+            this.resultsNotificationSender = resultsNotificationSender;
         }
 
         [FunctionName(nameof(RunMatchingAlgorithm))]
@@ -78,7 +84,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             [ActivityTrigger] Tuple<MatchingAlgorithmResultSet, IDictionary<int, MatchProbabilityResponse>> algorithmResults)
         {
             var (matchingResults, matchPredictionResults) = algorithmResults;
-            await searchResultsBlobUploader.UploadResults(matchingResults, matchPredictionResults);
+            var resultSet = resultsCombiner.CombineResults(matchingResults, matchPredictionResults);
+            await searchResultsBlobUploader.UploadResults(resultSet);
+            await resultsNotificationSender.PublishResultsNotification(resultSet);
         }
     }
 }

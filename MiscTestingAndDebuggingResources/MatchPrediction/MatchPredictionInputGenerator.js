@@ -11,8 +11,8 @@ const config = {
 // You can also copy data directly from the HF Set database - it will treat a 5-value input as homozygous at all loci
 // The output is the JSON to POST to the match prediction endpoints
 const fileContent = generateInputFromHlaData(
-    "01:01:01G	08:01:01G	07:01:01G	02:01:01G	03:01:17",
-    "01:01:01G	08:01:01G	07:01:01G	02:01:01G	03:01:17"
+    "*02:01:01:05\t*33:01:01:01\t*40:06:01:02\t*35:08:01:01\t*02:10:01:02\t*03:05\t*03:01:04\t*02:02:01:01\t*04:01:01:01\t*15:01:01:01",
+    "*02:01:01:05\t*33:01:01:01\t*40:06:01:02\t*35:08:01:01\t*02:10:01:02\t*03:05\t*03:01:04\t*02:02:01:01\t*04:01:01:01\t*15:01:01:01"
 );
 
 fs.writeFile(`${config.fileName}.json`, fileContent, () => {})
