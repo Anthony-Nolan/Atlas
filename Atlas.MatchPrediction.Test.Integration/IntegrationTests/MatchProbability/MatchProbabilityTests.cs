@@ -60,10 +60,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchProbabili
                 HlaNomenclatureVersion = HlaNomenclatureVersion
             };
 
-            var matchDetails =
-                await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var expectedProbabilityPerLocus = new LociInfo<decimal?> {A = 1, B = 1, C = 1, Dpb1 = null, Dqb1 = 1, Drb1 = 1};
+
+            var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.ZeroMismatchProbability.Should().Be(1m);
+            matchDetails.ZeroMismatchProbabilityPerLocus.Should().Be(expectedProbabilityPerLocus);
         }
 
         [Test]
@@ -78,10 +80,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchProbabili
                 HlaNomenclatureVersion = HlaNomenclatureVersion
             };
 
-            var matchDetails =
-                await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var expectedProbabilityPerLocus = new LociInfo<decimal?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0};
+
+            var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.ZeroMismatchProbability.Should().Be(0m);
+            matchDetails.ZeroMismatchProbabilityPerLocus.Should().Be(expectedProbabilityPerLocus);
         }
 
         [Test]
@@ -113,10 +117,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchProbabili
                 HlaNomenclatureVersion = HlaNomenclatureVersion
             };
 
-            var matchDetails =
-                await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var expectedProbabilityPerLocus = new LociInfo<decimal?> {A = 1, B = 0.4430379746835443037974683544m, C = 1, Dpb1 = null, Dqb1 = 1, Drb1 = 1};
+
+            var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.ZeroMismatchProbability.Should().Be(0.4430379746835443037974683544m);
+            matchDetails.ZeroMismatchProbabilityPerLocus.Should().Be(expectedProbabilityPerLocus);
         }
 
         private static Builder<PhenotypeInfo<string>> NewHla => Builder<PhenotypeInfo<string>>.New
