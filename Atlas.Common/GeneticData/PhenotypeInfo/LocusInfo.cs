@@ -29,6 +29,11 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             Position2 = position2;
         }
 
+        internal LocusInfo<T> ShallowCopy()
+        {
+            return (LocusInfo<T>) MemberwiseClone();
+        }
+        
         public LocusInfo<R> Map<R>(Func<T, R> mapping)
         {
             return new LocusInfo<R>(mapping(Position1), mapping(Position2));

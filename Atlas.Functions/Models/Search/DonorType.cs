@@ -10,6 +10,7 @@ namespace Atlas.Functions.Models.Search
 
     internal static class DonorTypeMappings
     {
+        // TODO: ALAS-290: clean up DonorType enums 
         public static MatchingAlgorithm.Client.Models.Donors.DonorType ToMatchingAlgorithmDonorType(this DonorType donorType)
         {
             return donorType switch
