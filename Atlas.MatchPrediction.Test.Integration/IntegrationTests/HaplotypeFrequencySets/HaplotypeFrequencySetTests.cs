@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencySets;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
+using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -14,8 +13,22 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
     [TestFixture]
     public class HaplotypeFrequencySetTests
     {
-        private IHaplotypeFrequencySetService service;
-        private IFrequencySetService importService;
+        private const string DefaultEthnicityCode = "ethnicity-code";
+        private const string DefaultRegistryCode = "registry-code";
+
+        private static readonly IndividualPopulationData DefaultSpecificPopulation = IndividualPopulationDataBuilder.New
+            .ForRegistry(DefaultRegistryCode)
+            .ForEthnicity(DefaultEthnicityCode)
+            .Build();
+
+        private static readonly IndividualPopulationData DefaultRegistryOnlyPopulation = IndividualPopulationDataBuilder.New
+            .ForRegistry(DefaultRegistryCode)
+            .Build();
+
+        private static readonly IndividualPopulationData GlobalPopulation = IndividualPopulationDataBuilder.New.Build();
+
+        private readonly IHaplotypeFrequencySetService service;
+        private readonly IFrequencySetService importService;
 
         public HaplotypeFrequencySetTests()
         {
@@ -24,25 +37,18 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         }
 
         [SetUp]
-        public async Task SetUpData()
+        public async Task SetUp()
         {
-            var data = new List<IndividualPopulationData>
-            {
-                new IndividualPopulationData { EthnicityCode = "01", RegistryCode = "12" },
-                new IndividualPopulationData { EthnicityCode = "02", RegistryCode = "12" },
-                new IndividualPopulationData { EthnicityCode = "03", RegistryCode = "22" },
-                new IndividualPopulationData { RegistryCode = "12" },
-                new IndividualPopulationData()
-            };
-            
-            await ImportAllHaplotypeSets(data);
+            await ImportHaplotypeSet(DefaultSpecificPopulation);
+            await ImportHaplotypeSet(DefaultRegistryOnlyPopulation);
+            await ImportHaplotypeSet(GlobalPopulation);
         }
 
         [Test]
-        public async Task GetHaplotypeSet_UsesSharedFrequencySet_WhenPatientAndDonorShareSameInformation()
+        public async Task GetHaplotypeSet_WhenPatientAndDonorShareSameInformation_ReturnsSharedFrequencySet()
         {
-            var donorInfo = new IndividualPopulationData {EthnicityCode = "01", RegistryCode = "12"};
-            var patientInfo = new IndividualPopulationData {EthnicityCode = "01", RegistryCode = "12"};
+            var donorInfo = DefaultSpecificPopulation;
+            var patientInfo = DefaultSpecificPopulation;
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
@@ -51,111 +57,127 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         }
 
         [Test]
-        public async Task GetHaplotypeSet_UsesSpecificSets_WhenPatientAndDonorShareRegistryButNotEthnicity()
+        public async Task GetHaplotypeSet_WhenPatientAndDonorShareRegistryButNotEthnicity_ReturnsDifferentSets()
         {
-            var donorInfo = new IndividualPopulationData {EthnicityCode = "01", RegistryCode = "12"};
-            var patientInfo = new IndividualPopulationData {EthnicityCode = "02", RegistryCode = "12"};
+            const string nonDefaultEthnicityCode = "non-default-ethnicity-code";
+            await ImportHaplotypeSet(DefaultRegistryCode, nonDefaultEthnicityCode);
+
+            var donorInfo = DefaultSpecificPopulation;
+            var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry(DefaultRegistryCode).ForEthnicity(nonDefaultEthnicityCode).Build();
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
             result.DonorSet.Should().BeEquivalentTo(donorInfo);
             result.PatientSet.Should().BeEquivalentTo(patientInfo);
         }
-        
+
         [Test]
-        public async Task GetHaplotypeSet_UsesDonorsRegistry_WhenPatientHasDifferentRegistryData()
+        public async Task GetHaplotypeSet_WhenPatientHasUnrepresentedRegistry_UsesDonorsRegistry()
         {
-            var donorInfo = new IndividualPopulationData {EthnicityCode = "01", RegistryCode = "12"};
-            var patientInfo = new IndividualPopulationData {EthnicityCode = "01", RegistryCode = "SOMETHING_ELSE"};
+            var donorInfo = DefaultSpecificPopulation;
+            var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry("not-recognised").ForEthnicity(DefaultEthnicityCode).Build();
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            result.DonorSet.Should().BeEquivalentTo(donorInfo);
-            result.PatientSet.Should().BeEquivalentTo(donorInfo);
-        }
-        
-        [Test]
-        public async Task GetHaplotypeSet_UsesDonorsRegistry_WhenPatientHasNoRegistryData()
-        {
-            var donorInfo = new IndividualPopulationData {EthnicityCode = "01", RegistryCode = "12"};
-            var patientInfo = new IndividualPopulationData {EthnicityCode = "01"};
-
-            var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
-
-            result.DonorSet.Should().BeEquivalentTo(donorInfo);
-            result.PatientSet.Should().BeEquivalentTo(donorInfo);
+            result.PatientSet.RegistryCode.Should().Be(donorInfo.RegistryCode);
         }
 
         [Test]
-        public async Task GetHaplotypeSet_UsesARegistrySpecificSet_WhenDonorAndPatientShareRegistryButNotEthnicity()
+        public async Task GetHaplotypeSet_WhenPatientHasNoRegistryData_UsesDonorsRegistry()
         {
-            var donorInfo = new IndividualPopulationData {EthnicityCode = "NON_EXISTENT", RegistryCode = "12"};
-            var patientInfo = new IndividualPopulationData {EthnicityCode = "NON_EXISTENT_2", RegistryCode = "12"};
-            
+            var donorInfo = DefaultSpecificPopulation;
+            var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry(null).ForEthnicity(DefaultEthnicityCode).Build();
+
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            var expectedSet = new IndividualPopulationData {RegistryCode = "12"};
-            
-            result.DonorSet.Should().BeEquivalentTo(expectedSet);
-            result.PatientSet.Should().BeEquivalentTo(expectedSet);
+            result.PatientSet.RegistryCode.Should().BeEquivalentTo(donorInfo.RegistryCode);
         }
 
         [Test]
-        public async Task GetHaplotypeSet_UsesARegistrySpecificSet_WhenNoEthnicityInformationProvided()
+        public async Task GetHaplotypeSet_WhenPatientHasDifferentRepresentedRegistryToDonor_UsesPatientRegistry()
         {
-            var donorInfo = new IndividualPopulationData { RegistryCode = "12"};
-            var patientInfo = new IndividualPopulationData { RegistryCode = "12"};
-            
+            const string registryCode = "new-registry";
+            await ImportHaplotypeSet(registryCode, DefaultEthnicityCode);
+
+            var donorInfo = DefaultSpecificPopulation;
+            var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry(registryCode).ForEthnicity(DefaultEthnicityCode).Build();
+
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            var expectedSet = new IndividualPopulationData {RegistryCode = "12"};
-            
-            result.DonorSet.Should().BeEquivalentTo(expectedSet);
-            result.PatientSet.Should().BeEquivalentTo(expectedSet);
+            result.PatientSet.RegistryCode.Should().BeEquivalentTo(patientInfo.RegistryCode);
         }
 
         [Test]
-        public async Task GetHaplotypeSet_GetsGenericSet_WhenNoInformationPresent()
+        public async Task GetHaplotypeSet_WhenDonorAndPatientHaveUnrepresentedEthnicity_UsesARegistrySpecificSet()
         {
-            var donorInfo = new IndividualPopulationData();
-            var patientInfo = new IndividualPopulationData();
+            var donorInfo = IndividualPopulationDataBuilder.New.ForRegistry(DefaultRegistryCode).ForEthnicity("new-ethnicity-donor").Build();
+            var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry(DefaultRegistryCode).ForEthnicity("new-ethnicity-patient").Build();
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            result.DonorSet.Should().BeEquivalentTo(new IndividualPopulationData());
-            result.PatientSet.Should().BeEquivalentTo(new IndividualPopulationData());
+            result.DonorSet.Should().BeEquivalentTo(DefaultRegistryOnlyPopulation);
+            result.PatientSet.Should().BeEquivalentTo(DefaultRegistryOnlyPopulation);
         }
 
         [Test]
-        public async Task GetHaplotypeSet_GetsGenericSet_WhenInformationIsNotValid()
+        public async Task GetHaplotypeSet_WhenNoEthnicityInformationProvided_UsesARegistrySpecificSet()
         {
-            var donorInfo = new IndividualPopulationData {EthnicityCode = "NOT_VALID", RegistryCode = "NOT_VALID_2" };
-            var patientInfo = new IndividualPopulationData { EthnicityCode = "NOT_VALID_2", RegistryCode = "NOT_VALID_3" };
-            
+            var donorInfo = IndividualPopulationDataBuilder.New.ForRegistry(DefaultRegistryCode).Build();
+            var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry(DefaultRegistryCode).Build();
+
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            result.DonorSet.Should().BeEquivalentTo(new IndividualPopulationData());
-            result.PatientSet.Should().BeEquivalentTo(new IndividualPopulationData());
+            result.DonorSet.Should().BeEquivalentTo(DefaultRegistryOnlyPopulation);
+            result.PatientSet.Should().BeEquivalentTo(DefaultRegistryOnlyPopulation);
         }
-        
+
         [Test]
-        public async Task GetHaplotypeSet_GetsGenericSet_WhenEthnicityIsValidButRegistryIsNot()
+        public async Task GetHaplotypeSet_WhenNoInformationPresent_GetsGenericSet()
         {
-            var donorInfo = new IndividualPopulationData {EthnicityCode = "01", RegistryCode = "NOT_VALID" };
-            var patientInfo = new IndividualPopulationData { EthnicityCode = "02", RegistryCode = "NOT_VALID" };
-            
+            var donorInfo = IndividualPopulationDataBuilder.New.Build();
+            var patientInfo = IndividualPopulationDataBuilder.New.Build();
+
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            result.DonorSet.Should().BeEquivalentTo(new IndividualPopulationData());
-            result.PatientSet.Should().BeEquivalentTo(new IndividualPopulationData());
+            result.DonorSet.Should().BeEquivalentTo(GlobalPopulation);
+            result.PatientSet.Should().BeEquivalentTo(GlobalPopulation);
         }
-        
-        private async Task ImportAllHaplotypeSets(IEnumerable<IndividualPopulationData> data)
+
+        [Test]
+        public async Task GetHaplotypeSet_WhenAllInformationUnrepresented_GetsGenericSet()
         {
-            var tasks = data.Select(set => ImportHaplotypeSet(set.RegistryCode, set.EthnicityCode));
-            await Task.WhenAll(tasks);
+            var donorInfo = IndividualPopulationDataBuilder.New
+                .ForRegistry("unrepresented-registry-donor")
+                .ForEthnicity("unrepresented-ethnicity-donor")
+                .Build();
+            var patientInfo = IndividualPopulationDataBuilder.New
+                .ForRegistry("unrepresented-registry-patient")
+                .ForEthnicity("unrepresented-ethnicity-patient")
+                .Build();
+
+            var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
+
+            result.DonorSet.Should().BeEquivalentTo(GlobalPopulation);
+            result.PatientSet.Should().BeEquivalentTo(GlobalPopulation);
         }
-        
+
+        [Test]
+        public async Task GetHaplotypeSet_WhenEthnicityIsValidButRegistryIsNot_GetsGenericSet()
+        {
+            var donorInfo = IndividualPopulationDataBuilder.New.ForRegistry("new-registry-donor").ForEthnicity(DefaultEthnicityCode).Build();
+            var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry("new-registry-patient").ForEthnicity(DefaultEthnicityCode).Build();
+
+            var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
+
+            result.DonorSet.Should().BeEquivalentTo(GlobalPopulation);
+            result.PatientSet.Should().BeEquivalentTo(GlobalPopulation);
+        }
+
+        private async Task ImportHaplotypeSet(IndividualPopulationData populationData)
+        {
+            await ImportHaplotypeSet(populationData.RegistryCode, populationData.EthnicityCode);
+        }
+
         private async Task ImportHaplotypeSet(string registry, string ethnicity)
         {
             using var file = FrequencySetFileBuilder.New(registry, ethnicity).Build();
