@@ -72,13 +72,13 @@ namespace Atlas.Functions.Services
             {
                 DonorId = matchingAlgorithmResult.DonorId,
                 DonorHla = matchingAlgorithmResult.DonorHla,
-                DonorFrequencySetSelectionInput = new FrequencySetSelectionInput
+                DonorFrequencySetMetadata = new FrequencySetMetadata
                 {
                     EthnicityCode = donorInfo.EthnicityCode,
                     RegistryCode = donorInfo.RegistryCode
                 },
                 PatientHla = searchRequest.SearchHlaData.ToPhenotypeInfo(),
-                PatientFrequencySetSelectionInput = new FrequencySetSelectionInput
+                PatientFrequencySetMetadata = new FrequencySetMetadata
                 {
                     EthnicityCode = searchRequest.PatientEthnicityCode,
                     RegistryCode = searchRequest.PatientRegistryCode

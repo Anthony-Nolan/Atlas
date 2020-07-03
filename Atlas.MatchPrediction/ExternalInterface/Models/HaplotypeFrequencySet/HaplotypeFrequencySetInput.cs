@@ -2,7 +2,7 @@
 {
     public class HaplotypeFrequencySetInput
     {
-        public FrequencySetSelectionInput DonorInfo { get; set; }
-        public FrequencySetSelectionInput PatientInfo { get; set; }
+        public FrequencySetMetadata DonorInfo { get; set; }
+        public FrequencySetMetadata PatientInfo { get; set; }
     }
 }
