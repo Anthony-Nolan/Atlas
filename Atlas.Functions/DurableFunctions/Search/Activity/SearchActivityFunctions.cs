@@ -29,7 +29,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         private readonly IResultsUploader searchResultsBlobUploader;
         private readonly IMatchPredictionInputBuilder matchPredictionInputBuilder;
         private readonly IResultsCombiner resultsCombiner;
-        private readonly IResultsNotificationSender resultsNotificationSender;
+        private readonly ISearchCompletionMessageSender searchCompletionMessageSender;
 
         public SearchActivityFunctions(
             // Matching Algorithm Services
@@ -42,7 +42,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             IResultsUploader searchResultsBlobUploader,
             IMatchPredictionInputBuilder matchPredictionInputBuilder,
             IResultsCombiner resultsCombiner,
-            IResultsNotificationSender resultsNotificationSender)
+            ISearchCompletionMessageSender searchCompletionMessageSender)
         {
             this.searchRunner = searchRunner;
             this.donorReader = donorReader;
@@ -50,7 +50,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             this.searchResultsBlobUploader = searchResultsBlobUploader;
             this.matchPredictionInputBuilder = matchPredictionInputBuilder;
             this.resultsCombiner = resultsCombiner;
-            this.resultsNotificationSender = resultsNotificationSender;
+            this.searchCompletionMessageSender = searchCompletionMessageSender;
         }
 
         [FunctionName(nameof(RunMatchingAlgorithm))]
@@ -62,7 +62,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             }
             catch (Exception e)
             {
-                await resultsNotificationSender.PublishFailureNotificationMessage(
+                await searchCompletionMessageSender.PublishFailureMessage(
                     searchRequest.Id,
                     $"Failed to run matching algorithm.\n Exception: {e.Message}"
                 );
@@ -80,7 +80,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             }
             catch (Exception e)
             {
-                await resultsNotificationSender.PublishFailureNotificationMessage(
+                await searchCompletionMessageSender.PublishFailureMessage(
                     searchId,
                     $"Failed to fetch donor data for use in match prediction.\n Exception: {e.Message}"
                 );
@@ -99,7 +99,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             }
             catch (Exception e)
             {
-                await resultsNotificationSender.PublishFailureNotificationMessage(
+                await searchCompletionMessageSender.PublishFailureMessage(
                     matchPredictionInputParameters.MatchingAlgorithmResults.SearchRequestId,
                     $"Failed to build match prediction inputs.\n Exception: {e.Message}"
                 );
@@ -116,8 +116,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             }
             catch (Exception e)
             {
-                await resultsNotificationSender.PublishFailureNotificationMessage(
-                    matchProbabilityInput.SearchId,
+                await searchCompletionMessageSender.PublishFailureMessage(
+                    matchProbabilityInput.SearchRequestId,
                     $"Failed to run match prediction algorithm.\n Exception: {e.Message}"
                 );
                 throw;
@@ -133,11 +133,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 var (matchingResults, matchPredictionResults) = algorithmResults;
                 var resultSet = resultsCombiner.CombineResults(matchingResults, matchPredictionResults);
                 await searchResultsBlobUploader.UploadResults(resultSet);
-                await resultsNotificationSender.PublishResultsNotificationMessage(resultSet);
+                await searchCompletionMessageSender.PublishResultsMessage(resultSet);
             }
             catch (Exception e)
             {
-                await resultsNotificationSender.PublishFailureNotificationMessage(
+                await searchCompletionMessageSender.PublishFailureMessage(
                     algorithmResults.Item1.SearchRequestId,
                     $"Failed to persist search results.\n Exception: {e.Message}"
                 );
