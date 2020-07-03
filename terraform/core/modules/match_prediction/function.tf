@@ -17,7 +17,6 @@ resource "azurerm_function_app" "atlas_match_prediction_function" {
     "AzureStorage:ConnectionString"                      = var.azure_storage.primary_connection_string
     "HlaMetadataDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
     "MacDictionary:AzureStorageConnectionString"         = var.azure_storage.primary_connection_string
-    "MacDictionary:MacSourceUrl"                         = var.MAC_SOURCE
     "MacDictionary:TableName"                            = var.mac_import_table.name,
     "NotificationsServiceBus:ConnectionString"           = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:AlertsTopic"                = var.servicebus_topics.alerts.name
