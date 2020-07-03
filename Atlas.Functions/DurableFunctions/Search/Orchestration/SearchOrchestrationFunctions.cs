@@ -89,9 +89,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             IDurableOrchestrationContext context,
             MatchingAlgorithmResultSet searchResults)
         {
+            var activityInput = new Tuple<string, IEnumerable<int>>(
+                context.InstanceId,
+                searchResults.MatchingAlgorithmResults.Select(r => r.DonorId)
+            );
+
             return await context.CallActivityAsync<Dictionary<int, Donor>>(
                 nameof(SearchActivityFunctions.FetchDonorInformation),
-                searchResults.MatchingAlgorithmResults.Select(r => r.DonorId)
+                activityInput
             );
         }
 

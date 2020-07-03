@@ -10,7 +10,8 @@ namespace Atlas.Functions.Services
 {
     public interface IResultsNotificationSender
     {
-        Task PublishResultsNotification(SearchResultSet searchResultSet);
+        Task PublishResultsNotificationMessage(SearchResultSet searchResultSet);
+        Task PublishFailureNotificationMessage(string searchId, string failureMessage);
     }
 
     internal class ResultsNotificationSender : IResultsNotificationSender
@@ -25,7 +26,7 @@ namespace Atlas.Functions.Services
         }
 
         /// <inheritdoc />
-        public async Task PublishResultsNotification(SearchResultSet searchResultSet)
+        public async Task PublishResultsNotificationMessage(SearchResultSet searchResultSet)
         {
             var searchResultsNotification = new SearchResultsNotification
             {
@@ -37,6 +38,24 @@ namespace Atlas.Functions.Services
                 BlobStorageContainerName = searchResultSet.BlobStorageContainerName,
             };
 
+            await SendNotificationMessage(searchResultsNotification);
+        }
+
+        /// <inheritdoc />
+        public async Task PublishFailureNotificationMessage(string searchId, string failureMessage)
+        {
+            var searchResultsNotification = new SearchResultsNotification
+            {
+                WasSuccessful = false,
+                SearchRequestId = searchId,
+                FailureMessage = failureMessage
+            };
+
+            await SendNotificationMessage(searchResultsNotification);
+        }
+
+        private async Task SendNotificationMessage(SearchResultsNotification searchResultsNotification)
+        {
             var json = JsonConvert.SerializeObject(searchResultsNotification);
             var message = new Message(Encoding.UTF8.GetBytes(json));
 

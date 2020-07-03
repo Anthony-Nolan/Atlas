@@ -8,6 +8,12 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         /// Donor ID is not strictly necessary for running match prediction, but will be useful for logging
         /// </summary>
         public int DonorId { get; set; }
+        
+        /// <summary>
+        /// Search ID is not necessary for running match prediction, but will be useful for logging
+        /// </summary>
+        public string SearchId { get; set; }
+        
         public PhenotypeInfo<string> DonorHla { get; set; }
         public FrequencySetSelectionInput DonorFrequencySetSelectionInput { get; set; }
         public PhenotypeInfo<string> PatientHla { get; set; }
