@@ -82,7 +82,7 @@ namespace Atlas.Functions
             services.AddScoped<IMatchPredictionInputBuilder, MatchPredictionInputBuilder>();
             services.AddScoped<IResultsCombiner, ResultsCombiner>();
             services.AddScoped<IResultsUploader, ResultsUploader>();
-            services.AddScoped<IResultsNotificationSender, ResultsNotificationSender>();
+            services.AddScoped<ISearchCompletionMessageSender, SearchCompletionMessageSender>();
         }
     }
 }
