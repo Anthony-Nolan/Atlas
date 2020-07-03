@@ -2,8 +2,12 @@
   "IsEncrypted": false,
   "Values": {
     "ApplicationInsights:LogLevel": "Verbose",
-    "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
-    "AzureStorage:SearchResultsBlobContainer": "atlas-search-results",
+    
+    "AtlasFunction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
+    "AtlasFunction:AzureStorage:SearchResultsBlobContainer": "atlas-search-results",
+    "AtlasFunction:MessagingServiceBus:ConnectionString": "override-this",
+    "AtlasFunction:MessagingServiceBus:SearchResultsTopic": "search-results-ready",
+    
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     

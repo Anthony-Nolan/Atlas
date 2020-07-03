@@ -1,11 +1,14 @@
 locals {
   service-bus = {
-    default-sku                    = "Standard" // Required for Topics.
-    long-expiry                    = "P9999D"   // 2.75 years
+    default-sku = "Standard"
+    // Required for Topics.
+    long-expiry = "P9999D"
+    // 2.75 years
     audit-subscription-idle-delete = "P8D"
     default-read-lock              = "PT5M"
-    default-bus-size               = 5120 // 5GB
-    default-message-retries        = 10
+    default-bus-size               = 5120
+    // 5GB
+    default-message-retries = 10
   }
 }
 
@@ -44,4 +47,26 @@ resource "azurerm_servicebus_namespace_authorization_rule" "read-write" {
   listen = true
   send   = true
   manage = false
+}
+
+resource "azurerm_servicebus_topic" "matching-results-ready" {
+  name                  = "search-results-ready"
+  resource_group_name   = azurerm_resource_group.atlas_resource_group.name
+  namespace_name        = azurerm_servicebus_namespace.general.name
+  auto_delete_on_idle   = local.service-bus.long-expiry
+  default_message_ttl   = local.service-bus.long-expiry
+  max_size_in_megabytes = local.service-bus.default-bus-size
+  support_ordering      = true
+}
+
+resource "azurerm_servicebus_subscription" "audit-matching-results-ready" {
+  name                                 = "audit"
+  resource_group_name                  = azurerm_resource_group.atlas_resource_group.name
+  namespace_name                       = azurerm_servicebus_namespace.general.name
+  topic_name                           = azurerm_servicebus_topic.matching-results-ready.name
+  auto_delete_on_idle                  = local.service-bus.audit-subscription-idle-delete
+  default_message_ttl                  = local.service-bus.long-expiry
+  lock_duration                        = local.service-bus.default-read-lock
+  max_delivery_count                   = local.service-bus.default-message-retries
+  dead_lettering_on_message_expiration = false
 }

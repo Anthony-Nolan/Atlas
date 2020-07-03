@@ -1,7 +1,9 @@
 {
   "IsEncrypted": false,
   "Values": {
+    "ApplicationInsights:InstrumentationKey": "dummy-key",
     "ApplicationInsights:LogLevel": "Info",
+    "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
@@ -9,7 +11,7 @@
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
-    "NotificationsServiceBus:NotificationsTopic": "notifications",
+    "NotificationsServiceBus:NotificationsTopic": "notifications"
   },
   "ConnectionStrings": {
     "MatchPredictionSql": "Data Source=(local);Initial Catalog=AtlasMatchPrediction;Integrated Security=True;MultipleActiveResultSets=True;"

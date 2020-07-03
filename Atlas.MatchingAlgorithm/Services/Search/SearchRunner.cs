@@ -70,7 +70,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 await resultsBlobStorageClient.UploadResults(searchResultSet);
 
-                var notification = new SearchResultsNotification
+                var notification = new MatchingResultsNotification
                 {
                     SearchRequestId = searchRequestId,
                     SearchAlgorithmServiceVersion = searchAlgorithmServiceVersion,
@@ -86,7 +86,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             catch (Exception e)
             {
                 logger.SendTrace($"Failed to run search with id {searchRequestId}. Exception: {e}", LogLevel.Error);
-                var notification = new SearchResultsNotification
+                var notification = new MatchingResultsNotification
                 {
                     WasSuccessful = false,
                     SearchRequestId = searchRequestId,
