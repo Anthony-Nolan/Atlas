@@ -288,7 +288,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     break;
                 case DataRefreshStage.QueuedDonorUpdateProcessing:
                     var dbBeingRefreshed = refreshRecord.Database.ParseToEnum<TransientDatabase>();
-                    await differentialDonorUpdateProcessor.ApplyDifferentialDonorUpdatesDuringRefresh(dbBeingRefreshed);
+                    await differentialDonorUpdateProcessor.ApplyDifferentialDonorUpdatesDuringRefresh(dbBeingRefreshed, refreshRecord.HlaNomenclatureVersion);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dataRefreshStage), dataRefreshStage, null);
