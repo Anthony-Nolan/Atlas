@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Atlas.MatchPrediction.Functions": {
+      "commandName": "Project",
+      "commandLineArgs": "host start --port 7085 --nodeDebugPort 5860"
+    }
+  }
+}
