@@ -21,9 +21,9 @@ namespace Atlas.MatchPrediction.Functions.Functions
         private readonly IFrequencySetService frequencySetService;
         private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
 
-        private const string DonorEthnicity = "donorEthnicity";
-        private const string DonorRegistry = "donorRegistry";
-        private const string PatientEthnicity = "patientEthnicity";
+        private const string DonorEthnicityQueryParam = "donorEthnicity";
+        private const string DonorRegistryQueryParam = "donorRegistry";
+        private const string PatientEthnicityQueryParam = "patientEthnicity";
 
         public HaplotypeFrequencySetFunctions(IFrequencySetService frequencySetService,
             IMatchPredictionAlgorithm matchPredictionAlgorithm)
@@ -52,9 +52,9 @@ namespace Atlas.MatchPrediction.Functions.Functions
             }
         }
 
-        [QueryStringParameter(DonorEthnicity, "Ethnicity ID of the donor", DataType = typeof(string))]
-        [QueryStringParameter(DonorRegistry, "Registry ID of the donor", DataType = typeof(string))]
-        [QueryStringParameter(PatientEthnicity, "Ethnicity ID of the patient", DataType = typeof(string))]
+        [QueryStringParameter(DonorEthnicityQueryParam, "Ethnicity ID of the donor", DataType = typeof(string))]
+        [QueryStringParameter(DonorRegistryQueryParam, "Registry ID of the donor", DataType = typeof(string))]
+        [QueryStringParameter(PatientEthnicityQueryParam, "Ethnicity ID of the patient", DataType = typeof(string))]
         [FunctionName((nameof(GetHaplotypeFrequencySet)))]
         [StorageAccount("AzureStorage:ConnectionString")]
         public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet(
@@ -63,13 +63,13 @@ namespace Atlas.MatchPrediction.Functions.Functions
         {
             var donorInfo = new IndividualPopulationData
             {
-                EthnicityCode = request.Query[DonorEthnicity],
-                RegistryCode = request.Query[DonorRegistry]
+                EthnicityCode = request.Query[DonorEthnicityQueryParam],
+                RegistryCode = request.Query[DonorRegistryQueryParam]
             };
 
             var patientInfo = new IndividualPopulationData
             {
-                EthnicityCode = request.Query[PatientEthnicity],
+                EthnicityCode = request.Query[PatientEthnicityQueryParam],
             };
             return await matchPredictionAlgorithm.GetHaplotypeFrequencySet(
                 new HaplotypeFrequencySetInput
