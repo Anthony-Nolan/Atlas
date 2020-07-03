@@ -5,9 +5,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
-using Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData;
 
-namespace Atlas.MultipleAlleleCodeDictionary.utils
+namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices
 {
     internal interface IMacParser
     {
@@ -16,12 +15,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.utils
 
     internal class MacLineParser : IMacParser
     {
-        private readonly IMacCodeDownloader macCodeDownloader;
         private readonly ILogger logger;
 
-        public MacLineParser(IMacCodeDownloader macCodeDownloader, ILogger logger)
+        public MacLineParser(ILogger logger)
         {
-            this.macCodeDownloader = macCodeDownloader;
             this.logger = logger;
         }
 

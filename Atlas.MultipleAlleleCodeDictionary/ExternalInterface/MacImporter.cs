@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
-using Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData;
-using Atlas.MultipleAlleleCodeDictionary.utils;
+using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices;
+using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices.SourceData;
 using Polly;
 
-namespace Atlas.MultipleAlleleCodeDictionary.MacImportServices
+namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
 {
     public interface IMacImporter
     {

@@ -11,7 +11,7 @@
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",
     
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
-    "MacDictionary:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
+    "MacDictionary:Import:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
     
     "Matching:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",

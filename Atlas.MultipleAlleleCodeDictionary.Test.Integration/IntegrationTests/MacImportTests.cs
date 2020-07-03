@@ -1,8 +1,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
-using Atlas.MultipleAlleleCodeDictionary.MacImportServices;
-using Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
+using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices.SourceData;
 using Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders;
 using FluentAssertions;
