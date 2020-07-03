@@ -21,7 +21,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 
         // Donor Import services
         private readonly IDonorReader donorReader;
-        
+
         // Match Prediction services
         private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
 
@@ -56,37 +56,93 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         [FunctionName(nameof(RunMatchingAlgorithm))]
         public async Task<MatchingAlgorithmResultSet> RunMatchingAlgorithm([ActivityTrigger] IdentifiedSearchRequest searchRequest)
         {
-            return await searchRunner.RunSearch(searchRequest);
+            try
+            {
+                return await searchRunner.RunSearch(searchRequest);
+            }
+            catch (Exception e)
+            {
+                await resultsNotificationSender.PublishFailureNotificationMessage(
+                    searchRequest.Id,
+                    $"Failed to run matching algorithm.\n Exception: {e.Message}"
+                );
+                throw;
+            }
         }
 
         [FunctionName(nameof(FetchDonorInformation))]
-        public async Task<IDictionary<int, Donor>> FetchDonorInformation([ActivityTrigger] IEnumerable<int> donorIds)
+        public async Task<IDictionary<int, Donor>> FetchDonorInformation([ActivityTrigger] Tuple<string, IEnumerable<int>> searchAndDonorIds)
         {
-            return await donorReader.GetDonors(donorIds);
+            var (searchId, donorIds) = searchAndDonorIds;
+            try
+            {
+                return await donorReader.GetDonors(donorIds);
+            }
+            catch (Exception e)
+            {
+                await resultsNotificationSender.PublishFailureNotificationMessage(
+                    searchId,
+                    $"Failed to fetch donor data for use in match prediction.\n Exception: {e.Message}"
+                );
+                throw;
+            }
         }
 
         [FunctionName(nameof(BuildMatchPredictionInputs))]
-        public IEnumerable<MatchProbabilityInput> BuildMatchPredictionInputs(
+        public async Task<IEnumerable<MatchProbabilityInput>> BuildMatchPredictionInputs(
             [ActivityTrigger] MatchPredictionInputParameters matchPredictionInputParameters
         )
         {
-            return matchPredictionInputBuilder.BuildMatchPredictionInputs(matchPredictionInputParameters);
+            try
+            {
+                return matchPredictionInputBuilder.BuildMatchPredictionInputs(matchPredictionInputParameters);
+            }
+            catch (Exception e)
+            {
+                await resultsNotificationSender.PublishFailureNotificationMessage(
+                    matchPredictionInputParameters.MatchingAlgorithmResults.SearchRequestId,
+                    $"Failed to build match prediction inputs.\n Exception: {e.Message}"
+                );
+                throw;
+            }
         }
 
         [FunctionName(nameof(RunMatchPrediction))]
         public async Task<MatchProbabilityResponse> RunMatchPrediction([ActivityTrigger] MatchProbabilityInput matchProbabilityInput)
         {
-            return await matchPredictionAlgorithm.RunMatchPredictionAlgorithm(matchProbabilityInput);
+            try
+            {
+                return await matchPredictionAlgorithm.RunMatchPredictionAlgorithm(matchProbabilityInput);
+            }
+            catch (Exception e)
+            {
+                await resultsNotificationSender.PublishFailureNotificationMessage(
+                    matchProbabilityInput.SearchId,
+                    $"Failed to run match prediction algorithm.\n Exception: {e.Message}"
+                );
+                throw;
+            }
         }
 
         [FunctionName(nameof(PersistSearchResults))]
         public async Task PersistSearchResults(
             [ActivityTrigger] Tuple<MatchingAlgorithmResultSet, IDictionary<int, MatchProbabilityResponse>> algorithmResults)
         {
-            var (matchingResults, matchPredictionResults) = algorithmResults;
-            var resultSet = resultsCombiner.CombineResults(matchingResults, matchPredictionResults);
-            await searchResultsBlobUploader.UploadResults(resultSet);
-            await resultsNotificationSender.PublishResultsNotification(resultSet);
+            try
+            {
+                var (matchingResults, matchPredictionResults) = algorithmResults;
+                var resultSet = resultsCombiner.CombineResults(matchingResults, matchPredictionResults);
+                await searchResultsBlobUploader.UploadResults(resultSet);
+                await resultsNotificationSender.PublishResultsNotificationMessage(resultSet);
+            }
+            catch (Exception e)
+            {
+                await resultsNotificationSender.PublishFailureNotificationMessage(
+                    algorithmResults.Item1.SearchRequestId,
+                    $"Failed to persist search results.\n Exception: {e.Message}"
+                );
+                throw;
+            }
         }
     }
 }
