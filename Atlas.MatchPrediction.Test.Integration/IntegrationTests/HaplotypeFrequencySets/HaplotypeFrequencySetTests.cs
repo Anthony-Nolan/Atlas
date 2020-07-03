@@ -72,7 +72,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         }
 
         [Test]
-        public async Task GetHaplotypeSet_WhenPatientHasUnrepresentedRegistry_UsesDonorsRegistry()
+        public async Task GetHaplotypeSet_WhenPatientHasUnrepresentedRegistry_ReturnsDonorsRegistry()
         {
             var donorInfo = DefaultSpecificPopulation;
             var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry("not-recognised").ForEthnicity(DefaultEthnicityCode).Build();
@@ -83,7 +83,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         }
 
         [Test]
-        public async Task GetHaplotypeSet_WhenPatientHasNoRegistryData_UsesDonorsRegistry()
+        public async Task GetHaplotypeSet_WhenPatientHasNoRegistryData_ReturnsDonorsRegistry()
         {
             var donorInfo = DefaultSpecificPopulation;
             var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry(null).ForEthnicity(DefaultEthnicityCode).Build();
@@ -94,7 +94,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         }
 
         [Test]
-        public async Task GetHaplotypeSet_WhenPatientHasDifferentRepresentedRegistryToDonor_UsesPatientRegistry()
+        public async Task GetHaplotypeSet_WhenPatientHasDifferentRepresentedRegistryToDonor_ReturnsPatientRegistry()
         {
             const string registryCode = "new-registry";
             await ImportHaplotypeSet(registryCode, DefaultEthnicityCode);
@@ -108,7 +108,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         }
 
         [Test]
-        public async Task GetHaplotypeSet_WhenDonorAndPatientHaveUnrepresentedEthnicity_UsesARegistrySpecificSet()
+        public async Task GetHaplotypeSet_WhenDonorAndPatientHaveUnrepresentedEthnicity_ReturnsARegistrySpecificSet()
         {
             var donorInfo = IndividualPopulationDataBuilder.New.ForRegistry(DefaultRegistryCode).ForEthnicity("new-ethnicity-donor").Build();
             var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry(DefaultRegistryCode).ForEthnicity("new-ethnicity-patient").Build();
@@ -120,7 +120,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         }
 
         [Test]
-        public async Task GetHaplotypeSet_WhenNoEthnicityInformationProvided_UsesARegistrySpecificSet()
+        public async Task GetHaplotypeSet_WhenNoEthnicityInformationProvided_ReturnsARegistrySpecificSet()
         {
             var donorInfo = IndividualPopulationDataBuilder.New.ForRegistry(DefaultRegistryCode).Build();
             var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry(DefaultRegistryCode).Build();
@@ -132,7 +132,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         }
 
         [Test]
-        public async Task GetHaplotypeSet_WhenNoInformationPresent_GetsGenericSet()
+        public async Task GetHaplotypeSet_WhenNoInformationPresent_ReturnsGenericSet()
         {
             var donorInfo = IndividualPopulationDataBuilder.New.Build();
             var patientInfo = IndividualPopulationDataBuilder.New.Build();
@@ -144,7 +144,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         }
 
         [Test]
-        public async Task GetHaplotypeSet_WhenAllInformationUnrepresented_GetsGenericSet()
+        public async Task GetHaplotypeSet_WhenAllInformationUnrepresented_ReturnsGenericSet()
         {
             var donorInfo = IndividualPopulationDataBuilder.New
                 .ForRegistry("unrepresented-registry-donor")
@@ -162,7 +162,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         }
 
         [Test]
-        public async Task GetHaplotypeSet_WhenEthnicityIsValidButRegistryIsNot_GetsGenericSet()
+        public async Task GetHaplotypeSet_WhenEthnicityIsValidButRegistryIsNot_ReturnsGenericSet()
         {
             var donorInfo = IndividualPopulationDataBuilder.New.ForRegistry("new-registry-donor").ForEthnicity(DefaultEthnicityCode).Build();
             var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry("new-registry-patient").ForEthnicity(DefaultEthnicityCode).Build();
