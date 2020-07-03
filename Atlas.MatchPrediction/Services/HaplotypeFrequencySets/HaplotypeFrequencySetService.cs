@@ -28,14 +28,14 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencySets
         public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(IndividualPopulationData donorInfo, IndividualPopulationData patientInfo)
         {
             // Patients should use the donors registry.
-            patientInfo.RegistryId = donorInfo.RegistryId;
+            patientInfo.RegistryCode = donorInfo.RegistryCode;
             
             // Attempt to get the most specific sets first
-            var donorSet = await repository.GetActiveSet(donorInfo.RegistryId, donorInfo.EthnicityId);
-            var patientSet = await repository.GetActiveSet(patientInfo.RegistryId, patientInfo.EthnicityId);
+            var donorSet = await repository.GetActiveSet(donorInfo.RegistryCode, donorInfo.EthnicityCode);
+            var patientSet = await repository.GetActiveSet(patientInfo.RegistryCode, patientInfo.EthnicityCode);
             
             // If we didn't find ethnicity sets, find a generic one for that repository
-            donorSet ??= await repository.GetActiveSet(donorInfo.RegistryId, null);
+            donorSet ??= await repository.GetActiveSet(donorInfo.RegistryCode, null);
             patientSet ??= donorSet;
             
             // If no registry specific set exists, use a generic one.
@@ -44,16 +44,26 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencySets
 
             if (donorSet == null || patientSet == null)
             {
-                logger.SendTrace($"Did not find Haplotype Frequency Set for: \n Donor Registry: {donorInfo.RegistryId} Donor Ethnicity: {donorInfo.EthnicityId} \n Patient Registry: {patientInfo.RegistryId} Patient Ethnicity: {patientInfo.EthnicityId}", LogLevel.Error);
+                logger.SendTrace($"Did not find Haplotype Frequency Set for: \n Donor Registry: {donorInfo.RegistryCode} Donor Ethnicity: {donorInfo.EthnicityCode} \n Patient Registry: {patientInfo.RegistryCode} Patient Ethnicity: {patientInfo.EthnicityCode}", LogLevel.Error);
                 throw new Exception("No Global Haplotype frequency set was found");
             }
             
-            var result = new HaplotypeFrequencySetResponse
+            return new HaplotypeFrequencySetResponse
             {
-                DonorSet = new HaplotypeFrequencySet(donorSet),
-                PatientSet = new HaplotypeFrequencySet(patientSet)
+                DonorSet = MapDataModelToClientModel(donorSet),
+                PatientSet = MapDataModelToClientModel(patientSet)
             };
-            return result;
+        }
+
+        private HaplotypeFrequencySet MapDataModelToClientModel(Data.Models.HaplotypeFrequencySet set)
+        {
+            return new HaplotypeFrequencySet
+            {
+                EthnicityCode = set.EthnicityCode,
+                Id = set.Id,
+                Name = set.Name,
+                RegistryCode = set.RegistryCode
+            };
         }
     }
 }

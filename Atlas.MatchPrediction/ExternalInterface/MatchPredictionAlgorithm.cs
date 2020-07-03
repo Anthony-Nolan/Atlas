@@ -41,7 +41,8 @@ namespace Atlas.MatchPrediction.ExternalInterface
 
         public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet(HaplotypeFrequencySetInput haplotypeFrequencySetInput)
         {
-            return await haplotypeFrequencySetService.GetHaplotypeFrequencySets(haplotypeFrequencySetInput.DonorInfo,
+            return await haplotypeFrequencySetService.GetHaplotypeFrequencySets(
+                haplotypeFrequencySetInput.DonorInfo,
                 haplotypeFrequencySetInput.PatientInfo);
         }
     }
