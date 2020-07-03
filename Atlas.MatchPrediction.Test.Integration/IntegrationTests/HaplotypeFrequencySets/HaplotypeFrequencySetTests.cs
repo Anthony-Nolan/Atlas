@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencySets;
@@ -16,16 +17,16 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         private const string DefaultEthnicityCode = "ethnicity-code";
         private const string DefaultRegistryCode = "registry-code";
 
-        private static readonly IndividualPopulationData DefaultSpecificPopulation = IndividualPopulationDataBuilder.New
+        private static readonly FrequencySetMetadata DefaultSpecificPopulation = FrequencySetMetadataBuilder.New
             .ForRegistry(DefaultRegistryCode)
             .ForEthnicity(DefaultEthnicityCode)
             .Build();
 
-        private static readonly IndividualPopulationData DefaultRegistryOnlyPopulation = IndividualPopulationDataBuilder.New
+        private static readonly FrequencySetMetadata DefaultRegistryOnlyPopulation = FrequencySetMetadataBuilder.New
             .ForRegistry(DefaultRegistryCode)
             .Build();
 
-        private static readonly IndividualPopulationData GlobalPopulation = IndividualPopulationDataBuilder.New.Build();
+        private static readonly FrequencySetMetadata GlobalPopulation = FrequencySetMetadataBuilder.New.Build();
 
         private readonly IHaplotypeFrequencySetService service;
         private readonly IFrequencySetService importService;
@@ -63,7 +64,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
             await ImportHaplotypeSet(DefaultRegistryCode, nonDefaultEthnicityCode);
 
             var donorInfo = DefaultSpecificPopulation;
-            var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry(DefaultRegistryCode).ForEthnicity(nonDefaultEthnicityCode).Build();
+            var patientInfo = FrequencySetMetadataBuilder.New.ForRegistry(DefaultRegistryCode).ForEthnicity(nonDefaultEthnicityCode).Build();
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
@@ -75,7 +76,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         public async Task GetHaplotypeSet_WhenPatientHasUnrepresentedRegistry_ReturnsDonorsRegistry()
         {
             var donorInfo = DefaultSpecificPopulation;
-            var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry("not-recognised").ForEthnicity(DefaultEthnicityCode).Build();
+            var patientInfo = FrequencySetMetadataBuilder.New.ForRegistry("not-recognised").ForEthnicity(DefaultEthnicityCode).Build();
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
@@ -86,7 +87,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         public async Task GetHaplotypeSet_WhenPatientHasNoRegistryData_ReturnsDonorsRegistry()
         {
             var donorInfo = DefaultSpecificPopulation;
-            var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry(null).ForEthnicity(DefaultEthnicityCode).Build();
+            var patientInfo = FrequencySetMetadataBuilder.New.ForRegistry(null).ForEthnicity(DefaultEthnicityCode).Build();
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
@@ -100,7 +101,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
             await ImportHaplotypeSet(registryCode, DefaultEthnicityCode);
 
             var donorInfo = DefaultSpecificPopulation;
-            var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry(registryCode).ForEthnicity(DefaultEthnicityCode).Build();
+            var patientInfo = FrequencySetMetadataBuilder.New.ForRegistry(registryCode).ForEthnicity(DefaultEthnicityCode).Build();
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
@@ -110,8 +111,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         [Test]
         public async Task GetHaplotypeSet_WhenDonorAndPatientHaveUnrepresentedEthnicity_ReturnsARegistrySpecificSet()
         {
-            var donorInfo = IndividualPopulationDataBuilder.New.ForRegistry(DefaultRegistryCode).ForEthnicity("new-ethnicity-donor").Build();
-            var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry(DefaultRegistryCode).ForEthnicity("new-ethnicity-patient").Build();
+            var donorInfo = FrequencySetMetadataBuilder.New.ForRegistry(DefaultRegistryCode).ForEthnicity("new-ethnicity-donor").Build();
+            var patientInfo = FrequencySetMetadataBuilder.New.ForRegistry(DefaultRegistryCode).ForEthnicity("new-ethnicity-patient").Build();
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
@@ -122,8 +123,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         [Test]
         public async Task GetHaplotypeSet_WhenNoEthnicityInformationProvided_ReturnsARegistrySpecificSet()
         {
-            var donorInfo = IndividualPopulationDataBuilder.New.ForRegistry(DefaultRegistryCode).Build();
-            var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry(DefaultRegistryCode).Build();
+            var donorInfo = FrequencySetMetadataBuilder.New.ForRegistry(DefaultRegistryCode).Build();
+            var patientInfo = FrequencySetMetadataBuilder.New.ForRegistry(DefaultRegistryCode).Build();
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
@@ -134,8 +135,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         [Test]
         public async Task GetHaplotypeSet_WhenNoInformationPresent_ReturnsGenericSet()
         {
-            var donorInfo = IndividualPopulationDataBuilder.New.Build();
-            var patientInfo = IndividualPopulationDataBuilder.New.Build();
+            var donorInfo = FrequencySetMetadataBuilder.New.Build();
+            var patientInfo = FrequencySetMetadataBuilder.New.Build();
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
@@ -146,11 +147,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         [Test]
         public async Task GetHaplotypeSet_WhenAllInformationUnrepresented_ReturnsGenericSet()
         {
-            var donorInfo = IndividualPopulationDataBuilder.New
+            var donorInfo = FrequencySetMetadataBuilder.New
                 .ForRegistry("unrepresented-registry-donor")
                 .ForEthnicity("unrepresented-ethnicity-donor")
                 .Build();
-            var patientInfo = IndividualPopulationDataBuilder.New
+            var patientInfo = FrequencySetMetadataBuilder.New
                 .ForRegistry("unrepresented-registry-patient")
                 .ForEthnicity("unrepresented-ethnicity-patient")
                 .Build();
@@ -164,8 +165,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         [Test]
         public async Task GetHaplotypeSet_WhenEthnicityIsValidButRegistryIsNot_ReturnsGenericSet()
         {
-            var donorInfo = IndividualPopulationDataBuilder.New.ForRegistry("new-registry-donor").ForEthnicity(DefaultEthnicityCode).Build();
-            var patientInfo = IndividualPopulationDataBuilder.New.ForRegistry("new-registry-patient").ForEthnicity(DefaultEthnicityCode).Build();
+            var donorInfo = FrequencySetMetadataBuilder.New.ForRegistry("new-registry-donor").ForEthnicity(DefaultEthnicityCode).Build();
+            var patientInfo = FrequencySetMetadataBuilder.New.ForRegistry("new-registry-patient").ForEthnicity(DefaultEthnicityCode).Build();
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
@@ -173,7 +174,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
             result.PatientSet.Should().BeEquivalentTo(GlobalPopulation);
         }
 
-        private async Task ImportHaplotypeSet(IndividualPopulationData populationData)
+        private async Task ImportHaplotypeSet(FrequencySetMetadata populationData)
         {
             await ImportHaplotypeSet(populationData.RegistryCode, populationData.EthnicityCode);
         }

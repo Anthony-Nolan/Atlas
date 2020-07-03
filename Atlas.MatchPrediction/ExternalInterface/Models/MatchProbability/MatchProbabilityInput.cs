@@ -15,9 +15,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         public string SearchRequestId { get; set; }
         
         public PhenotypeInfo<string> DonorHla { get; set; }
-        public FrequencySetSelectionInput DonorFrequencySetSelectionInput { get; set; }
+        public FrequencySetMetadata DonorFrequencySetMetadata { get; set; }
         public PhenotypeInfo<string> PatientHla { get; set; }
-        public FrequencySetSelectionInput PatientFrequencySetSelectionInput { get; set; }
+        public FrequencySetMetadata PatientFrequencySetMetadata { get; set; }
         public string HlaNomenclatureVersion { get; set; }
     }
 }

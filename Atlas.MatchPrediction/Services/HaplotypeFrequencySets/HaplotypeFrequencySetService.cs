@@ -3,6 +3,7 @@ using System;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
 
@@ -10,7 +11,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencySets
 {
     public interface IHaplotypeFrequencySetService
     {
-        Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(IndividualPopulationData donorInfo, IndividualPopulationData patientInfo);
+        Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(FrequencySetMetadata donorInfo, FrequencySetMetadata patientInfo);
     }
     
     internal class HaplotypeFrequencySetService : IHaplotypeFrequencySetService
@@ -24,7 +25,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencySets
             this.logger = logger;
         }
         
-        public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(IndividualPopulationData donorInfo, IndividualPopulationData patientInfo)
+        public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(FrequencySetMetadata donorInfo, FrequencySetMetadata patientInfo)
         {
             // Patients should use the donors registry.
             patientInfo.RegistryCode ??= donorInfo.RegistryCode;

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -61,13 +62,13 @@ namespace Atlas.MatchPrediction.Functions.Functions
             [HttpTrigger(AuthorizationLevel.Function, "get")]
             HttpRequest request)
         {
-            var donorInfo = new IndividualPopulationData
+            var donorInfo = new FrequencySetMetadata
             {
                 EthnicityCode = request.Query[DonorEthnicityQueryParam],
                 RegistryCode = request.Query[DonorRegistryQueryParam]
             };
 
-            var patientInfo = new IndividualPopulationData
+            var patientInfo = new FrequencySetMetadata
             {
                 EthnicityCode = request.Query[PatientEthnicityQueryParam],
             };
