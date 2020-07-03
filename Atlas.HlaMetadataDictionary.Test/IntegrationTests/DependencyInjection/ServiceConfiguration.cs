@@ -31,8 +31,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings)
         {
-            
-
             services.RegisterHlaMetadataDictionary(
                 _ => new HlaMetadataDictionarySettings(),
                 fetchApplicationInsightsSettings,

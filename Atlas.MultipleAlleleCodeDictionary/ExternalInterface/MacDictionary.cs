@@ -3,18 +3,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
-using Atlas.MultipleAlleleCodeDictionary.MacCacheService;
-using Atlas.MultipleAlleleCodeDictionary.MacImportServices;
+using Atlas.MultipleAlleleCodeDictionary.Services;
 
 namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
 {
     public interface IMacDictionary
     {
-        /// <summary>
-        /// Collects the most recent MAC data from the external source provided in MacImportSettings,
-        /// and then stores it in the provided azure storage account.
-        /// </summary>
-        public Task ImportLatestMacs();
         /// <summary>
         /// Fetch the HLA for a given MAC from the storage account, caching appropriately.
         /// </summary>
@@ -40,18 +34,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
 
     public class MacDictionary : IMacDictionary
     {
-        private readonly IMacImporter macImporter;
         private readonly IMacCacheService macCacheService;
 
-        public MacDictionary(IMacImporter macImporter, IMacCacheService macCacheService)
+        public MacDictionary(IMacCacheService macCacheService)
         {
-            this.macImporter = macImporter;
             this.macCacheService = macCacheService;
-        }
-
-        public async Task ImportLatestMacs()
-        {
-            await macImporter.ImportLatestMacs();
         }
 
         public async Task<Mac> GetMac(string macCode)

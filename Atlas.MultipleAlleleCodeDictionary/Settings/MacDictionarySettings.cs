@@ -1,10 +1,11 @@
 ﻿namespace Atlas.MultipleAlleleCodeDictionary.Settings
 {
-    // TODO: ATLAS-431: Split into read/write settings
+    /// <summary>
+    /// Settings needed in all use-cases of the MAC Dictionary component.
+    /// </summary>
     public class MacDictionarySettings
     {
         public string AzureStorageConnectionString { get; set; }
-        public string MacSourceUrl { get; set; }
         public string TableName { get; set; }
     }
 }

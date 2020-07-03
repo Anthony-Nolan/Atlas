@@ -15,17 +15,19 @@ namespace Atlas.Functions.Functions
     internal class MacDictionaryFunctions
     {
         private readonly IMacDictionary macDictionary;
+        private readonly IMacImporter macImporter;
 
-        public MacDictionaryFunctions(IMacDictionary macDictionary)
+        public MacDictionaryFunctions(IMacDictionary macDictionary, IMacImporter macImporter)
         {
             this.macDictionary = macDictionary;
+            this.macImporter = macImporter;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(ImportMacs))]
         public async Task ImportMacs([TimerTrigger("0 0 2 * * *")] TimerInfo myTimer)
         {
-            await macDictionary.ImportLatestMacs();
+            await macImporter.ImportLatestMacs();
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -34,7 +36,7 @@ namespace Atlas.Functions.Functions
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             HttpRequestMessage request)
         {
-            await macDictionary.ImportLatestMacs();
+            await macImporter.ImportLatestMacs();
         }
 
         [QueryStringParameter("macCode", "macCode", DataType = typeof(string))]

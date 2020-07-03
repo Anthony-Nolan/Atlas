@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
-using Atlas.MultipleAlleleCodeDictionary.MacImportServices;
-using Atlas.MultipleAlleleCodeDictionary.MacImportServices.SourceData;
-using Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders;
-using Atlas.MultipleAlleleCodeDictionary.utils;
-using Atlas.Common.ApplicationInsights;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
+using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices;
+using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices.SourceData;
+using Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -32,7 +32,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.UnitTests
                 mockRepository = Substitute.For<IMacRepository>();
                 mockLogger = Substitute.For<ILogger>();
                 
-                macParser = new MacLineParser(mockDownloader, mockLogger);
+                macParser = new MacLineParser(mockLogger);
                 macImporter = new MacImporter(mockRepository, macParser, mockLogger, mockDownloader);
             });
         }

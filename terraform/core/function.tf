@@ -24,8 +24,8 @@ resource "azurerm_function_app" "atlas_function" {
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"     = var.WMDA_FILE_URL
 
     "MacDictionary:AzureStorageConnectionString" = azurerm_storage_account.azure_storage.primary_connection_string
+    "MacDictionary:Import:MacSourceUrl"          = var.MAC_SOURCE
     "MacDictionary:TableName"                    = module.multiple_allele_code_lookup.storage_table.name
-    "MacDictionary:MacSourceUrl"                 = var.MAC_SOURCE
 
     "Matching:AzureStorage:ConnectionString"           = azurerm_storage_account.azure_storage.primary_connection_string
     "Matching:AzureStorage:SearchResultsBlobContainer" = module.matching_algorithm.azure_storage.search_results_container

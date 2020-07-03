@@ -9,6 +9,7 @@ using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,6 +49,12 @@ namespace Atlas.Functions
                 OptionsReaderFor<MacDictionarySettings>()
             );
 
+            builder.Services.RegisterMacImport(
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<MacDictionarySettings>(),
+                OptionsReaderFor<MacImportSettings>()
+            );
+
             builder.Services.RegisterMatchPredictionServices(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
@@ -70,6 +77,7 @@ namespace Atlas.Functions
             // Dictionary components
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
+            services.RegisterAsOptions<MacImportSettings>("MacDictionary:Import");
 
             // Matching Algorithm
             services.RegisterAsOptions<AzureStorageSettings>("Matching:AzureStorage");
