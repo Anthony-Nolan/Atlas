@@ -1,6 +1,5 @@
 ﻿
 using System;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchPrediction.Data.Repositories;
@@ -28,7 +27,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencySets
         public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(IndividualPopulationData donorInfo, IndividualPopulationData patientInfo)
         {
             // Patients should use the donors registry.
-            patientInfo.RegistryCode = donorInfo.RegistryCode;
+            patientInfo.RegistryCode ??= donorInfo.RegistryCode;
             
             // Attempt to get the most specific sets first
             var donorSet = await repository.GetActiveSet(donorInfo.RegistryCode, donorInfo.EthnicityCode);
