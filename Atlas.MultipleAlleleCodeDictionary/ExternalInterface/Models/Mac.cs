@@ -1,8 +1,9 @@
 ﻿using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
+using Atlas.MultipleAlleleCodeDictionary.Services;
 
 namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models
 {
-    public class Mac
+    public class Mac : IHasMacCode
     {
         public string Code { get; set; }
         public string Hla { get; set; }
