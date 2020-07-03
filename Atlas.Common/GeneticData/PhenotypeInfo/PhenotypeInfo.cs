@@ -121,12 +121,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         /// </summary>
         public PhenotypeInfo(LociInfo<LocusInfo<T>> source)
         {
-            a = new LocusInfo<T>(source.A.Position1, source.A.Position2);
-            b = new LocusInfo<T>(source.B.Position1, source.B.Position2);
-            c = new LocusInfo<T>(source.C.Position1, source.C.Position2);
-            dpb1 = new LocusInfo<T>(source.Dpb1.Position1, source.Dpb1.Position2);
-            dqb1 = new LocusInfo<T>(source.Dqb1.Position1, source.Dqb1.Position2);
-            drb1 = new LocusInfo<T>(source.Drb1.Position1, source.Drb1.Position2);
+            a = source.A.ShallowCopy();
+            b = source.B.ShallowCopy();
+            c = source.C.ShallowCopy();
+            dpb1 = source.Dpb1.ShallowCopy();
+            dqb1 = source.Dqb1.ShallowCopy();
+            drb1 = source.Drb1.ShallowCopy();
         }
 
         /// <summary>

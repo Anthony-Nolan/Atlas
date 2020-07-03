@@ -8,7 +8,6 @@ namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
     {
         private const int MinimumMismatchCount = 0;
         private const int MaximumTotalMismatchCount = 4;
-        private const int MaximumLocusMismatchCount = 2;
 
         public MismatchCriteriaValidator()
         {
