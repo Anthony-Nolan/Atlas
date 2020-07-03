@@ -11,7 +11,7 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
     public interface ISearchServiceBusClient
     {
         Task PublishToSearchQueue(IdentifiedSearchRequest searchRequest);
-        Task PublishToResultsNotificationTopic(SearchResultsNotification searchResultsNotification);
+        Task PublishToResultsNotificationTopic(MatchingResultsNotification matchingResultsNotification);
     }
     
     public class SearchServiceBusClient : ISearchServiceBusClient
@@ -36,9 +36,9 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
             await client.SendAsync(message);
         }
 
-        public async Task PublishToResultsNotificationTopic(SearchResultsNotification searchResultsNotification)
+        public async Task PublishToResultsNotificationTopic(MatchingResultsNotification matchingResultsNotification)
         {
-            var json = JsonConvert.SerializeObject(searchResultsNotification);
+            var json = JsonConvert.SerializeObject(matchingResultsNotification);
             var message = new Message(Encoding.UTF8.GetBytes(json));
             
             var client = new TopicClient(connectionString, resultsNotificationTopicName);

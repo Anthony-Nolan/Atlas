@@ -73,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = id});
 
-            await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
+            await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
                 r.WasSuccessful && r.SearchRequestId == id
             ));
         }
@@ -86,7 +86,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = "id"});
 
-            await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
+            await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
                 r.HlaNomenclatureVersion == hlaNomenclatureVersion
             ));
         }
@@ -106,7 +106,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             }
             finally
             {
-                await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<SearchResultsNotification>(r =>
+                await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
                     !r.WasSuccessful && r.SearchRequestId == id
                 ));
             }
