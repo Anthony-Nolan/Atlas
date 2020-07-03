@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Atlas.MatchingAlgorithm.Functions.DonorManagement": {
+      "commandName": "Project",
+      "commandLineArgs": "host start --port 7083 --nodeDebugPort 5860"
+    }
+  }
+}

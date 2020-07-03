@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Atlas.DonorImport.Functions": {
+      "commandName": "Project",
+      "commandLineArgs": "host start --port 7081 --nodeDebugPort 5860"
+    }
+  }
+}
