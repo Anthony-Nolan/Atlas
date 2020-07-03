@@ -53,7 +53,9 @@ namespace Atlas.MatchingAlgorithm.Api
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 ConnectionStringReader("PersistentSql"),
-                ConnectionStringReader("SqlA"), ConnectionStringReader("SqlB"), ConnectionStringReader("DonorImportSql"));
+                ConnectionStringReader("SqlA"),
+                ConnectionStringReader("SqlB"),
+                ConnectionStringReader("DonorImportSql"));
 
             services.ConfigureSwaggerService();
 
