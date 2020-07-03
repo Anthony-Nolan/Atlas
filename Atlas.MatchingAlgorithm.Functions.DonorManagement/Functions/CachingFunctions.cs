@@ -1,9 +1,9 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Microsoft.Azure.WebJobs;
 
 namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
@@ -11,16 +11,22 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
     public class CachingFunctions
     {
         private readonly IHlaMetadataCacheControl hlaMetadataCacheControl;
-        private readonly IMacDictionary macDictionary;
 
         public CachingFunctions(
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
-            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
-            IMacDictionary macDictionary
+            IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor
         )
         {
-            hlaMetadataCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
-            this.macDictionary = macDictionary;
+            try
+            {
+                var activeHlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
+                hlaMetadataCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(activeHlaNomenclatureVersion);
+            }
+            catch (ArgumentNullException)
+            {
+                //No active version is defined. No cache warming is necessary.
+                hlaMetadataCacheControl = null;
+            }
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
@@ -29,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement.Functions
             [TimerTrigger("00 00 03 * * *", RunOnStartup = true)]
             TimerInfo timerInfo)
         {
-            await hlaMetadataCacheControl.PreWarmAlleleNameCache();
+            await (hlaMetadataCacheControl?.PreWarmAlleleNameCache() ?? Task.CompletedTask);
         }
     }
 }
