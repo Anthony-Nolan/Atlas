@@ -11,7 +11,8 @@ using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
+using HaplotypeFrequencySet =
+    Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 
 namespace Atlas.MatchPrediction.Functions.Functions
 {
@@ -20,7 +21,12 @@ namespace Atlas.MatchPrediction.Functions.Functions
         private readonly IFrequencySetService frequencySetService;
         private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
 
-        public HaplotypeFrequencySetFunctions(IFrequencySetService frequencySetService, IMatchPredictionAlgorithm matchPredictionAlgorithm)
+        private const string DonorEthnicity = "donorEthnicity";
+        private const string DonorRegistry = "donorRegistry";
+        private const string PatientEthnicity = "patientEthnicity";
+
+        public HaplotypeFrequencySetFunctions(IFrequencySetService frequencySetService,
+            IMatchPredictionAlgorithm matchPredictionAlgorithm)
         {
             this.frequencySetService = frequencySetService;
             this.matchPredictionAlgorithm = matchPredictionAlgorithm;
@@ -45,30 +51,32 @@ namespace Atlas.MatchPrediction.Functions.Functions
                 await frequencySetService.ImportFrequencySet(file);
             }
         }
-        
-        [QueryStringParameter("donorEthnicity", "Ethnicity ID of the donor", DataType = typeof(string))]
-        [QueryStringParameter("donorRegistry", "Registry ID of the donor", DataType = typeof(string))]
-        [QueryStringParameter("patientEthnicity", "Ethnicity ID of the patient", DataType = typeof(string))]
+
+        [QueryStringParameter(DonorEthnicity, "Ethnicity ID of the donor", DataType = typeof(string))]
+        [QueryStringParameter(DonorRegistry, "Registry ID of the donor", DataType = typeof(string))]
+        [QueryStringParameter(PatientEthnicity, "Ethnicity ID of the patient", DataType = typeof(string))]
         [FunctionName((nameof(GetHaplotypeFrequencySet)))]
         [StorageAccount("AzureStorage:ConnectionString")]
-        public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest request)
+        public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet(
+            [HttpTrigger(AuthorizationLevel.Function, "get")]
+            HttpRequest request)
         {
             var donorInfo = new IndividualPopulationData
             {
-                EthnicityId = request.Query["donorEthnicity"],
-                RegistryId = request.Query["donorRegistry"]
+                EthnicityCode = request.Query[DonorEthnicity],
+                RegistryCode = request.Query[DonorRegistry]
             };
-            
+
             var patientInfo = new IndividualPopulationData
             {
-                EthnicityId = request.Query["patientEthnicity"],
+                EthnicityCode = request.Query[PatientEthnicity],
             };
             return await matchPredictionAlgorithm.GetHaplotypeFrequencySet(
                 new HaplotypeFrequencySetInput
                 {
                     DonorInfo = donorInfo,
                     PatientInfo = patientInfo
-                }     );
+                });
         }
     }
 }

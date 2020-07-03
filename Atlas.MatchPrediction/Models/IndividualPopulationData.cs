@@ -5,7 +5,7 @@
     /// </summary>
     public class IndividualPopulationData
     {
-        public string EthnicityId { get; set; }
-        public string RegistryId { get; set; }
+        public string EthnicityCode { get; set; }
+        public string RegistryCode { get; set; }
     }
 }
