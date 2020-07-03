@@ -36,7 +36,6 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
-        <ProjectReference Include="..\Atlas.MatchingAlgorithm.Functions\Atlas.MatchingAlgorithm.Functions.csproj" />
         <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
     </ItemGroup>
 </Project>
