@@ -16,15 +16,19 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
     public interface IDonorService
     {
         Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds, TransientDatabase targetDatabase);
-        Task CreateOrUpdateDonorBatch(IEnumerable<DonorInfo> donorInfos, TransientDatabase targetDatabase);
+
+        /// <param name="hlaNomenclatureVersion">
+        ///  This method includes processing the HLA, thus we need to know which version of the HLA nomenclature to be using for that interpretation
+        /// </param>
+        Task CreateOrUpdateDonorBatch(IEnumerable<DonorInfo> donorInfos, TransientDatabase targetDatabase, string hlaNomenclatureVersion);
     }
 
     public class DonorService : IDonorService
     {
         private const string ExpansionFailureEventName = "HLA Expansion Failure(s) in Matching Algorithm's Continuous Donor Update sytem";
 
-        private readonly IDonorHlaExpander donorHlaExpander;
         private readonly IStaticallyChosenDatabaseRepositoryFactory repositoryFactory;
+        private readonly IDonorHlaExpanderFactory donorHlaExpanderFactory;
         private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
 
         public DonorService(
@@ -32,8 +36,8 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             IDonorHlaExpanderFactory donorHlaExpanderFactory,
             IFailedDonorsNotificationSender failedDonorsNotificationSender)
         {
-            donorHlaExpander = donorHlaExpanderFactory.BuildForActiveHlaNomenclatureVersion();
             this.repositoryFactory = repositoryFactory;
+            this.donorHlaExpanderFactory = donorHlaExpanderFactory;
             this.failedDonorsNotificationSender = failedDonorsNotificationSender;
         }
 
@@ -49,7 +53,10 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             }
         }
 
-        public async Task CreateOrUpdateDonorBatch(IEnumerable<DonorInfo> donorInfos, TransientDatabase targetDatabase)
+        public async Task CreateOrUpdateDonorBatch(
+            IEnumerable<DonorInfo> donorInfos,
+            TransientDatabase targetDatabase,
+            string hlaNomenclatureVersion)
         {
             donorInfos = donorInfos.ToList();
 
@@ -57,7 +64,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             {
                 return;
             }
-
+            var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersion);
             var expansionResult = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorInfos, ExpansionFailureEventName);
 
             await CreateOrUpdateDonorsWithHla(expansionResult, targetDatabase);

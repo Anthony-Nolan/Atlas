@@ -257,6 +257,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 var refreshHistory = sp.GetService<IDataRefreshHistoryRepository>();
                 var managementService = sp.GetService<IDonorManagementService>();
                 var updateConverter = sp.GetService<ISearchableDonorUpdateConverter>();
+                var hlaVersionAccessor = sp.GetService<IActiveHlaNomenclatureVersionAccessor>();
                 var logger = sp.GetService<ILogger>();
                 var settings = fetchDonorManagementSettings(sp);
 
@@ -266,6 +267,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                     refreshHistory,
                     managementService,
                     updateConverter,
+                    hlaVersionAccessor,
                     logger,
                     int.Parse(settings.BatchSize));
             });

@@ -8,6 +8,7 @@ using Atlas.Common.ServiceBus.Models;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using EnumStringValues;
 
 namespace Atlas.MatchingAlgorithm.Services.DonorManagement
@@ -38,7 +39,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
     public interface IDonorUpdateProcessor
     {
         Task ProcessDifferentialDonorUpdates(TransientDatabase targetDatabase);
-        Task ApplyDifferentialDonorUpdatesDuringRefresh(TransientDatabase targetDatabase);
+        Task ApplyDifferentialDonorUpdatesDuringRefresh(TransientDatabase targetDatabase, string hlaNomenclatureVersionFromRefresh);
     }
 
     public class DonorUpdateProcessor : IDonorUpdateProcessor
@@ -50,6 +51,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         private readonly IDataRefreshHistoryRepository refreshHistoryRepository;
         private readonly IDonorManagementService donorManagementService;
         private readonly ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
+        private readonly IActiveHlaNomenclatureVersionAccessor activeHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
         private readonly int batchSize;
 
@@ -59,6 +61,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             IDataRefreshHistoryRepository refreshHistoryRepository,
             IDonorManagementService donorManagementService,
             ISearchableDonorUpdateConverter searchableDonorUpdateConverter,
+            IActiveHlaNomenclatureVersionAccessor activeHlaNomenclatureVersionAccessor,
             ILogger logger,
             int batchSize)
         {
@@ -67,6 +70,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             this.refreshHistoryRepository = refreshHistoryRepository;
             this.donorManagementService = donorManagementService;
             this.searchableDonorUpdateConverter = searchableDonorUpdateConverter;
+            this.activeHlaNomenclatureVersionAccessor = activeHlaNomenclatureVersionAccessor;
             this.logger = logger;
             this.batchSize = batchSize;
         }
@@ -74,7 +78,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         /// <remarks>
         /// It is intended that this method will be invoked by the Data Refresh process.
         /// </remarks>
-        public async Task ApplyDifferentialDonorUpdatesDuringRefresh(TransientDatabase targetDatabase)
+        public async Task ApplyDifferentialDonorUpdatesDuringRefresh(TransientDatabase targetDatabase, string hlaNomenclatureVersionFromRefresh)
         {
             var targetDatabaseState = DetermineDatabaseState(targetDatabase);
             if (targetDatabaseState != DatabaseStateWithRespectToDonorUpdates.Refreshing)
@@ -85,7 +89,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             var messageProcessorService = ChooseMessagesToProcess(targetDatabase);
 
             await messageProcessorService.ProcessMessageBatchAsync(
-                async batch => await ProcessMessages(batch, targetDatabase),
+                async batch => await ProcessMessages(batch, targetDatabase, hlaNomenclatureVersionFromRefresh),
                 batchSize,
                 batchSize * 2);
         }
@@ -101,8 +105,9 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             switch (targetDatabaseState)
             {
                 case DatabaseStateWithRespectToDonorUpdates.Active:
+                    var activeHlaVersion = activeHlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
                     await messageProcessorService.ProcessMessageBatchAsync(
-                        async batch => await ProcessMessages(batch, targetDatabase),
+                        async batch => await ProcessMessages(batch, targetDatabase, activeHlaVersion),
                         batchSize,
                         batchSize * 2);
                     return;
@@ -195,7 +200,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             };
         }
 
-        private async Task ProcessMessages(IEnumerable<ServiceBusMessage<SearchableDonorUpdate>> messageBatch, TransientDatabase targetDatabase)
+        private async Task ProcessMessages(IEnumerable<ServiceBusMessage<SearchableDonorUpdate>> messageBatch, TransientDatabase targetDatabase, string targetHlaNomenclatureVersion)
         {
             var converterResults = await searchableDonorUpdateConverter.ConvertSearchableDonorUpdatesAsync(messageBatch);
 
@@ -203,7 +208,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 
             if (converterResults.ProcessingResults.Any())
             {
-                await donorManagementService.ApplyDonorUpdatesToDatabase(converterResults.ProcessingResults, targetDatabase);
+                await donorManagementService.ApplyDonorUpdatesToDatabase(converterResults.ProcessingResults, targetDatabase, targetHlaNomenclatureVersion);
             }
         }
 

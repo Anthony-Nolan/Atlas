@@ -18,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
     /// </summary>
     public interface IDonorManagementService
     {
-        Task ApplyDonorUpdatesToDatabase(IEnumerable<DonorAvailabilityUpdate> donorAvailabilityUpdates, TransientDatabase targetDatabase);
+        Task ApplyDonorUpdatesToDatabase(IEnumerable<DonorAvailabilityUpdate> donorAvailabilityUpdates, TransientDatabase targetDatabase, string targetHlaNomenclatureVersion);
     }
 
     public class DonorManagementService : IDonorManagementService
@@ -54,10 +54,13 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             this.mapper = mapper;
         }
 
-        public async Task ApplyDonorUpdatesToDatabase(IEnumerable<DonorAvailabilityUpdate> donorAvailabilityUpdates, TransientDatabase targetDatabase)
+        public async Task ApplyDonorUpdatesToDatabase(
+            IEnumerable<DonorAvailabilityUpdate> donorAvailabilityUpdates,
+            TransientDatabase targetDatabase,
+            string targetHlaNomenclatureVersion)
         {
             var filteredUpdates = await FilterUpdates(donorAvailabilityUpdates, targetDatabase);
-            await ApplyDonorUpdates(filteredUpdates, targetDatabase);
+            await ApplyDonorUpdates(filteredUpdates, targetDatabase, targetHlaNomenclatureVersion);
         }
 
         private async Task<IEnumerable<DonorAvailabilityUpdate>> FilterUpdates(IEnumerable<DonorAvailabilityUpdate> updates, TransientDatabase targetDatabase)
@@ -129,7 +132,10 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             return new DonorUpdateNotAppliedEventModel(update.DonorManagementLog.LastUpdateDateTime, update.DonorAvailabilityUpdate);
         }
 
-        private async Task ApplyDonorUpdates(IEnumerable<DonorAvailabilityUpdate> updates, TransientDatabase targetDatabase)
+        private async Task ApplyDonorUpdates(
+            IEnumerable<DonorAvailabilityUpdate> updates,
+            TransientDatabase targetDatabase,
+            string targetHlaNomenclatureVersion)
         {
             var updatesList = updates.ToList();
 
@@ -137,12 +143,15 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 
             // Note, the management log must be written to last to prevent the undesirable
             // scenario of the donor update failing after the log has been successfully updated.
-            await AddOrUpdateDonors(updatesList, targetDatabase);
+            await AddOrUpdateDonors(updatesList, targetDatabase, targetHlaNomenclatureVersion);
             await SetDonorsAsUnavailableForSearch(updatesList, targetDatabase);
             await CreateOrUpdateManagementLogBatch(updatesList, targetDatabase);
         }
 
-        private async Task AddOrUpdateDonors(IEnumerable<DonorAvailabilityUpdate> updates, TransientDatabase targetDatabase)
+        private async Task AddOrUpdateDonors(
+            IEnumerable<DonorAvailabilityUpdate> updates,
+            TransientDatabase targetDatabase,
+            string targetHlaNomenclatureVersion)
         {
             var availableDonors = updates
                 .Where(update => update.IsAvailableForSearch && update.DonorInfo != null)
@@ -153,7 +162,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             {
                 logger.SendTrace($"{TraceMessagePrefix}: {availableDonors.Count} donors to be added or updated.");
 
-                await donorService.CreateOrUpdateDonorBatch(availableDonors, targetDatabase);
+                await donorService.CreateOrUpdateDonorBatch(availableDonors, targetDatabase, targetHlaNomenclatureVersion);
             }
         }
 
