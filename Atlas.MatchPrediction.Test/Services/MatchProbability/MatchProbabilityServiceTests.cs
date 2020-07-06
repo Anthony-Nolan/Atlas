@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
@@ -30,11 +31,11 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         private const string PatientLocus = "patientHla";
         private const string DonorLocus = "donorHla";
 
-        private static readonly PhenotypeInfo<string> PatientHla = PhenotypeInfoBuilder.New
-            .With(d => d.A, new LocusInfo<string> {Position1 = PatientLocus, Position2 = PatientLocus}).Build();
+        private static readonly PhenotypeInfo<string> PatientHla = new PhenotypeInfoBuilder<string>()
+            .WithDataAt(Locus.A, PatientLocus).Build();
 
-        private static readonly PhenotypeInfo<string> DonorHla = PhenotypeInfoBuilder.New
-            .With(d => d.A, new LocusInfo<string> {Position1 = DonorLocus, Position2 = DonorLocus}).Build();
+        private static readonly PhenotypeInfo<string> DonorHla = new PhenotypeInfoBuilder<string>()
+            .WithDataAt(Locus.A, DonorLocus).Build();
 
         [SetUp]
         public void Setup()
@@ -54,7 +55,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             matchProbabilityService = new MatchProbabilityService(
                 compressedPhenotypeExpander,
                 genotypeLikelihoodService,
-                matchCalculationService, 
+                matchCalculationService,
                 matchProbabilityCalculator,
                 logger);
         }
@@ -76,7 +77,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 .Returns(new HashSet<PhenotypeInfo<string>> {PatientHla});
 
             matchCalculationService.MatchAtPGroupLevel(PatientHla, DonorHla, Arg.Any<string>())
-                .Returns(new GenotypeMatchDetails 
+                .Returns(new GenotypeMatchDetails
                     {MatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2}});
 
             matchProbabilityCalculator.CalculateMatchProbability(

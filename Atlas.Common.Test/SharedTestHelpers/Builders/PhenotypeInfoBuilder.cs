@@ -1,17 +1,54 @@
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using LochNessBuilder;
+using Microsoft.Azure.Documents.Spatial;
 
 namespace Atlas.Common.Test.SharedTestHelpers.Builders
 {
     [Builder]
-    public static class PhenotypeInfoBuilder
+    public class PhenotypeInfoBuilder<T>
     {
-        public static Builder<PhenotypeInfo<string>> New => Builder<PhenotypeInfo<string>>.New
-            .With(d => d.A , new LocusInfo<string> { Position1 = "A1:A1", Position2 = "A2:A2" })
-            .With(d => d.B, new LocusInfo<string> { Position1 = "B1:B1", Position2 = "B2:B2" })
-            .With(d => d.C, new LocusInfo<string> { Position1 = "C1:C1", Position2 = "C2:C2" })
-            .With(d => d.Dpb1, new LocusInfo<string> { Position1 = "Dpb11:Dpb11", Position2 = "Dpb12:Dpb12" })
-            .With(d => d.Dqb1, new LocusInfo<string> { Position1 = "Dqb11:Dqb11", Position2 = "Dqb12:Dqb12" })
-            .With(d => d.Drb1, new LocusInfo<string> { Position1 = "Drb11:Drb11", Position2 = "Drb12:Drb12" });
+        private readonly PhenotypeInfo<T> phenotypeInfo;
+
+        public PhenotypeInfoBuilder()
+        {
+            phenotypeInfo = new PhenotypeInfo<T>
+            {
+                A = new LocusInfo<T>(default),
+                B = new LocusInfo<T>(default),
+                C = new LocusInfo<T>(default),
+                Dpb1 = new LocusInfo<T>(default),
+                Dqb1 = new LocusInfo<T>(default),
+                Drb1 = new LocusInfo<T>(default),
+            };
+        }
+
+        public PhenotypeInfoBuilder(PhenotypeInfo<T> initialValues)
+        {
+            phenotypeInfo = initialValues;
+        }
+
+        public PhenotypeInfoBuilder<T> WithDataAt(Locus locus, LocusPosition position, T value)
+        {
+            phenotypeInfo.SetPosition(locus, position, value);
+            return this;
+        }
+
+        public PhenotypeInfoBuilder<T> WithDataAt(Locus locus, T value)
+        {
+            phenotypeInfo.SetLocus(locus, value);
+            return this;
+        }
+
+        public PhenotypeInfoBuilder<T> WithDataAt(Locus locus, LocusInfo<T> value)
+        {
+            phenotypeInfo.SetLocus(locus, value);
+            return this;
+        }
+
+        public PhenotypeInfo<T> Build()
+        {
+            return phenotypeInfo;
+        }
     }
 }
