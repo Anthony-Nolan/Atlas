@@ -1,4 +1,5 @@
 ﻿using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using FluentAssertions;
@@ -20,7 +21,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         [Test]
         public void TruncateGenotypeAlleles_WhenGenotypeOnlyHasTwoFieldAlleles_ReturnsUnmodifiedGenotype()
         {
-            var genotype = PhenotypeInfoBuilder.New.Build();
+            var genotype = TwoFieldGenotypeBuilder.Build();
 
             var actualGenotype = alleleTruncater.TruncateGenotypeAlleles(genotype);
 
@@ -32,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         [TestCase("ExtraField:ExtraField")]
         public void TruncateGenotypeAlleles_WhenWholeGenotypeHasThreeOrFourFieldAllele_ReturnsGenotypeTruncatedToTwoFields(string fieldsToAdd)
         {
-            var genotype = PhenotypeInfoBuilder.New.Build();
+            var genotype = TwoFieldGenotypeBuilder.Build();
             var genotypeWithAddedFields = genotype.Map((locus, position, allele) => $"{genotype.GetPosition(locus, position)}:{fieldsToAdd}");
 
             var actualGenotype = alleleTruncater.TruncateGenotypeAlleles(genotypeWithAddedFields);
@@ -52,14 +53,17 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         [TestCase("ExtraField:ExtraField", Locus.Drb1)]
         public void TruncateGenotypeAlleles_WhenGenotypeHasThreeOrFourFieldAllele_ReturnsGenotypeTruncatedToTwoFields(string fieldsToAdd, Locus locus)
         {
-            var genotype = PhenotypeInfoBuilder.New.Build();
+            var genotype = TwoFieldGenotypeBuilder.Build();
 
             genotype.SetPosition(locus, LocusPosition.One, $"{genotype.GetPosition(locus, LocusPosition.One)}:{fieldsToAdd}");
             genotype.SetPosition(locus, LocusPosition.Two, $"{genotype.GetPosition(locus, LocusPosition.Two)}:{fieldsToAdd}");
 
             var actualGenotype = alleleTruncater.TruncateGenotypeAlleles(genotype);
 
-            actualGenotype.Should().BeEquivalentTo(PhenotypeInfoBuilder.New.Build());
+            actualGenotype.Should().BeEquivalentTo(TwoFieldGenotypeBuilder.Build());
         }
+
+        private PhenotypeInfoBuilder<string> TwoFieldGenotypeBuilder =>
+            new PhenotypeInfoBuilder<string>(new PhenotypeInfo<string>("FirstField:SecondField"));
     }
 }

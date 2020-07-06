@@ -3,6 +3,7 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Atlas.Common.GeneticData;
 using Atlas.MatchPrediction.Models;
 using FluentAssertions;
 
@@ -21,14 +22,14 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         private readonly LociInfo<int?> tenOutOfTenMatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
         private readonly LociInfo<int?> mismatchMatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 0, Drb1 = 0};
 
-        private readonly PhenotypeInfo<string> patientGenotype1 = PhenotypeInfoBuilder.New
-        .With(d => d.A, new LocusInfo<string> { Position1 = PatientLocus1, Position2 = PatientLocus1 }).Build();
-        private readonly PhenotypeInfo<string> patientGenotype2 = PhenotypeInfoBuilder.New
-        .With(d => d.A, new LocusInfo<string> { Position1 = PatientLocus2, Position2 = PatientLocus2 }).Build();
-        private readonly PhenotypeInfo<string> donorGenotype1 = PhenotypeInfoBuilder.New
-        .With(d => d.A, new LocusInfo<string> { Position1 = DonorLocus1, Position2 = DonorLocus1 }).Build();
-        private readonly PhenotypeInfo<string> donorGenotype2 = PhenotypeInfoBuilder.New
-        .With(d => d.A, new LocusInfo<string> { Position1 = DonorLocus2, Position2 = DonorLocus2 }).Build();
+        private readonly PhenotypeInfo<string> patientGenotype1 = new PhenotypeInfoBuilder<string>()
+        .WithDataAt(Locus.A, new LocusInfo<string> { Position1 = PatientLocus1, Position2 = PatientLocus1 }).Build();
+        private readonly PhenotypeInfo<string> patientGenotype2 = new PhenotypeInfoBuilder<string>()
+        .WithDataAt(Locus.A, new LocusInfo<string> { Position1 = PatientLocus2, Position2 = PatientLocus2 }).Build();
+        private readonly PhenotypeInfo<string> donorGenotype1 = new PhenotypeInfoBuilder<string>()
+        .WithDataAt(Locus.A, new LocusInfo<string> { Position1 = DonorLocus1, Position2 = DonorLocus1 }).Build();
+        private readonly PhenotypeInfo<string> donorGenotype2 = new PhenotypeInfoBuilder<string>()
+        .WithDataAt(Locus.A, new LocusInfo<string> { Position1 = DonorLocus2, Position2 = DonorLocus2 }).Build();
 
         [SetUp]
         public void Setup()
