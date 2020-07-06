@@ -1,9 +1,11 @@
 ﻿using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
 using Atlas.MatchPrediction.Services.MatchCalculation;
+using Atlas.MatchPrediction.Test.Integration.Resources;
 using FluentAssertions;
-using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -16,22 +18,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
 
         private const string HlaNomenclatureVersion = Constants.SnapshotHlaNomenclatureVersion;
 
-        private const string A1 = "02:09";
-        private const string A2 = "02:66";
-        private const string B1 = "08:182";
-        private const string B2 = "15:146";
-        private const string C1 = "01:03";
-        private const string C2 = "03:05";
-        private const string Dqb11 = "03:09";
-        private const string Dqb12 = "02:04";
-        private const string Drb11 = "03:124";
-        private const string Drb12 = "11:129";
-
         private static readonly LociInfo<int?> TenOutOfTenMatch = new LociInfo<int?>
             {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
 
         private static readonly LociInfo<int?> SingleMismatchAtB = new LociInfo<int?>
-            { A = 2, B = 1, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2 };
+            { A = 1, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2 };
 
         private static readonly LociInfo<int?> DoubleMismatchAtA = new LociInfo<int?>
             { A = 0, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2 };
@@ -46,8 +37,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         [Test]
         public async Task MatchAtPGroupLevel_WhenIdenticalGenotypes_IsTenOutOfTenMatch()
         {
-            var matchDetails =
-                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), NewGenotype.Build(), HlaNomenclatureVersion);
+            var matchDetails = await matchCalculationService
+                .MatchAtPGroupLevel(DefaultUnambiguousAllelesBuilder.Build(), DefaultUnambiguousAllelesBuilder.Build(), HlaNomenclatureVersion);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -55,11 +46,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         [Test]
         public async Task MatchAtPGroupLevel_WhenGenotypesWithDifferentAllelesWithSameGGroup_IsTenOutOfTenMatch()
         {
-            var donorGenotype = NewGenotype
-                .With(g => g.B, new LocusInfo<string> { Position1 = B1, Position2 = "15:228"}).Build();
+            var donorGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.B, LocusPosition.Two, "15:228").Build();
+            var patientGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.B, LocusPosition.Two, "15:146").Build();
 
-            var matchDetails =
-                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
+            var matchDetails = await matchCalculationService.MatchAtPGroupLevel(patientGenotype, donorGenotype, HlaNomenclatureVersion);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -67,11 +57,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         [Test]
         public async Task MatchAtPGroupLevel_WhenGenotypesWithDifferentAllelesWithSamePGroup_IsTenOutOfTenMatch()
         {
-            var donorGenotype = NewGenotype
-                .With(g => g.A, new LocusInfo<string> {Position1 = A1, Position2 = "02:09"}).Build();
+            var donorGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.Two, "02:09").Build();
+            var patientGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.Two, "02:66").Build();
 
-            var matchDetails =
-                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
+            var matchDetails = await matchCalculationService.MatchAtPGroupLevel(patientGenotype, donorGenotype, HlaNomenclatureVersion);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -79,11 +68,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         [Test]
         public async Task MatchAtPGroupLevel_WhenDonorIsSerologicallyTyped_AndDonorHasMatchingAllele_IsTenOutOfTenMatch()
         {
-            var donorGenotype = NewGenotype
-                .With(g => g.A, new LocusInfo<string> {Position1 = "2", Position2 = A2}).Build();
+            var donorGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.One, "2").Build();
+            var patientGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.One, "02:09").Build();
 
-            var matchDetails =
-                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
+            var matchDetails = await matchCalculationService.MatchAtPGroupLevel(patientGenotype, donorGenotype, HlaNomenclatureVersion);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -91,11 +79,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         [Test]
         public async Task MatchAtPGroupLevel_WhenGenotypesDifferInPhase_IsTenOutOfTenMatch()
         {
-            var donorGenotype = NewGenotype
-                .With(g => g.A, new LocusInfo<string> {Position1 = A2, Position2 = A1}).Build();
+            var donorGenotype = DefaultUnambiguousAllelesBuilder
+                .WithDataAt(Locus.A, Alleles.UnambiguousAlleleDetails.A.Position2.Allele, Alleles.UnambiguousAlleleDetails.A.Position1.Allele)
+                .Build();
 
-            var matchDetails =
-                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
+            var matchDetails = await matchCalculationService
+                .MatchAtPGroupLevel(DefaultUnambiguousAllelesBuilder.Build(), donorGenotype, HlaNomenclatureVersion);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -103,11 +92,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         [Test]
         public async Task MatchAtPGroupLevel_WhenPatientGenotypeHomozygous_AndMatchesExactlyOneOfPatientHla_IsNineOutOfTenMatch()
         {
-            var patientGenotype = NewGenotype
-                .With(g => g.B, new LocusInfo<string> {Position1 = B1, Position2 = B1}).Build();
+            var patientGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, Alleles.UnambiguousAlleleDetails.A.Position1.Allele).Build();
 
-            var matchDetails =
-                await matchCalculationService.MatchAtPGroupLevel(patientGenotype, NewGenotype.Build(), HlaNomenclatureVersion);
+            var matchDetails = await matchCalculationService
+                .MatchAtPGroupLevel(patientGenotype, DefaultUnambiguousAllelesBuilder.Build(), HlaNomenclatureVersion);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(SingleMismatchAtB);
         }
@@ -115,11 +103,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         [Test]
         public async Task MatchAtPGroupLevel_WhenDonorGenotypeHomozygous_AndMatchesExactlyOneOfDonorHla_IsNineOutOfTenMatch()
         {
-            var donorGenotype = NewGenotype
-                .With(g => g.B, new LocusInfo<string> {Position1 = B1, Position2 = B1}).Build();
+            var donorGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, Alleles.UnambiguousAlleleDetails.A.Position1.Allele).Build();
 
-            var matchDetails =
-                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
+            var matchDetails = await matchCalculationService
+                .MatchAtPGroupLevel(DefaultUnambiguousAllelesBuilder.Build(), donorGenotype, HlaNomenclatureVersion);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(SingleMismatchAtB);
         }
@@ -127,21 +114,15 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculati
         [Test]
         public async Task MatchAtPGroupLevel_WhenDonorGenotypeHasLocusMismatch_IsEightOutOfTenMatch()
         {
-            var donorGenotype = NewGenotype
-                .With(g => g.A, new LocusInfo<string> {Position1 = "11:03", Position2 = "11:03"}).Build();
+            var donorGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, "11:03").Build();
+            var patientGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, "02:09").Build();
 
-            var matchDetails =
-                await matchCalculationService.MatchAtPGroupLevel(NewGenotype.Build(), donorGenotype, HlaNomenclatureVersion);
+            var matchDetails = await matchCalculationService.MatchAtPGroupLevel(patientGenotype, donorGenotype, HlaNomenclatureVersion);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(DoubleMismatchAtA);
         }
 
-        private static Builder<PhenotypeInfo<string>> NewGenotype => Builder<PhenotypeInfo<string>>.New
-            .With(g => g.A, new LocusInfo<string> {Position1 = A1, Position2 = A2})
-            .With(g => g.B, new LocusInfo<string> {Position1 = B1, Position2 = B2})
-            .With(g => g.C, new LocusInfo<string> {Position1 = C1, Position2 = C2})
-            .With(g => g.Dpb1, new LocusInfo<string> {Position1 = null, Position2 = null})
-            .With(g => g.Dqb1, new LocusInfo<string> {Position1 = Dqb11, Position2 = Dqb12})
-            .With(g => g.Drb1, new LocusInfo<string> {Position1 = Drb11, Position2 = Drb12});
+        private static PhenotypeInfoBuilder<string> DefaultUnambiguousAllelesBuilder =>
+            new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles());
     }
 }
