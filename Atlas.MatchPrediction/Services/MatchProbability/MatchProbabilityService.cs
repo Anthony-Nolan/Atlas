@@ -42,15 +42,28 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             this.logger = logger;
         }
 
-        public async Task<MatchProbabilityResponse> CalculateMatchProbability(MatchProbabilityInput matchProbabilityInput)
+        public async Task<MatchProbabilityResponse> CalculateMatchProbability(
+            MatchProbabilityInput matchProbabilityInput)
         {
-            var patientGenotypes = await ExpandPatientPhenotype(matchProbabilityInput);
-            var donorGenotypes = await ExpandDonorPhenotype(matchProbabilityInput);
+
+            var patientGenotypes = (await ExpandPatientPhenotype(matchProbabilityInput)).Select(p =>
+                new PatientMatchPredictionInfo
+                {
+                    FrequencyMetadata = matchProbabilityInput.PatientFrequencySetMetadata,
+                    PhenotypeInfo = p
+                }).ToHashSet();
+            var donorGenotypes = (await ExpandDonorPhenotype(matchProbabilityInput)).Select(p =>
+                new DonorMatchPredictionInfo {
+                    FrequencyMetadata = matchProbabilityInput.DonorFrequencySetMetadata,
+                    PhenotypeInfo = p
+                }).ToHashSet();
 
             var allPatientDonorCombinations = patientGenotypes.SelectMany(patientHla =>
-                donorGenotypes.Select(donorHla => new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla, donorHla)));
+                donorGenotypes.Select(donorHla =>
+                    new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla.PhenotypeInfo, donorHla.PhenotypeInfo)));
 
-            var patientDonorMatchDetails = await CalculatePairsMatchCounts(matchProbabilityInput, allPatientDonorCombinations);
+            var patientDonorMatchDetails =
+                await CalculatePairsMatchCounts(matchProbabilityInput, allPatientDonorCombinations);
 
             // Returns early when patient/donor pair are guaranteed to either be a match or not
             if (patientDonorMatchDetails.Any() && patientDonorMatchDetails.All(p => p.IsTenOutOfTenMatch))
@@ -62,22 +75,26 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                         {A = 1m, B = 1m, C = 1m, Dpb1 = null, Dqb1 = 1m, Drb1 = 1m}
                 };
             }
+
             if (!patientDonorMatchDetails.Any(p => p.IsTenOutOfTenMatch))
             {
-                return new MatchProbabilityResponse {
+                return new MatchProbabilityResponse
+                {
                     ZeroMismatchProbability = 0m,
                     ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
                         {A = 0m, B = 0m, C = 0m, Dpb1 = null, Dqb1 = 0m, Drb1 = 0m}
                 };
             }
 
-            var genotypes = patientGenotypes.Union(donorGenotypes);
+            var genotypes = patientGenotypes.Union<PhenotypeInfoWithFrequencyMetadata>(donorGenotypes).ToHashSet();
             var genotypesLikelihoods = await CalculateGenotypeLikelihoods(genotypes);
 
-            return matchProbabilityCalculator.CalculateMatchProbability(patientGenotypes, donorGenotypes, patientDonorMatchDetails, genotypesLikelihoods);
+            return matchProbabilityCalculator.CalculateMatchProbability(patientGenotypes, donorGenotypes,
+                patientDonorMatchDetails, genotypesLikelihoods);
         }
 
-        private async Task<ISet<PhenotypeInfo<string>>> ExpandPatientPhenotype(MatchProbabilityInput matchProbabilityInput)
+        private async Task<ISet<PhenotypeInfo<string>>> ExpandPatientPhenotype(
+            MatchProbabilityInput matchProbabilityInput)
         {
             return await logger.RunTimedAsync(
                 async () => await compressedPhenotypeExpander.ExpandCompressedPhenotype(
@@ -89,7 +106,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             );
         }
 
-        private async Task<ISet<PhenotypeInfo<string>>> ExpandDonorPhenotype(MatchProbabilityInput matchProbabilityInput)
+        private async Task<ISet<PhenotypeInfo<string>>> ExpandDonorPhenotype(
+            MatchProbabilityInput matchProbabilityInput)
         {
             return await logger.RunTimedAsync(
                 async () => await compressedPhenotypeExpander.ExpandCompressedPhenotype(
@@ -113,7 +131,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             );
         }
 
-        private async Task<Dictionary<PhenotypeInfo<string>, decimal>> CalculateGenotypeLikelihoods(IEnumerable<PhenotypeInfo<string>> genotypes)
+        private async Task<Dictionary<PhenotypeInfo<string>, decimal>> CalculateGenotypeLikelihoods(
+            IEnumerable<PhenotypeInfoWithFrequencyMetadata> genotypes)
         {
             return (await logger.RunTimedAsync(
                     async () => await Task.WhenAll(genotypes.Select(CalculateLikelihood)),
@@ -127,13 +146,14 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>> patientDonorPair,
             string hlaNomenclatureVersion)
         {
-            return await matchCalculationService.MatchAtPGroupLevel(patientDonorPair.Item1, patientDonorPair.Item2, hlaNomenclatureVersion);
+            return await matchCalculationService.MatchAtPGroupLevel(patientDonorPair.Item1, patientDonorPair.Item2,
+                hlaNomenclatureVersion);
         }
 
-        private async Task<KeyValuePair<PhenotypeInfo<string>, decimal>> CalculateLikelihood(PhenotypeInfo<string> genotype)
+        private async Task<KeyValuePair<PhenotypeInfo<string>, decimal>> CalculateLikelihood(PhenotypeInfoWithFrequencyMetadata phenotype)
         {
-            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotype);
-            return new KeyValuePair<PhenotypeInfo<string>, decimal>(genotype, likelihood);
+            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(phenotype.PhenotypeInfo, phenotype.FrequencyMetadata);
+            return new KeyValuePair<PhenotypeInfo<string>, decimal>(phenotype.PhenotypeInfo, likelihood);
         }
     }
 }

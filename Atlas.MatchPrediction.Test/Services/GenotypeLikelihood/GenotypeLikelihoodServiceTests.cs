@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
@@ -59,7 +60,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>())
                 .Returns(new ExpandedGenotype {Diplotypes = DiplotypeBuilder.New.Build(numberOfDiplotypes).ToList()});
 
-            await genotypeLikelihoodService.CalculateLikelihood(new PhenotypeInfo<string>());
+            await genotypeLikelihoodService.CalculateLikelihood(new PhenotypeInfo<string>(), new FrequencySetMetadata());
 
             await frequencyRepository.Received(1)
                 .GetHaplotypeFrequencies(Arg.Any<IEnumerable<LociInfo<string>>>(), Arg.Any<int>());
@@ -68,7 +69,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         [Test]
         public async Task CalculateLikelihood_LikelihoodCalculatorIsCalledOnce()
         {
-            await genotypeLikelihoodService.CalculateLikelihood(new PhenotypeInfo<string>());
+            await genotypeLikelihoodService.CalculateLikelihood(new PhenotypeInfo<string>(), new FrequencySetMetadata());
 
             genotypeLikelihoodCalculator.Received(1)
                 .CalculateLikelihood(Arg.Any<ExpandedGenotype>());
