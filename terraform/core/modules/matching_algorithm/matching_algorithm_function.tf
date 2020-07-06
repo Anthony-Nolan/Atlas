@@ -22,6 +22,11 @@ locals {
     "DataRefresh:DatabaseBName"                                 = azurerm_sql_database.atlas-matching-transient-b.name
     "DataRefresh:DormantDatabaseSize"                           = var.DATA_REFRESH_DB_SIZE_DORMANT
     "DataRefresh:RefreshDatabaseSize"                           = var.DATA_REFRESH_DB_SIZE_REFRESH
+    "DataRefresh:DonorManagement:Topic"                         = var.servicebus_topics.updated-searchable-donors.name
+    "DataRefresh:DonorManagement:SubscriptionForDbA"            = azurerm_servicebus_subscription.matching_transient_a.name
+    "DataRefresh:DonorManagement:SubscriptionForDbB"            = azurerm_servicebus_subscription.matching_transient_b.name
+    "DataRefresh:DonorManagement:BatchSize"                     = var.MESSAGING_BUS_DONOR_BATCH_SIZE
+    "DataRefresh:DonorManagement:CronSchedule"                  = "NotActuallyUsedInThisFunction"
     "HlaMetadataDictionary:AzureStorageConnectionString"        = var.azure_storage.primary_connection_string,
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"            = var.WMDA_FILE_URL,
     "MacDictionary:AzureStorageConnectionString"                = var.azure_storage.primary_connection_string
