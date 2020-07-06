@@ -70,8 +70,8 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 
             return new DonorBatchProcessingResult<TResult>
             {
-                ProcessingResults = results,
-                FailedDonors = failedDonors
+                ProcessingResults = results.AsReadOnly(),
+                FailedDonors = failedDonors.AsReadOnly()
             };
         }
 

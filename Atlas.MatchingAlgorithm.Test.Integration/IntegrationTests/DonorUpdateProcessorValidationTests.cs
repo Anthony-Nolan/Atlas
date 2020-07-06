@@ -81,7 +81,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
             await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
-                Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(x => x.Count() == 1),
+                Arg.Is<IReadOnlyCollection<DonorAvailabilityUpdate>>(x => x.Count == 1),
                 Arg.Any<TransientDatabase>(),
                 Arg.Any<string>());
         }
@@ -213,7 +213,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
             await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
-                Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(x => x.Count() == 1),
+                Arg.Is<IReadOnlyCollection<DonorAvailabilityUpdate>>(x => x.Count == 1),
                 Arg.Any<TransientDatabase>(),
                 Arg.Any<string>());
         }
@@ -230,7 +230,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
             await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
-                Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(x => x.Count() == updateCount),
+                Arg.Is<IReadOnlyCollection<DonorAvailabilityUpdate>>(x => x.Count == updateCount),
                 Arg.Any<TransientDatabase>(),
                 Arg.Any<string>());
         }
@@ -262,7 +262,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
             await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
-                Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(x => x.Count() == 1),
+                Arg.Is<IReadOnlyCollection<DonorAvailabilityUpdate>>(x => x.Count == 1),
                 Arg.Any<TransientDatabase>(),
                 Arg.Any<string>());
         }

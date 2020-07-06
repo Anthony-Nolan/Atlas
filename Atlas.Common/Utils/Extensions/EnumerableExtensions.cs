@@ -33,9 +33,27 @@ namespace Atlas.Common.Utils.Extensions
         }
 
         public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(
-            this IEnumerable<KeyValuePair<TKey, TValue>>  keyValuePair)
+            this IEnumerable<KeyValuePair<TKey, TValue>> keyValuePair)
         {
             return keyValuePair.ToDictionary(p => p.Key, p => p.Value);
+        }
+
+        /// <summary>
+        /// Splits a collection into 2 groups whilst performing only a single pass through the data.
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="values">Objects to be split</param>
+        /// <param name="splittingFunction">Condition upon which to split the objects</param>
+        /// <returns>
+        /// A ValueTuple containing:
+        /// FIRST, the elements that DO satisfy the condition, and
+        /// SECOND, the elements that do NOT satisfy the condition.</returns>
+        public static (List<TValue>, List<TValue>) ReifyAndSplit<TValue>(
+            this IEnumerable<TValue> values,
+            Func<TValue, bool> splittingFunction)
+        {
+            var lookup = values.ToLookup(splittingFunction);
+            return (lookup[true].ToList(), lookup[false].ToList());
         }
     }
 }
