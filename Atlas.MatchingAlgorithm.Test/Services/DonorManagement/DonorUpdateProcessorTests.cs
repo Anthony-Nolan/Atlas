@@ -68,11 +68,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         private void ConfigureMocksToPassThroughToDonorService()
         {
             searchableDonorUpdateConverter.ConvertSearchableDonorUpdatesAsync(default).ReturnsForAnyArgs(
-                Task.FromResult(
-                    new DonorBatchProcessingResult<DonorAvailabilityUpdate>
-                    {
-                        ProcessingResults = new[] {new DonorAvailabilityUpdate()}
-                    }));
+                Task.FromResult(new DonorBatchProcessingResult<DonorAvailabilityUpdate>())
+                );
             ConfigureMockMessageProcessorToPassThrough(messageProcessorServiceForA);
             ConfigureMockMessageProcessorToPassThrough(messageProcessorServiceForB);
         }

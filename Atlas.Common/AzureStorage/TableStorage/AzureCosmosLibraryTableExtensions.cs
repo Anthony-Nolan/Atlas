@@ -26,7 +26,7 @@ namespace Atlas.Common.AzureStorage.TableStorage
     ///
     /// We have some code that was originally written using the M.WA.S library, and hasn't been updated.
     /// And we have some newer code that has been written using the M.A.C library.
-    /// We hope in due course to migrate everything to using the M.A.C library (but to continue using the ATS service) (TODO: ATLAS-QQ)
+    /// We hope in due course to migrate everything to using the M.A.C library (but to continue using the ATS service) (TODO: ATLAS-485)
     /// For the moment, we just try to keep these extension methods in sync where necessary.
     /// </summary>
     public static class AzureCosmosLibraryTableExtensions

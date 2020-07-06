@@ -85,15 +85,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             donorInfoConverter
                 .ConvertDonorInfoAsync(null, null)
                 .ReturnsForAnyArgs(new DonorBatchProcessingResult<DonorInfo>
-                {
-                    ProcessingResults = new List<DonorInfo>
+                (
+                    new List<DonorInfo>
                     {
                         new DonorInfo
                         {
                             DonorId = donorId
                         }
                     }
-                });
+                ));
 
             await donorImporter.ImportDonors();
 
@@ -116,7 +116,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                         {
                             AtlasDonorId = failedDonorId
                         }
-                    }
+                    }.AsReadOnly()
                 });
 
             var donor = DonorBuilder.New.With(d => d.AtlasDonorId, failedDonorId).Build();
