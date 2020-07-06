@@ -50,7 +50,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 .Returns(new GenotypeMatchDetails
                     {MatchCounts = new LociInfo<int?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0}});
 
-            genotypeLikelihoodService.CalculateLikelihood(Arg.Any<PhenotypeInfo<string>>()).Returns(0.5m);
+            genotypeLikelihoodService.CalculateLikelihood(default, default).Returns(0.5m);
 
             matchProbabilityService = new MatchProbabilityService(
                 compressedPhenotypeExpander,
@@ -81,8 +81,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                     {MatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2}});
 
             matchProbabilityCalculator.CalculateMatchProbability(
-                    Arg.Any<HashSet<PhenotypeInfo<string>>>(),
-                    Arg.Any<HashSet<PhenotypeInfo<string>>>(),
+                    default,
+                    default,
                     Arg.Any<HashSet<GenotypeMatchDetails>>(),
                     Arg.Any<Dictionary<PhenotypeInfo<string>, decimal>>())
                 .Returns(new MatchProbabilityResponse {ZeroMismatchProbability = 0.5m});
