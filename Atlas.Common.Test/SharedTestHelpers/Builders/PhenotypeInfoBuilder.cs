@@ -1,7 +1,6 @@
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using LochNessBuilder;
-using Microsoft.Azure.Documents.Spatial;
 
 namespace Atlas.Common.Test.SharedTestHelpers.Builders
 {
