@@ -17,7 +17,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         public Task<string> GetLastMacEntry();
         public Task InsertMacs(IEnumerable<Mac> macCodes);
         public Task<Mac> GetMac(string macCode);
-        public Task<IEnumerable<Mac>> GetAllMacs();
+        public Task<List<Mac>> GetAllMacs();
     }
 
     internal class MacRepository : IMacRepository
@@ -30,7 +30,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             this.logger = logger;
             var connectionString = macDictionarySettings.AzureStorageConnectionString;
             var tableName = macDictionarySettings.TableName;
-            var storageAccount = CloudStorageAccount.Parse(connectionString);//TODO: ATLAS-485. Combine this with the CloudTableFactory in HMD.
+            var storageAccount = CloudStorageAccount.Parse(connectionString); //TODO: ATLAS-485. Combine this with the CloudTableFactory in HMD.
             var tableClient = storageAccount.CreateCloudTableClient();
             Table = tableClient.GetTableReference(tableName);
             Table.CreateIfNotExists(); //TODO: ATLAS-455. Is there any mileage in using the "Lazy" Indexing Policy? (Apparently requires "Gateway" mode on the table?)
@@ -58,17 +58,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
         public async Task<Mac> GetMac(string macCode)
         {
-            var query = new TableQuery<MacEntity>().Where(
-                TableQuery.CombineFilters(
-                    TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, macCode.AsPartitionKey()),
-                    TableOperators.And,
-                    TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, macCode.AsRowKey())
-                ));
-            var result = await Table.ExecuteQueryAsync(query);
-            return new Mac(result.Single());
+            var macEntity = await Table.GetByPartitionAndRowKey<MacEntity>(macCode.AsPartitionKey(), macCode.AsRowKey());
+            return new Mac(macEntity);
         }
 
-        public async Task<IEnumerable<Mac>> GetAllMacs()
+        public async Task<List<Mac>> GetAllMacs()
         {
             var nonMetadataFilter = TableQuery.GenerateFilterCondition(
                 "PartitionKey",
@@ -78,7 +72,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
             var query = new TableQuery<MacEntity>().Where(nonMetadataFilter);
             var result = await Table.ExecuteQueryAsync(query);
-            return result.Select(x => new Mac(x));
+            return result.Select(x => new Mac(x)).ToList();
         }
 
         private async Task StoreLatestMacRecord(string latestMac)
@@ -108,14 +102,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
         private async Task<string> FetchLastMacEntryFromMetadata()
         {
-            var query = new TableQuery<LastStoredMacMetadataEntity>().Where(
-                TableQuery.CombineFilters(
-                    TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, LastStoredMacMetadataEntity.MetadataPartitionKey),
-                    TableOperators.And,
-                    TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, LastStoredMacMetadataEntity.LatestMacRowKey)
-                ));
+            var metadataEntity = (await Table.GetByPartitionAndRowKey<LastStoredMacMetadataEntity>(
+                LastStoredMacMetadataEntity.MetadataPartitionKey,
+                LastStoredMacMetadataEntity.LatestMacRowKey
+            ));
 
-            return (await Table.ExecuteQueryAsync(query)).SingleOrDefault()?.Code;
+            return metadataEntity?.Code;
         }
     }
 
