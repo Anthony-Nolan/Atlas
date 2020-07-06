@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.TableStorage;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
@@ -21,10 +22,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
     internal class MacRepository : IMacRepository
     {
+        private readonly ILogger logger;
         protected readonly CloudTable Table;
 
-        public MacRepository(MacDictionarySettings macDictionarySettings)
-        { 
+        public MacRepository(MacDictionarySettings macDictionarySettings, ILogger logger)
+        {
+            this.logger = logger;
             var connectionString = macDictionarySettings.AzureStorageConnectionString;
             var tableName = macDictionarySettings.TableName;
             var storageAccount = CloudStorageAccount.Parse(connectionString);//TODO: ATLAS-485. Combine this with the CloudTableFactory in HMD.
@@ -35,15 +38,17 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
         public async Task<string> GetLastMacEntry()
         {
-            var query = new TableQuery<MacEntity>();
-            var result = await Table.ExecuteQueryAsync(query);
-            return result.InOrderOfDefinition().FirstOrDefault()?.Code;
+            var lastMacEntryFromMetadata = await FetchLastMacEntryFromMetadata();
+            return lastMacEntryFromMetadata ?? await CalculateLastMacEntry();
         }
 
         public async Task InsertMacs(IEnumerable<Mac> macs)
         {
-            var macEntities = macs.InOrderOfDefinition().Select(mac => new MacEntity(mac));
+            var orderedMacs = macs.InOrderOfDefinition().ToList();
+            var latestMac = orderedMacs.Last();
+            var macEntities = orderedMacs.Select(mac => new MacEntity(mac));
             await Table.BatchInsert(macEntities);
+            await StoreLatestMacRecord(latestMac.Code);
         }
 
         public async Task<Mac> GetMac(string macCode)
@@ -60,9 +65,52 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
         public async Task<IEnumerable<Mac>> GetAllMacs()
         {
-            var query = new TableQuery<MacEntity>();
+            var nonMetadataFilter = TableQuery.GenerateFilterCondition(
+                "PartitionKey",
+                QueryComparisons.NotEqual,
+                LastStoredMacMetadataEntity.MetadataPartitionKey
+            );
+
+            var query = new TableQuery<MacEntity>().Where(nonMetadataFilter);
             var result = await Table.ExecuteQueryAsync(query);
             return result.Select(x => new Mac(x));
+        }
+
+        private async Task StoreLatestMacRecord(string latestMac)
+        {
+            var metadataEntity = new LastStoredMacMetadataEntity
+            {
+                Code = latestMac
+            };
+            var operation = TableOperation.InsertOrReplace(metadataEntity);
+            await Table.ExecuteAsync(operation);
+        }
+
+        /// <summary>
+        /// Uses MAC naming convention to work out which imported MAC is latest in the sequence.
+        /// This iterates through all known MACs, and as such is very slow.
+        /// Should only be used as a backup, when the last imported snapshot is not usable.  
+        /// </summary>
+        private async Task<string> CalculateLastMacEntry()
+        {
+            logger.SendTrace("Calculating last seen MAC from all MAC data. If this is called, last seen metadata has probably been deleted.");
+            var query = new TableQuery<MacEntity>();
+            var result = await Table.ExecuteQueryAsync(query);
+            var latestMac = result.InOrderOfDefinition().FirstOrDefault()?.Code;
+            await StoreLatestMacRecord(latestMac);
+            return latestMac;
+        }
+
+        private async Task<string> FetchLastMacEntryFromMetadata()
+        {
+            var query = new TableQuery<LastStoredMacMetadataEntity>().Where(
+                TableQuery.CombineFilters(
+                    TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, LastStoredMacMetadataEntity.MetadataPartitionKey),
+                    TableOperators.And,
+                    TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, LastStoredMacMetadataEntity.LatestMacRowKey)
+                ));
+
+            return (await Table.ExecuteQueryAsync(query)).SingleOrDefault()?.Code;
         }
     }
 
@@ -77,7 +125,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             where THasMacCode : IHasMacCode
         {
             return macs
-                .OrderByDescending(x => x.Code.Length) // Note that this is NOT semantically the same as the partition Key! This is an international agreement between biologists about how MAC codes are defined. The PartitionKey is our personal decision about what we think will make a DB query quick!
+                // Note that this is NOT semantically the same as the partition Key! This is an international agreement between biologists about how MAC codes are defined. The PartitionKey is our personal decision about what we think will make a DB query quick!
+                .OrderByDescending(x => x.Code.Length)
                 .ThenByDescending(x => x.Code);
         }
     }
