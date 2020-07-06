@@ -43,7 +43,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
                 List<Mac> newMacs;
                 await using (var macStream = await DownloadMacs())
                 {
-                    newMacs = await macParser.GetMacsSinceLastEntry(macStream, lastEntryBeforeInsert);
+                    newMacs = await macParser.GetMacsSince(macStream, lastEntryBeforeInsert);
                 }
 
                 logger.SendTrace($"{tracePrefix}Attempting to insert {newMacs.Count} new MACs");

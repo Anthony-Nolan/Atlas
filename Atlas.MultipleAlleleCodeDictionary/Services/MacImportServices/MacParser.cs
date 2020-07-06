@@ -10,7 +10,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices
 {
     internal interface IMacParser
     {
-        public Task<List<Mac>> GetMacsSinceLastEntry(Stream file, string lastMacEntry);
+        public Task<List<Mac>> GetMacsSince(Stream file, string lastMacEntry);
     }
 
     internal class MacLineParser : IMacParser
@@ -23,7 +23,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices
         }
 
         /// <inheritdoc />
-        public async Task<List<Mac>> GetMacsSinceLastEntry(Stream file, string lastMacEntry)
+        public async Task<List<Mac>> GetMacsSince(Stream file, string lastMacEntry)
         {
             logger.SendTrace($"Parsing MACs since: {lastMacEntry}");
             var macCodes = new List<Mac>();

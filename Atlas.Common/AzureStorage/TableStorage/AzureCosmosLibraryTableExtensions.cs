@@ -66,6 +66,7 @@ namespace Atlas.Common.AzureStorage.TableStorage
         public static async Task BatchInsert<TEntity>(this CloudTable table, IEnumerable<TEntity> entities)
             where TEntity : TableEntity
         {
+            // ReSharper disable once SuggestVarOrType_Elsewhere
             // List<List<List<TEntities>>> 
             // This construct is:
             // * A List of Partitions, each containing
