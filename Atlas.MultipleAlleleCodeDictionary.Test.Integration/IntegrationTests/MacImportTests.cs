@@ -41,8 +41,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
         public async Task ImportMacs_InsertsAllMacs()
         {
             const int numberOfMacs = 3;
-            // We cannot use LochNessBuilder's "Build(x)" feature as all macs must have unique ids.
-            var macs = Enumerable.Range(0, numberOfMacs).Select(i => MacBuilder.New.Build());
+            var macs = MacBuilder.New.Build(numberOfMacs);
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs));
 
             await macImporter.ImportLatestMacs();
@@ -56,8 +55,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
         {
             // Max batch size for inserting to cloud storage is 100, so regardless of the batch size this will always be >1 batch
             const int numberOfMacs = 101;
-            // We cannot use LochNessBuilder's "Build(x)" feature as all macs must have unique ids.
-            var macs = Enumerable.Range(0, numberOfMacs).Select(i => MacBuilder.New.Build());
+            var macs = MacBuilder.New.Build(numberOfMacs);
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs));
 
             await macImporter.ImportLatestMacs();

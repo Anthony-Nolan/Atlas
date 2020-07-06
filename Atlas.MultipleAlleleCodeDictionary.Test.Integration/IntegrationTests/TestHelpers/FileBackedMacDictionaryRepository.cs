@@ -34,14 +34,14 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests.T
             return cache.Get<Mac>(macCode);
         }
 
-        public Task<IEnumerable<Mac>> GetAllMacs()
+        public Task<List<Mac>> GetAllMacs()
         {
             var macs = ReadFile().Select(ParseMac).ToList();
             foreach (var mac in macs)
             {
                 cache.GetOrAdd(mac.Code, () => mac);
             }
-            return Task.FromResult((IEnumerable<Mac>) macs);
+            return Task.FromResult(macs);
         }
 
         private static Mac ParseMac(string input)

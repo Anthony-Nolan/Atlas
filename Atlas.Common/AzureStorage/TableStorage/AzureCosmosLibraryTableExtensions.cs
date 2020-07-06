@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Azure.Cosmos.Table.Protocol;
+using Microsoft.Azure.Cosmos.Table.Queryable;
 using MoreLinq;
 
 namespace Atlas.Common.AzureStorage.TableStorage
@@ -47,13 +48,13 @@ namespace Atlas.Common.AzureStorage.TableStorage
                 token = seg.ContinuationToken;
                 items.AddRange(seg);
                 onProgress?.Invoke(items);
-
             } while (token != null && !ct.IsCancellationRequested);
 
             return items;
         }
 
-        private const int BatchSize = TableConstants.TableServiceBatchMaximumOperations; //ExecuteBatchAsync has a limit on how many operations can be put in a single batch. :(
+        //ExecuteBatchAsync has a limit on how many operations can be put in a single batch. :(
+        private const int BatchSize = TableConstants.TableServiceBatchMaximumOperations;
 
         /*
          * Note that the internet recommends the following settings for optimal AzureTableStorage Insert performance.
@@ -99,6 +100,20 @@ namespace Atlas.Common.AzureStorage.TableStorage
                     }
                 }
             }
+        }
+
+        /// <returns>
+        /// The entity represented by the given composite primary key (comprised of partitionKey and rowKey).
+        /// If no entity with matching keys is found, returns null. 
+        /// </returns>
+        public static async Task<TEntity> GetByPartitionAndRowKey<TEntity>(this CloudTable table, string partitionKey, string rowKey)
+            where TEntity : TableEntity, new()
+        {
+            var query = table.CreateQuery<TEntity>()
+                .Where(m => m.PartitionKey == partitionKey)
+                .Where(m => m.RowKey == rowKey);
+
+            return (await table.ExecuteQueryAsync(query.AsTableQuery())).SingleOrDefault();
         }
     }
 }
