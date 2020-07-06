@@ -37,14 +37,24 @@ namespace Atlas.MatchPrediction.Test.Integration.Resources
                 Position2 = new AlleleWithGGroup {Allele = "11:129", GGroup = "11:06:01G"}
             }
         };
-
-        public static PhenotypeInfo<string> UnambiguousAlleles => UnambiguousAlleleDetails.Map((l, d) => l == Locus.Dpb1 ? null : d.Allele);
-        public static PhenotypeInfo<string> UnambiguousAllelesGGroups => UnambiguousAlleleDetails.Map((l, d) => l == Locus.Dpb1 ? null : d.GGroup);
     }
 
     internal class AlleleWithGGroup
     {
         public string Allele { get; set; }
         public string GGroup { get; set; }
+    }
+
+    internal static class AlleleWithGGroupPhenotypeExtensions
+    {
+        public static PhenotypeInfo<string> Alleles(this PhenotypeInfo<AlleleWithGGroup> phenotypeInfo)
+        {
+            return phenotypeInfo.Map((l, d) => l == Locus.Dpb1 ? null : d.Allele);
+        }
+        
+        public static PhenotypeInfo<string> GGroups(this PhenotypeInfo<AlleleWithGGroup> phenotypeInfo)
+        {
+            return phenotypeInfo.Map((l, d) => l == Locus.Dpb1 ? null : d.GGroup);
+        }
     }
 }
