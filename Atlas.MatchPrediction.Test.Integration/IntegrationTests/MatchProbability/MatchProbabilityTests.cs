@@ -22,9 +22,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchProbabili
         private const string HlaNomenclatureVersion = Constants.SnapshotHlaNomenclatureVersion;
 
         private const string A1 = "02:09";
-        private const string A2 = "02:66";
-        private const string B1 = "08:182";
-        private const string B2 = "15:146";
+        private const string A2 = "11:03";
+        private const string B1 = "15:12";
+        private const string B2 = "08:182";
         private const string C1 = "01:03";
         private const string C2 = "03:05";
         private const string Dqb11 = "03:09";
@@ -33,9 +33,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchProbabili
         private const string Drb12 = "11:129";
 
         private const string GGroupA1 = "02:01:01G";
-        private const string GGroupA2 = "02:01:01G";
-        private const string GGroupB1 = "15:01:01G";
-        private const string GGroupB2 = "15:01:01G";
+        private const string GGroupA2 = "11:03:01G";
+        private const string GGroupB1 = "15:12:01G";
+        private const string GGroupB2 = "08:01:01G";
         private const string GGroupC1 = "01:03:01G";
         private const string GGroupC2 = "03:05:01G";
         private const string GGroupDqb11 = "03:01:01G";
@@ -93,22 +93,25 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchProbabili
         {
             var allPossibleHaplotypes = new List<HaplotypeFrequency>
             {
-                new HaplotypeFrequency {A = GGroupA1, B = "15:12:01G", C = GGroupC1, DQB1 = GGroupDqb11, DRB1 = GGroupDrb12, Frequency = 0.10m},
-                new HaplotypeFrequency {A = GGroupA1, B = "15:12:01G", C = GGroupC1, DQB1 = GGroupDqb11, DRB1 = GGroupDrb12, Frequency = 0.09m},
-                new HaplotypeFrequency {A = GGroupA1, B = GGroupB2, C = GGroupC1, DQB1 = GGroupDqb11, DRB1 = GGroupDrb12, Frequency = 0.08m},
-                new HaplotypeFrequency {A = GGroupA2, B = GGroupB2, C = GGroupC2, DQB1 = GGroupDqb12, DRB1 = GGroupDrb11, Frequency = 0.07m},
-                new HaplotypeFrequency {A = GGroupA1, B = GGroupB2, C = GGroupC1, DQB1 = GGroupDqb11, DRB1 = GGroupDrb11, Frequency = 0.06m},
-                new HaplotypeFrequency {A = GGroupA2, B = GGroupB2, C = GGroupC2, DQB1 = GGroupDqb12, DRB1 = GGroupDrb12, Frequency = 0.05m},
-                new HaplotypeFrequency {A = GGroupA1, B = GGroupB2, C = GGroupC1, DQB1 = GGroupDqb12, DRB1 = GGroupDrb12, Frequency = 0.04m},
-                new HaplotypeFrequency {A = GGroupA2, B = GGroupB2, C = GGroupC1, DQB1 = GGroupDqb11, DRB1 = GGroupDrb11, Frequency = 0.03m},
-                new HaplotypeFrequency {A = GGroupA1, B = GGroupB2, C = GGroupC1, DQB1 = GGroupDqb12, DRB1 = GGroupDrb11, Frequency = 0.02m},
-                new HaplotypeFrequency {A = GGroupA2, B = GGroupB2, C = GGroupC2, DQB1 = GGroupDqb11, DRB1 = GGroupDrb12, Frequency = 0.01m}
+                new HaplotypeFrequency {A = "01:01:01G", B = GGroupB1, C = GGroupC1, DQB1 = GGroupDqb11, DRB1 = GGroupDrb11, Frequency = 0.7m},
+                new HaplotypeFrequency {A = GGroupA1, B = "08:01:01G", C = GGroupC1, DQB1 = GGroupDqb11, DRB1 = GGroupDrb11, Frequency = 0.6m},
+                new HaplotypeFrequency {A = GGroupA1, B = GGroupB1, C = "04:01:01G", DQB1 = GGroupDqb11, DRB1 = GGroupDrb11, Frequency = 0.5m},
+                new HaplotypeFrequency {A = GGroupA1, B = GGroupB1, C = GGroupC1, DQB1 = "06:04:01G", DRB1 = GGroupDrb11, Frequency = 0.4m},
+                new HaplotypeFrequency {A = GGroupA1, B = GGroupB1, C = GGroupC1, DQB1 = GGroupDqb11, DRB1 = "11:06:01G", Frequency = 0.3m},
+                new HaplotypeFrequency {A = GGroupA1, B = GGroupB1, C = GGroupC1, DQB1 = GGroupDqb11, DRB1 = GGroupDrb11, Frequency = 0.2m},
+                new HaplotypeFrequency {A = GGroupA2, B = GGroupB2, C = GGroupC2, DQB1 = GGroupDqb12, DRB1 = GGroupDrb12, Frequency = 0.1m}
             };
 
             await ImportFrequencies(allPossibleHaplotypes);
 
-            var patientHla = NewHla.With(h => h.B, new LocusInfo<string> {Position1 = "15:12/146", Position2 = B2});
-            var donorHla = NewHla.With(h => h.B, new LocusInfo<string> {Position1 = "15:12", Position2 = B2});
+            var patientHla = NewHla
+                .With(h => h.A, new LocusInfo<string> {Position1 = $"{A1}/01:37", Position2 = A2})
+                .With(h => h.B, new LocusInfo<string> {Position1 = $"{B1}/08:182", Position2 = B2})
+                .With(h => h.C, new LocusInfo<string> {Position1 = $"{C1}/04:82", Position2 = C2})
+                .With(h => h.Dqb1, new LocusInfo<string> {Position1 = $"{Dqb11}/06:39", Position2 = Dqb12})
+                .With(h => h.Drb1, new LocusInfo<string> {Position1 = $"{Drb11}/11:129", Position2 = Drb12});
+
+            var donorHla = NewHla;
 
             var matchProbabilityInput = new MatchProbabilityInput
             {
@@ -117,11 +120,19 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchProbabili
                 HlaNomenclatureVersion = HlaNomenclatureVersion
             };
 
-            var expectedProbabilityPerLocus = new LociInfo<decimal?> {A = 1, B = 0.4430379746835443037974683544m, C = 1, Dpb1 = null, Dqb1 = 1, Drb1 = 1};
+            var expectedProbabilityPerLocus = new LociInfo<decimal?>
+            {
+                A = 0.7407407407407407407407407407m,
+                B = 0.7777777777777777777777777778m,
+                C = 0.8148148148148148148148148148m,
+                Dpb1 = null,
+                Dqb1 = 0.8518518518518518518518518519m, 
+                Drb1 = 0.8888888888888888888888888889m
+            };
 
             var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Should().Be(0.4430379746835443037974683544m);
+            matchDetails.ZeroMismatchProbability.Should().Be(0.0740740740740740740740740741m);
             matchDetails.ZeroMismatchProbabilityPerLocus.Should().Be(expectedProbabilityPerLocus);
         }
 
