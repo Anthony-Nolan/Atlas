@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.TableStorage;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
@@ -15,7 +16,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
 
     internal class TestMacRepository : MacRepository, ITestMacRepository
     {
-        public TestMacRepository(MacDictionarySettings macDictionarySettings) : base(macDictionarySettings)
+        public TestMacRepository(MacDictionarySettings macDictionarySettings, ILogger logger) : base(macDictionarySettings, logger)
         {
         }
 

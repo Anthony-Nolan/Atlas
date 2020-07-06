@@ -36,12 +36,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests.T
 
         public Task<IEnumerable<Mac>> GetAllMacs()
         {
-            var macs = ReadFile().Select(ParseMac);
+            var macs = ReadFile().Select(ParseMac).ToList();
             foreach (var mac in macs)
             {
                 cache.GetOrAdd(mac.Code, () => mac);
             }
-            return Task.FromResult(macs);
+            return Task.FromResult((IEnumerable<Mac>) macs);
         }
 
         private static Mac ParseMac(string input)
