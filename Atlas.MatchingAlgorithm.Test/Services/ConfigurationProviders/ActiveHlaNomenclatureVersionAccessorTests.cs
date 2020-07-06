@@ -28,22 +28,30 @@ namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
             hlaNomenclatureVersionAccessor = new ActiveHlaNomenclatureVersionAccessor(dataRefreshHistoryRepository, transientCacheProvider);
         }
 
-        [Test]
-        public void GetActiveHlaNomenclatureVersion_WhenActiveVersionIsNull_ThrowsException()
+        [Test,
+        TestCase(null),
+        TestCase(""),
+        TestCase("   "),
+        TestCase("\t\r\n ")]
+        public void GetActiveHlaNomenclatureVersion_WhenActiveVersionIsNull_ThrowsException(string badVersionValues)
         {
-            dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion().Returns(null as string);
+            dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion().Returns(badVersionValues);
 
             hlaNomenclatureVersionAccessor.Invoking(provider => provider.GetActiveHlaNomenclatureVersion()).Should().Throw<ArgumentNullException>();
         }
 
-        [Test]
-        public void DoesActiveHlaNomenclatureVersionExist_WhenActiveVersionIsNull_ReturnsTrue()
+        [Test,
+         TestCase(null),
+         TestCase(""),
+         TestCase("   "),
+         TestCase("\t\r\n ")]
+        public void DoesActiveHlaNomenclatureVersionExist_WhenActiveVersionIsNull_ReturnsTrue(string badVersionValues)
         {
-            dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion().Returns(null as string);
+            dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion().Returns(badVersionValues);
 
             var doesActiveVersionExist = hlaNomenclatureVersionAccessor.DoesActiveHlaNomenclatureVersionExist();
 
-            doesActiveVersionExist.Should().BeTrue();
+            doesActiveVersionExist.Should().BeFalse();
         }
 
         [Test]
@@ -65,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
 
             var doesActiveVersionExist = hlaNomenclatureVersionAccessor.DoesActiveHlaNomenclatureVersionExist();
 
-            doesActiveVersionExist.Should().BeFalse();
+            doesActiveVersionExist.Should().BeTrue();
         }
     }
 }

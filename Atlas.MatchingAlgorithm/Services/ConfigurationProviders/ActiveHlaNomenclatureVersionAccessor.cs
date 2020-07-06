@@ -56,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 
         private void ThrowIfNull(string wmdaDatabaseVersion, string key)
         {
-            if (IsDefined(wmdaDatabaseVersion))
+            if (!IsDefined(wmdaDatabaseVersion))
             {
                 throw new ArgumentNullException(nameof(wmdaDatabaseVersion),
                     $"Attempted to retrieve the {key}, but found <{wmdaDatabaseVersion}>. This is never an appropriate value, under any circumstances, and would definitely cause myriad problems elsewhere.");
