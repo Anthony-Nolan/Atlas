@@ -68,10 +68,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
 
-            var activeVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersionOrDefault();
-            activeVersionHlaMetadataDictionary = activeVersion == HlaMetadataDictionaryConstants.NoActiveVersionValue
-                ? null
-                : hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersionOrDefault());
+            activeVersionHlaMetadataDictionary = hlaNomenclatureVersionAccessor.DoesActiveHlaNomenclatureVersionExist()
+                ? hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion())
+                : null;
         }
 
         public async Task RefreshDataIfNecessary(bool shouldForceRefresh)

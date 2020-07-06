@@ -8,19 +8,22 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
 {
     public interface IActiveHlaNomenclatureVersionAccessor
     {
+
+        /// <summary>
+        /// Indicates whether or not an active HLA version exists.
+        /// </summary>
+        /// <returns>
+        /// If the active value doesn't exist, or is empty, returns false;
+        /// Otherwise true
+        /// </returns>
+        bool DoesActiveHlaNomenclatureVersionExist();
+
         /// <returns>
         /// The version of the HLA Nomenclature used to populate the current Transient donor database.
         /// If the transient database has not yet been populated, calling this will result in an Exception.
         /// </returns>
         /// <exception cref="ArgumentNullException">Thrown if the active value is empty.</exception>
         string GetActiveHlaNomenclatureVersion();
-        
-        /// <returns>
-        /// If the active value doesn't exist, or is empty, returns the default value, which is a dummy "un-initialised" value.
-        /// The only time this is expected is when the data refresh has never been run.
-        /// Otherwise, returns the active version.
-        /// </returns>
-        string GetActiveHlaNomenclatureVersionOrDefault();
     }
 
     public class ActiveHlaNomenclatureVersionAccessor : IActiveHlaNomenclatureVersionAccessor
@@ -38,6 +41,12 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
             cache = cacheProvider.Cache;
         }
 
+        public bool DoesActiveHlaNomenclatureVersionExist()
+        {
+            var version = cache.GetOrAdd(ActiveVersionCacheKey, () => dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion());
+            return IsDefined(version);
+        }
+
         public string GetActiveHlaNomenclatureVersion()
         {
             var version = cache.GetOrAdd(ActiveVersionCacheKey, () => dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion());
@@ -45,20 +54,18 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders
             return version;
         }
 
-        /// <inheritdoc />
-        public string GetActiveHlaNomenclatureVersionOrDefault()
+        private void ThrowIfNull(string wmdaDatabaseVersion, string key)
         {
-            var version = cache.GetOrAdd(ActiveVersionCacheKey, () => dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion());
-            return string.IsNullOrWhiteSpace(version) ? HlaMetadataDictionaryConstants.NoActiveVersionValue : version;
-        }
-
-        private static void ThrowIfNull(string wmdaDatabaseVersion, string key)
-        {
-            if (string.IsNullOrWhiteSpace(wmdaDatabaseVersion))
+            if (IsDefined(wmdaDatabaseVersion))
             {
                 throw new ArgumentNullException(nameof(wmdaDatabaseVersion),
                     $"Attempted to retrieve the {key}, but found <{wmdaDatabaseVersion}>. This is never an appropriate value, under any circumstances, and would definitely cause myriad problems elsewhere.");
             }
         }
+
+        /// <remarks>
+        /// Note that this isn't attempting to check whether the version is *VALID*, just whether or not we've got something that purports to be a version.
+        /// </remarks>
+        private bool IsDefined(string version) => !string.IsNullOrWhiteSpace(version);
     }
 }

@@ -35,26 +35,37 @@ namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
 
             hlaNomenclatureVersionAccessor.Invoking(provider => provider.GetActiveHlaNomenclatureVersion()).Should().Throw<ArgumentNullException>();
         }
-        
+
         [Test]
-        public void GetActiveHlaNomenclatureVersionOreDefault_WhenActiveVersionIsNull_ReturnsDefaultValue()
+        public void DoesActiveHlaNomenclatureVersionExist_WhenActiveVersionIsNull_ReturnsTrue()
         {
             dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion().Returns(null as string);
 
-            var doesActiveVersionExist = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersionOrDefault();
+            var doesActiveVersionExist = hlaNomenclatureVersionAccessor.DoesActiveHlaNomenclatureVersionExist();
 
-            doesActiveVersionExist.Should().Be("NO-ACTIVE-VERSION");
+            doesActiveVersionExist.Should().BeTrue();
         }
-        
+
         [Test]
-        public void GetActiveHlaNomenclatureVersionOrDefault_WhenActiveVersionIsNotNull_ReturnsActiveValue()
+        public void GetActiveHlaNomenclatureVersion_WhenActiveVersionIsNotNull_ReturnsValue()
         {
             const string activeVersion = "version";
             dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion().Returns(activeVersion);
 
-            var doesActiveVersionExist = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersionOrDefault();
+            var activeVersionReturned = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
 
-            doesActiveVersionExist.Should().Be(activeVersion);
+            activeVersionReturned.Should().Be(activeVersion);
+        }
+
+        [Test]
+        public void DoesActiveHlaNomenclatureVersionExist_WhenActiveVersionIsNotNull_ReturnsFalse()
+        {
+            const string activeVersion = "version";
+            dataRefreshHistoryRepository.GetActiveHlaNomenclatureVersion().Returns(activeVersion);
+
+            var doesActiveVersionExist = hlaNomenclatureVersionAccessor.DoesActiveHlaNomenclatureVersionExist();
+
+            doesActiveVersionExist.Should().BeFalse();
         }
     }
 }

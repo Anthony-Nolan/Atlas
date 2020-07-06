@@ -58,7 +58,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(wmdaHlaNomenclatureVersionAccessor);
             
             var activeHlaVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
-            activeHlaVersionAccessor.GetActiveHlaNomenclatureVersionOrDefault().Returns(ExistingHlaVersion);
+            activeHlaVersionAccessor.DoesActiveHlaNomenclatureVersionExist().Returns(true);
+            activeHlaVersionAccessor.GetActiveHlaNomenclatureVersion().Returns(ExistingHlaVersion);
 
             var settings = dataRefreshSettings ?? DataRefreshSettingsBuilder.New.Build();
             

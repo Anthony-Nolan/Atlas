@@ -120,9 +120,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.dataRefreshSettings = dataRefreshSettings;
 
             // TODO: ATLAS-355: Remove the need for a hardcoded default value
-            activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(
-                hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersionOrDefault()
-            );
+            var hlaVersionOrDefault =  hlaNomenclatureVersionAccessor.DoesActiveHlaNomenclatureVersionExist()
+                ? hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion()
+                : HlaMetadataDictionaryConstants.NoActiveVersionValue;
+
+            activeVersionHlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaVersionOrDefault);
         }
 
         public async Task<string> RefreshData(int refreshRecordId)

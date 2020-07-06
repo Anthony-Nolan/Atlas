@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Api.Controllers
 {
-    [Route("hla-metadata-dictionary")] //TODO: ATLAS-262 (MDM) migrate to new project
+    [Route("hla-metadata-dictionary")]
     public class HlaMetadataDictionaryController : ControllerBase
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
@@ -16,7 +16,12 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
             IHlaMetadataDictionaryFactory factory,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
         {
-            this.hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersionOrDefault());
+            // TODO: ATLAS-355: Remove the need for a hardcoded default value
+            var hlaVersionOrDefault = hlaNomenclatureVersionAccessor.DoesActiveHlaNomenclatureVersionExist()
+                ? hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion()
+                : HlaMetadataDictionaryConstants.NoActiveVersionValue;
+
+            hlaMetadataDictionary = factory.BuildDictionary(hlaVersionOrDefault);
         }
 
         [HttpPost]
