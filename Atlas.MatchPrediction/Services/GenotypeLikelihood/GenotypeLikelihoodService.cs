@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Models;
 using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
 
@@ -10,7 +11,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
     public interface IGenotypeLikelihoodService
     {
-        public Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype);
+        public Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype, FrequencySetMetadata frequencySetMetadata);
     }
 
     internal class GenotypeLikelihoodService : IGenotypeLikelihoodService
@@ -32,19 +33,19 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
             this.likelihoodCalculator = likelihoodCalculator;
         }
 
-        public async Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype)
+        public async Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype, FrequencySetMetadata frequencySetMetadata)
         {
             var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype);
-            var haplotypesWithFrequencies = await GetHaplotypesWithFrequencies(expandedGenotype);
+            var haplotypesWithFrequencies = await GetHaplotypesWithFrequencies(expandedGenotype, frequencySetMetadata);
 
             UpdateFrequenciesForDiplotype(haplotypesWithFrequencies, expandedGenotype.Diplotypes);
             return likelihoodCalculator.CalculateLikelihood(expandedGenotype);
         }
 
-        private async Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypesWithFrequencies(ExpandedGenotype expandedGenotype)
+        private async Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypesWithFrequencies(ExpandedGenotype expandedGenotype, FrequencySetMetadata frequencySetMetadata)
         {
             var haplotypes = GetHaplotypes(expandedGenotype.Diplotypes);
-            var frequencySet = await setRepository.GetActiveSet(null, null);
+            var frequencySet = await setRepository.GetActiveSet(frequencySetMetadata.RegistryCode, frequencySetMetadata.EthnicityCode);
 
             return await frequencyRepository.GetHaplotypeFrequencies(haplotypes, frequencySet.Id);
         }

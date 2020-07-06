@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
 using Atlas.MatchPrediction.Data.Models;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
@@ -110,7 +111,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchProbabili
             {
                 PatientHla = patientHla,
                 DonorHla = donorHla,
-                HlaNomenclatureVersion = HlaNomenclatureVersion
+                HlaNomenclatureVersion = HlaNomenclatureVersion,
+                PatientFrequencySetMetadata = new FrequencySetMetadata(),
+                DonorFrequencySetMetadata = new FrequencySetMetadata()
             };
 
             var matchDetails =

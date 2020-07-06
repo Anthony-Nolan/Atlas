@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
@@ -27,8 +28,9 @@ namespace Atlas.MatchPrediction.Functions.Functions
             HttpRequest request)
         {
             var genotypeLikelihood = JsonConvert.DeserializeObject<GenotypeLikelihoodInput>(await new StreamReader(request.Body).ReadToEndAsync());
-
-            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotypeLikelihood.Genotype);
+            genotypeLikelihood.FrequencySetMetadata ??= new FrequencySetMetadata();
+            
+            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotypeLikelihood.Genotype, genotypeLikelihood.FrequencySetMetadata);
             return new JsonResult(new GenotypeLikelihoodResponse { Likelihood = likelihood });
         }
     }
