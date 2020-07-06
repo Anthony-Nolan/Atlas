@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Atlas.Common.AzureStorage.TableStorage;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
@@ -50,10 +49,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         {
             var query = new TableQuery<MacEntity>().Where(
                 TableQuery.CombineFilters(
-                    TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, macCode.Length.ToString()), //TODO: ATLAS-488. Rationalise these.
+                    TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, macCode.AsPartitionKey()),
                     TableOperators.And,
-                    TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, macCode)
-                    ));
+                    TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, macCode.AsRowKey())
+                ));
             var result = await Table.ExecuteQueryAsync(query);
             return new Mac(result.Single());
         }
@@ -77,7 +76,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             where THasMacCode : IHasMacCode
         {
             return macs
-                .OrderByDescending(x => x.Code.Length)   //TODO: ATLAS-488. Note that this is NOT the same as the partition Key! This is an international agreement between biologists about how MAC codes are defined. The PartitionKey is our personal decision about what we think will make a DB query quick!
+                .OrderByDescending(x => x.Code.Length) // Note that this is NOT semantically the same as the partition Key! This is an international agreement between biologists about how MAC codes are defined. The PartitionKey is our personal decision about what we think will make a DB query quick!
                 .ThenByDescending(x => x.Code);
         }
     }

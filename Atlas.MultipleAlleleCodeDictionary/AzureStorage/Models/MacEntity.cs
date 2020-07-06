@@ -15,13 +15,25 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models
             HLA = mac.Hla;
             IsGeneric = mac.IsGeneric;
 
-            //TODO: ATLAS-488. Rationalise these.
-            RowKey = Code;
-            PartitionKey = Code.Length.ToString();
+            RowKey = Code.AsRowKey();
+            PartitionKey = Code.AsPartitionKey();
         }
 
         public string Code { get; set; }
         public string HLA { get; set; }
         public bool IsGeneric { get; set; }
+    }
+
+    internal static class MacEntityTableIdentifierExtensions
+    {
+        public static string AsRowKey(this string mac)
+        {
+            return mac;
+        }
+
+        public static string AsPartitionKey(this string mac)
+        {
+            return mac.Length.ToString();
+        }
     }
 }
