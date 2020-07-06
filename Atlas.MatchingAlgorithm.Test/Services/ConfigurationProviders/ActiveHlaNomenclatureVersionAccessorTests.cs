@@ -23,7 +23,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
             transientCacheProvider = Substitute.For<ITransientCacheProvider>();
 
-            transientCacheProvider.Cache.Returns(AppCacheBuilder.DefaultCache);
+            transientCacheProvider.Cache.Returns(AppCacheBuilder.NewDefaultCache());
             
             hlaNomenclatureVersionAccessor = new ActiveHlaNomenclatureVersionAccessor(dataRefreshHistoryRepository, transientCacheProvider);
         }

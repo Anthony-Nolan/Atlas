@@ -8,6 +8,7 @@ namespace Atlas.Common.Test.SharedTestHelpers.Builders
     [Builder]
     public static class AppCacheBuilder
     {
-        public static IAppCache DefaultCache => new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())));
+        public static IAppCache NewDefaultCache() =>
+            new CachingService(new MemoryCacheProvider(new MemoryCache(new MemoryCacheOptions())));
     }
 }

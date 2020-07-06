@@ -31,7 +31,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
         {
             var permissiveMismatchCalculator = Substitute.For<IPermissiveMismatchCalculator>();
             var scoringCache = new ScoringCache(
-                new PersistentCacheProvider(AppCacheBuilder.DefaultCache),
+                new PersistentCacheProvider(AppCacheBuilder.NewDefaultCache()),
                 Substitute.For<IActiveHlaNomenclatureVersionAccessor>());
 
             gradingService = new GradingService(permissiveMismatchCalculator, scoringCache);
