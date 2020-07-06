@@ -3,7 +3,7 @@
 // The expected locus order is A-B-C-DPB1-DQB1-DRB1
 // The easiest way to use is to copy these columns directly from a `SELECT * FROM DONORS` query of the matching database donor store 
 // The output is the JSON to POST to the {{AtlasFunctionBaseUrl}}/Search endpoint
-console.log(generateInputFromHlaData("*03:02:01\t*02:01:01:05\t*13:02:01:01\t*08:182\t*01:44\t*07:02:80\t*02:01:04\t*104:01\t*03:01:01:05\t*06:01:03\t*11:129\t*11:04:01"));
+console.log(generateInputFromHlaData("**02:01:01:05\t*33:01:01:01\t*40:06:01:02\t*35:08:01:01\t*02:10:01:02\t*03:05\t*02:01:04\t*01:01:01\t*03:01:04\t*02:02:01:01\t*04:01:01:01\t*15:01:01:01"));
 
 // 10/10, Adult search
 function generateInputFromHlaData(rawData) {
