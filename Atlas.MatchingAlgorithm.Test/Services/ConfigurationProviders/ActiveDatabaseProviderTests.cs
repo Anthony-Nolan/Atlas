@@ -19,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.ConfigurationProviders
         public void SetUp()
         {
             historyRepository = Substitute.For<IDataRefreshHistoryRepository>();
-            var cache = AppCacheBuilder.DefaultCache;
+            var cache = AppCacheBuilder.NewDefaultCache();
             var cacheProvider = new TransientCacheProvider(cache);
             
             activeDatabaseProvider = new ActiveDatabaseProvider(historyRepository, cacheProvider);
