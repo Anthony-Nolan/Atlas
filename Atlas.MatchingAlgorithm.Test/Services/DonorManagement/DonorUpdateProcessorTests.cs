@@ -9,6 +9,7 @@ using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Models;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 using FluentAssertions;
@@ -44,6 +45,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             donorManagementService = Substitute.For<IDonorManagementService>();
             searchableDonorUpdateConverter = Substitute.For<ISearchableDonorUpdateConverter>();
+            var hlaVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
             ConfigureMocksToPassThroughToDonorService();
 
             var logger = Substitute.For<ILogger>();
@@ -54,6 +56,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 refreshHistory,
                 donorManagementService,
                 searchableDonorUpdateConverter,
+                hlaVersionAccessor,
                 logger,
                 BatchSize);
 

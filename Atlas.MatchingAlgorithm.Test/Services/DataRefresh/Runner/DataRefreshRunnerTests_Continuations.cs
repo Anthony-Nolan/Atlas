@@ -200,7 +200,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             await dataRefreshRunner.RefreshData(default);
 
             await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4);
-            await donorUpdateProcessor.ReceivedWithAnyArgs(1).ApplyDifferentialDonorUpdatesDuringRefresh(default);
+            await donorUpdateProcessor.ReceivedWithAnyArgs(1).ApplyDifferentialDonorUpdatesDuringRefresh(default, default);
         }
 
         [Test]
@@ -218,7 +218,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             await dataRefreshRunner.RefreshData(default);
 
             await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4);
-            await donorUpdateProcessor.ReceivedWithAnyArgs(1).ApplyDifferentialDonorUpdatesDuringRefresh(default);
+            await donorUpdateProcessor.ReceivedWithAnyArgs(1).ApplyDifferentialDonorUpdatesDuringRefresh(default, default);
         }
 
         [Test]
