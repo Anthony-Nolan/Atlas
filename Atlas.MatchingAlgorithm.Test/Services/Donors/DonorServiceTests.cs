@@ -104,9 +104,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             donorHlaExpander
                 .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())
                 .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>
-                {
-                    ProcessingResults = new[] { new DonorInfoWithExpandedHla { DonorId = donorId } }
-                });
+                (
+                    new[] { new DonorInfoWithExpandedHla { DonorId = donorId } }
+                ));
 
             await donorService.CreateOrUpdateDonorBatch(new[] { new DonorInfo() }, default, default);
 
@@ -121,9 +121,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             donorHlaExpander
                 .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())
                 .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>
-                {
-                    ProcessingResults = new[] { new DonorInfoWithExpandedHla { DonorId = donorId } }
-                });
+                (
+                    new[] { new DonorInfoWithExpandedHla { DonorId = donorId } }
+                ));
 
             await donorService.CreateOrUpdateDonorBatch(new[] { new DonorInfo() }, default, default);
 
@@ -138,9 +138,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             donorHlaExpander
                 .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())
                 .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>
-                {
-                    ProcessingResults = new[] { new DonorInfoWithExpandedHla { DonorId = donorId } }
-                });
+                (
+                    new[] { new DonorInfoWithExpandedHla { DonorId = donorId } }
+                ));
 
             inspectionRepository
                 .GetDonors(Arg.Any<IEnumerable<int>>())
@@ -159,9 +159,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             donorHlaExpander
                 .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())
                 .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>
-                {
-                    ProcessingResults = new[] { new DonorInfoWithExpandedHla { DonorId = donorId } }
-                });
+                (
+                    new[] { new DonorInfoWithExpandedHla { DonorId = donorId } }
+                ));
 
             inspectionRepository
                 .GetDonors(Arg.Any<IEnumerable<int>>())
@@ -181,7 +181,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
                 .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())
                 .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>
                 {
-                    FailedDonors = new[] { new FailedDonorInfo { AtlasDonorId = donorId } }
+                    FailedDonors = new[] { new FailedDonorInfo { AtlasDonorId = donorId } }.ToList().AsReadOnly()
                 });
 
             await donorService.CreateOrUpdateDonorBatch(new[] { new DonorInfo() }, default, default);
@@ -197,10 +197,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         {
             donorHlaExpander
                 .ExpandDonorHlaBatchAsync(Arg.Any<IEnumerable<DonorInfo>>(), Arg.Any<string>())
-                .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>
-                {
-                    FailedDonors = new List<FailedDonorInfo>()
-                });
+                .Returns(new DonorBatchProcessingResult<DonorInfoWithExpandedHla>());
 
             await donorService.CreateOrUpdateDonorBatch(new[] { new DonorInfo() }, default, default);
 
