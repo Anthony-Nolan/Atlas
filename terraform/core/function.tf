@@ -42,6 +42,12 @@ resource "azurerm_function_app" "atlas_function" {
   }
 
   connection_string {
+    name  = "DonorImport:Sql"
+    type  = "SQLAzure"
+    value = module.donor_import.sql_database.connection_string
+  }
+
+  connection_string {
     name  = "Matching:Sql:Persistent"
     type  = "SQLAzure"
     value = module.matching_algorithm.sql_database.persistent_database_connection_string
@@ -57,12 +63,6 @@ resource "azurerm_function_app" "atlas_function" {
     name  = "Matching:Sql:B"
     type  = "SQLAzure"
     value = module.matching_algorithm.sql_database.transient_b_database_connection_string
-  }
-
-  connection_string {
-    name  = "MatchPrediction:Sql"
-    type  = "SQLAzure"
-    value = module.match_prediction.sql_database.connection_string
   }
 
   connection_string {
