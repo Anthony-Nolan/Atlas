@@ -25,7 +25,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.AzureStorage
             var tableClient = storageAccount.CreateCloudTableClient();
             var tableReference = tableClient.GetTableReference(tableReferenceString);
             await tableReference.CreateIfNotExistsAsync();
-            return new CloudTable(tableReference.StorageUri, tableClient.Credentials);
+            return tableReference;
         }
     }
 }

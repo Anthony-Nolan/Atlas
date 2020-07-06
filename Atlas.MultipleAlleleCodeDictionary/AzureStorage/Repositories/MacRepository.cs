@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Atlas.Common.AzureStorage.TableStorage;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models;
@@ -25,12 +24,13 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         protected readonly CloudTable Table;
 
         public MacRepository(MacDictionarySettings macDictionarySettings)
-        {
+        { 
             var connectionString = macDictionarySettings.AzureStorageConnectionString;
             var tableName = macDictionarySettings.TableName;
-            var storageAccount = CloudStorageAccount.Parse(connectionString);
-            var tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+            var storageAccount = CloudStorageAccount.Parse(connectionString);//TODO: ATLAS-485. Combine this with the CloudTableFactory in HMD.
+            var tableClient = storageAccount.CreateCloudTableClient();
             Table = tableClient.GetTableReference(tableName);
+            Table.CreateIfNotExists(); //TODO: ATLAS-455. Is there any mileage in using the "Lazy" Indexing Policy? (Apparently requires "Gateway" mode on the table?)
         }
 
         public async Task<string> GetLastMacEntry()
