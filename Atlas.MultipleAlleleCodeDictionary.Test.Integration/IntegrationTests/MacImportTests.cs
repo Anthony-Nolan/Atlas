@@ -70,18 +70,32 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
         public async Task ImportMacs_WithExistingMacs_InsertsNewMacs()
         {
             const int numberOfMacs = 2;
-            // We cannot use LochNessBuilder's "Build(x)" feature as all macs must have unique ids.
-            var macs = Enumerable.Range(0, numberOfMacs).Select(i => MacBuilder.New.Build()).ToList();
+            var macs = MacBuilder.New.Build(numberOfMacs).ToList();
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs));
             await macImporter.ImportLatestMacs();
 
             const int numberOfNewMacs = 2;
-            var newMacs = Enumerable.Range(numberOfMacs, numberOfNewMacs).Select(i => MacBuilder.New.Build());
+            var newMacs = MacBuilder.New.Build(numberOfNewMacs).ToList();
             mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs.Concat(newMacs)));
             await macImporter.ImportLatestMacs();
 
             var importedMacs = await macRepository.GetAllMacs();
             importedMacs.Count().Should().Be(numberOfMacs + numberOfNewMacs);
+        }
+        
+        [Test]
+        public async Task ImportMacs_WithNoNewMacs_DoesNotInsertAnyMacs()
+        {
+            const int numberOfMacs = 2;
+            var macs = MacBuilder.New.Build(numberOfMacs).ToList();
+            mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs));
+            await macImporter.ImportLatestMacs();
+
+            mockDownloader.DownloadAndUnzipStream().Returns(MacSourceFileBuilder.BuildMacFile(macs));
+            await macImporter.ImportLatestMacs();
+
+            var importedMacs = await macRepository.GetAllMacs();
+            importedMacs.Count().Should().Be(numberOfMacs);
         }
 
         [Test]

@@ -45,7 +45,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         public async Task InsertMacs(IEnumerable<Mac> macs)
         {
             var orderedMacs = macs.InOrderOfDefinition().ToList();
-            var latestMac = orderedMacs.Last();
+            if (!orderedMacs.Any())
+            {
+                return;
+            }
+
+            var latestMac = orderedMacs.First();
             var macEntities = orderedMacs.Select(mac => new MacEntity(mac));
             await Table.BatchInsert(macEntities);
             await StoreLatestMacRecord(latestMac.Code);
