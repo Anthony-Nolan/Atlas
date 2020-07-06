@@ -47,7 +47,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var patientGenotypes = await ExpandPatientPhenotype(matchProbabilityInput);
             var donorGenotypes = await ExpandDonorPhenotype(matchProbabilityInput);
 
-
             var allPatientDonorCombinations = patientGenotypes.SelectMany(patientHla =>
                 donorGenotypes.Select(donorHla => new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla, donorHla)));
 
