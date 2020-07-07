@@ -11,7 +11,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
-namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikelihood
+namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.IndividualSteps.GenotypeLikelihood
 {
     ///<summary>
     /// These tests are snapshots based on some manually calculated frequencies/expectations.

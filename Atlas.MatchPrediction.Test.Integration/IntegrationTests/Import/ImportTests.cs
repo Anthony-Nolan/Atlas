@@ -1,4 +1,6 @@
-﻿using Atlas.Common.Notifications;
+﻿using System;
+using System.Threading.Tasks;
+using Atlas.Common.Notifications;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -8,10 +10,8 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
-using System;
-using System.Threading.Tasks;
 
-namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequencies
+namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
 {
     [TestFixture]
     public class ImportTests

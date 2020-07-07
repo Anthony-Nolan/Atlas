@@ -13,7 +13,7 @@ using NUnit.Framework;
 
 // ReSharper disable InconsistentNaming - want to avoid calling "G groups" "gGroup", as "g" groups are a distinct thing 
 
-namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.ExpandAmbiguousPhenotype
+namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.IndividualSteps.ExpandAmbiguousPhenotype
 {
     [TestFixture]
     public class ExpandAmbiguousPhenotypeTests

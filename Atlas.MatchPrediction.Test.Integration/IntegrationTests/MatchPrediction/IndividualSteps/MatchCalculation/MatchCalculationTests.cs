@@ -9,7 +9,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
-namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchCalculation
+namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.IndividualSteps.MatchCalculation
 {
     [TestFixture]
     public class MatchCalculationTests
