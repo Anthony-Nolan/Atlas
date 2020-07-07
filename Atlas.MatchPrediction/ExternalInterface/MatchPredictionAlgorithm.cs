@@ -3,7 +3,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
-using Atlas.MatchPrediction.Services.HaplotypeFrequencySets;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 
@@ -20,10 +20,10 @@ namespace Atlas.MatchPrediction.ExternalInterface
     internal class MatchPredictionAlgorithm : IMatchPredictionAlgorithm
     {
         private readonly IMatchProbabilityService matchProbabilityService;
-        private readonly IHaplotypeFrequencySetService haplotypeFrequencySetService;
+        private readonly IFrequencySetService haplotypeFrequencySetService;
         private readonly ILogger logger;
 
-        public MatchPredictionAlgorithm(IMatchProbabilityService matchProbabilityService, ILogger logger, IHaplotypeFrequencySetService haplotypeFrequencySetService)
+        public MatchPredictionAlgorithm(IMatchProbabilityService matchProbabilityService, ILogger logger, IFrequencySetService haplotypeFrequencySetService)
         {
             this.matchProbabilityService = matchProbabilityService;
             this.logger = logger;
