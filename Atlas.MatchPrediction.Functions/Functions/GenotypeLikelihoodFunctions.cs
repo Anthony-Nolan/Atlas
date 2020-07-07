@@ -28,9 +28,10 @@ namespace Atlas.MatchPrediction.Functions.Functions
             HttpRequest request)
         {
             var genotypeLikelihood = JsonConvert.DeserializeObject<GenotypeLikelihoodInput>(await new StreamReader(request.Body).ReadToEndAsync());
-            genotypeLikelihood.FrequencySetMetadata ??= new FrequencySetMetadata();
-            
-            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotypeLikelihood.Genotype, genotypeLikelihood.FrequencySetMetadata);
+            genotypeLikelihood.PatientFrequencySetMetadata ??= new FrequencySetMetadata();
+            genotypeLikelihood.DonorFrequencySetMetadata ??= new FrequencySetMetadata();
+
+            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotypeLikelihood.Genotype, genotypeLikelihood.DonorFrequencySetMetadata, genotypeLikelihood.PatientFrequencySetMetadata, genotypeLikelihood.IsPatient);
             return new JsonResult(new GenotypeLikelihoodResponse { Likelihood = likelihood });
         }
     }
