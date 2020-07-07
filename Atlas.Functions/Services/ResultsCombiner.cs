@@ -20,9 +20,9 @@ namespace Atlas.Functions.Services
             resultsContainer = azureStorageSettings.Value.SearchResultsBlobContainer;
         }
 
-        
         /// <inheritdoc />
-        public SearchResultSet CombineResults(SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters)
+        public SearchResultSet CombineResults(
+            SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters)
         {
             var matchingResults = persistSearchResultsParameters.MatchingAlgorithmResultSet;
             var matchPredictionResults = persistSearchResultsParameters.MatchPredictionResults;
@@ -34,7 +34,7 @@ namespace Atlas.Functions.Services
                 {
                     DonorCode = donorInfo[r.AtlasDonorId].ExternalDonorCode,
                     MatchingResult = r,
-                    MatchPredictionResult = matchPredictionResults[r.AtlasDonorId].ZeroMismatchProbability
+                    MatchPredictionResult = matchPredictionResults[r.AtlasDonorId]
                 }),
                 TotalResults = matchingResults.ResultCount,
                 HlaNomenclatureVersion = matchingResults.HlaNomenclatureVersion,

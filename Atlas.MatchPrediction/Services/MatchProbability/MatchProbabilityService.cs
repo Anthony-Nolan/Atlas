@@ -69,8 +69,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     ZeroMismatchProbability = 1m,
                     OneMismatchProbability = 0m,
                     TwoMismatchProbability = 0m,
-                    ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
-                        {A = 1m, B = 1m, C = 1m, Dpb1 = null, Dqb1 = 1m, Drb1 = 1m}
+                    ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?> {A = 1m, B = 1m, C = 1m, Dpb1 = null, Dqb1 = 1m, Drb1 = 1m}
                 };
             }
 
@@ -82,8 +81,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             var genotypesLikelihoods = patientGenotypeLikelihoods.Union(donorGenotypeLikelihoods).ToDictionary();
             
-            return matchProbabilityCalculator.CalculateMatchProbability(patientGenotypes, donorGenotypes,
-                patientDonorMatchDetails, genotypesLikelihoods);
+            return matchProbabilityCalculator.CalculateMatchProbability(
+                patientGenotypes,
+                donorGenotypes,
+                patientDonorMatchDetails,
+                genotypesLikelihoods
+            );
         }
 
         private async Task<ISet<PhenotypeInfo<string>>> ExpandPatientPhenotype(

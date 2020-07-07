@@ -116,7 +116,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         private static async Task PersistSearchResults(
             IDurableOrchestrationContext context,
             MatchingAlgorithmResultSet searchResults,
-            Dictionary<int, MatchProbabilityResponse> matchPredictionResults,
+            IDictionary<int, MatchProbabilityResponse> matchPredictionResults,
             Dictionary<int, Donor> donorInformation)
         {
             await context.CallActivityAsync(
