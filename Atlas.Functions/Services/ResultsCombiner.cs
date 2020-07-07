@@ -20,9 +20,9 @@ namespace Atlas.Functions.Services
             resultsContainer = azureStorageSettings.Value.SearchResultsBlobContainer;
         }
 
-        
         /// <inheritdoc />
-        public SearchResultSet CombineResults(SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters)
+        public SearchResultSet CombineResults(
+            SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters)
         {
             var matchingResults = persistSearchResultsParameters.MatchingAlgorithmResultSet;
             var matchPredictionResults = persistSearchResultsParameters.MatchPredictionResults;
