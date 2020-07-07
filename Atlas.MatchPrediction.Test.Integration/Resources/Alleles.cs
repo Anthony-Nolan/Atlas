@@ -7,9 +7,10 @@ namespace Atlas.MatchPrediction.Test.Integration.Resources
     {
         /// <summary>
         /// Alleles selected, such that each position has a single allele that corresponds to a single G-Group.
-        /// All chosen alleles are heterozygous with respect to the chosen GGroup
+        /// All chosen alleles are heterozygous with respect to the chosen GGroup.
+        /// Creates new property each time to avoid mutation.
         /// </summary>
-        public static readonly PhenotypeInfo<AlleleWithGGroup> UnambiguousAlleleDetails = new PhenotypeInfo<AlleleWithGGroup>
+        public static PhenotypeInfo<AlleleWithGGroup> UnambiguousAlleleDetails => new PhenotypeInfo<AlleleWithGGroup>
         {
             A = new LocusInfo<AlleleWithGGroup>
             {

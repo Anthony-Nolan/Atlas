@@ -164,7 +164,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [Test]
         public async Task ExpandCompressedPhenotype_WhenSerologyPresent_ExpandsSerology()
         {
-            var phenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.One, "82").Build();
+            var phenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.B, LocusPosition.One, "82").Build();
 
             var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
 
@@ -174,7 +174,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [Test]
         public async Task ExpandCompressedPhenotype_WhenPGroupPresent_ExpandsPGroup()
         {
-            var phenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.One, "23:02P").Build();
+            var phenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.One, "23:03P").Build();
 
             var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
 

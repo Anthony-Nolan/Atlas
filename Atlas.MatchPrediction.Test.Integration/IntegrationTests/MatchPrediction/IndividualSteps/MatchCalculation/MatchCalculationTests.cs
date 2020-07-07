@@ -21,7 +21,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         private static readonly LociInfo<int?> TenOutOfTenMatch = new LociInfo<int?>
             {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
 
-        private static readonly LociInfo<int?> SingleMismatchAtB = new LociInfo<int?>
+        private static readonly LociInfo<int?> SingleMismatchAtA = new LociInfo<int?>
             { A = 1, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2 };
 
         private static readonly LociInfo<int?> DoubleMismatchAtA = new LociInfo<int?>
@@ -97,7 +97,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var matchDetails = await matchCalculationService
                 .MatchAtPGroupLevel(patientGenotype, DefaultUnambiguousAllelesBuilder.Build(), HlaNomenclatureVersion);
 
-            matchDetails.MatchCounts.Should().BeEquivalentTo(SingleMismatchAtB);
+            matchDetails.MatchCounts.Should().BeEquivalentTo(SingleMismatchAtA);
         }
 
         [Test]
@@ -108,7 +108,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var matchDetails = await matchCalculationService
                 .MatchAtPGroupLevel(DefaultUnambiguousAllelesBuilder.Build(), donorGenotype, HlaNomenclatureVersion);
 
-            matchDetails.MatchCounts.Should().BeEquivalentTo(SingleMismatchAtB);
+            matchDetails.MatchCounts.Should().BeEquivalentTo(SingleMismatchAtA);
         }
 
         [Test]
