@@ -58,23 +58,28 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 return new MatchProbabilityResponse
                 {
                     ZeroMismatchProbability = 1m,
-                    ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
-                        {A = 1m, B = 1m, C = 1m, Dpb1 = null, Dqb1 = 1m, Drb1 = 1m}
+                    ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?> {A = 1m, B = 1m, C = 1m, Dpb1 = null, Dqb1 = 1m, Drb1 = 1m}
                 };
             }
+
             if (!patientDonorMatchDetails.Any(p => p.IsTenOutOfTenMatch))
             {
-                return new MatchProbabilityResponse {
+                return new MatchProbabilityResponse
+                {
                     ZeroMismatchProbability = 0m,
-                    ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
-                        {A = 0m, B = 0m, C = 0m, Dpb1 = null, Dqb1 = 0m, Drb1 = 0m}
+                    ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?> {A = 0m, B = 0m, C = 0m, Dpb1 = null, Dqb1 = 0m, Drb1 = 0m}
                 };
             }
 
             var genotypes = patientGenotypes.Union(donorGenotypes);
             var genotypesLikelihoods = await CalculateGenotypeLikelihoods(genotypes);
 
-            return matchProbabilityCalculator.CalculateMatchProbability(patientGenotypes, donorGenotypes, patientDonorMatchDetails, genotypesLikelihoods);
+            return matchProbabilityCalculator.CalculateMatchProbability(
+                patientGenotypes,
+                donorGenotypes,
+                patientDonorMatchDetails,
+                genotypesLikelihoods
+            );
         }
 
         private async Task<ISet<PhenotypeInfo<string>>> ExpandPatientPhenotype(MatchProbabilityInput matchProbabilityInput)

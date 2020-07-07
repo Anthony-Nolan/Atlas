@@ -22,16 +22,17 @@ namespace Atlas.Functions.Services
             resultsContainer = azureStorageSettings.Value.SearchResultsBlobContainer;
         }
 
-        
         /// <inheritdoc />
-        public SearchResultSet CombineResults(MatchingAlgorithmResultSet matchingResults, IDictionary<int, MatchProbabilityResponse> matchPredictionResults)
+        public SearchResultSet CombineResults(
+            MatchingAlgorithmResultSet matchingResults,
+            IDictionary<int, MatchProbabilityResponse> matchPredictionResults)
         {
             return new SearchResultSet
             {
                 SearchResults = matchingResults.MatchingAlgorithmResults.Select(r => new SearchResult
                 {
                     MatchingResult = r,
-                    MatchPredictionResult = matchPredictionResults[r.DonorId].ZeroMismatchProbability
+                    MatchPredictionResult = matchPredictionResults[r.DonorId]
                 }),
                 TotalResults = matchingResults.ResultCount,
                 HlaNomenclatureVersion = matchingResults.HlaNomenclatureVersion,
