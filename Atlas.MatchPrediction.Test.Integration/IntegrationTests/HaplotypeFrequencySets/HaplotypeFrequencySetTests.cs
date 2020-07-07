@@ -2,7 +2,6 @@
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
-using Atlas.MatchPrediction.Services.HaplotypeFrequencySets;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using FluentAssertions;
@@ -28,13 +27,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
 
         private static readonly FrequencySetMetadata GlobalPopulation = FrequencySetMetadataBuilder.New.Build();
 
-        private readonly IHaplotypeFrequencySetService service;
-        private readonly IFrequencySetService importService;
+        private readonly IFrequencySetService service;
 
         public HaplotypeFrequencySetTests()
         {
-            service = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencySetService>();
-            importService = DependencyInjection.DependencyInjection.Provider.GetService<IFrequencySetService>();
+            service = DependencyInjection.DependencyInjection.Provider.GetService<IFrequencySetService>();
         }
 
         [SetUp]
@@ -182,7 +179,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.HaplotypeFrequ
         private async Task ImportHaplotypeSet(string registry, string ethnicity)
         {
             using var file = FrequencySetFileBuilder.New(registry, ethnicity).Build();
-            await importService.ImportFrequencySet(file);
+            await service.ImportFrequencySet(file);
         }
     }
 }

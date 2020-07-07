@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
@@ -46,21 +47,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             MatchProbabilityInput matchProbabilityInput)
         {
 
-            var patientGenotypes = (await ExpandPatientPhenotype(matchProbabilityInput)).Select(p =>
-                new PatientMatchPredictionInfo
-                {
-                    FrequencyMetadata = matchProbabilityInput.PatientFrequencySetMetadata,
-                    PhenotypeInfo = p
-                }).ToHashSet();
-            var donorGenotypes = (await ExpandDonorPhenotype(matchProbabilityInput)).Select(p =>
-                new DonorMatchPredictionInfo {
-                    FrequencyMetadata = matchProbabilityInput.DonorFrequencySetMetadata,
-                    PhenotypeInfo = p
-                }).ToHashSet();
+            var patientGenotypes = await ExpandPatientPhenotype(matchProbabilityInput);
+            var donorGenotypes = await ExpandDonorPhenotype(matchProbabilityInput);
 
             var allPatientDonorCombinations = patientGenotypes.SelectMany(patientHla =>
                 donorGenotypes.Select(donorHla =>
-                    new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla.PhenotypeInfo, donorHla.PhenotypeInfo)));
+                    new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla, donorHla)));
 
             var patientDonorMatchDetails =
                 await CalculatePairsMatchCounts(matchProbabilityInput, allPatientDonorCombinations);
@@ -85,10 +77,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                         {A = 0m, B = 0m, C = 0m, Dpb1 = null, Dqb1 = 0m, Drb1 = 0m}
                 };
             }
+            
+            var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientGenotypes, matchProbabilityInput.DonorFrequencySetMetadata, matchProbabilityInput.PatientFrequencySetMetadata, true);
+            var donorGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientGenotypes, matchProbabilityInput.DonorFrequencySetMetadata, matchProbabilityInput.PatientFrequencySetMetadata, false);
 
-            var genotypes = patientGenotypes.Union<PhenotypeInfoWithFrequencyMetadata>(donorGenotypes).ToHashSet();
-            var genotypesLikelihoods = await CalculateGenotypeLikelihoods(genotypes);
-
+            var genotypesLikelihoods = patientGenotypeLikelihoods.Union(donorGenotypeLikelihoods).ToDictionary();
+            
             return matchProbabilityCalculator.CalculateMatchProbability(patientGenotypes, donorGenotypes,
                 patientDonorMatchDetails, genotypesLikelihoods);
         }
@@ -132,10 +126,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         }
 
         private async Task<Dictionary<PhenotypeInfo<string>, decimal>> CalculateGenotypeLikelihoods(
-            IEnumerable<PhenotypeInfoWithFrequencyMetadata> genotypes)
+            ISet<PhenotypeInfo<string>> genotypes,
+            FrequencySetMetadata donorFrequencySetMetadata,
+            FrequencySetMetadata patientFrequencySetMetadata,
+            bool isPatient)
         {
             return (await logger.RunTimedAsync(
-                    async () => await Task.WhenAll(genotypes.Select(CalculateLikelihood)),
+                    async () => await Task.WhenAll(genotypes.Select(genotype => CalculateLikelihood(genotype, donorFrequencySetMetadata, patientFrequencySetMetadata, isPatient))),
                     $"{LoggingPrefix}Calculated likelihoods for genotypes",
                     LogLevel.Verbose
                 ))
@@ -150,10 +147,14 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 hlaNomenclatureVersion);
         }
 
-        private async Task<KeyValuePair<PhenotypeInfo<string>, decimal>> CalculateLikelihood(PhenotypeInfoWithFrequencyMetadata phenotype)
+        private async Task<KeyValuePair<PhenotypeInfo<string>, decimal>> CalculateLikelihood(
+            PhenotypeInfo<string> phenotype, 
+            FrequencySetMetadata donorFrequencySetMetadata,
+            FrequencySetMetadata patientFrequencySetMetadata,
+            bool isPatient)
         {
-            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(phenotype.PhenotypeInfo, phenotype.FrequencyMetadata);
-            return new KeyValuePair<PhenotypeInfo<string>, decimal>(phenotype.PhenotypeInfo, likelihood);
+            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(phenotype, donorFrequencySetMetadata, patientFrequencySetMetadata, isPatient);
+            return new KeyValuePair<PhenotypeInfo<string>, decimal>(phenotype, likelihood);
         }
     }
 }

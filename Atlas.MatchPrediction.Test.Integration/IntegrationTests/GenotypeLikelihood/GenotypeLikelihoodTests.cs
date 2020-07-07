@@ -88,7 +88,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
             var genotypeInput = PhenotypeInfoBuilder.New.Build();
             const decimal expectedLikelihood = 3.28716m;
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotypeInput, defaultFrequencySetMetaData);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotypeInput, defaultFrequencySetMetaData, defaultFrequencySetMetaData, false);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
@@ -111,7 +111,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
             genotype.SetPosition(homozygousLocus, LocusPosition.Two,
                 genotype.GetPosition(homozygousLocus, LocusPosition.One));
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, defaultFrequencySetMetaData);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, defaultFrequencySetMetaData, defaultFrequencySetMetaData, false);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
@@ -138,7 +138,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
                     genotype.GetPosition(homozygousLocus, LocusPosition.One));
             }
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, defaultFrequencySetMetaData);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, defaultFrequencySetMetaData, defaultFrequencySetMetaData, false);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
@@ -160,7 +160,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
 
             const decimal expectedLikelihood = 0;
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, defaultFrequencySetMetaData);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, defaultFrequencySetMetaData, defaultFrequencySetMetaData, false);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
@@ -184,7 +184,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
 
             const decimal expectedLikelihood = 0;
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, defaultFrequencySetMetaData);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, defaultFrequencySetMetaData, defaultFrequencySetMetaData, false);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
@@ -218,7 +218,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
             var genotype = PhenotypeInfoBuilder.New.Build();
             const decimal expectedLikelihood = 0.99456m;
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, defaultFrequencySetMetaData);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, defaultFrequencySetMetaData, defaultFrequencySetMetaData, false);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }

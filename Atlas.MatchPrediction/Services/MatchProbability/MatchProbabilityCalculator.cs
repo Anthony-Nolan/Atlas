@@ -10,8 +10,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     internal interface IMatchProbabilityCalculator
     {
         MatchProbabilityResponse CalculateMatchProbability(
-            ISet<PatientMatchPredictionInfo> patientInfo,
-            ISet<DonorMatchPredictionInfo> donorInfo,
+            ISet<PhenotypeInfo<string>> patientInfo,
+            ISet<PhenotypeInfo<string>> donorInfo,
             ISet<GenotypeMatchDetails> patientDonorMatchDetails,
             Dictionary<PhenotypeInfo<string>, decimal> genotypesLikelihoods);
     }
@@ -19,13 +19,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     internal class MatchProbabilityCalculator : IMatchProbabilityCalculator
     {
         public MatchProbabilityResponse CalculateMatchProbability(
-            ISet<PatientMatchPredictionInfo> patientInfo,
-            ISet<DonorMatchPredictionInfo> donorInfo,
+            ISet<PhenotypeInfo<string>> patientInfo,
+            ISet<PhenotypeInfo<string>> donorInfo,
             ISet<GenotypeMatchDetails> patientDonorMatchDetails,
             Dictionary<PhenotypeInfo<string>, decimal> genotypesLikelihoods)
         {
-            var sumOfPatientLikelihoods = patientInfo.Select(p => genotypesLikelihoods[p.PhenotypeInfo]).Sum();
-            var sumOfDonorLikelihoods = donorInfo.Select(d => genotypesLikelihoods[d.PhenotypeInfo]).Sum();
+            var sumOfPatientLikelihoods = patientInfo.Select(p => genotypesLikelihoods[p]).Sum();
+            var sumOfDonorLikelihoods = donorInfo.Select(d => genotypesLikelihoods[d]).Sum();
 
             if (sumOfPatientLikelihoods == 0 || sumOfDonorLikelihoods == 0)
             {
