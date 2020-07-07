@@ -118,6 +118,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             MatchingAlgorithmResultSet searchResults,
             IDictionary<int, MatchProbabilityResponse> matchPredictionResults)
         {
+            // Note that this serializes the match prediction results, using default settings - which rounds any decimals to 15dp.
+            // TODO: ATLAS-492: Determine whether 15dp is enough here. Work around this limitation if not.
             await context.CallActivityAsync(
                 nameof(SearchActivityFunctions.PersistSearchResults),
                 new Tuple<MatchingAlgorithmResultSet, IDictionary<int, MatchProbabilityResponse>>(searchResults, matchPredictionResults)
