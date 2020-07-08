@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.HlaMetadataDictionary.WmdaDataAccess.Models
 {
@@ -23,7 +24,7 @@ namespace Atlas.HlaMetadataDictionary.WmdaDataAccess.Models
 
         public override string ToString()
         {
-            return $"locus: {TypingLocus}, name: {Name}, splits: {string.Join("/", SplitAntigens)}, associated: {string.Join("/", AssociatedAntigens)}";
+            return $"locus: {TypingLocus}, name: {Name}, splits: {SplitAntigens.StringJoin("/")}, associated: {AssociatedAntigens.StringJoin("/")}";
         }
 
 

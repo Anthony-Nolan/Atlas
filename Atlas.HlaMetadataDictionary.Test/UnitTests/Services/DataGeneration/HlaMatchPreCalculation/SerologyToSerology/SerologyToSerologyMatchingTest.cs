@@ -5,6 +5,7 @@ using ApprovalTests.Namers;
 using ApprovalTests.Reporters;
 using ApprovalTests.Reporters.TestFrameworks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
@@ -81,13 +82,14 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
         [Test]
         public void MatchedSerologies_CollectionContainsAllExpectedSerology()
         {
-            var str = string.Join("\r\n", SharedTestDataCache
+            var str = SharedTestDataCache
                 .GetMatchedHla()
                 .OfType<MatchedSerology>()
                 .OrderBy(s => s.HlaTyping.Locus)
                 .ThenBy(s => int.Parse(s.HlaTyping.Name))
                 .Select(s => $"{s.HlaTyping.Locus.ToString().ToUpper()}\t{s.HlaTyping.Name}")
-                .ToList());
+                .StringJoinWithNewline();
+
             Approvals.Verify(str);
         }
 
