@@ -85,11 +85,11 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                     Arg.Any<HashSet<PhenotypeInfo<string>>>(),
                     Arg.Any<HashSet<GenotypeMatchDetails>>(),
                     Arg.Any<Dictionary<PhenotypeInfo<string>, decimal>>())
-                .Returns(new MatchProbabilityResponse {ZeroMismatchProbability = 0.5m});
+                .Returns(new MatchProbabilityResponse {ZeroMismatchProbability = new Probability(0.5m)});
 
             var actualResponse = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            actualResponse.ZeroMismatchProbability.Should().Be(0.5m);
+            actualResponse.ZeroMismatchProbability.Decimal.Should().Be(0.5m);
         }
 
         [Test]
@@ -114,7 +114,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             var actualResponse = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            actualResponse.ZeroMismatchProbability.Should().Be(1m);
+            actualResponse.ZeroMismatchProbability.Decimal.Should().Be(1m);
         }
 
         [Test]
@@ -135,7 +135,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             var actualResponse = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            actualResponse.ZeroMismatchProbability.Should().Be(0m);
+            actualResponse.ZeroMismatchProbability.Decimal.Should().Be(0m);
         }
 
         [TestCase(5, 1, 5)]

@@ -55,26 +55,23 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             // Returns early when patient/donor pair are guaranteed to either be a match or not
             if (patientDonorMatchDetails.Any() && patientDonorMatchDetails.All(p => p.IsTenOutOfTenMatch))
             {
-                return new MatchProbabilityResponse
-                {
-                    ZeroMismatchProbability = 1m,
-                    ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
-                        {A = 1m, B = 1m, C = 1m, Dpb1 = null, Dqb1 = 1m, Drb1 = 1m}
-                };
+                return new MatchProbabilityResponse(Probability.One());
             }
+
             if (!patientDonorMatchDetails.Any(p => p.IsTenOutOfTenMatch))
             {
-                return new MatchProbabilityResponse {
-                    ZeroMismatchProbability = 0m,
-                    ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
-                        {A = 0m, B = 0m, C = 0m, Dpb1 = null, Dqb1 = 0m, Drb1 = 0m}
-                };
+                return new MatchProbabilityResponse(Probability.Zero());
             }
 
             var genotypes = patientGenotypes.Union(donorGenotypes);
             var genotypesLikelihoods = await CalculateGenotypeLikelihoods(genotypes);
 
-            return matchProbabilityCalculator.CalculateMatchProbability(patientGenotypes, donorGenotypes, patientDonorMatchDetails, genotypesLikelihoods);
+            return matchProbabilityCalculator.CalculateMatchProbability(
+                patientGenotypes,
+                donorGenotypes,
+                patientDonorMatchDetails,
+                genotypesLikelihoods
+            );
         }
 
         private async Task<ISet<PhenotypeInfo<string>>> ExpandPatientPhenotype(MatchProbabilityInput matchProbabilityInput)

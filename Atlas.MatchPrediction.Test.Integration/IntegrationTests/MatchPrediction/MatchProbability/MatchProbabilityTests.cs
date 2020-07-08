@@ -57,8 +57,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Should().Be(1m);
-            matchDetails.ZeroMismatchProbabilityPerLocus.Should().Be(expectedProbabilityPerLocus);
+            matchDetails.ZeroMismatchProbability.Decimal.Should().Be(1m);
+            matchDetails.ZeroMismatchProbabilityPerLocus.Map(v => v?.Decimal).Should().Be(expectedProbabilityPerLocus);
         }
 
         [Test]
@@ -78,8 +78,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Should().Be(0m);
-            matchDetails.ZeroMismatchProbabilityPerLocus.Should().Be(expectedProbabilityPerLocus);
+            matchDetails.ZeroMismatchProbability.Decimal.Should().Be(0m);
+            matchDetails.ZeroMismatchProbabilityPerLocus.Map(v => v?.Decimal).Should().Be(expectedProbabilityPerLocus);
         }
 
         [Test]
@@ -136,8 +136,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Should().Be(0.0740740740740740740740740741m);
-            matchDetails.ZeroMismatchProbabilityPerLocus.Should().Be(expectedProbabilityPerLocus);
+            matchDetails.ZeroMismatchProbability.Decimal.Should().Be(0.0740740740740740740740740741m);
+            matchDetails.ZeroMismatchProbabilityPerLocus.Map(v => v?.Decimal).Should().Be(expectedProbabilityPerLocus);
         }
 
         private async Task ImportFrequencies(IEnumerable<HaplotypeFrequency> haplotypes)

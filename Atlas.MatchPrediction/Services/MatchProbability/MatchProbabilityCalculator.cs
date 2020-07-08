@@ -29,12 +29,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             if (sumOfPatientLikelihoods == 0 || sumOfDonorLikelihoods == 0)
             {
-                return new MatchProbabilityResponse
-                {
-                    ZeroMismatchProbability = 0m,
-                    ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
-                        {A = 0m, B = 0m, C = 0m, Dpb1 = 0m, Dqb1 = 0m, Drb1 = 0m}
-                };
+                return new MatchProbabilityResponse(Probability.Zero());
             }
 
             var allowedLoci = LocusSettings.MatchPredictionLoci.ToList();
@@ -45,23 +40,27 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 {
                     return (decimal?) null;
                 }
-                
+
                 var twoOutOfTwoMatches = patientDonorMatchDetails.Where(g => g.MatchCounts.GetLocus(locus) == 2);
 
-                return CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, twoOutOfTwoMatches, genotypesLikelihoods);  
+                return CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, twoOutOfTwoMatches, genotypesLikelihoods);
             });
 
             var tenOutOfTenMatches = patientDonorMatchDetails.Where(g => g.IsTenOutOfTenMatch);
             var matchProbability = CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, tenOutOfTenMatches, genotypesLikelihoods);
 
-            return new MatchProbabilityResponse {ZeroMismatchProbabilityPerLocus = probabilityPerLocus, ZeroMismatchProbability = matchProbability};
+            return new MatchProbabilityResponse
+            {
+                ZeroMismatchProbability = new Probability(matchProbability),
+                ZeroMismatchProbabilityPerLocus = probabilityPerLocus.Map((l, v) => v.HasValue ? new Probability(v.Value) : null)
+            };
         }
 
         private static decimal CalculateProbability(
             decimal patientLikelihood,
             decimal donorLikelihood,
             IEnumerable<GenotypeMatchDetails> matchingLikelihoods,
-            Dictionary<PhenotypeInfo<string>, decimal> genotypesLikelihoods)
+            IReadOnlyDictionary<PhenotypeInfo<string>, decimal> genotypesLikelihoods)
         {
             var sumOfMatchingLikelihoods =
                 matchingLikelihoods.Select(g => genotypesLikelihoods[g.PatientGenotype] * genotypesLikelihoods[g.DonorGenotype]).Sum();

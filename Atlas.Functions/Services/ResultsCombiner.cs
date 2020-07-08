@@ -31,7 +31,7 @@ namespace Atlas.Functions.Services
                 SearchResults = matchingResults.MatchingAlgorithmResults.Select(r => new SearchResult
                 {
                     MatchingResult = r,
-                    MatchPredictionResult = matchPredictionResults[r.DonorId].ZeroMismatchProbability
+                    MatchPredictionResult = matchPredictionResults[r.DonorId]
                 }),
                 TotalResults = matchingResults.ResultCount,
                 HlaNomenclatureVersion = matchingResults.HlaNomenclatureVersion,
