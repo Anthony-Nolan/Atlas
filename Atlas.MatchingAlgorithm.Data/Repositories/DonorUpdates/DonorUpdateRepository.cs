@@ -60,8 +60,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             await AddMatchingPGroupsForExistingDonorBatch(donors);
         }
 
-        // Performance may not be sufficient to efficiently import large quantities of donors.
-        // Consider re-writing this if we prove to need to process large donor batches
+        // This implementation has *not* been aggressively tuned for performance, yet.
+        // Feel free to make changes.
         public async Task UpdateDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorsToUpdate)
         {
             donorsToUpdate = donorsToUpdate.ToList();
@@ -79,22 +79,28 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     SELECT * FROM Donors 
                     WHERE DonorId IN ({string.Join(",", donorsToUpdate.Select(d => d.DonorId))})
                     ", commandTimeout: 300)
-                    ).ToList();
+                    ).ToDictionary(d => d.DonorId);
 
-                await SetAvailabilityOfDonorBatch(existingDonors.Select(d => d.DonorId), true, conn);
+                await SetAvailabilityOfDonorBatch(donorsToUpdate.Select(d => d.DonorId), true, conn);
 
                 var donorsWhereHlaHasChanged = new List<DonorWithChangedMatchingLoci>();
 
-                foreach (var existingDonor in existingDonors)
+                foreach (var donorToUpdate in donorsToUpdate)
                 {
-                    var existingDonorResult = existingDonor.ToDonorInfo();
-                    var donorToUpdate = donorsToUpdate.Single(d => d.DonorId == existingDonorResult.DonorId);
-
-                    if (DonorInfoHasChanged(existingDonor, donorToUpdate))
+                    var donorExists = existingDonors.TryGetValue(donorToUpdate.DonorId, out var existingDonor);
+                    if (!donorExists)
                     {
-                        await UpdateDonorInfo(donorToUpdate, conn);
+                        // Shouldn't really happen - it suggests that 2 processes are updating the DB at the same time!
+                        // Existing code just drops these cases entirely.
+                        continue;
                     }
 
+                    if (DonorTypeHasChanged(existingDonor, donorToUpdate))
+                    {
+                        await UpdateDonorType(donorToUpdate, conn);
+                    }
+
+                    var existingDonorResult = existingDonor.ToDonorInfo();
                     if (DonorHlaHasChanged(existingDonorResult, donorToUpdate))
                     {
                         var changedLoci = GetChangedMatchingOnlyLoci(existingDonorResult, donorToUpdate);
@@ -109,7 +115,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        private static bool DonorInfoHasChanged(Donor existingDonor, DonorInfo donorInfo)
+        private static bool DonorTypeHasChanged(Donor existingDonor, DonorInfo donorInfo)
         {
             return existingDonor.DonorType != donorInfo.DonorType;
         }
@@ -129,24 +135,26 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             });
         }
 
+        /// <summary>
+        /// Sets all listed donors to be available or not, using the provided, open connection.
+        /// </summary>
+        /// <param name="donorIds">Donors to update.</param>
+        /// <param name="isAvailableForSearch">Value to update availability to.</param>
+        /// <param name="conn">An **open** SqlConnection which the caller is responsible for closing</param>
         private static async Task SetAvailabilityOfDonorBatch(IEnumerable<int> donorIds, bool isAvailableForSearch, SqlConnection conn)
         {
             var availabilityAsString = isAvailableForSearch ? "1" : "0";
 
-            var transaction = conn.BeginTransaction();
-
             var donorIdsAsString = string.Join(",", donorIds);
             await conn.ExecuteAsync(
                 $"UPDATE Donors SET IsAvailableForSearch = {availabilityAsString} WHERE DonorId IN ({donorIdsAsString})",
-                null, transaction, commandTimeout: 600);
-
-            transaction.Commit();
+                commandTimeout: 600);
         }
 
         /// <summary>
         /// Updates donor fields not related to availability or HLA.
         /// </summary>
-        private static async Task UpdateDonorInfo(DonorInfo donorInfo, IDbConnection connection)
+        private static async Task UpdateDonorType(DonorInfo donorInfo, IDbConnection connection)
         {
             await connection.ExecuteAsync($@"
                         UPDATE Donors 

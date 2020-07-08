@@ -55,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         {
             const int donorId = 123;
 
-            await donorService.SetDonorBatchAsUnavailableForSearch(new[] { donorId }, default);
+            await donorService.SetDonorBatchAsUnavailableForSearch(new List<int> { donorId }, default);
 
             await updateRepository.Received().SetDonorBatchAsUnavailableForSearch(Arg.Is<IEnumerable<int>>(x => x.Single() == donorId));
         }
