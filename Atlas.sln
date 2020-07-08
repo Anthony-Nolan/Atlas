@@ -5,6 +5,7 @@ VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E5979876-0294-475D-8970-A384B2DDEB8C}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		nuget.config = nuget.config
 	EndProjectSection
@@ -40,9 +41,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pipelines", "Pipelines", "{
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MatchingAlgorithm", "MatchingAlgorithm", "{F2A44C37-3B16-433A-85A1-B267E41325BA}"
-ProjectSection(SolutionItems) = preProject
-	README_MatchingAlgorithm.md = README_MatchingAlgorithm.md
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		README_MatchingAlgorithm.md = README_MatchingAlgorithm.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MatchingAlgorithm.Tests", "MatchingAlgorithm.Tests", "{CEE7D93E-013C-4D66-ABDA-C25F18623A0D}"
 EndProject
@@ -59,9 +60,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction.Data", "Atlas.MatchPrediction.Data\Atlas.MatchPrediction.Data.csproj", "{A44AF465-B57E-4A17-B5C2-85D0170B2BEE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MatchPrediction", "MatchPrediction", "{8DF9D0B6-B94E-4680-8AB8-CB1509F23A74}"
-ProjectSection(SolutionItems) = preProject
-	README_MatchPredictionAlgorithm.md = README_MatchPredictionAlgorithm.md
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		README_MatchPredictionAlgorithm.md = README_MatchPredictionAlgorithm.md
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction.Test.Integration", "Atlas.MatchPrediction.Test.Integration\Atlas.MatchPrediction.Test.Integration.csproj", "{00290A50-CE88-4148-B50F-63B3AF313E8A}"
 EndProject
@@ -79,9 +80,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.DonorImport.Functions", "Atlas.DonorImport.Functions\Atlas.DonorImport.Functions.csproj", "{60180E66-D312-4548-8654-F670DA3315D5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MultipleAlleleCodeDictionary", "MultipleAlleleCodeDictionary", "{DCB9E81B-16A1-4D0D-BB02-42A138B4D078}"
-ProjectSection(SolutionItems) = preProject
-	README_MultipleAlleleCodeDictionary.md = README_MultipleAlleleCodeDictionary.md
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		README_MultipleAlleleCodeDictionary.md = README_MultipleAlleleCodeDictionary.md
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MultipleAlleleCodeDictionary", "Atlas.MultipleAlleleCodeDictionary\Atlas.MultipleAlleleCodeDictionary.csproj", "{6716E55C-48DF-4425-A603-FA36BC362591}"
 EndProject
@@ -102,13 +103,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HlaMetadataDictionary", "Hl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.HlaMetadataDictionary.Test", "Atlas.HlaMetadataDictionary.Test\Atlas.HlaMetadataDictionary.Test.csproj", "{506F18FC-DAF2-4DE5-B853-F50E5638EC11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.MultipleAlleleCodeDictionary.Test.Integration", "Atlas.MultipleAlleleCodeDictionary.Test.Integration\Atlas.MultipleAlleleCodeDictionary.Test.Integration.csproj", "{DA4729BC-8829-474F-9DDC-257F61AC07BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MultipleAlleleCodeDictionary.Test.Integration", "Atlas.MultipleAlleleCodeDictionary.Test.Integration\Atlas.MultipleAlleleCodeDictionary.Test.Integration.csproj", "{DA4729BC-8829-474F-9DDC-257F61AC07BC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Readmes", "Readmes", "{122DA7C4-50ED-45A5-97D9-9CFC3391A87B}"
-ProjectSection(SolutionItems) = preProject
-	README.md = README.md
-	README_Deployment.md = README_Deployment.md
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+		README_Deployment.md = README_Deployment.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
