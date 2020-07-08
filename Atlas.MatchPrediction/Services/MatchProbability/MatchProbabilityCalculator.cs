@@ -32,8 +32,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 return new MatchProbabilityResponse
                 {
                     ZeroMismatchProbability = 0m,
-                    SingleMismatchProbability = 0m,
-                    DoubleMismatchProbability = 0m,
+                    OneMismatchProbability = 0m,
+                    TwoMismatchProbability = 0m,
                     ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
                         {A = 0m, B = 0m, C = 0m, Dpb1 = null, Dqb1 = 0m, Drb1 = 0m}
                 };
@@ -53,6 +53,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 return CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, twoOutOfTwoMatches, genotypesLikelihoods);  
             });
 
+            //TODO: ATLAS-235: Remove hard coded match count numbers
+
             var tenOutOfTenMatches = patientDonorMatchDetails.Where(g => g.MatchCount == 10);
             var zeroMismatchProbability = CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, tenOutOfTenMatches, genotypesLikelihoods);
 
@@ -66,8 +68,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             {
                 ZeroMismatchProbabilityPerLocus = probabilityPerLocus,
                 ZeroMismatchProbability = zeroMismatchProbability,
-                SingleMismatchProbability = singleMismatchProbability,
-                DoubleMismatchProbability = doubleMismatchProbability,
+                OneMismatchProbability = singleMismatchProbability,
+                TwoMismatchProbability = doubleMismatchProbability,
             };
         }
 
@@ -82,5 +84,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             return sumOfMatchingLikelihoods / (patientLikelihood * donorLikelihood);
         }
+
+
     }
 }
