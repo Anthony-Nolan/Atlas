@@ -5,6 +5,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
 using Atlas.MatchPrediction.Data.Models;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
@@ -13,6 +14,7 @@ using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFi
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 
 // ReSharper disable InconsistentNaming - want to avoid calling "G groups" "gGroup", as "g" groups are a distinct thing 
 
@@ -35,6 +37,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         private readonly string GGroupDqb12 = Alleles.UnambiguousAlleleDetails.Dqb1.Position2.GGroup;
         private readonly string GGroupDrb11 = Alleles.UnambiguousAlleleDetails.Drb1.Position1.GGroup;
         private readonly string GGroupDrb12 = Alleles.UnambiguousAlleleDetails.Drb1.Position2.GGroup;
+        
+        private readonly string DefaultRegistryCode = "default-registry-code";
+        private readonly string DefaultEthnicityCode = "default-ethnicity-code";
 
         [SetUp]
         public void SetUp()
@@ -121,7 +126,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             {
                 PatientHla = patientHla,
                 DonorHla = DefaultUnambiguousAllelesBuilder.Build(),
-                HlaNomenclatureVersion = HlaNomenclatureVersion
+                HlaNomenclatureVersion = HlaNomenclatureVersion,
+                DonorFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode},
+                PatientFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode}
             };
 
             var expectedProbabilityPerLocus = new LociInfo<decimal?>
@@ -142,7 +149,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         private async Task ImportFrequencies(IEnumerable<HaplotypeFrequency> haplotypes)
         {
-            using var file = FrequencySetFileBuilder.New(haplotypes).Build();
+            using var file = FrequencySetFileBuilder.New(DefaultRegistryCode, DefaultEthnicityCode, haplotypes).Build();
             await importService.ImportFrequencySet(file);
         }
 
