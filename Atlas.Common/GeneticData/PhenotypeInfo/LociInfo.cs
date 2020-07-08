@@ -14,7 +14,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
     /// A <see cref="PhenotypeInfo{T}"/> is a special case of <see cref="LociInfo{T}"/>, where T = LocusInfo.
     /// </summary>
     /// <typeparam name="T">The type of the information that is required for each locus.</typeparam>
-    public class LociInfo<T>
+    public class LociInfo<T> : IEquatable<LociInfo<T>>
     {
         // ReSharper disable InconsistentNaming - recommended name clashes with property!
         protected T a;
@@ -98,16 +98,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         {
             get => drb1;
             set => drb1 = value;
-        }
-
-        public static bool operator ==(LociInfo<T> left, LociInfo<T> right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(LociInfo<T> left, LociInfo<T> right)
-        {
-            return !Equals(left, right);
         }
 
         public LociInfo<R> Map<R>(Func<Locus, T, R> mapping)
@@ -253,24 +243,34 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
+        #region IEquatable<T> implementation (Defers to EqualityComparer of inner type.)
+        public static bool operator ==(LociInfo<T> left, LociInfo<T> right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(LociInfo<T> left, LociInfo<T> right)
+        {
+            return !Equals(left, right);
+        }
+
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
+            return Equals(obj as LociInfo<T>);
+        }
 
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
+        public virtual bool Equals(LociInfo<T> other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            if (this.GetType() != other.GetType()) return false;
 
-            if (obj.GetType() != this.GetType())
-            {
-                return false;
-            }
-
-            return Equals((LociInfo<T>) obj);
+            return EqualityComparer<T>.Default.Equals(A, other.A) &&
+                   EqualityComparer<T>.Default.Equals(B, other.B) &&
+                   EqualityComparer<T>.Default.Equals(C, other.C) &&
+                   EqualityComparer<T>.Default.Equals(Dpb1, other.Dpb1) &&
+                   EqualityComparer<T>.Default.Equals(Dqb1, other.Dqb1) &&
+                   EqualityComparer<T>.Default.Equals(Drb1, other.Drb1);
         }
 
         public override int GetHashCode()
@@ -286,15 +286,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 return hashCode;
             }
         }
-
-        private bool Equals(LociInfo<T> other)
-        {
-            return EqualityComparer<T>.Default.Equals(A, other.A) &&
-                   EqualityComparer<T>.Default.Equals(B, other.B) &&
-                   EqualityComparer<T>.Default.Equals(C, other.C) &&
-                   EqualityComparer<T>.Default.Equals(Dpb1, other.Dpb1) &&
-                   EqualityComparer<T>.Default.Equals(Dqb1, other.Dqb1) &&
-                   EqualityComparer<T>.Default.Equals(Drb1, other.Drb1);
-        }
+        #endregion
     }
 }
