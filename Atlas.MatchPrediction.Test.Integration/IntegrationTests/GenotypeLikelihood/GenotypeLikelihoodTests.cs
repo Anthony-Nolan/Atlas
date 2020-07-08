@@ -36,8 +36,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
         private const string Drb11 = "Drb11:Drb11";
         private const string Drb12 = "Drb12:Drb12";
 
-        private const string EthnicityCode = "ethnicity-code";
-        private const string RegistryCode = "registry-code";
+        private const string DefaultEthnicityCode = "ethnicity-code";
+        private const string DefaultRegistryCode = "registry-code";
         private HaplotypeFrequencySet haplotypeFrequencySet;
 
         [SetUp]
@@ -83,7 +83,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
                 new HaplotypeFrequency {A = A1, B = B1, C = C1, DQB1 = Dqb11, DRB1 = Drb11, Frequency = 0.1m}
             };
             
-            haplotypeFrequencySet = await  ImportFrequencies(allPossibleHaplotypes, RegistryCode, EthnicityCode);
+            haplotypeFrequencySet = await  ImportFrequencies(allPossibleHaplotypes, DefaultRegistryCode, DefaultEthnicityCode);
         }
 
         [Test]
@@ -232,14 +232,14 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
 
         private async Task<HaplotypeFrequencySet> ImportFrequencies(IEnumerable<HaplotypeFrequency> haplotypes, string registryCode, string ethnicityCode)
         {
-            using var file = FrequencySetFileBuilder.New(RegistryCode, EthnicityCode, haplotypes)
+            using var file = FrequencySetFileBuilder.New(DefaultRegistryCode, DefaultEthnicityCode, haplotypes)
                 .Build();
             await importService.ImportFrequencySet(file);
             
             var individualInfo = new FrequencySetMetadata
             {
-                EthnicityCode = EthnicityCode,
-                RegistryCode = RegistryCode
+                EthnicityCode = DefaultEthnicityCode,
+                RegistryCode = DefaultRegistryCode
             };
             var haplotypeFrequencySetResponse = await importService.GetHaplotypeFrequencySets(individualInfo, individualInfo);
             return haplotypeFrequencySetResponse.DonorSet;
