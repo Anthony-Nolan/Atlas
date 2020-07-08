@@ -32,6 +32,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 return new MatchProbabilityResponse
                 {
                     ZeroMismatchProbability = 0m,
+                    SingleMismatchProbability = 0m,
+                    DoubleMismatchProbability = 0m,
                     ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
                         {A = 0m, B = 0m, C = 0m, Dpb1 = 0m, Dqb1 = 0m, Drb1 = 0m}
                 };
@@ -51,10 +53,22 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 return CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, twoOutOfTwoMatches, genotypesLikelihoods);  
             });
 
-            var tenOutOfTenMatches = patientDonorMatchDetails.Where(g => g.IsTenOutOfTenMatch);
-            var matchProbability = CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, tenOutOfTenMatches, genotypesLikelihoods);
+            var tenOutOfTenMatches = patientDonorMatchDetails.Where(g => g.MatchCount == 10);
+            var zeroMismatchProbability = CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, tenOutOfTenMatches, genotypesLikelihoods);
 
-            return new MatchProbabilityResponse {ZeroMismatchProbabilityPerLocus = probabilityPerLocus, ZeroMismatchProbability = matchProbability};
+            var singleMismatches = patientDonorMatchDetails.Where(g => g.MatchCount == 9);
+            var singleMismatchProbability = CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, singleMismatches, genotypesLikelihoods);
+
+            var doubleMismatches = patientDonorMatchDetails.Where(g => g.MatchCount == 8);
+            var doubleMismatchProbability = CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, doubleMismatches, genotypesLikelihoods);
+
+            return new MatchProbabilityResponse
+            {
+                ZeroMismatchProbabilityPerLocus = probabilityPerLocus,
+                ZeroMismatchProbability = zeroMismatchProbability,
+                SingleMismatchProbability = singleMismatchProbability,
+                DoubleMismatchProbability = doubleMismatchProbability,
+            };
         }
 
         private static decimal CalculateProbability(

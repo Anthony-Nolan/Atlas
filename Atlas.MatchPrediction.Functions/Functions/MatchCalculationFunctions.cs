@@ -36,7 +36,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
                     matchCalculationInput.DonorHla,
                     matchCalculationInput.HlaNomenclatureVersion);
 
-                return new JsonResult(new MatchCalculationResponse {MatchCounts = match.MatchCounts, IsTenOutOfTenMatch = match.IsTenOutOfTenMatch});
+                return new JsonResult(new MatchCalculationResponse {MatchCounts = match.MatchCounts, IsTenOutOfTenMatch = match.MatchCount == 10});
             }
             catch (Exception exception)
             {
