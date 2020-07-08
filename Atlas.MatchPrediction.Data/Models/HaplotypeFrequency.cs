@@ -54,6 +54,7 @@ namespace Atlas.MatchPrediction.Data.Models
         {
             modelBuilder
                 .HasIndex(f => new {f.A, f.B, f.C, f.DQB1, f.DRB1, f.SetId})
+                .IsUnique()
                 .IncludeProperties(f => f.Frequency);
         }
     }
