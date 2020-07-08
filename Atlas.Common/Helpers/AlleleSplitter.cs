@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.Common.Helpers
 {
@@ -19,7 +20,7 @@ namespace Atlas.Common.Helpers
         
         public static string FirstThreeFieldsAsString(string allele)
         {
-            return string.Join(AlleleSeparator.ToString(), FirstThreeFields(allele));
+            return FirstThreeFields(allele).StringJoin(AlleleSeparator);
         }
         
         public static IEnumerable<string> FirstTwoFields(string allele)
@@ -29,13 +30,13 @@ namespace Atlas.Common.Helpers
         
         public static string FirstTwoFieldsAsString(string allele)
         {
-            return string.Join(AlleleSeparator.ToString(), FirstTwoFields(allele));
+            return FirstTwoFields(allele).StringJoin(AlleleSeparator);
         }
         
         public static string RemoveLastField(string allele)
         {
             var splitAllele = SplitToFields(allele).ToList();
-            return JoinFields(splitAllele.Take(splitAllele.Count - 1));
+            return splitAllele.Take(splitAllele.Count - 1).StringJoin(AlleleSeparator);
         }
 
         public static string FirstField(string allele)
@@ -52,11 +53,6 @@ namespace Atlas.Common.Helpers
         {
             // TODO: NOVA-1571: Handle alleles with an expression suffix. This truncation will remove expression suffix.
             return alleleString.Split(AlleleSeparator);
-        }
-
-        private static string JoinFields(IEnumerable<string> fields)
-        {
-            return string.Join(AlleleSeparator.ToString(), fields);
         }
     }
 }

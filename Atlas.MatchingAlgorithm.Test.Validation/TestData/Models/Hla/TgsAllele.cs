@@ -61,7 +61,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
             return FromTestDataAllele(allele, new AlleleStringOptions());
         }
 
-        private static TgsAllele FromFourFieldAllele(AlleleTestData fourFieldAllele, IEnumerable<AlleleTestData> otherAllelesInSubtypeString)
+        private static TgsAllele FromFourFieldAllele(AlleleTestData fourFieldAllele, List<AlleleTestData> otherAllelesInSubtypeString)
         {
             var threeFieldAllele = new AlleleTestData
             {
@@ -76,7 +76,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
             return tgsAllele;
         }
 
-        private static TgsAllele FromThreeFieldAllele(AlleleTestData threeFieldAllele, IEnumerable<AlleleTestData> otherAllelesInSubtypeString)
+        private static TgsAllele FromThreeFieldAllele(AlleleTestData threeFieldAllele, List<AlleleTestData> otherAllelesInSubtypeString)
         {
             var twoFieldAllele = new AlleleTestData
             {
@@ -91,7 +91,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
             return tgsAllele;
         }
 
-        private static TgsAllele FromTwoFieldAllele(AlleleTestData twoFieldAllele, IEnumerable<AlleleTestData> otherAllelesInSubtypeString)
+        private static TgsAllele FromTwoFieldAllele(AlleleTestData twoFieldAllele, List<AlleleTestData> otherAllelesInSubtypeString)
         {
             return new TgsAllele
             {
@@ -105,14 +105,14 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
             };
         }
 
-        private static string GenerateAlleleStringOfNames(AlleleTestData alleleTestData, IEnumerable<AlleleTestData> otherAllelesInAlleleString)
+        private static string GenerateAlleleStringOfNames(AlleleTestData alleleTestData, List<AlleleTestData> otherAllelesInAlleleString)
         {
             return otherAllelesInAlleleString.IsNullOrEmpty()
                 ? null
-                : $"{alleleTestData.AlleleName}{AlleleSeparator}{string.Join(AlleleSeparator, otherAllelesInAlleleString.Select(a => a.AlleleName.Replace(AlleleNamePrefix, "")))}";
+                : $"{alleleTestData.AlleleName}{AlleleSeparator}{otherAllelesInAlleleString.Select(a => a.AlleleName.Replace(AlleleNamePrefix, "")).StringJoin(AlleleSeparator)}";
         }
 
-        private static string GenerateAlleleStringOfSubtypes(AlleleTestData twoFieldAllele, IEnumerable<AlleleTestData> otherAllelesInAlleleString)
+        private static string GenerateAlleleStringOfSubtypes(AlleleTestData twoFieldAllele, List<AlleleTestData> otherAllelesInAlleleString)
         {
             if (otherAllelesInAlleleString.IsNullOrEmpty())
             {
@@ -124,7 +124,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla
                 throw new InvalidTestDataException("Cannot create allele string of subtypes from alleles that do not share a first field");
             }
 
-            var otherSubFields = string.Join(AlleleSeparator, otherAllelesInAlleleString.Select(x => AlleleSplitter.SecondField(x.AlleleName)));
+            var otherSubFields = otherAllelesInAlleleString.Select(x => AlleleSplitter.SecondField(x.AlleleName)).StringJoin(AlleleSeparator);
             return $"{twoFieldAllele.AlleleName}{AlleleSeparator}{otherSubFields}";
         }
 
