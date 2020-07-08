@@ -82,8 +82,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             var genotypesLikelihoods = patientGenotypeLikelihoods.Union(donorGenotypeLikelihoods).ToDictionary();
             
-            return matchProbabilityCalculator.CalculateMatchProbability(patientGenotypes, donorGenotypes,
-                patientDonorMatchDetails, genotypesLikelihoods);
+            return matchProbabilityCalculator.CalculateMatchProbability(
+                patientGenotypes,
+                donorGenotypes,
+                patientDonorMatchDetails,
+                genotypesLikelihoods
+            );
         }
 
         private async Task<ISet<PhenotypeInfo<string>>> ExpandPatientPhenotype(

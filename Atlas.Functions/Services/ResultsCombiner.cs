@@ -34,7 +34,7 @@ namespace Atlas.Functions.Services
                 {
                     DonorCode = donorInfo[r.AtlasDonorId].ExternalDonorCode,
                     MatchingResult = r,
-                    MatchPredictionResult = matchPredictionResults[r.AtlasDonorId].ZeroMismatchProbability
+                    MatchPredictionResult = matchPredictionResults[r.AtlasDonorId]
                 }),
                 TotalResults = matchingResults.ResultCount,
                 HlaNomenclatureVersion = matchingResults.HlaNomenclatureVersion,
