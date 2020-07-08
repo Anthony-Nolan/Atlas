@@ -115,7 +115,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
             await donorService
                 .Received(1)
                 .SetDonorBatchAsUnavailableForSearch(
-                    Arg.Is<IEnumerable<int>>(x => x.Single() == donorId),
+                    Arg.Is<List<int>>(x => x.Single() == donorId),
                     Arg.Any<TransientDatabase>());
         }
 
@@ -243,7 +243,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
             await donorService
                 .Received(1)
                 .SetDonorBatchAsUnavailableForSearch(
-                    Arg.Is<IEnumerable<int>>(x => x.Single() == donorId),
+                    Arg.Is<List<int>>(x => x.Single() == donorId),
                     Arg.Any<TransientDatabase>());
         }
 
@@ -486,7 +486,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
             await donorService
                 .Received(1)
                 .SetDonorBatchAsUnavailableForSearch(
-                    Arg.Is<IEnumerable<int>>(x => x.Single() == unavailableDonorId),
+                    Arg.Is<List<int>>(x => x.Single() == unavailableDonorId),
                     Arg.Any<TransientDatabase>());
 
             await donorService

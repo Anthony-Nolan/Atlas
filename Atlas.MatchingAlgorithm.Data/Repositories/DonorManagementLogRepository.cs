@@ -9,6 +9,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
 {
@@ -53,8 +54,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
             var donorIdsWithLogs = (await GetDonorIdsWithExistingLogs(infos.Select(i => i.DonorId))).ToList();
 
-            var logsToUpdate = infos.Where(i => donorIdsWithLogs.Contains(i.DonorId));
-            var logsToCreate = infos.Where(i => !donorIdsWithLogs.Contains(i.DonorId));
+            var (logsToUpdate, logsToCreate) = infos.ReifyAndSplit(i => donorIdsWithLogs.Contains(i.DonorId));
 
             await UpdateLogBatch(logsToUpdate);
             await CreateLogBatch(logsToCreate);
