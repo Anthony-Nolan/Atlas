@@ -62,23 +62,15 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 await CalculatePairsMatchCounts(matchProbabilityInput, allPatientDonorCombinations);
 
             // Returns early when patient/donor pair are guaranteed to either be a match or not
-            if (patientDonorMatchDetails.Any() && patientDonorMatchDetails.All(p => p.IsTenOutOfTenMatch))
+            if (patientDonorMatchDetails.Any() && patientDonorMatchDetails.All(p => p.MatchCount == 10))
             {
                 return new MatchProbabilityResponse
                 {
                     ZeroMismatchProbability = 1m,
+                    SingleMismatchProbability = 0m,
+                    DoubleMismatchProbability = 0m,
                     ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
                         {A = 1m, B = 1m, C = 1m, Dpb1 = null, Dqb1 = 1m, Drb1 = 1m}
-                };
-            }
-
-            if (!patientDonorMatchDetails.Any(p => p.IsTenOutOfTenMatch))
-            {
-                return new MatchProbabilityResponse
-                {
-                    ZeroMismatchProbability = 0m,
-                    ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
-                        {A = 0m, B = 0m, C = 0m, Dpb1 = null, Dqb1 = 0m, Drb1 = 0m}
                 };
             }
 
