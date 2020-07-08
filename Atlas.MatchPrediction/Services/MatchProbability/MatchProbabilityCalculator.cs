@@ -53,15 +53,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 return CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, twoOutOfTwoMatches, genotypesLikelihoods);  
             });
 
-            //TODO: ATLAS-235: Remove hard coded match count numbers
-
-            var tenOutOfTenMatches = patientDonorMatchDetails.Where(g => g.MatchCount == 10);
+            var tenOutOfTenMatches = patientDonorMatchDetails.Where(g => g.MismatchCount == 0);
             var zeroMismatchProbability = CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, tenOutOfTenMatches, genotypesLikelihoods);
 
-            var singleMismatches = patientDonorMatchDetails.Where(g => g.MatchCount == 9);
+            var singleMismatches = patientDonorMatchDetails.Where(g => g.MismatchCount == 1);
             var singleMismatchProbability = CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, singleMismatches, genotypesLikelihoods);
 
-            var doubleMismatches = patientDonorMatchDetails.Where(g => g.MatchCount == 8);
+            var doubleMismatches = patientDonorMatchDetails.Where(g => g.MismatchCount == 2);
             var doubleMismatchProbability = CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, doubleMismatches, genotypesLikelihoods);
 
             return new MatchProbabilityResponse
