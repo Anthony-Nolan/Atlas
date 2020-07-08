@@ -1,5 +1,5 @@
 ﻿using System;
-using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using FluentAssertions;
 using NUnit.Framework;
 

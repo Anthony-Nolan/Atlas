@@ -1,6 +1,6 @@
 ﻿using Atlas.Common.GeneticData.PhenotypeInfo;
 
-namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchCalculation
+namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.MatchCalculation
 {
     public class MatchCalculationInput
     {

@@ -3,7 +3,7 @@ using System.Linq;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Models;
 
-namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
+namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 {
     internal interface IFrequencySetMetadataExtractor
     {

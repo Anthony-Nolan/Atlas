@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchPrediction.ExternalInterface.Models.GenotypeLikelihood
+﻿namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.GenotypeLikelihood
 {
     public class GenotypeLikelihoodResponse
     {

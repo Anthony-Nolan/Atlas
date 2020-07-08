@@ -19,5 +19,9 @@
     <InternalsVisibleTo Include="Atlas.MatchPrediction.Test.Integration" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="ExternalInterface\Models\MatchPredictionSteps" />
+  </ItemGroup>
 
 </Project>

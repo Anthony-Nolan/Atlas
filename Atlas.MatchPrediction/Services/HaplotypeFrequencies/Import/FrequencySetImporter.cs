@@ -1,13 +1,13 @@
-﻿using Atlas.Common.Utils.Extensions;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models;
 using MoreLinq.Extensions;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 
-namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
+namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 {
     internal interface IFrequencySetImporter
     {
