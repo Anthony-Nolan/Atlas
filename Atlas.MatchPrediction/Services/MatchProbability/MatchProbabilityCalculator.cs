@@ -35,7 +35,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     SingleMismatchProbability = 0m,
                     DoubleMismatchProbability = 0m,
                     ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
-                        {A = 0m, B = 0m, C = 0m, Dpb1 = 0m, Dqb1 = 0m, Drb1 = 0m}
+                        {A = 0m, B = 0m, C = 0m, Dpb1 = null, Dqb1 = 0m, Drb1 = 0m}
                 };
             }
 

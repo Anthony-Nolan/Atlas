@@ -22,10 +22,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
 
         private static readonly LociInfo<int?> SingleMismatchAtA = new LociInfo<int?>
-            { A = 1, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2 };
+            {A = 1, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
 
         private static readonly LociInfo<int?> DoubleMismatchAtA = new LociInfo<int?>
-            { A = 0, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2 };
+            {A = 0, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
