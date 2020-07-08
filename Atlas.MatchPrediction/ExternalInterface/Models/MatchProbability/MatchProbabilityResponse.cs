@@ -25,5 +25,14 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 
         public Probability ZeroMismatchProbability { get; set; }
         public LociInfo<Probability> ZeroMismatchProbabilityPerLocus { get; set; }
+
+        public MatchProbabilityResponse Round(int decimalPlaces)
+        {
+            return new MatchProbabilityResponse
+            {
+                ZeroMismatchProbability = ZeroMismatchProbability.Round(decimalPlaces),
+                ZeroMismatchProbabilityPerLocus = ZeroMismatchProbabilityPerLocus.Map(p => p?.Round(decimalPlaces))
+            };
+        }
     }
 }

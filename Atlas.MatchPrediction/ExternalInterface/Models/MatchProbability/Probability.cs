@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 {
@@ -12,8 +13,14 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
             Decimal = value;
         }
 
-        public decimal Decimal { get; }
+        [JsonProperty]
+        public decimal Decimal { get; private set; }
 
+        public Probability Round(int decimalPlaces)
+        {
+            return new Probability(decimal.Round(Decimal, decimalPlaces));
+        }
+        
         #region Equality members
 
         protected bool Equals(Probability other)
