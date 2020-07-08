@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Data.Models;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Test.Integration.Resources;
@@ -10,6 +11,7 @@ using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFi
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.IndividualSteps.GenotypeLikelihood
 {
@@ -33,6 +35,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         private readonly string dqb12 = Alleles.UnambiguousAlleleDetails.GGroups().Dqb1.Position2;
         private readonly string drb11 = Alleles.UnambiguousAlleleDetails.GGroups().Drb1.Position1;
         private readonly string drb12 = Alleles.UnambiguousAlleleDetails.GGroups().Drb1.Position2;
+        
+        private const string DefaultEthnicityCode = "ethnicity-code";
+        private const string DefaultRegistryCode = "registry-code";
+        private HaplotypeFrequencySet haplotypeFrequencySet;
 
         [SetUp]
         public async Task SetUp()
@@ -77,7 +83,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 new HaplotypeFrequency {A = a1, B = b1, C = c1, DQB1 = dqb11, DRB1 = drb11, Frequency = 0.01m}
             };
 
-            await ImportFrequencies(allPossibleHaplotypes);
+            haplotypeFrequencySet = await  ImportFrequencies(allPossibleHaplotypes, DefaultRegistryCode, DefaultEthnicityCode);
         }
 
         [Test]
@@ -85,7 +91,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var genotypeInput = DefaultUnambiguousGGroupsBuilder.Build();
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotypeInput);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotypeInput, haplotypeFrequencySet);
 
             likelihoodResponse.Should().Be(1.1424m);
         }
@@ -101,7 +107,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDataAt(homozygousLocus, Alleles.UnambiguousAlleleDetails.GetPosition(homozygousLocus, LocusPosition.One).GGroup)
                 .Build();
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
@@ -122,7 +128,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     genotype.GetPosition(homozygousLocus, LocusPosition.One));
             }
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
@@ -134,7 +140,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var genotype = DefaultUnambiguousGGroupsBuilder.WithDataAt(locusToBeNull, (string)null).Build();
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet);
 
             likelihoodResponse.Should().Be(0m);
         }
@@ -148,7 +154,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var genotype = DefaultUnambiguousGGroupsBuilder.WithDataAt(unrepresentedLocus, "un-represented").Build();
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet);
 
             likelihoodResponse.Should().Be(0m);
         }
@@ -177,19 +183,32 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 new HaplotypeFrequency {A = a1, B = b2, C = c1, DQB1 = dqb11, DRB1 = drb11, Frequency = 0.01m}
             };
 
-            await ImportFrequencies(haplotypesWith16Missing);
+            
+            const string registryCode = "modified-registry-code";
+            const string ethnicityCode = "modified-ethnicity-code";
+            
+            var newHaplotypeFrequencySet = await ImportFrequencies(haplotypesWith16Missing, registryCode, ethnicityCode);
 
             var genotype = DefaultUnambiguousGGroupsBuilder.Build();
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, newHaplotypeFrequencySet);
 
             likelihoodResponse.Should().Be(0.1488m);
         }
 
-        private async Task ImportFrequencies(IEnumerable<HaplotypeFrequency> haplotypes)
+        private async Task<HaplotypeFrequencySet> ImportFrequencies(IEnumerable<HaplotypeFrequency> haplotypes, string registryCode, string ethnicityCode)
         {
-            using var file = FrequencySetFileBuilder.New(haplotypes).Build();
+            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode, haplotypes)
+                .Build();
             await importService.ImportFrequencySet(file);
+            
+            var individualInfo = new FrequencySetMetadata
+            {
+                EthnicityCode = ethnicityCode,
+                RegistryCode = registryCode
+            };
+            var haplotypeFrequencySetResponse = await importService.GetHaplotypeFrequencySets(individualInfo, individualInfo);
+            return haplotypeFrequencySetResponse.DonorSet;
         }
 
         private static PhenotypeInfoBuilder<string> DefaultUnambiguousGGroupsBuilder =>
