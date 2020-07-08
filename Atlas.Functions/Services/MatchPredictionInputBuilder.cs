@@ -41,9 +41,13 @@ namespace Atlas.Functions.Services
             var searchRequest = matchPredictionInputParameters.SearchRequest;
             var donorDictionary = matchPredictionInputParameters.DonorDictionary;
 
-            return matchingAlgorithmResultSet.MatchingAlgorithmResults.Select(matchingResult =>
-                    BuildMatchPredictionInput(matchingResult, searchRequest, donorDictionary, matchingAlgorithmResultSet.HlaNomenclatureVersion)
-                )
+            return matchingAlgorithmResultSet.MatchingAlgorithmResults.Select(matchingResult => BuildMatchPredictionInput(
+                    matchingResult,
+                    searchRequest,
+                    donorDictionary,
+                    matchingAlgorithmResultSet.HlaNomenclatureVersion,
+                    matchingAlgorithmResultSet.SearchRequestId
+                ))
                 .Where(r => r != null);
         }
 
@@ -58,7 +62,8 @@ namespace Atlas.Functions.Services
             MatchingAlgorithmResult matchingAlgorithmResult,
             SearchRequest searchRequest,
             IReadOnlyDictionary<int, Donor> donorDictionary,
-            string hlaNomenclatureVersion)
+            string hlaNomenclatureVersion,
+            string searchRequestId)
         {
             if (!donorDictionary.TryGetValue(matchingAlgorithmResult.DonorId, out var donorInfo))
             {
@@ -70,6 +75,7 @@ namespace Atlas.Functions.Services
 
             return new MatchProbabilityInput
             {
+                SearchRequestId = searchRequestId,
                 DonorId = matchingAlgorithmResult.DonorId,
                 DonorHla = matchingAlgorithmResult.DonorHla,
                 DonorFrequencySetMetadata = new FrequencySetMetadata
