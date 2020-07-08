@@ -1,20 +1,14 @@
-using System.Collections.Generic;
 using System.Linq;
-using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.Functions.DurableFunctions.Search.Activity;
 using Atlas.Functions.Models.Search.Results;
 using Atlas.Functions.Settings;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Microsoft.Extensions.Options;
 
 namespace Atlas.Functions.Services
 {
     public interface IResultsCombiner
     {
-        SearchResultSet CombineResults(
-            MatchingAlgorithmResultSet matchingResults,
-            IDictionary<int, MatchProbabilityResponse> matchPredictionResults,
-            IDictionary<int, Donor> donorInfo);
+        SearchResultSet CombineResults(SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters);
     }
 
     internal class ResultsCombiner : IResultsCombiner
@@ -28,16 +22,17 @@ namespace Atlas.Functions.Services
 
         
         /// <inheritdoc />
-        public SearchResultSet CombineResults(
-            MatchingAlgorithmResultSet matchingResults,
-            IDictionary<int, MatchProbabilityResponse> matchPredictionResults,
-            IDictionary<int, Donor> donorInfo)
+        public SearchResultSet CombineResults(SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters)
         {
+            var matchingResults = persistSearchResultsParameters.MatchingAlgorithmResultSet;
+            var matchPredictionResults = persistSearchResultsParameters.MatchPredictionResults;
+            var donorInfo = persistSearchResultsParameters.DonorInformation;
+            
             return new SearchResultSet
             {
                 SearchResults = matchingResults.MatchingAlgorithmResults.Select(r => new SearchResult
                 {
-                    DonorId = donorInfo[r.AtlasDonorId].ExternalDonorCode,
+                    DonorCode = donorInfo[r.AtlasDonorId].ExternalDonorCode,
                     MatchingResult = r,
                     MatchPredictionResult = matchPredictionResults[r.AtlasDonorId].ZeroMismatchProbability
                 }),

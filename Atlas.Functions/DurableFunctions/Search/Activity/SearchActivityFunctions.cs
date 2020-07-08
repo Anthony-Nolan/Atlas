@@ -125,23 +125,18 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [FunctionName(nameof(PersistSearchResults))]
-        public async Task PersistSearchResults(
-            [ActivityTrigger] PersistSearchResultsParameters parameters)
+        public async Task PersistSearchResults([ActivityTrigger] PersistSearchResultsParameters parameters)
         {
-            var matchingResults = parameters.MatchingAlgorithmResultSet;
-            var matchPredictionResults = parameters.MatchPredictionResults;
-            var donorInfo = parameters.DonorInformation;
-            
             try
             {
-                var resultSet = resultsCombiner.CombineResults(matchingResults, matchPredictionResults, donorInfo);
+                var resultSet = resultsCombiner.CombineResults(parameters);
                 await searchResultsBlobUploader.UploadResults(resultSet);
                 await searchCompletionMessageSender.PublishResultsMessage(resultSet);
             }
             catch (Exception e)
             {
                 await searchCompletionMessageSender.PublishFailureMessage(
-                    matchingResults.SearchRequestId,
+                    parameters.MatchingAlgorithmResultSet.SearchRequestId,
                     $"Failed to persist search results.\n Exception: {e.Message}"
                 );
                 throw;
