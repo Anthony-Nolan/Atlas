@@ -116,13 +116,17 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
         private static bool DonorHlaHasChanged(DonorInfo existingDonorInfo, DonorInfo incomingDonorInfo)
         {
-            return !existingDonorInfo.HlaNames.Equals(incomingDonorInfo.HlaNames);
+            return !existingDonorInfo.HlaNames.Equals(incomingDonorInfo.HlaNames); //PhenotypeInfo implements IEquatable.
         }
 
         private static IEnumerable<Locus> GetChangedMatchingOnlyLoci(DonorInfo existingDonorInfo, DonorInfo incomingDonorInfo)
         {
-            return LocusSettings.MatchingOnlyLoci.Where(locus => 
-                !existingDonorInfo.HlaNames.GetLocus(locus).Equals(incomingDonorInfo.HlaNames.GetLocus(locus)));
+            return LocusSettings.MatchingOnlyLoci.Where(locus =>
+            {
+                var existingNames = existingDonorInfo.HlaNames.GetLocus(locus);
+                var incomingNames = incomingDonorInfo.HlaNames.GetLocus(locus);
+                return !existingNames.Equals(incomingNames); //LocusInfo implements IEquatable.
+            });
         }
 
         private static async Task SetAvailabilityOfDonorBatch(IEnumerable<int> donorIds, bool isAvailableForSearch, SqlConnection conn)
