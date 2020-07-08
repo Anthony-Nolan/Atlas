@@ -10,6 +10,7 @@ using Atlas.MatchPrediction.Services;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MultipleAlleleCodeDictionary.Settings;

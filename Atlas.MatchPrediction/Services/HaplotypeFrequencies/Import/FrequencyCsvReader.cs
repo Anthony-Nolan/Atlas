@@ -5,7 +5,7 @@ using Atlas.MatchPrediction.Data.Models;
 using CsvHelper;
 using CsvHelper.Configuration;
 
-namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
+namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 {
     internal interface IFrequencyCsvReader
     {

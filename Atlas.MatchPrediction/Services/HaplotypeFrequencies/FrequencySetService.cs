@@ -1,13 +1,14 @@
+using System;
+using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Config;
-using Atlas.MatchPrediction.Models;
-using System;
-using System.Threading.Tasks;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
+using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 {
@@ -57,6 +58,9 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         
         public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(FrequencySetMetadata donorInfo, FrequencySetMetadata patientInfo)
         {
+            donorInfo ??= new FrequencySetMetadata();
+            patientInfo ??= new FrequencySetMetadata();
+            
             // Patients should use the donors registry.
             patientInfo.RegistryCode ??= donorInfo.RegistryCode;
 

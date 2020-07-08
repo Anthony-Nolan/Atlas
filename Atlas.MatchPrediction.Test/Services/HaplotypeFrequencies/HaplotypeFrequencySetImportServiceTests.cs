@@ -1,15 +1,15 @@
-﻿using Atlas.MatchPrediction.Data.Models;
-using Atlas.MatchPrediction.Data.Repositories;
-using Atlas.MatchPrediction.Models;
-using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
-using FluentAssertions;
-using NSubstitute;
-using NUnit.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Data.Models;
+using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
+using FluentAssertions;
+using NSubstitute;
+using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 {
