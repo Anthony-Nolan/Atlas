@@ -18,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
         /// <param name="selectedAllele">The selected allele</param>
         /// <param name="alleles">The dataset of alleles the selected allele was chosen from</param>
         /// <returns></returns>
-        public static IEnumerable<AlleleTestData> GetAllelesForAlleleStringOfSubtypes(
+        public static List<AlleleTestData> GetAllelesForAlleleStringOfSubtypes(
             Dataset dataset,
             AlleleTestData selectedAllele,
             IEnumerable<AlleleTestData> alleles
@@ -39,7 +39,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
             return allelesForAlleleStringOfSubtypes;
         }
 
-        public static IEnumerable<AlleleTestData> GetAllelesForAlleleStringOfNamesWithSinglePGroup(
+        public static List<AlleleTestData> GetAllelesForAlleleStringOfNamesWithSinglePGroup(
             AlleleTestData selectedAllele,
             IEnumerable<AlleleTestData> alleles
         )
@@ -50,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
                 a => a.PGroup == selectedAllele.PGroup && a.AlleleName != selectedAllele.AlleleName);
         }
 
-        public static IEnumerable<AlleleTestData> GetAllelesForAlleleStringOfNamesWithMultiplePGroups(
+        public static List<AlleleTestData> GetAllelesForAlleleStringOfNamesWithMultiplePGroups(
             AlleleTestData selectedAllele,
             IEnumerable<AlleleTestData> alleles
         )
@@ -61,7 +61,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
                 a => a.PGroup != selectedAllele.PGroup);
         }
 
-        public static IEnumerable<AlleleTestData> GetAllelesForAlleleStringOfNamesByPGroup(
+        public static List<AlleleTestData> GetAllelesForAlleleStringOfNamesByPGroup(
             AlleleTestData selectedAllele,
             IEnumerable<AlleleTestData> alleles,
             Func<AlleleTestData, bool> pGroupFilterFunc
@@ -80,7 +80,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
             // If no alleles found, string cannot be generated
             return filteredAlleles.IsNullOrEmpty()
                 ? new List<AlleleTestData>()
-                : filteredAlleles.GetRandomSelection(1, 10);
+                : filteredAlleles.GetRandomSelection(1, 10).ToList();
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
         /// <param name="shouldContainDifferentAlleleGroups">
         ///     When true, enforces that at least two first fields are represented among alleles in string
         /// </param>
-        public static IEnumerable<AlleleTestData> GetAllelesForAlleleStringOfNames(
+        public static List<AlleleTestData> GetAllelesForAlleleStringOfNames(
             Dataset dataset,
             AlleleTestData selectedAllele,
             IEnumerable<AlleleTestData> alleles,

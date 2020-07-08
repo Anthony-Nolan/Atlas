@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.Utils.Extensions;
 using Atlas.Common.Utils.Http;
 using FluentValidation;
 
@@ -23,7 +24,7 @@ namespace Atlas.MatchingAlgorithm.Helpers
         public static string ToErrorMessagesString(this ValidationException validationException)
         {
             var errorMessages = validationException.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}");
-            return string.Join(Environment.NewLine, errorMessages);
+            return errorMessages.StringJoinWithNewline();
         }
     }
 }

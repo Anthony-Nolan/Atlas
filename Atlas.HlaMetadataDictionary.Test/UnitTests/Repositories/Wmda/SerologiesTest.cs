@@ -2,6 +2,7 @@
 using ApprovalTests;
 using ApprovalTests.Reporters;
 using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 using NUnit.Framework;
 
@@ -45,11 +46,11 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
         [Test]
         public void WmdaDataRepository_SerologiesCollection_ContainsAllExpectedSerologies()
         {
-            var str = string.Join("\r\n", WmdaHlaTypings
+            var str = WmdaHlaTypings
                 .OrderBy(s => s.TypingLocus)
                 .ThenBy(s => int.Parse(s.Name))
                 .Select(s => $"{s.TypingLocus}\t{s.Name}")
-                .ToList());
+                .StringJoinWithNewline();
             Approvals.Verify(str);
         }
     }

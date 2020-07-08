@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
@@ -67,7 +68,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             {
                 {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
                 {"Donors", matches.Count.ToString()},
-                {"Loci", string.Join(",", loci.Select(l => l.ToString()))}
+                {"Loci", loci.Select(l => l.ToString()).StringJoin(",")}
             });
 
             return matches;
@@ -91,7 +92,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             {
                 {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
                 {"Donors", matchesAtAllLoci.Count.ToString()},
-                {"Loci", string.Join(",", loci.Select(l => l.ToString()))}
+                {"Loci", loci.Select(l => l.ToString()).StringJoin(",")}
             });
             return matchesAtAllLoci;
         }
