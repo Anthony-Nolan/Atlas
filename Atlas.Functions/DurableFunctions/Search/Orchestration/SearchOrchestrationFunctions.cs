@@ -87,11 +87,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
         private static async Task<Dictionary<int, Donor>> FetchDonorInformation(
             IDurableOrchestrationContext context,
-            MatchingAlgorithmResultSet searchResults)
+            MatchingAlgorithmResultSet matchingAlgorithmResults)
         {
             var activityInput = new Tuple<string, IEnumerable<int>>(
                 context.InstanceId,
-                searchResults.MatchingAlgorithmResults.Select(r => r.AtlasDonorId)
+                matchingAlgorithmResults.MatchingAlgorithmResults.Select(r => r.AtlasDonorId)
             );
 
             return await context.CallActivityAsync<Dictionary<int, Donor>>(
