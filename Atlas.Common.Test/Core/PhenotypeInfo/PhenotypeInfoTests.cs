@@ -22,7 +22,7 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
         }
 
         [Test]
-        public void LocusValues_CannotBeInitialisedToNull()
+        public void Initialisation_LocusProperties_CannotBeInitialisedToNull()
         {
             // ReSharper disable ObjectCreationAsStatement
             ((Action)(() => new PhenotypeInfo<int> { A = null })).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
