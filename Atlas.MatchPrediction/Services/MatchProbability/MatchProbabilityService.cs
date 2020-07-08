@@ -67,8 +67,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 return new MatchProbabilityResponse
                 {
                     ZeroMismatchProbability = 1m,
-                    SingleMismatchProbability = 0m,
-                    DoubleMismatchProbability = 0m,
+                    OneMismatchProbability = 0m,
+                    TwoMismatchProbability = 0m,
                     ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
                         {A = 1m, B = 1m, C = 1m, Dpb1 = null, Dqb1 = 1m, Drb1 = 1m}
                 };
