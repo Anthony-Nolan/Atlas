@@ -97,7 +97,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                     default,
                     default,
                     default)
-                .ReturnsForAnyArgs(new MatchProbabilityResponse {ZeroMismatchProbability = 0.5m});
+                .ReturnsForAnyArgs(new MatchProbabilityResponse {ZeroMismatchProbability = new Probability(0.5m)});
 
             frequencySetService.GetHaplotypeFrequencySets(default, default)
                 .ReturnsForAnyArgs(new HaplotypeFrequencySetResponse
@@ -109,7 +109,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             var actualResponse = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            actualResponse.ZeroMismatchProbability.Should().Be(0.5m);
+            actualResponse.ZeroMismatchProbability.Decimal.Should().Be(0.5m);
         }
 
         [Test]
@@ -136,7 +136,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             var actualResponse = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            actualResponse.ZeroMismatchProbability.Should().Be(1m);
+            actualResponse.ZeroMismatchProbability.Decimal.Should().Be(1m);
         }
 
         [TestCase(5, 1, 5)]

@@ -1,12 +1,20 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.MatchProbability;
+using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
+using Atlas.MatchPrediction.Services.MatchProbability;
 using FluentAssertions;
 using NUnit.Framework;
+using NUnit.Framework;
 using static Atlas.Common.Test.SharedTestHelpers.Builders.DictionaryBuilder;
+using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 {
@@ -51,7 +59,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             );
 
             var expectedMatchProbabilityPerLocus = new LociInfo<decimal?> {A = 0.5M, B = 0.5M, C = 0.5M, Dpb1 = null, Dqb1 = 0.25M, Drb1 = 0.25M};
-            actualProbability.ZeroMismatchProbability.Should().Be(0.25m);
+            actualProbability.ZeroMismatchProbability.Decimal.Should().Be(0.25m);
+            actualProbability.ZeroMismatchProbabilityPerLocus.A.Should().Be(expectedMatchProbabilityPerLocus.A);
             actualProbability.ZeroMismatchProbabilityPerLocus.Should().Be(expectedMatchProbabilityPerLocus);
         }
 
@@ -154,7 +163,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 likelihoods
             );
 
-            actualProbability.ZeroMismatchProbability.Should().Be(0m);
+            actualProbability.ZeroMismatchProbability.Decimal.Should().Be(0m);
             actualProbability.OneMismatchProbability.Should().Be(0m);
             actualProbability.TwoMismatchProbability.Should().Be(0m);
         }

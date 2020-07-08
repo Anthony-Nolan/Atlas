@@ -29,14 +29,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             if (sumOfPatientLikelihoods == 0 || sumOfDonorLikelihoods == 0)
             {
-                return new MatchProbabilityResponse
-                {
-                    ZeroMismatchProbability = 0m,
-                    OneMismatchProbability = 0m,
-                    TwoMismatchProbability = 0m,
-                    ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
-                        {A = 0m, B = 0m, C = 0m, Dpb1 = null, Dqb1 = 0m, Drb1 = 0m}
-                };
+                return new MatchProbabilityResponse(Probability.Zero());
             }
 
             var allowedLoci = LocusSettings.MatchPredictionLoci.ToList();
@@ -47,10 +40,10 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 {
                     return (decimal?) null;
                 }
-                
+
                 var twoOutOfTwoMatches = patientDonorMatchDetails.Where(g => g.MatchCounts.GetLocus(locus) == 2);
 
-                return CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, twoOutOfTwoMatches, genotypesLikelihoods);  
+                return CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, twoOutOfTwoMatches, genotypesLikelihoods);
             });
 
             var tenOutOfTenMatches = patientDonorMatchDetails.Where(g => g.MismatchCount == 0);
@@ -59,15 +52,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var singleMismatches = patientDonorMatchDetails.Where(g => g.MismatchCount == 1);
             var singleMismatchProbability = CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, singleMismatches, genotypesLikelihoods);
 
-            var doubleMismatches = patientDonorMatchDetails.Where(g => g.MismatchCount == 2);
-            var doubleMismatchProbability = CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, doubleMismatches, genotypesLikelihoods);
-
             return new MatchProbabilityResponse
             {
-                ZeroMismatchProbabilityPerLocus = probabilityPerLocus,
-                ZeroMismatchProbability = zeroMismatchProbability,
+                ZeroMismatchProbability = new Probability(matchProbability),
                 OneMismatchProbability = singleMismatchProbability,
                 TwoMismatchProbability = doubleMismatchProbability,
+                ZeroMismatchProbabilityPerLocus = probabilityPerLocus.Map((l, v) => v.HasValue ? new Probability(v.Value) : null)
             };
         }
 
@@ -75,7 +65,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             decimal patientLikelihood,
             decimal donorLikelihood,
             IEnumerable<GenotypeMatchDetails> matchingLikelihoods,
-            Dictionary<PhenotypeInfo<string>, decimal> genotypesLikelihoods)
+            IReadOnlyDictionary<PhenotypeInfo<string>, decimal> genotypesLikelihoods)
         {
             var sumOfMatchingLikelihoods =
                 matchingLikelihoods.Select(g => genotypesLikelihoods[g.PatientGenotype] * genotypesLikelihoods[g.DonorGenotype]).Sum();

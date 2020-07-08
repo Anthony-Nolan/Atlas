@@ -62,10 +62,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Should().Be(1m);
+            matchDetails.ZeroMismatchProbability.Decimal.Should().Be(1m);
             matchDetails.OneMismatchProbability.Should().Be(0m);
             matchDetails.TwoMismatchProbability.Should().Be(0m);
-            matchDetails.ZeroMismatchProbabilityPerLocus.Should().Be(expectedProbabilityPerLocus);
+            matchDetails.ZeroMismatchProbabilityPerLocus.Map(v => v?.Decimal).Should().Be(expectedProbabilityPerLocus);
         }
 
         [Test]
@@ -105,10 +105,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Should().Be(0m);
+            matchDetails.ZeroMismatchProbability.Decimal.Should().Be(0m);
             matchDetails.OneMismatchProbability.Should().Be(0m);
             matchDetails.TwoMismatchProbability.Should().Be(0m);
-            matchDetails.ZeroMismatchProbabilityPerLocus.Should().Be(expectedProbabilityPerLocus);
+            matchDetails.ZeroMismatchProbabilityPerLocus.Map(v => v?.Decimal).Should().Be(expectedProbabilityPerLocus);
         }
 
         [Test]
@@ -177,10 +177,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Should().Be(0.008230452674897119341563786m);
+            matchDetails.ZeroMismatchProbability.Decimal.Should().Be(0.008230452674897119341563786m);
             matchDetails.OneMismatchProbability.Should().Be(0.1687242798353909465020576132m);
             matchDetails.TwoMismatchProbability.Should().Be(0.8230452674897119341563786008m);
-            matchDetails.ZeroMismatchProbabilityPerLocus.Should().Be(expectedProbabilityPerLocus);
+            matchDetails.ZeroMismatchProbabilityPerLocus.Map(v => v?.Decimal).Should().Be(expectedProbabilityPerLocus);
         }
 
         private async Task ImportFrequencies(IEnumerable<HaplotypeFrequency> haplotypes)
