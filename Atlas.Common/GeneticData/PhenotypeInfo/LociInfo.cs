@@ -273,6 +273,8 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                    EqualityComparer<T>.Default.Equals(Drb1, other.Drb1);
         }
 
+        // TODO: ATLAS-499. This HashCode references mutable properties, which is a BadThing(TM).
+        // Make the whole class fully immutable.
         public override int GetHashCode()
         {
             unchecked

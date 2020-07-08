@@ -13,14 +13,27 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
         public void Set_LocusProperty_CannotBeNull()
         {
             var phenotypeInfo = new PhenotypeInfo<string>("default");
-            phenotypeInfo.Invoking(p => p.A = null).Should().Throw<ArgumentNullException>();
-            phenotypeInfo.Invoking(p => p.B = null).Should().Throw<ArgumentNullException>();
-            phenotypeInfo.Invoking(p => p.C = null).Should().Throw<ArgumentNullException>();
-            phenotypeInfo.Invoking(p => p.Dpb1 = null).Should().Throw<ArgumentNullException>();
-            phenotypeInfo.Invoking(p => p.Dqb1 = null).Should().Throw<ArgumentNullException>();
-            phenotypeInfo.Invoking(p => p.Drb1 = null).Should().Throw<ArgumentNullException>();
+            phenotypeInfo.Invoking(p => p.A = null).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            phenotypeInfo.Invoking(p => p.B = null).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            phenotypeInfo.Invoking(p => p.C = null).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            phenotypeInfo.Invoking(p => p.Dpb1 = null).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            phenotypeInfo.Invoking(p => p.Dqb1 = null).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            phenotypeInfo.Invoking(p => p.Drb1 = null).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
         }
-        
+
+        [Test]
+        public void LocusValues_CannotBeInitialisedToNull()
+        {
+            // ReSharper disable ObjectCreationAsStatement
+            ((Action)(() => new PhenotypeInfo<int> { A = null })).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            ((Action)(() => new PhenotypeInfo<int> { B = null })).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            ((Action)(() => new PhenotypeInfo<int> { C = null })).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            ((Action)(() => new PhenotypeInfo<int> { Dpb1 = null })).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            ((Action)(() => new PhenotypeInfo<int> { Dqb1 = null })).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            ((Action)(() => new PhenotypeInfo<int> { Drb1 = null })).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            // ReSharper restore ObjectCreationAsStatement
+        }
+
         [Test]
         public void GetAtPosition_GetsValuesAtSpecifiedPositionForAllLoci()
         {
@@ -207,20 +220,6 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
             };
 
             AllVariationsOnObjectEqualityShouldReport(original, different, false);
-        }
-
-        [Test]
-        public void LocusValues_CannotBeSetToNull()
-        {
-            var data = new PhenotypeInfo<int>();
-            data.Invoking(d => { d.A = null; }).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
-        }
-
-        [Test]
-        public void LocusValues_CannotBeInitialisedToNull()
-        {
-            Action nullInitialisation = () => new PhenotypeInfo<int>{ A = null };
-            nullInitialisation.Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
         }
 
         [Test]
