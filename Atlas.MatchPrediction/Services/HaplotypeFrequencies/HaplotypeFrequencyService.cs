@@ -34,7 +34,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         private readonly ILogger logger;
         private readonly IHaplotypeFrequencySetRepository frequencySetRepository;
         private readonly IHaplotypeFrequenciesRepository frequencyRepository;
-        private IAppCache cache;
+        private readonly IAppCache cache;
 
         public HaplotypeFrequencyService(
             IFrequencySetImporter frequencySetImporter,
@@ -125,7 +125,8 @@ var donorSet = await GetSingleHaplotypeFrequencySet(donorInfo);
         /// <inheritdoc />
         public async Task<Dictionary<HaplotypeHla, decimal>> GetAllHaplotypeFrequencies(int setId)
         {
-            return await frequencyRepository.GetAllHaplotypeFrequencies(setId);
+            var cacheKey = $"hf-set-{setId}";
+            return await cache.GetOrAddAsync(cacheKey, async () => await frequencyRepository.GetAllHaplotypeFrequencies(setId));
         }
 
         private static HaplotypeFrequencySet MapDataModelToClientModel(Data.Models.HaplotypeFrequencySet set)

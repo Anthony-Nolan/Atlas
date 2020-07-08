@@ -48,8 +48,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         )
         {
             var haplotypes = GetHaplotypes(expandedGenotype.Diplotypes);
-
-            return await haplotypeFrequencyService.GetHaplotypeFrequencies(haplotypes, haplotypeFrequencySet.Id);
+            return await haplotypeFrequencyService.GetAllHaplotypeFrequencies(haplotypeFrequencySet.Id);
         }
 
         private static IEnumerable<HaplotypeHla> GetHaplotypes(IEnumerable<Diplotype> diplotypes)
@@ -63,8 +62,12 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         {
             foreach (var diplotype in diplotypes)
             {
-                diplotype.Item1.Frequency = haplotypesWithFrequencies[diplotype.Item1.Hla];
-                diplotype.Item2.Frequency = haplotypesWithFrequencies[diplotype.Item2.Hla];
+                // Unrepresented haplotypes are assigned default value for decimal, 0 - which is what we want here.
+                haplotypesWithFrequencies.TryGetValue(diplotype.Item1.Hla, out var frequency1);
+                haplotypesWithFrequencies.TryGetValue(diplotype.Item2.Hla, out var frequency2);
+
+                diplotype.Item1.Frequency = frequency1;
+                diplotype.Item2.Frequency = frequency2;
             }
         }
     }
