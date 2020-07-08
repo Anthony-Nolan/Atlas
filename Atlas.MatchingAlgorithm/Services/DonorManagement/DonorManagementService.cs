@@ -200,7 +200,7 @@ Invalid DonorIds: " + donorIds);
             {
                 logger.SendTrace($"{TraceMessagePrefix}: {unavailableUpdates.Count} donors to be marked as unavailable for search.");
 
-                var unavailableDonorIds = unavailableUpdates.Select(d => d.DonorId);
+                var unavailableDonorIds = unavailableUpdates.Select(d => d.DonorId).ToList();
                 await donorService.SetDonorBatchAsUnavailableForSearch(unavailableDonorIds, targetDatabase);
             }
         }
