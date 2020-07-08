@@ -4,6 +4,7 @@ using ApprovalTests.Namers;
 using ApprovalTests.Reporters;
 using ApprovalTests.Reporters.TestFrameworks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using NUnit.Framework;
 
@@ -109,15 +110,15 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Hla
             var b15 = GetSingleMatchingTyping(Locus.B, "15").MatchingPGroups;
             var b70 = GetSingleMatchingTyping(Locus.B, "70").MatchingPGroups;
 
-            Approvals.Verify(string.Join("\r\n", b15.Intersect(b70).OrderBy(p => p)));
+            Approvals.Verify(b15.Intersect(b70).OrderBy(p => p).StringJoinWithNewline());
         }
 
         private string GetPGroupsAsString(Locus locus, string serologyName)
         {
-            return string.Join("\r\n",
-                GetSingleMatchingTyping(locus, serologyName)
+            return GetSingleMatchingTyping(locus, serologyName)
                 .MatchingPGroups
-                .OrderBy(p => p));
+                .OrderBy(p => p)
+                .StringJoinWithNewline();
         }
     }
 }

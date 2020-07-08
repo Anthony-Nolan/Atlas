@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.Utils.Extensions;
 using CosmosEntity = Microsoft.Azure.Cosmos.Table.TableEntity;
 using WindowsAzureEntity = Microsoft.WindowsAzure.Storage.Table.TableEntity;
 
@@ -22,7 +23,7 @@ namespace Atlas.Common.AzureStorage.TableStorage
         private static string GetErrorMessage<T>(IEnumerable<T> entities, Func<T, string> partitionKeyFor, Func<T, string> rowKeyFor)
         {
             var entitiesAsStrings = entities.Select((entity, i) => $"{i}: {partitionKeyFor(entity)}, {rowKeyFor(entity)}");
-            return $"Failed to insert batch: [{string.Join(";", entitiesAsStrings)}]";
+            return $"Failed to insert batch: [{entitiesAsStrings.StringJoin(";")}]";
         }
     }
 }
