@@ -19,8 +19,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         private const string DonorLocus1 = "donorGenotype1";
         private const string DonorLocus2 = "donorGenotype2";
 
-        private readonly LociInfo<int?> tenOutOfTenMatchCounts = new LociInfo<int?>
-            {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
+        private readonly LociInfo<int?> tenOutOfTenMatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
+        private readonly LociInfo<int?> mismatchMatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 0, Drb1 = 0};
 
         private readonly PhenotypeInfo<string> patientGenotype1 = new PhenotypeInfoBuilder<string>()
         .WithDataAt(Locus.A, new LocusInfo<string> { Position1 = PatientLocus1, Position2 = PatientLocus1 }).Build();
