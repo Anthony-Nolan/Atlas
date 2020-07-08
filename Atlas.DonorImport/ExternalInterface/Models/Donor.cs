@@ -4,9 +4,11 @@ using Atlas.MatchingAlgorithm.Client.Models.Donors;
 
 namespace Atlas.DonorImport.ExternalInterface.Models
 {
-    public class Donor 
+    public class Donor
     {
         public int AtlasDonorId { get; set; }
+
+        public string ExternalDonorCode { get; set; }
 
         public DonorType DonorType { get; set; }
 

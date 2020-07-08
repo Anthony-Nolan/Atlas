@@ -34,7 +34,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             var searchResults = await RunMatchingAlgorithm(context, searchRequest);
             var donorInformation = await FetchDonorInformation(context, searchResults);
             var matchPredictionResults = await RunMatchPredictionAlgorithm(context, searchRequest, searchResults, donorInformation);
-            await PersistSearchResults(context, searchResults, matchPredictionResults);
+            await PersistSearchResults(context, searchResults, matchPredictionResults, donorInformation);
 
             // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
             return new SearchOrchestrationOutput
@@ -91,7 +91,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         {
             var activityInput = new Tuple<string, IEnumerable<int>>(
                 context.InstanceId,
-                searchResults.MatchingAlgorithmResults.Select(r => r.DonorId)
+                searchResults.MatchingAlgorithmResults.Select(r => r.AtlasDonorId)
             );
 
             return await context.CallActivityAsync<Dictionary<int, Donor>>(
@@ -116,11 +116,17 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         private static async Task PersistSearchResults(
             IDurableOrchestrationContext context,
             MatchingAlgorithmResultSet searchResults,
-            Dictionary<int, MatchProbabilityResponse> matchPredictionResults)
+            Dictionary<int, MatchProbabilityResponse> matchPredictionResults,
+            Dictionary<int, Donor> donorInformation)
         {
             await context.CallActivityAsync(
                 nameof(SearchActivityFunctions.PersistSearchResults),
-                new Tuple<MatchingAlgorithmResultSet, IDictionary<int, MatchProbabilityResponse>>(searchResults, matchPredictionResults)
+                new SearchActivityFunctions.PersistSearchResultsParameters
+                {
+                    DonorInformation = donorInformation,
+                    MatchPredictionResults = matchPredictionResults,
+                    MatchingAlgorithmResultSet = searchResults
+                }
             );
         }
     }

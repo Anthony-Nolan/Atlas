@@ -179,7 +179,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var searchResults = await searchService.Search(searchRequest);
-            var result = searchResults.SingleOrDefault(d => d.DonorId == testDonorId);
+            var result = searchResults.SingleOrDefault(d => d.AtlasDonorId == testDonorId);
 
             result.MatchCategory.Should().NotBe(MatchCategory.Mismatch);
         }
@@ -193,7 +193,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var searchResults = await searchService.Search(searchRequest);
-            var result = searchResults.SingleOrDefault(d => d.DonorId == testDonorId);
+            var result = searchResults.SingleOrDefault(d => d.AtlasDonorId == testDonorId);
 
             result.MatchCategory.Should().Be(MatchCategory.Mismatch);
         }
@@ -241,7 +241,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var searchResults = await searchService.Search(searchRequest);
-            return searchResults.SingleOrDefault(d => d.DonorId == testDonorId);
+            return searchResults.SingleOrDefault(d => d.AtlasDonorId == testDonorId);
         }
     }
 }

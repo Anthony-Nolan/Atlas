@@ -108,7 +108,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 
             var results = await searchService.Search(searchRequest);
 
-            results.Should().Contain(d => d.DonorId == donor.DonorId);
+            results.Should().Contain(d => d.AtlasDonorId == donor.DonorId);
         }
 
         [Test]
@@ -173,7 +173,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == donor.DonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
             // C & DQB1 should both be populated from scoring data in a 6/6 only search
             result?.SearchResultAtLocusC.MatchCount.Should().Be(2);
@@ -188,7 +188,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == donor.DonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
             result?.TotalMatchCount.Should().Be(6);
         }
@@ -201,7 +201,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == donor.DonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
             // C is typed but not included in search
             result?.SearchResultAtLocusC.IsLocusTyped.Should().BeTrue();
@@ -215,7 +215,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == donor.DonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
             // A is typed and included in search
             result?.SearchResultAtLocusA.IsLocusTyped.Should().BeTrue();
@@ -229,7 +229,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == donor.DonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
             // DQB1 is not typed and not included in search
             result?.SearchResultAtLocusDqb1.IsLocusTyped.Should().BeFalse();

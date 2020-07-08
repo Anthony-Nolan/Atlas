@@ -122,7 +122,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         {
             return new MatchingAlgorithmResult
             {
-                DonorId = result.MatchResult.DonorInfo.DonorId,
+                AtlasDonorId = result.MatchResult.DonorInfo.DonorId,
                 DonorType = result.MatchResult.DonorInfo.DonorType,
                 MatchCategory = result.ScoreResult.AggregateScoreDetails.MatchCategory,
                 ConfidenceScore = result.ScoreResult.AggregateScoreDetails.ConfidenceScore,

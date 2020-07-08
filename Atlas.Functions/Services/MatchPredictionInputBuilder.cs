@@ -65,9 +65,9 @@ namespace Atlas.Functions.Services
             string hlaNomenclatureVersion,
             string searchRequestId)
         {
-            if (!donorDictionary.TryGetValue(matchingAlgorithmResult.DonorId, out var donorInfo))
+            if (!donorDictionary.TryGetValue(matchingAlgorithmResult.AtlasDonorId, out var donorInfo))
             {
-                var message = @$"Could not fetch donor information needed for match prediction for donor: {matchingAlgorithmResult.DonorId}. 
+                var message = @$"Could not fetch donor information needed for match prediction for donor: {matchingAlgorithmResult.AtlasDonorId}. 
                                         It is possible that this donor was removed between matching completing and match prediction initiation.";
                 logger.SendTrace(message);
                 return null;
@@ -76,7 +76,7 @@ namespace Atlas.Functions.Services
             return new MatchProbabilityInput
             {
                 SearchRequestId = searchRequestId,
-                DonorId = matchingAlgorithmResult.DonorId,
+                DonorId = matchingAlgorithmResult.AtlasDonorId,
                 DonorHla = matchingAlgorithmResult.DonorHla,
                 DonorFrequencySetMetadata = new FrequencySetMetadata
                 {

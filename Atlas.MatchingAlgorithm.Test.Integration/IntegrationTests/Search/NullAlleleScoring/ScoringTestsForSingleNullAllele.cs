@@ -73,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == originalNullAlleleDonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == originalNullAlleleDonorId);
 
             // Position under test
             matchGradesForMatchingNullAlleles.Should().Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
@@ -92,7 +92,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == originalNullAlleleDonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == originalNullAlleleDonorId);
 
             // Position under test
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.NullMismatch);
@@ -111,7 +111,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == originalNullAlleleDonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == originalNullAlleleDonorId);
 
             // Position under test
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
@@ -130,7 +130,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == homozygousLocusDonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == homozygousLocusDonorId);
 
             // Position under test
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);

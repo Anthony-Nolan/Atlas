@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.Models.Search.Results;
 using Atlas.Functions.Settings;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
@@ -10,7 +11,10 @@ namespace Atlas.Functions.Services
 {
     public interface IResultsCombiner
     {
-        SearchResultSet CombineResults(MatchingAlgorithmResultSet matchingResults, IDictionary<int, MatchProbabilityResponse> matchPredictionResults);
+        SearchResultSet CombineResults(
+            MatchingAlgorithmResultSet matchingResults,
+            IDictionary<int, MatchProbabilityResponse> matchPredictionResults,
+            IDictionary<int, Donor> donorInfo);
     }
 
     internal class ResultsCombiner : IResultsCombiner
@@ -24,14 +28,18 @@ namespace Atlas.Functions.Services
 
         
         /// <inheritdoc />
-        public SearchResultSet CombineResults(MatchingAlgorithmResultSet matchingResults, IDictionary<int, MatchProbabilityResponse> matchPredictionResults)
+        public SearchResultSet CombineResults(
+            MatchingAlgorithmResultSet matchingResults,
+            IDictionary<int, MatchProbabilityResponse> matchPredictionResults,
+            IDictionary<int, Donor> donorInfo)
         {
             return new SearchResultSet
             {
                 SearchResults = matchingResults.MatchingAlgorithmResults.Select(r => new SearchResult
                 {
+                    DonorId = donorInfo[r.AtlasDonorId].ExternalDonorCode,
                     MatchingResult = r,
-                    MatchPredictionResult = matchPredictionResults[r.DonorId].ZeroMismatchProbability
+                    MatchPredictionResult = matchPredictionResults[r.AtlasDonorId].ZeroMismatchProbability
                 }),
                 TotalResults = matchingResults.ResultCount,
                 HlaNomenclatureVersion = matchingResults.HlaNomenclatureVersion,

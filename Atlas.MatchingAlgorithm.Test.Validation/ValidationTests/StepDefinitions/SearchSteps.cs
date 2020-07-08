@@ -203,7 +203,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             var apiResult = scenarioContext.Get<SearchAlgorithmApiResult>();
             apiResult.IsSuccess.Should().BeTrue();
 
-            apiResult.Results.MatchingAlgorithmResults.Should().Contain(r => r.DonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
+            apiResult.Results.MatchingAlgorithmResults.Should().Contain(r => r.AtlasDonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
         }
 
         [Then(@"the results should contain all specified donors")]
@@ -215,7 +215,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
 
             foreach (var donorId in expectedDonorProvider.GetExpectedMatchingDonorIds())
             {
-                apiResult.Results.MatchingAlgorithmResults.Should().Contain(r => r.DonorId == donorId);
+                apiResult.Results.MatchingAlgorithmResults.Should().Contain(r => r.AtlasDonorId == donorId);
             }
         }
 
@@ -226,7 +226,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             var apiResult = scenarioContext.Get<SearchAlgorithmApiResult>();
             apiResult.IsSuccess.Should().BeTrue();
 
-            apiResult.Results.MatchingAlgorithmResults.Should().NotContain(r => r.DonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
+            apiResult.Results.MatchingAlgorithmResults.Should().NotContain(r => r.AtlasDonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
         }
 
         [Then(@"each set of results should contain the specified donor")]
@@ -239,7 +239,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                 apiResult.ApiResult.IsSuccess.Should().BeTrue();
                 var searchResultsForPatient = apiResult.ApiResult.Results.MatchingAlgorithmResults;
                 var expectedDonorProvider = apiResult.ExpectedDonorProvider;
-                searchResultsForPatient.Should().Contain(r => r.DonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
+                searchResultsForPatient.Should().Contain(r => r.AtlasDonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
             }
         }
 

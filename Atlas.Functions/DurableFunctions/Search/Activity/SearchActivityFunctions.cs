@@ -126,23 +126,44 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 
         [FunctionName(nameof(PersistSearchResults))]
         public async Task PersistSearchResults(
-            [ActivityTrigger] Tuple<MatchingAlgorithmResultSet, IDictionary<int, MatchProbabilityResponse>> algorithmResults)
+            [ActivityTrigger] PersistSearchResultsParameters parameters)
         {
+            var matchingResults = parameters.MatchingAlgorithmResultSet;
+            var matchPredictionResults = parameters.MatchPredictionResults;
+            var donorInfo = parameters.DonorInformation;
+            
             try
             {
-                var (matchingResults, matchPredictionResults) = algorithmResults;
-                var resultSet = resultsCombiner.CombineResults(matchingResults, matchPredictionResults);
+                var resultSet = resultsCombiner.CombineResults(matchingResults, matchPredictionResults, donorInfo);
                 await searchResultsBlobUploader.UploadResults(resultSet);
                 await searchCompletionMessageSender.PublishResultsMessage(resultSet);
             }
             catch (Exception e)
             {
                 await searchCompletionMessageSender.PublishFailureMessage(
-                    algorithmResults.Item1.SearchRequestId,
+                    matchingResults.SearchRequestId,
                     $"Failed to persist search results.\n Exception: {e.Message}"
                 );
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Parameters wrapped in single object as Azure Activity functions may only have one parameter.
+        /// </summary>
+        public class PersistSearchResultsParameters
+        {
+            public MatchingAlgorithmResultSet MatchingAlgorithmResultSet { get; set; }
+
+            /// <summary>
+            /// Keyed by ATLAS ID
+            /// </summary>
+            public IDictionary<int, MatchProbabilityResponse> MatchPredictionResults { get; set; }
+
+            /// <summary>
+            /// Keyed by ATLAS ID
+            /// </summary>
+            public IDictionary<int, Donor> DonorInformation { get; set; }
         }
     }
 }
