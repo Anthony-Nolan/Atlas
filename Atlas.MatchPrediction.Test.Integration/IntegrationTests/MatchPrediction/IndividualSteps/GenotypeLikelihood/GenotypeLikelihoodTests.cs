@@ -207,8 +207,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 EthnicityCode = ethnicityCode,
                 RegistryCode = registryCode
             };
-            var haplotypeFrequencySetResponse = await importService.GetHaplotypeFrequencySets(individualInfo, individualInfo);
-            return haplotypeFrequencySetResponse.DonorSet;
+            var haplotypeFrequencySetResponse = await importService.GetSingleHaplotypeFrequencySet(individualInfo);
+            return haplotypeFrequencySetResponse;
         }
 
         private static PhenotypeInfoBuilder<string> DefaultUnambiguousGGroupsBuilder =>

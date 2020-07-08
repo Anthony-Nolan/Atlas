@@ -15,6 +15,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
     {
         public Task ImportFrequencySet(FrequencySetFile file);
         public Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(FrequencySetMetadata donorInfo, FrequencySetMetadata patientInfo);
+        public Task<HaplotypeFrequencySet> GetSingleHaplotypeFrequencySet(FrequencySetMetadata setMetaData);
     }
 
     internal class FrequencySetService : IFrequencySetService
@@ -82,6 +83,20 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 DonorSet = MapDataModelToClientModel(donorSet),
                 PatientSet = MapDataModelToClientModel(patientSet)
             };
+        }
+
+        public async Task<HaplotypeFrequencySet> GetSingleHaplotypeFrequencySet(FrequencySetMetadata setMetaData)
+        {
+            var set = await repository.GetActiveSet(setMetaData.RegistryCode, setMetaData.EthnicityCode);
+            set ??= await repository.GetActiveSet(setMetaData.RegistryCode, null);
+            set ??= await repository.GetActiveSet(null, null);
+            if (set == null)
+            {
+                logger.SendTrace($"Did not find Haplotype Frequency Set for: Registry: {setMetaData.RegistryCode} Donor Ethnicity: {setMetaData.EthnicityCode}", LogLevel.Error);
+                throw new Exception("No Global Haplotype frequency set was found");
+            }
+
+            return MapDataModelToClientModel(set);
         }
         
         private static HaplotypeFrequencySet MapDataModelToClientModel(Data.Models.HaplotypeFrequencySet set)
