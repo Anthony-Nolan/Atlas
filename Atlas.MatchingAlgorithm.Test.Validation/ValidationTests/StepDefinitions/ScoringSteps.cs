@@ -132,7 +132,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             return apiResult
                 .Results
                 .MatchingAlgorithmResults
-                .Single(r => r.DonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
+                .Single(r => r.AtlasDonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
         }
 
         private IEnumerable<MatchGrade> ParseExpectedMatchGrades(string grades)
