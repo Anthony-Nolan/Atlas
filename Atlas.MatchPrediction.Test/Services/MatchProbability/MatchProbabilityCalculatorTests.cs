@@ -1,11 +1,10 @@
 ﻿using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using NUnit.Framework;
 using System.Collections.Generic;
-using Atlas.Common.GeneticData;
 using Atlas.MatchPrediction.Models;
 using FluentAssertions;
+using LochNessBuilder;
 
 namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 {
@@ -14,22 +13,16 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
     {
         private IMatchProbabilityCalculator matchProbabilityCalculator;
 
-        private const string PatientLocus1 = "patientGenotype1";
-        private const string PatientLocus2 = "patientGenotype2";
-        private const string DonorLocus1 = "donorGenotype1";
-        private const string DonorLocus2 = "donorGenotype2";
+        private const string PatientGenotype1 = "patientGenotype1";
+        private const string PatientGenotype2 = "patientGenotype2";
+        private const string DonorGenotype1 = "donorGenotype1";
+        private const string DonorGenotype2 = "donorGenotype2";
 
-        private static readonly PhenotypeInfo<string> PatientGenotype1 = new PhenotypeInfoBuilder<string>()
-        .WithDataAt(Locus.A, new LocusInfo<string> { Position1 = PatientLocus1, Position2 = PatientLocus1 }).Build();
-        private static readonly PhenotypeInfo<string> PatientGenotype2 = new PhenotypeInfoBuilder<string>()
-        .WithDataAt(Locus.A, new LocusInfo<string> { Position1 = PatientLocus2, Position2 = PatientLocus2 }).Build();
-        private static readonly PhenotypeInfo<string> DonorGenotype1 = new PhenotypeInfoBuilder<string>()
-        .WithDataAt(Locus.A, new LocusInfo<string> { Position1 = DonorLocus1, Position2 = DonorLocus1 }).Build();
-        private static readonly PhenotypeInfo<string> DonorGenotype2 = new PhenotypeInfoBuilder<string>()
-        .WithDataAt(Locus.A, new LocusInfo<string> { Position1 = DonorLocus2, Position2 = DonorLocus2 }).Build();
+        private static readonly HashSet<PhenotypeInfo<string>> DefaultPatientGenotypes = new HashSet<PhenotypeInfo<string>> 
+            {new PhenotypeInfo<string>(PatientGenotype1), new PhenotypeInfo<string>(PatientGenotype2)};
 
-        private static readonly HashSet<PhenotypeInfo<string>> PatientGenotypes = new HashSet<PhenotypeInfo<string>> {PatientGenotype1, PatientGenotype2};
-        private static readonly HashSet<PhenotypeInfo<string>> DonorGenotypes = new HashSet<PhenotypeInfo<string>> {DonorGenotype1, DonorGenotype2};
+        private static readonly HashSet<PhenotypeInfo<string>> DefaultDonorGenotypes = new HashSet<PhenotypeInfo<string>>
+            {new PhenotypeInfo<string>(DonorGenotype1), new PhenotypeInfo<string>(DonorGenotype2)};
 
         [SetUp]
         public void Setup()
@@ -45,16 +38,16 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             var matchingPairs = new HashSet<GenotypeMatchDetails>
             {
-                new GenotypeMatchDetails{PatientGenotype = PatientGenotype1, DonorGenotype = DonorGenotype1, MatchCounts = tenOutOfTenMatchCounts},
-                new GenotypeMatchDetails{PatientGenotype = PatientGenotype2, DonorGenotype = DonorGenotype2, MatchCounts = mismatchMatchCounts}
+                DefaultGenotypeMatchDetails1.With(g => g.MatchCounts, tenOutOfTenMatchCounts).Build(),
+                DefaultGenotypeMatchDetails2.With(g => g.MatchCounts, mismatchMatchCounts).Build()
             };
 
             var expectedMatchProbabilityPerLocus = new LociInfo<decimal?>
                 {A = 0.5M, B = 0.5M, C = 0.5M, Dpb1 = null, Dqb1 = 0.25M, Drb1 = 0.25M};
 
             var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(
-                PatientGenotypes,
-                DonorGenotypes,
+                DefaultPatientGenotypes,
+                DefaultDonorGenotypes,
                 matchingPairs,
                 NewGenotypesLikelihoods(0.5m));
 
@@ -66,12 +59,12 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         public void CalculateMatchProbability_WhenLocusWithOneMismatch_ReturnsMatchProbability()
         {
             var tenOutOfTenMatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
-            var singleMismatch = new LociInfo<int?> { A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 1 };
+            var singleMismatch = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 1 };
 
             var matchingPairs = new HashSet<GenotypeMatchDetails>
             {
-                new GenotypeMatchDetails {PatientGenotype = PatientGenotype1, DonorGenotype = DonorGenotype1, MatchCounts = tenOutOfTenMatchCounts},
-                new GenotypeMatchDetails {PatientGenotype = PatientGenotype2, DonorGenotype = DonorGenotype2, MatchCounts = singleMismatch}
+                DefaultGenotypeMatchDetails1.With(g => g.MatchCounts, tenOutOfTenMatchCounts).Build(),
+                DefaultGenotypeMatchDetails2.With(g => g.MatchCounts, singleMismatch).Build()
             };
             
 
@@ -79,8 +72,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 {A = 0.5M, B = 0.5M, C = 0.5M, Dpb1 = null, Dqb1 = 0.5M, Drb1 = 0.25M};
 
             var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(
-                PatientGenotypes,
-                DonorGenotypes,
+                DefaultPatientGenotypes,
+                DefaultDonorGenotypes,
                 matchingPairs,
                 NewGenotypesLikelihoods(0.5m));
 
@@ -96,16 +89,16 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             var matchingPairs = new HashSet<GenotypeMatchDetails>
             {
-                new GenotypeMatchDetails{PatientGenotype = PatientGenotype1, DonorGenotype = DonorGenotype1, MatchCounts = tenOutOfTenMatchCounts},
-                new GenotypeMatchDetails{PatientGenotype = PatientGenotype2, DonorGenotype = DonorGenotype2, MatchCounts = doubleMismatch1}
+                DefaultGenotypeMatchDetails1.With(g => g.MatchCounts, tenOutOfTenMatchCounts).Build(),
+                DefaultGenotypeMatchDetails2.With(g => g.MatchCounts, doubleMismatch1).Build()
             };
 
             var expectedMatchProbabilityPerLocus = new LociInfo<decimal?>
                 {A = 0.5M, B = 0.5M, C = 0.5M, Dpb1 = null, Dqb1 = 0.5M, Drb1 = 0.25M};
 
             var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(
-                PatientGenotypes,
-                DonorGenotypes,
+                DefaultPatientGenotypes,
+                DefaultDonorGenotypes,
                 matchingPairs,
                 NewGenotypesLikelihoods(0.5m));
 
@@ -121,16 +114,16 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             var matchingPairs = new HashSet<GenotypeMatchDetails>
             {
-                new GenotypeMatchDetails{PatientGenotype = PatientGenotype1, DonorGenotype = DonorGenotype1, MatchCounts = tenOutOfTenMatchCounts},
-                new GenotypeMatchDetails{PatientGenotype = PatientGenotype2, DonorGenotype = DonorGenotype2, MatchCounts = doubleMismatch2}
+                DefaultGenotypeMatchDetails1.With(g => g.MatchCounts, tenOutOfTenMatchCounts).Build(),
+                DefaultGenotypeMatchDetails2.With(g => g.MatchCounts, doubleMismatch2).Build()
             };
 
             var expectedMatchProbabilityPerLocus = new LociInfo<decimal?>
                 {A = 0.5M, B = 0.5M, C = 0.5M, Dpb1 = null, Dqb1 = 0.25M, Drb1 = 0.25M};
 
             var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(
-                PatientGenotypes,
-                DonorGenotypes,
+                DefaultPatientGenotypes,
+                DefaultDonorGenotypes,
                 matchingPairs,
                 NewGenotypesLikelihoods(0.5m));
 
@@ -145,12 +138,12 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             var matchingPairs = new HashSet<GenotypeMatchDetails>
             {
-                new GenotypeMatchDetails{PatientGenotype = PatientGenotype1, DonorGenotype = DonorGenotype1, MatchCounts = tenOutOfTenMatchCounts}
+                DefaultGenotypeMatchDetails1.With(g => g.MatchCounts, tenOutOfTenMatchCounts).Build()
             };
 
             var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(
-                PatientGenotypes,
-                DonorGenotypes,
+                DefaultPatientGenotypes,
+                DefaultDonorGenotypes,
                 matchingPairs,
                 NewGenotypesLikelihoods(0m));
 
@@ -163,11 +156,19 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         {
             return new Dictionary<PhenotypeInfo<string>, decimal>
             {
-                {PatientGenotype1, likelihood},
-                {PatientGenotype2, likelihood},
-                {DonorGenotype1, likelihood},
-                {DonorGenotype2, likelihood}
+                {new PhenotypeInfo<string>(PatientGenotype1), likelihood},
+                {new PhenotypeInfo<string>(PatientGenotype2), likelihood},
+                {new PhenotypeInfo<string>(DonorGenotype1), likelihood},
+                {new PhenotypeInfo<string>(DonorGenotype2), likelihood}
             };
         }
+
+        private static Builder<GenotypeMatchDetails> DefaultGenotypeMatchDetails1 => Builder<GenotypeMatchDetails>.New
+            .With(r => r.PatientGenotype, new PhenotypeInfo<string>(PatientGenotype1))
+            .With(r => r.DonorGenotype, new PhenotypeInfo<string>(DonorGenotype1));
+
+        private static Builder<GenotypeMatchDetails> DefaultGenotypeMatchDetails2 => Builder<GenotypeMatchDetails>.New
+            .With(r => r.PatientGenotype, new PhenotypeInfo<string>(PatientGenotype2))
+            .With(r => r.DonorGenotype, new PhenotypeInfo<string>(DonorGenotype2));
     }
 }
