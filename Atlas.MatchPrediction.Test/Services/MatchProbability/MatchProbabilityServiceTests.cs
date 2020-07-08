@@ -136,27 +136,6 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             actualResponse.ZeroMismatchProbability.Should().Be(1m);
         }
 
-        [Test]
-        public async Task CalculateMatchProbability_WhenNoTenOutOfTenMatch_ReturnsZeroPercentMatchProbability()
-        {
-            var matchProbabilityInput = new MatchProbabilityInput
-            {
-                DonorHla = DonorHla,
-                PatientHla = PatientHla,
-                HlaNomenclatureVersion = HlaNomenclatureVersion
-            };
-
-            compressedPhenotypeExpander.ExpandCompressedPhenotype(DonorHla, HlaNomenclatureVersion)
-                .Returns(new HashSet<PhenotypeInfo<string>>());
-
-            compressedPhenotypeExpander.ExpandCompressedPhenotype(PatientHla, HlaNomenclatureVersion)
-                .Returns(new HashSet<PhenotypeInfo<string>>());
-
-            var actualResponse = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
-
-            actualResponse.ZeroMismatchProbability.Should().Be(0m);
-        }
-
         [TestCase(5, 1, 5)]
         [TestCase(4, 2, 8)]
         [TestCase(3, 3, 9)]
