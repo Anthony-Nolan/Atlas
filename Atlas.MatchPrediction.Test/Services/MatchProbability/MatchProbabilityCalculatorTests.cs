@@ -68,24 +68,12 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             var tenOutOfTenMatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
             var singleMismatch = new LociInfo<int?> { A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 1 };
 
-        var matchingPairs = new HashSet<GenotypeMatchDetails>
+            var matchingPairs = new HashSet<GenotypeMatchDetails>
             {
-                new GenotypeMatchDetails{PatientGenotype = PatientGenotype1, DonorGenotype = DonorGenotype1, MatchCounts = tenOutOfTenMatchCounts},
-                new GenotypeMatchDetails{PatientGenotype = PatientGenotype2, DonorGenotype = DonorGenotype2, MatchCounts = singleMismatch}
-                new GenotypeMatchDetails
-                {
-                    PatientGenotype = patientGenotype1, DonorGenotype = donorGenotype1,
-                    MatchCounts = tenOutOfTenMatchCounts
-                },
-                new GenotypeMatchDetails
-                {
-                    PatientGenotype = patientGenotype2, DonorGenotype = donorGenotype2,
-                    MatchCounts = mismatchMatchCounts
-                }
+                new GenotypeMatchDetails {PatientGenotype = PatientGenotype1, DonorGenotype = DonorGenotype1, MatchCounts = tenOutOfTenMatchCounts},
+                new GenotypeMatchDetails {PatientGenotype = PatientGenotype2, DonorGenotype = DonorGenotype2, MatchCounts = singleMismatch}
             };
             
-            var patientGenotypes = new HashSet<PhenotypeInfo<string>> { patientGenotype1, patientGenotype2 };
-            var donorGenotypes = new HashSet<PhenotypeInfo<string>> { donorGenotype1, donorGenotype2 };
 
             var expectedMatchProbabilityPerLocus = new LociInfo<decimal?>
                 {A = 0.5M, B = 0.5M, C = 0.5M, Dpb1 = null, Dqb1 = 0.5M, Drb1 = 0.25M};
@@ -160,20 +148,9 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 new GenotypeMatchDetails{PatientGenotype = PatientGenotype1, DonorGenotype = DonorGenotype1, MatchCounts = tenOutOfTenMatchCounts}
             };
 
-            var patientGenotypes = new HashSet<PhenotypeInfo<string>> { PatientGenotype1, PatientGenotype2 };
-            var donorGenotypes = new HashSet<PhenotypeInfo<string>> { DonorGenotype1, DonorGenotype2 };
-            var matchingPairs = new HashSet<GenotypeMatchDetails>
-            {
-                new GenotypeMatchDetails
-                {
-                    PatientGenotype = patientGenotype1, DonorGenotype = donorGenotype1,
-                    MatchCounts = tenOutOfTenMatchCounts
-                }
-            };
-
             var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(
-                patientGenotypes,
-                donorGenotypes,
+                PatientGenotypes,
+                DonorGenotypes,
                 matchingPairs,
                 NewGenotypesLikelihoods(0m));
 
