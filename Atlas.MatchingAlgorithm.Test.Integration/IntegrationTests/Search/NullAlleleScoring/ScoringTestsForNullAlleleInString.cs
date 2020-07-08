@@ -142,7 +142,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
 
-            var result = (await searchService.Search(searchRequest)).Single(d => d.DonorId == donorId);
+            var result = (await searchService.Search(searchRequest)).Single(d => d.AtlasDonorId == donorId);
 
             matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
@@ -256,7 +256,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .WithDoubleMismatchRequestedAt(LocusUnderTest)
                 .Build();
 
-            var result = (await searchService.Search(searchRequest)).Single(d => d.DonorId == donorId);
+            var result = (await searchService.Search(searchRequest)).Single(d => d.AtlasDonorId == donorId);
 
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
@@ -370,7 +370,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.Single(d => d.DonorId == donorId);
+            var result = results.Single(d => d.AtlasDonorId == donorId);
 
             // Position under test
             matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
@@ -484,7 +484,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.Single(d => d.DonorId == donorId);
+            var result = results.Single(d => d.AtlasDonorId == donorId);
 
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
@@ -599,7 +599,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.Single(d => d.DonorId == donorId);
+            var result = results.Single(d => d.AtlasDonorId == donorId);
 
             matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
@@ -720,7 +720,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.Single(d => d.DonorId == donorId);
+            var result = results.Single(d => d.AtlasDonorId == donorId);
 
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
@@ -840,7 +840,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
 
-            var result = (await searchService.Search(searchRequest)).Single(d => d.DonorId == donorId);
+            var result = (await searchService.Search(searchRequest)).Single(d => d.AtlasDonorId == donorId);
 
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
             result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
@@ -950,7 +950,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var searchRequest = new SearchRequestFromHlasBuilder(patientAllele.Phenotype).SixOutOfSix().Build();
             var searchResults = await searchService.Search(searchRequest);
-            return searchResults.Single(d => d.DonorId == donorAllele.DonorId);
+            return searchResults.Single(d => d.AtlasDonorId == donorAllele.DonorId);
         }
 
         private async Task<MatchingAlgorithmResult> FiveOutOfSixSearch(AlleleTestData patientAllele, AlleleTestData donorAllele)
@@ -960,7 +960,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .WithSingleMismatchRequestedAt(LocusUnderTest)
                 .Build();
             var searchResults = await searchService.Search(searchRequest);
-            return searchResults.Single(d => d.DonorId == donorAllele.DonorId);
+            return searchResults.Single(d => d.AtlasDonorId == donorAllele.DonorId);
         }
 
         #endregion

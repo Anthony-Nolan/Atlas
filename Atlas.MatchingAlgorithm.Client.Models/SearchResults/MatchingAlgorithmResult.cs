@@ -7,9 +7,9 @@ namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults
     public class MatchingAlgorithmResult
     {
         /// <summary>
-        /// The ID of the donor for lookup in donor registries.
+        /// The ATLAS ID of the donor for lookup in donor registries.
         /// </summary>
-        public int DonorId { get; set; }
+        public int AtlasDonorId { get; set; }
         
         /// <summary>
         /// The type of donor, for example Adult or Cord.

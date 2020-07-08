@@ -68,7 +68,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             var expectedMatchCategories = new List<MatchCategory> { MatchCategory.Definite, MatchCategory.Exact };
             expectedMatchCategories.Should().Contain(result.MatchCategory);
@@ -84,7 +84,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             var expectedMatchCategories = new List<MatchCategory> { MatchCategory.Definite, MatchCategory.Exact };
             expectedMatchCategories.Should().Contain(result.MatchCategory);
@@ -100,7 +100,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             result.MatchCategory.Should().Be(MatchCategory.Potential);
         }
@@ -115,7 +115,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             result.MatchCategory.Should().Be(MatchCategory.Potential);
         }
@@ -134,7 +134,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             // Should be 6/6
             result.MatchCategory.Should().NotBe(MatchCategory.Mismatch);
@@ -173,7 +173,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             // Should be 5/6
             result.MatchCategory.Should().Be(MatchCategory.Mismatch);
@@ -211,7 +211,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             // Should be 2x potential P group matches at C
             result.SearchResultAtLocusC.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PGroup);
@@ -245,7 +245,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .Build();
 
             var results = await searchService.Search(searchRequest);
-            var result = results.SingleOrDefault(d => d.DonorId == testDonor.DonorId);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             // Should be 2x potential G group matches (XX code vs. Allele) at C
             result.SearchResultAtLocusC.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
