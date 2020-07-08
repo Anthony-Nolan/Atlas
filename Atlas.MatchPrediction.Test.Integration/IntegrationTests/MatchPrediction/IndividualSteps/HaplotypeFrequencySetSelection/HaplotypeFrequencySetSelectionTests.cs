@@ -169,6 +169,36 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             result.DonorSet.Should().BeEquivalentTo(GlobalPopulation);
             result.PatientSet.Should().BeEquivalentTo(GlobalPopulation);
         }
+        
+        [Test]
+        public async Task GetSingleHaplotypeSet_WhenExactHaplotypeSetMatch_ReturnsEthnicityAndRegistryMatchedSet()
+        {
+            var setInfo = DefaultSpecificPopulation;
+
+            var result = await service.GetSingleHaplotypeFrequencySet(setInfo);
+
+            result.Should().BeEquivalentTo(DefaultSpecificPopulation);
+        }
+
+        [Test]
+        public async Task GetSingleHaplotypeSet_WhenRegistryMatchesButEthnicityDoesNot_ReturnsRegistrySpecificSet()
+        {
+            var setInfo = FrequencySetMetadataBuilder.New.ForRegistry(DefaultRegistryCode).ForEthnicity("new-ethnicity-code").Build();
+
+            var result = await service.GetSingleHaplotypeFrequencySet(setInfo);
+            
+            result.Should().BeEquivalentTo(DefaultRegistryOnlyPopulation);
+        }
+        
+        [Test]
+        public async Task GetSingleHaplotypeSet_WhenRegistryAndEthnicityDoNotMatch_ReturnsGlobalSet()
+        {
+            var setInfo = FrequencySetMetadataBuilder.New.ForRegistry("new-registry-code").ForEthnicity("new-ethnicity-code").Build();
+
+            var result = await service.GetSingleHaplotypeFrequencySet(setInfo);
+            
+            result.Should().BeEquivalentTo(GlobalPopulation);
+        }
 
         private async Task ImportHaplotypeSet(FrequencySetMetadata populationData)
         {
