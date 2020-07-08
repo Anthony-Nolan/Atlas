@@ -83,17 +83,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
                 new HaplotypeFrequency {A = A1, B = B1, C = C1, DQB1 = Dqb11, DRB1 = Drb11, Frequency = 0.1m}
             };
             
-            await ImportFrequencies(allPossibleHaplotypes);
-            
-            var individualInfo = new FrequencySetMetadata
-            {
-                EthnicityCode = EthnicityCode,
-                RegistryCode = RegistryCode
-            };
-            var haplotypeFrequencySetResponse = await importService.GetHaplotypeFrequencySets(individualInfo, individualInfo);
-            haplotypeFrequencySet = haplotypeFrequencySetResponse.DonorSet;
-
-            
+            haplotypeFrequencySet = await  ImportFrequencies(allPossibleHaplotypes, RegistryCode, EthnicityCode);
         }
 
         [Test]
@@ -227,21 +217,32 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
                 new HaplotypeFrequency {A = A1, B = B2, C = C1, DQB1 = Dqb11, DRB1 = Drb11, Frequency = 0.17m}
             };
 
-            await ImportFrequencies(haplotypesWith16Missing);
+            const string registryCode = "modified-registry-code";
+            const string ethnicityCode = "modified-ethnicity-code";
+            
+            var newHaplotypeFrequencySet = await ImportFrequencies(haplotypesWith16Missing, registryCode, ethnicityCode);
 
             var genotype = PhenotypeInfoBuilder.New.Build();
             const decimal expectedLikelihood = 0.99456m;
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, newHaplotypeFrequencySet);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
 
-        private async Task ImportFrequencies(IEnumerable<HaplotypeFrequency> haplotypes)
+        private async Task<HaplotypeFrequencySet> ImportFrequencies(IEnumerable<HaplotypeFrequency> haplotypes, string registryCode, string ethnicityCode)
         {
             using var file = FrequencySetFileBuilder.New(RegistryCode, EthnicityCode, haplotypes)
                 .Build();
             await importService.ImportFrequencySet(file);
+            
+            var individualInfo = new FrequencySetMetadata
+            {
+                EthnicityCode = EthnicityCode,
+                RegistryCode = RegistryCode
+            };
+            var haplotypeFrequencySetResponse = await importService.GetHaplotypeFrequencySets(individualInfo, individualInfo);
+            return haplotypeFrequencySetResponse.DonorSet;
         }
     }
 }
