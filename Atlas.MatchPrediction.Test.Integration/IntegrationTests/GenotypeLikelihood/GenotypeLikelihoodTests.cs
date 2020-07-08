@@ -11,6 +11,7 @@ using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFi
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikelihood
 {
@@ -34,7 +35,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
         private const string Dqb12 = "Dqb12:Dqb12";
         private const string Drb11 = "Drb11:Drb11";
         private const string Drb12 = "Drb12:Drb12";
-        private static readonly FrequencySetMetadata defaultFrequencySetMetaData = new FrequencySetMetadata();
+
+        private const string EthnicityCode = "ethnicity-code";
+        private const string RegistryCode = "registry-code";
+        private HaplotypeFrequencySet haplotypeFrequencySet;
 
         [SetUp]
         public async Task SetUp()
@@ -78,8 +82,18 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
                 new HaplotypeFrequency {A = A2, B = B2, C = C2, DQB1 = Dqb12, DRB1 = Drb12, Frequency = 0.2m},
                 new HaplotypeFrequency {A = A1, B = B1, C = C1, DQB1 = Dqb11, DRB1 = Drb11, Frequency = 0.1m}
             };
-
+            
             await ImportFrequencies(allPossibleHaplotypes);
+            
+            var individualInfo = new FrequencySetMetadata
+            {
+                EthnicityCode = EthnicityCode,
+                RegistryCode = RegistryCode
+            };
+            var haplotypeFrequencySetResponse = await importService.GetHaplotypeFrequencySets(individualInfo, individualInfo);
+            haplotypeFrequencySet = haplotypeFrequencySetResponse.DonorSet;
+
+            
         }
 
         [Test]
@@ -88,7 +102,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
             var genotypeInput = PhenotypeInfoBuilder.New.Build();
             const decimal expectedLikelihood = 3.28716m;
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotypeInput, defaultFrequencySetMetaData, defaultFrequencySetMetaData, false);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotypeInput, haplotypeFrequencySet);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
@@ -111,7 +125,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
             genotype.SetPosition(homozygousLocus, LocusPosition.Two,
                 genotype.GetPosition(homozygousLocus, LocusPosition.One));
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, defaultFrequencySetMetaData, defaultFrequencySetMetaData, false);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
@@ -138,7 +152,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
                     genotype.GetPosition(homozygousLocus, LocusPosition.One));
             }
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, defaultFrequencySetMetaData, defaultFrequencySetMetaData, false);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
@@ -160,7 +174,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
 
             const decimal expectedLikelihood = 0;
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, defaultFrequencySetMetaData, defaultFrequencySetMetaData, false);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
@@ -184,7 +198,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
 
             const decimal expectedLikelihood = 0;
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, defaultFrequencySetMetaData, defaultFrequencySetMetaData, false);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
@@ -218,14 +232,15 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.GenotypeLikeli
             var genotype = PhenotypeInfoBuilder.New.Build();
             const decimal expectedLikelihood = 0.99456m;
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, defaultFrequencySetMetaData, defaultFrequencySetMetaData, false);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
 
         private async Task ImportFrequencies(IEnumerable<HaplotypeFrequency> haplotypes)
         {
-            using var file = FrequencySetFileBuilder.New(haplotypes).Build();
+            using var file = FrequencySetFileBuilder.New(RegistryCode, EthnicityCode, haplotypes)
+                .Build();
             await importService.ImportFrequencySet(file);
         }
     }

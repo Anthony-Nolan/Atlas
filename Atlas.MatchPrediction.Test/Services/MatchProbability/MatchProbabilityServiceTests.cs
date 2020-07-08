@@ -4,10 +4,13 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.MatchPrediction.ExternalInterface.Models;
+using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using FluentAssertions;
@@ -22,6 +25,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         private IGenotypeLikelihoodService genotypeLikelihoodService;
         private IMatchCalculationService matchCalculationService;
         private IMatchProbabilityCalculator matchProbabilityCalculator;
+        private IFrequencySetService frequencySetService;
 
         private IMatchProbabilityService matchProbabilityService;
 
@@ -43,19 +47,22 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             genotypeLikelihoodService = Substitute.For<IGenotypeLikelihoodService>();
             matchCalculationService = Substitute.For<IMatchCalculationService>();
             matchProbabilityCalculator = Substitute.For<IMatchProbabilityCalculator>();
+            frequencySetService = Substitute.For<IFrequencySetService>();
             var logger = Substitute.For<ILogger>();
 
-            matchCalculationService.MatchAtPGroupLevel(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<PhenotypeInfo<string>>(), Arg.Any<string>())
+            matchCalculationService.MatchAtPGroupLevel(Arg.Any<PhenotypeInfo<string>>(),
+                    Arg.Any<PhenotypeInfo<string>>(), Arg.Any<string>())
                 .Returns(new GenotypeMatchDetails
                     {MatchCounts = new LociInfo<int?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0}});
 
-            genotypeLikelihoodService.CalculateLikelihood(default, default, default, default).Returns(0.5m);
+            genotypeLikelihoodService.CalculateLikelihood(default, default).Returns(0.5m);
 
             matchProbabilityService = new MatchProbabilityService(
                 compressedPhenotypeExpander,
                 genotypeLikelihoodService,
-                matchCalculationService, 
+                matchCalculationService,
                 matchProbabilityCalculator,
+                frequencySetService,
                 logger);
         }
 
@@ -64,6 +71,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         {
             var matchProbabilityInput = new MatchProbabilityInput
             {
+                DonorFrequencySetMetadata = new FrequencySetMetadata(),
+                PatientFrequencySetMetadata = new FrequencySetMetadata(),
                 DonorHla = DonorHla,
                 PatientHla = PatientHla,
                 HlaNomenclatureVersion = HlaNomenclatureVersion
@@ -76,15 +85,23 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 .Returns(new HashSet<PhenotypeInfo<string>> {PatientHla});
 
             matchCalculationService.MatchAtPGroupLevel(PatientHla, DonorHla, Arg.Any<string>())
-                .Returns(new GenotypeMatchDetails 
+                .Returns(new GenotypeMatchDetails
                     {MatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2}});
 
             matchProbabilityCalculator.CalculateMatchProbability(
                     default,
                     default,
-                    Arg.Any<HashSet<GenotypeMatchDetails>>(),
-                    Arg.Any<Dictionary<PhenotypeInfo<string>, decimal>>())
-                .Returns(new MatchProbabilityResponse {ZeroMismatchProbability = 0.5m});
+                    default,
+                    default)
+                .ReturnsForAnyArgs(new MatchProbabilityResponse {ZeroMismatchProbability = 0.5m});
+
+            frequencySetService.GetHaplotypeFrequencySets(default, default)
+                .ReturnsForAnyArgs(new HaplotypeFrequencySetResponse
+                    {
+                        PatientSet = new HaplotypeFrequencySet(),
+                        DonorSet = new HaplotypeFrequencySet()
+                    }
+                );
 
             var actualResponse = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -92,7 +109,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         }
 
         [Test]
-        public async Task CalculateMatchProbability_WhenAllPatientAndDonorGenotypeMatch_ReturnsOneHundredPercentMatchProbability()
+        public async Task
+            CalculateMatchProbability_WhenAllPatientAndDonorGenotypeMatch_ReturnsOneHundredPercentMatchProbability()
         {
             var matchProbabilityInput = new MatchProbabilityInput
             {
@@ -101,7 +119,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 HlaNomenclatureVersion = HlaNomenclatureVersion
             };
 
-            matchCalculationService.MatchAtPGroupLevel(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<PhenotypeInfo<string>>(), Arg.Any<string>())
+            matchCalculationService.MatchAtPGroupLevel(Arg.Any<PhenotypeInfo<string>>(),
+                    Arg.Any<PhenotypeInfo<string>>(), Arg.Any<string>())
                 .Returns(new GenotypeMatchDetails
                     {MatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2}});
 
@@ -155,15 +174,18 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             };
 
             compressedPhenotypeExpander.ExpandCompressedPhenotype(PatientHla, HlaNomenclatureVersion)
-                .Returns(Enumerable.Range(1, numberOfPatientGenotypes).Select(i => new PhenotypeInfo<string>($"patient${i}")).ToHashSet());
+                .Returns(Enumerable.Range(1, numberOfPatientGenotypes)
+                    .Select(i => new PhenotypeInfo<string>($"patient${i}")).ToHashSet());
 
             compressedPhenotypeExpander.ExpandCompressedPhenotype(DonorHla, HlaNomenclatureVersion)
-                .Returns(Enumerable.Range(1, numberOfDonorGenotypes).Select(i => new PhenotypeInfo<string>($"donor${i}")).ToHashSet());
+                .Returns(Enumerable.Range(1, numberOfDonorGenotypes)
+                    .Select(i => new PhenotypeInfo<string>($"donor${i}")).ToHashSet());
 
             await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
             await matchCalculationService.Received(numberOfPossibleCombinations)
-                .MatchAtPGroupLevel(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<PhenotypeInfo<string>>(), Arg.Any<string>());
+                .MatchAtPGroupLevel(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<PhenotypeInfo<string>>(),
+                    Arg.Any<string>());
         }
     }
 }

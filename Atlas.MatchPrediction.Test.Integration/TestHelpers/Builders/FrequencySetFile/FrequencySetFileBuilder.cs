@@ -19,6 +19,12 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
             return FileWithoutContents(registryCode, ethnicityCode)
                 .With(x => x.Contents, GetStream(BuildCsvFile(haplotypeCount, frequencyValue)));
         }
+        
+        internal static Builder<TestFrequencySetFile> New(string registryCode, string ethnicityCode, IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
+        {
+            return FileWithoutContents(registryCode, ethnicityCode)
+                .With(x => x.Contents, GetStream(BuildCsvFile(haplotypeFrequencies)));
+        }
 
         internal static Builder<TestFrequencySetFile> New(IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
         {
