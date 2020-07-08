@@ -1,11 +1,11 @@
-﻿using Atlas.Common.Utils.Extensions;
-using Atlas.MatchPrediction.Data.Models;
-using LochNessBuilder;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Atlas.Common.Utils.Extensions;
+using Atlas.MatchPrediction.Data.Models;
+using LochNessBuilder;
 
 namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile
 {
@@ -14,13 +14,20 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
     {
         private const string CsvHeader = "a;b;c;drb1;dqb1;freq";
 
-        internal static Builder<TestFrequencySetFile> New(string registryCode, string ethnicityCode, int haplotypeCount = 1, decimal frequencyValue = 0.00001m)
+        internal static Builder<TestFrequencySetFile> New(
+            string registryCode,
+            string ethnicityCode,
+            int haplotypeCount = 1,
+            decimal frequencyValue = 0.00001m)
         {
             return FileWithoutContents(registryCode, ethnicityCode)
                 .With(x => x.Contents, GetStream(BuildCsvFile(haplotypeCount, frequencyValue)));
         }
-        
-        internal static Builder<TestFrequencySetFile> New(string registryCode, string ethnicityCode, IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
+
+        internal static Builder<TestFrequencySetFile> New(
+            string registryCode,
+            string ethnicityCode,
+            IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
         {
             return FileWithoutContents(registryCode, ethnicityCode)
                 .With(x => x.Contents, GetStream(BuildCsvFile(haplotypeFrequencies)));
@@ -64,12 +71,11 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
 
         private static string BuildCsvFile(int frequencyCount, decimal frequencyValue)
         {
-            var csvFileBodySingleFrequency = $"A-HLA;B-HLA;C-HLA;DRB1-HLA;DQB1-HLA;{frequencyValue}";
-
             var file = new StringBuilder(CsvHeader + Environment.NewLine);
 
             for (var i = 0; i < frequencyCount; i++)
             {
+                var csvFileBodySingleFrequency = $"A-HLA-{i};B-HLA-{i};C-HLA-{i};DRB1-HLA-{i};DQB1-HLA-{i};{frequencyValue}";
                 file.AppendLine(csvFileBodySingleFrequency);
             }
 
