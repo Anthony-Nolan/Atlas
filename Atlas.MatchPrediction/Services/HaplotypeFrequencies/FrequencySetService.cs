@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Config;
@@ -9,42 +11,53 @@ using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
+using LazyCache;
+using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 {
-    public interface IFrequencySetService
+    public interface IHaplotypeFrequencyService
     {
         public Task ImportFrequencySet(FrequencySetFile file);
         public Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(FrequencySetMetadata donorInfo, FrequencySetMetadata patientInfo);
+        Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypeFrequencies(IEnumerable<HaplotypeHla> haplotypes, int setId);
+        Task<Dictionary<HaplotypeHla, decimal>> GetAllHaplotypeFrequencies(int setId);
         public Task<HaplotypeFrequencySet> GetSingleHaplotypeFrequencySet(FrequencySetMetadata setMetaData);
     }
 
-    internal class FrequencySetService : IFrequencySetService
+    internal class HaplotypeFrequencyService : IHaplotypeFrequencyService
     {
         private const string SupportSummaryPrefix = "Haplotype Frequency Set Import";
 
-        private readonly IFrequencySetImporter importer;
+        private readonly IFrequencySetImporter frequencySetImporter;
         private readonly INotificationSender notificationSender;
         private readonly ILogger logger;
-        private readonly IHaplotypeFrequencySetRepository repository;
+        private readonly IHaplotypeFrequencySetRepository frequencySetRepository;
+        private readonly IHaplotypeFrequenciesRepository frequencyRepository;
+        private IAppCache cache;
 
-        public FrequencySetService(
-            IFrequencySetImporter importer,
-            IHaplotypeFrequencySetRepository repository,
+        public HaplotypeFrequencyService(
+            IFrequencySetImporter frequencySetImporter,
+            IHaplotypeFrequencySetRepository frequencySetRepository,
+            IHaplotypeFrequenciesRepository frequencyRepository,
             INotificationSender notificationSender,
-            ILogger logger)
+            ILogger logger,
+            // ReSharper disable once SuggestBaseTypeForParameter
+            IPersistentCacheProvider persistentCacheProvider)
         {
-            this.importer = importer;
+            this.frequencySetImporter = frequencySetImporter;
             this.notificationSender = notificationSender;
             this.logger = logger;
-            this.repository = repository;
+            this.frequencySetRepository = frequencySetRepository;
+            this.frequencyRepository = frequencyRepository;
+            cache = persistentCacheProvider.Cache;
         }
 
         public async Task ImportFrequencySet(FrequencySetFile file)
         {
             try
             {
-                await importer.Import(file);
+                await frequencySetImporter.Import(file);
                 file.ImportedDateTime = DateTimeOffset.UtcNow;
 
                 await SendSuccessNotification(file);
@@ -55,16 +68,15 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 throw;
             }
         }
-        
+
         public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(FrequencySetMetadata donorInfo, FrequencySetMetadata patientInfo)
         {
             donorInfo ??= new FrequencySetMetadata();
             patientInfo ??= new FrequencySetMetadata();
-            
+
             // Patients should use the donors registry.
             patientInfo.RegistryCode ??= donorInfo.RegistryCode;
-
-            var donorSet = await GetSingleHaplotypeFrequencySet(donorInfo);
+var donorSet = await GetSingleHaplotypeFrequencySet(donorInfo);
             var patientSet = await GetSingleHaplotypeFrequencySet(patientInfo);
 
             // If the patient's registry code was provided but not recognised, patientSet will end up using the global haplotype frequency set.
@@ -89,19 +101,33 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             var set = await repository.GetActiveSet(setMetaData.RegistryCode, setMetaData.EthnicityCode);
             
             // If we didn't find ethnicity sets, find a generic one for that repository
-            set ??= await repository.GetActiveSet(setMetaData.RegistryCode, null);
+            set ??= await frequencySetRepository.GetActiveSet(setMetaData.RegistryCode, null);
             
             // If no registry specific set exists, use a generic one.
-            set ??= await repository.GetActiveSet(null, null);
+            set ??= await frequencySetRepository.GetActiveSet(null, null);
             if (set == null)
             {
-                logger.SendTrace($"Did not find Haplotype Frequency Set for: Registry: {setMetaData.RegistryCode} Donor Ethnicity: {setMetaData.EthnicityCode}", LogLevel.Error);
+                logger.SendTrace(
+                    $"Did not find Haplotype Frequency Set for: Registry: {setMetaData.RegistryCode} Donor Ethnicity: {setMetaData.EthnicityCode}",
+                    LogLevel.Error);
                 throw new Exception("No Global Haplotype frequency set was found");
             }
 
             return MapDataModelToClientModel(set);
         }
-        
+
+        /// <inheritdoc />
+        public async Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypeFrequencies(IEnumerable<HaplotypeHla> haplotypes, int setId)
+        {
+            return await frequencyRepository.GetHaplotypeFrequencies(haplotypes, setId);
+        }
+
+        /// <inheritdoc />
+        public async Task<Dictionary<HaplotypeHla, decimal>> GetAllHaplotypeFrequencies(int setId)
+        {
+            return await frequencyRepository.GetAllHaplotypeFrequencies(setId);
+        }
+
         private static HaplotypeFrequencySet MapDataModelToClientModel(Data.Models.HaplotypeFrequencySet set)
         {
             return new HaplotypeFrequencySet
@@ -112,7 +138,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 RegistryCode = set.RegistryCode
             };
         }
-        
+
 
         private async Task SendSuccessNotification(FrequencySetFile file)
         {
@@ -135,7 +161,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             await notificationSender.SendAlert(
                 errorName,
                 $"Import of file, '{file.FullPath}', failed with the following exception message: \"{ex.GetBaseException().Message}\". "
-                    + "Full exception info has been logged to Application Insights.",
+                + "Full exception info has been logged to Application Insights.",
                 Priority.High,
                 NotificationConstants.OriginatorName);
         }

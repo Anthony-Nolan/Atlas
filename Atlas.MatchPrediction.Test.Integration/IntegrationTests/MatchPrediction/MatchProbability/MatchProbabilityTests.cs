@@ -24,7 +24,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
     public class MatchProbabilityTests
     {
         private IMatchProbabilityService matchProbabilityService;
-        private IFrequencySetService importService;
+        private IHaplotypeFrequencyService importService;
 
         private const string HlaNomenclatureVersion = Constants.SnapshotHlaNomenclatureVersion;
 
@@ -46,7 +46,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         public void SetUp()
         {
             matchProbabilityService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchProbabilityService>();
-            importService = DependencyInjection.DependencyInjection.Provider.GetService<IFrequencySetService>();
+            importService = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
         }
 
         [Test]

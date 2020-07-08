@@ -22,7 +22,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
     [TestFixture]
     public class GenotypeLikelihoodTests
     {
-        private IFrequencySetService importService;
+        private IHaplotypeFrequencyService importService;
         private IGenotypeLikelihoodService likelihoodService;
 
         private readonly string a1 = Alleles.UnambiguousAlleleDetails.GGroups().A.Position1;
@@ -43,7 +43,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [SetUp]
         public async Task SetUp()
         {
-            importService = DependencyInjection.DependencyInjection.Provider.GetService<IFrequencySetService>();
+            importService = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
             likelihoodService = DependencyInjection.DependencyInjection.Provider.GetService<IGenotypeLikelihoodService>();
 
             // 32 possible haplotypes for a single unambiguous genotype.

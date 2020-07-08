@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -38,7 +39,7 @@ namespace Atlas.MatchPrediction.Data.Models
 
         [ForeignKey(nameof(SetId))]
         public HaplotypeFrequencySet Set { get; set; }
-        
+
         /// <summary>
         /// Foreign Key. Should use <see cref="Set"/> navigation property in code instead.
         /// This exists to allow index creation on the generated foreign key. 
@@ -56,6 +57,22 @@ namespace Atlas.MatchPrediction.Data.Models
                 .HasIndex(f => new {f.A, f.B, f.C, f.DQB1, f.DRB1, f.SetId})
                 .IsUnique()
                 .IncludeProperties(f => f.Frequency);
+        }
+    }
+
+    internal static class HaplotypeFrequencyExtensions
+    {
+        public static LociInfo<string> Haplotype(this HaplotypeFrequency haplotypeFrequency)
+        {
+            return new LociInfo<string>
+            {
+                A = haplotypeFrequency.A,
+                B = haplotypeFrequency.B,
+                C = haplotypeFrequency.C,
+                Dpb1 = default,
+                Dqb1 = haplotypeFrequency.DQB1,
+                Drb1 = haplotypeFrequency.DRB1,
+            };
         }
     }
 }

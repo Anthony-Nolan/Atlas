@@ -29,7 +29,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         private readonly IGenotypeLikelihoodService genotypeLikelihoodService;
         private readonly IMatchCalculationService matchCalculationService;
         private readonly IMatchProbabilityCalculator matchProbabilityCalculator;
-        private readonly IFrequencySetService frequencySetService;
+        private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
         private readonly ILogger logger;
 
         public MatchProbabilityService(
@@ -37,14 +37,14 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             IGenotypeLikelihoodService genotypeLikelihoodService,
             IMatchCalculationService matchCalculationService,
             IMatchProbabilityCalculator matchProbabilityCalculator,
-            IFrequencySetService frequencySetService,
+            IHaplotypeFrequencyService haplotypeFrequencyService,
             ILogger logger)
         {
             this.compressedPhenotypeExpander = compressedPhenotypeExpander;
             this.genotypeLikelihoodService = genotypeLikelihoodService;
             this.matchCalculationService = matchCalculationService;
             this.matchProbabilityCalculator = matchProbabilityCalculator;
-            this.frequencySetService = frequencySetService;
+            this.haplotypeFrequencyService = haplotypeFrequencyService;
             this.logger = logger;
         }
 
@@ -58,8 +58,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 donorGenotypes.Select(donorHla =>
                     new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla, donorHla)));
 
-            var patientDonorMatchDetails =
-                await CalculatePairsMatchCounts(matchProbabilityInput, allPatientDonorCombinations);
+            var patientDonorMatchDetails = await CalculatePairsMatchCounts(matchProbabilityInput, allPatientDonorCombinations);
 
             // Returns early when patient/donor pair are guaranteed to either be a match or not
             if (patientDonorMatchDetails.Any() && patientDonorMatchDetails.All(p => p.MismatchCount == 0))
@@ -81,9 +80,10 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 };
             }
 
-            var frequencySets = await frequencySetService.GetHaplotypeFrequencySets(
-                matchProbabilityInput.DonorFrequencySetMetadata, matchProbabilityInput.PatientFrequencySetMetadata);
-
+            var frequencySets = await haplotypeFrequencyService.GetHaplotypeFrequencySets(
+                matchProbabilityInput.DonorFrequencySetMetadata,
+                matchProbabilityInput.PatientFrequencySetMetadata
+);
             var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientGenotypes, frequencySets.PatientSet);
             var donorGenotypeLikelihoods = await CalculateGenotypeLikelihoods(donorGenotypes, frequencySets.DonorSet);
 

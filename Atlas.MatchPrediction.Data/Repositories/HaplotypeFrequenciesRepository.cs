@@ -13,6 +13,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
     {
         Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies);
         Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypeFrequencies(IEnumerable<HaplotypeHla> haplotypes, int setId);
+        Task<Dictionary<HaplotypeHla, decimal>> GetAllHaplotypeFrequencies(int setId);
     }
 
     public class HaplotypeFrequenciesRepository : IHaplotypeFrequenciesRepository
@@ -116,6 +117,20 @@ namespace Atlas.MatchPrediction.Data.Repositories
             }
 
             return haplotypeInfo;
+        }
+        
+        /// <inheritdoc />
+        public async Task<Dictionary<HaplotypeHla, decimal>> GetAllHaplotypeFrequencies(int setId)
+        {
+            const string sql = "SELECT * FROM HaplotypeFrequencies WHERE Set_Id = @setId";
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                var frequencyModels = await conn.QueryAsync<HaplotypeFrequency>(sql, new {setId}, commandTimeout: 600);
+                return frequencyModels.ToDictionary(
+                    f => f.Haplotype(),
+                    f => f.Frequency
+                );
+            }
         }
     }
 }
