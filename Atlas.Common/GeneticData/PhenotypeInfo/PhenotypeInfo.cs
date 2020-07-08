@@ -14,13 +14,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
     /// A <see cref="PhenotypeInfo{T}"/> is a special case of <see cref="LociInfo{T}"/>, where T = LocusInfo.
     /// </summary>
     /// <typeparam name="T">The type of the information that is required for each loci position.</typeparam>
-    public class PhenotypeInfo<T> : LociInfo<LocusInfo<T>>
+    public class PhenotypeInfo<T> : LociInfo<LocusInfo<T>>, IEquatable<PhenotypeInfo<T>>
     {
         private const string LocusInfoNullExceptionMessage =
             "LocusInfo<T> cannot be null in a PhenotypeInfo<T>. Set the nested values to null instead.";
 
-        #region Overrides of LociInfo<LocusInfo<T>>
-
+        #region Ensure no Locus is null
         /// <inheritdoc />
         public override LocusInfo<T> A
         {
@@ -362,5 +361,44 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             Dqb1 = new LocusInfo<T>();
             Drb1 = new LocusInfo<T>();
         }
+
+        #region IEquatable<T> implementation (Defers to EqualityComparer of LocusInfo, which defers to inner type.)
+        public static bool operator ==(PhenotypeInfo<T> left, PhenotypeInfo<T> right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(PhenotypeInfo<T> left, PhenotypeInfo<T> right)
+        {
+            return !Equals(left, right);
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as PhenotypeInfo<T>);
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(LociInfo<LocusInfo<T>> other)
+        {
+            return Equals(other as PhenotypeInfo<T>);
+        }
+
+        /// <inheritdoc />
+        public virtual bool Equals(PhenotypeInfo<T> other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            if (other.GetType() != this.GetType()) return false;
+            return base.Equals(other);
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+        #endregion
     }
 }
