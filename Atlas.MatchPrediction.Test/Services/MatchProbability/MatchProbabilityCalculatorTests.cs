@@ -63,7 +63,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         }
 
         [Test]
-        public void CalculateMatchProbability_WhenLocusWithSingleMismatch_ReturnsMatchProbability()
+        public void CalculateMatchProbability_WhenLocusWithOneMismatch_ReturnsMatchProbability()
         {
             var tenOutOfTenMatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
             var singleMismatch = new LociInfo<int?> { A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 1 };
@@ -89,7 +89,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         }
 
         [Test]
-        public void CalculateMatchProbability_WhenLocusWithDoubleMismatchAtSameLocus_ReturnsMatchProbability()
+        public void CalculateMatchProbability_WhenLocusWithTwoMismatchesAtSameLocus_ReturnsMatchProbability()
         {
             var tenOutOfTenMatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
             var doubleMismatch1 = new LociInfo<int?> { A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 0 };
@@ -114,7 +114,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         }
 
         [Test]
-        public void CalculateMatchProbability_WhenLocusWithDoubleMismatchAtDifferentLocus_ReturnsMatchProbability()
+        public void CalculateMatchProbability_WhenLocusWithTwoMismatchesAtDifferentLoci_ReturnsMatchProbability()
         {
             var tenOutOfTenMatchCounts = new LociInfo<int?> {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
             var doubleMismatch2 = new LociInfo<int?> { A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 1, Drb1 = 1 };
