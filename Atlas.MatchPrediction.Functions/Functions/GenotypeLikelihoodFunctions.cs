@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.ExternalInterface.Models;
-using Atlas.MatchPrediction.ExternalInterface.Models.GenotypeLikelihood;
+using Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
