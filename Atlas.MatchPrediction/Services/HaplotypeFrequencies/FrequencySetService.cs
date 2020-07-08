@@ -59,36 +59,32 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         {
             // Patients should use the donors registry.
             patientInfo.RegistryCode ??= donorInfo.RegistryCode;
-            
-            // Attempt to get the most specific sets first
-            var donorSet = await repository.GetActiveSet(donorInfo.RegistryCode, donorInfo.EthnicityCode);
-            var patientSet = await repository.GetActiveSet(patientInfo.RegistryCode, patientInfo.EthnicityCode);
-            
-            // If we didn't find ethnicity sets, find a generic one for that repository
-            donorSet ??= await repository.GetActiveSet(donorInfo.RegistryCode, null);
-            patientSet ??= donorSet;
-            
-            // If no registry specific set exists, use a generic one.
-            donorSet ??= await repository.GetActiveSet(null, null);
-            patientSet ??= donorSet;
 
-            if (donorSet == null || patientSet == null)
+            var donorSet = await GetSingleHaplotypeFrequencySet(donorInfo);
+            var patientSet = await GetSingleHaplotypeFrequencySet(patientInfo);
+
+            // If the patient's registry code was not represented, use the donors code.
+            if (patientSet.RegistryCode == null && donorSet.RegistryCode != null)
             {
-                logger.SendTrace($"Did not find Haplotype Frequency Set for: \n Donor Registry: {donorInfo.RegistryCode} Donor Ethnicity: {donorInfo.EthnicityCode} \n Patient Registry: {patientInfo.RegistryCode} Patient Ethnicity: {patientInfo.EthnicityCode}", LogLevel.Error);
-                throw new Exception("No Global Haplotype frequency set was found");
+                patientInfo.RegistryCode = donorInfo.RegistryCode;
+                patientSet = await GetSingleHaplotypeFrequencySet(patientInfo);
             }
-            
             return new HaplotypeFrequencySetResponse
             {
-                DonorSet = MapDataModelToClientModel(donorSet),
-                PatientSet = MapDataModelToClientModel(patientSet)
+                DonorSet = donorSet,
+                PatientSet = patientSet
             };
         }
 
         public async Task<HaplotypeFrequencySet> GetSingleHaplotypeFrequencySet(FrequencySetMetadata setMetaData)
         {
+            // Attempt to get the most specific sets first
             var set = await repository.GetActiveSet(setMetaData.RegistryCode, setMetaData.EthnicityCode);
+            
+            // If we didn't find ethnicity sets, find a generic one for that repository
             set ??= await repository.GetActiveSet(setMetaData.RegistryCode, null);
+            
+            // If no registry specific set exists, use a generic one.
             set ??= await repository.GetActiveSet(null, null);
             if (set == null)
             {
