@@ -84,7 +84,5 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             return sumOfMatchingLikelihoods / (patientLikelihood * donorLikelihood);
         }
-
-
     }
 }

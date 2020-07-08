@@ -15,7 +15,6 @@ using FluentAssertions;
 using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 
 // ReSharper disable InconsistentNaming - want to avoid calling "G groups" "gGroup", as "g" groups are a distinct thing 
 
@@ -28,16 +27,16 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         private const string HlaNomenclatureVersion = Constants.SnapshotHlaNomenclatureVersion;
 
-        private readonly string GGroupA1 = Alleles.UnambiguousAlleleDetails.A.Position1.GGroup;
-        private readonly string GGroupA2 = Alleles.UnambiguousAlleleDetails.A.Position2.GGroup;
-        private readonly string GGroupB1 = Alleles.UnambiguousAlleleDetails.B.Position1.GGroup;
-        private readonly string GGroupB2 = Alleles.UnambiguousAlleleDetails.B.Position2.GGroup;
-        private readonly string GGroupC1 = Alleles.UnambiguousAlleleDetails.C.Position1.GGroup;
-        private readonly string GGroupC2 = Alleles.UnambiguousAlleleDetails.C.Position2.GGroup;
-        private readonly string GGroupDqb11 = Alleles.UnambiguousAlleleDetails.Dqb1.Position1.GGroup;
-        private readonly string GGroupDqb12 = Alleles.UnambiguousAlleleDetails.Dqb1.Position2.GGroup;
-        private readonly string GGroupDrb11 = Alleles.UnambiguousAlleleDetails.Drb1.Position1.GGroup;
-        private readonly string GGroupDrb12 = Alleles.UnambiguousAlleleDetails.Drb1.Position2.GGroup;
+        private static readonly string GGroupA1 = Alleles.UnambiguousAlleleDetails.A.Position1.GGroup;
+        private static readonly string GGroupA2 = Alleles.UnambiguousAlleleDetails.A.Position2.GGroup;
+        private static readonly string GGroupB1 = Alleles.UnambiguousAlleleDetails.B.Position1.GGroup;
+        private static readonly string GGroupB2 = Alleles.UnambiguousAlleleDetails.B.Position2.GGroup;
+        private static readonly string GGroupC1 = Alleles.UnambiguousAlleleDetails.C.Position1.GGroup;
+        private static readonly string GGroupC2 = Alleles.UnambiguousAlleleDetails.C.Position2.GGroup;
+        private static readonly string GGroupDqb11 = Alleles.UnambiguousAlleleDetails.Dqb1.Position1.GGroup;
+        private static readonly string GGroupDqb12 = Alleles.UnambiguousAlleleDetails.Dqb1.Position2.GGroup;
+        private static readonly string GGroupDrb11 = Alleles.UnambiguousAlleleDetails.Drb1.Position1.GGroup;
+        private static readonly string GGroupDrb12 = Alleles.UnambiguousAlleleDetails.Drb1.Position2.GGroup;
         
         private readonly string DefaultRegistryCode = "default-registry-code";
         private readonly string DefaultEthnicityCode = "default-ethnicity-code";
@@ -97,7 +96,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             {
                 PatientHla = patientHla,
                 DonorHla = donorHla,
-                HlaNomenclatureVersion = HlaNomenclatureVersion
+                HlaNomenclatureVersion = HlaNomenclatureVersion,
+                DonorFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode },
+                PatientFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode }
             };
 
             var expectedProbabilityPerLocus = new LociInfo<decimal?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0};
@@ -132,7 +133,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             
             var possibleHaplotypes = new List<HaplotypeFrequency>
             {
-
                 NewHaplotypeFrequency2.With(h => h.A, anotherGGroupA).With(h => h.Frequency, 0.00008m).Build(),
                 NewHaplotypeFrequency1.With(h => h.A, GGroupA).With(h => h.Frequency, 0.00007m).Build(),
                 NewHaplotypeFrequency1.With(h => h.B, GGroupB).With(h => h.Frequency, 0.00006m).Build(),
