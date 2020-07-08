@@ -16,7 +16,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
     [TestFixture]
     public class ImportTests
     {
-        private IFrequencySetService service;
+        private IHaplotypeFrequencyService service;
         private IHaplotypeFrequencySetRepository setRepository;
         private IHaplotypeFrequencyInspectionRepository inspectionRepository;
         private INotificationSender notificationSender;
@@ -26,7 +26,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                service = DependencyInjection.DependencyInjection.Provider.GetService<IFrequencySetService>();
+                service = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
                 setRepository = DependencyInjection.DependencyInjection.Provider
                     .GetService<IHaplotypeFrequencySetRepository>();
                 inspectionRepository = DependencyInjection.DependencyInjection.Provider
