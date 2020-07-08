@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
 {
@@ -92,7 +93,7 @@ SELECT CAST(SCOPE_IDENTITY() as int)
 
             var sql = $@"
 SELECT p.Id FROM PGroupNames p
-WHERE p.Name IN ('{string.Join("', '", pGroupNames)}') 
+WHERE p.Name IN ({pGroupNames.Select(name => $"'{name}'").StringJoin(", ")}) 
 ";
 
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))

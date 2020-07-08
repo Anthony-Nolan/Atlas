@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.HlaMetadataDictionary.WmdaDataAccess.Models
 {
@@ -25,7 +26,7 @@ namespace Atlas.HlaMetadataDictionary.WmdaDataAccess.Models
 
         public override string ToString()
         {
-            return $"locus: {TypingLocus}, pGroup: {Name}, alleles: {string.Join("/", Alleles)}";
+            return $"locus: {TypingLocus}, pGroup: {Name}, alleles: {Alleles.StringJoin("/")}";
         }
 
         public bool Equals(HlaNomP other)
