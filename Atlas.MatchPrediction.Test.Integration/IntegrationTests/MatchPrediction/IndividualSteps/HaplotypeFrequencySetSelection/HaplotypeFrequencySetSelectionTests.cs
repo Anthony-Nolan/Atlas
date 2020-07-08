@@ -26,11 +26,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         private static readonly FrequencySetMetadata GlobalPopulation = FrequencySetMetadataBuilder.New.Build();
 
-        private readonly IFrequencySetService service;
+        private readonly IHaplotypeFrequencyService service;
 
         public HaplotypeFrequencySetSelectionTests()
         {
-            service = DependencyInjection.DependencyInjection.Provider.GetService<IFrequencySetService>();
+            service = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
         }
 
         [SetUp]

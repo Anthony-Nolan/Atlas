@@ -19,17 +19,17 @@ namespace Atlas.MatchPrediction.Functions.Functions
 {
     public class HaplotypeFrequencySetFunctions
     {
-        private readonly IFrequencySetService frequencySetService;
+        private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
         private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
 
         private const string DonorEthnicityQueryParam = "donorEthnicity";
         private const string DonorRegistryQueryParam = "donorRegistry";
         private const string PatientEthnicityQueryParam = "patientEthnicity";
 
-        public HaplotypeFrequencySetFunctions(IFrequencySetService frequencySetService,
+        public HaplotypeFrequencySetFunctions(IHaplotypeFrequencyService haplotypeFrequencyService,
             IMatchPredictionAlgorithm matchPredictionAlgorithm)
         {
-            this.frequencySetService = frequencySetService;
+            this.haplotypeFrequencyService = haplotypeFrequencyService;
             this.matchPredictionAlgorithm = matchPredictionAlgorithm;
         }
 
@@ -49,7 +49,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
                 UploadedDateTime = blobCreatedEvent.EventTime
             })
             {
-                await frequencySetService.ImportFrequencySet(file);
+                await haplotypeFrequencyService.ImportFrequencySet(file);
             }
         }
 

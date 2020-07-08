@@ -27,7 +27,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         private IGenotypeLikelihoodService genotypeLikelihoodService;
         private IMatchCalculationService matchCalculationService;
         private IMatchProbabilityCalculator matchProbabilityCalculator;
-        private IFrequencySetService frequencySetService;
+        private IHaplotypeFrequencyService haplotypeFrequencyService;
 
         private IMatchProbabilityService matchProbabilityService;
 
@@ -49,7 +49,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             genotypeLikelihoodService = Substitute.For<IGenotypeLikelihoodService>();
             matchCalculationService = Substitute.For<IMatchCalculationService>();
             matchProbabilityCalculator = Substitute.For<IMatchProbabilityCalculator>();
-            frequencySetService = Substitute.For<IFrequencySetService>();
+            haplotypeFrequencyService = Substitute.For<IHaplotypeFrequencyService>();
             var logger = Substitute.For<ILogger>();
 
             matchCalculationService.MatchAtPGroupLevel(Arg.Any<PhenotypeInfo<string>>(),
@@ -67,7 +67,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 genotypeLikelihoodService,
                 matchCalculationService,
                 matchProbabilityCalculator,
-                frequencySetService,
+                haplotypeFrequencyService,
                 logger);
         }
 
@@ -100,7 +100,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 )
                 .ReturnsForAnyArgs(new MatchProbabilityResponse {ZeroMismatchProbability = new Probability(0.5m)});
 
-            frequencySetService.GetHaplotypeFrequencySets(default, default)
+            haplotypeFrequencyService.GetHaplotypeFrequencySets(default, default)
                 .ReturnsForAnyArgs(new HaplotypeFrequencySetResponse
                     {
                         PatientSet = new HaplotypeFrequencySet(),

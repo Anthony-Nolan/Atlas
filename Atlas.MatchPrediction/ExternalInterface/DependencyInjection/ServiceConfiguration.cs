@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
@@ -75,7 +75,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.AddScoped<IFrequencySetMetadataExtractor, FrequencySetMetadataExtractor>();
             services.AddScoped<IFrequencySetImporter, FrequencySetImporter>();
             services.AddScoped<IFrequencyCsvReader, FrequencyCsvReader>();
-            services.AddScoped<IFrequencySetService, FrequencySetService>();
+            services.AddScoped<IHaplotypeFrequencyService, HaplotypeFrequencyService>();
 
             services.AddScoped<IGenotypeLikelihoodService, GenotypeLikelihoodService>();
             services.AddScoped<IUnambiguousGenotypeExpander, UnambiguousGenotypeExpander>();

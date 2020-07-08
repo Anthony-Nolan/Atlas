@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
@@ -16,21 +16,23 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 
     internal class GenotypeLikelihoodService : IGenotypeLikelihoodService
     {
-        private readonly IHaplotypeFrequenciesRepository frequencyRepository;
         private readonly IUnambiguousGenotypeExpander unambiguousGenotypeExpander;
         private readonly IGenotypeLikelihoodCalculator likelihoodCalculator;
+        private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
 
         public GenotypeLikelihoodService(
-            IHaplotypeFrequenciesRepository frequencyRepository,
             IUnambiguousGenotypeExpander unambiguousGenotypeExpander,
-            IGenotypeLikelihoodCalculator likelihoodCalculator)
+            IGenotypeLikelihoodCalculator likelihoodCalculator,
+            IHaplotypeFrequencyService haplotypeFrequencyService
+        )
         {
-            this.frequencyRepository = frequencyRepository;
             this.unambiguousGenotypeExpander = unambiguousGenotypeExpander;
             this.likelihoodCalculator = likelihoodCalculator;
+            this.haplotypeFrequencyService = haplotypeFrequencyService;
         }
 
-        public async Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype, HaplotypeFrequencySet frequencySet)
+        public async Task<decimal> CalculateLikelihood(
+            PhenotypeInfo<string> genotype, HaplotypeFrequencySet frequencySet)
         {
             var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype);
             var haplotypesWithFrequencies = await GetHaplotypesWithFrequencies(expandedGenotype, frequencySet);
@@ -45,7 +47,8 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         )
         {
             var haplotypes = GetHaplotypes(expandedGenotype.Diplotypes);
-            return await frequencyRepository.GetHaplotypeFrequencies(haplotypes, haplotypeFrequencySet.Id);
+
+            return await haplotypeFrequencyService.GetHaplotypeFrequencies(haplotypes, haplotypeFrequencySet.Id);
         }
 
         private static IEnumerable<HaplotypeHla> GetHaplotypes(IEnumerable<Diplotype> diplotypes)
