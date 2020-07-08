@@ -58,6 +58,9 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             genotypeLikelihoodService.CalculateLikelihood(default, default).Returns(0.5m);
 
+            frequencySetService.GetHaplotypeFrequencySets(Arg.Any<FrequencySetMetadata>(), Arg.Any<FrequencySetMetadata>())
+                .Returns(new HaplotypeFrequencySetResponse());
+
             matchProbabilityService = new MatchProbabilityService(
                 compressedPhenotypeExpander,
                 genotypeLikelihoodService,
