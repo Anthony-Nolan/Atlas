@@ -160,7 +160,7 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
         [Test]
         public void Equality_WhenObjectsAreEqual_ReportsEquality()
         {
-            var data1 = new PhenotypeInfo<int>
+            var original = new PhenotypeInfo<int>
             {
                 A = new LocusInfo<int> { Position1 = 1, Position2 = 2 },
                 B = new LocusInfo<int> { Position1 = 3, Position2 = 4 },
@@ -170,7 +170,7 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
                 Drb1 = new LocusInfo<int> { Position1 = 11, Position2 = 12 },
             };
 
-            var data2 = new PhenotypeInfo<int>
+            var copy = new PhenotypeInfo<int>
             {
                 A = new LocusInfo<int> { Position1 = 1, Position2 = 2 },
                 B = new LocusInfo<int> { Position1 = 3, Position2 = 4 },
@@ -180,29 +180,13 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
                 Drb1 = new LocusInfo<int> { Position1 = 11, Position2 = 12 },
             };
 
-            data1.Equals(data2).Should().BeTrue();
-            Equals(data1, data2).Should().BeTrue();
-            (data1 == data2).Should().BeTrue();
-            (data1 != data2).Should().BeFalse();
-
-
-            data2.Equals(data1).Should().BeTrue();
-            Equals(data2, data1).Should().BeTrue();
-            (data2 == data1).Should().BeTrue();
-            (data2 != data1).Should().BeFalse();
-
-            ((object)data1).Equals(data2).Should().BeTrue();
-            ((LociInfo<LocusInfo<int>>)data1).Equals(data2).Should().BeTrue();
-            data1.Equals((object)data2).Should().BeTrue();
-            data1.Equals((LociInfo<LocusInfo<int>>)data2).Should().BeTrue();
-
-            data1.GetHashCode().Should().Be(data2.GetHashCode());
+            AllVariationsOnObjectEqualityShouldReport(original, copy, true);
         }
 
         [Test]
         public void Equality_WhenObjectsAreDifferent_ReportsNonEquality()
         {
-            var data1 = new PhenotypeInfo<int>
+            var original = new PhenotypeInfo<int>
             {
                 A = new LocusInfo<int> { Position1 = 1, Position2 = 2 },
                 B = new LocusInfo<int> { Position1 = 3, Position2 = 4 },
@@ -212,7 +196,7 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
                 Drb1 = new LocusInfo<int> { Position1 = 11, Position2 = 12 },
             };
 
-            var data2 = new PhenotypeInfo<int>
+            var different = new PhenotypeInfo<int>
             {
                 A = new LocusInfo<int> { Position1 = 1, Position2 = 2 },
                 B = new LocusInfo<int> { Position1 = 3, Position2 = 4 },
@@ -222,23 +206,7 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
                 Drb1 = new LocusInfo<int> { Position1 = 11, Position2 = 12 },
             };
 
-            data1.Equals(data2).Should().BeFalse();
-            Equals(data1, data2).Should().BeFalse();
-            (data1 == data2).Should().BeFalse();
-            (data1 != data2).Should().BeTrue();
-
-
-            data2.Equals(data1).Should().BeFalse();
-            Equals(data2, data1).Should().BeFalse();
-            (data2 == data1).Should().BeFalse();
-            (data2 != data1).Should().BeTrue();
-
-            ((object)data1).Equals(data2).Should().BeFalse();
-            ((LociInfo<LocusInfo<int>>)data1).Equals(data2).Should().BeFalse();
-            data1.Equals((object)data2).Should().BeFalse();
-            data1.Equals((LociInfo<LocusInfo<int>>)data2).Should().BeFalse();
-
-            data1.GetHashCode().Should().NotBe(data2.GetHashCode());
+            AllVariationsOnObjectEqualityShouldReport(original, different, false);
         }
 
         [Test]
@@ -280,53 +248,46 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
 
             var different = new PhenotypeInfo<int?>
             {
-                A = new LocusInfo<int?> { Position1 = 1, Position2 = null },
-                B = new LocusInfo<int?> { Position1 = 3, Position2 = null },
-                //C = ,
-                Dpb1 = new LocusInfo<int?> { Position1 = null, Position2 = null },
+                A = new LocusInfo<int?> { Position1 = 1, Position2 = null },       // nullity is inverse of same1
+                B = new LocusInfo<int?> { Position1 = 3, Position2 = null },       // nullity matches same1
+                //C = ,                                                            // This default, same1 all null
+                Dpb1 = new LocusInfo<int?> { Position1 = null, Position2 = null }, // This all null, same1 default
                 Dqb1 = new LocusInfo<int?> { Position1 = null, Position2 = null },
                 //Drb1 = ,
             };
 
-            same1.Equals(same2).Should().BeTrue();
-            Equals(same1, same2).Should().BeTrue();
-            (same1 == same2).Should().BeTrue();
-            (same1 != same2).Should().BeFalse();
-
-
-            same2.Equals(same1).Should().BeTrue();
-            Equals(same2, same1).Should().BeTrue();
-            (same2 == same1).Should().BeTrue();
-            (same2 != same1).Should().BeFalse();
-
-            ((object)same1).Equals(same2).Should().BeTrue();
-            ((LociInfo<LocusInfo<int?>>)same1).Equals(same2).Should().BeTrue();
-            same1.Equals((object)same2).Should().BeTrue();
-            same1.Equals((LociInfo<LocusInfo<int?>>)same2).Should().BeTrue();
-
-            same1.GetHashCode().Should().Be(same2.GetHashCode());
-
-
-
-
-            same1.Equals(different).Should().BeFalse();
-            Equals(same1, different).Should().BeFalse();
-            (same1 == different).Should().BeFalse();
-            (same1 != different).Should().BeTrue();
-
-
-            different.Equals(same1).Should().BeFalse();
-            Equals(different, same1).Should().BeFalse();
-            (different == same1).Should().BeFalse();
-            (different != same1).Should().BeTrue();
-
-            ((object)same1).Equals(different).Should().BeFalse();
-            ((LociInfo<LocusInfo<int?>>)same1).Equals(different).Should().BeFalse();
-            same1.Equals((object)different).Should().BeFalse();
-            same1.Equals((LociInfo<LocusInfo<int?>>)different).Should().BeFalse();
-
-            same1.GetHashCode().Should().NotBe(different.GetHashCode());
-
+            AllVariationsOnObjectEqualityShouldReport(same1, same2, true);
+            AllVariationsOnObjectEqualityShouldReport(same1, different, false);
+            AllVariationsOnObjectEqualityShouldReport(same2, different, false);
         }
+
+        public void AllVariationsOnObjectEqualityShouldReport<T>(PhenotypeInfo<T> first, PhenotypeInfo<T> second, bool areEqual)
+        {
+            first.Equals(second).Should().Be(areEqual);
+            Equals(first, second).Should().Be(areEqual);
+            (first == second).Should().Be(areEqual);
+            (first != second).Should().Be(!areEqual);
+
+
+            second.Equals(first).Should().Be(areEqual);
+            Equals(second, first).Should().Be(areEqual);
+            (second == first).Should().Be(areEqual);
+            (second != first).Should().Be(!areEqual);
+
+            ((object)first).Equals(second).Should().Be(areEqual);
+            ((LociInfo<LocusInfo<T>>)first).Equals(second).Should().Be(areEqual);
+            first.Equals((object)second).Should().Be(areEqual);
+            first.Equals((LociInfo<LocusInfo<T>>)second).Should().Be(areEqual);
+
+            if (areEqual)
+            {
+                first.GetHashCode().Should().Be(second.GetHashCode());
+            }
+            else
+            {
+                first.GetHashCode().Should().NotBe(second.GetHashCode());
+            }
+        }
+
     }
 }
