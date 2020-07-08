@@ -285,7 +285,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         {
             var donorInfo1 = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
             var donorInfo2 = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
-            var donorInfoIds = new[] { donorInfo1.DonorId, donorInfo2.DonorId };
+            var donorInfoIds = new List<int> { donorInfo1.DonorId, donorInfo2.DonorId };
             await donorService.CreateOrUpdateDonorBatch(new[] { donorInfo1, donorInfo2 }, default, tokenHlaVersion);
 
             await donorService.SetDonorBatchAsUnavailableForSearch(donorInfoIds, default);
@@ -302,7 +302,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
             var donorInfo1 = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
             var donorInfo2 = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
             var donorInfos = new[] { donorInfo1, donorInfo2 };
-            var donorInfoIds = new[] { donorInfo1.DonorId, donorInfo2.DonorId };
+            var donorInfoIds = new List<int> { donorInfo1.DonorId, donorInfo2.DonorId };
             await donorService.CreateOrUpdateDonorBatch(donorInfos, default, tokenHlaVersion);
             await donorService.SetDonorBatchAsUnavailableForSearch(donorInfoIds, default);
 
