@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
@@ -18,10 +17,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
 
         public Task<IAlleleNameMetadata> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            return Task.FromResult(HlaMetadata
-                .SingleOrDefault(result => 
-                    result.Locus == locus && 
-                    result.LookupName.Equals(lookupName)));
+            return LookupMetadata(locus, lookupName);
         }
     }
 }
