@@ -1,4 +1,5 @@
 ﻿using System;
+// ReSharper disable UseDeconstructionOnParameter
 
 namespace Atlas.Common.GeneticData
 {
@@ -13,15 +14,28 @@ namespace Atlas.Common.GeneticData
         public T Item1 { get; set; }
         public T Item2 { get; set; }
 
-        public UnorderedPair<R> Map<R>(Func<T, R> mapping)
+        // TODO: ATLAS-QQ: Make this immutable?
+        public UnorderedPair()
         {
-            return new UnorderedPair<R>
-            {
-                Item1 = mapping(Item1),
-                Item2 = mapping(Item2)
-            };
         }
         
+        public UnorderedPair(T item1, T item2)
+        {
+            Item1 = item1;
+            Item2 = item2;
+        }
+
+        public UnorderedPair(Tuple<T, T> tuple)
+        {
+            Item1 = tuple.Item1;
+            Item2 = tuple.Item2;
+        }
+
+        public UnorderedPair<R> Map<R>(Func<T, R> mapping)
+        {
+            return new UnorderedPair<R>(mapping(Item1), mapping(Item2));
+        }
+
         #region Equality
 
         /// <summary>
@@ -44,7 +58,7 @@ namespace Atlas.Common.GeneticData
                 return false;
             }
 
-            return Equals((UnorderedPair<T>)other);
+            return Equals((UnorderedPair<T>) other);
         }
 
         protected bool Equals(UnorderedPair<T> other)

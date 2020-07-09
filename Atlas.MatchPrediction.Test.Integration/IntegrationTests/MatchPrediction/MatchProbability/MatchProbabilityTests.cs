@@ -38,9 +38,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         private static readonly string GGroupDqb12 = Alleles.UnambiguousAlleleDetails.Dqb1.Position2.GGroup;
         private static readonly string GGroupDrb11 = Alleles.UnambiguousAlleleDetails.Drb1.Position1.GGroup;
         private static readonly string GGroupDrb12 = Alleles.UnambiguousAlleleDetails.Drb1.Position2.GGroup;
-        
-        private readonly string DefaultRegistryCode = "default-registry-code";
-        private readonly string DefaultEthnicityCode = "default-ethnicity-code";
+
+        private const string DefaultRegistryCode = "default-registry-code";
+        private const string DefaultEthnicityCode = "default-ethnicity-code";
 
         [SetUp]
         public void SetUp()
@@ -50,7 +50,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        public async Task CalculateMatchProbability_WhenIdenticalGenotypes_OneHundredPercentProbability()
+        public async Task CalculateMatchProbability_WhenIdenticalGenotypes_UnrepresentedInFrequencySet_ReturnsZeroPercent()
         {
             var matchProbabilityInput = new MatchProbabilityInput
             {
@@ -58,6 +58,36 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 DonorHla = DefaultUnambiguousAllelesBuilder.Build(),
                 HlaNomenclatureVersion = HlaNomenclatureVersion
             };
+
+            await ImportFrequencies(new List<HaplotypeFrequency> {Builder<HaplotypeFrequency>.New.Build()}, null, null);
+
+            var expectedProbabilityPerLocus = new LociInfo<decimal?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0};
+
+            var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+
+            matchDetails.ZeroMismatchProbability.Should().Be(0m);
+            matchDetails.OneMismatchProbability.Should().Be(0m);
+            matchDetails.TwoMismatchProbability.Should().Be(0m);
+            matchDetails.ZeroMismatchProbabilityPerLocus.Should().Be(expectedProbabilityPerLocus);
+        }
+        
+        [Test]
+        public async Task CalculateMatchProbability_WhenIdenticalGenotypes_RepresentedInFrequencySet_ReturnsOneHundredPercent()
+        {
+            var matchProbabilityInput = new MatchProbabilityInput
+            {
+                PatientHla = DefaultUnambiguousAllelesBuilder.Build(),
+                DonorHla = DefaultUnambiguousAllelesBuilder.Build(),
+                HlaNomenclatureVersion = HlaNomenclatureVersion
+            };
+
+            var possibleHaplotypes = new List<HaplotypeFrequency>
+            {
+                DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
+                DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build(),
+            };
+            
+            await ImportFrequencies(possibleHaplotypes, null, null);
 
             var expectedProbabilityPerLocus = new LociInfo<decimal?> {A = 1, B = 1, C = 1, Dpb1 = null, Dqb1 = 1, Drb1 = 1};
 
@@ -85,11 +115,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes);
 
-
             var patientHla = DefaultUnambiguousAllelesBuilder.WithDataAt(
-                Locus.A,
-                Alleles.UnambiguousAlleleDetails.A.Position1.Allele,
-                Alleles.UnambiguousAlleleDetails.A.Position2.Allele)
+                    Locus.A,
+                    Alleles.UnambiguousAlleleDetails.A.Position1.Allele,
+                    Alleles.UnambiguousAlleleDetails.A.Position2.Allele)
                 .Build();
             var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, alleleStringA1, alleleStringA2).Build();
 
@@ -98,8 +127,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 PatientHla = patientHla,
                 DonorHla = donorHla,
                 HlaNomenclatureVersion = HlaNomenclatureVersion,
-                DonorFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode },
-                PatientFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode }
+                DonorFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode},
+                PatientFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode}
             };
 
             var expectedProbabilityPerLocus = new LociInfo<decimal?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0};
@@ -112,6 +141,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedProbabilityPerLocus);
         }
 
+        // Warning - this test takes a long time to run (~30s)
+        // TODO: ATLAS-400 - can this be quicker?
         [Test]
         public async Task CalculateMatchProbability_WhenAmbiguousHla_ReturnsProbability()
         {
@@ -131,7 +162,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             const string alleleStringDrb1 = "11:129";
             const string GGroupDrb1 = "11:06:01G";
-            
+
             var possibleHaplotypes = new List<HaplotypeFrequency>
             {
                 DefaultHaplotypeFrequency2.With(h => h.A, anotherGGroupA).With(h => h.Frequency, 0.00008m).Build(),
@@ -147,23 +178,23 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             await ImportFrequencies(possibleHaplotypes);
 
             var patientHla = DefaultUnambiguousAllelesBuilder
-                    .WithDataAt(
-                        Locus.A,
-                        $"{Alleles.UnambiguousAlleleDetails.A.Position1.Allele}/{alleleStringA}",
-                        $"{Alleles.UnambiguousAlleleDetails.A.Position2.Allele}/{anotherAlleleStringA}")
-                    .WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{alleleStringB}")
-                    .WithDataAt(Locus.C, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.C.Position1.Allele}/{alleleStringC}")
-                    .WithDataAt(Locus.Dqb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Dqb1.Position1.Allele}/{alleleStringDqb1}")
-                    .WithDataAt(Locus.Drb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
-                    .Build();
+                .WithDataAt(
+                    Locus.A,
+                    $"{Alleles.UnambiguousAlleleDetails.A.Position1.Allele}/{alleleStringA}",
+                    $"{Alleles.UnambiguousAlleleDetails.A.Position2.Allele}/{anotherAlleleStringA}")
+                .WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{alleleStringB}")
+                .WithDataAt(Locus.C, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.C.Position1.Allele}/{alleleStringC}")
+                .WithDataAt(Locus.Dqb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Dqb1.Position1.Allele}/{alleleStringDqb1}")
+                .WithDataAt(Locus.Drb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
+                .Build();
 
             var matchProbabilityInput = new MatchProbabilityInput
             {
                 PatientHla = patientHla,
                 DonorHla = DefaultUnambiguousAllelesBuilder.Build(),
                 HlaNomenclatureVersion = HlaNomenclatureVersion,
-                DonorFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode},
-                PatientFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode}
+                DonorFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode},
+                PatientFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode}
             };
 
             var expectedProbabilityPerLocus = new LociInfo<decimal?>
@@ -172,7 +203,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 B = 0.7777777777777777777777777778m,
                 C = 0.8148148148148148148148148148m,
                 Dpb1 = null,
-                Dqb1 = 0.8518518518518518518518518519m, 
+                Dqb1 = 0.8518518518518518518518518519m,
                 Drb1 = 0.8888888888888888888888888889m
             };
 
@@ -184,9 +215,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedProbabilityPerLocus);
         }
 
-        private async Task ImportFrequencies(IEnumerable<HaplotypeFrequency> haplotypes)
+        private async Task ImportFrequencies(
+            IEnumerable<HaplotypeFrequency> haplotypes,
+            string registryCode = DefaultRegistryCode,
+            string ethnicityCode = DefaultEthnicityCode)
         {
-            using var file = FrequencySetFileBuilder.New(DefaultRegistryCode, DefaultEthnicityCode, haplotypes).Build();
+            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode, haplotypes).Build();
             await importService.ImportFrequencySet(file);
         }
 
@@ -200,7 +234,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             .With(r => r.DQB1, GGroupDqb11)
             .With(r => r.DRB1, GGroupDrb11);
 
-        public Builder<HaplotypeFrequency> DefaultHaplotypeFrequency2 => Builder<HaplotypeFrequency>.New
+        private Builder<HaplotypeFrequency> DefaultHaplotypeFrequency2 => Builder<HaplotypeFrequency>.New
             .With(r => r.A, GGroupA2)
             .With(r => r.B, GGroupB2)
             .With(r => r.C, GGroupC2)
