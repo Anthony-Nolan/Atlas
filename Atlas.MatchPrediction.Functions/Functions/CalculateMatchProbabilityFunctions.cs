@@ -20,8 +20,8 @@ namespace Atlas.MatchPrediction.Functions.Functions
             this.matchProbabilityService = matchProbabilityService;
         }
 
-        [FunctionName(nameof(CalculateZeroMismatchProbability))]
-        public async Task<IActionResult> CalculateZeroMismatchProbability(
+        [FunctionName(nameof(CalculateMatchProbability))]
+        public async Task<IActionResult> CalculateMatchProbability(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(MatchProbabilityInput), nameof(MatchProbabilityInput))]
             HttpRequest request)
