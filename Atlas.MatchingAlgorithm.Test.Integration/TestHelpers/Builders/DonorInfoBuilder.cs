@@ -9,12 +9,17 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
     {
         private readonly DonorInfo donorInfo;
 
-        public DonorInfoBuilder(int donorId)
+        /// <summary>
+        /// Builds a Donor, using the generated NextId, unless specifically overridden.
+        /// The override should only be used if you explicitly want to re-use an existing donor's Id.
+        /// </summary>
+        /// <param name="donorId"></param>
+        public DonorInfoBuilder(int? donorId = null)
         {
             donorInfo = new DonorInfo
             {
                 DonorType = DonorType.Adult,
-                DonorId = donorId,
+                DonorId = donorId ?? DonorIdGenerator.NextId(),
                 // Default hla chosen to be valid hla
                 HlaNames = new PhenotypeInfo<string>
                 {
