@@ -36,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task UpdateDonorHla_DoesNotChangeStoredDonorInformation()
         {
-            var donorInfo = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
+            var donorInfo = new DonorInfoBuilder().Build();
             await importRepo.InsertBatchOfDonors(new List<DonorInfo> { donorInfo });
 
             await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion);
@@ -53,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             const string hlaWithKnownPGroups = "01:XX";
             const int expectedPGroupCount = 213;
 
-            var donorInfo = new DonorInfoBuilder(DonorIdGenerator.NextId())
+            var donorInfo = new DonorInfoBuilder()
                     .WithHlaAtLocus(Locus.A, LocusPosition.One, hlaWithKnownPGroups)
                     .Build();
 
@@ -68,7 +68,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task UpdateDonorHla_WhenHlaUpdateIsRerun_DoesNotAddMorePGroups()
         {
-            var donorInfo = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
+            var donorInfo = new DonorInfoBuilder().Build();
             await importRepo.InsertBatchOfDonors(new List<DonorInfo> { donorInfo });
 
             await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion);
@@ -84,11 +84,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task UpdateDonorHla_UpdatesHlaForDonorsInsertedSinceLastRun()
         {
-            var donorInfo = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
+            var donorInfo = new DonorInfoBuilder().Build();
             await importRepo.InsertBatchOfDonors(new List<DonorInfo> { donorInfo });
             await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion);
 
-            var newDonor = new DonorInfoBuilder(DonorIdGenerator.NextId()).Build();
+            var newDonor = new DonorInfoBuilder().Build();
             await importRepo.InsertBatchOfDonors(new List<DonorInfo> { newDonor });
             await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion);
 
