@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Services;
@@ -28,8 +29,9 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
 
             ambiguousPhenotypeExpander = Substitute.For<IAmbiguousPhenotypeExpander>();
             locusHlaConverter = Substitute.For<ILocusHlaConverter>();
+            var logger = Substitute.For<ILogger>();
 
-            compressedPhenotypeExpander = new CompressedPhenotypeExpander(ambiguousPhenotypeExpander, locusHlaConverter);
+            compressedPhenotypeExpander = new CompressedPhenotypeExpander(ambiguousPhenotypeExpander, locusHlaConverter, logger);
         }
 
         [Test]

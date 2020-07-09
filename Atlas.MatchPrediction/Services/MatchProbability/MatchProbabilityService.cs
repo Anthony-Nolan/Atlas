@@ -13,6 +13,7 @@ using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchCalculation;
+using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
@@ -48,42 +49,29 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             this.logger = logger;
         }
 
-        public async Task<MatchProbabilityResponse> CalculateMatchProbability(
-            MatchProbabilityInput matchProbabilityInput)
+        public async Task<MatchProbabilityResponse> CalculateMatchProbability(MatchProbabilityInput matchProbabilityInput)
         {
-            var patientGenotypes = await ExpandPatientPhenotype(matchProbabilityInput);
-            var donorGenotypes = await ExpandDonorPhenotype(matchProbabilityInput);
-
-            var allPatientDonorCombinations = patientGenotypes.SelectMany(patientHla =>
-                donorGenotypes.Select(donorHla =>
-                    new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla, donorHla)));
-
-            var patientDonorMatchDetails = await CalculatePairsMatchCounts(matchProbabilityInput, allPatientDonorCombinations);
-
-            // Returns early when patient/donor pair are guaranteed to either be a match or not
-            if (patientDonorMatchDetails.Any() && patientDonorMatchDetails.All(p => p.MismatchCount == 0))
-            {
-                return new MatchProbabilityResponse
-                {
-                    ZeroMismatchProbability = Probability.One(),
-                    OneMismatchProbability = Probability.Zero(),
-                    TwoMismatchProbability = Probability.Zero(),
-                    ZeroMismatchProbabilityPerLocus = new LociInfo<Probability>
-                    {
-                        A = Probability.One(),
-                        B = Probability.One(),
-                        C = Probability.One(),
-                        Dpb1 = null,
-                        Dqb1 = Probability.One(),
-                        Drb1 = Probability.One()
-                    }
-                };
-            }
+            // var patientGenotypes = await ExpandPatientPhenotype(matchProbabilityInput);
+            // var donorGenotypes = await ExpandDonorPhenotype(matchProbabilityInput);
 
             var frequencySets = await haplotypeFrequencyService.GetHaplotypeFrequencySets(
                 matchProbabilityInput.DonorFrequencySetMetadata,
                 matchProbabilityInput.PatientFrequencySetMetadata
 );
+
+            var donorSet = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySets.DonorSet.Id);
+            var patientSet = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySets.PatientSet.Id);
+
+            var patientGenotypes = await ExpandPatientPhenotypeNew(matchProbabilityInput, donorSet);
+            var donorGenotypes = await ExpandDonorPhenotypeNew(matchProbabilityInput, patientSet);
+            
+            var allPatientDonorCombinations = patientGenotypes.SelectMany(patientHla =>
+                donorGenotypes.Select(donorHla => new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla, donorHla)));
+
+            var patientDonorMatchDetails = await CalculatePairsMatchCounts(matchProbabilityInput, allPatientDonorCombinations);
+
+            // TODO: ATLAS-233: Re-introduce hardcoded 100% probability for guaranteed match but no represented genotypes
+            
             var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientGenotypes, frequencySets.PatientSet);
             var donorGenotypeLikelihoods = await CalculateGenotypeLikelihoods(donorGenotypes, frequencySets.DonorSet);
 
@@ -96,25 +84,60 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
         private async Task<ISet<PhenotypeInfo<string>>> ExpandPatientPhenotype(MatchProbabilityInput matchProbabilityInput)
         {
+            return await ExpandPhenotype(matchProbabilityInput.DonorHla, matchProbabilityInput.HlaNomenclatureVersion, "patient");
+        }
+
+        private async Task<ISet<PhenotypeInfo<string>>> ExpandDonorPhenotype(MatchProbabilityInput matchProbabilityInput)
+        {
+            return await ExpandPhenotype(matchProbabilityInput.PatientHla, matchProbabilityInput.HlaNomenclatureVersion, "donor");
+        }
+
+        private async Task<ISet<PhenotypeInfo<string>>> ExpandPhenotype(
+            PhenotypeInfo<string> hla,
+            string hlaNomenclatureVersion,
+            string phenotypeLogDescription)
+        {
             return await logger.RunTimedAsync(
-                async () => await compressedPhenotypeExpander.ExpandCompressedPhenotype(
-                    matchProbabilityInput.PatientHla,
-                    matchProbabilityInput.HlaNomenclatureVersion
-                ),
-                $"{LoggingPrefix}Expanded patient phenotype",
+                async () => await compressedPhenotypeExpander.ExpandCompressedPhenotype(hla, hlaNomenclatureVersion),
+                $"{LoggingPrefix}Expanded {phenotypeLogDescription} phenotype",
                 LogLevel.Verbose
             );
         }
 
-        private async Task<ISet<PhenotypeInfo<string>>> ExpandDonorPhenotype(
-            MatchProbabilityInput matchProbabilityInput)
+        // TODO: ATLAS-400: Clean up "new" vs "old" methods here
+        private async Task<ISet<PhenotypeInfo<string>>> ExpandPatientPhenotypeNew(
+            MatchProbabilityInput matchProbabilityInput,
+            Dictionary<HaplotypeHla, decimal> haplotypeFrequencies)
+        {
+            return await ExpandPhenotypeNew(
+                matchProbabilityInput.DonorHla,
+                matchProbabilityInput.HlaNomenclatureVersion,
+                "patient",
+                haplotypeFrequencies
+            );
+        }
+
+        private async Task<ISet<PhenotypeInfo<string>>> ExpandDonorPhenotypeNew(
+            MatchProbabilityInput matchProbabilityInput,
+            Dictionary<HaplotypeHla, decimal> haplotypeFrequencies)
+        {
+            return await ExpandPhenotypeNew(
+                matchProbabilityInput.PatientHla,
+                matchProbabilityInput.HlaNomenclatureVersion,
+                "donor",
+                haplotypeFrequencies
+            );
+        }
+
+        private async Task<ISet<PhenotypeInfo<string>>> ExpandPhenotypeNew(
+            PhenotypeInfo<string> hla,
+            string hlaNomenclatureVersion,
+            string phenotypeLogDescription,
+            Dictionary<HaplotypeHla, decimal> haplotypeFrequencies)
         {
             return await logger.RunTimedAsync(
-                async () => await compressedPhenotypeExpander.ExpandCompressedPhenotype(
-                    matchProbabilityInput.DonorHla,
-                    matchProbabilityInput.HlaNomenclatureVersion
-                ),
-                $"{LoggingPrefix}Expanded donor phenotype",
+                async () => await compressedPhenotypeExpander.ExpandCompressedPhenotype(hla, hlaNomenclatureVersion, haplotypeFrequencies.Keys),
+                $"{LoggingPrefix}Expanded {phenotypeLogDescription} phenotype",
                 LogLevel.Verbose
             );
         }
