@@ -1,7 +1,7 @@
 {
   "IsEncrypted": false,
   "Values": {
-    "ApplicationInsights:LogLevel": "Verbose",
+    "ApplicationInsights:LogLevel": "Info",
     
     "AtlasFunction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AtlasFunction:AzureStorage:SearchResultsBlobContainer": "atlas-search-results",
