@@ -255,6 +255,11 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
+        public LociInfo<R> ToLociInfo<R>(Func<Locus, T, T, R> combine)
+        {
+            return Map((l, hla) => combine(l, hla.Position1, hla.Position2));
+        }
+
         public R Reduce<R>(Func<Locus, LocusPosition, T, R, R> reducer, R initialValue = default)
         {
             return Reduce((locus, t, accumulator) =>
@@ -337,16 +342,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
-        private void Initialise()
-        {
-            A = new LocusInfo<T>();
-            B = new LocusInfo<T>();
-            C = new LocusInfo<T>();
-            Dpb1 = new LocusInfo<T>();
-            Dqb1 = new LocusInfo<T>();
-            Drb1 = new LocusInfo<T>();
-        }
-
         public async Task WhenAllLoci(Func<Locus, LocusInfo<T>, Task> action)
         {
             await Task.WhenAll(
@@ -356,6 +351,16 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 action(Locus.Dpb1, Dpb1),
                 action(Locus.Dqb1, Dqb1),
                 action(Locus.Drb1, Drb1));
+        }
+
+        private void Initialise()
+        {
+            A = new LocusInfo<T>();
+            B = new LocusInfo<T>();
+            C = new LocusInfo<T>();
+            Dpb1 = new LocusInfo<T>();
+            Dqb1 = new LocusInfo<T>();
+            Drb1 = new LocusInfo<T>();
         }
     }
 }

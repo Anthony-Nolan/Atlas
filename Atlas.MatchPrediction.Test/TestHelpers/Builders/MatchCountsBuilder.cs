@@ -25,6 +25,17 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 
             return this;
         }
+        public MatchCountsBuilder ZeroOutOfTen()
+        {
+            var loci = EnumStringValues.EnumExtensions.EnumerateValues<Locus>().Except(new List<Locus> {Locus.Dpb1});
+
+            foreach (var locus in loci)
+            {
+                matchCounts.SetLocus(locus, 0);
+            }
+
+            return this;
+        }
 
         private MatchCountsBuilder WithMatchCountAt(Locus locus, int mismatchCount)
         {
