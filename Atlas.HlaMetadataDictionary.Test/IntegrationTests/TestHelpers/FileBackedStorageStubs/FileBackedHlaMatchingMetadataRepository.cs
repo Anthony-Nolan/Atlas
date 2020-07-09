@@ -20,7 +20,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         /// </param>
         public IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion)
         {
-            return HlaMetadata.SelectMany(hla => hla.MatchingPGroups);
+            return HlaMetadata.Values.SelectMany(m => m.MatchingPGroups);
         }
     }
 }
