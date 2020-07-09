@@ -63,7 +63,14 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             var donorSet = await GetSingleHaplotypeFrequencySet(donorInfo);
             var patientSet = await GetSingleHaplotypeFrequencySet(patientInfo);
 
-            patientSet.RegistryCode ??= donorSet.RegistryCode;
+            // If the patient's registry code was provided but not recognised, patientSet will end up using the global haplotype frequency set.
+            // Instead, use the haplotype frequency set with the donor's registry code, if one was found.
+            if (patientSet.RegistryCode == null && donorSet.RegistryCode != null)
+            {
+                patientInfo.RegistryCode = donorInfo.RegistryCode;
+                patientSet = await GetSingleHaplotypeFrequencySet(patientInfo);
+            }
+
             
             return new HaplotypeFrequencySetResponse
             {
