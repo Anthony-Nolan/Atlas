@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
+using Atlas.Common.Utils.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Models;
@@ -50,7 +51,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         public async Task<MatchProbabilityResponse> CalculateMatchProbability(
             MatchProbabilityInput matchProbabilityInput)
         {
-
             var patientGenotypes = await ExpandPatientPhenotype(matchProbabilityInput);
             var donorGenotypes = await ExpandDonorPhenotype(matchProbabilityInput);
 
@@ -66,22 +66,29 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             {
                 return new MatchProbabilityResponse
                 {
-                    ZeroMismatchProbability = 1m,
-                    OneMismatchProbability = 0m,
-                    TwoMismatchProbability = 0m,
-                    ZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
-                        {A = 1m, B = 1m, C = 1m, Dpb1 = null, Dqb1 = 1m, Drb1 = 1m}
+                    ZeroMismatchProbability = Probability.One(),
+                    OneMismatchProbability = Probability.Zero(),
+                    TwoMismatchProbability = Probability.Zero(),
+                    ZeroMismatchProbabilityPerLocus = new LociInfo<Probability>
+                    {
+                        A = Probability.One(),
+                        B = Probability.One(),
+                        C = Probability.One(),
+                        Dpb1 = null,
+                        Dqb1 = Probability.One(),
+                        Drb1 = Probability.One()
+                    }
                 };
             }
 
             var frequencySets = await frequencySetService.GetHaplotypeFrequencySets(
                 matchProbabilityInput.DonorFrequencySetMetadata, matchProbabilityInput.PatientFrequencySetMetadata);
-            
+
             var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientGenotypes, frequencySets.PatientSet);
             var donorGenotypeLikelihoods = await CalculateGenotypeLikelihoods(donorGenotypes, frequencySets.DonorSet);
 
             var genotypesLikelihoods = patientGenotypeLikelihoods.Union(donorGenotypeLikelihoods).ToDictionary();
-            
+
             return matchProbabilityCalculator.CalculateMatchProbability(
                 patientGenotypes,
                 donorGenotypes,
@@ -149,7 +156,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         }
 
         private async Task<KeyValuePair<PhenotypeInfo<string>, decimal>> CalculateLikelihood(
-            PhenotypeInfo<string> phenotype, 
+            PhenotypeInfo<string> phenotype,
             HaplotypeFrequencySet frequencySet)
         {
             var likelihood = await genotypeLikelihoodService.CalculateLikelihood(phenotype, frequencySet);

@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
+namespace Atlas.Common.Utils.Models
 {
     public class Probability
     {
@@ -20,7 +20,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         {
             return new Probability(decimal.Round(Decimal, decimalPlaces));
         }
-        
+
+        public int Percentage => Convert.ToInt32(Decimal * 100);
+
         #region Equality members
 
         protected bool Equals(Probability other)
@@ -66,8 +68,5 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         }
 
         #endregion
-
-        public int Percentage => Convert.ToInt32(Decimal * 100);
-
     }
 }

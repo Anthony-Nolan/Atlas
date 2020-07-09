@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Utils.Models;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Models;
@@ -47,16 +48,21 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             });
 
             var tenOutOfTenMatches = patientDonorMatchDetails.Where(g => g.MismatchCount == 0);
-            var zeroMismatchProbability = CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, tenOutOfTenMatches, genotypesLikelihoods);
+            var zeroMismatchProbability =
+                CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, tenOutOfTenMatches, genotypesLikelihoods);
 
             var singleMismatches = patientDonorMatchDetails.Where(g => g.MismatchCount == 1);
-            var singleMismatchProbability = CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, singleMismatches, genotypesLikelihoods);
+            var singleMismatchProbability =
+                CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, singleMismatches, genotypesLikelihoods);
+
+            var twoMismatches = patientDonorMatchDetails.Where(g => g.MismatchCount == 2);
+            var twoMismatchProbability = CalculateProbability(sumOfPatientLikelihoods, sumOfDonorLikelihoods, twoMismatches, genotypesLikelihoods);
 
             return new MatchProbabilityResponse
             {
-                ZeroMismatchProbability = new Probability(matchProbability),
-                OneMismatchProbability = singleMismatchProbability,
-                TwoMismatchProbability = doubleMismatchProbability,
+                ZeroMismatchProbability = new Probability(zeroMismatchProbability),
+                OneMismatchProbability = new Probability(singleMismatchProbability),
+                TwoMismatchProbability = new Probability(twoMismatchProbability),
                 ZeroMismatchProbabilityPerLocus = probabilityPerLocus.Map((l, v) => v.HasValue ? new Probability(v.Value) : null)
             };
         }
