@@ -144,7 +144,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build()
             };
 
-            await ImportFrequencies(possibleHaplotypes);
+            await ImportFrequencies(possibleHaplotypes, DefaultEthnicityCode, DefaultRegistryCode);
 
             var patientHla = DefaultUnambiguousAllelesBuilder
                     .WithDataAt(
@@ -183,10 +183,74 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.TwoMismatchProbability.Decimal.Should().Be(0.8230452674897119341563786008m);
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedProbabilityPerLocus);
         }
-
-        private async Task ImportFrequencies(IEnumerable<HaplotypeFrequency> haplotypes)
+        
+        [Test]
+        public async Task CalculateMatchProbability_WhenUsingSpecificHaplotypeSet_ReturnsProbability()
         {
-            using var file = FrequencySetFileBuilder.New(DefaultRegistryCode, DefaultEthnicityCode, haplotypes).Build();
+            const string alleleStringA = "01:37";
+            const string GGroupA = "01:01:01G";
+            const string alleleStringB = "08:182";
+            const string GGroupB = "08:01:01G";
+            const string alleleStringC = "04:82";
+            const string GGroupC = "04:01:01G";
+            const string alleleStringDqb1 = "06:39";
+            const string GGroupDqb1 = "06:04:01G";
+            const string alleleStringDrb1 = "11:129";
+            const string GGroupDrb1 = "11:06:01G";
+
+            const string specificRegistryCode = "specific-registry-code";
+            const string specificEthnicityCode = "specific-ethnicity-code";
+
+            var genericHaplotypeSet = new List<HaplotypeFrequency>
+            {
+                new HaplotypeFrequency {A = GGroupA, B = GGroupB, C = GGroupC, DQB1 = GGroupDqb1, DRB1 = GGroupDrb1, Frequency = 0.2m},
+            };
+            
+            await ImportFrequencies(genericHaplotypeSet, DefaultEthnicityCode, DefaultRegistryCode);
+            
+            var specificHaplotypeSet = new List<HaplotypeFrequency>
+            {
+                new HaplotypeFrequency {A = GGroupA, B = GGroupB, C = GGroupC, DQB1 = GGroupDqb1, DRB1 = GGroupDrb1, Frequency = 0.8m},
+            };
+
+            await ImportFrequencies(specificHaplotypeSet, specificEthnicityCode, specificRegistryCode);
+
+            var patientHla = DefaultUnambiguousAllelesBuilder
+                    .WithDataAt(Locus.A, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.A.Position1.Allele}/{alleleStringA}")
+                    .WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{alleleStringB}")
+                    .WithDataAt(Locus.C, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.C.Position1.Allele}/{alleleStringC}")
+                    .WithDataAt(Locus.Dqb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Dqb1.Position1.Allele}/{alleleStringDqb1}")
+                    .WithDataAt(Locus.Drb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
+                    .Build();
+
+            var matchProbabilityInput = new MatchProbabilityInput
+            {
+                PatientHla = DefaultUnambiguousAllelesBuilder.Build(),
+                DonorHla = DefaultUnambiguousAllelesBuilder.Build(),
+                HlaNomenclatureVersion = HlaNomenclatureVersion,
+                DonorFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = specificEthnicityCode, RegistryCode = specificRegistryCode},
+                PatientFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = specificEthnicityCode, RegistryCode = specificRegistryCode}
+            };
+
+            var expectedProbabilityPerLocus = new LociInfo<decimal?>
+            {
+                A = 0.7407407407407407407407407407m,
+                B = 0.7777777777777777777777777778m,
+                C = 0.8148148148148148148148148148m,
+                Dpb1 = null,
+                Dqb1 = 0.8518518518518518518518518519m, 
+                Drb1 = 0.8888888888888888888888888889m
+            };
+
+            var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+
+            matchDetails.ZeroMismatchProbability.Should().Be(0.0740740740740740740740740741m);
+            matchDetails.ZeroMismatchProbabilityPerLocus.Should().Be(expectedProbabilityPerLocus);
+        }
+
+        private async Task ImportFrequencies(IEnumerable<HaplotypeFrequency> haplotypes, string ethnicityCode, string registryCode)
+        {
+            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode, haplotypes).Build();
             await importService.ImportFrequencySet(file);
         }
 
