@@ -1,7 +1,5 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
-using Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.GenotypeLikelihood;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
@@ -18,12 +16,12 @@ namespace Atlas.MatchPrediction.Functions.Functions
     public class GenotypeLikelihoodFunctions
     {
         private readonly IGenotypeLikelihoodService genotypeLikelihoodService;
-        private readonly IFrequencySetService frequencySetService;
+        private readonly IHaplotypeFrequencyService frequencyService;
 
-        public GenotypeLikelihoodFunctions(IGenotypeLikelihoodService genotypeLikelihoodService, IFrequencySetService frequencySetService)
+        public GenotypeLikelihoodFunctions(IGenotypeLikelihoodService genotypeLikelihoodService, IHaplotypeFrequencyService frequencyService)
         {
             this.genotypeLikelihoodService = genotypeLikelihoodService;
-            this.frequencySetService = frequencySetService;
+            this.frequencyService = frequencyService;
         }
 
         [FunctionName(nameof(CalculateGenotypeLikelihood))]
@@ -35,7 +33,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
             var genotypeLikelihood = JsonConvert.DeserializeObject<GenotypeLikelihoodInput>(await new StreamReader(request.Body).ReadToEndAsync());
             genotypeLikelihood.FrequencySetMetaData ??= new FrequencySetMetadata();
 
-            var frequencySet = await frequencySetService.GetSingleHaplotypeFrequencySet(genotypeLikelihood.FrequencySetMetaData);
+            var frequencySet = await frequencyService.GetSingleHaplotypeFrequencySet(genotypeLikelihood.FrequencySetMetaData);
 
             var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotypeLikelihood.Genotype, frequencySet);
             return new JsonResult(new GenotypeLikelihoodResponse { Likelihood = likelihood });

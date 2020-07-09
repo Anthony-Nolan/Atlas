@@ -65,10 +65,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Should().Be(0m);
-            matchDetails.OneMismatchProbability.Should().Be(0m);
-            matchDetails.TwoMismatchProbability.Should().Be(0m);
-            matchDetails.ZeroMismatchProbabilityPerLocus.Should().Be(expectedProbabilityPerLocus);
+            matchDetails.ZeroMismatchProbability.Decimal.Should().Be(0m);
+            matchDetails.OneMismatchProbability.Decimal.Should().Be(0m);
+            matchDetails.TwoMismatchProbability.Decimal.Should().Be(0m);
+            matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedProbabilityPerLocus);
         }
         
         [Test]
