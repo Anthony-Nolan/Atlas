@@ -21,7 +21,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         IHlaMetadataRepository
         where TSerialisableHlaMetadata : ISerialisableHlaMetadata
     {
-        protected IEnumerable<TSerialisableHlaMetadata> HlaMetadata;
+        protected Dictionary<(Locus, string), TSerialisableHlaMetadata> HlaMetadata;
 
         protected FileBackedHlaMetadataRepositoryBase()
         {
@@ -40,23 +40,32 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
             return Task.CompletedTask;
         }
 
-        public Task<HlaMetadataTableRow> GetHlaMetadataRowIfExists(
+        public async Task<HlaMetadataTableRow> GetHlaMetadataRowIfExists(
             Locus locus,
             string lookupName,
             TypingMethod typingMethod,
             string hlaNomenclatureVersion)
         {
-            var metadata = HlaMetadata.FirstOrDefault(hla =>
-                hla.Locus.Equals(locus) && hla.LookupName == lookupName);
+            var metadata = await LookupMetadata(locus, lookupName);
+            return metadata == null ? null : new HlaMetadataTableRow(metadata);
+        }
 
-            var entity = metadata == null ? null : new HlaMetadataTableRow(metadata);
-            return Task.FromResult(entity);
+        protected Task<TSerialisableHlaMetadata> LookupMetadata(Locus locus, string lookupName)
+        {
+            var metadata = HlaMetadata.GetValueOrDefault((locus, lookupName));
+            return Task.FromResult(metadata);
         }
 
         private void PopulateHlaMetadata()
         {
             var metadataCollection = GetMetadataFromJsonFile();
-            HlaMetadata = GetHlaMetadata(metadataCollection);
+            var allMetadata = GetHlaMetadata(metadataCollection);
+
+            HlaMetadata = allMetadata
+                .ToDictionary(
+                    m => (m.Locus, m.LookupName),
+                    m => m
+                );
         }
 
         protected abstract IEnumerable<TSerialisableHlaMetadata> GetHlaMetadata(FileBackedHlaMetadataCollection metadataCollection);
@@ -70,9 +79,13 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
     public abstract class FileBackedHlaMetadataRepositoryBaseReader
     {
         private static FileBackedHlaMetadataCollection loadedFile = null;
+
         protected static FileBackedHlaMetadataCollection GetMetadataFromJsonFile()
         {
-            if (loadedFile != null) { return loadedFile; }
+            if (loadedFile != null)
+            {
+                return loadedFile;
+            }
 
             var assem = Assembly.GetExecutingAssembly();
             using (var stream = assem.GetManifestResourceStream("Atlas.HlaMetadataDictionary.Test.IntegrationTests.Resources.all_hla_metadata.json"))
