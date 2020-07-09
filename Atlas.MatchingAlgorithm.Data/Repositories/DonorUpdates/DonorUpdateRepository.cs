@@ -92,7 +92,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     if (!donorExists)
                     {
                         // Shouldn't really happen - it suggests that 2 processes are updating the DB at the same time!
-                        // Existing code just drops these cases entirely.
+                        // Previous iterations of this code just dropped these cases entirely".
+                        // TODO: ATLAS-501. Investigate whether this ever actually happens and decide what should happen if it does?
                         continue;
                     }
 
