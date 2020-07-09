@@ -156,11 +156,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         }
 
         private async Task<KeyValuePair<PhenotypeInfo<string>, decimal>> CalculateLikelihood(
-            PhenotypeInfo<string> phenotype,
+            PhenotypeInfo<string> genotype,
             HaplotypeFrequencySet frequencySet)
         {
-            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(phenotype, frequencySet);
-            return new KeyValuePair<PhenotypeInfo<string>, decimal>(phenotype, likelihood);
+            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotype, frequencySet);
+            return new KeyValuePair<PhenotypeInfo<string>, decimal>(genotype, likelihood);
         }
     }
 }
