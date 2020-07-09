@@ -5,6 +5,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.Ge
     public class GenotypeLikelihoodInput
     {
         public PhenotypeInfo<string> Genotype { get; set; }
-        public HaplotypeFrequencySet.HaplotypeFrequencySet FrequencySet { get; set; }
+        public FrequencySetMetadata FrequencySetMetaData { get; set; }
     }
 }

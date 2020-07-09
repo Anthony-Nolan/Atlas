@@ -20,9 +20,11 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
     {
         public Task ImportFrequencySet(FrequencySetFile file);
         public Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(FrequencySetMetadata donorInfo, FrequencySetMetadata patientInfo);
+        public Task<HaplotypeFrequencySet> GetSingleHaplotypeFrequencySet(FrequencySetMetadata setMetaData);
+
+        // TODO: ATLAS-400: Remove if no longer used
         Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypeFrequencies(IEnumerable<HaplotypeHla> haplotypes, int setId);
         Task<Dictionary<HaplotypeHla, decimal>> GetAllHaplotypeFrequencies(int setId);
-        public Task<HaplotypeFrequencySet> GetSingleHaplotypeFrequencySet(FrequencySetMetadata setMetaData);
     }
 
     internal class HaplotypeFrequencyService : IHaplotypeFrequencyService
@@ -76,7 +78,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
             // Patients should use the donors registry.
             patientInfo.RegistryCode ??= donorInfo.RegistryCode;
-var donorSet = await GetSingleHaplotypeFrequencySet(donorInfo);
+            var donorSet = await GetSingleHaplotypeFrequencySet(donorInfo);
             var patientSet = await GetSingleHaplotypeFrequencySet(patientInfo);
 
             // If the patient's registry code was provided but not recognised, patientSet will end up using the global haplotype frequency set.
@@ -87,7 +89,7 @@ var donorSet = await GetSingleHaplotypeFrequencySet(donorInfo);
                 patientSet = await GetSingleHaplotypeFrequencySet(patientInfo);
             }
 
-            
+
             return new HaplotypeFrequencySetResponse
             {
                 DonorSet = donorSet,
@@ -98,11 +100,11 @@ var donorSet = await GetSingleHaplotypeFrequencySet(donorInfo);
         public async Task<HaplotypeFrequencySet> GetSingleHaplotypeFrequencySet(FrequencySetMetadata setMetaData)
         {
             // Attempt to get the most specific sets first
-            var set = await repository.GetActiveSet(setMetaData.RegistryCode, setMetaData.EthnicityCode);
-            
+            var set = await frequencySetRepository.GetActiveSet(setMetaData.RegistryCode, setMetaData.EthnicityCode);
+
             // If we didn't find ethnicity sets, find a generic one for that repository
             set ??= await frequencySetRepository.GetActiveSet(setMetaData.RegistryCode, null);
-            
+
             // If no registry specific set exists, use a generic one.
             set ??= await frequencySetRepository.GetActiveSet(null, null);
             if (set == null)
@@ -139,7 +141,6 @@ var donorSet = await GetSingleHaplotypeFrequencySet(donorInfo);
                 RegistryCode = set.RegistryCode
             };
         }
-
 
         private async Task SendSuccessNotification(FrequencySetFile file)
         {
