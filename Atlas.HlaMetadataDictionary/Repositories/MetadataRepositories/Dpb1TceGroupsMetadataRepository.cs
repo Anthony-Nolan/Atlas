@@ -1,4 +1,5 @@
-﻿using Atlas.Common.Caching;
+﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
@@ -15,8 +16,9 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         public Dpb1TceGroupsMetadataRepository(
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
-            IPersistentCacheProvider cacheProvider)
-            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey)
+            IPersistentCacheProvider cacheProvider,
+            ILogger logger)
+            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey, logger)
         {
         }
     }
