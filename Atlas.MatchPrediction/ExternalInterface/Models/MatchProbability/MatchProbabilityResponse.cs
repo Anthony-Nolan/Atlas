@@ -1,11 +1,17 @@
 ﻿using System.Linq;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Utils.Models;
 using Atlas.MatchPrediction.Config;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 {
     public class MatchProbabilityResponse
     {
+        public Probability ZeroMismatchProbability { get; set; }
+        public Probability OneMismatchProbability { get; set; }
+        public Probability TwoMismatchProbability { get; set; }
+        public LociInfo<Probability> ZeroMismatchProbabilityPerLocus { get; set; }
+
         public MatchProbabilityResponse()
         {
         }
@@ -17,15 +23,12 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         public MatchProbabilityResponse(Probability sharedProbability)
         {
             ZeroMismatchProbability = sharedProbability;
-            ZeroMismatchProbabilityPerLocus = new LociInfo<Probability>(sharedProbability)
-                .Map((l, v) =>
-                    LocusSettings.MatchPredictionLoci.ToList().Contains(l) ? v : null
-                );
+            OneMismatchProbability = sharedProbability;
+            TwoMismatchProbability = sharedProbability;
+            ZeroMismatchProbabilityPerLocus = new LociInfo<Probability>(sharedProbability).Map((l, v) =>
+                LocusSettings.MatchPredictionLoci.ToList().Contains(l) ? v : null
+            );
         }
-        public decimal ZeroMismatchProbability { get; set; }
-        public decimal OneMismatchProbability { get; set; }
-        public decimal TwoMismatchProbability { get; set; }
-        public LociInfo<decimal?> ZeroMismatchProbabilityPerLocus { get; set; }
 
         public MatchProbabilityResponse Round(int decimalPlaces)
         {
