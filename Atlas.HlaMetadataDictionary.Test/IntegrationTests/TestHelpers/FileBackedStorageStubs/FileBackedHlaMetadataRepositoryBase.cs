@@ -53,6 +53,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
             return Task.FromResult(entity);
         }
 
+        // This method has a one-off cost of ~2s. Therefore the first test run in a suite using the file-backed dictionary will have a ~2s delay.
         private void PopulateHlaMetadata()
         {
             var metadataCollection = GetMetadataFromJsonFile();

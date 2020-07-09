@@ -1,10 +1,11 @@
-﻿using Atlas.Common.Caching;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 {
@@ -23,8 +24,9 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         public AlleleNamesMetadataRepository(
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
-            IPersistentCacheProvider cacheProvider)
-            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKeyAlleleNames)
+            IPersistentCacheProvider cacheProvider,
+            ILogger logger)
+            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKeyAlleleNames, logger)
         {
         }
 

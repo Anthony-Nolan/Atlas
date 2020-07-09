@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
@@ -30,8 +31,9 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             ITableReferenceRepository tableReferenceRepository,
             string dataFunctionalTableReferencePrefix,
             IPersistentCacheProvider cacheProvider,
-            string cacheKey)
-            : base(factory, tableReferenceRepository, dataFunctionalTableReferencePrefix, cacheProvider, cacheKey)
+            string cacheKey,
+            ILogger logger)
+            : base(factory, tableReferenceRepository, dataFunctionalTableReferencePrefix, cacheProvider, cacheKey, logger)
         {
         }
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.TableStorage;
 using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
@@ -26,35 +27,41 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         where TTableRow : TableEntity, new()
         where TStorable : ISerialisableHlaMetadata
     {
-        protected readonly IAppCache cache;
+        protected readonly IAppCache Cache;
 
         private readonly ICloudTableFactory tableFactory;
         private readonly ITableReferenceRepository tableReferenceRepository;
         private readonly string functionalTableReferencePrefix;
         private readonly string cacheKey;
+        private readonly ILogger logger;
         private CloudTable cloudTable;
 
         protected CloudTableRepositoryBase(
             ICloudTableFactory factory,
             ITableReferenceRepository tableReferenceRepository,
             string functionalTableReferencePrefix,
+            // ReSharper disable once SuggestBaseTypeForParameter
             IPersistentCacheProvider cacheProvider,
-            string cacheKey)
+            string cacheKey,
+            ILogger logger)
         {
             tableFactory = factory;
             this.tableReferenceRepository = tableReferenceRepository;
             this.functionalTableReferencePrefix = functionalTableReferencePrefix;
-            this.cache = cacheProvider.Cache;
+            this.Cache = cacheProvider.Cache;
             this.cacheKey = cacheKey;
+            this.logger = logger;
         }
 
         /// <summary>
-        /// If you plan to use this repository with multiple async operations, this method should be called first
+        /// Pre-warms the in-memory cache of all metadata for the specified nomenclature version.
+        /// While the cache will be lazily warmed on first request, this can be called up-front
+        /// to e.g. ensure that the first real request of the day is not unnecessarily slow.   
         /// </summary>
         public async Task LoadDataIntoMemory(string hlaNomenclatureVersion)
         {
             var data = await FetchTableData(hlaNomenclatureVersion);
-            cache.Add(VersionedCacheKey(hlaNomenclatureVersion), data);
+            Cache.Add(VersionedCacheKey(hlaNomenclatureVersion), data);
         }
 
         protected async Task RecreateDataTable(IEnumerable<TStorable> tableContents, string hlaNomenclatureVersion)
@@ -70,13 +77,13 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         {
             var versionedCacheKey = VersionedCacheKey(hlaNomenclatureVersion);
 
-            var tableData = await cache.GetOrAddAsync(versionedCacheKey, () => FetchTableData(hlaNomenclatureVersion));
+            var tableData = await Cache.GetOrAddAsync(versionedCacheKey, () => FetchTableData(hlaNomenclatureVersion));
 
             if (tableData == null)
             {
                 throw new MemoryCacheException($"Data: {partition}, {rowKey}: was not found in the {versionedCacheKey} cache");
             }
-            
+
             return GetDataFromCache(partition, rowKey, tableData);
         }
 
@@ -87,20 +94,25 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 
         private async Task<Dictionary<string, TTableRow>> FetchTableData(string hlaNomenclatureVersion)
         {
-            var currentDataTable = await GetCurrentDataTable(hlaNomenclatureVersion);
-            var tableResults = new CloudTableBatchQueryAsync<TTableRow>(currentDataTable);
-            var dataToLoad = new Dictionary<string, TTableRow>();
-
-            while (tableResults.HasMoreResults)
-            {
-                var results = await tableResults.RequestNextAsync();
-                foreach (var result in results)
+            return await logger.RunTimedAsync(async () =>
                 {
-                    dataToLoad.Add(result.PartitionKey + result.RowKey, result);
-                }
-            }
+                    var currentDataTable = await GetCurrentDataTable(hlaNomenclatureVersion);
+                    var tableResults = new CloudTableBatchQueryAsync<TTableRow>(currentDataTable);
+                    var dataToLoad = new Dictionary<string, TTableRow>();
 
-            return dataToLoad;
+                    while (tableResults.HasMoreResults)
+                    {
+                        var results = await tableResults.RequestNextAsync();
+                        foreach (var result in results)
+                        {
+                            dataToLoad.Add(result.PartitionKey + result.RowKey, result);
+                        }
+                    }
+
+                    return dataToLoad;
+                },
+                $"Fetched and cached Hla Metadata Dictionary data: {cacheKey}"
+            );
         }
 
         private string VersionedTableReferencePrefix(string hlaNomenclatureVersion)
@@ -115,14 +127,18 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         {
             if (cloudTable == null)
             {
-                var dataTableReference = await tableReferenceRepository.GetCurrentTableReference(VersionedTableReferencePrefix(hlaNomenclatureVersion));
+                var dataTableReference =
+                    await tableReferenceRepository.GetCurrentTableReference(VersionedTableReferencePrefix(hlaNomenclatureVersion));
                 cloudTable = await tableFactory.GetTable(dataTableReference);
             }
+
             return cloudTable;
         }
 
         private static TTableRow GetDataFromCache(
-            string partition, string rowKey, IReadOnlyDictionary<string, TTableRow> metadataDictionary)
+            string partition,
+            string rowKey,
+            IReadOnlyDictionary<string, TTableRow> metadataDictionary)
         {
             metadataDictionary.TryGetValue(partition + rowKey, out var row);
             return row;
@@ -144,7 +160,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             foreach (var partition in partitionedEntities)
             {
                 var entitiesInCurrentPartition = partition.ToList();
-                
+
                 await dataTable.BatchInsert(entitiesInCurrentPartition);
             }
         }

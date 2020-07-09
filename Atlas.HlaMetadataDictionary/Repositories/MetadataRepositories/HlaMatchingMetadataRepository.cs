@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
@@ -20,15 +21,16 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         public HlaMatchingMetadataRepository(
             ICloudTableFactory factory, 
             ITableReferenceRepository tableReferenceRepository,
-            IPersistentCacheProvider cacheProvider)
-            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey)
+            IPersistentCacheProvider cacheProvider,
+            ILogger logger)
+            : base(factory, tableReferenceRepository, DataTableReferencePrefix, cacheProvider, CacheKey, logger)
         {
         }
 
         public IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion)
         {
             var versionedCacheKey = VersionedCacheKey(hlaNomenclatureVersion);
-            var metadataDictionary = cache.Get<Dictionary<string, HlaMetadataTableRow>>(versionedCacheKey);
+            var metadataDictionary = Cache.Get<Dictionary<string, HlaMetadataTableRow>>(versionedCacheKey);
             if (metadataDictionary != null)
             {
                 return metadataDictionary.Values.SelectMany(v => v.ToHlaMatchingMetadata()?.MatchingPGroups);
