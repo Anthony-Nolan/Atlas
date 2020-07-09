@@ -89,7 +89,7 @@ ON m.DonorId = DonorIds.Id
                 var donorIdsString = donorIds.Select(id => id.ToString()).StringJoin(",");
                 
                 // Note that a previous iteration of this code used a JOIN on UNIONs of hard-coded Ids.
-                // A brief perf test demonstrated that this produces an identical QueryPlan.
+                // A thorough perf test demonstrated that this 'IN' produces an identical QueryPlan, and compiles faster.
                 var sql = $@"SELECT * FROM Donors WHERE DonorId IN({donorIdsString})";
 
                 var donors = await conn.QueryAsync<Donor>(sql, commandTimeout: 300);
