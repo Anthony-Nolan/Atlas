@@ -58,7 +58,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             .With(r => r.DQB1, GGroupDqb11)
             .With(r => r.DRB1, GGroupDrb11);
 
-        protected Builder<HaplotypeFrequency> DefaultHaplotypeFrequency2 => Builder<HaplotypeFrequency>.New
+        protected static Builder<HaplotypeFrequency> DefaultHaplotypeFrequency2 => Builder<HaplotypeFrequency>.New
             .With(r => r.A, GGroupA2)
             .With(r => r.B, GGroupB2)
             .With(r => r.C, GGroupC2)
