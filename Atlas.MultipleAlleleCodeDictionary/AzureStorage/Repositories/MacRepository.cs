@@ -33,7 +33,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             var storageAccount = CloudStorageAccount.Parse(connectionString); //TODO: ATLAS-485. Combine this with the CloudTableFactory in HMD.
             var tableClient = storageAccount.CreateCloudTableClient();
             Table = tableClient.GetTableReference(tableName);
-            Table.CreateIfNotExists(); //TODO: ATLAS-455. Is there any mileage in using the "Lazy" Indexing Policy? (Apparently requires "Gateway" mode on the table?)
+            Table.CreateIfNotExists(); //TODO: ATLAS-512. Is there any mileage in using the "Lazy" Indexing Policy? (Apparently requires "Gateway" mode on the table?)
         }
 
         public async Task<string> GetLastMacEntry()
