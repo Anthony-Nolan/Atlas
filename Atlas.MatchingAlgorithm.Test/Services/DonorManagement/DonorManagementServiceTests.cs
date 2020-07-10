@@ -27,7 +27,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         private IDonorService donorService;
         private IDonorManagementService donorManagementService;
         private ILogger logger;
-        private IMapper mapper;
 
         [SetUp]
         public void SetUp()
@@ -40,9 +39,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             donorService = Substitute.For<IDonorService>();
             logger = Substitute.For<ILogger>();
-            mapper = Substitute.For<IMapper>();
-
-            donorManagementService = new DonorManagementService(repositoryFactory, donorService, logger, mapper);
+            
+            donorManagementService = new DonorManagementService(repositoryFactory, donorService, logger);
         }
 
         [Test]
@@ -505,20 +503,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
             const int sequenceNumber = 123456789;
             var updateDateTime = DateTimeOffset.UtcNow;
 
-            mapper.Map<IEnumerable<DonorManagementInfo>>(
-                    Arg.Is<IEnumerable<DonorAvailabilityUpdate>>(x => x.Single().DonorId == donorId))
-                .Returns(new List<DonorManagementInfo>
-                {
-                    new DonorManagementInfo
-                    {
-                        DonorId = donorId,
-                        UpdateSequenceNumber = sequenceNumber,
-                        UpdateDateTime = updateDateTime
-                    }
-                });
-
             await donorManagementService.ApplyDonorUpdatesToDatabase(
-                new[] { new DonorAvailabilityUpdate { DonorId = donorId } },
+                new[] { new DonorAvailabilityUpdate { DonorId = donorId, UpdateDateTime = updateDateTime, UpdateSequenceNumber = sequenceNumber} },
                 default,
                 default);
 
