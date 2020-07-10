@@ -2,53 +2,20 @@
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.Common.Utils.Extensions;
-using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
-using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
-using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.Integration.Resources;
-using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 using FluentAssertions;
-using LochNessBuilder;
-using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
 // ReSharper disable InconsistentNaming - want to avoid calling "G groups" "gGroup", as "g" groups are a distinct thing 
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.MatchProbability
 {
-    public class MatchProbabilityTests
+    public class MatchProbabilityTests : MatchProbabilityTestsBase
     {
-        private IMatchProbabilityService matchProbabilityService;
-        private IHaplotypeFrequencyService importService;
-
-        private const string HlaNomenclatureVersion = Constants.SnapshotHlaNomenclatureVersion;
-
-        private static readonly string GGroupA1 = Alleles.UnambiguousAlleleDetails.A.Position1.GGroup;
-        private static readonly string GGroupA2 = Alleles.UnambiguousAlleleDetails.A.Position2.GGroup;
-        private static readonly string GGroupB1 = Alleles.UnambiguousAlleleDetails.B.Position1.GGroup;
-        private static readonly string GGroupB2 = Alleles.UnambiguousAlleleDetails.B.Position2.GGroup;
-        private static readonly string GGroupC1 = Alleles.UnambiguousAlleleDetails.C.Position1.GGroup;
-        private static readonly string GGroupC2 = Alleles.UnambiguousAlleleDetails.C.Position2.GGroup;
-        private static readonly string GGroupDqb11 = Alleles.UnambiguousAlleleDetails.Dqb1.Position1.GGroup;
-        private static readonly string GGroupDqb12 = Alleles.UnambiguousAlleleDetails.Dqb1.Position2.GGroup;
-        private static readonly string GGroupDrb11 = Alleles.UnambiguousAlleleDetails.Drb1.Position1.GGroup;
-        private static readonly string GGroupDrb12 = Alleles.UnambiguousAlleleDetails.Drb1.Position2.GGroup;
-
-        private const string DefaultRegistryCode = "default-registry-code";
-        private const string DefaultEthnicityCode = "default-ethnicity-code";
-
-        [SetUp]
-        public void SetUp()
-        {
-            matchProbabilityService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchProbabilityService>();
-            importService = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
-        }
-
         [Test]
         public async Task CalculateMatchProbability_WhenIdenticalGenotypes_UnrepresentedInFrequencySet_ReturnsZeroPercent()
         {
@@ -113,7 +80,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 DefaultHaplotypeFrequency2.With(h => h.A, alleleStringA2).With(h => h.Frequency, 0.00001m).Build()
             };
 
-            await ImportFrequencies(possibleHaplotypes);
+            await ImportFrequencies(possibleHaplotypes, DefaultEthnicityCode, DefaultRegistryCode);
 
             var patientHla = DefaultUnambiguousAllelesBuilder.WithDataAt(
                     Locus.A,
