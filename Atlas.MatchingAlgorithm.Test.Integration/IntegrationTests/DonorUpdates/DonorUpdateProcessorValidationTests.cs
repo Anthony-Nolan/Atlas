@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
+namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
 {
     /// <summary>
     /// Tests the processing and validation of donor update messages.
