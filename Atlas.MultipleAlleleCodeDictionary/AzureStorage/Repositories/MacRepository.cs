@@ -50,7 +50,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
                 return;
             }
 
-            var latestMac = orderedMacs.First();
+            var latestMac = orderedMacs.Last();
             var macEntities = orderedMacs.Select(mac => new MacEntity(mac));
             await Table.BatchInsert(macEntities);
             await StoreLatestMacRecord(latestMac.Code);
@@ -95,7 +95,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             logger.SendTrace("Calculating last seen MAC from all MAC data. If this is called, last seen metadata has probably been deleted.");
             var query = new TableQuery<MacEntity>();
             var result = await Table.ExecuteQueryAsync(query);
-            var latestMac = result.InOrderOfDefinition().FirstOrDefault()?.Code;
+            var latestMac = result.InOrderOfDefinition().LastOrDefault()?.Code;
             await StoreLatestMacRecord(latestMac);
             return latestMac;
         }
@@ -123,8 +123,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         {
             return macs
                 // Note that this is NOT semantically the same as the partition Key! This is an international agreement between biologists about how MAC codes are defined. The PartitionKey is our personal decision about what we think will make a DB query quick!
-                .OrderByDescending(x => x.Code.Length)
-                .ThenByDescending(x => x.Code);
+                .OrderBy(x => x.Code.Length)
+                .ThenBy(x => x.Code);
         }
     }
 }
