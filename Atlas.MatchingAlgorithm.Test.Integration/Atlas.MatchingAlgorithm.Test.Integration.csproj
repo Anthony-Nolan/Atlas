@@ -9,6 +9,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <EmbeddedResource Include="IntegrationTests\DonorUpdates\TestDonorsForUpdatesForSmokeTests.tsv" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CsvHelper" Version="12.1.2" />
       <PackageReference Include="FluentAssertions" Version="5.10.3" />
       <PackageReference Include="LochNessBuilder" Version="1.0.1" />
       <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />

@@ -1,6 +1,8 @@
 using System;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
+using Atlas.MatchingAlgorithm.Data.Persistent.Models;
+using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,12 +39,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
         /// </summary>
         public static void ClearDatabases()
         {
-            var transientContextA = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmContext>();
-            ClearTransientDatabase(transientContextA);
+            var connStringFactory = DependencyInjection.DependencyInjection.Provider.GetService<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
+            var connStringA = connStringFactory.GenerateConnectionStringProvider(TransientDatabase.DatabaseA).GetConnectionString();
+            var connStringB = connStringFactory.GenerateConnectionStringProvider(TransientDatabase.DatabaseB).GetConnectionString();
 
-            var connectionStringB =
-                DependencyInjection.DependencyInjection.Provider.GetService<IConfiguration>().GetSection("ConnectionStrings")["SqlB"];
-            var transientContextB = new ContextFactory().Create(connectionStringB);
+            var transientContextA = new ContextFactory().Create(connStringA);
+            var transientContextB = new ContextFactory().Create(connStringB);
+            ClearTransientDatabase(transientContextA);
             ClearTransientDatabase(transientContextB);
 
             var persistentContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmPersistentContext>();
@@ -53,6 +56,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
         {
             if (context != null)
             {
+                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [DonorManagementLogs]");
                 context.Database.ExecuteSqlRaw("TRUNCATE TABLE [Donors]");
                 context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtA]");
                 context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtB]");
