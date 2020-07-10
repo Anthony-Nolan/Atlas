@@ -11,7 +11,6 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Donors;
-using AutoMapper;
 
 namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 {
@@ -42,18 +41,15 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         private readonly IStaticallyChosenDatabaseRepositoryFactory repositoryFactory;
         private readonly IDonorService donorService;
         private readonly ILogger logger;
-        private readonly IMapper mapper;
 
         public DonorManagementService(
             IStaticallyChosenDatabaseRepositoryFactory repositoryFactory,
             IDonorService donorService,
-            ILogger logger,
-            IMapper mapper)
+            ILogger logger)
         {
             this.repositoryFactory = repositoryFactory;
             this.donorService = donorService;
             this.logger = logger;
-            this.mapper = mapper;
         }
 
         public async Task ApplyDonorUpdatesToDatabase(
@@ -159,7 +155,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             logger.SendTrace($"{TraceMessagePrefix}: {updatesList.Count} donor updates to be applied.");
 
             var (availableUpdates, unavailableUpdates) = updatesList.ReifyAndSplit(upd => upd.IsAvailableForSearch);
-            var recordOfUpdatesApplied = mapper.Map<IEnumerable<DonorManagementInfo>>(updatesList).ToList();
+            var recordOfUpdatesApplied = updatesList.Select(upd => new DonorManagementInfo{ DonorId = upd.DonorId, UpdateDateTime = upd.UpdateDateTime, UpdateSequenceNumber = upd.UpdateSequenceNumber}).ToList();
 
             //TODO: ATLAS-491 all of this needs to be bound up into a single transaction, so that we write updates atomically and thus can consume or release the messages atomically.
             // Note, the management log must be written to last to prevent the undesirable
