@@ -48,8 +48,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 
         public async Task<DonorInfoWithExpandedHla> ExpandDonorHlaAsync(DonorInfo donorInfo)
         {
-            var hlaNamesCopy = new PhenotypeInfo<string>(donorInfo.HlaNames);
-            var expandedHla = await hlaNamesCopy.MapByLocusAsync(GetExpandedHla);
+            var expandedHla = await donorInfo.HlaNames.MapByLocusAsync(GetExpandedHla);
 
             return new DonorInfoWithExpandedHla
             {

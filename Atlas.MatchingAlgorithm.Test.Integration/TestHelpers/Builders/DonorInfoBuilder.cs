@@ -2,6 +2,7 @@
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Data.Models.Entities;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 {
@@ -40,6 +41,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
                     }
                 }
             };
+        }
+
+        public DonorInfoBuilder(Donor existingDonor)
+        {
+            donorInfo = existingDonor.ToDonorInfo();
         }
 
         public DonorInfoBuilder WithHlaAtLocus(Locus locus, LocusPosition position, string hla)
