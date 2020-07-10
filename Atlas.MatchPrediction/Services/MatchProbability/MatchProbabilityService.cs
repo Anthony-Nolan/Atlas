@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
-using Atlas.Common.Utils.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Models;
@@ -57,21 +56,24 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var frequencySets = await haplotypeFrequencyService.GetHaplotypeFrequencySets(
                 matchProbabilityInput.DonorFrequencySetMetadata,
                 matchProbabilityInput.PatientFrequencySetMetadata
-);
+            );
 
             var donorSet = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySets.DonorSet.Id);
             var patientSet = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySets.PatientSet.Id);
 
             var patientGenotypes = await ExpandPatientPhenotypeNew(matchProbabilityInput, donorSet);
             var donorGenotypes = await ExpandDonorPhenotypeNew(matchProbabilityInput, patientSet);
-            
+
             var allPatientDonorCombinations = patientGenotypes.SelectMany(patientHla =>
-                donorGenotypes.Select(donorHla => new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla, donorHla)));
+                    donorGenotypes.Select(donorHla => new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla, donorHla)))
+                .ToList();
+
+            logger.SendTrace($"Patient/donor pairs: {allPatientDonorCombinations.Count}", LogLevel.Verbose);
 
             var patientDonorMatchDetails = await CalculatePairsMatchCounts(matchProbabilityInput, allPatientDonorCombinations);
 
             // TODO: ATLAS-233: Re-introduce hardcoded 100% probability for guaranteed match but no represented genotypes
-            
+
             var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientGenotypes, frequencySets.PatientSet);
             var donorGenotypeLikelihoods = await CalculateGenotypeLikelihoods(donorGenotypes, frequencySets.DonorSet);
 
