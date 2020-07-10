@@ -61,8 +61,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var donorSet = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySets.DonorSet.Id);
             var patientSet = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySets.PatientSet.Id);
 
-            var patientGenotypes = await ExpandPatientPhenotypeNew(matchProbabilityInput, donorSet);
-            var donorGenotypes = await ExpandDonorPhenotypeNew(matchProbabilityInput, patientSet);
+            var donorGenotypes = await ExpandDonorPhenotypeNew(matchProbabilityInput, donorSet);
+            var patientGenotypes = await ExpandPatientPhenotypeNew(matchProbabilityInput, patientSet);
 
             var allPatientDonorCombinations = patientGenotypes.SelectMany(patientHla =>
                     donorGenotypes.Select(donorHla => new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla, donorHla)))
@@ -112,7 +112,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             Dictionary<HaplotypeHla, decimal> haplotypeFrequencies)
         {
             return await ExpandPhenotypeNew(
-                matchProbabilityInput.DonorHla,
+                matchProbabilityInput.PatientHla,
                 matchProbabilityInput.HlaNomenclatureVersion,
                 "patient",
                 haplotypeFrequencies
@@ -124,7 +124,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             Dictionary<HaplotypeHla, decimal> haplotypeFrequencies)
         {
             return await ExpandPhenotypeNew(
-                matchProbabilityInput.PatientHla,
+                matchProbabilityInput.DonorHla,
                 matchProbabilityInput.HlaNomenclatureVersion,
                 "donor",
                 haplotypeFrequencies

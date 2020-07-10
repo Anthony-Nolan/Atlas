@@ -11,8 +11,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
     {
         public Task<MatchProbabilityResponse> RunMatchPredictionAlgorithm(MatchProbabilityInput matchProbabilityInput);
 
-        public Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet(
-            HaplotypeFrequencySetInput haplotypeFrequencySetInput);
+        public Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet(HaplotypeFrequencySetInput haplotypeFrequencySetInput);
     }
 
     internal class MatchPredictionAlgorithm : IMatchPredictionAlgorithm
@@ -21,7 +20,10 @@ namespace Atlas.MatchPrediction.ExternalInterface
         private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
         private readonly ILogger logger;
 
-        public MatchPredictionAlgorithm(IMatchProbabilityService matchProbabilityService, ILogger logger, IHaplotypeFrequencyService haplotypeFrequencyService)
+        public MatchPredictionAlgorithm(
+            IMatchProbabilityService matchProbabilityService,
+            ILogger logger,
+            IHaplotypeFrequencyService haplotypeFrequencyService)
         {
             this.matchProbabilityService = matchProbabilityService;
             this.logger = logger;
