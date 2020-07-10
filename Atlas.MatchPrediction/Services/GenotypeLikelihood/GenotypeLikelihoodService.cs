@@ -11,8 +11,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
     public interface IGenotypeLikelihoodService
     {
-        public Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype,
-            HaplotypeFrequencySet frequencySet);
+        public Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype, HaplotypeFrequencySet frequencySet);
     }
 
     internal class GenotypeLikelihoodService : IGenotypeLikelihoodService
@@ -31,12 +30,10 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
             this.likelihoodCalculator = likelihoodCalculator;
         }
 
-        public async Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype,
-            HaplotypeFrequencySet frequencySet)
+        public async Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype, HaplotypeFrequencySet frequencySet)
         {
             var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype);
-            var haplotypesWithFrequencies =
-                await GetHaplotypesWithFrequencies(expandedGenotype, frequencySet);
+            var haplotypesWithFrequencies = await GetHaplotypesWithFrequencies(expandedGenotype, frequencySet);
 
             UpdateFrequenciesForDiplotype(haplotypesWithFrequencies, expandedGenotype.Diplotypes);
             return likelihoodCalculator.CalculateLikelihood(expandedGenotype);
@@ -48,18 +45,16 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         )
         {
             var haplotypes = GetHaplotypes(expandedGenotype.Diplotypes);
-            
             return await frequencyRepository.GetHaplotypeFrequencies(haplotypes, haplotypeFrequencySet.Id);
         }
 
-        public IEnumerable<HaplotypeHla> GetHaplotypes(IEnumerable<Diplotype> diplotypes)
+        private static IEnumerable<HaplotypeHla> GetHaplotypes(IEnumerable<Diplotype> diplotypes)
         {
-            return diplotypes.SelectMany(diplotype => new List<HaplotypeHla>
-                {diplotype.Item1.Hla, diplotype.Item2.Hla});
+            return diplotypes.SelectMany(diplotype => new List<HaplotypeHla> {diplotype.Item1.Hla, diplotype.Item2.Hla});
         }
 
         private static void UpdateFrequenciesForDiplotype(
-            Dictionary<HaplotypeHla, decimal> haplotypesWithFrequencies,
+            IReadOnlyDictionary<HaplotypeHla, decimal> haplotypesWithFrequencies,
             IEnumerable<Diplotype> diplotypes)
         {
             foreach (var diplotype in diplotypes)
