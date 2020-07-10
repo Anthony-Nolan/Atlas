@@ -96,8 +96,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             matchProbabilityCalculator.CalculateMatchProbability(
                     default,
                     default,
-                    default,
-                    default)
+                    default
+                )
                 .ReturnsForAnyArgs(new MatchProbabilityResponse {ZeroMismatchProbability = new Probability(0.5m)});
 
             frequencySetService.GetHaplotypeFrequencySets(default, default)
