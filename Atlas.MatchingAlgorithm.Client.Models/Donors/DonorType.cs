@@ -1,4 +1,5 @@
-﻿using EnumStringValues;
+﻿using System;
+using EnumStringValues;
 
 namespace Atlas.MatchingAlgorithm.Client.Models.Donors
 {
@@ -9,5 +10,18 @@ namespace Atlas.MatchingAlgorithm.Client.Models.Donors
         Adult = 1, // AKA: MUD
         [StringValue("cord"), StringValue("c")]
         Cord = 2 // AKA: CBU
+    }
+
+    public static class Extension
+    {
+        public static DonorType Other(this DonorType type)
+        {
+            return type switch
+            {
+                DonorType.Adult => DonorType.Cord,
+                DonorType.Cord => DonorType.Adult,
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+            };
+        }
     }
 }
