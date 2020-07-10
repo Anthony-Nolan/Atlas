@@ -87,18 +87,14 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientGenotypes, frequencySets.PatientSet);
             var donorGenotypeLikelihoods = await CalculateGenotypeLikelihoods(donorGenotypes, frequencySets.DonorSet);
 
-            var genotypesLikelihoods = patientGenotypeLikelihoods.Union(donorGenotypeLikelihoods).ToDictionary();
-
             return matchProbabilityCalculator.CalculateMatchProbability(
-                patientGenotypes,
-                donorGenotypes,
-                patientDonorMatchDetails,
-                genotypesLikelihoods
+                new SubjectCalculatorInputs {Genotypes = patientGenotypes, GenotypeLikelihoods = patientGenotypeLikelihoods},
+                new SubjectCalculatorInputs {Genotypes = donorGenotypes, GenotypeLikelihoods = donorGenotypeLikelihoods},
+                patientDonorMatchDetails
             );
         }
 
-        private async Task<ISet<PhenotypeInfo<string>>> ExpandPatientPhenotype(
-            MatchProbabilityInput matchProbabilityInput)
+        private async Task<ISet<PhenotypeInfo<string>>> ExpandPatientPhenotype(MatchProbabilityInput matchProbabilityInput)
         {
             return await logger.RunTimedAsync(
                 async () => await compressedPhenotypeExpander.ExpandCompressedPhenotype(
