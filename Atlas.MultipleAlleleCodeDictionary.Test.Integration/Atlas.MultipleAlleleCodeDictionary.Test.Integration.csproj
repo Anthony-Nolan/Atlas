@@ -33,7 +33,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="Repositories\Mac.csv" />
+      <EmbeddedResource Include="Repositories\LargeMacDictionary.csv" />
     </ItemGroup>
 
 
