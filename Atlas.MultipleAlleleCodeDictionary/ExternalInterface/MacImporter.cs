@@ -14,6 +14,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
     public interface IMacImporter
     {
         public Task ImportLatestMacs();
+        public Task RecreateMacTable();
     }
 
     internal class MacImporter : IMacImporter
@@ -29,6 +30,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
             this.macParser = macParser;
             this.logger = logger;
             this.macCodeDownloader = macCodeDownloader;
+        }
+
+        public async Task RecreateMacTable()
+        {
+            await macRepository.TruncateMacTable();
+            await ImportLatestMacs();
         }
 
         public async Task ImportLatestMacs()
