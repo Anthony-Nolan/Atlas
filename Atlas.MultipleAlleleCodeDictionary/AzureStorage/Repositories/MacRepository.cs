@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -18,6 +19,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         public Task InsertMacs(IEnumerable<Mac> macCodes);
         public Task<Mac> GetMac(string macCode);
         public Task<IReadOnlyCollection<Mac>> GetAllMacs();
+        public Task TruncateMacTable();
     }
 
     internal class MacRepository : IMacRepository
@@ -108,6 +110,54 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             ));
 
             return metadataEntity?.Code;
+        }
+
+        /// <remarks>
+        /// Rather than attempting to delete each entry, just delete the table and re-create it.
+        /// This takes around 30 seconds on 'real' Azure, but the local emulator it's instantaneous, so this isn't an issue for tests.
+        /// 30s is still markedly faster than the "DeleteAll" approach for large tables on Azure. (Which can take hours!)
+        /// </remarks>
+        public async Task TruncateMacTable()
+        {
+            await DeleteAndRecreateTable();
+        }
+
+        private async Task DeleteAndRecreateTable()
+        {
+            await Table.DeleteIfExistsAsync();
+            var successfullyRecreated = false;
+            while (!successfullyRecreated)
+            {
+                try
+                {
+                    await Table.CreateIfNotExistsAsync();
+                    successfullyRecreated = true;
+                }
+                catch (StorageException e) when (e.Message == "Conflict")
+                {
+                    // Weirdly that Async delete doesn't wait until the deletion is finalised before continuing.
+                    // So we have to wait for it ourselves.
+                    logger.SendTrace("Waiting whilst Table deletion fully processes, before recreation can occur", LogLevel.Verbose);
+                    await Task.Delay(1000);
+                }
+            }
+        }
+
+        /// <remarks>
+        /// Retain this for reference of how to do it correctly, if nothing else.
+        /// </remarks>
+        private async Task ExplicitlyDeleteAllMacRecords()
+        {
+            var query = new TableQuery<MacEntity>();
+            var existingMacs = await Table.ExecuteQueryAsync(query); // GetAllMacs would A) do unnecessary conversions and B) skip the LastUpdated record
+
+            foreach (var macToDelete in existingMacs)
+            {
+                // A TableEntities ETag property must be set to "*" to allow overwrites.
+                macToDelete.ETag = "*";
+                var delete = TableOperation.Delete(macToDelete);
+                Table.Execute(delete);
+            }
         }
     }
 
