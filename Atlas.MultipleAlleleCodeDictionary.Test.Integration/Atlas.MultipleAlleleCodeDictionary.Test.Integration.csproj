@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="CsvHelper" Version="12.1.2" />
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.4" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.4" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.4" />
@@ -32,7 +33,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="Resources\Mac.csv" />
+      <EmbeddedResource Include="Repositories\Mac.csv" />
     </ItemGroup>
 
 
