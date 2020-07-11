@@ -56,7 +56,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjectio
 
         private static void SetUpIntegrationTestServices(this IServiceCollection services)
         {
-            services.AddScoped<ITestMacRepository, TestMacRepository>();
         }
 
         private static void SetUpMockServices(this IServiceCollection services)

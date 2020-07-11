@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices.SourceData;
 using Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories;
@@ -18,7 +19,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
         private IMacImporter macImporter;
 
         private IMacCodeDownloader mockDownloader;
-        private ITestMacRepository macRepository;
+        private IMacRepository macRepository;
 
         [SetUp]
         public void SetUp()
@@ -27,14 +28,14 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
             {
                 macImporter = DependencyInjection.DependencyInjection.Provider.GetService<IMacImporter>();
                 mockDownloader = DependencyInjection.DependencyInjection.Provider.GetService<IMacCodeDownloader>();
-                macRepository = DependencyInjection.DependencyInjection.Provider.GetService<ITestMacRepository>();
+                macRepository = DependencyInjection.DependencyInjection.Provider.GetService<IMacRepository>();
             });
         }
 
         [TearDown]
         public async Task TearDown()
         {
-            await macRepository.DeleteAllMacs();
+            await macRepository.TruncateMacTable();
         }
 
         [Test]
