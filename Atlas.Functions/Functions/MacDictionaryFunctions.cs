@@ -39,6 +39,17 @@ namespace Atlas.Functions.Functions
             await macImporter.ImportLatestMacs();
         }
 
+        // This is useful for local dev, but it would be fairly risky to exist on Prod.
+        // TODO: ATLAS-489. Review of Suitability of this endpoint existing all the time.
+        //[SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
+        //[FunctionName(nameof(RecreateMacTable))]
+        //public async Task RecreateMacTable(
+        //    [HttpTrigger(AuthorizationLevel.Function, "post")]
+        //    HttpRequestMessage request)
+        //{
+        //    await macImporter.RecreateMacTable();
+        //}
+
         [QueryStringParameter("macCode", "macCode", DataType = typeof(string))]
         [FunctionName(nameof(GetMac))]
         public async Task<Mac> GetMac(
