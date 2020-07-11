@@ -15,7 +15,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
     public class FileBackedMacDictionaryRepository : IMacRepository
     {
         private readonly IAppCache cache;
-        private const string AllKey = nameof(AllKey);
+        
+        // This class uses the same cache as the MacCacheServiceRepository,
+        // which means that we'd be loading macs into the cache twice with the same key ... in the same call.
+        // LazyCache isn't too offended by that, when it works. But if a key is missing it causes deadlocks. :(
+        private const string CodesPrefix = nameof(FileBackedMacDictionaryRepository) + "_";
+        private const string AllKey = CodesPrefix + nameof(AllKey);
 
         public FileBackedMacDictionaryRepository(IPersistentCacheProvider cacheProvider)
         {
@@ -35,7 +40,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
 
         public Task<Mac> GetMac(string macCode)
         {
-            var mac = cache.Get<Mac>(macCode);
+            var mac = cache.Get<Mac>(CodesPrefix + macCode);
             return Task.FromResult(mac);
         }
 
@@ -51,7 +56,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
             cache.Add(AllKey, macs);
             foreach (var mac in macs)
             {
-                cache.Add(mac.Code, mac);
+                cache.Add(CodesPrefix + mac.Code, mac);
             }
         }
 
@@ -73,7 +78,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
             // * Profit!
 
             var assembly = Assembly.GetExecutingAssembly();
-            using (var stream = assembly.GetManifestResourceStream($"{GetType().Namespace}.LargeMacDictionary.csv"))
+            using (var stream = assembly.GetManifestResourceStream($"{GetType().Namespace}.Mac.csv"))
             using (var reader = new StreamReader(stream))
             using (var csv = new CsvReader(reader))
             {
