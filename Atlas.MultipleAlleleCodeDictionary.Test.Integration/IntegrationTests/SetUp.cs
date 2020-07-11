@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjection;
-using Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -22,9 +22,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
 
         private static async Task ResetDatabase()
         {
-            var macRepository = DependencyInjection.DependencyInjection.Provider.GetService<ITestMacRepository>();
-            await macRepository.CreateTableIfNotExists();
-            await macRepository.DeleteAllMacs();
+            var macRepository = DependencyInjection.DependencyInjection.Provider.GetService<IMacRepository>();
+            await macRepository.TruncateMacTable();
         }
     }
 }
