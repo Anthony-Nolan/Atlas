@@ -38,6 +38,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
             throw new System.NotImplementedException();
         }
 
+        public Task TruncateMacTable()
+        {
+            throw new System.NotImplementedException();
+        }
+
         public Task<Mac> GetMac(string macCode)
         {
             var mac = cache.Get<Mac>(CodesPrefix + macCode);
