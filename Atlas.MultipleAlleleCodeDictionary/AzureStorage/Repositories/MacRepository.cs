@@ -17,7 +17,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         public Task<string> GetLastMacEntry();
         public Task InsertMacs(IEnumerable<Mac> macCodes);
         public Task<Mac> GetMac(string macCode);
-        public Task<List<Mac>> GetAllMacs();
+        public Task<IReadOnlyCollection<Mac>> GetAllMacs();
     }
 
     internal class MacRepository : IMacRepository
@@ -62,7 +62,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             return new Mac(macEntity);
         }
 
-        public async Task<List<Mac>> GetAllMacs()
+        public async Task<IReadOnlyCollection<Mac>> GetAllMacs()
         {
             var nonMetadataFilter = TableQuery.GenerateFilterCondition(
                 "PartitionKey",
@@ -72,7 +72,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
             var query = new TableQuery<MacEntity>().Where(nonMetadataFilter);
             var result = await Table.ExecuteQueryAsync(query);
-            return result.Select(x => new Mac(x)).ToList();
+            return result.Select(x => new Mac(x)).ToList().AsReadOnly();
         }
 
         private async Task StoreLatestMacRecord(string latestMac)

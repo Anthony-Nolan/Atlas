@@ -4,6 +4,11 @@ using Microsoft.Azure.Cosmos.Table;
 
 namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Models
 {
+    /// <remarks>
+    /// Note that this class is used to deserialise the FileBackedMacDictionary, as well as the Azure Storage
+    /// If you change this, you'll need to work out how to regenerate the file, so that it can be interpretted.
+    /// See notes in <see cref="FileBackedMacDictionaryRepository"/>
+    /// </remarks>
     internal class MacEntity : TableEntity, IHasMacCode
     {
         // ReSharper disable once UnusedMember.Global Needed for some Cosmos API methods
