@@ -1,6 +1,7 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
@@ -18,9 +19,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
             this.alleleGroupExpander = alleleGroupExpander;
         }
 
-        protected override async Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName, string hlaNomenclatureVersion)
+        protected override async Task<List<string>> GetAlleleLookupNames(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            return await alleleGroupExpander.ExpandAlleleGroup(locus, lookupName, hlaNomenclatureVersion);
+            return (await alleleGroupExpander.ExpandAlleleGroup(locus, lookupName, hlaNomenclatureVersion)).ToList();
         }
     }
 }

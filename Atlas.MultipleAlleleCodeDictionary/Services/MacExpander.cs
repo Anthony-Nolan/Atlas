@@ -32,8 +32,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services
         private static IEnumerable<string> ExpandGenericMac(Mac mac, string firstField = null)
         {
             var secondFields = mac.Hla.Split(AlleleDelimiter);
-            return secondFields.Select(secondField =>
-                new MolecularAlleleDetails(firstField, secondField).AlleleNameWithoutPrefix);
+            return secondFields.Select(secondField => new MolecularAlleleDetails(firstField, secondField).AlleleNameWithoutPrefix).ToList();
         }
 
         /// <remarks>
