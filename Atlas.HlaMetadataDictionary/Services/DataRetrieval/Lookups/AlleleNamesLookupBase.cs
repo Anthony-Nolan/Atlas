@@ -24,24 +24,24 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
             this.alleleNamesMetadataService = alleleNamesMetadataService;
         }
 
-        public override async Task<IEnumerable<HlaMetadataTableRow>> PerformLookupAsync(Locus locus, string lookupName, string hlaNomenclatureVersion)
+        public override async Task<List<HlaMetadataTableRow>> PerformLookupAsync(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
             var alleleNamesToLookup = await GetAlleleLookupNames(locus, lookupName, hlaNomenclatureVersion);
             return await GetHlaMetadataRows(locus, alleleNamesToLookup, hlaNomenclatureVersion);
         }
 
-        protected abstract Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName, string hlaNomenclatureVersion);
+        protected abstract Task<List<string>> GetAlleleLookupNames(Locus locus, string lookupName, string hlaNomenclatureVersion);
 
-        private async Task<IEnumerable<HlaMetadataTableRow>> GetHlaMetadataRows(
+        private async Task<List<HlaMetadataTableRow>> GetHlaMetadataRows(
             Locus locus,
             IEnumerable<string> alleleNamesToLookup,
             string hlaNomenclatureVersion
         )
         {
-            var lookupTasks = alleleNamesToLookup.Select(name => GetHlaMetadataRowsForAlleleNameIfExists(locus, name, hlaNomenclatureVersion));
+            var lookupTasks = alleleNamesToLookup.Select(name => GetHlaMetadataRowsForAlleleNameIfExists(locus, name, hlaNomenclatureVersion)).ToList();
             var metadataRows = await Task.WhenAll(lookupTasks);
 
-            return metadataRows.SelectMany(rows => rows);
+            return metadataRows.SelectMany(rows => rows).ToList();
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
         /// If nothing is found, try again using the current version(s) of the allele name.
         /// Else an invalid HLA exception will be thrown.
         /// </summary>
-        private async Task<IEnumerable<HlaMetadataTableRow>> GetHlaMetadataRowsForAlleleNameIfExists(
+        private async Task<IList<HlaMetadataTableRow>> GetHlaMetadataRowsForAlleleNameIfExists(
             Locus locus,
             string lookupName,
             string hlaNomenclatureVersion)
@@ -68,14 +68,14 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
             return await TryGetHlaMetadataRow(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
         }
 
-        private async Task<IEnumerable<HlaMetadataTableRow>> GetHlaMetadataRowsByCurrentAlleleNamesIfExists(
+        private async Task<HlaMetadataTableRow[]> GetHlaMetadataRowsByCurrentAlleleNamesIfExists(
             Locus locus,
             string lookupName,
             string hlaNomenclatureVersion
         )
         {
             var currentNames = await alleleNamesMetadataService.GetCurrentAlleleNames(locus, lookupName, hlaNomenclatureVersion);
-            var lookupTasks = currentNames.Select(name => GetHlaMetadataRowIfExists(locus, name, TypingMethod.Molecular, hlaNomenclatureVersion));
+            var lookupTasks = currentNames.Select(name => GetHlaMetadataRowIfExists(locus, name, TypingMethod.Molecular, hlaNomenclatureVersion)).ToList();
             return await Task.WhenAll(lookupTasks);
         }
     }
