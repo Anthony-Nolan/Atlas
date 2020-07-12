@@ -21,7 +21,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
         /// Lookup the submitted HLA details.
         /// </summary>
         /// <exception cref="InvalidHlaException">Thrown if no lookup results found.</exception>
-        public abstract Task<IEnumerable<HlaMetadataTableRow>> PerformLookupAsync(Locus locus, string lookupName, string hlaNomenclatureVersion);
+        public abstract Task<List<HlaMetadataTableRow>> PerformLookupAsync(Locus locus, string lookupName, string hlaNomenclatureVersion);
 
         protected async Task<HlaMetadataTableRow> GetHlaMetadataRowIfExists(
             Locus locus,
