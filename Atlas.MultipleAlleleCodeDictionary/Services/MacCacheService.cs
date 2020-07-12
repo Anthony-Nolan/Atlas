@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
@@ -33,7 +34,13 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services
         public async Task<IEnumerable<string>> GetHlaFromMac(string macCode, string firstField)
         {
             var mac = await GetMacCode(macCode);
-            logger.SendTrace($"Attempting to expand Hla for Mac: {mac.Code}", LogLevel.Verbose);
+            if (mac == null)
+            {
+                var message = $"Unrecognised Mac: {macCode}.";
+                logger.SendTrace(message, LogLevel.Error);
+                throw new ArgumentNullException(message);
+            }
+            logger.SendTrace($"Attempting to expand Hla for Mac: {macCode}", LogLevel.Verbose);
             return macExpander.ExpandMac(mac, firstField);
         }
 
