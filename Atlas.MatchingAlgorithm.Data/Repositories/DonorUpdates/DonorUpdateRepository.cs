@@ -266,9 +266,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
             foreach (var donor in donors)
             {
-                donor.MatchingHla.EachPosition((l, p, h) =>
+                donor.MatchingHla.GetLocus(locus).EachPosition((p, h) =>
                 {
-                    if (h == null || l != locus)
+                    if (h == null)
                     {
                         return;
                     }

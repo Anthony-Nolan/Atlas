@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
@@ -19,9 +20,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
             this.alleleSplitter = alleleSplitter;
         }
 
-        protected override async Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName, string hlaNomenclatureVersion)
+        protected override async Task<List<string>> GetAlleleLookupNames(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            return await Task.Run(() => alleleSplitter.GetAlleleNamesFromAlleleString(lookupName));
+            return await Task.Run(() => alleleSplitter.GetAlleleNamesFromAlleleString(lookupName).ToList());
         }
     }
 }

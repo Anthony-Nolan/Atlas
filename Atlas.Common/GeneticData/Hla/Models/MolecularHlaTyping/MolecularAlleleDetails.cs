@@ -7,7 +7,7 @@ namespace Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping
 {
     public class MolecularAlleleDetails
     {
-        private static readonly string ExpressionSuffixPattern = $"[{MolecularTypingNameConstants.ExpressionSuffixes}]$";
+        private static readonly Regex ExpressionSuffixRegex = new Regex(MolecularTypingNameConstants.ExpressionSuffixesRegexCharacterGroup, RegexOptions.Compiled);
 
         public MolecularAlleleDetails()
         {
@@ -67,7 +67,7 @@ namespace Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping
 
         private static string GetExpressionSuffix(string alleleName)
         {
-            return new Regex(ExpressionSuffixPattern).Match(alleleName).Value;
+            return ExpressionSuffixRegex.Match(alleleName).Value;
         }
 
         private static IEnumerable<string> GetFields(string alleleName)

@@ -79,7 +79,7 @@ SELECT CAST(SCOPE_IDENTITY() as int)
                 newId = conn.Query<int>(sql, new {PGroupName = pGroupName}, commandTimeout: 300).Single();
             }
 
-            CachePGroupDictionary();
+            CachePGroupDictionary(); //QQ Umm ... what?
             return newId;
         }
 

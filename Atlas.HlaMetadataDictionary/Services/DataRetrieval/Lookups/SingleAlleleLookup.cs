@@ -14,9 +14,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
         {
         }
 
-        protected override async Task<IEnumerable<string>> GetAlleleLookupNames(Locus locus, string lookupName, string hlaNomenclatureVersion)
+        protected override async Task<List<string>> GetAlleleLookupNames(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            return await Task.FromResult((IEnumerable<string>)new[] { lookupName });
+            return await Task.FromResult(new List<string> { lookupName });
         }
     }
 }

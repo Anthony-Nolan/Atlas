@@ -6,7 +6,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.Ser
     internal class SerologyToSerologyRelationshipExtractor : WmdaDataExtractor<RelSerSer>
     {
         private const string FileName = WmdaFilePathPrefix + "rel_ser_ser.txt";
-        private readonly Regex regex = new Regex(@"(\w+)\;(\d*)\;([\d\/]*)\;([\d\/]*)");
+        private readonly Regex regex = new Regex(@"(\w+)\;(\d*)\;([\d\/]*)\;([\d\/]*)", RegexOptions.Compiled);
 
         public SerologyToSerologyRelationshipExtractor() : base(FileName)
         {

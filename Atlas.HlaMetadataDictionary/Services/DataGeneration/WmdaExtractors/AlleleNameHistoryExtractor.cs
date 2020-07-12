@@ -13,10 +13,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors
         private const string OldestHlaNomenclatureVersionToImport = "3000";
 
         private static readonly Regex ColumnNamesRegex =
-            new Regex("^HLA_ID" + ColumnDelimiter + @"(?:\d+" + ColumnDelimiter + "){1,}" + OldestHlaNomenclatureVersionToImport);
-
-        private static readonly Regex AlleleHistoryRegex = new Regex(@"^HLA\d+,.+$");
-        private static readonly Regex AlleleNameRegex = new Regex(@"\" + MolecularPrefix + @"([\w:]+)");
+            new Regex("^HLA_ID" + ColumnDelimiter + @"(?:\d+" + ColumnDelimiter + "){1,}" + OldestHlaNomenclatureVersionToImport, RegexOptions.Compiled);
+        private static readonly Regex AlleleHistoryRegex = new Regex(@"^HLA\d+,.+$", RegexOptions.Compiled);
+        private static readonly Regex AlleleNameRegex = new Regex(@"\" + MolecularPrefix + @"([\w:]+)", RegexOptions.Compiled);
         private const string NoAlleleNamePlaceHolder = "NA";
         private const string MolecularPrefix = "*";
 

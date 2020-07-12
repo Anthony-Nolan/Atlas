@@ -4,6 +4,7 @@ using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
@@ -46,7 +47,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 throw new InvalidHlaException(locus, lookupName);
             }
 
-            return metadata.AllelesInGroup;
+            return metadata.AllelesInGroup.ToList();
         }
 
         private bool IsAlleleGroup(string lookupName)

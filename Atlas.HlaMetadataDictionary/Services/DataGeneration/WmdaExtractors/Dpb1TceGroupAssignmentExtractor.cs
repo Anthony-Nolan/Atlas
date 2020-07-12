@@ -6,7 +6,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors
     internal class Dpb1TceGroupAssignmentExtractor : WmdaDataExtractor<Dpb1TceGroupAssignment>
     {
         private const string FileName = "tce/dpb_tce.csv";
-        private readonly Regex regex = new Regex(@"^DPB1\*([\w:]+),.*,(\w?).*,(\w?).*,");
+        private readonly Regex regex = new Regex(@"^DPB1\*([\w:]+),.*,(\w?).*,(\w?).*,", RegexOptions.Compiled);
 
         public Dpb1TceGroupAssignmentExtractor() : base(FileName)
         {
