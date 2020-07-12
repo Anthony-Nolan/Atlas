@@ -24,12 +24,12 @@ namespace Atlas.Common.GeneticData.Hla.Services
     internal class HlaCategorisationService : IHlaCategorisationService
     {
         private const string SingleFieldPattern = "\\d+";
-        private static readonly string ExpressionSuffixPattern = $"[{MolecularTypingNameConstants.ExpressionSuffixes}]?";
+        private static readonly string OptionalExpressionSuffixPattern = MolecularTypingNameConstants.ExpressionSuffixesRegexCharacterGroup + "?";
         private static readonly string MolecularFirstFieldPattern = $"\\{MolecularTypingNameConstants.Prefix}?{SingleFieldPattern}";
-        private static readonly string AlleleFinalFieldPattern = SingleFieldPattern + ExpressionSuffixPattern;
+        private static readonly string AlleleFinalFieldPattern = SingleFieldPattern + OptionalExpressionSuffixPattern;
 
         private static readonly string AlleleDesignationPattern =
-            $"{MolecularFirstFieldPattern}(:{SingleFieldPattern}){{1,3}}{ExpressionSuffixPattern}";
+            $"{MolecularFirstFieldPattern}(:{SingleFieldPattern}){{1,3}}{OptionalExpressionSuffixPattern}";
 
         private static readonly List<(Regex, HlaTypingCategory)> TypingCategoryRegexes = new List<(Regex, HlaTypingCategory)>
         {

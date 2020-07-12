@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
@@ -46,7 +47,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 throw new InvalidHlaException(locus, lookupName);
             }
 
-            return alleleNameMetadata.CurrentAlleleNames;
+            return alleleNameMetadata.CurrentAlleleNames.ToList();
         }
     }
 }

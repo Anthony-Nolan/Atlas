@@ -65,10 +65,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-
-            var results = await Task.WhenAll(loci.Select(l =>
-                FindMatchesAtLocus(criteria.SearchType, l, criteria.MatchCriteriaForLocus(l)))
-            );
+            var matchFindingTasks = loci.Select(l => FindMatchesAtLocus(criteria.SearchType, l, criteria.MatchCriteriaForLocus(l))).ToList();
+            var results = await Task.WhenAll(matchFindingTasks);
 
             logger.SendTrace($"MATCHING PHASE1: all donors from Db. {results.Sum(x => x.Count)} results in {stopwatch.ElapsedMilliseconds} ms");
             stopwatch.Restart();

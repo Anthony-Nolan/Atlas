@@ -6,7 +6,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors
     internal class AlleleStatusExtractor : WmdaDataExtractor<AlleleStatus>
     {
         private const string FileName = "Allele_status.txt";
-        private readonly Regex regex = new Regex(@"^(\w+\*)([\w:]+),.+,(Full|Partial),(cDNA|gDNA)$");
+        private readonly Regex regex = new Regex(@"^(\w+\*)([\w:]+),.+,(Full|Partial),(cDNA|gDNA)$", RegexOptions.Compiled);
 
         public AlleleStatusExtractor() : base(FileName)
         {

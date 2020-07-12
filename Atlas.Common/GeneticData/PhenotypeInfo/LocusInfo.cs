@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 // ReSharper disable InconsistentNaming - want to use T/R to easily distinguish contained type and target type(s)
 // ReSharper disable MemberCanBeInternal
@@ -12,6 +13,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
     /// A <see cref="LociInfo{T}"/> has a T at each locus.
     /// A <see cref="PhenotypeInfo{T}"/> is a special case of <see cref="LociInfo{T}"/>, where T = LocusInfo.
     /// </summary>
+    [DebuggerDisplay("1: {Position1}, 2: {Position2}")]
     public class LocusInfo<T> : IEquatable<LocusInfo<T>>
     {
         public T Position1 { get; set; }
@@ -65,6 +67,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 default:
                     throw new ArgumentOutOfRangeException(nameof(position), position, null);
             }
+        }
+
+        public void EachPosition(Action<LocusPosition, T> action)
+        {
+            action(LocusPosition.One, Position1);
+            action(LocusPosition.Two, Position2);
         }
 
         #region Functional Methods

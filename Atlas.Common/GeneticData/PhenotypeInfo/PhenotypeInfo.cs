@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 // ReSharper disable InconsistentNaming - want to use T/R to easily distinguish contained type and target type(s)
@@ -16,6 +17,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
     /// A <see cref="PhenotypeInfo{T}"/> is a special case of <see cref="LociInfo{T}"/>, where T = LocusInfo.
     /// </summary>
     /// <typeparam name="T">The type of the information that is required for each loci position.</typeparam>
+    [DebuggerDisplay("A: {A.Position1}, {A.Position2}; B: {B.Position1}, {B.Position2}; C: {C.Position1}, {C.Position2}; DPB1: {Dpb1.Position1}, {Dpb1.Position2}; DQB1: {Dqb1.Position1}, {Dpb1.Position2}; DRB1: {Drb1.Position1}, {Drb1.Position2};")]
     public class PhenotypeInfo<T> : LociInfo<LocusInfo<T>>, IEquatable<PhenotypeInfo<T>>
     {
         private const string LocusInfoNullExceptionMessage = "LocusInfo<T> cannot be null in a PhenotypeInfo<T>. Set nested values to null instead.";

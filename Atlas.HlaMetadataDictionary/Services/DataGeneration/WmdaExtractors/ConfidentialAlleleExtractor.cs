@@ -6,7 +6,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors
     internal class ConfidentialAlleleExtractor : WmdaDataExtractor<ConfidentialAllele>
     {
         private const string FileName = "version_report.txt";
-        private readonly Regex regex = new Regex(@"^Confidential,(\w+\*)([\w:]+),");
+        private readonly Regex regex = new Regex(@"^Confidential,(\w+\*)([\w:]+),", RegexOptions.Compiled);
 
         public ConfidentialAlleleExtractor() : base(FileName)
         {

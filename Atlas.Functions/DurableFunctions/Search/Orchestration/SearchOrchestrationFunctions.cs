@@ -61,11 +61,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             Dictionary<int, Donor> donorInformation)
         {
             var matchPredictionInputs = await BuildMatchPredictionInputs(context, searchRequest, searchResults, donorInformation);
-
-
-            var matchPredictionResults = (await Task.WhenAll(
-                matchPredictionInputs.Select(r => RunMatchPredictionForDonor(context, r))
-            )).ToDictionary();
+            var matchPredictionTasks = matchPredictionInputs.Select(r => RunMatchPredictionForDonor(context, r)).ToList();
+            var matchPredictionResults = (await Task.WhenAll(matchPredictionTasks)).ToDictionary();
             return matchPredictionResults;
         }
 

@@ -13,7 +13,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
         {
         }
 
-        public override async Task<IEnumerable<HlaMetadataTableRow>> PerformLookupAsync(Locus locus, string lookupName, string hlaNomenclatureVersion)
+        public override async Task<List<HlaMetadataTableRow>> PerformLookupAsync(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
             var row = await GetHlaMetadataRowIfExists(locus, lookupName, TypingMethod.Serology, hlaNomenclatureVersion);
             return new List<HlaMetadataTableRow> { row };
