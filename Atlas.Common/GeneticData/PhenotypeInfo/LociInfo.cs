@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 // ReSharper disable MemberCanBeProtected.Global
@@ -14,6 +15,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
     /// A <see cref="PhenotypeInfo{T}"/> is a special case of <see cref="LociInfo{T}"/>, where T = LocusInfo.
     /// </summary>
     /// <typeparam name="T">The type of the information that is required for each locus.</typeparam>
+    [DebuggerDisplay("A: {a}, B: {b}, C: {c}, DPB1: {dpb1}, DQB1: {dqb1}, DRB1: {drb1}")]
     public class LociInfo<T> : IEquatable<LociInfo<T>>
     {
         // ReSharper disable InconsistentNaming - recommended name clashes with property!

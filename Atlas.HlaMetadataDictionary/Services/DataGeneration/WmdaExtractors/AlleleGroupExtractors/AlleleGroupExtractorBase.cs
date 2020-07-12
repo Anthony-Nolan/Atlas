@@ -6,7 +6,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.WmdaExtractors.All
     internal abstract class AlleleGroupExtractorBase<TWmdaAlleleGroup> : WmdaDataExtractor<TWmdaAlleleGroup>
         where TWmdaAlleleGroup : IWmdaAlleleGroup, new()
     {
-        private readonly Regex regex = new Regex(@"^(\w+\*)\;([\w:\/]+)\;([\w:]*)$");
+        private readonly Regex regex = new Regex(@"^(\w+\*)\;([\w:\/]+)\;([\w:]*)$", RegexOptions.Compiled);
 
         protected AlleleGroupExtractorBase(string fileName) : base(WmdaFilePathPrefix + fileName)
         {
