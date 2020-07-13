@@ -1,24 +1,31 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static Atlas.Common.Maths.FactorialMaths;
 
 namespace Atlas.Common.Maths
 {
-    // TODO: ATLAS-400: Review code lifted from StackOverflow
     public static class Combinations
     {
+        /// <summary>
+        /// Calculates how many pairs exist for a collection of size n
+        /// </summary>
+        /// <param name="n"></param>
+        /// <param name="shouldIncludeSelfPairs">
+        /// If set, includes the number of pairs consisting of the same element twice.
+        /// Otherwise, each element can only be paired with distinct other elements.
+        /// </param>
+        /// <returns></returns>
         public static long NumberOfPairs(int n, bool shouldIncludeSelfPairs = false)
         {
+            if (n < 0)
+            {
+                throw new InvalidOperationException("A collection cannot have a negative length. Cannot count number of pairs.");
+            }
+            
             var selfPairs = n;
             var nonSelfPairs = nCr(n, 2);
             return shouldIncludeSelfPairs ? nonSelfPairs + selfPairs : nonSelfPairs;
-        }
-        
-        // ReSharper disable once InconsistentNaming
-        public static long nCr(int n, int r)
-        {
-            // naive: return Factorial(n) / (Factorial(r) * Factorial(n - r));
-            return nPr(n, r) / Factorial(r);
         }
 
         /// <param name="array">Array of initial values to form pairs from.</param>
@@ -32,14 +39,22 @@ namespace Atlas.Common.Maths
             return shouldIncludeSelfPairs ? nonSelfPairs.Concat(AllSelfPairs(array)) : nonSelfPairs;
         }
 
-        private static IEnumerable<T[]> AllCombinations<T>(T[] array, int m)
+        /// <summary>
+        /// Enumerate all possible m-sized combinations of given collection.
+        /// Does not include repetitions - each item cannot be in a combination with itself.  
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="m"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        private static IEnumerable<T[]> AllCombinations<T>(IReadOnlyList<T> collection, int m)
         {
             var result = new T[m];
-            foreach (var j in CombinationsRosettaWoRecursion(m, array.Length))
+            foreach (var j in AllCombinations(m, collection.Count))
             {
                 for (var i = 0; i < m; i++)
                 {
-                    result[i] = array[j[i]];
+                    result[i] = collection[j[i]];
                 }
 
                 yield return result;
@@ -52,7 +67,7 @@ namespace Atlas.Common.Maths
         /// </summary>
         /// <param name="m"></param>
         /// <param name="n"></param>
-        private static IEnumerable<int[]> CombinationsRosettaWoRecursion(int m, int n)
+        private static IEnumerable<int[]> AllCombinations(int m, int n)
         {
             var result = new int[m];
             var stack = new Stack<int>(m);
@@ -76,9 +91,20 @@ namespace Atlas.Common.Maths
             }
         }
 
+        /// <returns>
+        /// All elements of the array as pairs with itself.
+        /// e.g. [1, 2] => [[1,1], [2,2]]
+        /// </returns>
         private static IEnumerable<Tuple<T, T>> AllSelfPairs<T>(IEnumerable<T> array)
         {
             return array.Select(x => new Tuple<T, T>(x, x));
+        }
+
+        // ReSharper disable once InconsistentNaming
+        private static long nCr(int n, int r)
+        {
+            // naive: return Factorial(n) / (Factorial(r) * Factorial(n - r));
+            return nPr(n, r) / Factorial(r);
         }
 
         // ReSharper disable once InconsistentNaming
@@ -86,24 +112,6 @@ namespace Atlas.Common.Maths
         {
             // naive: return Factorial(n) / Factorial(n - r);
             return FactorialDivision(n, n - r);
-        }
-
-        private static long FactorialDivision(int topFactorial, int divisorFactorial)
-        {
-            long result = 1;
-            for (var i = topFactorial;
-                i > divisorFactorial;
-                i--)
-            {
-                result *= i;
-            }
-
-            return result;
-        }
-
-        private static long Factorial(int i)
-        {
-            return i <= 1 ? 1 : i * Factorial(i - 1);
         }
     }
 }
