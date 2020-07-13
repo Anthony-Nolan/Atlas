@@ -159,12 +159,14 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             logger.SendTrace($"{TraceMessagePrefix}: {updatesList.Count} donor updates to be applied.");
 
             var (availableUpdates, unavailableUpdates) = updatesList.ReifyAndSplit(upd => upd.IsAvailableForSearch);
+            var recordOfUpdatesApplied = mapper.Map<IEnumerable<DonorManagementInfo>>(updatesList).ToList();
+
             //TODO: ATLAS-491 all of this needs to be bound up into a single transaction, so that we write updates atomically and thus can consume or release the messages atomically.
             // Note, the management log must be written to last to prevent the undesirable
             // scenario of the donor update failing after the log has been successfully updated.
             await AddOrUpdateDonors(availableUpdates, targetDatabase, targetHlaNomenclatureVersion);
             await SetDonorsAsUnavailableForSearch(unavailableUpdates, targetDatabase);
-            await CreateOrUpdateManagementLogBatch(updatesList, targetDatabase);
+            await CreateOrUpdateManagementLogBatch(recordOfUpdatesApplied, targetDatabase);
         }
 
         private async Task AddOrUpdateDonors(
@@ -200,21 +202,20 @@ Invalid DonorIds: " + donorIds);
             {
                 logger.SendTrace($"{TraceMessagePrefix}: {unavailableUpdates.Count} donors to be marked as unavailable for search.");
 
-                var unavailableDonorIds = unavailableUpdates.Select(d => d.DonorId);
+                var unavailableDonorIds = unavailableUpdates.Select(d => d.DonorId).ToList();
                 await donorService.SetDonorBatchAsUnavailableForSearch(unavailableDonorIds, targetDatabase);
             }
         }
 
-        private async Task CreateOrUpdateManagementLogBatch(List<DonorAvailabilityUpdate> appliedUpdates, TransientDatabase targetDatabase)
+        private async Task CreateOrUpdateManagementLogBatch(List<DonorManagementInfo> appliedUpdates, TransientDatabase targetDatabase)
         {
             if (!appliedUpdates.Any())
             {
                 return;
             }
 
-            var infos = mapper.Map<IEnumerable<DonorManagementInfo>>(appliedUpdates);
             var logRepository = repositoryFactory.GetDonorManagementLogRepositoryForDatabase(targetDatabase);
-            await logRepository.CreateOrUpdateDonorManagementLogBatch(infos);
+            await logRepository.CreateOrUpdateDonorManagementLogBatch(appliedUpdates);
         }
     }
 }

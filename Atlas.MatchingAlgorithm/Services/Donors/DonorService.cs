@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Notifications;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Models;
@@ -15,7 +16,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
     /// </summary>
     public interface IDonorService
     {
-        Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds, TransientDatabase targetDatabase);
+        Task SetDonorBatchAsUnavailableForSearch(List<int> donorIds, TransientDatabase targetDatabase);
 
         /// <param name="hlaNomenclatureVersion">
         ///  This method includes processing the HLA, thus we need to know which version of the HLA nomenclature to be using for that interpretation
@@ -41,10 +42,8 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             this.failedDonorsNotificationSender = failedDonorsNotificationSender;
         }
 
-        public async Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds, TransientDatabase targetDatabase)
+        public async Task SetDonorBatchAsUnavailableForSearch(List<int> donorIds, TransientDatabase targetDatabase)
         {
-            donorIds = donorIds.ToList();
-
             if (donorIds.Any())
             {
                 var donorUpdateRepository = repositoryFactory.GetDonorUpdateRepositoryForDatabase(targetDatabase);
@@ -67,26 +66,22 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersion);
             var expansionResult = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorInfos, ExpansionFailureEventName);
 
-            await CreateOrUpdateDonorsWithHla(expansionResult, targetDatabase);
-
-            await SendFailedDonorsAlert(expansionResult);
+            await CreateOrUpdateDonorsWithHla(expansionResult.ProcessingResults, targetDatabase);
+            await SendFailedDonorsAlert(expansionResult.FailedDonors);
         }
 
-        private async Task CreateOrUpdateDonorsWithHla(DonorBatchProcessingResult<DonorInfoWithExpandedHla> expansionResult, TransientDatabase targetDatabase)
+        private async Task CreateOrUpdateDonorsWithHla(IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHla, TransientDatabase targetDatabase)
         {
-            var donorsWithHla = expansionResult.ProcessingResults.ToList();
-
             if (!donorsWithHla.Any())
             {
                 return;
             }
 
             var existingDonorIds = (await GetExistingDonorIds(donorsWithHla, targetDatabase)).ToList();
-            var newDonors = donorsWithHla.Where(id => !existingDonorIds.Contains(id.DonorId));
-            var updateDonors = donorsWithHla.Where(id => existingDonorIds.Contains(id.DonorId));
+            var (updatedDonors, newDonors) = donorsWithHla.ReifyAndSplit(id => existingDonorIds.Contains(id.DonorId));
 
             await CreateDonorBatch(newDonors, targetDatabase);
-            await UpdateDonorBatch(updateDonors, targetDatabase);
+            await UpdateDonorBatch(updatedDonors, targetDatabase);
         }
 
         private async Task<IEnumerable<int>> GetExistingDonorIds(IEnumerable<DonorInfoWithExpandedHla> donorInfos, TransientDatabase targetDatabase)
@@ -97,33 +92,28 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             return existingDonors.Keys;
         }
 
-        private async Task CreateDonorBatch(IEnumerable<DonorInfoWithExpandedHla> newDonors, TransientDatabase targetDatabase)
+        private async Task CreateDonorBatch(List<DonorInfoWithExpandedHla> newDonors, TransientDatabase targetDatabase)
         {
-            newDonors = newDonors.ToList();
-
             if (newDonors.Any())
             {
                 var donorUpdateRepository = repositoryFactory.GetDonorUpdateRepositoryForDatabase(targetDatabase);
 
-                await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(newDonors.AsEnumerable());
+                await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(newDonors);
             }
         }
 
-        private async Task UpdateDonorBatch(IEnumerable<DonorInfoWithExpandedHla> updateDonors, TransientDatabase targetDatabase)
+        private async Task UpdateDonorBatch(List<DonorInfoWithExpandedHla> updateDonors, TransientDatabase targetDatabase)
         {
-            updateDonors = updateDonors.ToList();
-
             if (updateDonors.Any())
             {
                 var donorUpdateRepository = repositoryFactory.GetDonorUpdateRepositoryForDatabase(targetDatabase);
 
-                await donorUpdateRepository.UpdateDonorBatch(updateDonors.AsEnumerable());
+                await donorUpdateRepository.UpdateDonorBatch(updateDonors);
             }
         }
 
-        private async Task SendFailedDonorsAlert(DonorBatchProcessingResult<DonorInfoWithExpandedHla> expansionResult)
+        private async Task SendFailedDonorsAlert(IReadOnlyCollection<FailedDonorInfo> failedDonors)
         {
-            var failedDonors = expansionResult.FailedDonors.ToList();
 
             if (!failedDonors.Any())
             {

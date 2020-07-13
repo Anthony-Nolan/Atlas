@@ -1,3 +1,4 @@
+using System;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Common.Models.Matching;
@@ -11,6 +12,7 @@ using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {
@@ -84,15 +86,12 @@ ON m.DonorId = DonorIds.Id
 
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                var sql = $@"
-SELECT * FROM Donors 
-INNER JOIN (
-    SELECT '{donorIds.FirstOrDefault()}' AS Id
-    UNION ALL SELECT '{string.Join("' UNION ALL SELECT '", donorIds.Skip(1))}'
-)
-AS DonorIds 
-ON DonorId = DonorIds.Id
-";
+                var donorIdsString = donorIds.Select(id => id.ToString()).StringJoin(",");
+                
+                // Note that a previous iteration of this code used a JOIN on UNIONs of hard-coded Ids.
+                // A thorough perf test demonstrated that this 'IN' produces an identical QueryPlan, and compiles faster.
+                var sql = $@"SELECT * FROM Donors WHERE DonorId IN({donorIdsString})";
+
                 var donors = await conn.QueryAsync<Donor>(sql, commandTimeout: 300);
                 return donors.Select(d => d.ToDonorInfo()).ToDictionary(d => d.DonorId, d => d);
             }

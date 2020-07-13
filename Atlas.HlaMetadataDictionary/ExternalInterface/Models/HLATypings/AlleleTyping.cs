@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.HlaTypingInfo;
 using Atlas.HlaMetadataDictionary.Services;
 
@@ -47,7 +48,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings
                 return false;
             }
 
-            threeFieldName = string.Join(":", Fields.Take(3));
+            threeFieldName = BuildAlleleNameWithoutExpressionSuffix(3);
             return true;
         }
 
@@ -91,7 +92,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings
 
         private string BuildAlleleNameWithoutExpressionSuffix(int fieldCount)
         {
-            return string.Join(FieldDelimiter.ToString(), Fields.Take(fieldCount));
+            return Fields.Take(fieldCount).StringJoin(FieldDelimiter);
         }
     }
 }
