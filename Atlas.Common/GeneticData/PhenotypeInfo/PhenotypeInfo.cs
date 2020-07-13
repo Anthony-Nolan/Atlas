@@ -137,6 +137,19 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         }
 
         /// <summary>
+        /// Creates a new PhenotypeInfo using the provided LociInfo objects.
+        /// </summary>
+        public PhenotypeInfo(LociInfo<T> source1, LociInfo<T> source2)
+        {
+            a = new LocusInfo<T>(source1.A, source2.A);
+            b = new LocusInfo<T>(source1.B, source2.B);
+            c = new LocusInfo<T>(source1.C, source2.C);
+            dpb1 = new LocusInfo<T>(source1.Dpb1, source2.Dpb1);
+            dqb1 = new LocusInfo<T>(source1.Dqb1, source2.Dqb1);
+            drb1 = new LocusInfo<T>(source1.Drb1, source2.Drb1);
+        }
+        
+        /// <summary>
         /// Creates a new PhenotypeInfo with all inner values set to the same starting value.
         /// </summary>
         /// <param name="initialValue">The initial value all inner locus position values should be given.</param>
@@ -355,6 +368,11 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         }
 
         #endregion
+
+        public PhenotypeInfo<T> Swap()
+        {
+            return new PhenotypeInfo<T>(Map((_, locusInfo) => locusInfo.Swap()));
+        }
 
         public new IEnumerable<T> ToEnumerable()
         {
