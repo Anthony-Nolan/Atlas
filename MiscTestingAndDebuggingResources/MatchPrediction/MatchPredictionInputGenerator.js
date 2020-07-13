@@ -1,7 +1,11 @@
 var fs = require('fs');
 
 const config = {
-    fileName: "imputation-input"
+    fileName: "imputation-input",
+    donorRegistry: null,
+    donorEthnicity: null,
+    patientRegistry: null,
+    patientEthnicity: null,
 }
 
 // USAGE INSTRUCTIONS
@@ -31,6 +35,8 @@ function generateInputFromHlaData(donorRawData, patientRawData) {
     "HlaNomenclatureVersion": "${hlaNomenclatureVersion}",
     "DonorHla": ${buildPhenotypeInfo(donorHlaValues)},
     "PatientHla": ${buildPhenotypeInfo(patientHlaValues)},
+    "DonorFrequencySetMetadata": ${buildFrequencySetSelectionCriteria(config.donorEthnicity, config.donorRegistry)},
+    "PatientFrequencySetMetadata": ${buildFrequencySetSelectionCriteria(config.patientEthnicity, config.patientRegistry)},
 }`
 }
 
@@ -56,6 +62,15 @@ function buildPhenotypeInfo(hlaValues) {
             "position1": "${hlaValues[8]}",
             "position2": "${hlaValues[9]}"
         }
+    }`
+}
+
+function buildFrequencySetSelectionCriteria(ethnicityCode, registryCode) {
+    const ethnicityString = ethnicityCode ? `"EthnicityCode": "${ethnicityCode}"` : null
+    const registryString = registryCode ? `"RegistryCode": "${registryCode}"` : null
+    
+    return `{
+        ${[ethnicityString, registryString].filter(x => x).join(", ")}
     }`
 }
 
