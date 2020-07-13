@@ -188,7 +188,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         [Test]
         public void InsertBatchOfDonors_ForDonorWithUntypedRequiredLocus_ThrowsException()
         {
-            var donor = new DonorInfoBuilder(DonorIdGenerator.NextId())
+            var donor = new DonorInfoBuilder()
                 .WithHlaAtLocus(Locus.A, LocusPosition.One, null)
                 .WithHlaAtLocus(Locus.A, LocusPosition.Two, null)
                 .Build();
@@ -213,10 +213,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task UpdateDonorBatch_ForDonorWithAlleles_UpdatesDonorInfoCorrectly()
         {
-            var donorId = DonorIdGenerator.NextId();
+            var donorInfo = new DonorInfoBuilder().Build();
             var donor = donorInfoWithAllelesAtThreeLoci;
-            donor.DonorId = donorId;
-            await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> { new DonorInfoBuilder(donorId).Build() });
+            donor.DonorId = donorInfo.DonorId;
+            await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> {donorInfo});
             await donorUpdateRepository.UpdateDonorBatch(new List<DonorInfoWithExpandedHla> { donor });
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
@@ -227,10 +227,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task UpdateDonorBatch_ForDonorWithXXCodes_UpdatesDonorInfoCorrectly()
         {
-            var donorId = DonorIdGenerator.NextId();
+            var donorInfo = new DonorInfoBuilder().Build();
             var donor = donorInfoWithXxCodesAtThreeLoci;
-            donor.DonorId = donorId;
-            await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> { new DonorInfoBuilder(donorId).Build() });
+            donor.DonorId = donorInfo.DonorId;
+            await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> { donorInfo });
             await donorUpdateRepository.UpdateDonorBatch(new List<DonorInfoWithExpandedHla> { donor });
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
