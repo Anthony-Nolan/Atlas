@@ -18,10 +18,18 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
     {
         Task<string> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour);
         Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory);
+
+        /// <summary>
+        /// Functionally the same as calling ConvertHla on GGroup typed hla, with a target type of PGroup.
+        /// As GGroups are guaranteed to correspond to exactly 0 or 1 PGroups, this method makes this specific conversion much faster.  
+        /// </summary>
+        public Task<string> GetSinglePGroupForGGroup(Locus locus, string gGroup);
+
         Task<LocusInfo<IHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
         Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
-        IEnumerable<string> GetAllPGroups();
+        Task<IEnumerable<string>> GetAllPGroups();
+        Task<IDictionary<Locus, List<string>>> GetAllGGroups();
 
         /// <summary>
         /// This is not the intended entry point for consumption of the metadata;
@@ -53,6 +61,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
+        private readonly IGGroupToPGroupDictionaryGenerator groupToPGroupDictionaryGenerator;
 
         public HlaMetadataDictionary(
             string activeHlaNomenclatureVersionOrDefault,
@@ -64,7 +73,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
-            ILogger logger)
+            ILogger logger,
+            IGGroupToPGroupDictionaryGenerator groupToPGroupDictionaryGenerator)
         {
             this.activeHlaNomenclatureVersionOrDefault = activeHlaNomenclatureVersionOrDefault;
             this.recreateMetadataService = recreateMetadataService;
@@ -76,6 +86,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
+            this.groupToPGroupDictionaryGenerator = groupToPGroupDictionaryGenerator;
         }
 
         private string ActiveHlaNomenclatureVersion => activeHlaNomenclatureVersionOrDefault == HlaMetadataDictionaryConstants.NoActiveVersionValue
@@ -107,6 +118,25 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             }
 
             return version;
+        }
+
+        /// <inheritdoc />
+        public async Task<string> GetSinglePGroupForGGroup(Locus locus, string gGroup)
+        {
+            if (gGroup == null)
+            {
+                return null;
+            }
+
+            var dictionary = await groupToPGroupDictionaryGenerator.GetGGroupToPGroupDictionary(
+                locus,
+                GetAllGGroups,
+                (l, hla) => ConvertHla(l, hla, TargetHlaCategory.PGroup)
+                , ActiveHlaNomenclatureVersion
+            );
+
+            // Null is an appropriate value in some cases - G Groups corresponding to a null allele will have no P Group. 
+            return dictionary.GetValueOrDefault(gGroup);
         }
 
         private bool ShouldRecreate(CreationBehaviour creationConfig)
@@ -155,9 +185,15 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             return await dpb1TceGroupMetadataService.GetDpb1TceGroup(dpb1HlaName, ActiveHlaNomenclatureVersion);
         }
 
-        public IEnumerable<string> GetAllPGroups()
+        public async Task<IEnumerable<string>> GetAllPGroups()
         {
-            return hlaMatchingMetadataService.GetAllPGroups(ActiveHlaNomenclatureVersion);
+            return await hlaMatchingMetadataService.GetAllPGroups(ActiveHlaNomenclatureVersion);
+        }
+
+        /// <inheritdoc />
+        public async Task<IDictionary<Locus, List<string>>> GetAllGGroups()
+        {
+            return await hlaScoringMetadataService.GetAllGGroups(ActiveHlaNomenclatureVersion);
         }
 
         public HlaMetadataCollection GetAllHlaMetadata(string version)

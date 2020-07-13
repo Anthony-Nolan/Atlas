@@ -2,10 +2,10 @@
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
+using Microsoft.Extensions.DependencyInjection;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using FluentAssertions;
 using LazyCache;
-using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
@@ -31,7 +31,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
                 appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
             });
         }
-        
+
         [TearDown]
         public void TearDown()
         {

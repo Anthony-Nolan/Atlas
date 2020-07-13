@@ -21,6 +21,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         /// If not, builds a new appropriate Dictionary and CacheControl, stores them and returns them.
         /// </remarks>
         IHlaMetadataDictionary BuildDictionary(string activeHlaNomenclatureVersion);
+
         IHlaMetadataCacheControl BuildCacheControl(string activeHlaNomenclatureVersion);
     }
 
@@ -45,6 +46,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
+        private readonly IGGroupToPGroupDictionaryGenerator gGroupToPGroupDictionaryGenerator;
 
         //For CacheControl
         private readonly IAlleleNamesMetadataRepository alleleNamesRepository;
@@ -65,13 +67,14 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger,
+            IGGroupToPGroupDictionaryGenerator gGroupToPGroupDictionaryGenerator,
 
             //For CacheControl
             IAlleleNamesMetadataRepository alleleNamesRepository,
             IHlaMatchingMetadataRepository matchingMetadataRepository,
             IHlaScoringMetadataRepository scoringMetadataRepository,
             IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository
-            )
+        )
         {
             this.cache = cacheProvider.Cache;
 
@@ -85,13 +88,13 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
+            this.gGroupToPGroupDictionaryGenerator = gGroupToPGroupDictionaryGenerator;
 
             //For CacheControl
             this.alleleNamesRepository = alleleNamesRepository;
             this.matchingMetadataRepository = matchingMetadataRepository;
             this.scoringMetadataRepository = scoringMetadataRepository;
             this.dpb1TceGroupsMetadataRepository = dpb1TceGroupsMetadataRepository;
-
         }
 
         /// <summary>
@@ -125,7 +128,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             {
                 throw new Exception("Cannot create a HLA Metadata Dictionary without a nomenclature version.");
             }
-            
+
             return new CacheObject
             {
                 Dictionary = BuildUncachedDictionary(activeHlaNomenclatureVersion),
@@ -145,7 +148,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 dpb1TceGroupMetadataService,
                 hlaMetadataGenerationOrchestrator,
                 wmdaHlaNomenclatureVersionAccessor,
-                logger);
+                logger,
+                gGroupToPGroupDictionaryGenerator);
         }
 
         private IHlaMetadataCacheControl BuildUncachedDictionaryCacheControl(string activeHlaNomenclatureVersion)
