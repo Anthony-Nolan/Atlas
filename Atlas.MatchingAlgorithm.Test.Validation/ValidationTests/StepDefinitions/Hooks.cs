@@ -57,10 +57,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         {
             config = new LoggingConfiguration();
 
-            var logfileInfo = new FileTarget("logfile") {FileName = "${basedir}\\info.log"};
-            var logfileError = new FileTarget("logfile") {FileName = "${basedir}\\error.log"};
+            var traceFileInfo = new FileTarget("logfile") { FileName = "${basedir}\\trace.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2 };
+            var logfileInfo = new FileTarget("logfile") { FileName = "${basedir}\\info.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2 };
+            var logfileError = new FileTarget("logfile") {FileName = "${basedir}\\error.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2 };
 
-            config.AddRule(LogLevel.Info, LogLevel.Fatal, logfileInfo);
+            config.AddRule(LogLevel.Trace, LogLevel.Trace, traceFileInfo);
+            config.AddRule(LogLevel.Info, LogLevel.Info, logfileInfo);
             config.AddRule(LogLevel.Error, LogLevel.Fatal, logfileError);
 
             LogManager.Configuration = config;
