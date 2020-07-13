@@ -20,16 +20,16 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         protected const string HlaNomenclatureVersion = Constants.SnapshotHlaNomenclatureVersion;
 
-        protected static readonly string GGroupA1 = Alleles.UnambiguousAlleleDetails.A.Position1.GGroup;
-        protected static readonly string GGroupA2 = Alleles.UnambiguousAlleleDetails.A.Position2.GGroup;
-        protected static readonly string GGroupB1 = Alleles.UnambiguousAlleleDetails.B.Position1.GGroup;
-        protected static readonly string GGroupB2 = Alleles.UnambiguousAlleleDetails.B.Position2.GGroup;
-        protected static readonly string GGroupC1 = Alleles.UnambiguousAlleleDetails.C.Position1.GGroup;
-        protected static readonly string GGroupC2 = Alleles.UnambiguousAlleleDetails.C.Position2.GGroup;
-        protected static readonly string GGroupDqb11 = Alleles.UnambiguousAlleleDetails.Dqb1.Position1.GGroup;
-        protected static readonly string GGroupDqb12 = Alleles.UnambiguousAlleleDetails.Dqb1.Position2.GGroup;
-        protected static readonly string GGroupDrb11 = Alleles.UnambiguousAlleleDetails.Drb1.Position1.GGroup;
-        protected static readonly string GGroupDrb12 = Alleles.UnambiguousAlleleDetails.Drb1.Position2.GGroup;
+        protected static readonly string DefaultGGroupA1 = Alleles.UnambiguousAlleleDetails.A.Position1.GGroup;
+        protected static readonly string DefaultGGroupA2 = Alleles.UnambiguousAlleleDetails.A.Position2.GGroup;
+        protected static readonly string DefaultGGroupB1 = Alleles.UnambiguousAlleleDetails.B.Position1.GGroup;
+        protected static readonly string DefaultGGroupB2 = Alleles.UnambiguousAlleleDetails.B.Position2.GGroup;
+        protected static readonly string DefaultGGroupC1 = Alleles.UnambiguousAlleleDetails.C.Position1.GGroup;
+        protected static readonly string DefaultGGroupC2 = Alleles.UnambiguousAlleleDetails.C.Position2.GGroup;
+        protected static readonly string DefaultGGroupDqb11 = Alleles.UnambiguousAlleleDetails.Dqb1.Position1.GGroup;
+        protected static readonly string DefaultGGroupDqb12 = Alleles.UnambiguousAlleleDetails.Dqb1.Position2.GGroup;
+        protected static readonly string DefaultGGroupDrb11 = Alleles.UnambiguousAlleleDetails.Drb1.Position1.GGroup;
+        protected static readonly string DefaultGGroupDrb12 = Alleles.UnambiguousAlleleDetails.Drb1.Position2.GGroup;
         
         protected readonly string DefaultRegistryCode = "default-registry-code";
         protected readonly string DefaultEthnicityCode = "default-ethnicity-code";
@@ -39,7 +39,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             matchProbabilityService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchProbabilityService>(); 
             importService = DependencyInjection.DependencyInjection.Provider.GetService<IFrequencySetService>();
-            
         }
         
         protected async Task ImportFrequencies(IEnumerable<HaplotypeFrequency> haplotypes, string ethnicityCode, string registryCode)
@@ -52,18 +51,18 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles());
 
         protected static Builder<HaplotypeFrequency> DefaultHaplotypeFrequency1 => Builder<HaplotypeFrequency>.New
-            .With(r => r.A, GGroupA1)
-            .With(r => r.B, GGroupB1)
-            .With(r => r.C, GGroupC1)
-            .With(r => r.DQB1, GGroupDqb11)
-            .With(r => r.DRB1, GGroupDrb11);
+            .With(r => r.A, DefaultGGroupA1)
+            .With(r => r.B, DefaultGGroupB1)
+            .With(r => r.C, DefaultGGroupC1)
+            .With(r => r.DQB1, DefaultGGroupDqb11)
+            .With(r => r.DRB1, DefaultGGroupDrb11);
 
         protected static Builder<HaplotypeFrequency> DefaultHaplotypeFrequency2 => Builder<HaplotypeFrequency>.New
-            .With(r => r.A, GGroupA2)
-            .With(r => r.B, GGroupB2)
-            .With(r => r.C, GGroupC2)
-            .With(r => r.DQB1, GGroupDqb12)
-            .With(r => r.DRB1, GGroupDrb12);
+            .With(r => r.A, DefaultGGroupA2)
+            .With(r => r.B, DefaultGGroupB2)
+            .With(r => r.C, DefaultGGroupC2)
+            .With(r => r.DQB1, DefaultGGroupDqb12)
+            .With(r => r.DRB1, DefaultGGroupDrb12);
     }
     
 }
