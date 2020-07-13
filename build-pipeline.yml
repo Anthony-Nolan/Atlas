@@ -198,7 +198,7 @@ jobs:
       - task: raul-arrieta.terraform-outputs.terraform-outputs.terraform-outputs@0
         displayName: 'Terraform Outputs'
         inputs:
-          workingDirectory: '$(TerraformWorkspace)'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/core'
           variablePrefix: 'TF-OUT'
       - bash: |
           echo Remove the .terraform directory before pushing
