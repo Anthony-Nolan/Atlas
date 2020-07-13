@@ -27,3 +27,7 @@ resource "azurerm_sql_database" "atlas-persistent" {
   server_name         = var.sql_server.name
   tags                = var.general.common_tags
 }
+
+output "matching_transient_database-A_connection_string" {
+  value = locals.matching_transient_database_a_connection_string
+}
