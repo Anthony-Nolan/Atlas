@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
@@ -52,6 +53,16 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         {
             // var patientGenotypes = await ExpandPatientPhenotype(matchProbabilityInput);
             // var donorGenotypes = await ExpandDonorPhenotype(matchProbabilityInput);
+
+            var allowedLoci = new List<Locus>();
+
+            matchProbabilityInput.PatientHla.EachLocus((locus, loci) =>
+            {
+                if (loci.Position1And2NotNull())
+                {
+                    allowedLoci.Add(locus);
+                }
+            });
 
             var frequencySets = await haplotypeFrequencyService.GetHaplotypeFrequencySets(
                 matchProbabilityInput.DonorFrequencySetMetadata,
