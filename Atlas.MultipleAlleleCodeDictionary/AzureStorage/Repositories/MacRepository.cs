@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -8,6 +9,7 @@ using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.Services;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Cosmos.Table;
+using Polly;
 using QueryComparisons = Microsoft.WindowsAzure.Storage.Table.QueryComparisons;
 
 namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
@@ -17,7 +19,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         public Task<string> GetLastMacEntry();
         public Task InsertMacs(IEnumerable<Mac> macCodes);
         public Task<Mac> GetMac(string macCode);
-        public Task<List<Mac>> GetAllMacs();
+        public Task<IReadOnlyCollection<Mac>> GetAllMacs();
+        public Task TruncateMacTable();
     }
 
     internal class MacRepository : IMacRepository
@@ -62,7 +65,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             return new Mac(macEntity);
         }
 
-        public async Task<List<Mac>> GetAllMacs()
+        public async Task<IReadOnlyCollection<Mac>> GetAllMacs()
         {
             var nonMetadataFilter = TableQuery.GenerateFilterCondition(
                 "PartitionKey",
@@ -72,7 +75,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
             var query = new TableQuery<MacEntity>().Where(nonMetadataFilter);
             var result = await Table.ExecuteQueryAsync(query);
-            return result.Select(x => new Mac(x)).ToList();
+            return result.Select(x => new Mac(x)).ToList().AsReadOnly();
         }
 
         private async Task StoreLatestMacRecord(string latestMac)
@@ -108,6 +111,46 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             ));
 
             return metadataEntity?.Code;
+        }
+
+        /// <remarks>
+        /// Rather than attempting to delete each entry, just delete the table and re-create it.
+        /// This takes around 30 seconds on 'real' Azure, but the local emulator it's instantaneous, so this isn't an issue for tests.
+        /// 30s is still markedly faster than the "DeleteAll" approach for large tables on Azure. (Which can take hours!)
+        /// </remarks>
+        public async Task TruncateMacTable()
+        {
+            await DeleteAndRecreateTable();
+        }
+
+        private async Task DeleteAndRecreateTable()
+        {
+            await Table.DeleteIfExistsAsync();
+
+            // Weirdly that Async delete doesn't wait until the deletion is finalised before continuing.
+            // So we have to wait for it ourselves.
+            var twoMinuteRetryPolicy = Policy
+                .Handle<StorageException>(ex => ex.Message == "Conflict")
+                .WaitAndRetry(120, _ => TimeSpan.FromSeconds(1));
+
+            await twoMinuteRetryPolicy.Execute(async () => await Table.CreateIfNotExistsAsync());
+        }
+
+        /// <remarks>
+        /// Retain this for reference of how to do it correctly, if nothing else.
+        /// </remarks>
+        private async Task ExplicitlyDeleteAllMacRecords()
+        {
+            var query = new TableQuery<MacEntity>();
+            var existingMacs = await Table.ExecuteQueryAsync(query); // GetAllMacs would A) do unnecessary conversions and B) skip the LastUpdated record
+
+            foreach (var macToDelete in existingMacs)
+            {
+                // A TableEntities ETag property must be set to "*" to allow overwrites.
+                macToDelete.ETag = "*";
+                var delete = TableOperation.Delete(macToDelete);
+                Table.Execute(delete);
+            }
         }
     }
 
