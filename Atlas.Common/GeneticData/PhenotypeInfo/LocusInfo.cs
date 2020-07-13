@@ -36,7 +36,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         }
 
         #endregion
-        
+
+        internal LocusInfo<T> ShallowCopy()
+        {
+            return (LocusInfo<T>) MemberwiseClone();
+        }
+
         public T GetAtPosition(LocusPosition position)
         {
             return position switch
@@ -61,30 +66,25 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                     throw new ArgumentOutOfRangeException(nameof(position), position, null);
             }
         }
-        
+
         #region Functional Methods
 
         public LocusInfo<R> Map<R>(Func<T, R> mapping)
         {
             return new LocusInfo<R>(mapping(Position1), mapping(Position2));
         }
-        
+
         public async Task<LocusInfo<R>> MapAsync<R>(Func<T, Task<R>> mapping)
         {
             return new LocusInfo<R>(await mapping(Position1), await mapping(Position2));
         }
-        
-        internal LocusInfo<T> ShallowCopy()
-        {
-            return (LocusInfo<T>) MemberwiseClone();
-        }
-        
+
+        #endregion
+
         public LocusInfo<T> Swap()
         {
             return new LocusInfo<T>(Position2, Position1);
         }
-
-        #endregion
 
         public IEnumerable<T> ToEnumerable()
         {
@@ -102,7 +102,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         }
 
         #region Equality Operations
-        
+
         public static bool operator ==(LocusInfo<T> left, LocusInfo<T> right)
         {
             return Equals(left, right);
