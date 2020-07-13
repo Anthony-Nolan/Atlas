@@ -195,6 +195,11 @@ jobs:
         env:
           ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
           ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+      - task: raul-arrieta.terraform-outputs.terraform-outputs.terraform-outputs@0
+        displayName: 'Terraform Outputs'
+        inputs:
+          workingDirectory: '$(TerraformWorkspace)'
+          variablePrefix: 'TF-OUT'
       - bash: |
           echo Remove the .terraform directory before pushing
 
@@ -206,11 +211,6 @@ jobs:
         inputs:
           PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform/core'
           ArtifactName: 'terraform-atlas-core'
-      - task: raul-arrieta.terraform-outputs.terraform-outputs.terraform-outputs@0
-        displayName: 'Terraform Outputs'
-        inputs:
-          workingDirectory: '$(TerraformWorkspace)'
-          variablePrefix: 'TF-OUT'
   - job: Terraform_Webhooks
     pool: Hosted Ubuntu 1604
     steps:
