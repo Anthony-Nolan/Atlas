@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 // ReSharper disable InconsistentNaming - want to use T/R to easily distinguish contained type and target type(s)
 // ReSharper disable MemberCanBeInternal
@@ -34,11 +35,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             Position2 = position2;
         }
 
-        internal LocusInfo<T> ShallowCopy()
-        {
-            return (LocusInfo<T>) MemberwiseClone();
-        }
-        
         #endregion
         
         public T GetAtPosition(LocusPosition position)
@@ -71,6 +67,21 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         public LocusInfo<R> Map<R>(Func<T, R> mapping)
         {
             return new LocusInfo<R>(mapping(Position1), mapping(Position2));
+        }
+        
+        public async Task<LocusInfo<R>> MapAsync<R>(Func<T, Task<R>> mapping)
+        {
+            return new LocusInfo<R>(await mapping(Position1), await mapping(Position2));
+        }
+        
+        internal LocusInfo<T> ShallowCopy()
+        {
+            return (LocusInfo<T>) MemberwiseClone();
+        }
+        
+        public LocusInfo<T> Swap()
+        {
+            return new LocusInfo<T>(Position2, Position1);
         }
 
         #endregion
