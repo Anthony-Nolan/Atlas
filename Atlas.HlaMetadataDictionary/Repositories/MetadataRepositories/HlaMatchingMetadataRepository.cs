@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
-using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 
@@ -10,7 +10,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 {
     internal interface IHlaMatchingMetadataRepository : IHlaMetadataRepository
     {
-        IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion);
+        Task<IEnumerable<string>> GetAllPGroups(string hlaNomenclatureVersion);
     }
 
     internal class HlaMatchingMetadataRepository : HlaMetadataRepositoryBase, IHlaMatchingMetadataRepository
@@ -27,15 +27,18 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         {
         }
 
-        public IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion)
+        public async Task<IEnumerable<string>> GetAllPGroups(string hlaNomenclatureVersion)
         {
-            var versionedCacheKey = VersionedCacheKey(hlaNomenclatureVersion);
-            var metadataDictionary = Cache.Get<Dictionary<string, HlaMetadataTableRow>>(versionedCacheKey);
-            if (metadataDictionary != null)
-            {
-                return metadataDictionary.Values.SelectMany(v => v.ToHlaMatchingMetadata()?.MatchingPGroups);
-            }
-            throw new MemoryCacheException($"{versionedCacheKey} table not cached!");
-        }            
+            return await Cache.GetOrAddAsync($"All-P-Groups:{hlaNomenclatureVersion}", async _ => await CalculateAllPGroups(hlaNomenclatureVersion));
+        }
+
+        private async Task<List<string>> CalculateAllPGroups(string hlaNomenclatureVersion)
+        {
+            var metadataDictionary = await TableData(hlaNomenclatureVersion);
+            return Logger.RunTimed(
+                () => new HashSet<string>(metadataDictionary.Values.SelectMany(v => v.ToHlaMatchingMetadata()?.MatchingPGroups)).ToList(),
+                "Calculated all P-Groups from matching metadata entries"
+            );
+        }          
     }
 }

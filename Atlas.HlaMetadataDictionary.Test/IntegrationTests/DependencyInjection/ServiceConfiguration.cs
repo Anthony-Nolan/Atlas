@@ -37,9 +37,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
                 _ => new MacDictionarySettings()
             );
             
-            services.SetUpMacDictionaryWithFileBackedRepository(
-                fetchApplicationInsightsSettings,
-                fetchMacDictionarySettings);
+            services.SetUpMacDictionaryWithFileBackedRepository(fetchApplicationInsightsSettings, fetchMacDictionarySettings);
 
             services.RegisterConfiguration();
             // Replace Repositories with File-Backed equivalents.

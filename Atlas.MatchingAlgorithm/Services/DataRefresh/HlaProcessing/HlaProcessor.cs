@@ -150,7 +150,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 logger.SendTrace("HLA PROCESSOR: inserting new p groups to database");
                 // P Groups are inserted (when using relational database storage) upfront. All groups are extracted from the HlaMetadataDictionary, and new ones added to the SQL database
                 var hlaDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
-                var pGroups = hlaDictionary.GetAllPGroups();
+                var pGroups = await hlaDictionary.GetAllPGroups();
                 pGroupRepository.InsertPGroups(pGroups);
             }
             catch (Exception e)

@@ -20,6 +20,7 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
         private IHlaMetadataGenerationOrchestrator metadata;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private ILogger logger;
+        private IGGroupToPGroupDictionaryGenerator gGroupToPGroupDictionaryGenerator;
         private IHlaMetadataDictionary cannedResponse = null;
 
         public HlaMetadataDictionaryBuilder()
@@ -37,6 +38,7 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
             dpb1 = Substitute.For<IDpb1TceGroupMetadataService>();
             metadata = Substitute.For<IHlaMetadataGenerationOrchestrator>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
+            gGroupToPGroupDictionaryGenerator = Substitute.For<IGGroupToPGroupDictionaryGenerator>();
             logger = Substitute.For<ILogger>();
         }
 
@@ -74,6 +76,9 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                 case IWmdaHlaNomenclatureVersionAccessor typedDependency:
                     wmdaHlaNomenclatureVersionAccessor = typedDependency;
                     break;
+                case IGGroupToPGroupDictionaryGenerator typedDependency:
+                    gGroupToPGroupDictionaryGenerator = typedDependency;
+                    break;
                 default:
                     throw new InvalidOperationException($"Type '{typeof(T).FullName}' does not match any expected dependency");
             }
@@ -98,7 +103,8 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                 dpb1,
                 metadata,
                 wmdaHlaNomenclatureVersionAccessor,
-                logger
+                logger,
+                gGroupToPGroupDictionaryGenerator
             );
         }
 
