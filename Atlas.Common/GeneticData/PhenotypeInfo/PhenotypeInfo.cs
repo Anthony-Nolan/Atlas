@@ -393,27 +393,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
-        public async Task WhenAllLoci(Func<Locus, LocusInfo<T>, Task> action)
-        {
-            await Task.WhenAll(
-                action(Locus.A, A),
-                action(Locus.B, B),
-                action(Locus.C, C),
-                action(Locus.Dpb1, Dpb1),
-                action(Locus.Dqb1, Dqb1),
-                action(Locus.Drb1, Drb1));
-        }
-
-        private void Initialise()
-        {
-            A = new LocusInfo<T>();
-            B = new LocusInfo<T>();
-            C = new LocusInfo<T>();
-            Dpb1 = new LocusInfo<T>();
-            Dqb1 = new LocusInfo<T>();
-            Drb1 = new LocusInfo<T>();
-        }
-
         #region IEquatable<T> implementation (Defers to EqualityComparer of LocusInfo, which defers to inner type.)
         public static bool operator ==(PhenotypeInfo<T> left, PhenotypeInfo<T> right)
         {
@@ -440,9 +419,21 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         /// <inheritdoc />
         public virtual bool Equals(PhenotypeInfo<T> other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            if (other.GetType() != this.GetType()) return false;
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (other.GetType() != this.GetType())
+            {
+                return false;
+            }
+
             return base.Equals(other);
         }
 
