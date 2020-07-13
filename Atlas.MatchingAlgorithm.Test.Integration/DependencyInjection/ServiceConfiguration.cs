@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus.BatchReceiving;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
@@ -98,6 +99,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.AddScoped(sp => Substitute.For<IMessageReceiverFactory>());
             services.AddScoped(sp => Substitute.For<INotificationSender>());
             services.AddScoped(sp => Substitute.For<IAzureDatabaseManager>());
+
+            // Log to file, not to ApplicationInsights!
+            services.AddScoped<ILogger, FileBasedLogger>();
         }
 
         private static void RegisterIntegrationTestServices(IServiceCollection services)
