@@ -8,7 +8,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
     /// A <see cref="LociInfo{T}"/> has a T at each locus.
     /// A <see cref="PhenotypeInfo{T}"/> is a special case of <see cref="LociInfo{T}"/>, where T = LocusInfo.
     /// </summary>
-    public class LocusInfo<T>
+    public class LocusInfo<T> : IEquatable<LocusInfo<T>>
     {
         public T Position1 { get; set; }
         public T Position2 { get; set; }
@@ -49,51 +49,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             return Position1 == null ^ Position2 == null;
         }
 
-        public IEnumerable<T> ToEnumerable()
-        {
-            return new List<T> {Position1, Position2};
-        }
-
-        public static bool operator ==(LocusInfo<T> left, LocusInfo<T> right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(LocusInfo<T> left, LocusInfo<T> right)
-        {
-            return !Equals(left, right);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (obj.GetType() != this.GetType())
-            {
-                return false;
-            }
-
-            return Equals((LocusInfo<T>) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hashCode = EqualityComparer<T>.Default.GetHashCode(Position1);
-                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(Position2);
-                return hashCode;
-            }
-        }
-
         public T GetAtPosition(LocusPosition position)
         {
             switch (position)
@@ -122,10 +77,42 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             }
         }
 
-        private bool Equals(LocusInfo<T> other)
+        #region IEquatable<T> implementation (Defers to EqualityComparer of inner type.)
+        public static bool operator ==(LocusInfo<T> left, LocusInfo<T> right)
         {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(LocusInfo<T> left, LocusInfo<T> right)
+        {
+            return !Equals(left, right);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as LocusInfo<T>);
+        }
+
+        public virtual bool Equals(LocusInfo<T> other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            if (other.GetType() != this.GetType()) return false;
             return EqualityComparer<T>.Default.Equals(Position1, other.Position1) &&
                    EqualityComparer<T>.Default.Equals(Position2, other.Position2);
         }
+
+        // TODO: ATLAS-499. This HashCode references mutable properties, which is a BadThing(TM).
+        // Make the whole class fully immutable.
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = EqualityComparer<T>.Default.GetHashCode(Position1);
+                hashCode = (hashCode * 397) ^ EqualityComparer<T>.Default.GetHashCode(Position2);
+                return hashCode;
+            }
+        }
+        #endregion
     }
 }

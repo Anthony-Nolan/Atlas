@@ -13,14 +13,27 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
         public void Set_LocusProperty_CannotBeNull()
         {
             var phenotypeInfo = new PhenotypeInfo<string>("default");
-            phenotypeInfo.Invoking(p => p.A = null).Should().Throw<ArgumentNullException>();
-            phenotypeInfo.Invoking(p => p.B = null).Should().Throw<ArgumentNullException>();
-            phenotypeInfo.Invoking(p => p.C = null).Should().Throw<ArgumentNullException>();
-            phenotypeInfo.Invoking(p => p.Dpb1 = null).Should().Throw<ArgumentNullException>();
-            phenotypeInfo.Invoking(p => p.Dqb1 = null).Should().Throw<ArgumentNullException>();
-            phenotypeInfo.Invoking(p => p.Drb1 = null).Should().Throw<ArgumentNullException>();
+            phenotypeInfo.Invoking(p => p.A = null).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            phenotypeInfo.Invoking(p => p.B = null).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            phenotypeInfo.Invoking(p => p.C = null).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            phenotypeInfo.Invoking(p => p.Dpb1 = null).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            phenotypeInfo.Invoking(p => p.Dqb1 = null).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            phenotypeInfo.Invoking(p => p.Drb1 = null).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
         }
-        
+
+        [Test]
+        public void LocusValues_CannotBeInitialisedToNull()
+        {
+            // ReSharper disable ObjectCreationAsStatement
+            ((Action)(() => new PhenotypeInfo<int> { A = null })).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            ((Action)(() => new PhenotypeInfo<int> { B = null })).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            ((Action)(() => new PhenotypeInfo<int> { C = null })).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            ((Action)(() => new PhenotypeInfo<int> { Dpb1 = null })).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            ((Action)(() => new PhenotypeInfo<int> { Dqb1 = null })).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            ((Action)(() => new PhenotypeInfo<int> { Drb1 = null })).Should().Throw<ArgumentNullException>().WithMessage("*cannot be null*");
+            // ReSharper restore ObjectCreationAsStatement
+        }
+
         [Test]
         public void GetAtPosition_GetsValuesAtSpecifiedPositionForAllLoci()
         {
@@ -156,5 +169,124 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
 
             reducedValue.Should().Be(78);
         }
+
+        [Test]
+        public void Equality_WhenObjectsAreEqual_ReportsEquality()
+        {
+            var original = new PhenotypeInfo<int>
+            {
+                A = new LocusInfo<int> { Position1 = 1, Position2 = 2 },
+                B = new LocusInfo<int> { Position1 = 3, Position2 = 4 },
+                C = new LocusInfo<int> { Position1 = 5, Position2 = 6 },
+                Dpb1 = new LocusInfo<int> { Position1 = 7, Position2 = 8 },
+                Dqb1 = new LocusInfo<int> { Position1 = 9, Position2 = 10 },
+                Drb1 = new LocusInfo<int> { Position1 = 11, Position2 = 12 },
+            };
+
+            var copy = new PhenotypeInfo<int>
+            {
+                A = new LocusInfo<int> { Position1 = 1, Position2 = 2 },
+                B = new LocusInfo<int> { Position1 = 3, Position2 = 4 },
+                C = new LocusInfo<int> { Position1 = 5, Position2 = 6 },
+                Dpb1 = new LocusInfo<int> { Position1 = 7, Position2 = 8 },
+                Dqb1 = new LocusInfo<int> { Position1 = 9, Position2 = 10 },
+                Drb1 = new LocusInfo<int> { Position1 = 11, Position2 = 12 },
+            };
+
+            AllVariationsOnObjectEqualityShouldReport(original, copy, true);
+        }
+
+        [Test]
+        public void Equality_WhenObjectsAreDifferent_ReportsNonEquality()
+        {
+            var original = new PhenotypeInfo<int>
+            {
+                A = new LocusInfo<int> { Position1 = 1, Position2 = 2 },
+                B = new LocusInfo<int> { Position1 = 3, Position2 = 4 },
+                C = new LocusInfo<int> { Position1 = 5, Position2 = 6 },
+                Dpb1 = new LocusInfo<int> { Position1 = 7, Position2 = 8 },
+                Dqb1 = new LocusInfo<int> { Position1 = 9, Position2 = 10 },
+                Drb1 = new LocusInfo<int> { Position1 = 11, Position2 = 12 },
+            };
+
+            var different = new PhenotypeInfo<int>
+            {
+                A = new LocusInfo<int> { Position1 = 1, Position2 = 2 },
+                B = new LocusInfo<int> { Position1 = 3, Position2 = 4 },
+                C = new LocusInfo<int> { Position1 = 5, Position2 = 6 },
+                Dpb1 = new LocusInfo<int> { Position1 = 7, Position2 = -1 }, //Different Here.
+                Dqb1 = new LocusInfo<int> { Position1 = 9, Position2 = 10 },
+                Drb1 = new LocusInfo<int> { Position1 = 11, Position2 = 12 },
+            };
+
+            AllVariationsOnObjectEqualityShouldReport(original, different, false);
+        }
+
+        [Test]
+        public void Equality_WhenObjectsContainNulls_DoesNotError()
+        {
+            var same1 = new PhenotypeInfo<int?>
+            {
+                A = new LocusInfo<int?> { Position1 = null, Position2 = 2 },
+                B = new LocusInfo<int?> { Position1 = 3, Position2 = null },
+                C = new LocusInfo<int?> { Position1 = null, Position2 = null },
+                //Dpb1 = ,
+                Dqb1 = new LocusInfo<int?> { Position1 = 9, Position2 = 10 },
+                Drb1 = new LocusInfo<int?> { Position1 = 11, Position2 = 12 },
+            };
+
+            var same2 = new PhenotypeInfo<int?>
+            {
+                A = new LocusInfo<int?> { Position1 = null, Position2 = 2 },
+                B = new LocusInfo<int?> { Position1 = 3, Position2 = null },
+                C = new LocusInfo<int?> { Position1 = null, Position2 = null },
+                //Dpb1 = ,
+                Dqb1 = new LocusInfo<int?> { Position1 = 9, Position2 = 10 },
+                Drb1 = new LocusInfo<int?> { Position1 = 11, Position2 = 12 },
+            };
+
+            var different = new PhenotypeInfo<int?>
+            {
+                A = new LocusInfo<int?> { Position1 = 1, Position2 = null },       // nullity is inverse of same1
+                B = new LocusInfo<int?> { Position1 = 3, Position2 = null },       // nullity matches same1
+                //C = ,                                                            // This default, same1 all null
+                Dpb1 = new LocusInfo<int?> { Position1 = null, Position2 = null }, // This all null, same1 default
+                Dqb1 = new LocusInfo<int?> { Position1 = null, Position2 = null },
+                //Drb1 = ,
+            };
+
+            AllVariationsOnObjectEqualityShouldReport(same1, same2, true);
+            AllVariationsOnObjectEqualityShouldReport(same1, different, false);
+            AllVariationsOnObjectEqualityShouldReport(same2, different, false);
+        }
+
+        public void AllVariationsOnObjectEqualityShouldReport<T>(PhenotypeInfo<T> first, PhenotypeInfo<T> second, bool areEqual)
+        {
+            first.Equals(second).Should().Be(areEqual);
+            Equals(first, second).Should().Be(areEqual);
+            (first == second).Should().Be(areEqual);
+            (first != second).Should().Be(!areEqual);
+
+
+            second.Equals(first).Should().Be(areEqual);
+            Equals(second, first).Should().Be(areEqual);
+            (second == first).Should().Be(areEqual);
+            (second != first).Should().Be(!areEqual);
+
+            ((object)first).Equals(second).Should().Be(areEqual);
+            ((LociInfo<LocusInfo<T>>)first).Equals(second).Should().Be(areEqual);
+            first.Equals((object)second).Should().Be(areEqual);
+            first.Equals((LociInfo<LocusInfo<T>>)second).Should().Be(areEqual);
+
+            if (areEqual)
+            {
+                first.GetHashCode().Should().Be(second.GetHashCode());
+            }
+            else
+            {
+                first.GetHashCode().Should().NotBe(second.GetHashCode());
+            }
+        }
+
     }
 }
