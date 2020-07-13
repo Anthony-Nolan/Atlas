@@ -2,6 +2,7 @@
 using Atlas.Common.Caching;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using FluentAssertions;
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +17,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
     public class Dpb1TceGroupMetadataServiceTests
     {
         private const string CacheKey = "NmdpCodeLookup_Dpb1";
+        private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion;
 
         private IDpb1TceGroupMetadataService metadataService;
         private IAppCache appCache;
@@ -43,7 +45,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string pGroup = "01:01P";
             const string tceGroup = "3";
 
-            var result = await metadataService.GetDpb1TceGroup(pGroup, null);
+            var result = await metadataService.GetDpb1TceGroup(pGroup, HlaVersion);
 
             result.Should().Be(tceGroup);
         }
@@ -54,7 +56,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string pGroup = "01:01:01G";
             const string tceGroup = "3";
 
-            var result = await metadataService.GetDpb1TceGroup(pGroup, null);
+            var result = await metadataService.GetDpb1TceGroup(pGroup, HlaVersion);
 
             result.Should().Be(tceGroup);
         }
@@ -68,7 +70,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Resources.Mac.csv
             const string macWithFirstField = "02:ABC";
 
-            var result = await metadataService.GetDpb1TceGroup(macWithFirstField, null);
+            var result = await metadataService.GetDpb1TceGroup(macWithFirstField, HlaVersion);
 
             result.Should().Be(tceGroup);
         }
@@ -80,7 +82,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Resources.Mac.csv
             const string macWithFirstField = "02:DEF";
 
-            var result = await metadataService.GetDpb1TceGroup(macWithFirstField, null);
+            var result = await metadataService.GetDpb1TceGroup(macWithFirstField, HlaVersion);
 
             result.Should().BeNullOrEmpty();
         }
@@ -94,7 +96,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string tceGroup = "3";
             const string alleleString = firstAllele + "/" + secondAllele;
 
-            var result = await metadataService.GetDpb1TceGroup(alleleString, null);
+            var result = await metadataService.GetDpb1TceGroup(alleleString, HlaVersion);
 
             result.Should().Be(tceGroup);
         }
@@ -106,7 +108,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string tceGroup = "3";
             const string alleleString = "02:01/02";
 
-            var result = await metadataService.GetDpb1TceGroup(alleleString, null);
+            var result = await metadataService.GetDpb1TceGroup(alleleString, HlaVersion);
 
             result.Should().Be(tceGroup);
         }
@@ -119,7 +121,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string secondAllele = "03:01";
             const string alleleString = firstAllele + "/" + secondAllele;
 
-            var result = await metadataService.GetDpb1TceGroup(alleleString, null);
+            var result = await metadataService.GetDpb1TceGroup(alleleString, HlaVersion);
 
             result.Should().BeNullOrEmpty();
         }
