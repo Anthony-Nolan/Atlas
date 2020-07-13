@@ -17,7 +17,8 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         public Task<ISet<PhenotypeInfo<string>>> ExpandCompressedPhenotype(
             PhenotypeInfo<string> phenotype,
             string hlaNomenclatureVersion,
-            IReadOnlyCollection<LociInfo<string>> allPossibleHaplotypes);
+            IReadOnlyCollection<LociInfo<string>> allPossibleHaplotypes,
+            ISet<Locus> allowedLoci);
 
         /// <returns>
         /// The number of genotypes that would be returned if <see cref="ExpandCompressedPhenotype"/> were to be called on this phenotype.
@@ -54,7 +55,8 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         public async Task<ISet<PhenotypeInfo<string>>> ExpandCompressedPhenotype(
             PhenotypeInfo<string> phenotype,
             string hlaNomenclatureVersion,
-            IReadOnlyCollection<LociInfo<string>> allPossibleHaplotypes)
+            IReadOnlyCollection<LociInfo<string>> allPossibleHaplotypes,
+            ISet<Locus> allowedLoci)
         {
             var gGroupsPerPosition = await locusHlaConverter.ConvertHla(phenotype, FrequencyResolution, hlaNomenclatureVersion);
             var gGroupsPerLocus = gGroupsPerPosition.ToLociInfo((l, gGroups1, gGroups2)
