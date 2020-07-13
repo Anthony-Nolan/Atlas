@@ -9,6 +9,7 @@ using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.Services;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Cosmos.Table;
+using Polly;
 using QueryComparisons = Microsoft.WindowsAzure.Storage.Table.QueryComparisons;
 
 namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
@@ -125,22 +126,14 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         private async Task DeleteAndRecreateTable()
         {
             await Table.DeleteIfExistsAsync();
-            var successfullyRecreated = false;
-            while (!successfullyRecreated)
-            {
-                try
-                {
-                    await Table.CreateIfNotExistsAsync();
-                    successfullyRecreated = true;
-                }
-                catch (StorageException e) when (e.Message == "Conflict")
-                {
-                    // Weirdly that Async delete doesn't wait until the deletion is finalised before continuing.
-                    // So we have to wait for it ourselves.
-                    logger.SendTrace("Waiting whilst Table deletion fully processes, before recreation can occur", LogLevel.Verbose);
-                    await Task.Delay(1000);
-                }
-            }
+
+            // Weirdly that Async delete doesn't wait until the deletion is finalised before continuing.
+            // So we have to wait for it ourselves.
+            var twoMinuteRetryPolicy = Policy
+                .Handle<StorageException>(ex => ex.Message == "Conflict")
+                .WaitAndRetry(120, _ => TimeSpan.FromSeconds(1));
+
+            await twoMinuteRetryPolicy.Execute(async () => await Table.CreateIfNotExistsAsync());
         }
 
         /// <remarks>

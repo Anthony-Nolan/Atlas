@@ -19,8 +19,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
         // This class uses the same cache as the MacCacheServiceRepository,
         // which means that we'd be loading macs into the cache twice with the same key ... in the same call.
         // LazyCache isn't too offended by that, when it works. But if a key is missing it causes deadlocks. :(
-        private const string CodesPrefix = nameof(FileBackedMacDictionaryRepository) + "_";
-        private const string AllKey = CodesPrefix + nameof(AllKey);
+        private const string KeysPrefix = nameof(FileBackedMacDictionaryRepository) + "_";
+        private const string AllMacsKey = KeysPrefix + nameof(AllMacsKey);
 
         public FileBackedMacDictionaryRepository(IPersistentCacheProvider cacheProvider)
         {
@@ -45,23 +45,23 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
 
         public Task<Mac> GetMac(string macCode)
         {
-            var mac = cache.Get<Mac>(CodesPrefix + macCode);
+            var mac = cache.Get<Mac>(KeysPrefix + macCode);
             return Task.FromResult(mac);
         }
 
         public Task<IReadOnlyCollection<Mac>> GetAllMacs()
         {
-            var macs = cache.Get<IReadOnlyCollection<Mac>>(AllKey);
+            var macs = cache.Get<IReadOnlyCollection<Mac>>(AllMacsKey);
             return Task.FromResult(macs);
         }
 
         private void CacheAllMacs()
         {
             var macs = ReadMacsFromFile().Select(macEnt => new Mac(macEnt)).ToList().AsReadOnly();
-            cache.Add(AllKey, macs);
+            cache.Add(AllMacsKey, macs);
             foreach (var mac in macs)
             {
-                cache.Add(CodesPrefix + mac.Code, mac);
+                cache.Add(KeysPrefix + mac.Code, mac);
             }
         }
 
@@ -79,11 +79,9 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories
             // * Modify your local Top-level function settings so that it points at a new (temporary) table in AzureTableStorage.
             // * Run the Manual Import endpoint, to populate your temporary table with the records you care about.
             // * Using AzureStorageExplorer navigate to your temp table and export it to CSV.
-            // * ???
-            // * Profit!
 
             var assembly = Assembly.GetExecutingAssembly();
-            using (var stream = assembly.GetManifestResourceStream($"{GetType().Namespace}.Mac.csv"))
+            using (var stream = assembly.GetManifestResourceStream($"{GetType().Namespace}.LargeMacDictionary.csv"))
             using (var reader = new StreamReader(stream))
             using (var csv = new CsvReader(reader))
             {
