@@ -48,7 +48,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             await ImportFrequencies(DefaultHaplotypeFrequencySetOption1, null, null);
             
             await ImportFrequencies(DefaultHaplotypeFrequencySetOption2, SpecificEthnicityCode, SpecificRegistryCode);
-            // Should use option 2
             var patientHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{AlleleStringB}").Build();
             var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, DefaultGGroupA2, DefaultGGroupA2).Build();
 
