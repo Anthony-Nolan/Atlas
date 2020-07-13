@@ -6,6 +6,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
+using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Models;
@@ -54,15 +55,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             // var patientGenotypes = await ExpandPatientPhenotype(matchProbabilityInput);
             // var donorGenotypes = await ExpandDonorPhenotype(matchProbabilityInput);
 
-            var allowedLoci = new List<Locus>();
-
-            matchProbabilityInput.PatientHla.EachLocus((locus, loci) =>
-            {
-                if (loci.Position1And2NotNull())
-                {
-                    allowedLoci.Add(locus);
-                }
-            });
+            var allowedPatientLoci = GetAllowedLoci(matchProbabilityInput.PatientHla);
+            var allowedDonorLoci = GetAllowedLoci(matchProbabilityInput.DonorHla);
 
             var frequencySets = await haplotypeFrequencyService.GetHaplotypeFrequencySets(
                 matchProbabilityInput.DonorFrequencySetMetadata,
@@ -93,6 +87,19 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 new SubjectCalculatorInputs {Genotypes = donorGenotypes, GenotypeLikelihoods = donorGenotypeLikelihoods},
                 patientDonorMatchDetails
             );
+        }
+
+        private static List<Locus> GetAllowedLoci(PhenotypeInfo<string> hla)
+        {
+            return hla.Reduce((locus, value, accumulator) =>
+            {
+                if (value.Position1And2NotNull())
+                {
+                    accumulator.Add(locus);
+                }
+
+                return accumulator;
+            }, new List<Locus>());
         }
 
         private async Task<ISet<PhenotypeInfo<string>>> ExpandPatientPhenotype(MatchProbabilityInput matchProbabilityInput)
