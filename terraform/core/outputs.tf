@@ -1,3 +1,6 @@
+// This file is for outputs that are read by otherr terraforms.
+// If you want an output to be read by azure, use CIOutputs.tf
+
 output "donor_import" {
   value = module.donor_import
 }
