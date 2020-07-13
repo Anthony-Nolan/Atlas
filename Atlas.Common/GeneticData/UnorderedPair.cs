@@ -1,5 +1,10 @@
 ﻿using System;
+
 // ReSharper disable UseDeconstructionOnParameter
+// ReSharper disable MemberCanBeInternal
+// ReSharper disable MemberCanBePrivate.Global
+
+// ReSharper disable InconsistentNaming - want to use T/R to easily distinguish contained type and target type(s)
 
 namespace Atlas.Common.GeneticData
 {
@@ -14,11 +19,11 @@ namespace Atlas.Common.GeneticData
         public T Item1 { get; set; }
         public T Item2 { get; set; }
 
-        // TODO: ATLAS-QQ: Make this immutable?
+        // TODO: ATLAS-527: Make this immutable.
         public UnorderedPair()
         {
         }
-        
+
         public UnorderedPair(T item1, T item2)
         {
             Item1 = item1;
@@ -69,6 +74,7 @@ namespace Atlas.Common.GeneticData
 
         public override int GetHashCode()
         {
+            // TODO: ATLAS-527: Make this immutable.
             return Item1.GetHashCode() ^ Item2.GetHashCode();
         }
 
