@@ -12,6 +12,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 {
@@ -23,6 +24,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
     {
         private const Locus DefaultLocus = Locus.A;
         private const string CacheKey = "NmdpCodeLookup_A";
+        private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion;
 
         private IHlaScoringMetadataService metadataService;
         private IAppCache appCache;
@@ -53,7 +55,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             var expectedGGroups = new[] { "82:01:01G", "82:02:01G", "82:02:02", "82:03" };
             var expectedPGroups = new[] { "82:01P", "82:02P", "82:03" };
 
-            var result = await metadataService.GetHlaMetadata(serologyLocus, serologyName, null);
+            var result = await metadataService.GetHlaMetadata(serologyLocus, serologyName, HlaVersion);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<SerologyScoringInfo>();
@@ -69,7 +71,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string truncatedAlleleName = "01:03";
             const int expectedAlleleCount = 2;
 
-            var result = await metadataService.GetHlaMetadata(DefaultLocus, truncatedAlleleName, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, truncatedAlleleName, HlaVersion);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<MultipleAlleleScoringInfo>();
@@ -84,7 +86,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             var expectedGGroups = new List<string> { "01:09:01G", "01:09:02" };
             var expectedSerologies = new List<SerologyEntry> { new SerologyEntry("1", SerologySubtype.NotSplit, true) };
 
-            var result = await metadataService.GetHlaMetadata(DefaultLocus, pGroup, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, pGroup, HlaVersion);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
@@ -101,7 +103,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string expectedPGroup = "01:01P";
             var expectedSerologies = new List<SerologyEntry> { new SerologyEntry("1", SerologySubtype.NotSplit, true) };
 
-            var result = await metadataService.GetHlaMetadata(DefaultLocus, gGroup, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, gGroup, HlaVersion);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
@@ -121,7 +123,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Resources.Mac.csv
             const string macWithFirstField = "01:XYZ";
 
-            var result = await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, HlaVersion);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
@@ -143,7 +145,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             // MAC value here should be represented in Atlas.MultipleAlleleCodeDictionary.Test.Integration.Resources.Mac.csv
             const string macWithFirstField = "01:XYZ";
 
-            var result = await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, HlaVersion);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
@@ -160,7 +162,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string alleleString = firstAllele + "/" + secondAllele;
             var alleles = new[] { firstAllele, secondAllele };
 
-            var result = await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, alleleString, HlaVersion);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
@@ -177,7 +179,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string alleleString = "01:133/158";
             var alleles = new[] { firstAllele, secondAllele };
 
-            var result = await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, alleleString, HlaVersion);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
@@ -195,7 +197,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string alleleString = firstAllele + "/" + secondAllele + "/" + nullAllele;
             var expressingAlleles = new[] { firstAllele, secondAllele };
 
-            var result = await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null);
+            var result = await metadataService.GetHlaMetadata(DefaultLocus, alleleString, HlaVersion);
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<ConsolidatedMolecularScoringInfo>();
