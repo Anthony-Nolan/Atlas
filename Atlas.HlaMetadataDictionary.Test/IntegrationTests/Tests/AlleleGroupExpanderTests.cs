@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -17,6 +18,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
     public class AlleleGroupExpanderTests
     {
         private const Locus DefaultLocus = Locus.A;
+        private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion;
 
         private IAlleleGroupExpander alleleGroupExpander;
 
@@ -35,7 +37,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string pGroup = "01:88P";
             var expectedAlleles = new List<string> { "01:88:01", "01:88:02", "01:88:03" };
 
-            var alleles = await alleleGroupExpander.ExpandAlleleGroup(DefaultLocus, pGroup, null);
+            var alleles = await alleleGroupExpander.ExpandAlleleGroup(DefaultLocus, pGroup, HlaVersion);
 
             alleles.Should().BeEquivalentTo(expectedAlleles);
         }
@@ -46,7 +48,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string gGroup = "02:02:01G";
             var expectedAlleles = new List<string> { "02:02:01:01", "02:02:01:02", "02:02:01:03", "02:02:01:04", "02:717" };
 
-            var alleles = await alleleGroupExpander.ExpandAlleleGroup(DefaultLocus, gGroup, null);
+            var alleles = await alleleGroupExpander.ExpandAlleleGroup(DefaultLocus, gGroup, HlaVersion);
 
             alleles.Should().BeEquivalentTo(expectedAlleles);
         }
@@ -60,7 +62,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [TestCase("01:XX")]
         public void ExpandAlleleGroup_WhenValidHlaIsNotAnAlleleGroup_ThrowsException(string lookupName)
         {
-            alleleGroupExpander.Invoking(async service => await service.ExpandAlleleGroup(DefaultLocus, lookupName, null))
+            alleleGroupExpander.Invoking(async service => await service.ExpandAlleleGroup(DefaultLocus, lookupName, HlaVersion))
                 .Should().Throw<Exception>();
         }
     }

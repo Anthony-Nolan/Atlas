@@ -21,11 +21,13 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         IHlaMetadataRepository
         where TSerialisableHlaMetadata : ISerialisableHlaMetadata
     {
-        protected Dictionary<(Locus, string), TSerialisableHlaMetadata> HlaMetadata;
+        // Dictionary of dictionaries. First layer keyed by HlaVersion. Second layer by (locus, lookupName).
+        // Make no effort to protect against innappropriate versions being passed in.
+        protected Dictionary<string, Dictionary<(Locus, string), TSerialisableHlaMetadata>> HlaMetadata = new Dictionary<string, Dictionary<(Locus, string), TSerialisableHlaMetadata>>();
 
         protected FileBackedHlaMetadataRepositoryBase()
         {
-            PopulateHlaMetadata();
+            PopulateHlaMetadata(PreExistingTestVersion);
         }
 
         public Task LoadDataIntoMemory(string hlaNomenclatureVersion)
@@ -46,23 +48,23 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
             TypingMethod typingMethod,
             string hlaNomenclatureVersion)
         {
-            var metadata = await LookupMetadata(locus, lookupName);
+            var metadata = await LookupMetadata(locus, lookupName, hlaNomenclatureVersion);
             return metadata == null ? null : new HlaMetadataTableRow(metadata);
         }
 
-        protected Task<TSerialisableHlaMetadata> LookupMetadata(Locus locus, string lookupName)
+        protected Task<TSerialisableHlaMetadata> LookupMetadata(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            var metadata = HlaMetadata.GetValueOrDefault((locus, lookupName));
+            var metadata = HlaMetadata[hlaNomenclatureVersion].GetValueOrDefault((locus, lookupName));
             return Task.FromResult(metadata);
         }
 
         // This method has a one-off cost of ~2s. Therefore the first test run in a suite using the file-backed dictionary will have a ~2s delay.
-        private void PopulateHlaMetadata()
+        private void PopulateHlaMetadata(string hlaNomenclatureVersion)
         {
-            var metadataCollection = GetMetadataFromJsonFile();
+            var metadataCollection = GetMetadataFromJsonFile(hlaNomenclatureVersion);
             var allMetadata = GetHlaMetadata(metadataCollection);
 
-            HlaMetadata = allMetadata
+            HlaMetadata[hlaNomenclatureVersion] = allMetadata
                 .ToDictionary(
                     m => (m.Locus, m.LookupName),
                     m => m
@@ -79,25 +81,26 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
     /// </summary>
     public abstract class FileBackedHlaMetadataRepositoryBaseReader
     {
-        private static FileBackedHlaMetadataCollection loadedFile = null;
+        public const string PreExistingTestVersion = "3330";
 
-        protected static FileBackedHlaMetadataCollection GetMetadataFromJsonFile()
+        private static readonly Dictionary<string, FileBackedHlaMetadataCollection> PreviouslyLoadedFiles = new Dictionary<string, FileBackedHlaMetadataCollection>();
+
+        protected static FileBackedHlaMetadataCollection GetMetadataFromJsonFile(string hlaNomenclatureVersion)
         {
-            if (loadedFile != null)
+            if (PreviouslyLoadedFiles.TryGetValue(hlaNomenclatureVersion, out var loadedFile))
             {
                 return loadedFile;
             }
 
-            var assem = Assembly.GetExecutingAssembly();
-            using (var stream = assem.GetManifestResourceStream("Atlas.HlaMetadataDictionary.Test.IntegrationTests.Resources.all_hla_metadata.json"))
+            var assembly = Assembly.GetExecutingAssembly();
+            using (var stream = assembly.GetManifestResourceStream($"Atlas.HlaMetadataDictionary.Test.IntegrationTests.Resources.all_hla_metadata_v{hlaNomenclatureVersion}.json"))
+            using (var reader = new StreamReader(stream))
             {
-                using (var reader = new StreamReader(stream))
-                {
-                    loadedFile = JsonConvert.DeserializeObject<FileBackedHlaMetadataCollection>(reader.ReadToEnd());
-                }
+                loadedFile = JsonConvert.DeserializeObject<FileBackedHlaMetadataCollection>(reader.ReadToEnd());
             }
 
-            var forceEvaluation = loadedFile.AlleleNameMetadata.Count(); //Forces population of all the IEnumerables.
+            var forceEvaluation = loadedFile.AlleleNameMetadata.Count(); //Forces population of all the IEnumerable Properties.
+            PreviouslyLoadedFiles[hlaNomenclatureVersion] = loadedFile;
             return loadedFile;
         }
     }

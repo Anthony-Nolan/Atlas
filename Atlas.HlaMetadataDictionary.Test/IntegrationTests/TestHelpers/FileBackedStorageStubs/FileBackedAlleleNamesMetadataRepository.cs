@@ -17,7 +17,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
 
         public Task<IAlleleNameMetadata> GetAlleleNameIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            return LookupMetadata(locus, lookupName);
+            return LookupMetadata(locus, lookupName, hlaNomenclatureVersion);
         }
     }
 }
