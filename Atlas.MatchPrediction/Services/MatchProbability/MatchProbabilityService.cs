@@ -93,13 +93,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         {
             return hla.Reduce((locus, value, accumulator) =>
             {
-                if (value.Position1And2NotNull())
+                if (value.Position1 == null && value.Position1 == null)
                 {
-                    accumulator.Add(locus);
+                    accumulator.Remove(locus);
                 }
 
                 return accumulator;
-            }, new List<Locus>());
+            }, LocusSettings.MatchPredictionLoci.ToList());
         }
 
         private async Task<ISet<PhenotypeInfo<string>>> ExpandPatientPhenotype(MatchProbabilityInput matchProbabilityInput)
