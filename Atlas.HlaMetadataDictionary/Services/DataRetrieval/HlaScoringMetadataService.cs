@@ -9,6 +9,7 @@ using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
@@ -19,12 +20,15 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// </summary>
     internal interface IHlaScoringMetadataService : ISearchRelatedMetadataService<IHlaScoringMetadata>
     {
+        Task<IDictionary<Locus, List<string>>> GetAllGGroups(string hlaNomenclatureVersion);
     }
 
     internal class HlaScoringMetadataService :
         SearchRelatedMetadataServiceBase<IHlaScoringMetadata>,
         IHlaScoringMetadataService
     {
+        private readonly IHlaScoringMetadataRepository hlaScoringMetadataRepository;
+
         public HlaScoringMetadataService(
             IHlaScoringMetadataRepository hlaScoringMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
@@ -40,10 +44,15 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             macDictionary,
             alleleGroupExpander)
         {
+            this.hlaScoringMetadataRepository = hlaScoringMetadataRepository;
+        }
+        
+        public async Task<IDictionary<Locus, List<string>>> GetAllGGroups(string hlaNomenclatureVersion)
+        {
+            return await hlaScoringMetadataRepository.GetAllGGroups(hlaNomenclatureVersion);
         }
 
-        protected override IEnumerable<IHlaScoringMetadata> ConvertMetadataRowsToMetadata(
-            IEnumerable<HlaMetadataTableRow> rows)
+        protected override IEnumerable<IHlaScoringMetadata> ConvertMetadataRowsToMetadata(IEnumerable<HlaMetadataTableRow> rows)
         {
             return rows.Select(row => row.ToHlaScoringMetadata());
         }
@@ -137,24 +146,21 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             return MultipleAlleleNullFilter.Filter(singleAlleleInfos);
         }
 
-        private static IEnumerable<string> GetMatchingPGroups(
-            IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
+        private static IEnumerable<string> GetMatchingPGroups(IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
         {
             return singleAlleleScoringInfos
                 .Select(single => single.MatchingPGroup)
                 .Distinct();
         }
 
-        private static IEnumerable<string> GetMatchingGGroups(
-            IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
+        private static IEnumerable<string> GetMatchingGGroups(IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
         {
             return singleAlleleScoringInfos
                 .Select(single => single.MatchingGGroup)
                 .Distinct();
         }
 
-        private static IEnumerable<SerologyEntry> GetMatchingSerologies(
-            IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
+        private static IEnumerable<SerologyEntry> GetMatchingSerologies(IEnumerable<SingleAlleleScoringInfo> singleAlleleScoringInfos)
         {
             return singleAlleleScoringInfos
                 .SelectMany(info => info.MatchingSerologies)

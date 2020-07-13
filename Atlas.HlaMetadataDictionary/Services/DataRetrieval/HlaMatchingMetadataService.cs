@@ -6,6 +6,7 @@ using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
@@ -14,7 +15,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// </summary>
     internal interface IHlaMatchingMetadataService : ISearchRelatedMetadataService<IHlaMatchingMetadata>
     {
-        IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion);
+        Task<IEnumerable<string>> GetAllPGroups(string hlaNomenclatureVersion);
     }
 
     internal class HlaMatchingMetadataService : 
@@ -67,9 +68,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 pGroups);
         }
 
-        public IEnumerable<string> GetAllPGroups(string hlaNomenclatureVersion)
+        public async Task<IEnumerable<string>> GetAllPGroups(string hlaNomenclatureVersion)
         {
-            return typedMatchingRepository.GetAllPGroups(hlaNomenclatureVersion);
+            return await typedMatchingRepository.GetAllPGroups(hlaNomenclatureVersion);
         }
 
     }

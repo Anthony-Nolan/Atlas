@@ -24,6 +24,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         private IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
         private IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
+        private IGGroupToPGroupDictionaryGenerator gGroupToPGroupDictionaryGenerator;
         private ILogger logger;
 
         private IHlaMetadataDictionary hlaMetadataDictionary;
@@ -39,20 +40,21 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
             dpb1TceGroupMetadataService = Substitute.For<IDpb1TceGroupMetadataService>();
             hlaMetadataGenerationOrchestrator = Substitute.For<IHlaMetadataGenerationOrchestrator>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
+            gGroupToPGroupDictionaryGenerator = Substitute.For<IGGroupToPGroupDictionaryGenerator>();
             logger = Substitute.For<ILogger>();
 
-            hlaMetadataDictionary =
-                new HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary(
-                    DefaultVersion,
-                    recreateMetadataService,
-                    hlaConverter,
-                    hlaMatchingMetadataService,
-                    locusHlaMatchingMetadataService,
-                    hlaScoringMetadataService,
-                    dpb1TceGroupMetadataService,
-                    hlaMetadataGenerationOrchestrator,
-                    wmdaHlaNomenclatureVersionAccessor,
-                    logger);
+            hlaMetadataDictionary = new HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary(
+                DefaultVersion,
+                recreateMetadataService,
+                hlaConverter,
+                hlaMatchingMetadataService,
+                locusHlaMatchingMetadataService,
+                hlaScoringMetadataService,
+                dpb1TceGroupMetadataService,
+                hlaMetadataGenerationOrchestrator,
+                wmdaHlaNomenclatureVersionAccessor,
+                logger,
+                gGroupToPGroupDictionaryGenerator);
         }
 
         [Test]
