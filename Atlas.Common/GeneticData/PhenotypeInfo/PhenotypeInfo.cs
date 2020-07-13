@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+
+// ReSharper disable InconsistentNaming - want to use T/R to easily distinguish contained type and target type(s)
+// ReSharper disable MemberCanBeInternal
 
 // ReSharper disable MemberCanBePrivate.Global
 namespace Atlas.Common.GeneticData.PhenotypeInfo
@@ -16,8 +18,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
     /// <typeparam name="T">The type of the information that is required for each loci position.</typeparam>
     public class PhenotypeInfo<T> : LociInfo<LocusInfo<T>>, IEquatable<PhenotypeInfo<T>>
     {
-        private const string LocusInfoNullExceptionMessage =
-            "LocusInfo<T> cannot be null in a PhenotypeInfo<T>. Set the nested values to null instead.";
+        private const string LocusInfoNullExceptionMessage = "LocusInfo<T> cannot be null in a PhenotypeInfo<T>. Set nested values to null instead.";
 
         #region Ensure no Locus is null
         /// <inheritdoc />
@@ -34,6 +35,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 a = value;
             }
         }
+
         /// <inheritdoc />
         public override LocusInfo<T> B
         {
@@ -48,6 +50,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 b = value;
             }
         }
+
         /// <inheritdoc />
         public override LocusInfo<T> C
         {
@@ -62,6 +65,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 c = value;
             }
         }
+
         /// <inheritdoc />
         public override LocusInfo<T> Dpb1
         {
@@ -76,6 +80,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 dpb1 = value;
             }
         }
+
         /// <inheritdoc />
         public override LocusInfo<T> Dqb1
         {
@@ -90,6 +95,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 dqb1 = value;
             }
         }
+
         /// <inheritdoc />
         public override LocusInfo<T> Drb1
         {
@@ -106,6 +112,8 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         }
 
         #endregion
+
+        #region Constructors
 
         /// <summary>
         /// Creates a new PhenotypeInfo with no inner values set.
@@ -143,6 +151,36 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             SetLocus(Locus.Drb1, initialValue);
         }
 
+        private void Initialise()
+        {
+            A = new LocusInfo<T>();
+            B = new LocusInfo<T>();
+            C = new LocusInfo<T>();
+            Dpb1 = new LocusInfo<T>();
+            Dqb1 = new LocusInfo<T>();
+            Drb1 = new LocusInfo<T>();
+        }
+
+        #endregion
+
+        public T GetPosition(Locus locus, LocusPosition position)
+        {
+            return GetLocus(locus).GetAtPosition(position);
+        }
+
+        public void SetPosition(Locus locus, LocusPosition position, T value)
+        {
+            GetLocus(locus).SetAtPosition(position, value);
+        }
+
+        public void SetLocus(Locus locus, T value)
+        {
+            SetPosition(locus, LocusPosition.One, value);
+            SetPosition(locus, LocusPosition.Two, value);
+        }
+
+        #region Functional Methods
+
         public PhenotypeInfo<R> Map<R>(Func<Locus, LocusPosition, T, R> mapping)
         {
             return new PhenotypeInfo<R>(Map((locusType, locusInfo) => new LocusInfo<R>(
@@ -161,7 +199,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             return Map((locusType, position, locusInfo) => mapping(locusInfo));
         }
 
-        [SuppressMessage("ReSharper", "InconsistentNaming")]
         public async Task<PhenotypeInfo<R>> MapAsync<R>(Func<Locus, LocusPosition, T, Task<R>> mapping)
         {
             var a_1 = mapping(Locus.A, LocusPosition.One, A.Position1);
@@ -190,11 +227,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
-        public PhenotypeInfo<R> MapByLocus<R>(Func<LocusInfo<T>, LocusInfo<R>> mapping)
-        {
-            return MapByLocus((locus, x) => mapping(x));
-        }
-
         public PhenotypeInfo<R> MapByLocus<R>(Func<Locus, LocusInfo<T>, LocusInfo<R>> mapping)
         {
             return new PhenotypeInfo<R>
@@ -208,55 +240,55 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
+        public PhenotypeInfo<R> MapByLocus<R>(Func<LocusInfo<T>, LocusInfo<R>> mapping)
+        {
+            return MapByLocus((locus, x) => mapping(x));
+        }
+
         public async Task<PhenotypeInfo<R>> MapByLocusAsync<R>(Func<Locus, LocusInfo<T>, Task<LocusInfo<R>>> action)
         {
-            var a = action(Locus.A, A);
-            var b = action(Locus.B, B);
-            var c = action(Locus.C, C);
-            var dpb1 = action(Locus.Dpb1, Dpb1);
-            var dqb1 = action(Locus.Dqb1, Dqb1);
-            var drb1 = action(Locus.Drb1, Drb1);
+            var taskA = action(Locus.A, A);
+            var taskB = action(Locus.B, B);
+            var taskC = action(Locus.C, C);
+            var taskDpb1 = action(Locus.Dpb1, Dpb1);
+            var taskDqb1 = action(Locus.Dqb1, Dqb1);
+            var taskDrb1 = action(Locus.Drb1, Drb1);
 
-            await Task.WhenAll(a, b, c, dpb1, dqb1, drb1);
+            await Task.WhenAll(taskA, taskB, taskC, taskDpb1, taskDqb1, taskDrb1);
 
             return new PhenotypeInfo<R>
             {
                 A =
                 {
-                    Position1 = a.Result.Position1,
-                    Position2 = a.Result.Position2,
+                    Position1 = taskA.Result.Position1,
+                    Position2 = taskA.Result.Position2,
                 },
                 B =
                 {
-                    Position1 = b.Result.Position1,
-                    Position2 = b.Result.Position2,
+                    Position1 = taskB.Result.Position1,
+                    Position2 = taskB.Result.Position2,
                 },
                 C =
                 {
-                    Position1 = c.Result.Position1,
-                    Position2 = c.Result.Position2,
+                    Position1 = taskC.Result.Position1,
+                    Position2 = taskC.Result.Position2,
                 },
                 Dpb1 =
                 {
-                    Position1 = dpb1.Result.Position1,
-                    Position2 = dpb1.Result.Position2,
+                    Position1 = taskDpb1.Result.Position1,
+                    Position2 = taskDpb1.Result.Position2,
                 },
                 Dqb1 =
                 {
-                    Position1 = dqb1.Result.Position1,
-                    Position2 = dqb1.Result.Position2,
+                    Position1 = taskDqb1.Result.Position1,
+                    Position2 = taskDqb1.Result.Position2,
                 },
                 Drb1 =
                 {
-                    Position1 = drb1.Result.Position1,
-                    Position2 = drb1.Result.Position2
+                    Position1 = taskDrb1.Result.Position1,
+                    Position2 = taskDrb1.Result.Position2
                 }
             };
-        }
-
-        public LociInfo<R> ToLociInfo<R>(Func<Locus, T, T, R> combine)
-        {
-            return Map((l, hla) => combine(l, hla.Position1, hla.Position2));
         }
 
         public R Reduce<R>(Func<Locus, LocusPosition, T, R, R> reducer, R initialValue = default)
@@ -267,22 +299,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 accumulator = reducer(locus, LocusPosition.Two, t.Position2, accumulator);
                 return accumulator;
             }, initialValue);
-        }
-
-        public void SetPosition(Locus locus, LocusPosition position, T value)
-        {
-            GetLocus(locus).SetAtPosition(position, value);
-        }
-
-        public T GetPosition(Locus locus, LocusPosition position)
-        {
-            return GetLocus(locus).GetAtPosition(position);
-        }
-
-        public void SetLocus(Locus locus, T value)
-        {
-            SetPosition(locus, LocusPosition.One, value);
-            SetPosition(locus, LocusPosition.Two, value);
         }
 
         public void EachLocus(Action<Locus, LocusInfo<T>> action)
@@ -321,6 +337,24 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             action(Locus.Drb1, LocusPosition.One, Drb1.Position1);
             action(Locus.Drb1, LocusPosition.Two, Drb1.Position2);
         }
+
+        public async Task WhenAllLoci(Func<Locus, LocusInfo<T>, Task> action)
+        {
+            await Task.WhenAll(
+                action(Locus.A, A),
+                action(Locus.B, B),
+                action(Locus.C, C),
+                action(Locus.Dpb1, Dpb1),
+                action(Locus.Dqb1, Dqb1),
+                action(Locus.Drb1, Drb1));
+        }
+
+        public LociInfo<R> ToLociInfo<R>(Func<Locus, T, T, R> combine)
+        {
+            return Map((l, hla) => combine(l, hla.Position1, hla.Position2));
+        }
+
+        #endregion
 
         public new IEnumerable<T> ToEnumerable()
         {
