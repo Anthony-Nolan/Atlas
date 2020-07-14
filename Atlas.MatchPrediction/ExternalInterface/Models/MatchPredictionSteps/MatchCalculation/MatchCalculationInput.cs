@@ -1,4 +1,6 @@
-﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+﻿using System.Collections.Generic;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.MatchCalculation
 {
@@ -7,5 +9,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.Ma
         public PhenotypeInfo<string> DonorHla { get; set; }
         public PhenotypeInfo<string> PatientHla { get; set; }
         public string HlaNomenclatureVersion { get; set; }
+        public ISet<Locus> AllowedPatientLoci { get; set; }
+        public ISet<Locus> AllowedDonorLoci { get; set; }
     }
 }

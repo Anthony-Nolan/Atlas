@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
@@ -27,6 +28,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         private static readonly LociInfo<int?> DoubleMismatchAtA = new LociInfo<int?>
             {A = 0, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
 
+
+        private static readonly ISet<Locus> allowedLoci = new HashSet<Locus> {Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1};
+
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
@@ -38,7 +42,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         public async Task MatchAtPGroupLevel_WhenIdenticalGenotypes_IsTenOutOfTenMatch()
         {
             var matchDetails = await matchCalculationService
-                .MatchAtPGroupLevel(DefaultUnambiguousAllelesBuilder.Build(), DefaultUnambiguousAllelesBuilder.Build(), HlaNomenclatureVersion);
+                .MatchAtPGroupLevel(
+                    DefaultUnambiguousAllelesBuilder.Build(),
+                    DefaultUnambiguousAllelesBuilder.Build(),
+                    HlaNomenclatureVersion,
+                    allowedLoci,
+                    allowedLoci);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -49,7 +58,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var donorGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.B, LocusPosition.Two, "15:228").Build();
             var patientGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.B, LocusPosition.Two, "15:146").Build();
 
-            var matchDetails = await matchCalculationService.MatchAtPGroupLevel(patientGenotype, donorGenotype, HlaNomenclatureVersion);
+            var matchDetails = await matchCalculationService.MatchAtPGroupLevel(
+                patientGenotype,
+                donorGenotype, 
+                HlaNomenclatureVersion,
+                allowedLoci,
+                allowedLoci);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -60,7 +74,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var donorGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.Two, "02:09").Build();
             var patientGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.Two, "02:66").Build();
 
-            var matchDetails = await matchCalculationService.MatchAtPGroupLevel(patientGenotype, donorGenotype, HlaNomenclatureVersion);
+            var matchDetails = await matchCalculationService.MatchAtPGroupLevel(
+                patientGenotype,
+                donorGenotype,
+                HlaNomenclatureVersion,
+                allowedLoci,
+                allowedLoci);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -71,7 +90,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var donorGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.One, "2").Build();
             var patientGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.One, "02:09").Build();
 
-            var matchDetails = await matchCalculationService.MatchAtPGroupLevel(patientGenotype, donorGenotype, HlaNomenclatureVersion);
+            var matchDetails = await matchCalculationService.MatchAtPGroupLevel(
+                patientGenotype,
+                donorGenotype,
+                HlaNomenclatureVersion,
+                allowedLoci,
+                allowedLoci);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -84,7 +108,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .Build();
 
             var matchDetails = await matchCalculationService
-                .MatchAtPGroupLevel(DefaultUnambiguousAllelesBuilder.Build(), donorGenotype, HlaNomenclatureVersion);
+                .MatchAtPGroupLevel(
+                    DefaultUnambiguousAllelesBuilder.Build(),
+                    donorGenotype,
+                    HlaNomenclatureVersion,
+                    allowedLoci,
+                    allowedLoci);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -95,7 +124,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var patientGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, Alleles.UnambiguousAlleleDetails.A.Position1.Allele).Build();
 
             var matchDetails = await matchCalculationService
-                .MatchAtPGroupLevel(patientGenotype, DefaultUnambiguousAllelesBuilder.Build(), HlaNomenclatureVersion);
+                .MatchAtPGroupLevel(
+                    patientGenotype,
+                    DefaultUnambiguousAllelesBuilder.Build(),
+                    HlaNomenclatureVersion,
+                    allowedLoci,
+                    allowedLoci);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(SingleMismatchAtA);
         }
@@ -106,7 +140,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var donorGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, Alleles.UnambiguousAlleleDetails.A.Position1.Allele).Build();
 
             var matchDetails = await matchCalculationService
-                .MatchAtPGroupLevel(DefaultUnambiguousAllelesBuilder.Build(), donorGenotype, HlaNomenclatureVersion);
+                .MatchAtPGroupLevel(
+                    DefaultUnambiguousAllelesBuilder.Build(),
+                    donorGenotype,
+                    HlaNomenclatureVersion,
+                    allowedLoci,
+                    allowedLoci);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(SingleMismatchAtA);
         }
@@ -117,7 +156,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var donorGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, "11:03").Build();
             var patientGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, "02:09").Build();
 
-            var matchDetails = await matchCalculationService.MatchAtPGroupLevel(patientGenotype, donorGenotype, HlaNomenclatureVersion);
+            var matchDetails = await matchCalculationService.MatchAtPGroupLevel(
+                patientGenotype,
+                donorGenotype,
+                HlaNomenclatureVersion,
+                allowedLoci,
+                allowedLoci);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(DoubleMismatchAtA);
         }

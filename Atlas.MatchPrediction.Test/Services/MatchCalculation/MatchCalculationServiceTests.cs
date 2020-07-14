@@ -24,7 +24,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchCalculation
             locusMatchCalculator = Substitute.For<ILocusMatchCalculator>();
             locusHlaConverter = Substitute.For<ILocusHlaConverter>();
 
-            locusHlaConverter.ConvertHla(default, default, default)
+            locusHlaConverter.ConvertHla(default, default, default, default)
                 .ReturnsForAnyArgs(new PhenotypeInfo<IReadOnlyCollection<string>>(new List<string> {"hla"}));
 
             locusMatchCalculator.MatchCount(Arg.Any<LocusInfo<IEnumerable<string>>>(), Arg.Any<LocusInfo<IEnumerable<string>>>()).Returns(2);
@@ -35,7 +35,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchCalculation
         [Test]
         public async Task MatchAtPGroupLevel_MatchCountIsCalledPerLocus()
         {
-            await matchCalculationService.MatchAtPGroupLevel(default, default, default);
+            await matchCalculationService.MatchAtPGroupLevel(default, default, default, default, default);
 
             locusMatchCalculator.Received(5)
                 .MatchCount(Arg.Any<LocusInfo<IEnumerable<string>>>(), Arg.Any<LocusInfo<IEnumerable<string>>>());
@@ -48,7 +48,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchCalculation
         {
             locusMatchCalculator.MatchCount(Arg.Any<LocusInfo<IEnumerable<string>>>(), Arg.Any<LocusInfo<IEnumerable<string>>>()).Returns(perLocusMatchCount);
 
-            var match = await matchCalculationService.MatchAtPGroupLevel(default, default, default);
+            var match = await matchCalculationService.MatchAtPGroupLevel(default, default, default, default, default);
 
             // Not including Dpb1 as it's not included in match prediction
             var actualTotal = match.MatchCounts.A + match.MatchCounts.B + match.MatchCounts.C + match.MatchCounts.Dqb1 + match.MatchCounts.Drb1;
