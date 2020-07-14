@@ -75,7 +75,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 
             var scoringInfo = result.HlaScoringInfo;
             scoringInfo.Should().BeOfType<MultipleAlleleScoringInfo>();
-            ((MultipleAlleleScoringInfo)scoringInfo).AlleleScoringInfos.Count().Should().Be(expectedAlleleCount);
+            ((MultipleAlleleScoringInfo)scoringInfo).AlleleScoringInfos.Should().HaveCount(expectedAlleleCount);
         }
 
         // TODO: ATLAS-454: Confirm scoring metadata lookup strategy for P groups
