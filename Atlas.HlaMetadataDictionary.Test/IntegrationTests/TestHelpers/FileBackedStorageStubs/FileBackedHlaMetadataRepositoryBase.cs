@@ -82,6 +82,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
     public abstract class FileBackedHlaMetadataRepositoryBaseReader
     {
         public const string PreExistingTestVersion = "3330";
+        public const string NewDonorUpdateTestsVersion = "3400";
 
         private static readonly Dictionary<string, FileBackedHlaMetadataCollection> PreviouslyLoadedFiles = new Dictionary<string, FileBackedHlaMetadataCollection>();
 

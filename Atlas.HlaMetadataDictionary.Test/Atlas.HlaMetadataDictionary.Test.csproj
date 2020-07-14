@@ -118,6 +118,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="IntegrationTests\Resources\all_hla_metadata_v3330.json" />
+    <EmbeddedResource Include="IntegrationTests\Resources\all_hla_metadata_v3400.json" />
   </ItemGroup>
 
   <ItemGroup>
