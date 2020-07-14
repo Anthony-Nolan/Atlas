@@ -24,7 +24,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
         {
             var services = new ServiceCollection();
 
-            SetUpConfiguration(services);
+            services.SetUpConfiguration();
             services.RegisterMatchPredictionServices(
                 ApplicationInsightsSettingsReader,
                 _ => new HlaMetadataDictionarySettings(),
@@ -32,8 +32,8 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
                 _ => new NotificationsServiceBusSettings(),
                 ConnectionStringReader(MatchPredictionSqlConnectionString)
             );
-            RegisterIntegrationTestServices(services);
-            SetUpMockServices(services);
+            services.RegisterIntegrationTestServices();
+            services.SetUpMockServices();
             
             // This call must be made after `RegisterMatchPredictionServices()`, as it overrides the non-mock dictionary set up in that method
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(ApplicationInsightsSettingsReader, _ => new MacDictionarySettings());
@@ -44,7 +44,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             return services.BuildServiceProvider();
         }
 
-        private static void SetUpConfiguration(IServiceCollection services)
+        private static void SetUpConfiguration(this IServiceCollection services)
         {
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
@@ -54,7 +54,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             services.AddSingleton<IConfiguration>(sp => configuration);
         }
 
-        private static void RegisterIntegrationTestServices(IServiceCollection services)
+        private static void RegisterIntegrationTestServices(this IServiceCollection services)
         {
             services.AddScoped(sp =>
             {
@@ -67,7 +67,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             );
         }
 
-        private static void SetUpMockServices(IServiceCollection services)
+        private static void SetUpMockServices(this IServiceCollection services)
         {
             services.AddScoped(sp => Substitute.For<INotificationSender>());
         }
