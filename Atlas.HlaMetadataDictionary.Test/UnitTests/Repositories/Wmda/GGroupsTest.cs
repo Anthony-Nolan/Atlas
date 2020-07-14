@@ -7,10 +7,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
 {
     internal class GGroupsTest : WmdaRepositoryTestBase<HlaNomG>
     {
-        protected override void SetupTestData()
-        {
-            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaNomenclatureVersionToTest).GGroups, MolecularLoci);
-        }
+        protected override IEnumerable<HlaNomG> SelectTestDataTypings(WmdaDataset dataset) => dataset.GGroups;
+        protected override string[] ApplicableLoci => MolecularLoci;
 
         [TestCase("C*", "02:14:01G", new[] { "02:14:01", "02:14:02" }, Description = "G group of alleles of same subtype")]
         [TestCase("C*", "01:03:01G", new[] { "01:03", "01:24" }, Description = "G group of alleles of different subtypes")]

@@ -7,10 +7,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
 {
     internal class ConfidentialAlleleTest : WmdaRepositoryTestBase<ConfidentialAllele>
     {
-        protected override void SetupTestData()
-        {
-            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaNomenclatureVersionToTest).ConfidentialAlleles, MolecularLoci);
-        }
+        protected override IEnumerable<ConfidentialAllele> SelectTestDataTypings(WmdaDataset dataset) => dataset.ConfidentialAlleles;
+        protected override string[] ApplicableLoci => MolecularLoci;
         
         [Test]
         public void WmdaDataRepository_ConfidentialAlleles_SuccessfullyCaptured()

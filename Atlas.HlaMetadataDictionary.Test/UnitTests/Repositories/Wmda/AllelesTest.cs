@@ -1,4 +1,5 @@
-﻿using Atlas.Common.GeneticData.Hla.Models;
+﻿using System.Collections.Generic;
+using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 using NUnit.Framework;
 
@@ -6,11 +7,10 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
 {
     internal class AllelesTest : WmdaRepositoryTestBase<HlaNom>
     {
-        protected override void SetupTestData()
-        {
-            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaNomenclatureVersionToTest).Alleles, MolecularLoci);
-        }
-        
+        protected override IEnumerable<HlaNom> SelectTestDataTypings(WmdaDataset dataset) => dataset.Alleles;
+        protected override string[] ApplicableLoci => MolecularLoci;
+
+
         [TestCase("A*", "01:26")]
         [TestCase("A*", "01:27N")]
         [TestCase("B*", "07:05:06")]
