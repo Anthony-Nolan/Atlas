@@ -32,10 +32,10 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
         
         [TestCase(Locus.A, "01:11N")]
-        [TestCase(Locus.B, "08:01N")]
-        [TestCase(Locus.C, "07:01N")]
-        [TestCase(Locus.Dqb1, "02:01N")]
-        [TestCase(Locus.Drb1, "03:02N")]
+        [TestCase(Locus.B, "13:56:01")]
+        [TestCase(Locus.C, "07:491:01N")]
+        [TestCase(Locus.Dqb1, "02:18")]
+        [TestCase(Locus.Drb1, "08:78N")]
         public async Task GetSinglePGroupForGGroup_WithNoMatchingPGroup_ReturnsNull(Locus locus, string gGroup)
         {
             var pGroup = await hlaMetadataDictionary.GetSinglePGroupForGGroup(locus, gGroup);
