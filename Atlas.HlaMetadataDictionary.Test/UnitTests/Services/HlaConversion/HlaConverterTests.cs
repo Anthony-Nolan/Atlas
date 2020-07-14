@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
-using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
@@ -24,6 +23,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         private const Locus DefaultLocus = Locus.A;
         private const string DefaultHlaName = "hla";
 
+        private IHlaNameToPGroupConverter hlaNameToPGroupConverter;
         private IHlaNameToTwoFieldAlleleConverter hlaNameToTwoFieldAlleleConverter;
         private IHlaScoringMetadataService scoringMetadataService;
 
@@ -33,14 +33,14 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         public void SetUp()
         {
             hlaNameToTwoFieldAlleleConverter = Substitute.For<IHlaNameToTwoFieldAlleleConverter>();
+            hlaNameToPGroupConverter = Substitute.For<IHlaNameToPGroupConverter>();
             scoringMetadataService = Substitute.For<IHlaScoringMetadataService>();
             var logger = Substitute.For<ILogger>();
 
             hlaConverter = new HlaConverter(
                 hlaNameToTwoFieldAlleleConverter,
-                scoringMetadataService,
-                logger,
-                AppCacheBuilder.NewPersistentCacheProvider()
+                hlaNameToPGroupConverter,
+                scoringMetadataService
             );
         }
 
@@ -137,28 +137,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
                 HlaNomenclatureVersion = version
             });
 
-            await scoringMetadataService.Received()
-                .GetHlaMetadata(DefaultLocus, DefaultHlaName, version);
-        }
-
-        //TODO ATLAS-394: After HMD has been decoupled from Scoring, test using appropriate PGroup lookup service
-        [Test]
-        public async Task ConvertHla_TargetIsPGroup_ReturnsMatchingPGroups()
-        {
-            var pGroups = new List<string> {"p-group1", "p-group-2"};
-            var info = new ConsolidatedMolecularScoringInfoBuilder().WithMatchingPGroups(pGroups).Build();
-            var metadata = BuildHlaScoringMetadata(info);
-            scoringMetadataService.GetHlaMetadata(DefaultLocus, DefaultHlaName, Arg.Any<string>()).Returns(metadata);
-
-            const TargetHlaCategory targetHla = TargetHlaCategory.PGroup;
-            const string version = "version";
-            var result = await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
-            {
-                TargetHlaCategory = targetHla,
-                HlaNomenclatureVersion = version
-            });
-
-            result.Should().BeEquivalentTo(pGroups);
+            await hlaNameToPGroupConverter.Received().ConvertHla(DefaultLocus, DefaultHlaName, version);
         }
 
         //TODO ATLAS-394: After HMD has been decoupled from Scoring, test using appropriate Serology lookup service
