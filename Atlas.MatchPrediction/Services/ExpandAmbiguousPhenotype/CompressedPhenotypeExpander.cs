@@ -6,6 +6,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Maths;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
+using Atlas.MatchPrediction.Config;
 
 namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 {
@@ -23,7 +24,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         /// <returns>
         /// The number of genotypes that would be returned if <see cref="ExpandCompressedPhenotype"/> were to be called on this phenotype.
         /// </returns>>
-        public Task<long> CalculateNumberOfPermutations(PhenotypeInfo<string> phenotype, string hlaNomenclatureVersion);
+        public Task<long> CalculateNumberOfPermutations(PhenotypeInfo<string> phenotype, string hlaNomenclatureVersion, ISet<Locus> allowedLoci);
     }
 
     internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
@@ -46,7 +47,8 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 
         public async Task<ISet<PhenotypeInfo<string>>> ExpandCompressedPhenotype(PhenotypeInfo<string> phenotype, string hlaNomenclatureVersion)
         {
-            var gGroupsPerLocus = await locusHlaConverter.ConvertHla(phenotype, FrequencyResolution, hlaNomenclatureVersion);
+            var allowedLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
+            var gGroupsPerLocus = await locusHlaConverter.ConvertHla(phenotype, FrequencyResolution, hlaNomenclatureVersion, allowedLoci);
             return ambiguousPhenotypeExpander.ExpandPhenotype(gGroupsPerLocus);
         }
 
@@ -58,17 +60,17 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             IReadOnlyCollection<LociInfo<string>> allPossibleHaplotypes,
             ISet<Locus> allowedLoci)
         {
-            var gGroupsPerPosition = await locusHlaConverter.ConvertHla(phenotype, FrequencyResolution, hlaNomenclatureVersion);
+            var gGroupsPerPosition = await locusHlaConverter.ConvertHla(phenotype, FrequencyResolution, hlaNomenclatureVersion, allowedLoci);
             var gGroupsPerLocus = gGroupsPerPosition.ToLociInfo((l, gGroups1, gGroups2)
                 => gGroups1 != null && gGroups2 != null ? new HashSet<string>(gGroups1.Concat(gGroups2)) : null
             );
 
             var allowedHaplotypes = allPossibleHaplotypes.Where(h =>
-                gGroupsPerLocus.A.Contains(h.A)
-                && gGroupsPerLocus.B.Contains(h.B)
-                && gGroupsPerLocus.C.Contains(h.C)
-                && gGroupsPerLocus.Dqb1.Contains(h.Dqb1)
-                && gGroupsPerLocus.Drb1.Contains(h.Drb1)
+                (!allowedLoci.Contains(Locus.A) || gGroupsPerLocus.A.Contains(h.A))
+                && (!allowedLoci.Contains(Locus.B) || gGroupsPerLocus.B.Contains(h.B))
+                && (!allowedLoci.Contains(Locus.C) || gGroupsPerLocus.C.Contains(h.C))
+                && (!allowedLoci.Contains(Locus.Dqb1) || gGroupsPerLocus.Dqb1.Contains(h.Dqb1))
+                && (!allowedLoci.Contains(Locus.Drb1) || gGroupsPerLocus.Drb1.Contains(h.Drb1))
             ).ToList();
 
             // TODO: ATLAS-400: Filtering when still Enumerable to save memory
@@ -77,8 +79,8 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 
             logger.SendTrace($"(Filtered) Possible allowed haplotypes: {allowedHaplotypes.Count}");
             logger.SendTrace($"(Filtered) Possible allowed *diplotypes* (calculated): {Combinations.NumberOfPairs(allowedHaplotypes.Count, true)}");
-            logger.SendTrace($"(Filtered) Possible allowed *diplotypes* (actually expanded): {allowedDiplotypes.Count()}");
-            logger.SendTrace($"(Unfiltered) Possible genotypes: {await CalculateNumberOfPermutations(phenotype, hlaNomenclatureVersion)}");
+            logger.SendTrace($"(Filtered) Possible allowed *diplotypes* (actually expanded): {allowedDiplotypes.Count}");
+            logger.SendTrace($"(Unfiltered) Possible genotypes: {await CalculateNumberOfPermutations(phenotype, hlaNomenclatureVersion, allowedLoci)}");
             
             var expanded = ambiguousPhenotypeExpander.ExpandPhenotype(gGroupsPerPosition, allowedHaplotypes);
             logger.SendTrace($"Expanded genotypes: {expanded.Count}");
@@ -86,15 +88,11 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             return expanded;
         }
 
-        /// <inheritdoc />
-        public async Task<long> CalculateNumberOfPermutations(PhenotypeInfo<string> phenotype, string hlaNomenclatureVersion)
+        public async Task<long> CalculateNumberOfPermutations(PhenotypeInfo<string> phenotype, string hlaNomenclatureVersion, ISet<Locus> allowedLoci)
         {
-            var allelesPerLocus = await locusHlaConverter.ConvertHla(phenotype, FrequencyResolution, hlaNomenclatureVersion);
+            var allelesPerLocus = await locusHlaConverter.ConvertHla(phenotype, FrequencyResolution, hlaNomenclatureVersion, allowedLoci);
 
-            return allelesPerLocus.Reduce(
-                (l, p, alleles, count) => l == Locus.Dpb1 ? count : count * alleles.Count,
-                1L
-            );
+            return allelesPerLocus.Reduce((l, p, alleles, count) => allowedLoci.Contains(l) ? count * alleles.Count : count, 1L);
         }
     }
 }

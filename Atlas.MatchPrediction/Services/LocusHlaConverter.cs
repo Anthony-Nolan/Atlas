@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
@@ -16,7 +17,8 @@ namespace Atlas.MatchPrediction.Services
         public Task<PhenotypeInfo<IReadOnlyCollection<string>>> ConvertHla(
             PhenotypeInfo<string> hlaInfo,
             TargetHlaCategory targetHlaCategory,
-            string hlaNomenclatureVersion);
+            string hlaNomenclatureVersion,
+            ISet<Locus> allowedLoci);
     }
 
     internal class LocusHlaConverter : ILocusHlaConverter
@@ -31,10 +33,10 @@ namespace Atlas.MatchPrediction.Services
         public async Task<PhenotypeInfo<IReadOnlyCollection<string>>> ConvertHla(
             PhenotypeInfo<string> hlaInfo,
             TargetHlaCategory targetHlaCategory,
-            string hlaNomenclatureVersion)
+            string hlaNomenclatureVersion,
+            ISet<Locus> allowedLoci)
         {
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
-            var allowedLoci = LocusSettings.MatchPredictionLoci.ToList();
 
             return await hlaInfo.MapAsync(async (locus, position, hla) =>
                 allowedLoci.Contains(locus)
