@@ -80,8 +80,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             // TODO: ATLAS-233: Re-introduce hardcoded 100% probability for guaranteed match but no represented genotypes
 
-            var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientGenotypes, frequencySets.PatientSet);
-            var donorGenotypeLikelihoods = await CalculateGenotypeLikelihoods(donorGenotypes, frequencySets.DonorSet);
+            var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientGenotypes, frequencySets.PatientSet, allowedPatientLoci);
+            var donorGenotypeLikelihoods = await CalculateGenotypeLikelihoods(donorGenotypes, frequencySets.DonorSet, allowedDonorLoci);
 
             return matchProbabilityCalculator.CalculateMatchProbability(
                 new SubjectCalculatorInputs {Genotypes = patientGenotypes, GenotypeLikelihoods = patientGenotypeLikelihoods},
@@ -186,7 +186,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
         private async Task<Dictionary<PhenotypeInfo<string>, decimal>> CalculateGenotypeLikelihoods(
             ISet<PhenotypeInfo<string>> genotypes,
-            HaplotypeFrequencySet frequencySet)
+            HaplotypeFrequencySet frequencySet,
+            ISet<Locus> allowedLoci)
         {
             return (await logger.RunTimedAsync(
                     async () => await Task.WhenAll(genotypes.Select(genotype => CalculateLikelihood(genotype, frequencySet))),
