@@ -9,7 +9,7 @@ using MoreLinq.Extensions;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 {
-    internal interface IFrequencySetImporter
+    public interface IFrequencySetImporter
     {
         Task Import(FrequencySetFile file);
     }
