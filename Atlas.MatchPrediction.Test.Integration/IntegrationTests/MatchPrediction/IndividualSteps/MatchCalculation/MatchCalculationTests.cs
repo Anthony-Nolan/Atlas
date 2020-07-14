@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
-using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Test.Integration.Resources;
 using FluentAssertions;
@@ -17,7 +17,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
     {
         private IMatchCalculationService matchCalculationService;
 
-        private const string HlaNomenclatureVersion = Constants.SnapshotHlaNomenclatureVersion;
+        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion;
 
         private static readonly LociInfo<int?> TenOutOfTenMatch = new LociInfo<int?>
             {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};

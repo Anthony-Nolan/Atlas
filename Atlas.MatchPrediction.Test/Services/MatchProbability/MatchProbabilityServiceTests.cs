@@ -6,6 +6,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.Common.Utils.Models;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
@@ -33,7 +34,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
         private IMatchProbabilityService matchProbabilityService;
 
-        private const string HlaNomenclatureVersion = "3330";
+        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion;
 
         private const string PatientLocus = "patientHla";
         private const string DonorLocus = "donorHla";

@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
-using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
-using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.Integration.Resources;
-using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +18,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected IMatchProbabilityService matchProbabilityService;
         protected IHaplotypeFrequencyService importService;
 
-        protected const string HlaNomenclatureVersion = Constants.SnapshotHlaNomenclatureVersion;
+        protected const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion;
 
         protected static readonly string DefaultGGroupA1 = Alleles.UnambiguousAlleleDetails.A.Position1.GGroup;
         protected static readonly string DefaultGGroupA2 = Alleles.UnambiguousAlleleDetails.A.Position2.GGroup;

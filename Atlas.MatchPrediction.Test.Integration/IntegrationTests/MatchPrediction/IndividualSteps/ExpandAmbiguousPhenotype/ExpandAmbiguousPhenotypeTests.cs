@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
-using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Test.Integration.Resources;
 using FluentAssertions;
@@ -20,7 +20,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
     {
         private ICompressedPhenotypeExpander compressedPhenotypeExpander;
 
-        private const string HlaNomenclatureVersion = Constants.SnapshotHlaNomenclatureVersion;
+        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -148,7 +148,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
 
             // The two 2-field alleles represented by the MAC cover 86 G-Groups
-            genotypes.Count.Should().Be(86);
+            genotypes.Should().HaveCount(86);
         }
 
         [Test]
@@ -158,7 +158,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
 
-            genotypes.Count.Should().Be(303);
+            genotypes.Should().HaveCount(303);
         }
 
         [Test]
@@ -168,7 +168,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
 
-            genotypes.Count.Should().Be(4);
+            genotypes.Should().HaveCount(4);
         }
 
         [Test]
@@ -178,7 +178,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
 
-            genotypes.Count.Should().Be(2);
+            genotypes.Should().HaveCount(2);
         }
 
         [Test]
@@ -188,7 +188,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
 
-            genotypes.Count.Should().Be(1);
+            genotypes.Should().HaveCount(1);
         }
 
         private static PhenotypeInfoBuilder<string> DefaultUnambiguousAllelesBuilder =>
