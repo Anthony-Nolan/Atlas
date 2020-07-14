@@ -34,7 +34,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 
         public async Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype, HaplotypeFrequencySet frequencySet, ISet<Locus> allowedLoci)
         {
-            var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype);
+            var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype, allowedLoci);
             var haplotypesWithFrequencies = await GetHaplotypesWithFrequencies(expandedGenotype, frequencySet);
 
             UpdateFrequenciesForDiplotype(haplotypesWithFrequencies, expandedGenotype.Diplotypes);
@@ -61,6 +61,8 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         {
             foreach (var diplotype in diplotypes)
             {
+                //TODO: ATLAS-520: change this so we only want to match it on the allowed loci and if more than 1, sum of loci is the frequency!!!!!!
+
                 // Unrepresented haplotypes are assigned default value for decimal, 0 - which is what we want here.
                 haplotypesWithFrequencies.TryGetValue(diplotype.Item1.Hla, out var frequency1);
                 haplotypesWithFrequencies.TryGetValue(diplotype.Item2.Hla, out var frequency2);
