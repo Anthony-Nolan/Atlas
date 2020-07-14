@@ -71,36 +71,18 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
 
         private static string SerialiseToJsonString(HlaMetadataCollection metadata)
         {
-            var contractResolver = new TargetedIgnoringContractResolver();
-            contractResolver.IgnorePropertyOnAllTypes(nameof(ISerialisableHlaMetadata.HlaInfoToSerialise)); //It seems to check both the interface AND the concrete class and writes if EITHER are non-Ignored.
-            var jsonSerializerSettings = new JsonSerializerSettings {ContractResolver = contractResolver};
-
-            var stringRep = JsonConvert.SerializeObject(metadata, Formatting.Indented, jsonSerializerSettings);
-            return stringRep;
+            var jsonSerializerSettings = new JsonSerializerSettings {ContractResolver = new IgnoreHlaInfoToSerialise()};
+            return JsonConvert.SerializeObject(metadata, Formatting.Indented, jsonSerializerSettings);
         }
 
-        public class TargetedIgnoringContractResolver : DefaultContractResolver
+        public class IgnoreHlaInfoToSerialise : DefaultContractResolver
         {
-            private readonly Dictionary<Type, HashSet<string>> typedPropsToIgnore = new Dictionary<Type, HashSet<string>>();
-            private readonly HashSet<string> globalPropsToIgnore = new HashSet<string>();
-
-            public void IgnorePropertyOnAllTypes(string jsonPropertyName)
-            {
-                globalPropsToIgnore.Add(jsonPropertyName);
-            }
-
-            public void IgnoreProperty(Type type, string jsonPropertyName)
-            {
-                typedPropsToIgnore.TryAdd(type, new HashSet<string>());
-
-                typedPropsToIgnore[type].Add(jsonPropertyName);
-            }
-
             protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
             {
                 var property = base.CreateProperty(member, memberSerialization);
 
-                if (ShouldBeIgnored(property.DeclaringType, property.PropertyName))
+                //It seems to check both the interface AND the concrete class and writes if EITHER are non-Ignored, and we can't [JsonIgnore] the prop on the interface.
+                if (property.PropertyName == nameof(ISerialisableHlaMetadata.HlaInfoToSerialise))
                 {
                     property.ShouldSerialize = _ => false;
                     property.Ignored = true;
@@ -108,13 +90,6 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
 
                 return property;
             }
-
-            private bool ShouldBeIgnored(Type type, string jsonPropertyName)
-            {
-                return globalPropsToIgnore.Contains(jsonPropertyName) ||
-                       (typedPropsToIgnore.ContainsKey(type) && typedPropsToIgnore[type].Contains(jsonPropertyName));
-            }
         }
-
     }
 }
