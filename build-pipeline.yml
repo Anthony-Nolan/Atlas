@@ -195,11 +195,6 @@ jobs:
         env:
           ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
           ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-      - task: raul-arrieta.terraform-outputs.terraform-outputs.terraform-outputs@0
-        displayName: 'Terraform Outputs'
-        inputs:
-          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/core'
-          variablePrefix: 'TF-OUT'
       - bash: |
           echo Remove the .terraform directory before pushing
 
