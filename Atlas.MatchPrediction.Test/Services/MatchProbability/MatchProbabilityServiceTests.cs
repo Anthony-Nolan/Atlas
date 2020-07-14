@@ -136,12 +136,12 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             };
 
             compressedPhenotypeExpander
-                .ExpandCompressedPhenotype(PatientHla, HlaNomenclatureVersion, Arg.Any<IReadOnlyCollection<HaplotypeHla>>(), default)
+                .ExpandCompressedPhenotype(PatientHla, HlaNomenclatureVersion, Arg.Any<IReadOnlyCollection<HaplotypeHla>>(), Arg.Any<ISet<Locus>>())
                 .Returns(Enumerable.Range(1, numberOfPatientGenotypes)
                     .Select(i => new PhenotypeInfo<string>($"patient${i}")).ToHashSet());
 
             compressedPhenotypeExpander
-                .ExpandCompressedPhenotype(DonorHla, HlaNomenclatureVersion, Arg.Any<IReadOnlyCollection<HaplotypeHla>>(), default)
+                .ExpandCompressedPhenotype(DonorHla, HlaNomenclatureVersion, Arg.Any<IReadOnlyCollection<HaplotypeHla>>(), Arg.Any<ISet<Locus>>())
                 .Returns(Enumerable.Range(1, numberOfDonorGenotypes)
                     .Select(i => new PhenotypeInfo<string>($"donor${i}")).ToHashSet());
 
