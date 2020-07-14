@@ -47,6 +47,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 
         public async Task<ISet<PhenotypeInfo<string>>> ExpandCompressedPhenotype(PhenotypeInfo<string> phenotype, string hlaNomenclatureVersion)
         {
+            // TODO: ATLAS-400: Remove if no longer used
             var allowedLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
             var gGroupsPerLocus = await locusHlaConverter.ConvertHla(phenotype, FrequencyResolution, hlaNomenclatureVersion, allowedLoci);
             return ambiguousPhenotypeExpander.ExpandPhenotype(gGroupsPerLocus);

@@ -52,7 +52,7 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
             numberOfPermutations.Should().Be(1);
         }
 
-        // 2 positions at each of 5 loci, means that for equally ambiguous hla we expect n^10 permutations
+        // 2 positions at each of up to 5 loci, means that for equally ambiguous hla at all loci we expect n^10 permutations
         [TestCase(2, 5, 1024)]
         [TestCase(3, 5, 59049)]
         [TestCase(5, 4, 390625)]
