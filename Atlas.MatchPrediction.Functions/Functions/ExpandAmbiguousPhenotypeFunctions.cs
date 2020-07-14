@@ -54,7 +54,8 @@ namespace Atlas.MatchPrediction.Functions.Functions
 
             var genotypeCount = await compressedPhenotypeExpander.CalculateNumberOfPermutations(
                 expandAmbiguousPhenotypeInput.Phenotype,
-                expandAmbiguousPhenotypeInput.HlaNomenclatureVersion);
+                expandAmbiguousPhenotypeInput.HlaNomenclatureVersion,
+                expandAmbiguousPhenotypeInput.AllowedLoci);
 
             return new JsonResult(genotypeCount);
         }

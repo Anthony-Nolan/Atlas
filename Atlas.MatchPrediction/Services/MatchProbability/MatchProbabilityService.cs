@@ -171,8 +171,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
         private async Task<ISet<GenotypeMatchDetails>> CalculatePairsMatchCounts(
             MatchProbabilityInput matchProbabilityInput,
-            IEnumerable<Tuple<PhenotypeInfo<string>, 
-            PhenotypeInfo<string>>> allPatientDonorCombinations,
+            IEnumerable<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>> allPatientDonorCombinations,
             ISet<Locus> allowedPatientLoci,
             ISet<Locus> allowedDonorLoci)
         {
