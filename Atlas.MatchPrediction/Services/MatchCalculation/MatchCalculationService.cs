@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Matching.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
@@ -17,7 +18,9 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
         public Task<GenotypeMatchDetails> MatchAtPGroupLevel(
             PhenotypeInfo<string> patientGenotype,
             PhenotypeInfo<string> donorGenotype,
-            string hlaNomenclatureVersion);
+            string hlaNomenclatureVersion,
+            ISet<Locus> allowedPatientLoci,
+            ISet<Locus> allowedDonorLoci);
     }
 
     internal class MatchCalculationService : IMatchCalculationService
@@ -36,14 +39,16 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
         public async Task<GenotypeMatchDetails> MatchAtPGroupLevel(
             PhenotypeInfo<string> patientGenotype,
             PhenotypeInfo<string> donorGenotype,
-            string hlaNomenclatureVersion)
+            string hlaNomenclatureVersion,
+            ISet<Locus> allowedPatientLoci,
+            ISet<Locus> allowedDonorLoci)
         {
             const TargetHlaCategory matchingResolution = TargetHlaCategory.PGroup;
 
             var patientGenotypeAsPGroups =
-                await locusHlaConverter.ConvertHla(patientGenotype, matchingResolution, hlaNomenclatureVersion);
+                await locusHlaConverter.ConvertHla(patientGenotype, matchingResolution, hlaNomenclatureVersion, allowedPatientLoci);
             var donorGenotypeAsPGroups =
-                await locusHlaConverter.ConvertHla(donorGenotype, matchingResolution, hlaNomenclatureVersion);
+                await locusHlaConverter.ConvertHla(donorGenotype, matchingResolution, hlaNomenclatureVersion, allowedDonorLoci);
 
             var allowedLoci = LocusSettings.MatchPredictionLoci.ToList();
 
