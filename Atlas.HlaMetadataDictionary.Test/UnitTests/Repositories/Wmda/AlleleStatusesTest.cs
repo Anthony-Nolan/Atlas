@@ -1,15 +1,14 @@
-﻿using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
+﻿using System.Collections.Generic;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
 {
     internal class AlleleStatusesTest : WmdaRepositoryTestBase<AlleleStatus>
     {
-        protected override void SetupTestData()
-        {
-            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaNomenclatureVersionToTest).AlleleStatuses, MolecularLoci);
-        }
-        
+        protected override IEnumerable<AlleleStatus> SelectTestDataTypings(WmdaDataset dataset) => dataset.AlleleStatuses;
+        protected override string[] ApplicableLoci => MolecularLoci;
+
         [TestCase("A*", "01:26", "Partial", "cDNA")]
         [TestCase("A*", "01:27N", "Partial", "cDNA")]
         [TestCase("DRB1*", "07:04", "Full", "cDNA")]

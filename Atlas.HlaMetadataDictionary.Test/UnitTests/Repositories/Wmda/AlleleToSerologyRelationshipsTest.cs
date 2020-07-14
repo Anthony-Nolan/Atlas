@@ -8,11 +8,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
 {
     internal class AlleleToSerologyRelationshipsTest : WmdaRepositoryTestBase<RelDnaSer>
     {
-
-        protected override void SetupTestData()
-        {
-            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaNomenclatureVersionToTest).AlleleToSerologyRelationships, MolecularLoci);
-        }
+        protected override IEnumerable<RelDnaSer> SelectTestDataTypings(WmdaDataset dataset) => dataset.AlleleToSerologyRelationships;
+        protected override string[] ApplicableLoci => MolecularLoci;
 
         [TestCase(
             "A*",
