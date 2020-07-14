@@ -76,6 +76,10 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
         }
 
         /// <inheritdoc />
+        /// <remarks>
+        /// Converts a single G group to a single P Group (or null), via a cached collection of said lookups.
+        /// This is faster than fully expanding G Groups on each call to this method.
+        /// </remarks>
         public async Task<string> ConvertGGroupToPGroup(Locus locus, string gGroup, string hlaNomenclatureVersion)
         {
             return await hlaNameToPGroupConverter.ConvertGGroup(locus, gGroup, hlaNomenclatureVersion);
