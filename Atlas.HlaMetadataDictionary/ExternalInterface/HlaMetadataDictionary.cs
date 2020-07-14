@@ -35,7 +35,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         /// This is not the intended entry point for consumption of the metadata;
         /// the only expected use case is for manual recreation of the test HLA metadata dictionary.
         /// </summary>
-        HlaMetadataCollection GetAllHlaMetadata(string version);
+        HlaMetadataCollection GenerateAllHlaMetadata(string version);
 
         /// <summary>
         /// Indicates whether there's a discrepancy between the version of the HLA Nomenclature that we would use from WMDA,
@@ -180,7 +180,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             return await hlaScoringMetadataService.GetAllGGroups(ActiveHlaNomenclatureVersion);
         }
 
-        public HlaMetadataCollection GetAllHlaMetadata(string version)
+        public HlaMetadataCollection GenerateAllHlaMetadata(string version)
         {
             return hlaMetadataGenerationOrchestrator.GenerateAllHlaMetadata(version);
         }
