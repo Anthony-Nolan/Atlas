@@ -5,6 +5,8 @@ using static Atlas.Common.Maths.FactorialMaths;
 
 namespace Atlas.Common.Maths
 {
+    // Libraries exist that perform the work we do here: e.g. https://github.com/eoincampbell/combinatorics
+    // IF we ever start having trouble with this combination code, consider swapping in a Nuget package to do this
     public static class Combinations
     {
         /// <summary>
