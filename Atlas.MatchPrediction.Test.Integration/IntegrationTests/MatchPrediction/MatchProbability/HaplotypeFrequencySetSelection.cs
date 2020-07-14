@@ -47,7 +47,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             await ImportFrequencies(DefaultHaplotypeFrequencySetOption1, null, null);
             
-            await ImportFrequencies(DefaultHaplotypeFrequencySetOption2, SpecificEthnicityCode, SpecificRegistryCode);
+            await ImportFrequencies(DefaultHaplotypeFrequencySetOption2, SpecificRegistryCode, SpecificEthnicityCode);
             var patientHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{AlleleStringB}").Build();
             var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, DefaultGGroupA2, DefaultGGroupA2).Build();
 
@@ -70,9 +70,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         public async Task CalculateMatchProbability_WhenUsingRegistryButNotEthnicityMatchedHaplotypeSet_UsesRegistryOnlyHaplotypeFrequencySet()
         {
             await ImportFrequencies(DefaultHaplotypeFrequencySetOption1, null, null);
+            await ImportFrequencies(DefaultHaplotypeFrequencySetOption2, SpecificRegistryCode, null);
             
-            await ImportFrequencies(DefaultHaplotypeFrequencySetOption2, null, SpecificRegistryCode);
-            
+
             var patientHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{AlleleStringB}").Build();
             var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, DefaultGGroupA2, DefaultGGroupA2).Build();
 
@@ -122,8 +122,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             const string donorEthnicity = "donor-ethnicity";
             const string patientEthnicity = "patient-ethnicity";
 
-            await ImportFrequencies(DefaultHaplotypeFrequencySetOption2, donorEthnicity, patientDonorRegistry);
-            await ImportFrequencies(DefaultHaplotypeFrequencySetOption3, patientEthnicity, patientDonorRegistry);
+            await ImportFrequencies(DefaultHaplotypeFrequencySetOption2, patientDonorRegistry, donorEthnicity);
+            await ImportFrequencies(DefaultHaplotypeFrequencySetOption3, patientDonorRegistry, patientEthnicity);
             
             var patientHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{AlleleStringB}").Build();
             var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, DefaultGGroupA2, DefaultGGroupA2).Build();
