@@ -38,7 +38,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.TwoMismatchProbability.Decimal.Should().Be(0m);
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedProbabilityPerLocus);
         }
-        
+
         [Test]
         public async Task CalculateMatchProbability_WhenIdenticalGenotypes_RepresentedInFrequencySet_ReturnsOneHundredPercent()
         {
@@ -54,7 +54,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
                 DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build(),
             };
-            
+
             await ImportFrequencies(possibleHaplotypes, null, null);
 
             var expectedProbabilityPerLocus = new LociInfo<decimal?> {A = 1, B = 1, C = 1, Dpb1 = null, Dqb1 = 1, Drb1 = 1};
@@ -182,11 +182,5 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.TwoMismatchProbability.Decimal.Should().Be(0.8230452674897119341563786008m);
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedProbabilityPerLocus);
         }
-
-
-
-
-        
-        
     }
 }
