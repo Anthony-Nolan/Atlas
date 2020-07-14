@@ -2,13 +2,13 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using FluentAssertions;
-using NUnit.Framework;
 using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 {
     [TestFixture]
-    public class GGroupToPGroupLookupTests
+    public class GGroupToPGroupConversionTests
     {
         private IHlaMetadataDictionary hlaMetadataDictionary;
         

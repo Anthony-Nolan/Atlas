@@ -61,7 +61,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
-        private readonly IGGroupToPGroupDictionaryGenerator groupToPGroupDictionaryGenerator;
 
         public HlaMetadataDictionary(
             string activeHlaNomenclatureVersionOrDefault,
@@ -73,8 +72,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
-            ILogger logger,
-            IGGroupToPGroupDictionaryGenerator groupToPGroupDictionaryGenerator)
+            ILogger logger)
         {
             this.activeHlaNomenclatureVersionOrDefault = activeHlaNomenclatureVersionOrDefault;
             this.recreateMetadataService = recreateMetadataService;
@@ -86,7 +84,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
-            this.groupToPGroupDictionaryGenerator = groupToPGroupDictionaryGenerator;
         }
 
         private string ActiveHlaNomenclatureVersion => activeHlaNomenclatureVersionOrDefault == HlaMetadataDictionaryConstants.NoActiveVersionValue
@@ -123,20 +120,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         /// <inheritdoc />
         public async Task<string> GetSinglePGroupForGGroup(Locus locus, string gGroup)
         {
-            if (gGroup == null)
-            {
-                return null;
-            }
-
-            var dictionary = await groupToPGroupDictionaryGenerator.GetGGroupToPGroupDictionary(
-                locus,
-                GetAllGGroups,
-                (l, hla) => ConvertHla(l, hla, TargetHlaCategory.PGroup)
-                , ActiveHlaNomenclatureVersion
-            );
-
-            // Null is an appropriate value in some cases - G Groups corresponding to a null allele will have no P Group. 
-            return dictionary.GetValueOrDefault(gGroup);
+            return await hlaConverter.ConvertGGroupToPGroup(locus, gGroup, ActiveHlaNomenclatureVersion);
         }
 
         private bool ShouldRecreate(CreationBehaviour creationConfig)

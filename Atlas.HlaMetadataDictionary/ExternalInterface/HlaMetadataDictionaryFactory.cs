@@ -46,7 +46,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
-        private readonly IGGroupToPGroupDictionaryGenerator gGroupToPGroupDictionaryGenerator;
 
         //For CacheControl
         private readonly IAlleleNamesMetadataRepository alleleNamesRepository;
@@ -67,7 +66,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger,
-            IGGroupToPGroupDictionaryGenerator gGroupToPGroupDictionaryGenerator,
 
             //For CacheControl
             IAlleleNamesMetadataRepository alleleNamesRepository,
@@ -88,7 +86,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
-            this.gGroupToPGroupDictionaryGenerator = gGroupToPGroupDictionaryGenerator;
 
             //For CacheControl
             this.alleleNamesRepository = alleleNamesRepository;
@@ -148,8 +145,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 dpb1TceGroupMetadataService,
                 hlaMetadataGenerationOrchestrator,
                 wmdaHlaNomenclatureVersionAccessor,
-                logger,
-                gGroupToPGroupDictionaryGenerator);
+                logger);
         }
 
         private IHlaMetadataCacheControl BuildUncachedDictionaryCacheControl(string activeHlaNomenclatureVersion)
