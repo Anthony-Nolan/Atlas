@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
@@ -11,7 +12,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
     public interface IGenotypeLikelihoodService
     {
-        public Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype, HaplotypeFrequencySet frequencySet);
+        public Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype, HaplotypeFrequencySet frequencySet, ISet<Locus> allowedLoci);
     }
 
     internal class GenotypeLikelihoodService : IGenotypeLikelihoodService
@@ -31,8 +32,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
             this.haplotypeFrequencyService = haplotypeFrequencyService;
         }
 
-        public async Task<decimal> CalculateLikelihood(
-            PhenotypeInfo<string> genotype, HaplotypeFrequencySet frequencySet)
+        public async Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype, HaplotypeFrequencySet frequencySet, ISet<Locus> allowedLoci)
         {
             var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype);
             var haplotypesWithFrequencies = await GetHaplotypesWithFrequencies(expandedGenotype, frequencySet);
