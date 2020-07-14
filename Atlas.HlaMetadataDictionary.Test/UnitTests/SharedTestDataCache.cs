@@ -14,7 +14,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests
         // For the avoidance of doubt this "3330" is *NOT* the same as the "3330" in the FileBackedHlaMetadataDictionary.
         // This is "what is the path to the files that will be imported from disc rather than read from GitHub".
         // Nothing is particularly known to care what actual version of the HLA those files do or don't represent.
-        public const string HlaNomenclatureVersionToTest = "3330";
+        public const string HlaNomenclatureVersionForImportingTestWmdaRepositoryFiles = "3330";
 
         private static List<IMatchedHla> _matchedHla;
         private static WmdaDataRepository _wmdaDataRepository;
@@ -25,7 +25,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests
             {
                 var wmdaDataRepository = GetWmdaDataRepository();
                 var hlaMatchPreCalculationService = new HlaMatchPreCalculationService(wmdaDataRepository);
-                _matchedHla = hlaMatchPreCalculationService.GetMatchedHla(HlaNomenclatureVersionToTest).ToList();
+                _matchedHla = hlaMatchPreCalculationService.GetMatchedHla(HlaNomenclatureVersionForImportingTestWmdaRepositoryFiles).ToList();
             }
 
             return _matchedHla;

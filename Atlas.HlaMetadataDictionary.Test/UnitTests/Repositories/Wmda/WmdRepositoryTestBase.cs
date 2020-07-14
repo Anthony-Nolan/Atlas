@@ -10,21 +10,14 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
 {
     internal abstract class WmdaRepositoryTestBase<TWmdaHlaTyping> where TWmdaHlaTyping : IWmdaHlaTyping
     {
-        protected const string HlaNomenclatureVersionToTest = "3330";
-
         protected readonly string[] MolecularLoci =  { "A*", "B*", "C*", "DPB1*", "DQB1*", "DRB1*" };
         protected readonly string[] SerologyLoci = { "A", "B", "Cw", "DQ", "DR" };
 
         protected IWmdaDataRepository WmdaDataRepository;
-        
         protected List<TWmdaHlaTyping> WmdaHlaTypings;
-        private IEnumerable<string> matchLoci;
 
-        protected void SetTestData(IEnumerable<TWmdaHlaTyping> hlaTypings, IEnumerable<string> matchLoci)
-        {
-            WmdaHlaTypings = hlaTypings.ToList();
-            this.matchLoci = matchLoci;
-        }
+        protected abstract IEnumerable<TWmdaHlaTyping> SelectTestDataTypings(WmdaDataset dataset);
+        protected abstract string[] ApplicableLoci { get; }
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -36,8 +29,13 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
             });
         }
 
-        protected abstract void SetupTestData();
-        
+        private void SetupTestData()
+        {
+            var wmdaDataset = WmdaDataRepository.GetWmdaDataset(SharedTestDataCache.HlaNomenclatureVersionForImportingTestWmdaRepositoryFiles);
+            var data = SelectTestDataTypings(wmdaDataset);
+            WmdaHlaTypings = data.ToList();
+        }
+
         [Test]
         public void WmdaDataRepository_WmdaHlaTypingCollection_IsNotEmpty()
         {
@@ -47,7 +45,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
         [Test]
         public void WmdaDataRepository_WmdaHlaTypingCollection_OnlyContainsMatchLoci()
         {
-            WmdaHlaTypings.Should().OnlyContain(typing => matchLoci.Contains(typing.TypingLocus));               
+            WmdaHlaTypings.Should().OnlyContain(typing => ApplicableLoci.Contains(typing.TypingLocus));
         }
 
         protected TWmdaHlaTyping GetSingleWmdaHlaTyping(string wmdaLocus, string name)

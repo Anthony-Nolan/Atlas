@@ -7,10 +7,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
 {
     internal class PGroupsTest : WmdaRepositoryTestBase<HlaNomP>
     {
-        protected override void SetupTestData()
-        {
-            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaNomenclatureVersionToTest).PGroups, MolecularLoci);
-        }
+        protected override IEnumerable<HlaNomP> SelectTestDataTypings(WmdaDataset dataset) => dataset.PGroups;
+        protected override string[] ApplicableLoci => MolecularLoci;
 
         [TestCase("DRB1*", "03:02P", new[] { "03:02:01", "03:02:02", "03:02:03" }, Description = "P group of alleles of same subtype")]
         [TestCase("C*", "03:14P", new[] { "03:14", "03:361" }, Description = "P group of alleles of different subtypes")]

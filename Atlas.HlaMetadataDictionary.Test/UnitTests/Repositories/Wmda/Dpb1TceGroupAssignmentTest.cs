@@ -1,14 +1,13 @@
-﻿using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
+﻿using System.Collections.Generic;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 using NUnit.Framework;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
 {
     internal class Dpb1TceGroupAssignmentTest : WmdaRepositoryTestBase<Dpb1TceGroupAssignment>
     {
-        protected override void SetupTestData()
-        {
-            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaNomenclatureVersionToTest).Dpb1TceGroupAssignments, MolecularLoci);
-        }
+        protected override IEnumerable<Dpb1TceGroupAssignment> SelectTestDataTypings(WmdaDataset dataset) => dataset.Dpb1TceGroupAssignments;
+        protected override string[] ApplicableLoci => MolecularLoci;
 
         [TestCase("17:01:01:01", "1", "1",
             Description = "Same assignment in V1 & 2.")]

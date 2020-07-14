@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 using FluentAssertions;
@@ -8,11 +9,9 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
 {
     internal class AlleleNameHistoriesTest : WmdaRepositoryTestBase<AlleleNameHistory>
     {
-        protected override void SetupTestData()
-        {
-            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaNomenclatureVersionToTest).AlleleNameHistories, MolecularLoci);
-        }
-        
+        protected override IEnumerable<AlleleNameHistory> SelectTestDataTypings(WmdaDataset dataset) => dataset.AlleleNameHistories;
+        protected override string[] ApplicableLoci => MolecularLoci;
+
         [Test]
         public void WmdaDataRepository_WhenUnassignedAlleleName_NoAlleleNameHistoriesCaptured()
         {

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using ApprovalTests;
 using ApprovalTests.Reporters;
 using Atlas.Common.GeneticData.Hla.Models;
@@ -11,10 +12,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Repositories.Wmda
     [UseReporter(typeof(DiffReporter))]
     internal class SerologiesTest : WmdaRepositoryTestBase<HlaNom>
     {
-        protected override void SetupTestData()
-        {
-            SetTestData(WmdaDataRepository.GetWmdaDataset(HlaNomenclatureVersionToTest).Serologies, SerologyLoci);
-        }
+        protected override IEnumerable<HlaNom> SelectTestDataTypings(WmdaDataset dataset) => dataset.Serologies;
+        protected override string[] ApplicableLoci => SerologyLoci;
 
         [TestCase("DQ", "1")]
         [TestCase("A", "29")]

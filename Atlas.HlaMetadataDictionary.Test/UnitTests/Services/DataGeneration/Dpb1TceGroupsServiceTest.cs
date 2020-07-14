@@ -20,7 +20,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
                 var dataRepository = SharedTestDataCache.GetWmdaDataRepository();
 
                 tceGroupsMetadata = new Dpb1TceGroupsService(dataRepository)
-                    .GetDpb1TceGroupMetadata(SharedTestDataCache.HlaNomenclatureVersionToTest)
+                    .GetDpb1TceGroupMetadata(SharedTestDataCache.HlaNomenclatureVersionForImportingTestWmdaRepositoryFiles)
                     .ToList();
             });
         }
