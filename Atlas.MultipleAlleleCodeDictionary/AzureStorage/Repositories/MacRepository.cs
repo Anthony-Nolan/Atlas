@@ -115,8 +115,8 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
         /// <remarks>
         /// Rather than attempting to delete each entry, just delete the table and re-create it.
-        /// This takes around 30 seconds on 'real' Azure, but the local emulator it's instantaneous, so this isn't an issue for tests.
-        /// 30s is still markedly faster than the "DeleteAll" approach for large tables on Azure. (Which can take hours!)
+        /// This takes around 30 seconds on 'real' Azure, which is still markedly faster than the "DeleteAll" approach for large tables on Azure. (Which can take hours!)
+        /// On the local emulator it's instantaneous, so this isn't an issue for local tests, but it is a noticeable impact on the System Tests run in DevOps against real Azure tables.
         /// </remarks>
         public async Task TruncateMacTable()
         {
@@ -130,10 +130,13 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             // Weirdly that Async delete doesn't wait until the deletion is finalised before continuing.
             // So we have to wait for it ourselves.
             var twoMinuteRetryPolicy = Policy
-                .Handle<StorageException>(ex => ex.Message == "Conflict")
-                .WaitAndRetry(120, _ => TimeSpan.FromSeconds(1));
+                .Handle<StorageException>(ex => 
+                    (ex?.RequestInformation?.HttpStatusMessage ?? "") == "Conflict" &&
+                    (ex?.RequestInformation?.ExtendedErrorInformation?.ErrorCode ?? "") == "TableBeingDeleted"
+                 )
+                .WaitAndRetryAsync(120, _ => TimeSpan.FromSeconds(1));
 
-            await twoMinuteRetryPolicy.Execute(async () => await Table.CreateIfNotExistsAsync());
+            await twoMinuteRetryPolicy.ExecuteAsync(async () => await Table.CreateIfNotExistsAsync());
         }
 
         /// <remarks>
