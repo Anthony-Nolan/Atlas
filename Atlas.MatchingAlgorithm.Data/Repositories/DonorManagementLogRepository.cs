@@ -76,43 +76,35 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                 return;
             }
 
+            // This UNION ALL based strategy seems sufficiently performant when bulk updating 100s of rows
+            // If row count increases to the 1000s, it may be better to use a temp table instead
+            var infosSelectStatement = BuildUnionAllSelectStatement(infos);
+            var sql = $@"
+                    UPDATE {LogTableName} 
+                    SET 
+                        {SequenceNumberColumnName} = infos.{SequenceNumberColumnName},
+                        {UpdateDateTimeColumnName} = infos.{UpdateDateTimeColumnName}
+                    FROM {LogTableName} AS logs
+                    JOIN ({infosSelectStatement}) AS infos
+                    ON logs.{DonorIdColumnName} = infos.{DonorIdColumnName}
+                    ";
+
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                // This UNION ALL based strategy seems sufficiently performant when bulk updating 100s of rows
-                // If row count increases to the 1000s, it may be better to use a temp table instead
-                var infosSelectStatement = BuildUnionAllSelectStatement(infos);
-                var sql = $@"
-                        UPDATE {LogTableName} 
-                        SET 
-                            {SequenceNumberColumnName} = infos.{SequenceNumberColumnName},
-                            {UpdateDateTimeColumnName} = infos.{UpdateDateTimeColumnName}
-                        FROM {LogTableName} logs
-                        JOIN ({infosSelectStatement}) infos
-                        ON logs.{DonorIdColumnName} = infos.{DonorIdColumnName}
-                        ";
-
                 await conn.ExecuteAsync(sql, commandTimeout: 600);
             }
         }
 
-        private static string BuildUnionAllSelectStatement(IEnumerable<DonorManagementInfo> donorManagementInfos)
+        private static string BuildUnionAllSelectStatement(List<DonorManagementInfo> donorManagementInfos)
         {
-            var selectStatements = donorManagementInfos.Select(GetDonorManagementInfoSelectStatement).ToList();
-
-            if (!selectStatements.Any())
+            if (!donorManagementInfos.Any())
             {
                 return string.Empty;
             }
 
-            var builder = new StringBuilder(selectStatements.First() + Environment.NewLine);
-
-            foreach (var selectStatement in selectStatements.Skip(1))
-            {
-                builder.AppendLine("UNION ALL");
-                builder.AppendLine(selectStatement);
-            }
-
-            return builder.ToString();
+            return Environment.NewLine + donorManagementInfos
+                .Select(GetDonorManagementInfoSelectStatement)
+                .StringJoin(Environment.NewLine + " UNION ALL " + Environment.NewLine);
         }
 
         private static string GetDonorManagementInfoSelectStatement(DonorManagementInfo info)
@@ -120,7 +112,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             return "SELECT " +
                     $"{info.DonorId} AS {DonorIdColumnName}, " +
                     $"{info.UpdateSequenceNumber} AS {SequenceNumberColumnName}, " +
-                    $"'{info.UpdateDateTime}' AS {UpdateDateTimeColumnName}";
+                    $"'{info.UpdateDateTime.ToString("O")}' AS {UpdateDateTimeColumnName}";
         }
 
         private async Task CreateLogBatch(IEnumerable<DonorManagementInfo> donorManagementInfos)
