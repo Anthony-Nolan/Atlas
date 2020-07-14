@@ -79,6 +79,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
         {
             services.AddScoped<IHlaConverter, HlaConverter>();
             services.AddScoped<IHlaNameToTwoFieldAlleleConverter, HlaNameToTwoFieldAlleleConverter>();
+            services.AddScoped<IHlaNameToPGroupConverter, HlaNameToPGroupConverter>();
             services.AddScoped<IAlleleNamesMetadataService, AlleleNamesMetadataService>();
             services.AddScoped<IAlleleGroupExpander, AlleleGroupExpander>();
             services.AddScoped<IHlaMetadataGenerationOrchestrator, HlaMetadataGenerationOrchestrator>();
