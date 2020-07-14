@@ -9,12 +9,13 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
+using MoreLinq;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
 {
     public class PGroupRepository : Repository, IPGroupRepository
     {
-        private Dictionary<string, PGroupName> pGroupDictionary;
+        private Dictionary<string, int> pGroupNameToIdDictionary;
 
         public PGroupRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
         {
@@ -22,21 +23,21 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
         public void InsertPGroups(IEnumerable<string> pGroups)
         {
+            EnsurePGroupDictionaryCacheIsPopulated();
+
+            var newPGroups = pGroups.Distinct().Except(pGroupNameToIdDictionary.Keys.ToList()).ToList();
+            var dt = new DataTable();
+            dt.Columns.Add("Id");
+            dt.Columns.Add("Name");
+
+            foreach (var pg in newPGroups)
+            {
+                dt.Rows.Add(0, pg);
+            }
+
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 conn.Open();
-
-                var existingPGroups = conn.Query<PGroupName>("SELECT * FROM PGroupNames").Select(p => p.Name);
-
-                var dt = new DataTable();
-                dt.Columns.Add("Id");
-                dt.Columns.Add("Name");
-
-                foreach (var pg in pGroups.Distinct().Except(existingPGroups))
-                {
-                    dt.Rows.Add(0, pg);
-                }
-
                 var transaction = conn.BeginTransaction();
                 using (var sqlBulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, transaction))
                 {
@@ -50,21 +51,17 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                 conn.Close();
             }
 
-            CachePGroupDictionary();
+            // We need to get the new Ids back out.
+            ForceCachePGroupDictionary();
         }
 
         public int FindOrCreatePGroup(string pGroupName)
         {
-            if (pGroupDictionary == null)
-            {
-                CachePGroupDictionary();
-            }
+            EnsurePGroupDictionaryCacheIsPopulated();
 
-            pGroupDictionary.TryGetValue(pGroupName, out var existing);
-
-            if (existing != null)
+            if (pGroupNameToIdDictionary.TryGetValue(pGroupName, out var existingId))
             {
-                return existing.Id;
+                return existingId;
             }
 
             const string sql = @"
@@ -79,7 +76,7 @@ SELECT CAST(SCOPE_IDENTITY() as int)
                 newId = conn.Query<int>(sql, new {PGroupName = pGroupName}, commandTimeout: 300).Single();
             }
 
-            CachePGroupDictionary(); //QQ Umm ... what?
+            pGroupNameToIdDictionary.Add(pGroupName, newId);
             return newId;
         }
 
@@ -102,12 +99,20 @@ WHERE p.Name IN ({pGroupNames.Select(name => $"'{name}'").StringJoin(", ")})
             }
         }
 
-        private void CachePGroupDictionary()
+        private void EnsurePGroupDictionaryCacheIsPopulated()
+        {
+            if (pGroupNameToIdDictionary == null)
+            {
+                ForceCachePGroupDictionary();
+            }
+        }
+
+        private void ForceCachePGroupDictionary()
         {
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                var innerPGroups = conn.Query<PGroupName>("SELECT * FROM PGroupNames", commandTimeout: 300);
-                pGroupDictionary = innerPGroups.Distinct(new DistinctPGroupNameComparer()).ToDictionary(p => p.Name);
+                var innerPGroups = conn.Query<PGroupName>($"SELECT {nameof(PGroupName.Id)}, {nameof(PGroupName.Name)} FROM PGroupNames", commandTimeout: 300);
+                pGroupNameToIdDictionary = innerPGroups.DistinctBy(pGrp => pGrp.Name).ToDictionary(p => p.Name, pGrp => pGrp.Id);
             }
         }
     }
