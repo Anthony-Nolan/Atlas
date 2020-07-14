@@ -4,6 +4,7 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.Integration.Resources;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
@@ -17,7 +18,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
     public class MatchProbabilityTestsBase
     {
         protected IMatchProbabilityService matchProbabilityService;
-        protected IFrequencySetService importService;
+        protected IHaplotypeFrequencyService importService;
 
         protected const string HlaNomenclatureVersion = Constants.SnapshotHlaNomenclatureVersion;
 
@@ -39,7 +40,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected void SetUp()
         {
             matchProbabilityService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchProbabilityService>(); 
-            importService = DependencyInjection.DependencyInjection.Provider.GetService<IFrequencySetService>();
+            importService = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
         }
         
         protected async Task ImportFrequencies(IEnumerable<HaplotypeFrequency> haplotypes, string ethnicityCode, string registryCode)
