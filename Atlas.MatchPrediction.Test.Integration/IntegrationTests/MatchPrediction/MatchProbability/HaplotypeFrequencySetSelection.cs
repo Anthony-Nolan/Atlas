@@ -20,8 +20,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         private static readonly List<HaplotypeFrequency> DefaultHaplotypeFrequencySetOption1 = new List<HaplotypeFrequency>
         {
             DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.1m).Build(),
-            DefaultHaplotypeFrequency1.With(h => h.A, DefaultGGroupA2).With(h => h.Frequency, 0.1m).Build(),
-            DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.1m).With(h => h.B, DefaultGGroupB2).Build(),
+            DefaultHaplotypeFrequency1.With(h => h.A, DefaultGGroupA2).With(h => h.Frequency, 0.8m).Build(),
+            DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.8m).With(h => h.B, DefaultGGroupB2).Build(),
             DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.1m).Build(),
         };
         
@@ -94,11 +94,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [Test]
         public async Task CalculateMatchProbability_WhenUsingRegistryAndEthnicityCodesAreNotRepresented_UsesGlobalHaplotypeFrequencySet()
         {
-            
             await ImportFrequencies(DefaultHaplotypeFrequencySetOption1, null, null);
-            
             await ImportFrequencies(DefaultHaplotypeFrequencySetOption2, SpecificEthnicityCode, null);
-
+            
             var patientHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{AlleleStringB}").Build();
             var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, DefaultGGroupA2, DefaultGGroupA2).Build();
 
@@ -113,8 +111,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            // We are expecting to use DefaultHaplotypeFrequencySetOption1, which will have a one mismatch probability of 40%.
-            matchDetails.OneMismatchProbability.Percentage.Should().Be(40);
+            // We are expecting to use DefaultHaplotypeFrequencySetOption1, which will have a one mismatch probability of 11%.
+            matchDetails.OneMismatchProbability.Percentage.Should().Be(11);
         }
 
         [Test]
