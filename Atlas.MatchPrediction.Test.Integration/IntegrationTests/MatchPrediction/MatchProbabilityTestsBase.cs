@@ -32,9 +32,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected static readonly string DefaultGGroupDqb12 = Alleles.UnambiguousAlleleDetails.Dqb1.Position2.GGroup;
         protected static readonly string DefaultGGroupDrb11 = Alleles.UnambiguousAlleleDetails.Drb1.Position1.GGroup;
         protected static readonly string DefaultGGroupDrb12 = Alleles.UnambiguousAlleleDetails.Drb1.Position2.GGroup;
-        
-        protected readonly string DefaultRegistryCode = "default-registry-code";
-        protected readonly string DefaultEthnicityCode = "default-ethnicity-code";
+
+        protected const string DefaultRegistryCode = "default-registry-code";
+        protected const string DefaultEthnicityCode = "default-ethnicity-code";
 
         [SetUp]
         protected void SetUp()
@@ -43,28 +43,30 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             importService = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
         }
         
-        protected async Task ImportFrequencies(IEnumerable<HaplotypeFrequency> haplotypes, string ethnicityCode, string registryCode)
+        protected async Task ImportFrequencies(
+            IEnumerable<HaplotypeFrequency> haplotypes,
+            string registryCode = DefaultRegistryCode,
+            string ethnicityCode = DefaultEthnicityCode)
         {
             using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode, haplotypes).Build();
             await importService.ImportFrequencySet(file);
         }
-
-        protected static PhenotypeInfoBuilder<string> DefaultUnambiguousAllelesBuilder =>
-            new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles());
-
+        
         protected static Builder<HaplotypeFrequency> DefaultHaplotypeFrequency1 => Builder<HaplotypeFrequency>.New
             .With(r => r.A, DefaultGGroupA1)
             .With(r => r.B, DefaultGGroupB1)
             .With(r => r.C, DefaultGGroupC1)
             .With(r => r.DQB1, DefaultGGroupDqb11)
             .With(r => r.DRB1, DefaultGGroupDrb11);
-
         protected static Builder<HaplotypeFrequency> DefaultHaplotypeFrequency2 => Builder<HaplotypeFrequency>.New
             .With(r => r.A, DefaultGGroupA2)
             .With(r => r.B, DefaultGGroupB2)
             .With(r => r.C, DefaultGGroupC2)
             .With(r => r.DQB1, DefaultGGroupDqb12)
             .With(r => r.DRB1, DefaultGGroupDrb12);
+
+        protected static PhenotypeInfoBuilder<string> DefaultUnambiguousAllelesBuilder =>
+            new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles());
     }
     
 }
