@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchPrediction.Config;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Models;
@@ -10,14 +9,14 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
     internal interface IUnambiguousGenotypeExpander
     {
-        public ExpandedGenotype ExpandGenotype(PhenotypeInfo<string> genotype);
+        public ExpandedGenotype ExpandGenotype(PhenotypeInfo<string> genotype, ISet<Locus> allowedLoci);
     }
 
     internal class UnambiguousGenotypeExpander : IUnambiguousGenotypeExpander
     {
-        public ExpandedGenotype ExpandGenotype(PhenotypeInfo<string> genotype)
+        public ExpandedGenotype ExpandGenotype(PhenotypeInfo<string> genotype, ISet<Locus> allowedLoci)
         {
-            var heterozygousLoci = GetHeterozygousLoci(genotype);
+            var heterozygousLoci = GetHeterozygousLoci(genotype, allowedLoci);
             if (!heterozygousLoci.Any())
             {
                 return new ExpandedGenotype
@@ -68,10 +67,9 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
                 {Position1 = genotypeLocusInfo.Position2, Position2 = genotypeLocusInfo.Position1};
         }
 
-        private static List<Locus> GetHeterozygousLoci(PhenotypeInfo<string> genotype)
+        private static List<Locus> GetHeterozygousLoci(PhenotypeInfo<string> genotype, ISet<Locus> allowedLoci)
         {
             var heterozygousLoci = new List<Locus>();
-            var allowedLoci = LocusSettings.MatchPredictionLoci.ToList();
 
             genotype.EachLocus((locus, locusInfo) =>
             {
