@@ -53,22 +53,22 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             try
             {
                 logger.SendTrace("HlaMetadataDictionary: Processing Allele Names");
-                var alleleNameMetadata = GetAlleleNamesAndTheirVariants(hlaNomenclatureVersion);
+                var alleleNameMetadata = GetAlleleNamesAndTheirVariants(hlaNomenclatureVersion).ToList();
                 
                 logger.SendTrace("HlaMetadataDictionary: Processing Pre-calculated match hla");
                 var preCalculatedMatchedHla = GetPreCalculatedMatchedHla(hlaNomenclatureVersion).ToList();
                 
                 logger.SendTrace("HlaMetadataDictionary: Processing Matching metadata");
-                var matchingMetadata = GetMatchingMetadata(preCalculatedMatchedHla);
+                var matchingMetadata = GetMatchingMetadata(preCalculatedMatchedHla).ToList();
 
                 logger.SendTrace("HlaMetadataDictionary: Processing Scoring metadata");
-                var scoringMetadata = GetScoringMetadata(preCalculatedMatchedHla);
+                var scoringMetadata = GetScoringMetadata(preCalculatedMatchedHla).ToList();
 
                 logger.SendTrace("HlaMetadataDictionary: Processing TCE groups");
-                var dpb1TceGroupMetadata = GetDpb1TceGroupMetadata(hlaNomenclatureVersion);
+                var dpb1TceGroupMetadata = GetDpb1TceGroupMetadata(hlaNomenclatureVersion).ToList();
 
                 logger.SendTrace("HlaMetadataDictionary: Processing Allele Groups metadata");
-                var alleleGroupsMetadata = GetAlleleGroupsMetadata(hlaNomenclatureVersion);
+                var alleleGroupsMetadata = GetAlleleGroupsMetadata(hlaNomenclatureVersion).ToList();
 
                 return new HlaMetadataCollection
                 {
