@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.TableStorage;
@@ -34,7 +35,9 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         private readonly ITableReferenceRepository tableReferenceRepository;
         private readonly string functionalTableReferencePrefix;
         private readonly string cacheKey;
-        private CloudTable cloudTable;
+        private CloudTable cloudTable; 
+        
+        private readonly SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
 
         protected CloudTableRepositoryBase(
             ICloudTableFactory factory,
@@ -75,7 +78,12 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 
         protected async Task<TTableRow> GetDataRowIfExists(string partition, string rowKey, string hlaNomenclatureVersion)
         {
-            return GetDataFromCache(partition, rowKey, await TableData(hlaNomenclatureVersion));
+            return await Cache.GetAndScheduleFullCacheWarm(
+                VersionedCacheKey(hlaNomenclatureVersion),
+                () => FetchTableData(hlaNomenclatureVersion),
+                d => GetDataFromCache(partition, rowKey, d),
+                () => GetDataFromSource(partition, rowKey, hlaNomenclatureVersion)
+            );
         }
 
         protected string VersionedCacheKey(string hlaNomenclatureVersion)
@@ -85,7 +93,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 
         protected async Task<Dictionary<string, TTableRow>> TableData(string hlaNomenclatureVersion)
         {
-            return await Cache.GetOrAddAsync(VersionedCacheKey(hlaNomenclatureVersion), () => FetchTableData(hlaNomenclatureVersion))
+            return await Cache.GetOrAddAsync_Tracked(VersionedCacheKey(hlaNomenclatureVersion), () => FetchTableData(hlaNomenclatureVersion))
                    ?? throw new MemoryCacheException($"HLA metadata could not be loaded for nomenclature version: {hlaNomenclatureVersion}");
         }
 
@@ -108,7 +116,8 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 
                     return dataToLoad;
                 },
-                $"Fetched and cached Hla Metadata Dictionary data: {cacheKey}"
+                $"Fetched and cached Hla Metadata Dictionary data: {cacheKey}",
+                customProperties: new Dictionary<string, string> {{"HlaNomenclatureVersion", hlaNomenclatureVersion}}
             );
         }
 
@@ -122,23 +131,34 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         /// </summary>
         private async Task<CloudTable> GetCurrentDataTable(string hlaNomenclatureVersion)
         {
-            if (cloudTable == null)
+            await semaphoreSlim.WaitAsync();
+            try
             {
-                var dataTableReference =
-                    await tableReferenceRepository.GetCurrentTableReference(VersionedTableReferencePrefix(hlaNomenclatureVersion));
-                cloudTable = await tableFactory.GetTable(dataTableReference);
-            }
+                if (cloudTable == null)
+                {
+                    var tablePrefix = VersionedTableReferencePrefix(hlaNomenclatureVersion);
+                    var dataTableReference = await tableReferenceRepository.GetCurrentTableReference(tablePrefix);
+                    cloudTable = await tableFactory.GetTable(dataTableReference);
+                }
 
-            return cloudTable;
+                return cloudTable;
+            }
+            finally
+            {
+                semaphoreSlim.Release();
+            }
         }
 
-        private static TTableRow GetDataFromCache(
-            string partition,
-            string rowKey,
-            IReadOnlyDictionary<string, TTableRow> metadataDictionary)
+        private static TTableRow GetDataFromCache(string partition, string rowKey, IReadOnlyDictionary<string, TTableRow> metadataDictionary)
         {
             metadataDictionary.TryGetValue(partition + rowKey, out var row);
             return row;
+        }
+
+        private async Task<TTableRow> GetDataFromSource(string partition, string rowKey, string hlaNomenclatureVersion)
+        {
+            var table = await GetCurrentDataTable(hlaNomenclatureVersion);
+            return await table.GetRowByPartitionAndRowKey<TTableRow>(partition, rowKey);
         }
 
         private async Task<CloudTable> CreateNewDataTable(string tablePrefix)

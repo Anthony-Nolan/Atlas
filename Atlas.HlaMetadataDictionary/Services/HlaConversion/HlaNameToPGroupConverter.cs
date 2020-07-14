@@ -55,24 +55,24 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
                 return null;
             }
 
-            var dictionary = await GetGGroupToPGroupDictionary(locus, hlaNomenclatureVersion);
-
-            // Null is an appropriate value in some cases - G Groups corresponding to a null allele will have no P Group. 
-            return dictionary.GetValueOrDefault(gGroup);
+            var cacheKey = $"{locus}-GToPGroupLookup-{hlaNomenclatureVersion}";
+            return await cache.GetAndScheduleFullCacheWarm(
+                cacheKey,
+                () => BuildGGroupToPGroupDictionary(locus, hlaNomenclatureVersion),
+                // Null is an appropriate value in some cases - G Groups corresponding to a null allele will have no P Group. 
+                d => d.GetValueOrDefault(gGroup),
+                () => ConvertSingleGGroupToPGroup(locus, gGroup, hlaNomenclatureVersion)
+            );
         }
 
-        private async Task<IReadOnlyDictionary<string, string>> GetGGroupToPGroupDictionary(Locus locus, string hlaNomenclatureVersion)
+        private async Task<Dictionary<string, string>> BuildGGroupToPGroupDictionary(Locus locus, string hlaNomenclatureVersion)
         {
-            var cacheKey = $"{locus}-GToPGroupLookup-{hlaNomenclatureVersion}";
-            return await cache.GetOrAddAsync(cacheKey, async _ =>
-            {
-                return await logger.RunTimedAsync(async () =>
-                    {
-                        var perLocusGGroups = (await scoringMetadataService.GetAllGGroups(hlaNomenclatureVersion))[locus];
-                        return await BuildPerLocusGGroupToPGroupDictionary(locus, perLocusGGroups, hlaNomenclatureVersion);
-                    },
-                    $"Calculated GGroup to PGroup lookup for locus {locus}");
-            });
+            return await logger.RunTimedAsync(async () =>
+                {
+                    var perLocusGGroups = (await scoringMetadataService.GetAllGGroups(hlaNomenclatureVersion))[locus];
+                    return await BuildPerLocusGGroupToPGroupDictionary(locus, perLocusGGroups, hlaNomenclatureVersion);
+                },
+                $"Calculated GGroup to PGroup lookup for locus {locus}");
         }
 
         private async Task<Dictionary<string, string>> BuildPerLocusGGroupToPGroupDictionary(
@@ -83,21 +83,23 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
             var dictionary = new Dictionary<string, string>();
             foreach (var gGroup in gGroups)
             {
-                var pGroups = await ConvertHla(locus, gGroup, hlaNomenclatureVersion);
-                if (pGroups.Count > 1)
-                {
-                    const string errorMessage = "Encountered G Group with multiple corresponding P Groups. This is not expected to be possible.";
-                    logger.SendTrace(errorMessage, LogLevel.Error, new Dictionary<string, string> {{"GGroup", gGroup}});
-                    throw new Exception(errorMessage);
-                }
-
-                if (pGroups.Count == 1)
-                {
-                    dictionary[gGroup] = pGroups.Single();
-                }
+                dictionary[gGroup] = await ConvertSingleGGroupToPGroup(locus, gGroup, hlaNomenclatureVersion);
             }
 
             return dictionary;
+        }
+
+        private async Task<string> ConvertSingleGGroupToPGroup(Locus locus, string gGroup, string hlaNomenclatureVersion)
+        {
+            var pGroups = await ConvertHla(locus, gGroup, hlaNomenclatureVersion);
+            if (pGroups.Count > 1)
+            {
+                const string errorMessage = "Encountered G Group with multiple corresponding P Groups. This is not expected to be possible.";
+                logger.SendTrace(errorMessage, LogLevel.Error, new Dictionary<string, string> {{"GGroup", gGroup}});
+                throw new Exception(errorMessage);
+            }
+
+            return pGroups.SingleOrDefault();
         }
     }
 }
