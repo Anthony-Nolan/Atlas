@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
@@ -45,8 +46,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
                     WasSuccessful = true,
                     RefreshBeginUtc = DateTime.UtcNow,
                     RefreshEndUtc = DateTime.UtcNow,
-                    // Hardcoded HLA Nomenclature version, as all test data sources were manually generated using this specific nomenclature version - 3330
-                    HlaNomenclatureVersion = "3330"
+                    HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion
                 });
                 persistentContext.SaveChanges();
             }

@@ -2,12 +2,12 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
-using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +21,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         private IDonorInspectionRepository inspectionRepo;
         private IHlaProcessor processor;
 
-        private const string DefaultHlaNomenclatureVersion = "3330";
+        private const string DefaultHlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion;
 
         [SetUp]
         public void SetUp()
