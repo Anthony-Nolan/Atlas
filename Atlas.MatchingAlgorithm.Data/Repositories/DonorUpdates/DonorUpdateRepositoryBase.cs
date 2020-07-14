@@ -9,6 +9,7 @@ using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Services;
+using EnumStringValues;
 using Microsoft.Data.SqlClient;
 
 // ReSharper disable InconsistentNaming
@@ -120,14 +121,17 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 dataTable.Columns.Add(columnName);
             }
 
+            var tempPositionDictionary = EnumExtensions.EnumerateValues<LocusPosition>().ToDictionary(p => p, p => (int) p.ToTypePosition());
             foreach (var donor in donors)
             {
-                donor.MatchingHla.EachPosition((l, p, h) =>
+                donor.MatchingHla.GetLocus(locus).EachPosition((p, h) =>
                 {
-                    if (h == null || l != locus)
+                    if (h == null)
                     {
                         return;
                     }
+
+                    var position = tempPositionDictionary[p];
 
                     foreach (var pGroup in h.MatchingPGroups)
                     {
@@ -135,7 +139,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                         dataTable.Rows.Add(
                             0,
                             donor.DonorId,
-                            (int) p.ToTypePosition(),
+                            position,
                             pGroupRepository.FindOrCreatePGroup(pGroup));
                     }
                 });
