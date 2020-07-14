@@ -86,7 +86,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.AddScoped<IHlaMatchingMetadataService, HlaMatchingMetadataService>();
             services.AddScoped<IHlaScoringMetadataService, HlaScoringMetadataService>();
             services.AddScoped<IDpb1TceGroupMetadataService, Dpb1TceGroupMetadataService>();
-            services.AddScoped<IGGroupToPGroupDictionaryGenerator, GGroupToPGroupLookupGenerator>();
         }
     }
 }

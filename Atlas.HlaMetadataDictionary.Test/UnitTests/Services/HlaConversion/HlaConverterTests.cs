@@ -1,4 +1,9 @@
-﻿using Atlas.Common.GeneticData;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
@@ -10,9 +15,6 @@ using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders.ScoringInfoBuilders;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
 {
@@ -32,8 +34,14 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         {
             hlaNameToTwoFieldAlleleConverter = Substitute.For<IHlaNameToTwoFieldAlleleConverter>();
             scoringMetadataService = Substitute.For<IHlaScoringMetadataService>();
+            var logger = Substitute.For<ILogger>();
 
-            hlaConverter = new HlaConverter(hlaNameToTwoFieldAlleleConverter, scoringMetadataService);
+            hlaConverter = new HlaConverter(
+                hlaNameToTwoFieldAlleleConverter,
+                scoringMetadataService,
+                logger,
+                AppCacheBuilder.NewPersistentCacheProvider()
+            );
         }
 
         [TestCase(null)]
@@ -100,7 +108,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         [Test]
         public async Task ConvertHla_TargetIsGGroup_ReturnsMatchingGGroups()
         {
-            var gGroups = new List<string> { "g-group1", "g-group-2" };
+            var gGroups = new List<string> {"g-group1", "g-group-2"};
             var info = new ConsolidatedMolecularScoringInfoBuilder().WithMatchingGGroups(gGroups).Build();
             var metadata = BuildHlaScoringMetadata(info);
             scoringMetadataService.GetHlaMetadata(DefaultLocus, DefaultHlaName, Arg.Any<string>()).Returns(metadata);
@@ -137,7 +145,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         [Test]
         public async Task ConvertHla_TargetIsPGroup_ReturnsMatchingPGroups()
         {
-            var pGroups = new List<string> { "p-group1", "p-group-2" };
+            var pGroups = new List<string> {"p-group1", "p-group-2"};
             var info = new ConsolidatedMolecularScoringInfoBuilder().WithMatchingPGroups(pGroups).Build();
             var metadata = BuildHlaScoringMetadata(info);
             scoringMetadataService.GetHlaMetadata(DefaultLocus, DefaultHlaName, Arg.Any<string>()).Returns(metadata);
@@ -159,7 +167,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         {
             const TargetHlaCategory targetHla = TargetHlaCategory.Serology;
             const string version = "version";
-            
+
             await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
             {
                 TargetHlaCategory = targetHla,
@@ -175,7 +183,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         public async Task ConvertHla_TargetIsSerology_ReturnsMatchingSerologies()
         {
             const string serologyName = "serology";
-            var serologies = new List<SerologyEntry> { new SerologyEntry(serologyName, SerologySubtype.Associated, false) };
+            var serologies = new List<SerologyEntry> {new SerologyEntry(serologyName, SerologySubtype.Associated, false)};
             var info = new ConsolidatedMolecularScoringInfoBuilder().WithMatchingSerologies(serologies).Build();
             var metadata = BuildHlaScoringMetadata(info);
             scoringMetadataService.GetHlaMetadata(DefaultLocus, DefaultHlaName, Arg.Any<string>()).Returns(metadata);

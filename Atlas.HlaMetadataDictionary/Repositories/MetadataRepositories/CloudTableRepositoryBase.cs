@@ -87,7 +87,6 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         {
             return await Cache.GetOrAddAsync(VersionedCacheKey(hlaNomenclatureVersion), () => FetchTableData(hlaNomenclatureVersion))
                    ?? throw new MemoryCacheException($"HLA metadata could not be loaded for nomenclature version: {hlaNomenclatureVersion}");
-            ;
         }
 
         private async Task<Dictionary<string, TTableRow>> FetchTableData(string hlaNomenclatureVersion)

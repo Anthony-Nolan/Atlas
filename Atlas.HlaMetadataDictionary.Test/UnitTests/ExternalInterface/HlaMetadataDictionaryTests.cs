@@ -1,13 +1,13 @@
+using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using NSubstitute;
 using NUnit.Framework;
-using System.Threading.Tasks;
-using Atlas.HlaMetadataDictionary.Services.HlaConversion;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
 {
@@ -24,7 +24,6 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         private IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
         private IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
-        private IGGroupToPGroupDictionaryGenerator gGroupToPGroupDictionaryGenerator;
         private ILogger logger;
 
         private IHlaMetadataDictionary hlaMetadataDictionary;
@@ -40,7 +39,6 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
             dpb1TceGroupMetadataService = Substitute.For<IDpb1TceGroupMetadataService>();
             hlaMetadataGenerationOrchestrator = Substitute.For<IHlaMetadataGenerationOrchestrator>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
-            gGroupToPGroupDictionaryGenerator = Substitute.For<IGGroupToPGroupDictionaryGenerator>();
             logger = Substitute.For<ILogger>();
 
             hlaMetadataDictionary = new HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary(
@@ -53,8 +51,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
                 dpb1TceGroupMetadataService,
                 hlaMetadataGenerationOrchestrator,
                 wmdaHlaNomenclatureVersionAccessor,
-                logger,
-                gGroupToPGroupDictionaryGenerator);
+                logger);
         }
 
         [Test]
