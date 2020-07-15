@@ -28,3 +28,7 @@ output "matching-algorithm-b-conn-string" {
 output "sql-server" {
   value = module.matching_algorithm.sql_database.sql_server
 }
+
+output "matching-algorithm-function-name" {
+  value = module.matching_algorithm.function_app.app_name
+}
