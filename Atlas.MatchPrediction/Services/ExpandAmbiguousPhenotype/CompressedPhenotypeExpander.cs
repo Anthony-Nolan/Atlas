@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -6,6 +7,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Maths;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
+using Atlas.MatchPrediction.Config;
 
 namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 {
@@ -52,7 +54,6 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             this.logger = logger;
         }
 
-        // TODO: ATLAS-400: Tests for this method
         /// <inheritdoc />
         public async Task<ISet<PhenotypeInfo<string>>> ExpandCompressedPhenotype(
             PhenotypeInfo<string> phenotype,
@@ -65,24 +66,17 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
                 => gGroups1 != null && gGroups2 != null ? new HashSet<string>(gGroups1.Concat(gGroups2)) : null
             );
 
-            // TODO: ATLAS-400: Return smallest of two sets - sometimes allowedDiplotypes is bigger than fully expanding the input...
             if (allPossibleHaplotypes == null)
             {
-                return ambiguousPhenotypeExpander.ExpandPhenotype(gGroupsPerPosition);
+                return await NaivelyExpandPhenotype(phenotype, hlaNomenclatureVersion, allowedLoci, gGroupsPerPosition);
             }
-            
+
             var allowedHaplotypes = allPossibleHaplotypes.Where(h =>
                 allowedLoci.All(l => gGroupsPerLocus.GetLocus(l).Contains(h.GetLocus(l)))
             ).ToList();
-            
-            // TODO: ATLAS-400: Filtering when still Enumerable to save memory
-            // TODO: ATLAS-400: De-duplicate as unordered pairs! Currently double counting diplotypes. 
-            var allowedDiplotypes = Combinations.AllPairs(allowedHaplotypes.ToArray(), true)
-                .Select(p => new UnorderedPair<LociInfo<string>>(p.Item1, p.Item2))
-                .Distinct()
-                .ToList();
 
-            // TODO: ATLAS-400: No really, unit test this.
+            var allowedDiplotypes = Combinations.AllPairs(allowedHaplotypes.ToArray(), true).ToList();
+
             var filteredDiplotypes = allowedDiplotypes.Where(diplotype =>
             {
                 return !gGroupsPerPosition.Reduce((l, gGroups, toExclude) =>
@@ -92,8 +86,9 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
                         return true;
                     }
 
-                    // TODO: ATLAS-400: Replace with cleaner config backed version
-                    if (l == Locus.Dpb1)
+                    // If MPA does not support locus - e.g. DPB1: the haplotypes will have no data at such loci
+                    // Distinct from the "allowedLoci", as there loci can be excluded even if supported
+                    if (!LocusSettings.MatchPredictionLoci.Contains(l))
                     {
                         return false;
                     }
@@ -101,26 +96,36 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
                     var diplotypeGGroup1 = diplotype.Item1.GetLocus(l);
                     var diplotypeGGroup2 = diplotype.Item2.GetLocus(l);
 
-                    return !((gGroups.Position1.Contains(diplotypeGGroup1) && gGroups.Position2.Contains(diplotypeGGroup2)) ||
-                             (gGroups.Position1.Contains(diplotypeGGroup2) && gGroups.Position2.Contains(diplotypeGGroup1)));
+                    return !(gGroups.Position1.Contains(diplotypeGGroup1) && gGroups.Position2.Contains(diplotypeGGroup2) ||
+                             gGroups.Position1.Contains(diplotypeGGroup2) && gGroups.Position2.Contains(diplotypeGGroup1));
                 }, false);
             }).ToList();
 
-            logger.SendTrace($"Filtered diplotypes: {filteredDiplotypes.Count}");
+            logger.SendTrace($"Filtered expanded genotypes: {filteredDiplotypes.Count}");
+            return filteredDiplotypes.Select(dp => new PhenotypeInfo<string>(dp.Item1, dp.Item2)).ToHashSet();
+        }
 
-            // TODO: ATLAS-400: Prove to myself that this gives the same answers! - it looks good on the benchmarks, check existing int. tests once the build is fixed
+        /// <summary>
+        /// Expands phenotype naively - i.e. with no haplotype filtering.
+        /// Will throw an exception if input is too ambiguous. 
+        /// </summary>
+        private async Task<ISet<PhenotypeInfo<string>>> NaivelyExpandPhenotype(
+            PhenotypeInfo<string> phenotype,
+            string hlaNomenclatureVersion,
+            ISet<Locus> allowedLoci,
+            PhenotypeInfo<IReadOnlyCollection<string>> gGroupsPerPosition)
+        {
+            var numberOfGenotypes = await CalculateNumberOfPermutations(phenotype, hlaNomenclatureVersion, allowedLoci);
+            // If long overflows, we will get a negative number - this number cannot be negative in other circumstances
+            if (numberOfGenotypes < 0 || numberOfGenotypes > int.MaxValue)
+            {
+                throw new NotImplementedException(
+                    "Imputation of provided phenotype would create an unfeasibly large number of permutations. This code path is not not supported for such ambiguous data."
+                );
+            }
 
-            // TODO: ATLAS-400: Check how this copes with homozygous loci, it might not be good!
-            // TODO: ATLAS-400: If we can break this down to diplotypes here, can we *not* times by two and get rid of the homozygous correction factor altogether?
-            // TODO: ATLAS-400: Is the count of this calculatable mathematically? In case we want to decide to instead fully impute if that gives us fewer options 
-            var finalDiplotypes = new HashSet<PhenotypeInfo<string>>(filteredDiplotypes
-                .Select(dp => new PhenotypeInfo<string>(dp.Item1, dp.Item2))
-                .SelectMany(d => new[] {d})
-                .ToList()
-            );
-
-            logger.SendTrace($"Final diplotype based response: {finalDiplotypes.Count}");
-            return finalDiplotypes;
+            // TODO: ATLAS-235: Pass in excludedLoci here if lost in merge
+            return ambiguousPhenotypeExpander.ExpandPhenotype(gGroupsPerPosition);
         }
 
         private async Task<long> CalculateNumberOfPermutations(

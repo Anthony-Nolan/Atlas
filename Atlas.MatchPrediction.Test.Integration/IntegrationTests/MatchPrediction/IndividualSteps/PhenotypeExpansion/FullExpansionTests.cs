@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
@@ -195,6 +196,22 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultAllowedLoci);
 
             genotypes.Should().HaveCount(1);
+        }
+
+        [Test]
+        public async Task ExpandCompressedPhenotype_WhenExpansionWouldCreateInfeasibleNumberOfPermutations_DoesNotAttemptExpansion()
+        {
+            var phenotype = DefaultUnambiguousAllelesBuilder
+                .WithDataAt(Locus.A, "01:XX")
+                .WithDataAt(Locus.B, "08:XX")
+                .WithDataAt(Locus.C, "07:XX")
+                .WithDataAt(Locus.Dqb1, "02:XX")
+                .WithDataAt(Locus.Drb1, "03:XX")
+                .Build();
+
+            await compressedPhenotypeExpander
+                .Invoking(expander => expander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultAllowedLoci))
+                .Should().ThrowAsync<NotImplementedException>();
         }
 
         private static PhenotypeInfoBuilder<string> DefaultUnambiguousAllelesBuilder =>
