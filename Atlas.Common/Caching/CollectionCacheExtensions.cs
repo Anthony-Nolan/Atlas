@@ -21,7 +21,7 @@ namespace Atlas.Common.Caching
     ///
     /// ** These extension methods allow to have that workflow. **
     /// </summary>
-    public static class CacheExtensions /*QQ CollectionCacheExtensions. Do separately for benefit of reviewer*/
+    public static class CollectionCacheExtensions
     {
         /// <summary>
         /// ** SEE CLASS DOC-COMMENT **
@@ -109,7 +109,7 @@ namespace Atlas.Common.Caching
         ///
         /// Purpose:
         ///==========
-        /// See class-level docComment on <see cref="CacheExtensions"/>
+        /// See class-level docComment on <see cref="CollectionCacheExtensions"/>
         /// Get very quick access once the cache is setup, but still have quick-ish access during the warm-up period.
         /// </summary>
         /// <typeparam name="TCollection">
@@ -180,12 +180,12 @@ namespace Atlas.Common.Caching
                 var message = $"Exception thrown in {nameof(GenerateAndCacheCollectionWithTracking)}, with {nameof(collectionCacheKey)}: '{collectionCacheKey}'. Exception details: {e.ToString()}";
                 Console.WriteLine(message);
                 Debug.WriteLine(message);
-                //TODO: ATLAS-??? Create static Logger?
+                //TODO: ATLAS-542 Create static Logger?
                 if (rethrowErrors)
                 {
                     throw;
                 }
-                return  default;
+                return default;
             }
             finally
             {
