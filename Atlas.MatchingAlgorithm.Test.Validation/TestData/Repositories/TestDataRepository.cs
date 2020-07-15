@@ -46,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
                     WasSuccessful = true,
                     RefreshBeginUtc = DateTime.UtcNow,
                     RefreshEndUtc = DateTime.UtcNow,
-                    HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion
+                    HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion
                 });
                 persistentContext.SaveChanges();
             }

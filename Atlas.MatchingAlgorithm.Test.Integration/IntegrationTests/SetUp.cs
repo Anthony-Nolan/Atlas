@@ -29,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
         private static void RunInitialDataRefresh()
         {
             var dataRefreshHistoryRepository = DependencyInjection.DependencyInjection.Provider.GetService<ITestDataRefreshHistoryRepository>();
-            dataRefreshHistoryRepository.InsertDummySuccessfulRefreshRecord(FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion);
+            dataRefreshHistoryRepository.InsertDummySuccessfulRefreshRecord(FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion);
         }
 
         private static void ResetDatabase()

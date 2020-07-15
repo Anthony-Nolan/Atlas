@@ -19,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
     {
         private IDonorService donorService;
         private IDonorInspectionRepository donorInspectionRepository;
-        private readonly string tokenHlaVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion;
+        private readonly string tokenHlaVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
         [SetUp]
         public void SetUp()

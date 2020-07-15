@@ -50,7 +50,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             services.AddScoped(sp =>
             {
                 var wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
-                wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion);
+                wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion);
                 return wmdaHlaNomenclatureVersionAccessor;
             });
         }

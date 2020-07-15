@@ -19,7 +19,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
     {
         private const Locus DefaultLocus = Locus.A;
         private const string CacheKey = "NmdpCodeLookup_A";
-        private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion;
+        private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
         private IHlaMatchingMetadataService metadataService;
         private IAppCache appCache;

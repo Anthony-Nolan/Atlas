@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DataRefresh
             dataRefreshHistoryRepository = DependencyInjection.DependencyInjection.Provider.GetService<ITestDataRefreshHistoryRepository>();
 
             // Set up a dummy record so the refresh does not attempt to regenerate the file-backed metadata dictionary
-            dataRefreshHistoryRepository.InsertDummySuccessfulRefreshRecord(FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion);
+            dataRefreshHistoryRepository.InsertDummySuccessfulRefreshRecord(FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion);
 
             dataRefreshRunner = DependencyInjection.DependencyInjection.Provider.GetService<IDataRefreshRunner>();
         }

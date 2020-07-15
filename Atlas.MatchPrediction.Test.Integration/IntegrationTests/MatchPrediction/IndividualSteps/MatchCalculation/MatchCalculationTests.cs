@@ -17,7 +17,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
     {
         private IMatchCalculationService matchCalculationService;
 
-        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion;
+        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
         private static readonly LociInfo<int?> TenOutOfTenMatch = new LociInfo<int?>
             {A = 2, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
