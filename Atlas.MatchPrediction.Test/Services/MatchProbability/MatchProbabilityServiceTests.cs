@@ -55,7 +55,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             matchCalculationService.MatchAtPGroupLevel(default, default, default, default, default)
                 .ReturnsForAnyArgs(new GenotypeMatchDetails {MatchCounts = new MatchCountsBuilder().ZeroOutOfTen().Build()});
 
-            genotypeLikelihoodService.CalculateLikelihood(default, default).Returns(0.5m);
+            genotypeLikelihoodService.CalculateLikelihood(default, default, default).Returns(0.5m);
 
             haplotypeFrequencyService.GetHaplotypeFrequencySets(default, default).ReturnsForAnyArgs(new HaplotypeFrequencySetResponse
             {

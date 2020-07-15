@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
@@ -10,6 +11,7 @@ using Atlas.MatchPrediction.Test.Integration.Resources;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using MoreLinq;
 using NUnit.Framework;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 
@@ -89,9 +91,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [Test]
         public async Task CalculateLikelihood_WhenAllLociAreHeterozygous_ReturnsExpectedLikelihood()
         {
+            var allowedLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
             var genotypeInput = DefaultUnambiguousGGroupsBuilder.Build();
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotypeInput, haplotypeFrequencySet);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotypeInput, haplotypeFrequencySet, allowedLoci);
 
             likelihoodResponse.Should().Be(1.1424m);
         }
@@ -103,11 +106,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [TestCase(Locus.Drb1, 0.5664)]
         public async Task CalculateLikelihood_WhenLocusIsHomozygous_ReturnsExpectedLikelihood(Locus homozygousLocus, decimal expectedLikelihood)
         {
+            var allowedLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
             var genotype = DefaultUnambiguousGGroupsBuilder
                 .WithDataAt(homozygousLocus, Alleles.UnambiguousAlleleDetails.GetPosition(homozygousLocus, LocusPosition.One).GGroup)
                 .Build();
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet, allowedLoci);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
@@ -120,6 +124,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             Locus[] homozygousLoci,
             decimal expectedLikelihood)
         {
+            var allowedLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
             var genotype = DefaultUnambiguousGGroupsBuilder.Build();
 
             foreach (var homozygousLocus in homozygousLoci)
@@ -128,21 +133,22 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     genotype.GetPosition(homozygousLocus, LocusPosition.One));
             }
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet, allowedLoci);
 
             likelihoodResponse.Should().Be(expectedLikelihood);
         }
 
-        //TODO: ATLAS-345: This test will no longer be correct once we handle untyped input loci.
-        [TestCase(Locus.C)]
-        [TestCase(Locus.Dqb1)]
-        public async Task CalculateLikelihood_WhenGenotypeHasNullLoci_ReturnsZeroLikelihood(Locus locusToBeNull)
+        [TestCase(Locus.C, 2.1824)]
+        [TestCase(Locus.Dqb1, 2.2592)]
+        public async Task CalculateLikelihood_WhenGenotypeHasNullLoci_ReturnsExpectedLikelihood(Locus locusToBeNull, decimal expectedLikelihood)
         {
+            var allowedLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
+            allowedLoci.Remove(locusToBeNull);
             var genotype = DefaultUnambiguousGGroupsBuilder.WithDataAt(locusToBeNull, (string)null).Build();
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet, allowedLoci);
 
-            likelihoodResponse.Should().Be(0m);
+            likelihoodResponse.Should().Be(expectedLikelihood);
         }
 
         [TestCase(Locus.A)]
@@ -152,9 +158,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [TestCase(Locus.Drb1)]
         public async Task CalculateLikelihood_WhenNoHaplotypesAreRepresentedInDatabase_ReturnsZeroLikelihood(Locus unrepresentedLocus)
         {
+            var allowedLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
             var genotype = DefaultUnambiguousGGroupsBuilder.WithDataAt(unrepresentedLocus, "un-represented").Build();
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet, allowedLoci);
 
             likelihoodResponse.Should().Be(0m);
         }
@@ -162,6 +169,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [Test]
         public async Task CalculateLikelihood_WhenOnlySomeHaplotypesAreRepresentedInDatabase_ReturnsExpectedLikelihood()
         {
+            var allowedLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
             // 16 of the possible 32 haplotypes for a single unambiguous genotype.
             var haplotypesWith16Missing = new List<HaplotypeFrequency>
             {
@@ -183,7 +191,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 new HaplotypeFrequency {A = a1, B = b2, C = c1, DQB1 = dqb11, DRB1 = drb11, Frequency = 0.01m}
             };
 
-            
             const string registryCode = "modified-registry-code";
             const string ethnicityCode = "modified-ethnicity-code";
             
@@ -191,7 +198,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var genotype = DefaultUnambiguousGGroupsBuilder.Build();
 
-            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, newHaplotypeFrequencySet);
+            var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, newHaplotypeFrequencySet, allowedLoci);
 
             likelihoodResponse.Should().Be(0.1488m);
         }

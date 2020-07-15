@@ -1,4 +1,6 @@
-﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+﻿using System.Collections.Generic;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.GenotypeLikelihood
 {
@@ -6,5 +8,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.Ge
     {
         public PhenotypeInfo<string> Genotype { get; set; }
         public FrequencySetMetadata FrequencySetMetaData { get; set; }
+        public ISet<Locus> AllowedLoci { get; set; }
     }
 }
