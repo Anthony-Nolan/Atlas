@@ -8,6 +8,7 @@ output "function_app" {
   value = {
     api_key  = var.FUNCTION_HOST_KEY
     base_url = "https://${azurerm_function_app.atlas_matching_algorithm_function.default_hostname}"
+    app_name = "${var.general.environment}-ATLAS-MATCHING-DONOR-MANAGEMENT-FUNCTION"
   }
 }
 
