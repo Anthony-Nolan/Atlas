@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
@@ -23,6 +24,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         {
             matchingRequestBuilder = new MatchingRequestBuilder()
                 .WithSearchType(DonorType.Adult)
+                .WithLociToScore(new List<Locus>())
                 .WithLociExcludedFromScoringAggregates(new List<Locus>())
                 .WithSearchHla(searchHlas);
             this.nonMatchingHlas = nonMatchingHlas;
@@ -89,6 +91,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 
             matchingRequestBuilder = matchingRequestBuilder
                 .WithLocusSearchHla(locus, LocusPosition.One, nonMatchingHlas.GetLocus(locus).Position1);
+            return this;
+        }
+
+        public SearchRequestFromHlasBuilder WithAllLociScored()
+        {
+            matchingRequestBuilder.WithLociToScore(EnumStringValues.EnumExtensions.EnumerateValues<Locus>().ToList());
             return this;
         }
 

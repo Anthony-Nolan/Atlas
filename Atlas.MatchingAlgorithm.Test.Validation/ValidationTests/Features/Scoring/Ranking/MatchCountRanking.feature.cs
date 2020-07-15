@@ -110,9 +110,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
     testRunner.And("the search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
 #line 9
-    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.And("scoring includes all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
 #line 10
+    testRunner.When("I run an 8/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 11
     testRunner.Then("a match at DQB1 should be returned above a mismatch at DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -125,7 +128,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 8/8 vs 7/8", null, ((string[])(null)));
-#line 12
+#line 13
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -145,19 +148,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
             else
             {
                 this.ScenarioStart();
-#line 13
+#line 14
     testRunner.Given("a patient has multiple matches with different match counts", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 14
+#line 15
     testRunner.And("all matching donors are of type cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 15
+#line 16
     testRunner.And("the search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 16
+#line 17
+    testRunner.And("scoring includes all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 18
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 17
+#line 19
     testRunner.Then("an 8/8 result should be returned above a 7/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -170,7 +176,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 8/8 vs 6/8", null, ((string[])(null)));
-#line 19
+#line 21
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -190,19 +196,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
             else
             {
                 this.ScenarioStart();
-#line 20
+#line 22
     testRunner.Given("a patient has multiple matches with different match counts", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 21
+#line 23
     testRunner.And("all matching donors are of type cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 22
+#line 24
     testRunner.And("the search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 23
+#line 25
+    testRunner.And("scoring includes all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 26
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 24
+#line 27
     testRunner.Then("an 8/8 result should be returned above a 6/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -215,7 +224,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 8/8 vs 5/8", null, ((string[])(null)));
-#line 26
+#line 29
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -235,19 +244,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
             else
             {
                 this.ScenarioStart();
-#line 27
+#line 30
     testRunner.Given("a patient has multiple matches with different match counts", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 28
+#line 31
     testRunner.And("all matching donors are of type cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 29
+#line 32
     testRunner.And("the search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 30
+#line 33
+    testRunner.And("scoring includes all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 34
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 31
+#line 35
     testRunner.Then("an 8/8 result should be returned above a 5/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -260,7 +272,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 8/8 vs 4/8", null, ((string[])(null)));
-#line 33
+#line 37
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -280,19 +292,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
             else
             {
                 this.ScenarioStart();
-#line 34
+#line 38
     testRunner.Given("a patient has multiple matches with different match counts", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 35
+#line 39
     testRunner.And("all matching donors are of type cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 36
+#line 40
     testRunner.And("the search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 37
+#line 41
+    testRunner.And("scoring includes all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 42
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 38
+#line 43
     testRunner.Then("an 8/8 result should be returned above a 4/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -305,7 +320,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 7/8 vs 6/8", null, ((string[])(null)));
-#line 40
+#line 45
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -325,19 +340,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
             else
             {
                 this.ScenarioStart();
-#line 41
+#line 46
     testRunner.Given("a patient has multiple matches with different match counts", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 42
+#line 47
     testRunner.And("all matching donors are of type cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 43
+#line 48
     testRunner.And("the search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 44
+#line 49
+    testRunner.And("scoring includes all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 50
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 45
+#line 51
     testRunner.Then("a 7/8 result should be returned above a 6/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -350,7 +368,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 7/8 vs 5/8", null, ((string[])(null)));
-#line 47
+#line 53
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -370,19 +388,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
             else
             {
                 this.ScenarioStart();
-#line 48
+#line 54
     testRunner.Given("a patient has multiple matches with different match counts", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 49
+#line 55
     testRunner.And("all matching donors are of type cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 50
+#line 56
     testRunner.And("the search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 51
+#line 57
+    testRunner.And("scoring includes all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 58
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 52
+#line 59
     testRunner.Then("a 7/8 result should be returned above a 5/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -395,51 +416,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 7/8 vs 4/8", null, ((string[])(null)));
-#line 54
-  this.ScenarioInitialize(scenarioInfo);
-#line hidden
-            bool isScenarioIgnored = default(bool);
-            bool isFeatureIgnored = default(bool);
-            if ((tagsOfScenario != null))
-            {
-                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
-            }
-            if ((this._featureTags != null))
-            {
-                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
-            }
-            if ((isScenarioIgnored || isFeatureIgnored))
-            {
-                testRunner.SkipScenario();
-            }
-            else
-            {
-                this.ScenarioStart();
-#line 55
-    testRunner.Given("a patient has multiple matches with different match counts", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line hidden
-#line 56
-    testRunner.And("all matching donors are of type cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line hidden
-#line 57
-    testRunner.And("the search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line hidden
-#line 58
-    testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line hidden
-#line 59
-    testRunner.Then("a 7/8 result should be returned above a 4/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-            }
-            this.ScenarioCleanup();
-        }
-        
-        [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 6/8 vs 5/8")]
-        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_68Vs58()
-        {
-            string[] tagsOfScenario = ((string[])(null));
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 6/8 vs 5/8", null, ((string[])(null)));
 #line 61
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -470,9 +446,60 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
     testRunner.And("the search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
 #line 65
-    testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.And("scoring includes all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
 #line 66
+    testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 67
+    testRunner.Then("a 7/8 result should be returned above a 4/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Search with multiple matches with different match counts - 6/8 vs 5/8")]
+        public virtual void SearchWithMultipleMatchesWithDifferentMatchCounts_68Vs58()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 6/8 vs 5/8", null, ((string[])(null)));
+#line 69
+  this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 70
+    testRunner.Given("a patient has multiple matches with different match counts", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 71
+    testRunner.And("all matching donors are of type cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 72
+    testRunner.And("the search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 73
+    testRunner.And("scoring includes all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 74
+    testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 75
     testRunner.Then("a 6/8 result should be returned above a 5/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -485,7 +512,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 6/8 vs 4/8", null, ((string[])(null)));
-#line 68
+#line 77
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -505,19 +532,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
             else
             {
                 this.ScenarioStart();
-#line 69
+#line 78
     testRunner.Given("a patient has multiple matches with different match counts", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 70
+#line 79
     testRunner.And("all matching donors are of type cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 71
+#line 80
     testRunner.And("the search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 72
+#line 81
+    testRunner.And("scoring includes all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 82
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 73
+#line 83
     testRunner.Then("a 6/8 result should be returned above a 4/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -530,7 +560,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         {
             string[] tagsOfScenario = ((string[])(null));
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with multiple matches with different match counts - 5/8 vs 4/8", null, ((string[])(null)));
-#line 75
+#line 85
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -550,19 +580,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
             else
             {
                 this.ScenarioStart();
-#line 76
+#line 86
     testRunner.Given("a patient has multiple matches with different match counts", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 77
+#line 87
     testRunner.And("all matching donors are of type cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 78
+#line 88
     testRunner.And("the search type is cord", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 79
+#line 89
+    testRunner.And("scoring includes all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 90
     testRunner.When("I run a 4/8 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 80
+#line 91
     testRunner.Then("a 5/8 result should be returned above a 4/8 result", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }

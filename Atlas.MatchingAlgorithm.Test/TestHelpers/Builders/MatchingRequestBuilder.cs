@@ -35,6 +35,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                     B = new LocusInfo<string>("default-hla-b"),
                     Drb1 = new LocusInfo<string>("default-hla-drb1")
                 },
+                LociToScore = new List<Locus>(),
                 LociToExcludeFromAggregateScore = new List<Locus>()
             };
         }
@@ -116,6 +117,12 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         public MatchingRequestBuilder WithSearchType(DonorType donorType)
         {
             matchingRequest.SearchType = donorType;
+            return this;
+        }
+
+        public MatchingRequestBuilder WithLociToScore(IEnumerable<Locus> loci)
+        {
+            matchingRequest.LociToScore = loci;
             return this;
         }
 

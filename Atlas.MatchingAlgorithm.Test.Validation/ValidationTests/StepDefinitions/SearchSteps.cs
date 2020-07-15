@@ -8,6 +8,7 @@ using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.PatientFactories;
+using Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinitions.InputParsers;
 using EnumStringValues;
 using FluentAssertions;
 using TechTalk.SpecFlow;
@@ -30,6 +31,14 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             var donorType = searchType.ParseToEnum<DonorType>();
             var searchRequest = scenarioContext.Get<MatchingRequestBuilder>();
             scenarioContext.Set(searchRequest.WithSearchType(donorType));
+        }
+
+        [Given(@"scoring includes (.*)")]
+        public void GivenScoringIsAppliedToLoci(string locusString)
+        {
+            var loci = LocusParser.ParseLoci(locusString).ToList();
+            var searchRequest = scenarioContext.Get<MatchingRequestBuilder>();
+            scenarioContext.Set(searchRequest.WithLociToScore(loci));
         }
 
         [Given(@"locus (.*) is excluded from aggregate scoring")]

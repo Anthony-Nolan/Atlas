@@ -16,15 +16,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
             {
                 DonorInfo = new DonorInfoWithExpandedHla
                 {
-                    HlaNames = new PhenotypeInfo<string>
-                    {
-                        A = { Position1 = "donor-hla", Position2 = "donor-hla"},
-                        B = { Position1 = "donor-hla", Position2 = "donor-hla"},
-                        C = { Position1 = "donor-hla", Position2 = "donor-hla"},
-                        Dpb1 = { Position1 = "donor-hla", Position2 = "donor-hla" },
-                        Dqb1 = { Position1 = "donor-hla", Position2 = "donor-hla"},
-                        Drb1 = { Position1 = "donor-hla", Position2 = "donor-hla"},
-                    }
+                    HlaNames = new PhenotypeInfo<string>("donor-hla")
                 }
             };
         }

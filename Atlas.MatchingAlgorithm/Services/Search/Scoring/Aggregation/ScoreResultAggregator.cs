@@ -1,26 +1,38 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
-using static EnumStringValues.EnumExtensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
 {
     public interface IScoreResultAggregator
     {
-        AggregateScoreDetails AggregateScoreDetails(ScoreResult scoreResult, IReadOnlyCollection<Locus> lociToExclude = null);
+        AggregateScoreDetails AggregateScoreDetails(ScoreResultAggregatorParameters parameters);
     }
 
+    public class ScoreResultAggregatorParameters
+    {
+        public ScoreResult ScoreResult { get; set; }
+        public IReadOnlyCollection<Locus> ScoredLoci { get; set; }
+
+        /// <summary>
+        /// Optional - if empty, results from all scored loci will be included in aggregation.
+        /// </summary>
+        public IReadOnlyCollection<Locus> LociToExclude { get; set; }
+    }
+
+    /// <summary>
+    /// TODO ATLAS-544 - confirm how scoring results should be aggregated if only a subset of loci are scored
+    /// </summary>
     public class ScoreResultAggregator : IScoreResultAggregator
     {
-        public AggregateScoreDetails AggregateScoreDetails(ScoreResult scoreResult, IReadOnlyCollection<Locus> lociToExclude)
+        public AggregateScoreDetails AggregateScoreDetails(ScoreResultAggregatorParameters parameters)
         {
-            lociToExclude = lociToExclude ?? new List<Locus>();
-            var locusScoreDetails = NonExcludedLocusScoreDetails(scoreResult, lociToExclude).ToList();
+            var locusScoreDetails = NonExcludedLocusScoreDetails(parameters).ToList();
             
             return new AggregateScoreDetails
             {
@@ -91,10 +103,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
             return locusScoreDetails.Count(m => m.IsLocusTyped);
         }
 
-        private static IEnumerable<LocusScoreDetails> NonExcludedLocusScoreDetails(ScoreResult scoreResult, IEnumerable<Locus> lociToExclude)
+        private static IEnumerable<LocusScoreDetails> NonExcludedLocusScoreDetails(ScoreResultAggregatorParameters parameters)
         {
-            var includedLoci = EnumerateValues<Locus>().Except(lociToExclude);
-            return includedLoci.Select(scoreResult.ScoreDetailsForLocus);
+            var includedLoci = parameters.ScoredLoci.Except(parameters.LociToExclude);
+            return includedLoci.Select(parameters.ScoreResult.ScoreDetailsForLocus);
         }
     }
 }

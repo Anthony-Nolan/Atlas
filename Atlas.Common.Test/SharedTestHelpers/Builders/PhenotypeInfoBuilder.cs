@@ -22,6 +22,11 @@ namespace Atlas.Common.Test.SharedTestHelpers.Builders
             };
         }
 
+        public PhenotypeInfoBuilder(T initialValue)
+        {
+            phenotypeInfo = new PhenotypeInfo<T>(initialValue);
+        }
+
         public PhenotypeInfoBuilder(PhenotypeInfo<T> initialValues)
         {
             phenotypeInfo = initialValues;

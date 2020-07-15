@@ -5,6 +5,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
@@ -61,9 +62,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var scoredMatches = await logger.RunTimedAsync(
                 async () =>
                 {
-                    var lociToExcludeFromAggregateScoring = matchingRequest.LociToExcludeFromAggregateScore.ToList();
-                    var patientHla = matchingRequest.SearchHlaData;
-                    return await donorScoringService.ScoreMatchesAgainstHla(matches, patientHla, lociToExcludeFromAggregateScoring);
+                    var request = new ScoringRequest<IEnumerable<MatchResult>>
+                    {
+                        PatientHla = matchingRequest.SearchHlaData,
+                        DonorData = matches,
+                        LociToScore = matchingRequest.LociToScore.ToList(),
+                        LociToExcludeFromAggregateScoring = matchingRequest.LociToExcludeFromAggregateScore.ToList()
+                    };
+                    return await donorScoringService.ScoreMatchesAgainstPatientHla(request);
                 },
                 $"{LoggingPrefix}Scoring complete"
             );
@@ -124,11 +130,18 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 AtlasDonorId = result.MatchResult.DonorInfo.DonorId,
                 DonorType = result.MatchResult.DonorInfo.DonorType,
-                MatchCategory = result.ScoreResult.AggregateScoreDetails.MatchCategory,
-                ConfidenceScore = result.ScoreResult.AggregateScoreDetails.ConfidenceScore,
-                GradeScore = result.ScoreResult.AggregateScoreDetails.GradeScore,
-                TypedLociCount = result.ScoreResult.AggregateScoreDetails.TypedLociCount,
+
+                //matching results
                 TotalMatchCount = result.MatchResult.TotalMatchCount,
+                DonorHla = result.MatchResult.DonorInfo.HlaNames,
+
+                // scoring results
+                MatchCategory = result.ScoreResult?.AggregateScoreDetails.MatchCategory,
+                ConfidenceScore = result.ScoreResult?.AggregateScoreDetails.ConfidenceScore,
+                GradeScore = result.ScoreResult?.AggregateScoreDetails.GradeScore,
+                TypedLociCount = result.ScoreResult?.AggregateScoreDetails.TypedLociCount,
+
+                // combines both matching and scoring results
                 PotentialMatchCount = result.PotentialMatchCount,
                 SearchResultAtLocusA = MapSearchResultToApiLocusSearchResult(result, Locus.A),
                 SearchResultAtLocusB = MapSearchResultToApiLocusSearchResult(result, Locus.B),
@@ -136,24 +149,32 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 SearchResultAtLocusDpb1 = MapSearchResultToApiLocusSearchResult(result, Locus.Dpb1),
                 SearchResultAtLocusDqb1 = MapSearchResultToApiLocusSearchResult(result, Locus.Dqb1),
                 SearchResultAtLocusDrb1 = MapSearchResultToApiLocusSearchResult(result, Locus.Drb1),
-                DonorHla = result.MatchResult.DonorInfo.HlaNames
             };
         }
 
         private static LocusSearchResult MapSearchResultToApiLocusSearchResult(MatchAndScoreResult result, Locus locus)
         {
             var matchDetailsForLocus = result.MatchResult.MatchDetailsForLocus(locus);
-            var scoreDetailsForLocus = result.ScoreResult.ScoreDetailsForLocus(locus);
+            var scoreDetailsForLocus = result.ScoreResult?.ScoreDetailsForLocus(locus);
+
+            // do not return a result if neither matching nor scoring was performed at this locus
+            if (matchDetailsForLocus == null && scoreDetailsForLocus == null)
+            {
+                return default;
+            }
 
             return new LocusSearchResult
             {
-                IsLocusTyped = scoreDetailsForLocus.IsLocusTyped,
                 MatchCount = matchDetailsForLocus?.MatchCount ?? scoreDetailsForLocus.MatchCount(),
+
                 IsLocusMatchCountIncludedInTotal = matchDetailsForLocus != null,
-                MatchGradeScore = scoreDetailsForLocus.MatchGradeScore,
-                MatchConfidenceScore = scoreDetailsForLocus.MatchConfidenceScore,
-                ScoreDetailsAtPositionOne = scoreDetailsForLocus.ScoreDetailsAtPosition1,
-                ScoreDetailsAtPositionTwo = scoreDetailsForLocus.ScoreDetailsAtPosition2
+
+                // scoring results
+                IsLocusTyped = scoreDetailsForLocus?.IsLocusTyped,
+                MatchGradeScore = scoreDetailsForLocus?.MatchGradeScore,
+                MatchConfidenceScore = scoreDetailsForLocus?.MatchConfidenceScore,
+                ScoreDetailsAtPositionOne = scoreDetailsForLocus?.ScoreDetailsAtPosition1,
+                ScoreDetailsAtPositionTwo = scoreDetailsForLocus?.ScoreDetailsAtPosition2
             };
         }
     }
