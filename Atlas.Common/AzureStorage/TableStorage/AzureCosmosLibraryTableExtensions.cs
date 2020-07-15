@@ -64,6 +64,9 @@ namespace Atlas.Common.AzureStorage.TableStorage
          * ServicePointManager.UseNagleAlgorithm = false;
          * ServicePointManager.DefaultConnectionLimit = 100;
          */
+        /// <summary>
+        /// Splits entities by partition before applying batch inserts - so can be called without first splitting by partition.
+        /// </summary>
         public static async Task BatchInsert<TEntity>(this CloudTable table, IEnumerable<TEntity> entities)
             where TEntity : TableEntity
         {

@@ -49,7 +49,7 @@ namespace Atlas.Common.AzureStorage.TableStorage
          */
         /// <summary>
         /// Splits entities by partition before applying batch inserts - so can be called without first splitting by partition.
-        /// </summary>>
+        /// </summary>
         public static async Task BatchInsert<TEntity>(this CloudTable table, IEnumerable<TEntity> entities)
             where TEntity : TableEntity
         {
