@@ -1,10 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using LazyCache;
 
@@ -59,8 +59,7 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
             return await cache.GetAndScheduleFullCacheWarm(
                 cacheKey,
                 () => BuildGGroupToPGroupDictionary(locus, hlaNomenclatureVersion),
-                // Null is an appropriate value in some cases - G Groups corresponding to a null allele will have no P Group. 
-                d => d.GetValueOrDefault(gGroup),
+                gGroupToPGroupDictionary => GetPGroupFromDictionaryIfExists(locus, gGroup, gGroupToPGroupDictionary),
                 () => ConvertSingleGGroupToPGroup(locus, gGroup, hlaNomenclatureVersion)
             );
         }
@@ -89,6 +88,17 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
             return dictionary;
         }
 
+        private static string GetPGroupFromDictionaryIfExists(
+            Locus locus,
+            string gGroup,
+            IReadOnlyDictionary<string, string> gGroupToPGroupDictionary)
+        {
+            var gGroupExists = gGroupToPGroupDictionary.TryGetValue(gGroup, out var pGroup);
+            return gGroupExists
+                ? pGroup
+                : throw new HlaMetadataDictionaryException(locus, gGroup, "GGroup not recognised, could not be converted to PGroup.");
+        }
+
         private async Task<string> ConvertSingleGGroupToPGroup(Locus locus, string gGroup, string hlaNomenclatureVersion)
         {
             var pGroups = await ConvertHla(locus, gGroup, hlaNomenclatureVersion);
@@ -96,7 +106,7 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
             {
                 const string errorMessage = "Encountered G Group with multiple corresponding P Groups. This is not expected to be possible.";
                 logger.SendTrace(errorMessage, LogLevel.Error, new Dictionary<string, string> {{"GGroup", gGroup}});
-                throw new Exception(errorMessage);
+                throw new HlaMetadataDictionaryException(locus, gGroup, errorMessage);
             }
 
             return pGroups.SingleOrDefault();
