@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
-using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Test.Integration.Resources;
@@ -18,6 +18,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
     [TestFixture]
     internal class FilteredExpansion
     {
+        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
         private static readonly ISet<Locus> DefaultLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
 
         // The GGroups represented by the default alleles in UnambiguousAlleleDetails could theoretically be split into 16 haplotypes. 
@@ -39,7 +40,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var phenotype = new PhenotypeInfoBuilder<string>(UnambiguousAlleleDetails.Alleles()).Build();
             var haplotypes = new List<LociInfo<string>> {HaplotypeBuilder1.Build(), HaplotypeBuilder2.Build()};
 
-            var genotypes = await expander.ExpandCompressedPhenotype(phenotype, Constants.SnapshotHlaNomenclatureVersion, DefaultLoci, haplotypes);
+            var genotypes = await expander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultLoci, haplotypes);
 
             genotypes.Count.Should().Be(1);
         }
@@ -57,7 +58,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 HaplotypeBuilder2.Build()
             };
 
-            var genotypes = await expander.ExpandCompressedPhenotype(phenotype, Constants.SnapshotHlaNomenclatureVersion, DefaultLoci, haplotypes);
+            var genotypes = await expander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultLoci, haplotypes);
 
             // This G Group is represented by the patient HLA (01:XX), but is not present in the HF set 
             const string expectedAbsentGGroup = "01:01:02";
@@ -76,7 +77,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 HaplotypeBuilder1.WithDataAt(locus, "g-group-at-excluded-locus").Build()
             };
 
-            var genotypes = await expander.ExpandCompressedPhenotype(phenotype, Constants.SnapshotHlaNomenclatureVersion, DefaultLoci, haplotypes);
+            var genotypes = await expander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultLoci, haplotypes);
 
             genotypes.Count.Should().Be(1);
         }
@@ -117,7 +118,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 HaplotypeBuilder2.Build()
             };
 
-            var genotypes = await expander.ExpandCompressedPhenotype(phenotype, Constants.SnapshotHlaNomenclatureVersion, DefaultLoci, haplotypes);
+            var genotypes = await expander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultLoci, haplotypes);
 
             // Of two matching haplotypes, three possible combinations as diplotypes: x & y => (xx)/(xy)/(yy)
             genotypes.Count.Should().Be(3);
