@@ -1,3 +1,6 @@
+// This file is for outputs that are read by otherr terraforms.
+// If you want an output to be read by azure, use CIOutputs.tf
+
 output "donor_import" {
   value = module.donor_import
 }
@@ -22,28 +25,4 @@ output "storage_account" {
   value = {
     id = azurerm_storage_account.azure_storage.id
   }
-}
-
-output "matching-algorithm-persistent-db-name" {
-  value = module.matching_algorithm.sql_database.persistent_database_name
-}
-
-output "matching-algorithm-persistent-db-conn-string" {
-  value = module.matching_algorithm.sql_database.persistent_database_connection_string
-}
-
-output "matching-transient-a-name" {
-  value = module.matching_algorithm.sql_database.transient_a_database_name
-}
-
-output "matching-algorithm-a-conn-string" {
-  value = module.matching_algorithm.sql_database.transient_a_database_connection_string
-}
-
-output "matching-algorithm-b-name" {
-  value = module.matching_algorithm.sql_database.transient_b_database_name
-}
-
-output "matching-algorithm-b-conn-string" {
-  value = module.matching_algorithm.sql_database.transient_b_database_connection_string
 }
