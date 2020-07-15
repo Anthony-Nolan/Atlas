@@ -28,6 +28,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         protected FileBackedHlaMetadataRepositoryBase()
         {
             PopulateHlaMetadata(OlderTestHlaVersion);
+            PopulateHlaMetadata(NewerTestsHlaVersion);
         }
 
         public Task LoadDataIntoMemory(string hlaNomenclatureVersion)

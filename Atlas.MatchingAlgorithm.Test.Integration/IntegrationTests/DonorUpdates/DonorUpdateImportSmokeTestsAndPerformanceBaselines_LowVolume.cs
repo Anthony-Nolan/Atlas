@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
@@ -77,7 +78,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
     {
         private IDonorManagementService managementService;
         private TestDonorInspectionRepository donorInspectionRepository;
-        private string fileBackedHmdHlaNomenclatureVersion = Constants.SnapshotHlaNomenclatureVersion;
+        private string fileBackedHmdHlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewDonorUpdateTestsVersion;
         private TransientDatabase activeDb;
 
         [SetUp]
