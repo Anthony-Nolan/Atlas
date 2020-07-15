@@ -47,39 +47,32 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
             IEnumerable<Diplotype> diplotypes,
             ISet<Locus> allowedLoci)
         {
-            var allMpaLoci = allowedLoci == LocusSettings.MatchPredictionLoci.ToHashSet();
-
             // Unrepresented haplotypes are assigned default value for decimal, 0 - which is what we want here.
             foreach (var diplotype in diplotypes)
             {
-                haplotypesWithFrequencies.TryGetValue(diplotype.Item1.Hla, out var frequency1);
-                if (!allMpaLoci && frequency1 == 0m)
-                {
-                    frequency1 = GetFrequencyForHla(haplotypesWithFrequencies, diplotype.Item1.Hla, allowedLoci);
-                    haplotypesWithFrequencies.Add(diplotype.Item1.Hla, frequency1);
-                }
-
-                haplotypesWithFrequencies.TryGetValue(diplotype.Item2.Hla, out var frequency2);
-                if (!allMpaLoci && frequency2 == 0m)
-                {
-                    frequency1 = GetFrequencyForHla(haplotypesWithFrequencies, diplotype.Item1.Hla, allowedLoci);
-                    haplotypesWithFrequencies.Add(diplotype.Item1.Hla, frequency1);
-                }
-
-                diplotype.Item1.Frequency = frequency1;
-                diplotype.Item2.Frequency = frequency2;
+                diplotype.Item1.Frequency = GetFrequencyForHla(haplotypesWithFrequencies, diplotype.Item1.Hla, allowedLoci);
+                diplotype.Item2.Frequency = GetFrequencyForHla(haplotypesWithFrequencies, diplotype.Item2.Hla, allowedLoci);
             }
         }
 
         private static decimal GetFrequencyForHla(
-            IReadOnlyDictionary<HaplotypeHla, decimal> haplotypesWithFrequencies,
+            Dictionary<HaplotypeHla, decimal> haplotypesWithFrequencies,
             HaplotypeHla hla,
             ISet<Locus> allowedLoci)
         {
-            return haplotypesWithFrequencies
-                .Where(kvp => kvp.Key.EqualsAtLoci(hla, allowedLoci)).Select(kvp => kvp.Value)
-                .DefaultIfEmpty(0m)
-                .Sum();
+            haplotypesWithFrequencies.TryGetValue(hla, out var frequency);
+
+            if (allowedLoci != LocusSettings.MatchPredictionLoci.ToHashSet() && frequency == default)
+            {
+                frequency = haplotypesWithFrequencies
+                    .Where(kvp => kvp.Key.EqualsAtLoci(hla, allowedLoci)).Select(kvp => kvp.Value)
+                    .DefaultIfEmpty(0m)
+                    .Sum();
+
+                haplotypesWithFrequencies.Add(hla, frequency);
+            }
+
+            return frequency;
         }
     }
 }
