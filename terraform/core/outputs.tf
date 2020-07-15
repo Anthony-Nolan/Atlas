@@ -23,3 +23,27 @@ output "storage_account" {
     id = azurerm_storage_account.azure_storage.id
   }
 }
+
+output "matching-algorithm-persistent-db-name" {
+  module.matching_algorithm.sql_database.persistent_database_name
+}
+
+output "matching-algorithm-persistent-db-conn-string" {
+  module.matching_algorithm.sql_database.persistent_database_connection_string
+}
+
+output "matching-transient-a-name" {
+  module.matching_algorithm.sql_database.transient_a_database_name
+}
+
+output "matching-algorithm-a-conn-string" {
+  module.matching_algorithm.sql_database.transient_a_database_connection_string
+}
+
+output "matching-algorithm-b-name" {
+  module.matching_algorithm.sql_database.transient_b_database_name
+}
+
+output "matching-algorithm-b-conn-string" {
+  module.matching_algorithm.sql_database.transient_b_database_connection_string
+}
