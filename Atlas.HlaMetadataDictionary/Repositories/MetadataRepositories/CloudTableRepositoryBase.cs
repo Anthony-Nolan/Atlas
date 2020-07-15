@@ -76,7 +76,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 
         protected async Task<TTableRow> GetDataRowIfExists(string partition, string rowKey, string hlaNomenclatureVersion)
         {
-            return await Cache.GetAndScheduleFullCacheWarm(
+            return await Cache.GetSingleItemAndScheduleWholeCollectionCacheWarm(
                 VersionedCacheKey(hlaNomenclatureVersion),
                 () => FetchAllRowsInTable(hlaNomenclatureVersion),
                 tableDictionary => GetRowFromCachedTable(partition, rowKey, tableDictionary),
@@ -86,7 +86,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 
         protected async Task<Dictionary<string, TTableRow>> TableData(string hlaNomenclatureVersion)
         {
-            return await Cache.GetOrAddAsync_Tracked(VersionedCacheKey(hlaNomenclatureVersion), () => FetchAllRowsInTable(hlaNomenclatureVersion))
+            return await Cache.GetOrAddWholeCollectionAsync_Tracked(VersionedCacheKey(hlaNomenclatureVersion), () => FetchAllRowsInTable(hlaNomenclatureVersion))
                    ?? throw new MemoryCacheException($"HLA metadata could not be loaded for nomenclature version: {hlaNomenclatureVersion}");
         }
 

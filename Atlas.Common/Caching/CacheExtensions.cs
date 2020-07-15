@@ -1,98 +1,196 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using LazyCache;
 
 namespace Atlas.Common.Caching
 {
-    public static class CacheExtensions
+    /// <summary>
+    /// In many cases we cache a large collection, are it is more efficient to fetch the *entire* dataset in one go.
+    /// e.g. reading an AzureStorage Table.
+    ///
+    /// However, when taking this approach the initial collection fetch often takes quite a long time - a lot longer
+    /// than pulling out a single value would take.
+    /// In these cases, if what we want right now is a single record from the collection and the collection has not
+    /// yet been cached, then we'd prefer to fetch that single element directly, rather than wait for the full
+    /// collection caching to complete.
+    ///
+    /// But we still want the kick off the caching of the full collection in the background.
+    ///
+    /// ** These extension methods allow to have that workflow. **
+    /// </summary>
+    public static class CacheExtensions /*QQ CollectionCacheExtensions. Do separately for benefit of reviewer*/
     {
         /// <summary>
-        /// Manually keep track of when cache keys are in the process of being populated.
-        /// Some cached collections take a long time to generate, and LazyCache has no way of checking whether a cache is currently being populated:
-        /// instead it will wait for the population to complete, then return a value (rather than returning null, which indicates both "no value" and "no-in progress cache population")
+        /// ** SEE CLASS DOC-COMMENT **
+        /// We have to manually keep track of which collections are in the process of being populated, because
+        /// LazyCache has no way of checking that.
+        ///
+        /// LazyCache will do one of three things:
+        /// * return the value (if the key exists in the cache)
+        /// * return null (if the key is not in the cache AND there is no process currently populating that key)
+        /// * wait (if the key is currently being populated)
+        ///
+        /// We want to be able to return a bool indicating whether or not a collection is being populated, without
+        /// waiting if it is.
         /// </summary>
-        private static readonly List<string> CacheKeysBeingPopulatedInBackground = new List<string>();
+        private static readonly HashSet<string> CollectionCacheKeysBeingPopulatedInBackground = new HashSet<string>();
+
+        /// <returns>
+        /// Returns <c>true</c> if the key is in the process of being cached.
+        /// Returns <c>false</c> if the key is already present, or if caching has not yet been initiated.
+        /// </returns>
+        private static bool CollectionIsCurrentlyBeingCached(string collectionCacheKey)
+        {
+            return CollectionCacheKeysBeingPopulatedInBackground.Contains(collectionCacheKey);
+        }
 
         /// <summary>
-        /// Intended for use in conjunction with <see cref="GetAndScheduleFullCacheWarm{TItem,TCollection}"/>.
-        /// Use this when calling `GetOrAddAsync` on a cacheKey that is elsewhere accessed via <see cref="GetAndScheduleFullCacheWarm{TItem,TCollection}"/> 
+        /// ** SEE CLASS DOC-COMMENT **
         ///
-        /// In some cases, both the full collection cache + the single item fetch method will depend on another cached collection - which
-        /// may not be itself appropriate for use of <see cref="GetAndScheduleFullCacheWarm{TItem,TCollection}"/>
+        /// Intended Usage:
+        ///=================
+        /// To be used if you want to fetch the *entirety* of a collection (and use large portions of it), but
+        /// individual elements from that collection are ALSO accessed elsewhere.
+        /// This method MUST be used (instead of on <see cref="IAppCache.GetOrAddAsync"/>) for any cached collection
+        /// which is also being accessed via <see cref="GetSingleItemAndScheduleWholeCollectionCacheWarm{TItem,TCollection}"/>, in order 
+        /// to preserve the behaviour of the latter.
         ///
-        /// Some caches take a long time to generate, but if the operation to populate it has begun, GetOrAdd will wait for the value to be populated,
-        /// rather than returning null. We do not want the "fetch item directly" behaviour to be slowed down by this, so we track currently-caching keys.
+        /// Behaviour:
+        ///============
+        /// From the point of view of the consumer of this method alone, this method acts exactly as <see cref="IAppCache.GetOrAddAsync"/>.
+        /// If the provided key is in the cache, it returns the collection associated with that key
+        /// If the provided key is NOT in the cache, it invokes the <c>async</c> Factory function, <c>await</c>s that
+        /// function and returns the Result (having added it to the cache).
         ///
-        /// This method allows us to track keys even when we do not use the background cache population method. 
+        /// Purpose:
+        ///==========
+        /// Without this method, if code A asks for the whole collection, and the shortly later code B asks for a single
+        /// item from the same collection, then code B has no way to know that the (slow) fetch has already been initiated.
+        /// As documented on <see cref="CollectionCacheKeysBeingPopulatedInBackground"/> LazyCache offers no way to detect
+        /// that without waiting.
+        /// So we require code A to use this method, so that the fetch gets recorded, and thus code B knows about it.
         /// </summary>
-        public static async Task<T> GetOrAddAsync_Tracked<T>(this IAppCache cache, string cacheKey, Func<Task<T>> addItemFactory)
+        /// <typeparam name="TCollection">
+        /// Type of the collection to be fetched/returned.
+        /// Constrained to implement <see cref="ICollection"/>, which isn't technically *required* by the logic of the method,
+        /// but if it's not true you're probably mis-using these methods.
+        /// (If you have a real use-case and have though about these methods in detail feel free to remove this constraint.)
+        /// </typeparam>
+        /// <param name="cache">The underlying cache</param>
+        /// <param name="collectionCacheKey">The cache key by which the collection is stored</param>
+        /// <param name="fetchFullCollection">An async callback that will generate the full collection for caching. Do not return null, if avoidable.</param>
+        /// <returns>The collection produces by the fetch method. From a cache, if possible.</returns>
+        public static async Task<TCollection> GetOrAddWholeCollectionAsync_Tracked<TCollection>(
+            this IAppCache cache,
+            string collectionCacheKey,
+            Func<Task<TCollection>> fetchFullCollection
+        ) where TCollection : ICollection // See typeparam comment.
         {
-            var value = await cache.GetAsync<T>(cacheKey);
+            var value = await cache.GetAsync<TCollection>(collectionCacheKey);
             if (value == null)
             {
-                CacheKeysBeingPopulatedInBackground.Add(cacheKey);
-                value = await cache.GetOrAddAsync(cacheKey, addItemFactory);
-                CacheKeysBeingPopulatedInBackground.Remove(cacheKey);
+                value = await cache.GenerateAndCacheCollectionWithTracking(collectionCacheKey, fetchFullCollection, true);
             }
 
             return value;
         }
 
         /// <summary>
-        /// In some situations, warming a cache can take a long time - e.g. pulling ina large collection from external storage.
-        /// In these cases, fetching an element from the cache is quicker once warmed,
-        /// but if not warmed fetching an individual item can be faster than waiting for the whole collection to cache.
+        /// ** SEE CLASS DOC-COMMENT **
         ///
-        /// This method triggers a background population of a full cache, while allowing a quick retrieval from the un-warmed cache.
+        /// Behaviour:
+        ///============
+        /// If the provided collection Key is present in the cache, reads the single value from that collection.
+        /// If not, fetches the single value directly from the source, and kicks off a caching process to fetch the
+        /// collection in the background.
+        ///
+        /// Purpose:
+        ///==========
+        /// See class-level docComment on <see cref="CacheExtensions"/>
+        /// Get very quick access once the cache is setup, but still have quick-ish access during the warm-up period.
         /// </summary>
-        /// <typeparam name="TCollection">Type of the cached collection</typeparam>
-        /// <typeparam name="TItem">Type of the item we want to retrieve from the cached collection</typeparam>
+        /// <typeparam name="TCollection">
+        /// Type of the cached collection.
+        /// Constrained to implement <see cref="ICollection"/>, which isn't technically *required* by the logic of the method,
+        /// but if it's not true you're probably mis-using these methods.
+        /// (If you have a real use-case and have though about these methods in detail feel free to remove this constraint.)
+        /// </typeparam>
+        /// <typeparam name="TItem">Type of the single item we want to retrieve from the cached collection</typeparam>
         /// <param name="cache">The underlying cache</param>
-        /// <param name="cacheKey">The cache key by which the collection is stored</param>
-        /// <param name="generateFullCollection">A callback that will generate the full collection for caching</param>
-        /// <param name="getItemFromCollection">A callback that can fetch the desired item from the cached collection</param>
-        /// <param name="getItemDirectly">A callback that can fetch the desired item while bypassing the cache</param>
-        public static async Task<TItem> GetAndScheduleFullCacheWarm<TItem, TCollection>(
+        /// <param name="collectionCacheKey">The cache key by which the collection is stored</param>
+        /// <param name="fetchFullCollection">
+        /// An async callback that will fetch the full collection for caching.
+        /// WARNING! This will NOT be <c>await</c>ed, so the calling code is responsible for catching and logging any exceptions.
+        /// </param>
+        /// <param name="readSingleItemFromCollection">A synchronous callback that can read the desired item from the collection, if it has already been cached.</param>
+        /// <param name="fetchSingleItemDirectly">An async callback that can fetch the desired item directly without using the collection</param>
+        public static async Task<TItem> GetSingleItemAndScheduleWholeCollectionCacheWarm<TItem, TCollection>(
             this IAppCache cache,
-            string cacheKey,
-            Func<Task<TCollection>> generateFullCollection,
-            Func<TCollection, TItem> getItemFromCollection,
-            Func<Task<TItem>> getItemDirectly
-        )
+            string collectionCacheKey,
+            Func<Task<TCollection>> fetchFullCollection,
+            Func<TCollection, TItem> readSingleItemFromCollection,
+            Func<Task<TItem>> fetchSingleItemDirectly
+        ) where TCollection : ICollection // See typeparam comment.
         {
-            // If cache currently being populated for key, do not either wait for cache to complete, or kick off new cache population.
-            if (CacheKeysBeingPopulatedInBackground.Contains(cacheKey))
+            if (CollectionIsCurrentlyBeingCached(collectionCacheKey))
             {
-                return await getItemDirectly();
+                // The cache of this collection is currently being populated for key, do not either wait for cache to complete, or kick off new cache population.
+                return await fetchSingleItemDirectly();
             }
 
-            // cache will return null if item is not present, and item if fully present.
-            // If currently populating, it will wait for the cache to populate, then return the item.
-            var cachedCollection = await cache.GetAsync<TCollection>(cacheKey);
-            if (cachedCollection != null)
+            //See docs on CollectionCacheKeysBeingPopulatedInBackground, for the possible return values here.
+            var cachedCollection = await cache.GetAsync<TCollection>(collectionCacheKey);
+            if (cachedCollection == null)
             {
-                return getItemFromCollection(cachedCollection);
+                // Item is neither in the cache, nor being populated.
+                
+                // So the first thing we want to do is initiate a read of the single item.
+                var desiredSingleItemTask = fetchSingleItemDirectly();
+
+                // Then, kick off the larger cache warming process.
+                // We explicitly do NOT await this! We want it to run **in the background**, so as not to delay our single item returning.
+                // Errors are the calling code's responsibility.
+#pragma warning disable 4014
+                _ = Task.Factory.StartNew((Action) (() => cache.GenerateAndCacheCollectionWithTracking(collectionCacheKey, fetchFullCollection)));
+#pragma warning restore 4014
+                
+                return await desiredSingleItemTask;
             }
 
-            // Explicitly do not await this! We want it to complete in the background while we fetch the inner item the fast way.
-            _ = Task.Factory.StartNew(() => cache.GenerateAndCacheCollection(cacheKey, generateFullCollection));
-
-            return await getItemDirectly();
+            return readSingleItemFromCollection(cachedCollection);
         }
 
-        private static async Task GenerateAndCacheCollection<TCollection>(
+        private static async Task<TCollection> GenerateAndCacheCollectionWithTracking<TCollection>(
             this IAppCache cache,
-            string cacheKey,
-            Func<Task<TCollection>> generateFullCollection)
+            string collectionCacheKey,
+            Func<Task<TCollection>> fetchFullCollection,
+            bool rethrowErrors = false
+        ) where TCollection : ICollection // See typeparam comment.
         {
-            CacheKeysBeingPopulatedInBackground.Add(cacheKey);
-            await cache.GetOrAddAsync(cacheKey, async () =>
+            CollectionCacheKeysBeingPopulatedInBackground.Add(collectionCacheKey);
+            try
             {
-                var collection = await generateFullCollection();
-                CacheKeysBeingPopulatedInBackground.Remove(cacheKey);
-                return collection;
-            });
+                return await cache.GetOrAddAsync(collectionCacheKey, fetchFullCollection);
+            }
+            catch (Exception e)
+            {
+                var message = $"Exception thrown in {nameof(GenerateAndCacheCollectionWithTracking)}, with {nameof(collectionCacheKey)}: '{collectionCacheKey}'. Exception details: {e.ToString()}";
+                Console.WriteLine(message);
+                Debug.WriteLine(message);
+                //TODO: ATLAS-??? Create static Logger?
+                if (rethrowErrors)
+                {
+                    throw;
+                }
+                return  default;
+            }
+            finally
+            {
+                CollectionCacheKeysBeingPopulatedInBackground.Remove(collectionCacheKey);
+            }
         }
     }
 }
