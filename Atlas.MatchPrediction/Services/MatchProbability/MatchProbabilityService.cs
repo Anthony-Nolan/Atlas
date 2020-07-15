@@ -190,7 +190,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             ISet<Locus> allowedLoci)
         {
             return (await logger.RunTimedAsync(
-                    async () => await Task.WhenAll(genotypes.Select(genotype => CalculateLikelihood(genotype, frequencySet))),
+                    async () => await Task.WhenAll(genotypes.Select(genotype => CalculateLikelihood(genotype, frequencySet, allowedLoci))),
                     $"{LoggingPrefix}Calculated likelihoods for genotypes",
                     LogLevel.Verbose
                 ))
@@ -213,9 +213,10 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
         private async Task<KeyValuePair<PhenotypeInfo<string>, decimal>> CalculateLikelihood(
             PhenotypeInfo<string> genotype,
-            HaplotypeFrequencySet frequencySet)
+            HaplotypeFrequencySet frequencySet,
+            ISet<Locus> allowedLoci)
         {
-            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotype, frequencySet);
+            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotype, frequencySet, allowedLoci);
             return new KeyValuePair<PhenotypeInfo<string>, decimal>(genotype, likelihood);
         }
     }

@@ -273,6 +273,20 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                    EqualityComparer<T>.Default.Equals(Drb1, other.Drb1);
         }
 
+        public virtual bool Equals(LociInfo<T> other, ISet<Locus> lociToMatchAt)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            if (this.GetType() != other.GetType()) return false;
+
+            return (!lociToMatchAt.Contains(Locus.A) || EqualityComparer<T>.Default.Equals(A, other.A)) &&
+                   (!lociToMatchAt.Contains(Locus.A) || EqualityComparer<T>.Default.Equals(B, other.B)) &&
+                   (!lociToMatchAt.Contains(Locus.A) || EqualityComparer<T>.Default.Equals(C, other.C)) &&
+                   (!lociToMatchAt.Contains(Locus.A) || EqualityComparer<T>.Default.Equals(Dpb1, other.Dpb1)) &&
+                   (!lociToMatchAt.Contains(Locus.A) || EqualityComparer<T>.Default.Equals(Dqb1, other.Dqb1)) &&
+                   (!lociToMatchAt.Contains(Locus.A) || EqualityComparer<T>.Default.Equals(Drb1, other.Drb1));
+        }
+
         // TODO: ATLAS-499. This HashCode references mutable properties, which is a BadThing(TM).
         // Make the whole class fully immutable.
         public override int GetHashCode()
