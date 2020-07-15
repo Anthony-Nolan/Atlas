@@ -60,13 +60,13 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
         public string RegenerateNewMetadataFile(string version, string outputPath = null)
         {
             var metadata = hlaMetadataDictionary.GenerateAllHlaMetadata(version);
-            var stringRep = SerialiseToJsonString(metadata);
+            var stringRepresentation = SerialiseToJsonString(metadata);
 
             if (!string.IsNullOrWhiteSpace(outputPath))
             {
-                System.IO.File.WriteAllText(outputPath, stringRep);
+                System.IO.File.WriteAllText(outputPath, stringRepresentation);
             }
-            return stringRep;
+            return stringRepresentation;
         }
 
         private static string SerialiseToJsonString(HlaMetadataCollection metadata)

@@ -27,7 +27,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
 
         protected FileBackedHlaMetadataRepositoryBase()
         {
-            PopulateHlaMetadata(PreExistingTestVersion);
+            PopulateHlaMetadata(OlderTestHlaVersion);
         }
 
         public Task LoadDataIntoMemory(string hlaNomenclatureVersion)
@@ -81,8 +81,8 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
     /// </summary>
     public abstract class FileBackedHlaMetadataRepositoryBaseReader
     {
-        public const string PreExistingTestVersion = "3330";
-        public const string NewDonorUpdateTestsVersion = "3400";
+        public const string OlderTestHlaVersion = "3330";
+        public const string NewerTestsHlaVersion = "3400";
 
         private static readonly Dictionary<string, FileBackedHlaMetadataCollection> PreviouslyLoadedFiles = new Dictionary<string, FileBackedHlaMetadataCollection>();
 

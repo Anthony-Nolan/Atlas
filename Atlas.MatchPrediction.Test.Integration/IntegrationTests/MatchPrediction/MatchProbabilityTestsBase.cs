@@ -18,7 +18,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected IMatchProbabilityService matchProbabilityService;
         protected IHaplotypeFrequencyService importService;
 
-        protected const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion;
+        protected const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
         protected static readonly string DefaultGGroupA1 = Alleles.UnambiguousAlleleDetails.A.Position1.GGroup;
         protected static readonly string DefaultGGroupA2 = Alleles.UnambiguousAlleleDetails.A.Position2.GGroup;

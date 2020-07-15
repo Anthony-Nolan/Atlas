@@ -18,7 +18,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
     public class AlleleGroupExpanderTests
     {
         private const Locus DefaultLocus = Locus.A;
-        private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion;
+        private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
         private IAlleleGroupExpander alleleGroupExpander;
 

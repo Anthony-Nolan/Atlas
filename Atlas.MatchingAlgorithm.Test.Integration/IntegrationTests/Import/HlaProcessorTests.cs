@@ -21,7 +21,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         private IDonorInspectionRepository inspectionRepo;
         private IHlaProcessor processor;
 
-        private const string DefaultHlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion;
+        private const string DefaultHlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
         [SetUp]
         public void SetUp()

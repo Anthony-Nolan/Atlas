@@ -17,7 +17,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
     public class Dpb1TceGroupMetadataServiceTests
     {
         private const string CacheKey = "NmdpCodeLookup_Dpb1";
-        private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion;
+        private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
         private IDpb1TceGroupMetadataService metadataService;
         private IAppCache appCache;

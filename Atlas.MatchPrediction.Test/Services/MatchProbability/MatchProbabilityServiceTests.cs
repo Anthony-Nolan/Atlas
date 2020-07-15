@@ -34,7 +34,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
         private IMatchProbabilityService matchProbabilityService;
 
-        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.PreExistingTestVersion;
+        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
         private const string PatientLocus = "patientHla";
         private const string DonorLocus = "donorHla";
