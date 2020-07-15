@@ -35,41 +35,34 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         public async Task<decimal> CalculateLikelihood(PhenotypeInfo<string> genotype, HaplotypeFrequencySet frequencySet, ISet<Locus> allowedLoci)
         {
             var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype, allowedLoci);
-            var haplotypesWithFrequencies = await GetHaplotypesWithFrequencies(expandedGenotype, frequencySet);
+            var haplotypesWithFrequencies = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySet.Id);
 
-            UpdateFrequenciesForDiplotype(haplotypesWithFrequencies, expandedGenotype.Diplotypes);
+            UpdateFrequenciesForDiplotype(haplotypesWithFrequencies, expandedGenotype.Diplotypes, allowedLoci);
             return likelihoodCalculator.CalculateLikelihood(expandedGenotype);
-        }
-
-        private async Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypesWithFrequencies(
-            ExpandedGenotype expandedGenotype,
-            HaplotypeFrequencySet haplotypeFrequencySet
-        )
-        {
-            var haplotypes = GetHaplotypes(expandedGenotype.Diplotypes);
-            return await haplotypeFrequencyService.GetAllHaplotypeFrequencies(haplotypeFrequencySet.Id);
-        }
-
-        private static IEnumerable<HaplotypeHla> GetHaplotypes(IEnumerable<Diplotype> diplotypes)
-        {
-            return diplotypes.SelectMany(diplotype => new List<HaplotypeHla> {diplotype.Item1.Hla, diplotype.Item2.Hla});
         }
 
         private static void UpdateFrequenciesForDiplotype(
             IReadOnlyDictionary<HaplotypeHla, decimal> haplotypesWithFrequencies,
-            IEnumerable<Diplotype> diplotypes)
+            IEnumerable<Diplotype> diplotypes,
+            ISet<Locus> allowedLoci)
         {
             foreach (var diplotype in diplotypes)
             {
-                //TODO: ATLAS-520: change this so we only want to match it on the allowed loci and if more than 1, sum of loci is the frequency!!!!!!
-
                 // Unrepresented haplotypes are assigned default value for decimal, 0 - which is what we want here.
-                haplotypesWithFrequencies.TryGetValue(diplotype.Item1.Hla, out var frequency1);
-                haplotypesWithFrequencies.TryGetValue(diplotype.Item2.Hla, out var frequency2);
-
-                diplotype.Item1.Frequency = frequency1;
-                diplotype.Item2.Frequency = frequency2;
+                diplotype.Item1.Frequency = GetFrequencyForHla(haplotypesWithFrequencies, diplotype.Item1.Hla, allowedLoci);
+                diplotype.Item2.Frequency = GetFrequencyForHla(haplotypesWithFrequencies, diplotype.Item2.Hla, allowedLoci);
             }
+        }
+
+        private static decimal GetFrequencyForHla(
+            IReadOnlyDictionary<HaplotypeHla, decimal> haplotypesWithFrequencies,
+            HaplotypeHla hla,
+            ISet<Locus> allowedLoci)
+        {
+            return haplotypesWithFrequencies
+                .Where(kvp => kvp.Key.Equals(hla, allowedLoci)).Select(kvp => kvp.Value)
+                .DefaultIfEmpty(0m)
+                .Sum();
         }
     }
 }
