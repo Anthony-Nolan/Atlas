@@ -60,16 +60,17 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
             HaplotypeHla hla,
             ISet<Locus> allowedLoci)
         {
-            haplotypesWithFrequencies.TryGetValue(hla, out var frequency);
-
-            if (allowedLoci != LocusSettings.MatchPredictionLoci.ToHashSet() && frequency == default)
+            if (!haplotypesWithFrequencies.TryGetValue(hla, out var frequency))
             {
-                frequency = haplotypesWithFrequencies
-                    .Where(kvp => kvp.Key.EqualsAtLoci(hla, allowedLoci)).Select(kvp => kvp.Value)
-                    .DefaultIfEmpty(0m)
-                    .Sum();
+                if (allowedLoci != LocusSettings.MatchPredictionLoci.ToHashSet() && frequency == default)
+                {
+                    frequency = haplotypesWithFrequencies
+                        .Where(kvp => kvp.Key.EqualsAtLoci(hla, allowedLoci)).Select(kvp => kvp.Value)
+                        .DefaultIfEmpty(0m)
+                        .Sum();
 
-                haplotypesWithFrequencies.Add(hla, frequency);
+                    haplotypesWithFrequencies.Add(hla, frequency);
+                }
             }
 
             return frequency;
