@@ -21,6 +21,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         private const string LocusInfoNullExceptionMessage = "LocusInfo<T> cannot be null in a PhenotypeInfo<T>. Set nested values to null instead.";
 
         #region Ensure no Locus is null
+
         /// <inheritdoc />
         public override LocusInfo<T> A
         {
@@ -148,7 +149,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             dqb1 = new LocusInfo<T>(source1.Dqb1, source2.Dqb1);
             drb1 = new LocusInfo<T>(source1.Drb1, source2.Drb1);
         }
-        
+
         /// <summary>
         /// Creates a new PhenotypeInfo with all inner values set to the same starting value.
         /// </summary>
@@ -374,6 +375,17 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             return new PhenotypeInfo<T>(Map((_, locusInfo) => locusInfo.Swap()));
         }
 
+        /// <summary>
+        /// Splits the data into two <see cref="LociInfo{T}"/> objects, with the data from Position1/Position2 respectively
+        /// </summary>
+        public (LociInfo<T>, LociInfo<T>) Split()
+        {
+            return (
+                new LociInfo<T>().Map((l, _) => GetLocus(l).Position1),
+                new LociInfo<T>().Map((l, _) => GetLocus(l).Position2)
+            );
+        }
+
         public new IEnumerable<T> ToEnumerable()
         {
             return new List<T>
@@ -394,6 +406,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         }
 
         #region IEquatable<T> implementation (Defers to EqualityComparer of LocusInfo, which defers to inner type.)
+
         public static bool operator ==(PhenotypeInfo<T> left, PhenotypeInfo<T> right)
         {
             return Equals(left, right);
@@ -442,6 +455,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         {
             return base.GetHashCode();
         }
+
         #endregion
     }
 }

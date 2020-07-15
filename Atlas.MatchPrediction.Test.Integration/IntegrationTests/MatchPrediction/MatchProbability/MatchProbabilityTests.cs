@@ -4,9 +4,8 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Data.Models;
-using Atlas.MatchPrediction.ExternalInterface.Models;
-using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Test.Integration.Resources;
+using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using FluentAssertions;
 using LochNessBuilder;
 using NUnit.Framework;
@@ -20,14 +19,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [Test]
         public async Task CalculateMatchProbability_WhenIdenticalGenotypes_UnrepresentedInFrequencySet_ReturnsZeroPercent()
         {
-            var matchProbabilityInput = new MatchProbabilityInput
-            {
-                PatientHla = DefaultUnambiguousAllelesBuilder.Build(),
-                DonorHla = DefaultUnambiguousAllelesBuilder.Build(),
-                HlaNomenclatureVersion = HlaNomenclatureVersion
-            };
+            var matchProbabilityInput = DefaultInputBuilder.Build();
 
-            await ImportFrequencies(new List<HaplotypeFrequency> {Builder<HaplotypeFrequency>.New.Build()}, null, null);
+            await ImportFrequencies(new List<HaplotypeFrequency> {Builder<HaplotypeFrequency>.New.Build()});
 
             var expectedProbabilityPerLocus = new LociInfo<decimal?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0};
 
@@ -42,12 +36,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [Test]
         public async Task CalculateMatchProbability_WhenIdenticalGenotypes_RepresentedInFrequencySet_ReturnsOneHundredPercent()
         {
-            var matchProbabilityInput = new MatchProbabilityInput
-            {
-                PatientHla = DefaultUnambiguousAllelesBuilder.Build(),
-                DonorHla = DefaultUnambiguousAllelesBuilder.Build(),
-                HlaNomenclatureVersion = HlaNomenclatureVersion
-            };
+            var matchProbabilityInput = DefaultInputBuilder.Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
             {
@@ -90,14 +79,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .Build();
             var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, alleleStringA1, alleleStringA2).Build();
 
-            var matchProbabilityInput = new MatchProbabilityInput
-            {
-                PatientHla = patientHla,
-                DonorHla = donorHla,
-                HlaNomenclatureVersion = HlaNomenclatureVersion,
-                DonorFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode},
-                PatientFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode}
-            };
+            var matchProbabilityInput = DefaultInputBuilder
+                .With(i => i.PatientHla, patientHla)
+                .With(i => i.DonorHla, donorHla)
+                .Build();
 
             var expectedProbabilityPerLocus = new LociInfo<decimal?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0};
 
@@ -109,8 +94,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedProbabilityPerLocus);
         }
 
-        // Warning - this test takes a long time to run (~30s)
-        // TODO: ATLAS-400 - can this be quicker?
         [Test]
         public async Task CalculateMatchProbability_WhenAmbiguousHla_ReturnsProbability()
         {
@@ -156,15 +139,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDataAt(Locus.Drb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
                 .Build();
 
-            var matchProbabilityInput = new MatchProbabilityInput
-            {
-                PatientHla = patientHla,
-                DonorHla = DefaultUnambiguousAllelesBuilder.Build(),
-                HlaNomenclatureVersion = HlaNomenclatureVersion,
-                DonorFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode},
-                PatientFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode}
-            };
-
+            var matchProbabilityInput = DefaultInputBuilder.With(i => i.PatientHla, patientHla).Build();
+            
             var expectedProbabilityPerLocus = new LociInfo<decimal?>
             {
                 A = 0.0823045267489711934156378601m,
@@ -181,6 +157,28 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.OneMismatchProbability.Decimal.Should().Be(0.1687242798353909465020576132m);
             matchDetails.TwoMismatchProbability.Decimal.Should().Be(0.8230452674897119341563786008m);
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedProbabilityPerLocus);
+        }
+
+        [Test]
+        public async Task CalculateMatchProbability_WithAmbiguousHomozygousHla_ReturnsCorrectProbability()
+        {
+            var patientHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, "02:XX").Build();
+            var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.Two, "11:03/02:01").Build();
+            
+            await ImportFrequencies(new List<HaplotypeFrequency>
+            {
+                DefaultHaplotypeFrequency1.WithFrequency(0.05m),
+                DefaultHaplotypeFrequency2.WithDataAt(Locus.A, "02:01:01G").WithFrequency(0.02m),
+                DefaultHaplotypeFrequency2.WithFrequency(0.07m),
+            });
+            var matchProbabilityInput = DefaultInputBuilder
+                .With(i => i.PatientHla, patientHla)
+                .With(i => i.DonorHla, donorHla)
+                .Build();
+            
+            var matchProbability = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+
+            matchProbability.ZeroMismatchProbability.Percentage.Should().Be(22);
         }
     }
 }
