@@ -22,8 +22,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         public Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(FrequencySetMetadata donorInfo, FrequencySetMetadata patientInfo);
         public Task<HaplotypeFrequencySet> GetSingleHaplotypeFrequencySet(FrequencySetMetadata setMetaData);
 
-        // TODO: ATLAS-400: Remove if no longer used
-        Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypeFrequencies(IEnumerable<HaplotypeHla> haplotypes, int setId);
         Task<Dictionary<HaplotypeHla, decimal>> GetAllHaplotypeFrequencies(int setId);
     }
 
@@ -116,12 +114,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             }
 
             return MapDataModelToClientModel(set);
-        }
-
-        /// <inheritdoc />
-        public async Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypeFrequencies(IEnumerable<HaplotypeHla> haplotypes, int setId)
-        {
-            return await frequencyRepository.GetHaplotypeFrequencies(haplotypes, setId);
         }
 
         /// <inheritdoc />
