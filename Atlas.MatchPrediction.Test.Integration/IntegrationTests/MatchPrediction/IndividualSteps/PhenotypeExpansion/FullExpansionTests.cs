@@ -13,14 +13,20 @@ using NUnit.Framework;
 
 // ReSharper disable InconsistentNaming - want to avoid calling "G groups" "gGroup", as "g" groups are a distinct thing 
 
-namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.IndividualSteps.ExpandAmbiguousPhenotype
+namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.IndividualSteps.PhenotypeExpansion
 {
+    /// <summary>
+    /// This suite focuses on testing that we can cope with all expected hla resolutions.
+    /// Tests do not provide a set of allowed haplotype values for simplicity, which is not recommended for actual usage of the expander.
+    /// </summary>
     [TestFixture]
-    public class ExpandAmbiguousPhenotypeTests
+    public class FullExpansionTests
     {
         private ICompressedPhenotypeExpander compressedPhenotypeExpander;
 
         private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
+
+        private readonly ISet<Locus> DefaultAllowedLoci = Config.LocusSettings.MatchPredictionLoci.ToHashSet();
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -43,7 +49,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var phenotype = alleleGGroupPairs.Alleles();
             var expectedGenotypes = alleleGGroupPairs.GGroups();
 
-            var actualGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
+            var actualGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultAllowedLoci);
 
             actualGenotypes.Single().Should().BeEquivalentTo(expectedGenotypes);
         }
@@ -68,7 +74,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 DefaultUnambiguousGGroupsBuilder.WithDataAt(locus, GGroup2).Build()
             };
 
-            var actualGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
+            var actualGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultAllowedLoci);
 
             actualGenotypes.Should().BeEquivalentTo(expectedGenotypes);
         }
@@ -93,7 +99,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 DefaultUnambiguousGGroupsBuilder.WithDataAt(locus, GGroup2).Build()
             };
 
-            var actualGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
+            var actualGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultAllowedLoci);
 
             actualGenotypes.Should().BeEquivalentTo(expectedGenotypes);
         }
@@ -132,7 +138,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     .Build(),
             };
 
-            var actualGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
+            var actualGenotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultAllowedLoci);
 
             actualGenotypes.Should().BeEquivalentTo(expectedGenotypes);
         }
@@ -145,7 +151,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var phenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.One, mac).Build();
 
-            var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
+            var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultAllowedLoci);
 
             // The two 2-field alleles represented by the MAC cover 86 G-Groups
             genotypes.Should().HaveCount(86);
@@ -156,7 +162,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var phenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.One, "01:XX").Build();
 
-            var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
+            var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultAllowedLoci);
 
             genotypes.Should().HaveCount(303);
         }
@@ -166,7 +172,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var phenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.B, LocusPosition.One, "82").Build();
 
-            var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
+            var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultAllowedLoci);
 
             genotypes.Should().HaveCount(4);
         }
@@ -176,7 +182,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var phenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.One, "23:03P").Build();
 
-            var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
+            var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultAllowedLoci);
 
             genotypes.Should().HaveCount(2);
         }
@@ -186,7 +192,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var phenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.One, "02:02:01G").Build();
 
-            var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion);
+            var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultAllowedLoci);
 
             genotypes.Should().HaveCount(1);
         }
