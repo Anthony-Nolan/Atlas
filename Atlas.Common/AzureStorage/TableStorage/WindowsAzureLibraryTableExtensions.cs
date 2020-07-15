@@ -47,6 +47,9 @@ namespace Atlas.Common.AzureStorage.TableStorage
          * ServicePointManager.UseNagleAlgorithm = false;
          * ServicePointManager.DefaultConnectionLimit = 100;
          */
+        /// <summary>
+        /// Splits entities by partition before applying batch inserts - so can be called without first splitting by partition.
+        /// </summary>>
         public static async Task BatchInsert<TEntity>(this CloudTable table, IEnumerable<TEntity> entities)
             where TEntity : TableEntity
         {
@@ -57,6 +60,7 @@ namespace Atlas.Common.AzureStorage.TableStorage
             //     * List of (100) Entities within that batch (all of which have a single PartitionKey)
             //
             // We start from this construct as it allows easy refactors of how we divvy these inserts up, in the future.
+            // ReSharper disable once SuggestVarOrType_Elsewhere
             List<List<List<TEntity>>> entitiesPartitionedWithSubBatches = entities
                 .GroupBy(e => e.PartitionKey) //Note that batch inserts MUST have a common Partition Key.
                 .Select(partitionGroup => partitionGroup.Batch(BatchSize).Select(batch => batch.ToList()).ToList())

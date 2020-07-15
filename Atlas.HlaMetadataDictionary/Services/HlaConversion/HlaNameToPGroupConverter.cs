@@ -93,10 +93,12 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
             string gGroup,
             IReadOnlyDictionary<string, string> gGroupToPGroupDictionary)
         {
-            var gGroupExists = gGroupToPGroupDictionary.TryGetValue(gGroup, out var pGroup);
-            return gGroupExists
-                ? pGroup
-                : throw new HlaMetadataDictionaryException(locus, gGroup, "GGroup not recognised, could not be converted to PGroup.");
+            if (!gGroupToPGroupDictionary.TryGetValue(gGroup, out var pGroup))
+            {
+                throw new HlaMetadataDictionaryException(locus, gGroup, "GGroup not recognised, could not be converted to PGroup.");
+            }
+
+            return pGroup;
         }
 
         private async Task<string> ConvertSingleGGroupToPGroup(Locus locus, string gGroup, string hlaNomenclatureVersion)

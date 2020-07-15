@@ -49,9 +49,9 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             tableFactory = factory;
             this.tableReferenceRepository = tableReferenceRepository;
             this.functionalTableReferencePrefix = functionalTableReferencePrefix;
-            this.Cache = cacheProvider.Cache;
+            Cache = cacheProvider.Cache;
             this.cacheKey = cacheKey;
-            this.Logger = logger;
+            Logger = logger;
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         {
             var tablePrefix = VersionedTableReferencePrefix(hlaNomenclatureVersion);
             var newDataTable = await CreateNewDataTable(tablePrefix);
-            await InsertIntoDataTable(tableContents, newDataTable);
+            await newDataTable.BatchInsert(tableContents.Select(rowData => new HlaMetadataTableRow(rowData)));
             await tableReferenceRepository.UpdateTableReference(tablePrefix, newDataTable.Name);
             cloudTable = null;
         }
@@ -164,19 +164,6 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         {
             var dataTableReference = tableReferenceRepository.GetNewTableReference(tablePrefix);
             return await tableFactory.GetTable(dataTableReference);
-        }
-
-        private static async Task InsertIntoDataTable(IEnumerable<TStorable> contents, CloudTable dataTable)
-        {
-            var partitionedEntities = contents
-                .Select(data => new HlaMetadataTableRow(data))
-                .GroupBy(row => row.PartitionKey)
-                .Select(partition => partition.ToList());
-
-            foreach (var entitiesInCurrentPartition in partitionedEntities)
-            {
-                await dataTable.BatchInsert(entitiesInCurrentPartition);
-            }
         }
     }
 }
