@@ -5,7 +5,7 @@ using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
+namespace Atlas.MatchPrediction.Test.Services.PhenotypeExpansion
 {
     [TestFixture]
     public class AmbiguousPhenotypeExpanderTests
@@ -220,11 +220,9 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
             actualGenotypes.Should().BeEquivalentTo(expectedGenotype);
         }
 
-        // Ran in ~1.5 sec
         [TestCase(1, 1)]
         [TestCase(2, 1024)]
         [TestCase(3, 59049)]
-        [TestCase(4, 1048576)]
         public void ExpandPhenotype_WithMultipleAllelePerLocus_ReturnsExpectedNumberOfGenotypes(int numberOfAllelesPerLocus, int expectedNumberOfGenotypes)
         {
             var alleles = new List<string>();
