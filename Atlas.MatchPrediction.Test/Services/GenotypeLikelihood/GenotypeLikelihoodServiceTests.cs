@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
@@ -31,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             alleleTruncater.TruncateGenotypeAlleles(Arg.Any<PhenotypeInfo<string>>())
                 .Returns(arg => arg[0]);
 
-            unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>())
+            unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<ISet<Locus>>())
                 .Returns(new ExpandedGenotype {Diplotypes = new List<Diplotype> {DiplotypeBuilder.New.Build()}});
 
             frequencyService.GetAllHaplotypeFrequencies(Arg.Any<int>())
@@ -45,10 +47,12 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         [Test]
         public async Task CalculateLikelihood_FrequencyRepositoryIsCalledOnce([Values(16, 8, 4, 2, 1)] int numberOfDiplotypes)
         {
-            unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>())
+            var allowedLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
+
+            unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<ISet<Locus>>())
                 .Returns(new ExpandedGenotype {Diplotypes = DiplotypeBuilder.New.Build(numberOfDiplotypes).ToList()});
 
-            await genotypeLikelihoodService.CalculateLikelihood(new PhenotypeInfo<string>(), new HaplotypeFrequencySet());
+            await genotypeLikelihoodService.CalculateLikelihood(new PhenotypeInfo<string>(), new HaplotypeFrequencySet(), allowedLoci);
 
             await frequencyService.Received(1).GetAllHaplotypeFrequencies(Arg.Any<int>());
         }
@@ -56,7 +60,9 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         [Test]
         public async Task CalculateLikelihood_LikelihoodCalculatorIsCalledOnce()
         {
-            await genotypeLikelihoodService.CalculateLikelihood(new PhenotypeInfo<string>(), new HaplotypeFrequencySet());
+            var allowedLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
+
+            await genotypeLikelihoodService.CalculateLikelihood(new PhenotypeInfo<string>(), new HaplotypeFrequencySet(), allowedLoci);
 
             genotypeLikelihoodCalculator.Received(1).CalculateLikelihood(Arg.Any<ExpandedGenotype>());
         }
