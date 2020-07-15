@@ -56,7 +56,7 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
             }
 
             var cacheKey = $"{locus}-GToPGroupLookup-{hlaNomenclatureVersion}";
-            return await cache.GetAndScheduleFullCacheWarm(
+            return await cache.GetSingleItemAndScheduleWholeCollectionCacheWarm(
                 cacheKey,
                 () => BuildGGroupToPGroupDictionary(locus, hlaNomenclatureVersion),
                 gGroupToPGroupDictionary => GetPGroupFromDictionaryIfExists(locus, gGroup, gGroupToPGroupDictionary),
