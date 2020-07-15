@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -42,15 +43,31 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         }
 
         private static void UpdateFrequenciesForDiplotype(
-            IReadOnlyDictionary<HaplotypeHla, decimal> haplotypesWithFrequencies,
+            Dictionary<HaplotypeHla, decimal> haplotypesWithFrequencies,
             IEnumerable<Diplotype> diplotypes,
             ISet<Locus> allowedLoci)
         {
+            var allMpaLoci = allowedLoci == LocusSettings.MatchPredictionLoci.ToHashSet();
+
+            // Unrepresented haplotypes are assigned default value for decimal, 0 - which is what we want here.
             foreach (var diplotype in diplotypes)
             {
-                // Unrepresented haplotypes are assigned default value for decimal, 0 - which is what we want here.
-                diplotype.Item1.Frequency = GetFrequencyForHla(haplotypesWithFrequencies, diplotype.Item1.Hla, allowedLoci);
-                diplotype.Item2.Frequency = GetFrequencyForHla(haplotypesWithFrequencies, diplotype.Item2.Hla, allowedLoci);
+                haplotypesWithFrequencies.TryGetValue(diplotype.Item1.Hla, out var frequency1);
+                if (!allMpaLoci && frequency1 == 0m)
+                {
+                    frequency1 = GetFrequencyForHla(haplotypesWithFrequencies, diplotype.Item1.Hla, allowedLoci);
+                    haplotypesWithFrequencies.Add(diplotype.Item1.Hla, frequency1);
+                }
+
+                haplotypesWithFrequencies.TryGetValue(diplotype.Item2.Hla, out var frequency2);
+                if (!allMpaLoci && frequency2 == 0m)
+                {
+                    frequency1 = GetFrequencyForHla(haplotypesWithFrequencies, diplotype.Item1.Hla, allowedLoci);
+                    haplotypesWithFrequencies.Add(diplotype.Item1.Hla, frequency1);
+                }
+
+                diplotype.Item1.Frequency = frequency1;
+                diplotype.Item2.Frequency = frequency2;
             }
         }
 
@@ -60,7 +77,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
             ISet<Locus> allowedLoci)
         {
             return haplotypesWithFrequencies
-                .Where(kvp => kvp.Key.Equals(hla, allowedLoci)).Select(kvp => kvp.Value)
+                .Where(kvp => kvp.Key.EqualsAtLoci(hla, allowedLoci)).Select(kvp => kvp.Value)
                 .DefaultIfEmpty(0m)
                 .Sum();
         }

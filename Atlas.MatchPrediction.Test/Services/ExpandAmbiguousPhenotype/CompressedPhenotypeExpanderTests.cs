@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Config;
@@ -21,6 +22,8 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
         private ILocusHlaConverter locusHlaConverter;
 
         private ICompressedPhenotypeExpander compressedPhenotypeExpander;
+
+        private readonly ISet<Locus> allLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
 
         [SetUp]
         public void SetUp()
@@ -44,7 +47,7 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
             locusHlaConverter.ConvertHla(default, default, default, default)
                 .ReturnsForAnyArgs(new PhenotypeInfo<IReadOnlyCollection<string>>(new List<string> {"hla"}));
 
-            var allowedLoci = LocusSettings.MatchPredictionLoci.Take(numberOfAllowedLoci).ToHashSet();
+            var allowedLoci = allLoci.Take(numberOfAllowedLoci).ToHashSet();
 
             var numberOfPermutations = 
                 await compressedPhenotypeExpander.CalculateNumberOfPermutations(new PhenotypeInfo<string>(), default, allowedLoci);
@@ -65,7 +68,7 @@ namespace Atlas.MatchPrediction.Test.Services.ExpandAmbiguousPhenotype
             locusHlaConverter.ConvertHla(default, default, default, default)
                 .ReturnsForAnyArgs(new PhenotypeInfo<IReadOnlyCollection<string>>(new string[numberOfAllelesAtEachPosition]));
 
-            var allowedLoci = LocusSettings.MatchPredictionLoci.Take(numberOfAllowedLoci).ToHashSet();
+            var allowedLoci = allLoci.Take(numberOfAllowedLoci).ToHashSet();
 
             var numberOfPermutations = 
                 await compressedPhenotypeExpander.CalculateNumberOfPermutations(new PhenotypeInfo<string>(), default, allowedLoci);
