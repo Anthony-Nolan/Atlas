@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -17,7 +18,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         public void SetUp()
         {
             var factory = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMetadataDictionaryFactory>();
-            hlaMetadataDictionary = factory.BuildDictionary(Constants.SnapshotHlaNomenclatureVersion);
+            hlaMetadataDictionary = factory.BuildDictionary(FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion);
         }
 
         [TestCase(Locus.A, "01:01:01G", "01:01P")]
