@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
-using Atlas.MatchPrediction.Config;
 
 namespace Atlas.MatchPrediction.Services
 {
@@ -39,9 +37,8 @@ namespace Atlas.MatchPrediction.Services
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
 
             return await hlaInfo.MapAsync(async (locus, position, hla) =>
-                allowedLoci.Contains(locus)
-                    ? await hlaMetadataDictionary.ConvertHla(locus, hla, targetHlaCategory)
-                    : null);
+                allowedLoci.Contains(locus) ? await hlaMetadataDictionary.ConvertHla(locus, hla, targetHlaCategory) : null
+            );
         }
     }
 }
