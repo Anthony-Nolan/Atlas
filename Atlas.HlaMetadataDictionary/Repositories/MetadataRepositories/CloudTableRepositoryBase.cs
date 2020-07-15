@@ -35,9 +35,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         private readonly ITableReferenceRepository tableReferenceRepository;
         private readonly string functionalTableReferencePrefix;
         private readonly string cacheKey;
-        private CloudTable cloudTable; 
-        
-        private readonly SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
+        private CloudTable cloudTable;
 
         protected CloudTableRepositoryBase(
             ICloudTableFactory factory,
@@ -63,7 +61,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         /// </summary>
         public async Task LoadDataIntoMemory(string hlaNomenclatureVersion)
         {
-            var data = await FetchTableData(hlaNomenclatureVersion);
+            var data = await FetchAllRowsInTable(hlaNomenclatureVersion);
             Cache.Add(VersionedCacheKey(hlaNomenclatureVersion), data);
         }
 
@@ -80,28 +78,25 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         {
             return await Cache.GetAndScheduleFullCacheWarm(
                 VersionedCacheKey(hlaNomenclatureVersion),
-                () => FetchTableData(hlaNomenclatureVersion),
-                d => GetDataFromCache(partition, rowKey, d),
-                () => GetDataFromSource(partition, rowKey, hlaNomenclatureVersion)
+                () => FetchAllRowsInTable(hlaNomenclatureVersion),
+                tableDictionary => GetRowFromCachedTable(partition, rowKey, tableDictionary),
+                () => FetchRowFromSourceTable(partition, rowKey, hlaNomenclatureVersion)
             );
-        }
-
-        protected string VersionedCacheKey(string hlaNomenclatureVersion)
-        {
-            return $"{cacheKey}:{hlaNomenclatureVersion}";
         }
 
         protected async Task<Dictionary<string, TTableRow>> TableData(string hlaNomenclatureVersion)
         {
-            return await Cache.GetOrAddAsync_Tracked(VersionedCacheKey(hlaNomenclatureVersion), () => FetchTableData(hlaNomenclatureVersion))
+            return await Cache.GetOrAddAsync_Tracked(VersionedCacheKey(hlaNomenclatureVersion), () => FetchAllRowsInTable(hlaNomenclatureVersion))
                    ?? throw new MemoryCacheException($"HLA metadata could not be loaded for nomenclature version: {hlaNomenclatureVersion}");
         }
 
-        private async Task<Dictionary<string, TTableRow>> FetchTableData(string hlaNomenclatureVersion)
+        private string VersionedCacheKey(string hlaNomenclatureVersion) => $"{cacheKey}:{hlaNomenclatureVersion}";
+
+        private async Task<Dictionary<string, TTableRow>> FetchAllRowsInTable(string hlaNomenclatureVersion)
         {
             return await Logger.RunTimedAsync(async () =>
                 {
-                    var currentDataTable = await GetCurrentDataTable(hlaNomenclatureVersion);
+                    var currentDataTable = await GetVersionedDataTable(hlaNomenclatureVersion);
                     var tableResults = new CloudTableBatchQueryAsync<TTableRow>(currentDataTable);
                     var dataToLoad = new Dictionary<string, TTableRow>();
 
@@ -110,7 +105,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
                         var results = await tableResults.RequestNextAsync();
                         foreach (var result in results)
                         {
-                            dataToLoad.Add(result.PartitionKey + result.RowKey, result);
+                            dataToLoad.Add(RowPrimaryKey(result.PartitionKey, result.RowKey), result);
                         }
                     }
 
@@ -121,17 +116,21 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             );
         }
 
+        private static string RowPrimaryKey(string partitionKey, string rowKey) => partitionKey + rowKey;
+
         private string VersionedTableReferencePrefix(string hlaNomenclatureVersion)
         {
             return $"{functionalTableReferencePrefix}{hlaNomenclatureVersion}";
         }
 
+        private readonly SemaphoreSlim tableConnectionCreationLock = new SemaphoreSlim(1, 1);
+
         /// <summary>
         /// The connection to the current data table is cached so we don't open unnecessary connections
         /// </summary>
-        private async Task<CloudTable> GetCurrentDataTable(string hlaNomenclatureVersion)
+        private async Task<CloudTable> GetVersionedDataTable(string hlaNomenclatureVersion)
         {
-            await semaphoreSlim.WaitAsync();
+            await tableConnectionCreationLock.WaitAsync();
             try
             {
                 if (cloudTable == null)
@@ -145,19 +144,19 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
             }
             finally
             {
-                semaphoreSlim.Release();
+                tableConnectionCreationLock.Release();
             }
         }
 
-        private static TTableRow GetDataFromCache(string partition, string rowKey, IReadOnlyDictionary<string, TTableRow> metadataDictionary)
+        private static TTableRow GetRowFromCachedTable(string partition, string rowKey, IReadOnlyDictionary<string, TTableRow> metadataDictionary)
         {
-            metadataDictionary.TryGetValue(partition + rowKey, out var row);
+            metadataDictionary.TryGetValue(RowPrimaryKey(partition, rowKey), out var row);
             return row;
         }
 
-        private async Task<TTableRow> GetDataFromSource(string partition, string rowKey, string hlaNomenclatureVersion)
+        private async Task<TTableRow> FetchRowFromSourceTable(string partition, string rowKey, string hlaNomenclatureVersion)
         {
-            var table = await GetCurrentDataTable(hlaNomenclatureVersion);
+            var table = await GetVersionedDataTable(hlaNomenclatureVersion);
             return await table.GetRowByPartitionAndRowKey<TTableRow>(partition, rowKey);
         }
 
@@ -171,13 +170,11 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         {
             var partitionedEntities = contents
                 .Select(data => new HlaMetadataTableRow(data))
-                .GroupBy(ent => ent.PartitionKey)
-                .ToList();
+                .GroupBy(row => row.PartitionKey)
+                .Select(partition => partition.ToList());
 
-            foreach (var partition in partitionedEntities)
+            foreach (var entitiesInCurrentPartition in partitionedEntities)
             {
-                var entitiesInCurrentPartition = partition.ToList();
-
                 await dataTable.BatchInsert(entitiesInCurrentPartition);
             }
         }

@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -11,14 +12,14 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
     public class GGroupToPGroupConversionTests
     {
         private IHlaMetadataDictionary hlaMetadataDictionary;
-        
+
         [SetUp]
         public void SetUp()
         {
             var factory = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMetadataDictionaryFactory>();
             hlaMetadataDictionary = factory.BuildDictionary(Constants.SnapshotHlaNomenclatureVersion);
         }
-        
+
         [TestCase(Locus.A, "01:01:01G", "01:01P")]
         [TestCase(Locus.B, "08:01:01G", "08:01P")]
         [TestCase(Locus.C, "07:01:01G", "07:01P")]
@@ -30,7 +31,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 
             pGroup.Should().Be(expectedPGroup);
         }
-        
+
         [TestCase(Locus.A, "01:11N")]
         [TestCase(Locus.B, "13:56:01")]
         [TestCase(Locus.C, "07:491:01N")]
@@ -41,6 +42,13 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             var pGroup = await hlaMetadataDictionary.GetSinglePGroupForGGroup(locus, gGroup);
 
             pGroup.Should().Be(null);
+        }
+
+        [Test]
+        public async Task GetSinglePGroupForGGroup_ForInvalidGGroup_ThrowsException()
+        {
+            await hlaMetadataDictionary.Invoking(h => h.GetSinglePGroupForGGroup(Locus.A, "not-a-valid-g-group"))
+                .Should().ThrowAsync<HlaMetadataDictionaryException>();
         }
     }
 }
