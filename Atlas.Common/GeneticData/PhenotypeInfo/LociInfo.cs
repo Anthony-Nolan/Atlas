@@ -243,6 +243,32 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
+        public virtual bool EqualsAtLoci(LociInfo<T> other, ISet<Locus> lociToMatchAt)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (this.GetType() != other.GetType())
+            {
+                return false;
+            }
+
+            // Do not commonise with existing equals method as we'll be comparing these a lot and we don't want to add a load of unnecessary lookups.
+            return (!lociToMatchAt.Contains(Locus.A) || EqualityComparer<T>.Default.Equals(A, other.A)) &&
+                   (!lociToMatchAt.Contains(Locus.B) || EqualityComparer<T>.Default.Equals(B, other.B)) &&
+                   (!lociToMatchAt.Contains(Locus.C) || EqualityComparer<T>.Default.Equals(C, other.C)) &&
+                   (!lociToMatchAt.Contains(Locus.Dpb1) || EqualityComparer<T>.Default.Equals(Dpb1, other.Dpb1)) &&
+                   (!lociToMatchAt.Contains(Locus.Dqb1) || EqualityComparer<T>.Default.Equals(Dqb1, other.Dqb1)) &&
+                   (!lociToMatchAt.Contains(Locus.Drb1) || EqualityComparer<T>.Default.Equals(Drb1, other.Drb1));
+        }
+
         #region IEquatable<T> implementation (Defers to EqualityComparer of inner type.)
         public static bool operator ==(LociInfo<T> left, LociInfo<T> right)
         {
@@ -261,9 +287,20 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
 
         public virtual bool Equals(LociInfo<T> other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            if (this.GetType() != other.GetType()) return false;
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (this.GetType() != other.GetType())
+            {
+                return false;
+            }
 
             return EqualityComparer<T>.Default.Equals(A, other.A) &&
                    EqualityComparer<T>.Default.Equals(B, other.B) &&
@@ -271,20 +308,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                    EqualityComparer<T>.Default.Equals(Dpb1, other.Dpb1) &&
                    EqualityComparer<T>.Default.Equals(Dqb1, other.Dqb1) &&
                    EqualityComparer<T>.Default.Equals(Drb1, other.Drb1);
-        }
-
-        public virtual bool Equals(LociInfo<T> other, ISet<Locus> lociToMatchAt)
-        {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            if (this.GetType() != other.GetType()) return false;
-
-            return (!lociToMatchAt.Contains(Locus.A) || EqualityComparer<T>.Default.Equals(A, other.A)) &&
-                   (!lociToMatchAt.Contains(Locus.B) || EqualityComparer<T>.Default.Equals(B, other.B)) &&
-                   (!lociToMatchAt.Contains(Locus.C) || EqualityComparer<T>.Default.Equals(C, other.C)) &&
-                   (!lociToMatchAt.Contains(Locus.Dpb1) || EqualityComparer<T>.Default.Equals(Dpb1, other.Dpb1)) &&
-                   (!lociToMatchAt.Contains(Locus.Dqb1) || EqualityComparer<T>.Default.Equals(Dqb1, other.Dqb1)) &&
-                   (!lociToMatchAt.Contains(Locus.Drb1) || EqualityComparer<T>.Default.Equals(Drb1, other.Drb1));
         }
 
         // TODO: ATLAS-499. This HashCode references mutable properties, which is a BadThing(TM).
