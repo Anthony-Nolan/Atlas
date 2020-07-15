@@ -87,10 +87,10 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 HlaNomenclatureVersion = HlaNomenclatureVersion
             };
 
-            compressedPhenotypeExpander.ExpandCompressedPhenotype(DonorHla, HlaNomenclatureVersion)
+            compressedPhenotypeExpander.ExpandCompressedPhenotype(DonorHla, HlaNomenclatureVersion, Arg.Any<ISet<Locus>>(), Arg.Any<IReadOnlyCollection<HaplotypeHla>>())
                 .Returns(new HashSet<PhenotypeInfo<string>> {DonorHla, PatientHla});
 
-            compressedPhenotypeExpander.ExpandCompressedPhenotype(PatientHla, HlaNomenclatureVersion)
+            compressedPhenotypeExpander.ExpandCompressedPhenotype(PatientHla, HlaNomenclatureVersion, Arg.Any<ISet<Locus>>(), Arg.Any<IReadOnlyCollection<HaplotypeHla>>())
                 .Returns(new HashSet<PhenotypeInfo<string>> {PatientHla});
 
             matchCalculationService.MatchAtPGroupLevel(PatientHla, DonorHla, Arg.Any<string>(), default, default)
@@ -137,12 +137,12 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             };
 
             compressedPhenotypeExpander
-                .ExpandCompressedPhenotype(PatientHla, HlaNomenclatureVersion, Arg.Any<IReadOnlyCollection<HaplotypeHla>>(), Arg.Any<ISet<Locus>>())
+                .ExpandCompressedPhenotype(PatientHla, HlaNomenclatureVersion, Arg.Any<ISet<Locus>>(), Arg.Any<IReadOnlyCollection<HaplotypeHla>>())
                 .Returns(Enumerable.Range(1, numberOfPatientGenotypes)
                     .Select(i => new PhenotypeInfo<string>($"patient${i}")).ToHashSet());
 
             compressedPhenotypeExpander
-                .ExpandCompressedPhenotype(DonorHla, HlaNomenclatureVersion, Arg.Any<IReadOnlyCollection<HaplotypeHla>>(), Arg.Any<ISet<Locus>>())
+                .ExpandCompressedPhenotype(DonorHla, HlaNomenclatureVersion, Arg.Any<ISet<Locus>>(), Arg.Any<IReadOnlyCollection<HaplotypeHla>>())
                 .Returns(Enumerable.Range(1, numberOfDonorGenotypes)
                     .Select(i => new PhenotypeInfo<string>($"donor${i}")).ToHashSet());
 

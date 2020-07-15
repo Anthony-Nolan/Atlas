@@ -103,28 +103,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             }, LocusSettings.MatchPredictionLoci.ToHashSet());
         }
 
-        private async Task<ISet<PhenotypeInfo<string>>> ExpandPatientPhenotype(MatchProbabilityInput matchProbabilityInput)
-        {
-            return await ExpandPhenotype(matchProbabilityInput.DonorHla, matchProbabilityInput.HlaNomenclatureVersion, "patient");
-        }
-
-        private async Task<ISet<PhenotypeInfo<string>>> ExpandDonorPhenotype(MatchProbabilityInput matchProbabilityInput)
-        {
-            return await ExpandPhenotype(matchProbabilityInput.PatientHla, matchProbabilityInput.HlaNomenclatureVersion, "donor");
-        }
-
-        private async Task<ISet<PhenotypeInfo<string>>> ExpandPhenotype(
-            PhenotypeInfo<string> hla,
-            string hlaNomenclatureVersion,
-            string phenotypeLogDescription)
-        {
-            return await logger.RunTimedAsync(
-                async () => await compressedPhenotypeExpander.ExpandCompressedPhenotype(hla, hlaNomenclatureVersion),
-                $"{LoggingPrefix}Expanded {phenotypeLogDescription} phenotype",
-                LogLevel.Verbose
-            );
-        }
-
         // TODO: ATLAS-400: Clean up "new" vs "old" methods here
         private async Task<ISet<PhenotypeInfo<string>>> ExpandPatientPhenotypeNew(
             MatchProbabilityInput matchProbabilityInput,
@@ -163,7 +141,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         {
             return await logger.RunTimedAsync(
                 async () => await compressedPhenotypeExpander
-                    .ExpandCompressedPhenotype(hla, hlaNomenclatureVersion, haplotypeFrequencies.Keys, allowedLoci),
+                    .ExpandCompressedPhenotype(hla, hlaNomenclatureVersion, allowedLoci, haplotypeFrequencies.Keys),
                 $"{LoggingPrefix}Expanded {phenotypeLogDescription} phenotype",
                 LogLevel.Verbose
             );
