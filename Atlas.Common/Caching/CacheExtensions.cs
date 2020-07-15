@@ -180,12 +180,12 @@ namespace Atlas.Common.Caching
                 var message = $"Exception thrown in {nameof(GenerateAndCacheCollectionWithTracking)}, with {nameof(collectionCacheKey)}: '{collectionCacheKey}'. Exception details: {e.ToString()}";
                 Console.WriteLine(message);
                 Debug.WriteLine(message);
-                //TODO: ATLAS-??? Create static Logger?
+                //TODO: ATLAS-542 Create static Logger?
                 if (rethrowErrors)
                 {
                     throw;
                 }
-                return  default;
+                return default;
             }
             finally
             {
