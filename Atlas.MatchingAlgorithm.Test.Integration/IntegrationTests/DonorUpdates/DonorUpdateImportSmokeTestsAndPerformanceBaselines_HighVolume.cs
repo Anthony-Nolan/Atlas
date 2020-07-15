@@ -110,7 +110,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 .Select(d => d.ToDonorInfo())
                 .ToList();
 
-            var oldHlaVersion = "3330"; // QQ Constant
+            var oldHlaVersion = FileBackedHlaMetadataRepositoryBaseReader.NewDonorUpdateTestsVersion;
             var expanderService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForSpecifiedHlaNomenclatureVersion(oldHlaVersion);
 
             await expanderService.ExpandDonorHlaBatchAsync(newDonors.ToList(), "Testing");
