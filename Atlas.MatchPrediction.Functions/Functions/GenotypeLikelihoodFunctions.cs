@@ -35,7 +35,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
 
             var frequencySet = await frequencyService.GetSingleHaplotypeFrequencySet(genotypeLikelihood.FrequencySetMetaData);
 
-            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotypeLikelihood.Genotype, frequencySet);
+            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotypeLikelihood.Genotype, frequencySet, genotypeLikelihood.AllowedLoci);
             return new JsonResult(new GenotypeLikelihoodResponse { Likelihood = likelihood });
         }
     }

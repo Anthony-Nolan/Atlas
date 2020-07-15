@@ -280,11 +280,11 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             if (this.GetType() != other.GetType()) return false;
 
             return (!lociToMatchAt.Contains(Locus.A) || EqualityComparer<T>.Default.Equals(A, other.A)) &&
-                   (!lociToMatchAt.Contains(Locus.A) || EqualityComparer<T>.Default.Equals(B, other.B)) &&
-                   (!lociToMatchAt.Contains(Locus.A) || EqualityComparer<T>.Default.Equals(C, other.C)) &&
-                   (!lociToMatchAt.Contains(Locus.A) || EqualityComparer<T>.Default.Equals(Dpb1, other.Dpb1)) &&
-                   (!lociToMatchAt.Contains(Locus.A) || EqualityComparer<T>.Default.Equals(Dqb1, other.Dqb1)) &&
-                   (!lociToMatchAt.Contains(Locus.A) || EqualityComparer<T>.Default.Equals(Drb1, other.Drb1));
+                   (!lociToMatchAt.Contains(Locus.B) || EqualityComparer<T>.Default.Equals(B, other.B)) &&
+                   (!lociToMatchAt.Contains(Locus.C) || EqualityComparer<T>.Default.Equals(C, other.C)) &&
+                   (!lociToMatchAt.Contains(Locus.Dpb1) || EqualityComparer<T>.Default.Equals(Dpb1, other.Dpb1)) &&
+                   (!lociToMatchAt.Contains(Locus.Dqb1) || EqualityComparer<T>.Default.Equals(Dqb1, other.Dqb1)) &&
+                   (!lociToMatchAt.Contains(Locus.Drb1) || EqualityComparer<T>.Default.Equals(Drb1, other.Drb1));
         }
 
         // TODO: ATLAS-499. This HashCode references mutable properties, which is a BadThing(TM).
