@@ -14,7 +14,6 @@ using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchCalculation;
-using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
@@ -52,8 +51,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
         public async Task<MatchProbabilityResponse> CalculateMatchProbability(MatchProbabilityInput matchProbabilityInput)
         {
-            // var patientGenotypes = await ExpandPatientPhenotype(matchProbabilityInput);
-            // var donorGenotypes = await ExpandDonorPhenotype(matchProbabilityInput);
+            var hlaNomenclatureVersion = matchProbabilityInput.HlaNomenclatureVersion;
 
             var allowedPatientLoci = GetAllowedLoci(matchProbabilityInput.PatientHla);
             var allowedDonorLoci = GetAllowedLoci(matchProbabilityInput.DonorHla);
@@ -63,11 +61,21 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 matchProbabilityInput.PatientFrequencySetMetadata
             );
 
-            var donorSet = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySets.DonorSet.Id);
-            var patientSet = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySets.PatientSet.Id);
+            var donorGenotypes = await ExpandToGenotypes(
+                matchProbabilityInput.DonorHla,
+                frequencySets.DonorSet.Id,
+                allowedDonorLoci,
+                hlaNomenclatureVersion,
+                "donor"
+            );
 
-            var donorGenotypes = await ExpandDonorPhenotypeNew(matchProbabilityInput, donorSet, allowedDonorLoci);
-            var patientGenotypes = await ExpandPatientPhenotypeNew(matchProbabilityInput, patientSet, allowedPatientLoci);
+            var patientGenotypes = await ExpandToGenotypes(
+                matchProbabilityInput.PatientHla,
+                frequencySets.PatientSet.Id,
+                allowedPatientLoci,
+                hlaNomenclatureVersion,
+                "patient"
+            );
 
             var allPatientDonorCombinations = patientGenotypes.SelectMany(patientHla =>
                     donorGenotypes.Select(donorHla => new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla, donorHla)))
@@ -75,8 +83,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             logger.SendTrace($"Patient/donor pairs: {allPatientDonorCombinations.Count}", LogLevel.Verbose);
 
-            var patientDonorMatchDetails = 
-                await CalculatePairsMatchCounts(matchProbabilityInput, allPatientDonorCombinations, allowedPatientLoci, allowedDonorLoci);
+            var patientDonorMatchDetails = await CalculatePairsMatchCounts(
+                matchProbabilityInput,
+                allPatientDonorCombinations,
+                allowedPatientLoci,
+                allowedDonorLoci
+            );
 
             // TODO: ATLAS-233: Re-introduce hardcoded 100% probability for guaranteed match but no represented genotypes
 
@@ -87,6 +99,26 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 new SubjectCalculatorInputs {Genotypes = patientGenotypes, GenotypeLikelihoods = patientGenotypeLikelihoods},
                 new SubjectCalculatorInputs {Genotypes = donorGenotypes, GenotypeLikelihoods = donorGenotypeLikelihoods},
                 patientDonorMatchDetails
+            );
+        }
+
+        private async Task<ISet<PhenotypeInfo<string>>> ExpandToGenotypes(
+            PhenotypeInfo<string> phenotype,
+            int frequencySetId,
+            ISet<Locus> allowedLoci,
+            string hlaNomenclatureVersion,
+            string subjectLogDescription = null)
+        {
+            var haplotypeFrequencies = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySetId);
+            return await logger.RunTimedAsync(
+                async () => await compressedPhenotypeExpander.ExpandCompressedPhenotype(
+                    phenotype,
+                    hlaNomenclatureVersion,
+                    allowedLoci,
+                    haplotypeFrequencies.Keys
+                ),
+                $"{LoggingPrefix}Expanded {subjectLogDescription} phenotype",
+                LogLevel.Verbose
             );
         }
 
@@ -103,50 +135,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             }, LocusSettings.MatchPredictionLoci.ToHashSet());
         }
 
-        // TODO: ATLAS-400: Clean up "new" vs "old" methods here
-        private async Task<ISet<PhenotypeInfo<string>>> ExpandPatientPhenotypeNew(
-            MatchProbabilityInput matchProbabilityInput,
-            Dictionary<HaplotypeHla, decimal> haplotypeFrequencies,
-            ISet<Locus> allowedLoci)
-        {
-            return await ExpandPhenotypeNew(
-                matchProbabilityInput.PatientHla,
-                matchProbabilityInput.HlaNomenclatureVersion,
-                "patient",
-                haplotypeFrequencies,
-                allowedLoci
-            );
-        }
-
-        private async Task<ISet<PhenotypeInfo<string>>> ExpandDonorPhenotypeNew(
-            MatchProbabilityInput matchProbabilityInput,
-            Dictionary<HaplotypeHla, decimal> haplotypeFrequencies,
-            ISet<Locus> allowedLoci)
-        {
-            return await ExpandPhenotypeNew(
-                matchProbabilityInput.DonorHla,
-                matchProbabilityInput.HlaNomenclatureVersion,
-                "donor",
-                haplotypeFrequencies,
-                allowedLoci
-            );
-        }
-
-        private async Task<ISet<PhenotypeInfo<string>>> ExpandPhenotypeNew(
-            PhenotypeInfo<string> hla,
-            string hlaNomenclatureVersion,
-            string phenotypeLogDescription,
-            Dictionary<HaplotypeHla, decimal> haplotypeFrequencies,
-            ISet<Locus> allowedLoci)
-        {
-            return await logger.RunTimedAsync(
-                async () => await compressedPhenotypeExpander
-                    .ExpandCompressedPhenotype(hla, hlaNomenclatureVersion, allowedLoci, haplotypeFrequencies.Keys),
-                $"{LoggingPrefix}Expanded {phenotypeLogDescription} phenotype",
-                LogLevel.Verbose
-            );
-        }
-
         private async Task<ISet<GenotypeMatchDetails>> CalculatePairsMatchCounts(
             MatchProbabilityInput matchProbabilityInput,
             IEnumerable<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>> allPatientDonorCombinations,
@@ -155,7 +143,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         {
             return await logger.RunTimedAsync(
                 async () => (await Task.WhenAll(allPatientDonorCombinations
-                    .Select(pd => CalculateMatch(pd, matchProbabilityInput.HlaNomenclatureVersion, allowedPatientLoci, allowedDonorLoci))))
+                        .Select(pd => CalculateMatch(pd, matchProbabilityInput.HlaNomenclatureVersion, allowedPatientLoci, allowedDonorLoci))))
                     .ToHashSet(),
                 $"{LoggingPrefix}Calculated genotype matches",
                 LogLevel.Verbose
