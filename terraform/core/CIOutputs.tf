@@ -32,3 +32,7 @@ output "sql-server" {
 output "matching-algorithm-function-name" {
   value = module.matching_algorithm.function_app.app_name
 }
+
+output "donor-matching-function-name" {
+  value = module.matching_algorithm.function_app.donor_matching_app_name
+}
