@@ -19,7 +19,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         /// <inheritdoc />
         public Task<IDictionary<Locus, List<string>>> GetAllGGroups(string hlaNomenclatureVersion)
         {
-            var gGroupsWithDuplicates = HlaMetadata.Values
+            var gGroupsWithDuplicates = HlaMetadata[hlaNomenclatureVersion].Values
                 .GroupBy(g => g.Locus)
                 .Select(locusGroups => (locusGroups.Key, locusGroups.SelectMany(m => m.HlaScoringInfo.MatchingGGroups)));
 
