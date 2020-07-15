@@ -10,6 +10,7 @@ using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using CsvHelper;
+using FluentAssertions;
 using MoreLinq.Extensions;
 using NUnit.Framework;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         [Test, Repeat(100)]
         //Before ErrorHandling Perf: 50 Reps = 4.138s, 100 Reps = 5.465s
         //After ErrorHandling Perf: 50 Reps = 3.35s, 100 Reps = 4.002s
-        public async Task ImportingSingleDonorWith_Invalid_HlasPerformanceTest()
+        public async Task ApplyDonorUpdatesToDatabase_ImportingSingleDonorWith_Invalid_Hlas_CompletesWithoutErrors_WithAnExpectedPerformance()
         {
             var donor = new Donor
             {
@@ -69,7 +70,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         //After ErrorHandling Perf: 50 Reps = 5.333s, 100 Reps = 7.769s (+2.436)
         //Before, 100 Rep runs: 7.426, 6.886, 8.026, 7.403, 7.149
         //Before, 100 Rep runs: 7.769, 7.428, 7.836, 7.870, 7.735
-        public async Task ImportingSingleDonorWith_Valid_HlasPerformanceTest()
+        public async Task ApplyDonorUpdatesToDatabase_ImportingSingleDonorWith_Valid_Hlas_CompletesWithoutErrors_WithAnExpectedPerformance()
         {
             var donor = new Donor
             {
@@ -101,7 +102,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
          TestCase(1_000), // 0.0022 s/hla    =>    0.0026 s/hla
          TestCase(5_000), // 0.0030 s/hla    =>    0.0027 s/hla
          TestCase(20_000)]// 0.0031 s/hla    =>    0.0028 s/hla
-        public async Task MassHlaExpand_N(int n)
+        public async Task ExpandDonorHlaBatchAsync_OnLargeNumbersOfDonors_RunsWithExpectedPerformance(int n)
         {
             var newDonors =
                 (await ParseTestDonorFile())
@@ -110,27 +111,46 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 .Select(d => d.ToDonorInfo())
                 .ToList();
 
-            var oldHlaVersion = FileBackedHlaMetadataRepositoryBaseReader.NewDonorUpdateTestsVersion;
+            var oldHlaVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
             var expanderService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForSpecifiedHlaNomenclatureVersion(oldHlaVersion);
 
             await expanderService.ExpandDonorHlaBatchAsync(newDonors.ToList(), "Testing");
         }
 
-        [Test]
-        public async Task MassImport()
+        [Test,
+         TestCase(8000, 4000, 2000, 3000, 2000, 2000, 2000),
+         TestCase(400, 200, 100, 150, 100, 100, 100),
+        ]
+        public async Task ApplyDonorUpdatesToDatabase_RunningMassImport_CompletesWithoutErrors_AndRunsWithExpectedPerformance(
+            int initialAvailableCreationsCount,
+            int initialUnavailableCreationsCount,
+            int secondaryCreationsCount,
+            int drasticUpdatesCount,
+            int gentleUpdatesCount,
+            int makeAvailableCount,
+            int makeUnavailableCount
+            )
         {
-            var newDonors = new Queue<Donor>((await ParseTestDonorFile()).OrderBy(d => d.DonorId));// 20k. Used 8+4+2+3. 2 remain entirely unused
+            ValidateInputCounts(
+                initialAvailableCreationsCount,
+                initialUnavailableCreationsCount,
+                secondaryCreationsCount,
+                drasticUpdatesCount,
+                gentleUpdatesCount,
+                makeAvailableCount,
+                makeUnavailableCount);
+            var newDonors = new Queue<Donor>((await ParseTestDonorFile()).OrderBy(d => d.DonorId));
 
-            var (existingAvailableDonors, existingUnavailableDonors) = await SetupInitialDonorsInDb(newDonors);
+            var (existingAvailableDonors, existingUnavailableDonors) = await SetupInitialDonorsInDb(newDonors, initialAvailableCreationsCount, initialUnavailableCreationsCount);
 
-            var moreCreations = PrepareSomeCreations(newDonors);
-            var drasticUpdates = PrepareSomeDrasticUpdates(existingAvailableDonors, newDonors);
-            var gentleUpdates = PrepareSomeGentleUpdates(existingAvailableDonors, newDonors);
-            var availabilityUpdated = ModifySomeAvailabilities(existingAvailableDonors, existingUnavailableDonors);
+            var moreCreations = PrepareSomeCreations(newDonors, secondaryCreationsCount);
+            var drasticUpdates = PrepareSomeDrasticUpdates(existingAvailableDonors, newDonors, drasticUpdatesCount);
+            var gentleUpdates = PrepareSomeGentleUpdates(existingAvailableDonors, newDonors, gentleUpdatesCount);
+            var availabilityUpdated = ModifySomeAvailabilities(existingAvailableDonors, existingUnavailableDonors, makeAvailableCount, makeUnavailableCount);
 
             var allUpdates = moreCreations.Concat(drasticUpdates).Concat(gentleUpdates).Concat(availabilityUpdated).ToList();
 
-            var rand = new Random(123);// Need a fixed seed to ensure that this is determinstic, so that the tests are reproducible.
+            var rand = new Random(123);// Need a fixed seed to ensure that this is deterministic, so that the tests are reproducible.
             var deterministicallyRandomizedUpdates = allUpdates.OrderBy(upd => rand.NextDouble()).ToList();
             var updateBatches = deterministicallyRandomizedUpdates.Batch(1000).ToList();
 
@@ -140,31 +160,58 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             }
         }
 
-        public async Task<(Queue<Donor>, Queue<Donor>)> SetupInitialDonorsInDb(Queue<Donor> newDonors)
+        private void ValidateInputCounts(
+            int initialAvailableCreationsCount,
+            int initialUnavailableCreationsCount,
+            int secondaryCreationsCount,
+            int drasticUpdatesCount,
+            int gentleUpdatesCount,
+            int makeAvailableCount,
+            int makeUnavailableCount)
         {
-            var initialCreations = newDonors.Dequeue(8000).ToList();
-            await Import(initialCreations.Select(d => d.ToDonorInfo()));
-            var newlyCreatedAvailableDonors = new Queue<Donor>(initialCreations); //8k. Used 3+2+2. 1k remain as they were originally inserted.
+            var totalUsedFromFile =
+                initialAvailableCreationsCount +
+                initialUnavailableCreationsCount +
+                secondaryCreationsCount +
+                drasticUpdatesCount +
+                gentleUpdatesCount;
+            totalUsedFromFile.Should().BeLessOrEqualTo(20_000); //Number of donors available in the File.
 
-            var initialUnavailableCreations = newDonors.Dequeue(4000).ToList();
+            var totalInitialAvailableDonorsEdited =
+                drasticUpdatesCount +
+                gentleUpdatesCount +
+                makeUnavailableCount;
+            totalInitialAvailableDonorsEdited.Should().BeLessOrEqualTo(initialAvailableCreationsCount);
+
+            var totalInitialUnavailableDonorsEdited = makeAvailableCount;
+            totalInitialUnavailableDonorsEdited.Should().BeLessOrEqualTo(initialUnavailableCreationsCount);
+        }
+
+        public async Task<(Queue<Donor>, Queue<Donor>)> SetupInitialDonorsInDb(Queue<Donor> newDonors, int availableCount, int unavailableCount)
+        {
+            var initialCreations = newDonors.Dequeue(availableCount).ToList();
+            await Import(initialCreations.Select(d => d.ToDonorInfo()));
+            var newlyCreatedAvailableDonors = new Queue<Donor>(initialCreations);
+
+            var initialUnavailableCreations = newDonors.Dequeue(unavailableCount).ToList();
             await ImportAsUnavailable(initialUnavailableCreations.Select(d => d.ToDonorInfo()));
-            var newlyCreatedUnavailableDonors = new Queue<Donor>(initialUnavailableCreations); //4k Used 2. 2k remain as they were originally inserted.
+            var newlyCreatedUnavailableDonors = new Queue<Donor>(initialUnavailableCreations);
 
             return (newlyCreatedAvailableDonors, newlyCreatedUnavailableDonors);
         }
 
-        private static List<DonorAvailabilityUpdate> PrepareSomeCreations(Queue<Donor> newDonors)
+        private static List<DonorAvailabilityUpdate> PrepareSomeCreations(Queue<Donor> newDonors, int count)
         {
-            var moreCreations = newDonors.Dequeue(2000).Select(d => d.ToDonorInfo().ToUpdate()).ToList();
+            var moreCreations = newDonors.Dequeue(count).Select(d => d.ToDonorInfo().ToUpdate()).ToList();
             return moreCreations;
         }
 
-        private static List<DonorAvailabilityUpdate> PrepareSomeDrasticUpdates(Queue<Donor> existingAvailableDonors, Queue<Donor> newDonors)
+        private static List<DonorAvailabilityUpdate> PrepareSomeDrasticUpdates(Queue<Donor> existingAvailableDonors, Queue<Donor> newDonors, int count)
         {
-            var existingDonorsToDrasticallyEdit = existingAvailableDonors.Dequeue(3000).ToList();
-            var newDonorValuesToUse = newDonors.Dequeue(3000).ToList();
+            var existingDonorsToDrasticallyEdit = existingAvailableDonors.Dequeue(count).ToList();
+            var newDonorsToGetValidFullHlas = newDonors.Dequeue(count).ToList();
             var drasticUpdates = existingDonorsToDrasticallyEdit
-                .Zip(newDonorValuesToUse, ((existingDonor, newDonor) =>
+                .Zip(newDonorsToGetValidFullHlas, ((existingDonor, newDonor) =>
                 {
                     newDonor.DonorId = existingDonor.DonorId;
                     return newDonor;
@@ -174,10 +221,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             return drasticUpdates;
         }
 
-        private static IEnumerable<DonorAvailabilityUpdate> PrepareSomeGentleUpdates(Queue<Donor> existingAvailableDonors, Queue<Donor> newDonors)
+        private static IEnumerable<DonorAvailabilityUpdate> PrepareSomeGentleUpdates(Queue<Donor> existingAvailableDonors, Queue<Donor> newDonors, int count)
         {
-            var existingDonorsToGentlyEdit = existingAvailableDonors.Dequeue(2000).ToList();
-            var newDonorsToGetValidAHlas = newDonors.Dequeue(2000).ToList();
+            var existingDonorsToGentlyEdit = existingAvailableDonors.Dequeue(count).ToList();
+            var newDonorsToGetValidAHlas = newDonors.Dequeue(count).ToList();
             var gentleUpdates = existingDonorsToGentlyEdit
                 .Zip(newDonorsToGetValidAHlas, ((existingDonor, newDonor) =>
                 {
@@ -190,10 +237,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             return gentleUpdates;
         }
 
-        private static List<DonorAvailabilityUpdate> ModifySomeAvailabilities(Queue<Donor> existingAvailableDonors, Queue<Donor> existingUnavailableDonors)
+        private static List<DonorAvailabilityUpdate> ModifySomeAvailabilities(Queue<Donor> existingAvailableDonors, Queue<Donor> existingUnavailableDonors, int availableCount, int unavailableCount)
         {
-            var markAsUnavailable = existingAvailableDonors.Dequeue(2000).Select(d => d.ToDonorInfo().ToUnavailableUpdate()).ToList();
-            var markAsAvailable = existingUnavailableDonors.Dequeue(2000).Select(d => d.ToDonorInfo().ToUpdate()).ToList();
+            var markAsAvailable = existingUnavailableDonors.Dequeue(availableCount).Select(d => d.ToDonorInfo().ToUpdate()).ToList();
+            var markAsUnavailable = existingAvailableDonors.Dequeue(unavailableCount).Select(d => d.ToDonorInfo().ToUnavailableUpdate()).ToList();
             return markAsUnavailable.Union(markAsAvailable).ToList();
         }
     }

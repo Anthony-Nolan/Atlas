@@ -78,7 +78,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
     {
         private IDonorManagementService managementService;
         private TestDonorInspectionRepository donorInspectionRepository;
-        private string fileBackedHmdHlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewDonorUpdateTestsVersion;
+        private string fileBackedHmdHlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
         private TransientDatabase activeDb;
 
         [SetUp]
@@ -107,13 +107,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             }
         }
 
-        private async Task ImportMixOfUpdatesAndInfos(params object[] inconsistentObjects) //Yeah, I know. But this is still less ugly that loads of noisy `.ToUpdate()` calls.
-        {
-            var naturalUpdates = inconsistentObjects.OfType<DonorAvailabilityUpdate>().ToList();
-            var convertedUpdates = inconsistentObjects.OfType<DonorInfo>().Select(TestExtensions.ToUpdate).ToList();
-            await Import(naturalUpdates.Union(convertedUpdates));
-        }
-
         private async Task Import(IEnumerable<DonorAvailabilityUpdate> updates) => await Import(updates.ToArray());
         private async Task Import(params DonorInfo[] infos) => await Import(infos.Select(TestExtensions.ToUpdate).ToArray());
         private async Task Import(IEnumerable<DonorInfo> infos) => await Import(infos.Select(TestExtensions.ToUpdate).ToArray());
@@ -137,8 +130,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         private void Debug_ExpectDonorCountToBe(int expectedCount) { } // => ExpectDonorCountToBe(expectedCount);
 
         [Test]
-        public async Task RunAllDonorsFromExistingTestsAs_Relatively_IndividualInserts()
+        public async Task ApplyDonorUpdatesToDatabase_ImportingAllDonorsFromExistingTestsAsSeparateBatches_ResultsInCorrectNumberOfDonorsAtEnd()
         {
+            // All of these "test cases" have been lifted directly from the DonorServiceTests class, with little further thought.
+            // Each Debug_ExpectDonorCountToBe() represents the end of a test (as of writing of this class!)
+            // Look there to establish what these blocks were intended to test in their original state.
+            // Note that there's no desperate need to keep the 2 sets of code in sync.
+
             var expectedRunningTotal = 0;
             var donorInfo0 = new DonorInfoBuilder().Build();
             await Import(donorInfo0);
@@ -227,7 +225,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
 
             var donorInfo16 = new DonorInfoBuilder().Build().ToUnavailableUpdate();
             await Import(donorInfo16);
-            //expectedRunningTotal unchanged. Non-Available Creations are just ignored. QQ reviewer, Seems Fair.
+            //expectedRunningTotal unchanged. Non-Available Creations are just ignored.
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
             var donorInfo17 = new DonorInfoBuilder().Build().ToUpdate();
@@ -274,7 +272,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         }
 
         [Test]
-        public async Task RunAllDonorsFromExistingTestsAsSingleLargeInsert()
+        public async Task ApplyDonorUpdatesToDatabase_ImportingAllDonorsFromExistingTestsAsSingleBatch_ResultsInCorrectNumberOfDonorsAtEnd()
         {
             var expectedRunningTotal = 0;
 
@@ -300,11 +298,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             
             var donorInfo4 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var updatedDonor4 = new DonorInfoBuilder(donorInfo4.DonorId).WithDonorType(Cord).WithHlaAtLocus(A, One, "invalid-hla-name").Build();
-            //expectedRunningTotal unchanged. The 2nd record supercedes the first, but isn't valid. QQ Reviewer!
+            //expectedRunningTotal unchanged. The 2nd record supercedes the first, but isn't valid.
 
             var donorInfo5 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02").Build();
             var updatedDonor5 = new DonorInfoBuilder(donorInfo5.DonorId).WithHlaAtLocus(A, One, "invalid-hla-name").Build();
-            //expectedRunningTotal unchanged. The 2nd record supercedes the first, but isn't valid. QQ Reviewer!
+            //expectedRunningTotal unchanged. The 2nd record supercedes the first, but isn't valid.
 
             var donorInfo6 = new DonorInfoBuilder().Build();
             var donorInfo7 = new DonorInfoBuilder().Build();
@@ -331,7 +329,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             expectedRunningTotal += 4;
             
             var donorInfo16 = new DonorInfoBuilder().Build().ToUnavailableUpdate();
-            //expectedRunningTotal unchanged. Non-Available Creations are just ignored. QQ reviewer, Seems Fair.
+            //expectedRunningTotal unchanged. Non-Available Creations are just ignored.
 
             var donorInfo17 = new DonorInfoBuilder().Build().ToUpdate();
             var donorInfo18 = new DonorInfoBuilder().Build().ToUnavailableUpdate();
@@ -341,7 +339,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             var donorInfo20 = new DonorInfoBuilder().Build().ToUnavailableUpdate();
             var updatedDonor19 = new DonorInfoBuilder(donorInfo19.DonorId).Build().ToUnavailableUpdate();
             var updatedDonor20 = new DonorInfoBuilder(donorInfo20.DonorId).Build().ToUpdate();
-            expectedRunningTotal++;   //expectedRunningTotal unchanged. The updatedDonor19 supercedes donorInfo19, and thus isn't imported. QQ Reviewer!
+            expectedRunningTotal++;   //expectedRunningTotal unchanged. The updatedDonor19 supercedes donorInfo19, and thus isn't imported. (Which is good, because we don't really want the unavailable donors anyway.)
 
             var donorInfo21 = new DonorInfoBuilder().Build().ToUpdate();
             var updatedDonor21 = new DonorInfoBuilder(donorInfo21.DonorId).Build().ToUnavailableUpdate();
@@ -351,35 +349,35 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             var donorInfo21B = new DonorInfoBuilder().Build().ToUnavailableUpdate();
             var updatedDonor21B = new DonorInfoBuilder(donorInfo21B.DonorId).Build().ToUpdate();
             var reUpdatedDonor21B = new DonorInfoBuilder(donorInfo21B.DonorId).Build().ToUnavailableUpdate();
-            //expectedRunningTotal unchanged. The 3rd record supercedes the 2nd, and thus isn't imported. QQ Reviewer!
+            //expectedRunningTotal unchanged. The 3rd record supercedes the 2nd, and thus isn't imported. (which is good, as above)
 
             var donorInfo22 = new DonorInfoBuilder().WithDonorType(Adult).WithHlaAtLocus(A, One, "*01:01").Build();
             var updatedDonor22 = new DonorInfoBuilder(donorInfo22.DonorId).WithDonorType(Cord).WithHlaAtLocus(A, One, "*01:XX").Build();
             expectedRunningTotal++;
 
 
-            await ImportMixOfUpdatesAndInfos( //Yeah, I know. But this is still less ugly that loads of noisy `.ToUpdate()` calls.
-                donorInfo0,
-                donorInfo0B,
-                donorInfo1,
-                donorInfo1,
-                donorInfo1,
-                donorInfo1B, donorInfo1B, donorInfo1B,
-                donorInfo2,
-                updatedDonor2,
-                donorInfo3,
-                updatedDonor3,
-                donorInfo4,
-                updatedDonor4,
-                donorInfo5,
-                updatedDonor5,
-                donorInfo6, donorInfo7,
-                donorInfo8, donorInfo9,
-                updatedDonor8, updatedDonor9,
-                donorInfo10, donorInfo11,
-                updatedDonor10, updatedDonor11,
-                donorInfo12, donorInfo13,
-                donorInfo14, donorInfo15, updatedDonor12, updatedDonor13,
+            await Import(
+                donorInfo0.ToUpdate(),
+                donorInfo0B.ToUpdate(),
+                donorInfo1.ToUpdate(),
+                donorInfo1.ToUpdate(),
+                donorInfo1.ToUpdate(),
+                donorInfo1B.ToUpdate(), donorInfo1B.ToUpdate(), donorInfo1B.ToUpdate(),
+                donorInfo2.ToUpdate(),
+                updatedDonor2.ToUpdate(),
+                donorInfo3.ToUpdate(),
+                updatedDonor3.ToUpdate(),
+                donorInfo4.ToUpdate(),
+                updatedDonor4.ToUpdate(),
+                donorInfo5.ToUpdate(),
+                updatedDonor5.ToUpdate(),
+                donorInfo6.ToUpdate(), donorInfo7.ToUpdate(),
+                donorInfo8.ToUpdate(), donorInfo9.ToUpdate(),
+                updatedDonor8.ToUpdate(), updatedDonor9.ToUpdate(),
+                donorInfo10.ToUpdate(), donorInfo11.ToUpdate(),
+                updatedDonor10.ToUpdate(), updatedDonor11.ToUpdate(),
+                donorInfo12.ToUpdate(), donorInfo13.ToUpdate(),
+                donorInfo14.ToUpdate(), donorInfo15.ToUpdate(), updatedDonor12.ToUpdate(), updatedDonor13.ToUpdate(),
                 donorInfo16,
                 donorInfo17, donorInfo18,
                 donorInfo19, donorInfo20,
@@ -390,18 +388,18 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 donorInfo21B,
                 updatedDonor21B,
                 reUpdatedDonor21B,
-                donorInfo22,
-                updatedDonor22
+                donorInfo22.ToUpdate(),
+                updatedDonor22.ToUpdate()
             );
 
             ExpectDonorCountToBe(expectedRunningTotal);
         }
 
         [Test]
-        public async Task FurtherSingleOperationBatchToEnsureAllPathsAreExercised()
+        public async Task ApplyDonorUpdatesToDatabase_ImportingFurtherSingleBatchOperationBatch_WhichExplicitlyExercisesAllPaths_CompletesWithoutErrors()
         {
             //This is a useful way to populate varied baseline data :)
-            await RunAllDonorsFromExistingTestsAsSingleLargeInsert();
+            await ApplyDonorUpdatesToDatabase_ImportingAllDonorsFromExistingTestsAsSeparateBatches_ResultsInCorrectNumberOfDonorsAtEnd();
             await PopulateSomeUnavailableDonors();
 
             var existingDonors = new Queue<DonorWithLog>(donorInspectionRepository.GetAllDonorsWithLogs().Values.OrderBy(d => d.Donor.DonorId));
