@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
@@ -39,9 +40,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             }
         }
 
-        [Test, Repeat(100)]
-        //Before ErrorHandling Perf: 50 Reps = 4.138s, 100 Reps = 5.465s
-        //After ErrorHandling Perf: 50 Reps = 3.35s, 100 Reps = 4.002s
+        [Test, Repeat(1000)]
+        [IgnoreExceptOnCiPerfTest("50 Reps = 4.138s, 100 Reps = 5.465s")]
         public async Task ApplyDonorUpdatesToDatabase_ImportingSingleDonorWith_Invalid_Hlas_CompletesWithoutErrors_WithAnExpectedPerformance()
         {
             var donor = new Donor
@@ -65,11 +65,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             await Import(donor.ToDonorInfo().ToUpdate());
         }
 
-        [Test, Repeat(100)]
-        //Before ErrorHandling Perf: 50 Reps = 4.907s, 100 Reps = 7.423s (+2.516)
-        //After ErrorHandling Perf: 50 Reps = 5.333s, 100 Reps = 7.769s (+2.436)
-        //Before, 100 Rep runs: 7.426, 6.886, 8.026, 7.403, 7.149
-        //Before, 100 Rep runs: 7.769, 7.428, 7.836, 7.870, 7.735
+        [Test, Repeat(1000)]
+        [IgnoreExceptOnCiPerfTest(@"50 Reps = 4.907s. 100 Reps = 7.426, 6.886, 8.026, 7.403, 7.149")]
         public async Task ApplyDonorUpdatesToDatabase_ImportingSingleDonorWith_Valid_Hlas_CompletesWithoutErrors_WithAnExpectedPerformance()
         {
             var donor = new Donor
@@ -94,15 +91,22 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         }
 
         [Test,
-         TestCase(1),
-         TestCase(10),    // 0.0250 s/hla    =>    0.0264 s/hla
-         TestCase(50),    // 0.0049 s/hla    =>    0.0056 s/hla
-         TestCase(100),   // 0.0043 s/hla    =>    0.0048 s/hla
-         TestCase(500),   // 0.0021 s/hla    =>    0.0022 s/hla
-         TestCase(1_000), // 0.0022 s/hla    =>    0.0026 s/hla
-         TestCase(5_000), // 0.0030 s/hla    =>    0.0027 s/hla
-         TestCase(20_000)]// 0.0031 s/hla    =>    0.0028 s/hla
+         TestCase(1_000),  // 0.0022 s/hla
+         TestCase(5_000),  // 0.0030 s/hla
+         TestCase(20_000)] // 0.0031 s/hla
+        [IgnoreExceptOnCiPerfTest(@"See comments per scale.")]
         public async Task ExpandDonorHlaBatchAsync_OnLargeNumbersOfDonors_RunsWithExpectedPerformance(int n)
+        {
+            await ExpandDonorHlaBatchAsync_OnModerateNumbersOfDonors_RunsWithExpectedPerformance(n);
+        }
+
+        [Test,
+         TestCase(1),
+         TestCase(10),    // 0.0250 s/hla
+         TestCase(50),    // 0.0049 s/hla
+         TestCase(100),   // 0.0043 s/hla
+         TestCase(500)]   // 0.0021 s/hla
+        public async Task ExpandDonorHlaBatchAsync_OnModerateNumbersOfDonors_RunsWithExpectedPerformance(int n)
         {
             var newDonors =
                 (await ParseTestDonorFile())
@@ -118,18 +122,46 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         }
 
         [Test,
-         TestCase(8000, 4000, 2000, 3000, 2000, 2000, 2000),
-         TestCase(400, 200, 100, 150, 100, 100, 100),
+         TestCase(8000, 4000, 2000, 3000, 2000, 2000, 2000, 1000),
+         TestCase(400, 200, 100, 150, 100, 100, 100, 1000),
         ]
-        public async Task ApplyDonorUpdatesToDatabase_RunningMassImport_CompletesWithoutErrors_AndRunsWithExpectedPerformance(
+        [IgnoreExceptOnCiPerfTest(@"See comments per scale.")]
+        public async Task ApplyDonorUpdatesToDatabase_RunningHighVolumeMassImport_CompletesWithoutErrors_AndRunsWithExpectedPerformance(
             int initialAvailableCreationsCount,
             int initialUnavailableCreationsCount,
             int secondaryCreationsCount,
             int drasticUpdatesCount,
             int gentleUpdatesCount,
             int makeAvailableCount,
-            int makeUnavailableCount
-            )
+            int makeUnavailableCount,
+            int artificialBatchSize
+        )
+        {
+            await ApplyDonorUpdatesToDatabase_RunningModerateVolumeMassImport_CompletesWithoutErrors_AndRunsWithExpectedPerformance(
+                initialAvailableCreationsCount,
+                initialUnavailableCreationsCount,
+                secondaryCreationsCount,
+                drasticUpdatesCount,
+                gentleUpdatesCount,
+                makeAvailableCount,
+                makeUnavailableCount,
+                artificialBatchSize
+            );
+        }
+
+        [Test,
+         TestCase(100, 50, 25, 35, 25, 25, 25, 100),
+        ]
+        public async Task ApplyDonorUpdatesToDatabase_RunningModerateVolumeMassImport_CompletesWithoutErrors_AndRunsWithExpectedPerformance(
+            int initialAvailableCreationsCount,
+            int initialUnavailableCreationsCount,
+            int secondaryCreationsCount,
+            int drasticUpdatesCount,
+            int gentleUpdatesCount,
+            int makeAvailableCount,
+            int makeUnavailableCount,
+            int artificialBatchSize
+        )
         {
             ValidateInputCounts(
                 initialAvailableCreationsCount,
@@ -138,7 +170,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 drasticUpdatesCount,
                 gentleUpdatesCount,
                 makeAvailableCount,
-                makeUnavailableCount);
+                makeUnavailableCount,
+                artificialBatchSize);
             var newDonors = new Queue<Donor>((await ParseTestDonorFile()).OrderBy(d => d.DonorId));
 
             var (existingAvailableDonors, existingUnavailableDonors) = await SetupInitialDonorsInDb(newDonors, initialAvailableCreationsCount, initialUnavailableCreationsCount);
@@ -152,7 +185,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
 
             var rand = new Random(123);// Need a fixed seed to ensure that this is deterministic, so that the tests are reproducible.
             var deterministicallyRandomizedUpdates = allUpdates.OrderBy(upd => rand.NextDouble()).ToList();
-            var updateBatches = deterministicallyRandomizedUpdates.Batch(1000).ToList();
+            var updateBatches = deterministicallyRandomizedUpdates.Batch(artificialBatchSize).ToList();
 
             foreach (var updateBatch in updateBatches)
             {
@@ -167,7 +200,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             int drasticUpdatesCount,
             int gentleUpdatesCount,
             int makeAvailableCount,
-            int makeUnavailableCount)
+            int makeUnavailableCount,
+            int artificialBatchSize)
         {
             var totalUsedFromFile =
                 initialAvailableCreationsCount +
@@ -175,7 +209,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 secondaryCreationsCount +
                 drasticUpdatesCount +
                 gentleUpdatesCount;
-            totalUsedFromFile.Should().BeLessOrEqualTo(20_000); //Number of donors available in the File.
+            totalUsedFromFile.Should().BeLessOrEqualTo(20_000, "only 20k donors are available in the File.");
 
             var totalInitialAvailableDonorsEdited =
                 drasticUpdatesCount +
@@ -185,6 +219,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
 
             var totalInitialUnavailableDonorsEdited = makeAvailableCount;
             totalInitialUnavailableDonorsEdited.Should().BeLessOrEqualTo(initialUnavailableCreationsCount);
+
+            artificialBatchSize.Should().BeLessOrEqualTo(1_000, "Batching is imposed elsewhere, so anything greater than that won't actually take effect.");
         }
 
         public async Task<(Queue<Donor>, Queue<Donor>)> SetupInitialDonorsInDb(Queue<Donor> newDonors, int availableCount, int unavailableCount)
