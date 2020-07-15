@@ -18,7 +18,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
     [TestFixture]
     internal class FilteredExpansion
     {
-        private readonly ISet<Locus> defaultLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
+        private static readonly ISet<Locus> DefaultLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
 
         // The GGroups represented by the default alleles in UnambiguousAlleleDetails could theoretically be split into 16 haplotypes. 
         // We are only using two (as if allele phase was represented in the raw data) for simplicity
@@ -39,9 +39,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var phenotype = new PhenotypeInfoBuilder<string>(UnambiguousAlleleDetails.Alleles()).Build();
             var haplotypes = new List<LociInfo<string>> {HaplotypeBuilder1.Build(), HaplotypeBuilder2.Build()};
 
-            var genotypes = await expander.ExpandCompressedPhenotype(phenotype, Constants.SnapshotHlaNomenclatureVersion, defaultLoci, haplotypes);
+            var genotypes = await expander.ExpandCompressedPhenotype(phenotype, Constants.SnapshotHlaNomenclatureVersion, DefaultLoci, haplotypes);
 
-            genotypes.Count().Should().Be(1);
+            genotypes.Count.Should().Be(1);
         }
 
         [Test]
@@ -57,13 +57,30 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 HaplotypeBuilder2.Build()
             };
 
-            var genotypes = await expander.ExpandCompressedPhenotype(phenotype, Constants.SnapshotHlaNomenclatureVersion, defaultLoci, haplotypes);
+            var genotypes = await expander.ExpandCompressedPhenotype(phenotype, Constants.SnapshotHlaNomenclatureVersion, DefaultLoci, haplotypes);
 
             // This G Group is represented by the patient HLA (01:XX), but is not present in the HF set 
             const string expectedAbsentGGroup = "01:01:02";
             genotypes.Should().NotContain(x => x.A.Position1 == expectedAbsentGGroup || x.A.Position2 == expectedAbsentGGroup);
         }
 
+        [TestCaseSource(nameof(DefaultLoci))]
+        public async Task ExpandCompressedPhenotype_WhenOneLocusExcluded_ReturnsSumOfAllHaplotypesThatDifferOnlyAtExcludedLoci(Locus locus)
+        {
+            var phenotype = new PhenotypeInfoBuilder<string>(UnambiguousAlleleDetails.Alleles()).Build();
+            
+            var haplotypes = new List<LociInfo<string>>
+            {
+                HaplotypeBuilder1.Build(), 
+                HaplotypeBuilder2.Build(),
+                HaplotypeBuilder1.WithDataAt(locus, "g-group-at-excluded-locus").Build()
+            };
+
+            var genotypes = await expander.ExpandCompressedPhenotype(phenotype, Constants.SnapshotHlaNomenclatureVersion, DefaultLoci, haplotypes);
+
+            genotypes.Count.Should().Be(1);
+        }
+        
         // This test is fairly slow, as tests go: ~3 seconds.
         // With the naive approach, this would take *significantly* longer - the number of permutations would overflow a long!
         [Test]
@@ -100,7 +117,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 HaplotypeBuilder2.Build()
             };
 
-            var genotypes = await expander.ExpandCompressedPhenotype(phenotype, Constants.SnapshotHlaNomenclatureVersion, defaultLoci, haplotypes);
+            var genotypes = await expander.ExpandCompressedPhenotype(phenotype, Constants.SnapshotHlaNomenclatureVersion, DefaultLoci, haplotypes);
 
             // Of two matching haplotypes, three possible combinations as diplotypes: x & y => (xx)/(xy)/(yy)
             genotypes.Count.Should().Be(3);
