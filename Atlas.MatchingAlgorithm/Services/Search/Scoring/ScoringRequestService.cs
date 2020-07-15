@@ -1,16 +1,16 @@
-﻿using System.Threading.Tasks;
-using Atlas.MatchingAlgorithm.Client.Models.Scoring;
-using Atlas.MatchingAlgorithm.Extensions;
+﻿using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using AutoMapper;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 {
     public interface IScoringRequestService
     {
-        Task<ScoringResult> Score(ScoringRequest scoringRequest);
+        Task<ScoringResult> Score(ScoringRequest<PhenotypeInfo<string>> scoringRequest);
     }
-    
-    public class ScoringRequestService: IScoringRequestService
+
+    public class ScoringRequestService : IScoringRequestService
     {
         private readonly IDonorScoringService donorScoringService;
         private readonly IMapper mapper;
@@ -19,14 +19,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
         {
             this.donorScoringService = donorScoringService;
             this.mapper = mapper;
-        }   
-        
-        public async Task<ScoringResult> Score(ScoringRequest scoringRequest)
-        {
-            var donorHla = scoringRequest.DonorHla;
-            var patientHla = scoringRequest.PatientHla;
+        }
 
-            var scoringResult = await donorScoringService.ScoreDonorHlaAgainstPatientHla(donorHla, patientHla);
+        public async Task<ScoringResult> Score(ScoringRequest<PhenotypeInfo<string>> scoringRequest)
+        {
+            var scoringResult = await donorScoringService.ScoreDonorHlaAgainstPatientHla(scoringRequest);
 
             return mapper.Map<ScoringResult>(scoringResult);
         }

@@ -17,6 +17,7 @@ namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
             RuleFor(x => x.SearchHlaData.Dqb1.Position1).NotNull().When(x => x.MatchCriteria?.LocusMismatchCounts.Dqb1 != null);
             RuleFor(x => x.SearchHlaData.Dqb1.Position2).NotNull().When(x => x.MatchCriteria?.LocusMismatchCounts.Dqb1 != null);
 
+            RuleFor(x => x.LociToScore).NotNull();
             RuleFor(x => x.LociToExcludeFromAggregateScore).NotNull();
         }
     }

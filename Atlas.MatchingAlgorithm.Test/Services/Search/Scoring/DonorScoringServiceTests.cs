@@ -1,5 +1,6 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
@@ -12,6 +13,7 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
 using FluentAssertions;
 using NSubstitute;
@@ -32,17 +34,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
         private IMatchScoreCalculator matchScoreCalculator;
         private IScoreResultAggregator scoreResultAggregator;
 
-        private DonorScoringService donorScoringService;
-
-        private readonly PhenotypeInfo<MatchGradeResult> defaultMatchGradeResults = new PhenotypeInfo<MatchGradeResult>
-        {
-            A = {Position1 = new MatchGradeResult(), Position2 = new MatchGradeResult()},
-            B = {Position1 = new MatchGradeResult(), Position2 = new MatchGradeResult()},
-            C = {Position1 = new MatchGradeResult(), Position2 = new MatchGradeResult()},
-            Dpb1 = {Position1 = new MatchGradeResult(), Position2 = new MatchGradeResult()},
-            Dqb1 = {Position1 = new MatchGradeResult(), Position2 = new MatchGradeResult()},
-            Drb1 = {Position1 = new MatchGradeResult(), Position2 = new MatchGradeResult()},
-        };
+        private IDonorScoringService donorScoringService;
 
         [SetUp]
         public void SetUp()
@@ -56,8 +48,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
             var hlaVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
 
             rankingService.RankSearchResults(Arg.Any<IEnumerable<MatchAndScoreResult>>())
-                .Returns(callInfo => (IEnumerable<MatchAndScoreResult>) callInfo.Args().First());
-            gradingService.CalculateGrades(null, null).ReturnsForAnyArgs(defaultMatchGradeResults);
+                .Returns(callInfo => (IEnumerable<MatchAndScoreResult>)callInfo.Args().First());
+            gradingService.CalculateGrades(null, null).ReturnsForAnyArgs(new PhenotypeInfo<MatchGradeResult>(new MatchGradeResult()));
             confidenceService.CalculateMatchConfidences(null, null, null).ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>());
 
             var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(scoringMetadataService);
@@ -74,95 +66,120 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
         }
 
         [Test]
-        public async Task Score_FetchesScoringDataForAllLociForAllResults()
+        public async Task ScoreMatchesAgainstHla_NoLociToScore_ReturnsMatchResultsWithNoScoreResults()
         {
-            // 6 loci x 2 x 2 results
-            const int expectedNumberOfFetches = 24;
+            var matchResults = new List<MatchResult>
+            {
+                new MatchResultBuilder().WithHlaAtLocus(Locus.A, "hla-a").Build(),
+                new MatchResultBuilder().WithHlaAtLocus(Locus.B, "hla-b").Build()
+            };
 
-            var patientHla = new PhenotypeInfo<string>();
-            var result1 = new MatchResultBuilder().Build();
-            var result2 = new MatchResultBuilder().Build();
+            var request = ScoringRequestBuilder.New
+                .With(x => x.DonorData, matchResults)
+                .With(x => x.LociToScore, new List<Locus>())
+                .Build();
 
-            await donorScoringService.ScoreMatchesAgainstHla(new[] {result1, result2}, patientHla);
+            var results = await donorScoringService.ScoreMatchesAgainstPatientHla(request);
+
+            results.Select(r => r.MatchResult).Should().BeEquivalentTo(matchResults);
+            results.Any(r => r.ScoreResult != null).Should().BeFalse();
+        }
+
+        [Test]
+        public async Task ScoreMatchesAgainstHla_FetchesScoringMetadataForRequestedLociForAllResults()
+        {
+            // 3 loci x 2 x 2 results
+            const int expectedNumberOfFetches = 12;
+            var lociToScore = new List<Locus> { Locus.A, Locus.B, Locus.C };
+
+            var request = ScoringRequestBuilder.New
+                .With(x => x.DonorData, new[] { new MatchResultBuilder().Build(), new MatchResultBuilder().Build() })
+                .With(x => x.LociToScore, lociToScore)
+                .Build();
+
+            await donorScoringService.ScoreMatchesAgainstPatientHla(request);
 
             await scoringMetadataService.Received(expectedNumberOfFetches).GetHlaMetadata(Arg.Any<Locus>(), Arg.Any<string>(), Arg.Any<string>());
         }
 
         [Test]
-        public async Task Score_DoesNotFetchScoringDataForUntypedLociForResults()
+        public async Task ScoreMatchesAgainstHla_DoesNotFetchScoringDataForUntypedLociForResults()
         {
             const Locus locus = Locus.B;
             const string patientHlaAtLocus = "patient-hla-locus-B";
-            var patientHla = new PhenotypeInfo<string>();
-            patientHla.SetLocus(locus, patientHlaAtLocus);
-            var result1 = new MatchResultBuilder()
-                .WithHlaAtLocus(locus, null)
+
+            var request = ScoringRequestBuilder.New
+                .With(x => x.PatientHla, new PhenotypeInfoBuilder<string>().WithDataAt(locus, patientHlaAtLocus).Build())
+                .With(x => x.DonorData, new[] { new MatchResultBuilder().WithHlaAtLocus(locus, null).Build() })
                 .Build();
 
-            await donorScoringService.ScoreMatchesAgainstHla(new[] {result1}, patientHla);
+            await donorScoringService.ScoreMatchesAgainstPatientHla(request);
 
             await scoringMetadataService.DidNotReceive().GetHlaMetadata(locus, Arg.Is<string>(s => s != patientHlaAtLocus), Arg.Any<string>());
         }
 
         [Test]
-        public async Task Score_FetchesScoringDataForAllLociForPatientHla()
+        public async Task ScoreMatchesAgainstHla_FetchesScoringMetadataForRequestedLociForPatientHla()
         {
-            // 6 loci x 2 positions
-            const int expectedNumberOfFetches = 12;
+            // 2 loci x 2 positions
+            const int expectedNumberOfFetches = 4;
+            var lociToScore = new List<Locus> { Locus.Dqb1, Locus.Drb1 };
 
-            var patientHla = new PhenotypeInfo<string>
-            {
-                A = {Position1 = "hla-a-1", Position2 = "hla-a-2"},
-                B = {Position1 = "hla-b-1", Position2 = "hla-b-2"},
-                C = {Position1 = "hla-c-1", Position2 = "hla-c-2"},
-                Dpb1 = {Position1 = "hla-dpb1-1", Position2 = "hla-dpb1-2"},
-                Dqb1 = {Position1 = "hla-dqb1-1", Position2 = "hla-dqb1-2"},
-                Drb1 = {Position1 = "hla-drb1-1", Position2 = "hla-drb1-2"},
-            };
+            var request = ScoringRequestBuilder.New
+                .With(x => x.PatientHla, new PhenotypeInfo<string>("hla"))
+                .With(x => x.DonorData, new List<MatchResult>())
+                .With(x => x.LociToScore, lociToScore)
+                .Build();
 
-            await donorScoringService.ScoreMatchesAgainstHla(new List<MatchResult>(), patientHla);
+            await donorScoringService.ScoreMatchesAgainstPatientHla(request);
 
             await scoringMetadataService.Received(expectedNumberOfFetches).GetHlaMetadata(Arg.Any<Locus>(), Arg.Any<string>(), Arg.Any<string>());
         }
 
         [Test]
-        public async Task Score_DoesNotFetchScoringDataForUntypedLociForPatient()
+        public async Task ScoreMatchesAgainstHla_DoesNotFetchScoringDataForUntypedLociForPatient()
         {
-            var patientHla = new PhenotypeInfo<string>
-            {
-                A = {Position1 = "hla-1", Position2 = "hla-2"}
-            };
+            const Locus untypedLocus = Locus.B;
+            var patientHla = new PhenotypeInfoBuilder<string>("hla").WithDataAt(untypedLocus, (string)default).Build();
 
-            await donorScoringService.ScoreMatchesAgainstHla(new List<MatchResult>(), patientHla);
+            var request = ScoringRequestBuilder.New
+                .With(x => x.PatientHla, patientHla)
+                .With(x => x.DonorData, new List<MatchResult>())
+                .Build();
 
-            await scoringMetadataService.DidNotReceive().GetHlaMetadata(Locus.B, Arg.Any<string>(), Arg.Any<string>());
+            await donorScoringService.ScoreMatchesAgainstPatientHla(request);
+
+            await scoringMetadataService.DidNotReceive().GetHlaMetadata(untypedLocus, Arg.Any<string>(), Arg.Any<string>());
         }
 
         [Test]
-        public async Task Score_DoesNotModifyMatchDetailsForResults()
+        public async Task ScoreMatchesAgainstHla_DoesNotModifyMatchDetailsForResults()
         {
             var matchResult = new MatchResultBuilder().Build();
 
-            var results = await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult}, new PhenotypeInfo<string>());
+            var request = ScoringRequestBuilder.New
+                .With(x => x.DonorData, new[] { matchResult })
+                .Build();
+
+            var results = await donorScoringService.ScoreMatchesAgainstPatientHla(request);
 
             results.First().MatchResult.Should().BeEquivalentTo(matchResult);
         }
 
         [Test]
-        public async Task Score_ReturnsMatchGradeForMatchResults()
+        public async Task ScoreMatchesAgainstHla_ReturnsMatchGradeForMatchResults()
         {
             const MatchGrade expectedMatchGradeAtA1 = MatchGrade.GGroup;
             const MatchGrade expectedMatchGradeAtB2 = MatchGrade.Protein;
 
-            var matchResult = new MatchResultBuilder().Build();
-
-            var matchGrades = defaultMatchGradeResults;
-            matchGrades.A.Position1 = new MatchGradeResult {GradeResult = expectedMatchGradeAtA1};
-            matchGrades.B.Position2 = new MatchGradeResult {GradeResult = expectedMatchGradeAtB2};
+            var matchGrades = new PhenotypeInfoBuilder<MatchGradeResult>(new MatchGradeResult())
+                .WithDataAt(Locus.A, LocusPosition.One, new MatchGradeResult { GradeResult = expectedMatchGradeAtA1 })
+                .WithDataAt(Locus.B, LocusPosition.Two, new MatchGradeResult { GradeResult = expectedMatchGradeAtB2 })
+                .Build();
 
             gradingService.CalculateGrades(null, null).ReturnsForAnyArgs(matchGrades);
 
-            var results = (await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult}, new PhenotypeInfo<string>())).ToList();
+            var results = await donorScoringService.ScoreMatchesAgainstPatientHla(ScoringRequestBuilder.New.Build());
 
             // Check across multiple loci and positions
             results.First().ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.MatchGrade.Should().Be(expectedMatchGradeAtA1);
@@ -170,32 +187,30 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
         }
 
         [Test]
-        public async Task Score_CalculatesMatchGradeForEachMatchResult()
+        public async Task ScoreMatchesAgainstHla_CalculatesMatchGradeForEachMatchResult()
         {
-            var matchResult1 = new MatchResultBuilder().Build();
-            var matchResult2 = new MatchResultBuilder().Build();
+            var request = ScoringRequestBuilder.New
+                .With(x => x.DonorData, new[] { new MatchResultBuilder().Build(), new MatchResultBuilder().Build() })
+                .Build();
 
-            await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult1, matchResult2}, new PhenotypeInfo<string>());
+            await donorScoringService.ScoreMatchesAgainstPatientHla(request);
 
             gradingService.ReceivedWithAnyArgs(2).CalculateGrades(null, null);
         }
 
         [Test]
-        public async Task Score_ReturnsMatchGradeScoreForMatchResults()
+        public async Task ScoreMatchesAgainstHla_ReturnsMatchGradeScoreForMatchResults()
         {
             const MatchGrade matchGradeAtA1 = MatchGrade.GGroup;
             const MatchGrade matchGradeAtB2 = MatchGrade.Protein;
+            var matchGrades = new PhenotypeInfoBuilder<MatchGradeResult>(new MatchGradeResult())
+                .WithDataAt(Locus.A, LocusPosition.One, new MatchGradeResult { GradeResult = matchGradeAtA1 })
+                .WithDataAt(Locus.B, LocusPosition.Two, new MatchGradeResult { GradeResult = matchGradeAtB2 })
+                .Build();
+            gradingService.CalculateGrades(null, null).ReturnsForAnyArgs(matchGrades);
 
             const int expectedMatchGradeScoreAtA1 = 190;
             const int expectedMatchGradeScoreAtB2 = 87;
-
-            var matchResult = new MatchResultBuilder().Build();
-
-            var matchGrades = defaultMatchGradeResults;
-            matchGrades.A.Position1 = new MatchGradeResult {GradeResult = matchGradeAtA1};
-            matchGrades.B.Position2 = new MatchGradeResult {GradeResult = matchGradeAtB2};
-
-            gradingService.CalculateGrades(null, null).ReturnsForAnyArgs(matchGrades);
             matchScoreCalculator
                 .CalculateScoreForMatchGrade(Arg.Is<MatchGrade>(a => a == matchGradeAtA1))
                 .Returns(expectedMatchGradeScoreAtA1);
@@ -203,7 +218,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
                 .CalculateScoreForMatchGrade(Arg.Is<MatchGrade>(a => a == matchGradeAtB2))
                 .Returns(expectedMatchGradeScoreAtB2);
 
-            var results = (await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult}, new PhenotypeInfo<string>())).ToList();
+            var results = (await donorScoringService.ScoreMatchesAgainstPatientHla(ScoringRequestBuilder.New.Build())).ToList();
 
             // Check across multiple loci and positions
             results.First().ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.MatchGradeScore.Should().Be(expectedMatchGradeScoreAtA1);
@@ -211,21 +226,19 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
         }
 
         [Test]
-        public async Task Score_ReturnsMatchConfidenceForMatchResults()
+        public async Task ScoreMatchesAgainstHla_ReturnsMatchConfidenceForMatchResults()
         {
             const MatchConfidence expectedMatchConfidenceAtA1 = MatchConfidence.Mismatch;
             const MatchConfidence expectedMatchConfidenceAtB2 = MatchConfidence.Potential;
 
-            var matchResult = new MatchResultBuilder().Build();
-
             confidenceService.CalculateMatchConfidences(null, null, null)
                 .ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>
                 {
-                    A = {Position1 = expectedMatchConfidenceAtA1},
-                    B = {Position2 = expectedMatchConfidenceAtB2},
+                    A = { Position1 = expectedMatchConfidenceAtA1 },
+                    B = { Position2 = expectedMatchConfidenceAtB2 },
                 });
 
-            var results = (await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult}, new PhenotypeInfo<string>())).ToList();
+            var results = (await donorScoringService.ScoreMatchesAgainstPatientHla(ScoringRequestBuilder.New.Build())).ToList();
 
             // Check across multiple loci and positions
             results.First().ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.MatchConfidence.Should().Be(expectedMatchConfidenceAtA1);
@@ -233,22 +246,20 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
         }
 
         [Test]
-        public async Task Score_ReturnsMatchConfidenceScoreForMatchResults()
+        public async Task ScoreMatchesAgainstHla_ReturnsMatchConfidenceScoreForMatchResults()
         {
             const MatchConfidence matchConfidenceAtA1 = MatchConfidence.Mismatch;
             const MatchConfidence matchConfidenceAtB2 = MatchConfidence.Potential;
 
-            const int expectedMatchConfidenceScoreAtA1 = 7;
-            const int expectedMatchConfidenceScoreAtB2 = 340;
-
             confidenceService.CalculateMatchConfidences(null, null, null)
                 .ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>
                 {
-                    A = {Position1 = matchConfidenceAtA1},
-                    B = {Position2 = matchConfidenceAtB2},
+                    A = { Position1 = matchConfidenceAtA1 },
+                    B = { Position2 = matchConfidenceAtB2 },
                 });
 
-            var matchResult = new MatchResultBuilder().Build();
+            const int expectedMatchConfidenceScoreAtA1 = 7;
+            const int expectedMatchConfidenceScoreAtB2 = 340;
             matchScoreCalculator
                 .CalculateScoreForMatchConfidence(Arg.Is<MatchConfidence>(a => a == matchConfidenceAtA1))
                 .Returns(expectedMatchConfidenceScoreAtA1);
@@ -256,7 +267,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
                 .CalculateScoreForMatchConfidence(Arg.Is<MatchConfidence>(a => a == matchConfidenceAtB2))
                 .Returns(expectedMatchConfidenceScoreAtB2);
 
-            var results = (await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult}, new PhenotypeInfo<string>())).ToList();
+            var results = (await donorScoringService.ScoreMatchesAgainstPatientHla(ScoringRequestBuilder.New.Build())).ToList();
 
             // Check across multiple loci and positions
             results.First().ScoreResult.ScoreDetailsAtLocusA.ScoreDetailsAtPosition1.MatchConfidenceScore.Should()
@@ -266,36 +277,85 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
         }
 
         [Test]
-        public async Task Score_CalculatesMatchConfidenceForEachMatchResult()
+        public async Task ScoreMatchesAgainstHla_CalculatesMatchConfidenceForEachMatchResult()
         {
-            var matchResult1 = new MatchResultBuilder().Build();
-            var matchResult2 = new MatchResultBuilder().Build();
+            var request = ScoringRequestBuilder.New
+                .With(x => x.DonorData, new[] { new MatchResultBuilder().Build(), new MatchResultBuilder().Build() })
+                .Build();
 
-            await donorScoringService.ScoreMatchesAgainstHla(new[] {matchResult1, matchResult2}, new PhenotypeInfo<string>());
+            await donorScoringService.ScoreMatchesAgainstPatientHla(request);
 
             confidenceService.ReceivedWithAnyArgs(2).CalculateMatchConfidences(null, null, null);
         }
 
         [Test]
-        public async Task Score_RanksResults()
+        public async Task ScoreMatchesAgainstHla_OnlyReturnsDetailsForScoredLoci()
         {
-            var expectedSortedResults = new List<MatchAndScoreResult> {new MatchAndScoreResultBuilder().Build()};
+            const Locus scoredLocus = Locus.A;
+            const Locus notScoredLocus = Locus.B;
+
+            var request = ScoringRequestBuilder.New
+                .With(x => x.LociToScore, new[] { scoredLocus })
+                .Build();
+
+            var results = await donorScoringService.ScoreMatchesAgainstPatientHla(request);
+
+            var result = results.Single();
+            result.ScoreResult.ScoreDetailsForLocus(scoredLocus).Should().NotBeNull();
+            result.ScoreResult.ScoreDetailsForLocus(notScoredLocus).Should().BeNull();
+        }
+
+        [Test]
+        public async Task ScoreMatchesAgainstHla_SetsTypingStatusAtScoredLoci()
+        {
+            var lociToScore = new List<Locus> { Locus.A, Locus.C };
+
+            var donorWithUntypedLoci = new MatchResultBuilder()
+                .WithHlaAtLocus(Locus.A, "hla-a")
+                .WithHlaAtLocus(Locus.C, null)
+                .Build();
+
+            var request = ScoringRequestBuilder.New
+                .With(x => x.LociToScore, lociToScore)
+                .With(x => x.DonorData, new[] { donorWithUntypedLoci })
+                .Build();
+
+            var results = await donorScoringService.ScoreMatchesAgainstPatientHla(request);
+
+            var result = results.Single();
+            result.ScoreResult.ScoreDetailsAtLocusA.IsLocusTyped.Should().BeTrue();
+            result.ScoreResult.ScoreDetailsAtLocusC.IsLocusTyped.Should().BeFalse();
+        }
+
+        [Test]
+        public async Task ScoreMatchesAgainstHla_RanksResults()
+        {
+            var expectedSortedResults = new List<MatchAndScoreResult> { new MatchAndScoreResultBuilder().Build() };
             rankingService.RankSearchResults(null).ReturnsForAnyArgs(expectedSortedResults);
 
-            var results = await donorScoringService.ScoreMatchesAgainstHla(new List<MatchResult>(), new PhenotypeInfo<string>());
+            var results = await donorScoringService.ScoreMatchesAgainstPatientHla(ScoringRequestBuilder.New.Build());
 
             results.Should().BeEquivalentTo(expectedSortedResults);
         }
 
         [Test]
-        public async Task Score_AssignsAggregateScoringData()
+        public async Task ScoreMatchesAgainstHla_AggregatesScoringData()
         {
-            var patientHla = new PhenotypeInfo<string>();
-            var result1 = new MatchResultBuilder().Build();
-            var result2 = new MatchResultBuilder().Build();
-            scoreResultAggregator.AggregateScoreDetails(Arg.Any<ScoreResult>()).Returns(new AggregateScoreDetails());
+            await donorScoringService.ScoreMatchesAgainstPatientHla(ScoringRequestBuilder.New.Build());
 
-            var results = await donorScoringService.ScoreMatchesAgainstHla(new[] {result1, result2}, patientHla);
+            scoreResultAggregator.Received().AggregateScoreDetails(Arg.Any<ScoreResultAggregatorParameters>());
+        }
+
+        [Test]
+        public async Task ScoreMatchesAgainstHla_AssignsAggregateScoringData()
+        {
+            scoreResultAggregator.AggregateScoreDetails(Arg.Any<ScoreResultAggregatorParameters>()).Returns(new AggregateScoreDetails());
+
+            var request = ScoringRequestBuilder.New
+                .With(x => x.DonorData, new[] { new MatchResultBuilder().Build(), new MatchResultBuilder().Build() })
+                .Build();
+
+            var results = await donorScoringService.ScoreMatchesAgainstPatientHla(request);
 
             foreach (var result in results.Select(r => r.ScoreResult))
             {

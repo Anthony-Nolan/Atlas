@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Atlas.Common.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
 {
@@ -8,13 +9,26 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
 
         public ScoreResult ScoreResult { get; set; }
 
-        public int PotentialMatchCount => MatchResult.MatchedLoci
-            .Select(locus =>
+        /// <summary>
+        /// Total count of Potential matches at those loci covered by both matching *and* scoring.
+        /// TODO - ATLAS-539 - Confirm how potential matches should be calculated
+        /// </summary>
+        public int PotentialMatchCount => MatchResult.MatchedLoci.Select(GetPotentialMatchCountAtLocus).Sum();
+
+        private int GetPotentialMatchCountAtLocus(Locus locus)
+        {
+            var matchDetailsAtLocus = MatchResult.MatchDetailsForLocus(locus);
+
+            if (matchDetailsAtLocus == null)
             {
-                var scoreDetailsAtLocus = ScoreResult.ScoreDetailsForLocus(locus);
-                var matchDetailsAtLocus = MatchResult.MatchDetailsForLocus(locus);
-                return scoreDetailsAtLocus.IsPotentialMatch ? matchDetailsAtLocus.MatchCount : 0;
-            })
-            .Sum();
+                return 0;
+            }
+
+            var scoreDetailsAtLocus = ScoreResult?.ScoreDetailsForLocus(locus);
+
+            return scoreDetailsAtLocus != null && scoreDetailsAtLocus.IsPotentialMatch
+                ? matchDetailsAtLocus.MatchCount
+                : 0;
+        }
     }
 }

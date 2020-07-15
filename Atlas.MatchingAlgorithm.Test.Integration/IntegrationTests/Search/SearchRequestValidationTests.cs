@@ -1,15 +1,14 @@
-﻿using System.Collections.Generic;
-using Atlas.Common.GeneticData;
+﻿using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData;
-using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 {
@@ -32,8 +31,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             matchingRequest = new MatchingRequestBuilder()
                 .WithSearchType(DonorType.Adult)
                 .WithTotalMismatchCount(0)
-                .WithMismatchCountAtLoci(new List<Locus> {Locus.A, Locus.B, Locus.Drb1}, 0)
+                .WithMismatchCountAtLoci(new List<Locus> { Locus.A, Locus.B, Locus.Drb1 }, 0)
                 .WithSearchHla(new SampleTestHlas.HeterozygousSet1().SixLocus_SingleExpressingAlleles)
+                .WithLociToScore(new List<Locus>())
                 .WithLociExcludedFromScoringAggregates(new List<Locus>())
                 .Build();
         }
@@ -144,6 +144,22 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
+        public void DispatchSearch_LociToScoreIsNull_ThrowsValidationError()
+        {
+            matchingRequest.LociToScore = null;
+
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
+        }
+
+        [Test]
+        public void DispatchSearch_LociToScoreContainsAlgorithmLocus_DoesNotThrowValidationError()
+        {
+            matchingRequest.LociToScore = new List<Locus> { Locus.Dpb1 };
+
+            Assert.DoesNotThrowAsync(async () => await searchDispatcher.DispatchSearch(matchingRequest));
+        }
+
+        [Test]
         public void DispatchSearch_LociToExcludeFromAggregateScoreIsNull_ThrowsValidationError()
         {
             matchingRequest.LociToExcludeFromAggregateScore = null;
@@ -154,7 +170,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public void DispatchSearch_LociToExcludeFromAggregateScoreContainsAlgorithmLocus_DoesNotThrowValidationError()
         {
-            matchingRequest.LociToExcludeFromAggregateScore = new List<Locus> { Locus.Dpb1};
+            matchingRequest.LociToExcludeFromAggregateScore = new List<Locus> { Locus.Dpb1 };
 
             Assert.DoesNotThrowAsync(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }

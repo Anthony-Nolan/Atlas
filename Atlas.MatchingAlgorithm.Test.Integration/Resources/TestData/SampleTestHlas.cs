@@ -1,6 +1,6 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData
 {
@@ -31,13 +31,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData
                 }
             };
 
-            public PhenotypeInfo<string> SixLocus_SingleExpressingAlleles => new HlaNamePhenotypeBuilder(ThreeLocus_SingleExpressingAlleles)
-                .WithHlaNameAt(Locus.C, LocusPosition.One, "01:02:01:01")
-                .WithHlaNameAt(Locus.C, LocusPosition.Two, "02:02:01")
-                .WithHlaNameAt(Locus.Dpb1, LocusPosition.One, "01:01:01:01")
-                .WithHlaNameAt(Locus.Dpb1, LocusPosition.Two, "09:01:01")
-                .WithHlaNameAt(Locus.Dqb1, LocusPosition.One, "02:01:11")
-                .WithHlaNameAt(Locus.Dqb1, LocusPosition.Two, "03:01:01:01")
+            public PhenotypeInfo<string> SixLocus_SingleExpressingAlleles => new PhenotypeInfoBuilder<string>(ThreeLocus_SingleExpressingAlleles)
+                .WithDataAt(Locus.C, LocusPosition.One, "01:02:01:01")
+                .WithDataAt(Locus.C, LocusPosition.Two, "02:02:01")
+                .WithDataAt(Locus.Dpb1, LocusPosition.One, "01:01:01:01")
+                .WithDataAt(Locus.Dpb1, LocusPosition.Two, "09:01:01")
+                .WithDataAt(Locus.Dqb1, LocusPosition.One, "02:01:11")
+                .WithDataAt(Locus.Dqb1, LocusPosition.Two, "03:01:01:01")
                 .Build();
 
             public PhenotypeInfo<string> SixLocus_ExpressingAlleles_WithTruncatedNames => new PhenotypeInfo<string>
@@ -159,13 +159,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData
                 }
             };
 
-            public PhenotypeInfo<string> SixLocus_SingleExpressingAlleles => new HlaNamePhenotypeBuilder(ThreeLocus_SingleExpressingAlleles)
-                .WithHlaNameAt(Locus.C, LocusPosition.One, "03:02:01")
-                .WithHlaNameAt(Locus.C, LocusPosition.Two, "04:42:01")
-                .WithHlaNameAt(Locus.Dpb1, LocusPosition.One, "39:01:01:04")
-                .WithHlaNameAt(Locus.Dpb1, LocusPosition.Two, "124:01:01:01")
-                .WithHlaNameAt(Locus.Dqb1, LocusPosition.One, "04:02:10")
-                .WithHlaNameAt(Locus.Dqb1, LocusPosition.Two, "05:01:01:05")
+            public PhenotypeInfo<string> SixLocus_SingleExpressingAlleles => new PhenotypeInfoBuilder<string>(ThreeLocus_SingleExpressingAlleles)
+                .WithDataAt(Locus.C, LocusPosition.One, "03:02:01")
+                .WithDataAt(Locus.C, LocusPosition.Two, "04:42:01")
+                .WithDataAt(Locus.Dpb1, LocusPosition.One, "39:01:01:04")
+                .WithDataAt(Locus.Dpb1, LocusPosition.Two, "124:01:01:01")
+                .WithDataAt(Locus.Dqb1, LocusPosition.One, "04:02:10")
+                .WithDataAt(Locus.Dqb1, LocusPosition.Two, "05:01:01:05")
                 .Build();
 
             public PhenotypeInfo<string> SixLocus_ExpressingAlleles_WithTruncatedNames => new PhenotypeInfo<string>

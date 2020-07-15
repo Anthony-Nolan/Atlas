@@ -166,10 +166,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_LociExcludedFromSearchHaveMatchCounts()
+        public async Task Search_SixOutOfSix_LociExcludedFromMatchingButIncludedInScoringHaveMatchCounts()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -181,10 +182,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_LociExcludedFromSearchAreNotIncludedInTotalMatchCount()
+        public async Task Search_SixOutOfSix_LociExcludedFromMatchingButIncludedInScoringAreInTotalMatchCount()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -194,24 +196,26 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_TypedLociExcludedFromSearchSetIsLocusTypedAsTrue()
+        public async Task Search_SixOutOfSix_TypedLociExcludedFromMatchingButIncludedInScoringHaveIsLocusTypedAsTrue()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
-            // C is typed but not included in search
+            // C is typed but not included in matching
             result?.SearchResultAtLocusC.IsLocusTyped.Should().BeTrue();
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_TypedLociIncludedInSearchSetIsLocusTypedAsTrue()
+        public async Task Search_SixOutOfSix_TypedLociIncludedInMatchingAndScoringHaveIsLocusTypedAsTrue()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -222,10 +226,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_UntypedLociExcludedFromSearchSetIsLocusTypedAsFalse()
+        public async Task Search_SixOutOfSix_UntypedLociExcludedFromMatchingButIncludedInScoringHaveIsLocusTypedAsFalse()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);

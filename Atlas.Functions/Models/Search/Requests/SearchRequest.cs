@@ -34,10 +34,15 @@ namespace Atlas.Functions.Models.Search.Requests
         /// Must match registry code format uploaded with haplotype frequency sets.  
         /// </summary>
         public string PatientRegistryCode { get; set; }
-        
+
         /// <summary>
-        /// By default the algorithm will use scoring information available at all loci to aggregate into some overall values to use for ranking.
-        /// e.g. MatchCategory, GradeScore, ConfidenceScore
+        /// By default, scoring is not performed on matched donor HLA, except on the loci specified here.
+        /// </summary>
+        public IEnumerable<Locus> LociToScore { get; set; }
+
+        /// <summary>
+        /// By default, the algorithm will use scoring information available at loci defined in <see cref="LociToScore"/>
+        /// to aggregate into some overall values to use for ranking. e.g. MatchCategory, GradeScore, ConfidenceScore
         /// Any loci specified here can be excluded from these aggregates.
         /// </summary>
         public IEnumerable<Locus> LociToExcludeFromAggregateScore { get; set; }
@@ -52,6 +57,7 @@ namespace Atlas.Functions.Models.Search.Requests
                 SearchType = searchRequest.SearchType.ToMatchingAlgorithmDonorType(),
                 MatchCriteria = searchRequest.MatchCriteria.ToMatchingAlgorithmMatchCriteria(),
                 SearchHlaData = searchRequest.SearchHlaData.ToPhenotypeInfo(),
+                LociToScore = searchRequest.LociToScore,
                 LociToExcludeFromAggregateScore = searchRequest.LociToExcludeFromAggregateScore
             };
         }
