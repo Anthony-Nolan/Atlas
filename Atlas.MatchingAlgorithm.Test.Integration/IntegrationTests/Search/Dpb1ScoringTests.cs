@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
+﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
@@ -15,6 +13,8 @@ using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using System.Linq;
+using System.Threading.Tasks;
 
 // ReSharper disable InconsistentNaming
 
@@ -59,7 +59,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMatchingDpb1Typings_MatchCountIs2AtDpb1()
         {
-            var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(defaultPhenotype);
+            var result = await RunSixOutOfSixSearchWithAllLociScored(defaultPhenotype);
 
             result.SearchResultAtLocusDpb1.MatchCount.Should().Be(2);
         }
@@ -67,7 +67,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMatchingDpb1Typings_NoMismatchGradesAtDpb1()
         {
-            var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(defaultPhenotype);
+            var result = await RunSixOutOfSixSearchWithAllLociScored(defaultPhenotype);
 
             dpb1MismatchGrades.Should().NotContain(result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchGrade);
             dpb1MismatchGrades.Should().NotContain(result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchGrade);
@@ -76,7 +76,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMatchingDpb1Typings_NoMismatchConfidencesAtDpb1()
         {
-            var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(defaultPhenotype);
+            var result = await RunSixOutOfSixSearchWithAllLociScored(defaultPhenotype);
 
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
@@ -86,7 +86,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         public async Task Search_SixOutOfSix_PatientAndDonorDpb1TypingsAreMismatched_ButHaveSameTceGroup_MatchCountIs0AtDpb1()
         {
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
-            var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(patientPhenotype);
+            var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
             result.SearchResultAtLocusDpb1.MatchCount.Should().Be(0);
         }
@@ -95,7 +95,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         public async Task Search_SixOutOfSix_PatientAndDonorDpb1TypingsAreMismatched_ButHaveSameTceGroup_TwoPermissiveMismatchGradesAtDpb1()
         {
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
-            var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(patientPhenotype);
+            var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PermissiveMismatch);
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.PermissiveMismatch);
@@ -105,7 +105,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         public async Task Search_SixOutOfSix_PatientAndDonorDpb1TypingsAreMismatched_ButHaveSameTceGroup_TwoMismatchConfidencesAtDpb1()
         {
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
-            var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(patientPhenotype);
+            var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
@@ -115,7 +115,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButHaveDifferentTceGroups_MatchCountIs0AtDpb1()
         {
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
-            var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(patientPhenotype);
+            var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
             result.SearchResultAtLocusDpb1.MatchCount.Should().Be(0);
         }
@@ -124,7 +124,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButHaveDifferentTceGroups_TwoMismatchGradesAtDpb1()
         {
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithDifferentTceGroup);
-            var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(patientPhenotype);
+            var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.Mismatch);
@@ -134,7 +134,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButHaveDifferentTceGroups_TwoMismatchConfidencesAtDpb1()
         {
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithDifferentTceGroup);
-            var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(patientPhenotype);
+            var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
@@ -144,7 +144,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButPatientHasNoTceGroupAssignments_MatchCountIs0AtDpb1()
         {
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
-            var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(patientPhenotype);
+            var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
             result.SearchResultAtLocusDpb1.MatchCount.Should().Be(0);
         }
@@ -153,7 +153,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButPatientHasNoTceGroupAssignments_TwoMismatchGradesAtDpb1()
         {
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
-            var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(patientPhenotype);
+            var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.Mismatch);
@@ -163,7 +163,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButPatientHasNoTceGroupAssignments_TwoMismatchConfidencesAtDpb1()
         {
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
-            var result = await RunSixOutOfSixSearchWithPatientPhenotypeOf(patientPhenotype);
+            var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
             result.SearchResultAtLocusDpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
@@ -175,6 +175,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
             var searchRequest = new SearchRequestFromHlasBuilder(patientPhenotype)
                 .SixOutOfSix()
+                .WithAllLociScored()
                 .WithDpb1ExcludedFromScoringAggregation()
                 .Build();
 
@@ -183,17 +184,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 
             result.MatchCategory.Should().NotBe(MatchCategory.Mismatch);
         }
-        
+
         [Test]
         public async Task Search_SixOutOfSix_WhenDpb1IsNotExcludedFromAggregateScoring_AndResultMismatchedAtDpb1Only_TotalScoreIsMismatch()
         {
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
-            var searchRequest = new SearchRequestFromHlasBuilder(patientPhenotype)
-                .SixOutOfSix()
-                .Build();
-
-            var searchResults = await searchService.Search(searchRequest);
-            var result = searchResults.SingleOrDefault(d => d.AtlasDonorId == testDonorId);
+            var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
             result.MatchCategory.Should().Be(MatchCategory.Mismatch);
         }
@@ -234,10 +230,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             return modifiedPhenotype;
         }
 
-        private async Task<MatchingAlgorithmResult> RunSixOutOfSixSearchWithPatientPhenotypeOf(PhenotypeInfo<string> patientPhenotype)
+        private async Task<MatchingAlgorithmResult> RunSixOutOfSixSearchWithAllLociScored(PhenotypeInfo<string> patientPhenotype)
         {
             var searchRequest = new SearchRequestFromHlasBuilder(patientPhenotype)
                 .SixOutOfSix()
+                .WithAllLociScored()
                 .Build();
 
             var searchResults = await searchService.Search(searchRequest);

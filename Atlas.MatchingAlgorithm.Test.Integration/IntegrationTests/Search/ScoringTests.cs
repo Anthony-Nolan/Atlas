@@ -65,12 +65,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                     defaultHlaSet.SixLocus_SingleExpressingAlleles,
                     mismatchHlaSet.SixLocus_SingleExpressingAlleles)
                 .TenOutOfTen()
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
-            var expectedMatchCategories = new List<MatchCategory> { MatchCategory.Definite, MatchCategory.Exact };
+            var expectedMatchCategories = new List<MatchCategory?> { MatchCategory.Definite, MatchCategory.Exact };
             expectedMatchCategories.Should().Contain(result.MatchCategory);
         }
 
@@ -81,12 +82,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                     defaultHlaSet.SixLocus_ExpressingAlleles_WithTruncatedNames,
                     mismatchHlaSet.SixLocus_ExpressingAlleles_WithTruncatedNames)
                 .TenOutOfTen()
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
-            var expectedMatchCategories = new List<MatchCategory> { MatchCategory.Definite, MatchCategory.Exact };
+            var expectedMatchCategories = new List<MatchCategory?> { MatchCategory.Definite, MatchCategory.Exact };
             expectedMatchCategories.Should().Contain(result.MatchCategory);
         }
 
@@ -97,6 +99,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                     defaultHlaSet.SixLocus_XxCodes,
                     mismatchHlaSet.SixLocus_XxCodes)
                 .TenOutOfTen()
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -112,6 +115,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                     defaultHlaSet.FiveLocus_Serologies,
                     mismatchHlaSet.FiveLocus_Serologies)
                 .TenOutOfTen()
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -131,6 +135,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                     defaultHlaSet.SixLocus_SingleExpressingAlleles,
                     mismatchHlaSet.SixLocus_SingleExpressingAlleles)
                 .SixOutOfSix()
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -170,6 +175,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .FiveOutOfSix()
                 .WithSingleMismatchRequestedAt(Locus.A)
                 .WithPositionOneOfSearchHlaMismatchedAt(Locus.A)
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -208,6 +214,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                     defaultHlaSet.ThreeLocus_SingleExpressingAlleles,
                     mismatchHlaSet.ThreeLocus_SingleExpressingAlleles)
                 .SixOutOfSix()
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -242,6 +249,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                     defaultHlaSet.SixLocus_XxCodes,
                     mismatchHlaSet.SixLocus_XxCodes)
                 .SixOutOfSix()
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);

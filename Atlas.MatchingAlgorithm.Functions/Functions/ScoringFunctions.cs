@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
@@ -24,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         [FunctionName(nameof(Score))]
         public async Task<ScoringResult> Score([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
         {
-            var scoringRequest = JsonConvert.DeserializeObject<ScoringRequest>(await new StreamReader(httpRequest.Body).ReadToEndAsync());
+            var scoringRequest = JsonConvert.DeserializeObject<ScoringRequest<PhenotypeInfo<string>>>(await new StreamReader(httpRequest.Body).ReadToEndAsync());
             return await scoringRequestService.Score(scoringRequest);
         }
     }

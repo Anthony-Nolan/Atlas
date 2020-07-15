@@ -70,6 +70,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var searchRequest = new SearchRequestFromHlasBuilder(originalNullAlleleAtOnePositionPhenotype)
                 .SixOutOfSix()
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -89,6 +90,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var searchRequest = new SearchRequestFromHlasBuilder(differentNullAlleleAtOnePositionPhenotype)
                 .SixOutOfSix()
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -108,6 +110,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var searchRequest = new SearchRequestFromHlasBuilder(homozygousByTypingAtOneLocusPhenotype)
                 .SixOutOfSix()
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -127,6 +130,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var searchRequest = new SearchRequestFromHlasBuilder(originalNullAlleleAtOnePositionPhenotype)
                 .SixOutOfSix()
+                .WithAllLociScored()
                 .Build();
 
             var results = await searchService.Search(searchRequest);

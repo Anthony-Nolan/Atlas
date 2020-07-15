@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using Atlas.Common.GeneticData;
+﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
+using System.Collections.Generic;
 
 namespace Atlas.MatchingAlgorithm.Client.Models.SearchRequests
 {
@@ -22,13 +22,18 @@ namespace Atlas.MatchingAlgorithm.Client.Models.SearchRequests
         /// Even if locus should not be used for matching (no match criteria provided),
         /// the HLA data should still be provided if possible for use in scoring results.
         ///
-        /// A, B, DRB1 required. Others optional - and should be provided as a null <see cref="LocusInfo"/> if not present.
+        /// A, B, DRB1 required. Others optional - and should be provided as a null <see cref="LocusInfo{T}"/> if not present.
         /// </summary>
         public PhenotypeInfo<string> SearchHlaData { get; set; }
-        
+
         /// <summary>
-        /// By default the algorithm will use scoring information available at all loci to aggregate into some overall values to use for ranking.
-        /// e.g. MatchCategory, GradeScore, ConfidenceScore
+        /// By default, scoring is not performed on matched donor HLA, except on the loci specified here.
+        /// </summary>
+        public IEnumerable<Locus> LociToScore { get; set; }
+
+        /// <summary>
+        /// By default, the algorithm will use scoring information available at loci defined in <see cref="LociToScore"/>
+        /// to aggregate into some overall values to use for ranking. e.g. MatchCategory, GradeScore, ConfidenceScore
         /// Any loci specified here can be excluded from these aggregates.
         /// </summary>
         public IEnumerable<Locus> LociToExcludeFromAggregateScore { get; set; }
