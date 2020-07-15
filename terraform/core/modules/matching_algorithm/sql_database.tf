@@ -27,3 +27,11 @@ resource "azurerm_sql_database" "atlas-persistent" {
   server_name         = var.sql_server.name
   tags                = var.general.common_tags
 }
+
+output "atlas-matching-transient-a-name" {
+  value = lower("${var.general.environment}-ATLAS-MATCHING-A")
+}
+
+output "atlas-matching-transient-a-address" {
+  value = var.sql_server.fully_qualified_domain_name
+}

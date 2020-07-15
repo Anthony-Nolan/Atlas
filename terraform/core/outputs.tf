@@ -23,7 +23,3 @@ output "storage_account" {
     id = azurerm_storage_account.azure_storage.id
   }
 }
-
-output "username" {
-  value = var.MATCH_PREDICTION_DATABASE_USERNAME
-}
