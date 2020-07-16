@@ -5,7 +5,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 {
-    internal class MatchCountsBuilder
+    public class MatchCountsBuilder
     {
         private readonly LociInfo<int?> matchCounts;
 
@@ -25,6 +25,17 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 
             return this;
         }
+
+        public MatchCountsBuilder ZeroMismatch(ISet<Locus> allowedLoci)
+        {
+            foreach (var locus in allowedLoci)
+            {
+                matchCounts.SetLocus(locus, 2);
+            }
+
+            return this;
+        }
+
         public MatchCountsBuilder ZeroOutOfTen()
         {
             var loci = EnumStringValues.EnumExtensions.EnumerateValues<Locus>().Except(new List<Locus> {Locus.Dpb1});
