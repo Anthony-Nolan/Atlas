@@ -19,8 +19,7 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
             PhenotypeInfo<string> patientGenotype,
             PhenotypeInfo<string> donorGenotype,
             string hlaNomenclatureVersion,
-            ISet<Locus> allowedPatientLoci,
-            ISet<Locus> allowedDonorLoci);
+            ISet<Locus> allowedLoci);
     }
 
     internal class MatchCalculationService : IMatchCalculationService
@@ -40,17 +39,14 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
             PhenotypeInfo<string> patientGenotype,
             PhenotypeInfo<string> donorGenotype,
             string hlaNomenclatureVersion,
-            ISet<Locus> allowedPatientLoci,
-            ISet<Locus> allowedDonorLoci)
+            ISet<Locus> allowedLoci)
         {
             const TargetHlaCategory matchingResolution = TargetHlaCategory.PGroup;
 
             var patientGenotypeAsPGroups =
-                await locusHlaConverter.ConvertHla(patientGenotype, matchingResolution, hlaNomenclatureVersion, allowedPatientLoci);
+                await locusHlaConverter.ConvertHla(patientGenotype, matchingResolution, hlaNomenclatureVersion, allowedLoci);
             var donorGenotypeAsPGroups =
-                await locusHlaConverter.ConvertHla(donorGenotype, matchingResolution, hlaNomenclatureVersion, allowedDonorLoci);
-
-            var allowedLoci = LocusSettings.MatchPredictionLoci.ToList();
+                await locusHlaConverter.ConvertHla(donorGenotype, matchingResolution, hlaNomenclatureVersion, allowedLoci);
 
             var matchCounts = new LociInfo<int?>().Map((locus, matchCount) =>
                 allowedLoci.Contains(locus)

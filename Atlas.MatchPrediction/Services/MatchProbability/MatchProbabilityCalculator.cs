@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Models;
-using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Models;
 
@@ -22,8 +22,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         MatchProbabilityResponse CalculateMatchProbability(
             SubjectCalculatorInputs patientInfo,
             SubjectCalculatorInputs donorInfo,
-            ISet<GenotypeMatchDetails> patientDonorMatchDetails
-        );
+            ISet<GenotypeMatchDetails> patientDonorMatchDetails,
+            ISet<Locus> allowedLoci);
     }
 
     internal class MatchProbabilityCalculator : IMatchProbabilityCalculator
@@ -31,8 +31,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         public MatchProbabilityResponse CalculateMatchProbability(
             SubjectCalculatorInputs patientInfo,
             SubjectCalculatorInputs donorInfo,
-            ISet<GenotypeMatchDetails> patientDonorMatchDetails
-        )
+            ISet<GenotypeMatchDetails> patientDonorMatchDetails,
+            ISet<Locus> allowedLoci)
         {
             var patientLikelihoods = patientInfo.GenotypeLikelihoods;
             var donorLikelihoods = donorInfo.GenotypeLikelihoods;
@@ -42,7 +42,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             if (sumOfPatientLikelihoods == 0 || sumOfDonorLikelihoods == 0)
             {
-                return new MatchProbabilityResponse(Probability.Zero());
+                return new MatchProbabilityResponse(Probability.Zero(), allowedLoci);
             }
 
             decimal CalculateProbability(Func<ISet<GenotypeMatchDetails>, IEnumerable<GenotypeMatchDetails>> filterMatches)
@@ -52,8 +52,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
                 return sumOfMatchingLikelihoods / (sumOfPatientLikelihoods * sumOfDonorLikelihoods);
             }
-
-            var allowedLoci = LocusSettings.MatchPredictionLoci.ToList();
 
             var probabilityPerLocus = new LociInfo<decimal?>().Map((locus, info) =>
             {
