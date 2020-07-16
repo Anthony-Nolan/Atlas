@@ -28,7 +28,7 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
         private readonly ILocusMatchCalculator locusMatchCalculator;
 
         public MatchCalculationService(
-            ILocusHlaConverter locusHlaConverter, 
+            ILocusHlaConverter locusHlaConverter,
             ILocusMatchCalculator locusMatchCalculator)
         {
             this.locusHlaConverter = locusHlaConverter;
@@ -55,11 +55,7 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
                         donorGenotypeAsPGroups.GetLocus(locus).Map(x => x as IEnumerable<string>))
                     : (int?) null);
 
-            return new GenotypeMatchDetails
-            {
-                MatchCounts = matchCounts,
-                PatientGenotype = patientGenotype,
-                DonorGenotype = donorGenotype,
+            return new GenotypeMatchDetails {MatchCounts = matchCounts, PatientGenotype = patientGenotype, DonorGenotype = donorGenotype,
                 AvailableLoci = allowedLoci
             };
         }
