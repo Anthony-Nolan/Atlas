@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -36,7 +37,7 @@ namespace Atlas.Common.Caching
         /// We want to be able to return a bool indicating whether or not a collection is being populated, without
         /// waiting if it is.
         /// </summary>
-        private static readonly HashSet<string> CollectionCacheKeysBeingPopulatedInBackground = new HashSet<string>();
+        private static readonly ConcurrentDictionary<string, bool> CollectionCacheKeysBeingPopulatedInBackground = new ConcurrentDictionary<string, bool>();
 
         /// <returns>
         /// Returns <c>true</c> if the key is in the process of being cached.
@@ -44,7 +45,7 @@ namespace Atlas.Common.Caching
         /// </returns>
         private static bool CollectionIsCurrentlyBeingCached(string collectionCacheKey)
         {
-            return CollectionCacheKeysBeingPopulatedInBackground.Contains(collectionCacheKey);
+            return CollectionCacheKeysBeingPopulatedInBackground.TryGetValue(collectionCacheKey, out _);
         }
 
         /// <summary>
@@ -170,7 +171,7 @@ namespace Atlas.Common.Caching
             bool rethrowErrors = false
         ) where TCollection : ICollection // See typeparam comment.
         {
-            CollectionCacheKeysBeingPopulatedInBackground.Add(collectionCacheKey);
+            CollectionCacheKeysBeingPopulatedInBackground.TryAdd(collectionCacheKey, true);
             try
             {
                 return await cache.GetOrAddAsync(collectionCacheKey, fetchFullCollection);
@@ -189,7 +190,7 @@ namespace Atlas.Common.Caching
             }
             finally
             {
-                CollectionCacheKeysBeingPopulatedInBackground.Remove(collectionCacheKey);
+                CollectionCacheKeysBeingPopulatedInBackground.Remove(collectionCacheKey, out _);
             }
         }
     }
