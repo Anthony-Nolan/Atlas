@@ -66,9 +66,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Percentage.Should().Be(60);
-            matchDetails.OneMismatchProbability.Percentage.Should().Be(35);
-            matchDetails.TwoMismatchProbability.Percentage.Should().Be(4);
+            matchDetails.ZeroMismatchProbability.Percentage.Should().Be(75);
+            matchDetails.OneMismatchProbability.Percentage.Should().Be(22);
+            matchDetails.TwoMismatchProbability.Percentage.Should().Be(3);
         }
 
         [Test]
