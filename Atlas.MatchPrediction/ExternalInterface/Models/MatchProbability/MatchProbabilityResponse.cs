@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Models;
 using Atlas.MatchPrediction.Config;
@@ -20,13 +22,13 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         /// Used to initialise a response when all probabilities are known upfront.
         /// This can be useful for e.g. Shortcuts when a mismatch is guaranteed.
         /// </summary>
-        public MatchProbabilityResponse(Probability sharedProbability)
+        public MatchProbabilityResponse(Probability sharedProbability, ISet<Locus> allowedLoci)
         {
             ZeroMismatchProbability = sharedProbability;
             OneMismatchProbability = sharedProbability;
             TwoMismatchProbability = sharedProbability;
             ZeroMismatchProbabilityPerLocus = new LociInfo<Probability>(sharedProbability).Map((l, v) =>
-                LocusSettings.MatchPredictionLoci.ToList().Contains(l) ? v : null
+                allowedLoci.Contains(l) ? v : null
             );
         }
 
