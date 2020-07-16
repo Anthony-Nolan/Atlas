@@ -20,10 +20,11 @@ locals {
     "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"              = "1"
     "WEBSITE_RUN_FROM_PACKAGE"                               = var.WEBSITE_RUN_FROM_PACKAGE
   }
+  donor_management_function_app_name = "${var.general.environment}-ATLAS-MATCHING-DONOR-MANAGEMENT-FUNCTION"
 }
 
 resource "azurerm_function_app" "atlas_matching_algorithm_donor_management_function" {
-  name                      = "${var.general.environment}-ATLAS-MATCHING-DONOR-MANAGEMENT-FUNCTION"
+  name                      = local.donor_management_function_app_name
   resource_group_name       = var.app_service_plan.resource_group_name
   location                  = var.general.location
   app_service_plan_id       = var.app_service_plan.id
