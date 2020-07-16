@@ -46,8 +46,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        // TODO: ATLAS-400: Update logged time when this improves
-        [IgnoreExceptOnCiPerfTest("Ran in ~6s")]
+        [IgnoreExceptOnCiPerfTest("Ran in ~4.4s")]
         public async Task MatchPrediction_WithSmallAmbiguityAtEachDonorLocus_CalculatesProbabilityCorrectly()
         {
             var donorHla = new PhenotypeInfoBuilder<string>()
@@ -74,7 +73,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         [Test]
         // TODO: ATLAS-400: This should be runnable
-        [Ignore("Too slow to complete yet.")]
+        // [Ignore("Too slow to complete yet.")]
         public async Task MatchPrediction_WithDonorFullyTyped_AtTruncatedTwoFieldAlleleResolution_CalculatesProbabilityCorrectly()
         {
             var donorHla = new PhenotypeInfoBuilder<string>()
