@@ -9,6 +9,7 @@ namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
         {
             RuleFor(x => x.SearchType).NotNull().IsInEnum();
             RuleFor(x => x.MatchCriteria).NotNull().SetValidator(new MismatchCriteriaValidator());
+            RuleFor(x => x.ScoringCriteria).NotNull().SetValidator(new ScoringCriteriaValidator());
             RuleFor(x => x.SearchHlaData).NotNull().SetValidator(new PhenotypeHlaNamesValidator());
 
             RuleFor(x => x.SearchHlaData.C.Position1).NotNull().When(x => x.MatchCriteria?.LocusMismatchCounts.C != null);
@@ -16,9 +17,6 @@ namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
 
             RuleFor(x => x.SearchHlaData.Dqb1.Position1).NotNull().When(x => x.MatchCriteria?.LocusMismatchCounts.Dqb1 != null);
             RuleFor(x => x.SearchHlaData.Dqb1.Position2).NotNull().When(x => x.MatchCriteria?.LocusMismatchCounts.Dqb1 != null);
-
-            RuleFor(x => x.LociToScore).NotNull();
-            RuleFor(x => x.LociToExcludeFromAggregateScore).NotNull();
         }
     }
 }

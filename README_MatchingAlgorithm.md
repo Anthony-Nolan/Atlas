@@ -132,10 +132,12 @@ A search request requires the following criteria:
   - Allows specification of an allowed number of mismatches, both overall and per locus.
   - If a donor exceeds either the total mismatch count, or any per locus count, it will not be returned
   - Some loci (Dqb1, C) are optional - if omitted, matching will not be run against these loci
+- Scoring Criteria
+  - Allows specification of which loci should be scored, if any.
+  - Allows specification of which loci should excluded from aggregation of score results, if any.
 - Search Hla Data
   - The HLA data to search against. (Usually the hla of a patient - but occasionally searches will be run against modified HLA)
-  - All known HLA should be provided, even if that locus is omitted from matching.
-    - This is because scoring will still be run against that locus, even if mismatches at it are not considered when matching donors
+  - All known HLA should be provided, even if that locus is omitted from matching, as it may be used in scoring (where enabled).
 
 The search process can be broken down as follows:
 

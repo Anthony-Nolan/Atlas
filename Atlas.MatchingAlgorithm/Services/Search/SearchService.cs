@@ -66,8 +66,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     {
                         PatientHla = matchingRequest.SearchHlaData,
                         MatchResults = matches,
-                        LociToScore = matchingRequest.LociToScore.ToList(),
-                        LociToExcludeFromAggregateScoring = matchingRequest.LociToExcludeFromAggregateScore.ToList()
+                        ScoringCriteria = matchingRequest.ScoringCriteria
                     };
                     return await donorScoringService.ScoreMatchesAgainstPatientHla(request);
                 },

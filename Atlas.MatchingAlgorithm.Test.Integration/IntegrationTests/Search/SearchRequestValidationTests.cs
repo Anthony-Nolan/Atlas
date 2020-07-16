@@ -51,7 +51,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             {
                 MatchCriteria = matchingRequest.MatchCriteria,
                 SearchHlaData = matchingRequest.SearchHlaData,
-                LociToExcludeFromAggregateScore = matchingRequest.LociToExcludeFromAggregateScore
+                ScoringCriteria = matchingRequest.ScoringCriteria
             };
 
             Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(searchRequestWithoutSearchType));
@@ -146,7 +146,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public void DispatchSearch_LociToScoreIsNull_ThrowsValidationError()
         {
-            matchingRequest.LociToScore = null;
+            matchingRequest.ScoringCriteria.LociToScore = null;
 
             Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
@@ -154,7 +154,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public void DispatchSearch_LociToScoreContainsAlgorithmLocus_DoesNotThrowValidationError()
         {
-            matchingRequest.LociToScore = new List<Locus> { Locus.Dpb1 };
+            matchingRequest.ScoringCriteria.LociToScore = new List<Locus> { Locus.Dpb1 };
 
             Assert.DoesNotThrowAsync(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
@@ -162,7 +162,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public void DispatchSearch_LociToExcludeFromAggregateScoreIsNull_ThrowsValidationError()
         {
-            matchingRequest.LociToExcludeFromAggregateScore = null;
+            matchingRequest.ScoringCriteria.LociToExcludeFromAggregateScore = null;
 
             Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
@@ -170,7 +170,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public void DispatchSearch_LociToExcludeFromAggregateScoreContainsAlgorithmLocus_DoesNotThrowValidationError()
         {
-            matchingRequest.LociToExcludeFromAggregateScore = new List<Locus> { Locus.Dpb1 };
+            matchingRequest.ScoringCriteria.LociToExcludeFromAggregateScore = new List<Locus> { Locus.Dpb1 };
 
             Assert.DoesNotThrowAsync(async () => await searchDispatcher.DispatchSearch(matchingRequest));
         }
