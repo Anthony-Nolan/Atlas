@@ -61,4 +61,6 @@ output "sql-server-admin-login-password" {
   value = var.DATABASE_SERVER_ADMIN_LOGIN_PASSWORD
 }
 
-
+output "function-app-name" {
+  value = local.atlas_function_app_name
+}
