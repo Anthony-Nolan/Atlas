@@ -13,11 +13,11 @@ namespace Atlas.MatchingAlgorithm.Common.Config
         /// <summary>
         /// Loci that are only considered during matching.
         /// </summary>
-        public static IEnumerable<Locus> MatchingOnlyLoci => EnumerateValues<Locus>().Except(new[] {Locus.Dpb1});
+        public static HashSet<Locus> MatchingOnlyLoci => EnumerateValues<Locus>().Except(new[] {Locus.Dpb1}).ToHashSet();
 
         /// <summary>
         /// Only loci that are possible to match in Phase I of Matching.
         /// </summary>
-        public static IEnumerable<Locus> LociPossibleToMatchInMatchingPhaseOne => new[] { Locus.A, Locus.B, Locus.Drb1 };
+        public static HashSet<Locus> LociPossibleToMatchInMatchingPhaseOne => new[] { Locus.A, Locus.B, Locus.Drb1 }.ToHashSet();
     }
 }

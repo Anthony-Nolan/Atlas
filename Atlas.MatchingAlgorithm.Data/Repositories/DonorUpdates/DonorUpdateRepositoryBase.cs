@@ -3,11 +3,13 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Services;
+using Dapper;
 using EnumStringValues;
 using Microsoft.Data.SqlClient;
 
@@ -71,15 +73,69 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
         public async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorInfos)
         {
-            donorInfos = donorInfos.ToList();
-            await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => AddMatchingGroupsForExistingDonorBatchAtLocus(donorInfos, l)));
+            var donorsWithUpdatesAtEveryLocus = donorInfos
+                .Select(info => new DonorWithChangedMatchingLoci(info, LocusSettings.MatchingOnlyLoci))
+                .ToList();
+
+            await UpsertMatchingPGroupsAtSpecifiedLoci(donorsWithUpdatesAtEveryLocus, true);
         }
 
-        private async Task AddMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
+        protected class DonorWithChangedMatchingLoci
+        {
+            public DonorInfoWithExpandedHla DonorInfo { get; }
+            public HashSet<Locus> ChangedMatchingLoci { get; }
+
+            public DonorWithChangedMatchingLoci(DonorInfoWithExpandedHla donorInfo, HashSet<Locus> changedMatchingLoci)
+            {
+                DonorInfo = donorInfo;
+                ChangedMatchingLoci = changedMatchingLoci;
+            }
+        }
+
+        protected async Task UpsertMatchingPGroupsAtSpecifiedLoci(List<DonorWithChangedMatchingLoci> donors, bool isKnownToBeCreate)
+        {
+            var perLocusUpsertTasks = new List<Task>();
+            foreach (var locus in LocusSettings.MatchingOnlyLoci)
+            {
+                var donorsWhichChangedAtThisLocus = donors
+                    .Where(d => d.ChangedMatchingLoci.Contains(locus))
+                    .Select(d => d.DonorInfo)
+                    .ToList();
+
+                if (donorsWhichChangedAtThisLocus.Any())
+                {
+                    var task = UpsertMatchingPGroupsAtLocus(donorsWhichChangedAtThisLocus, locus, isKnownToBeCreate);
+                    perLocusUpsertTasks.Add(task);
+                }
+            }
+
+            await Task.WhenAll(perLocusUpsertTasks);
+        }
+
+        private async Task UpsertMatchingPGroupsAtLocus(List<DonorInfoWithExpandedHla> donors, Locus locus, bool isKnownToBeCreate)
         {
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
             var dataTable = BuildPerLocusPGroupDataTable(donors, locus);
-            await BulkInsertDataTable(matchingTableName, dataTable, donorPGroupDataTableColumnNames);
+
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            {
+                conn.Open();
+                var transaction = conn.BeginTransaction();
+
+                if (!isKnownToBeCreate)
+                {
+                    var deleteSql = $@"
+                    DELETE FROM {matchingTableName}
+                    WHERE DonorId IN ({donors.Select(d => d.DonorId.ToString()).StringJoin(",")})
+                    ";
+                    await conn.ExecuteAsync(deleteSql, null, transaction, commandTimeout: 600);
+                }
+
+                await BulkInsertDataTable(matchingTableName, dataTable, donorPGroupDataTableColumnNames, 14400);
+
+                transaction.Commit();
+                conn.Close();
+            }
         }
 
         private DataTable BuildDonorInsertDataTable(IEnumerable<DonorInfo> donorInfos)
@@ -155,14 +211,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         private async Task BulkInsertDataTable(
             string tableName,
             DataTable dataTable,
-            IEnumerable<string> columnNames = null)
+            IEnumerable<string> columnNames = null,
+            int timeout = 3600)
         {
             columnNames ??= new List<string>();
             await using (var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 connection.Open();
                 var transaction = connection.BeginTransaction();
-                using (var sqlBulk = BuildSqlBulkCopy(tableName, connection, transaction))
+                using (var sqlBulk = BuildSqlBulkCopy(tableName, connection, transaction, timeout))
                 {
                     foreach (var columnName in columnNames)
                     {
