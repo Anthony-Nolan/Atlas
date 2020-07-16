@@ -21,8 +21,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 {
     public interface IDonorScoringService
     {
-        Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstPatientHla(ScoringRequest<IEnumerable<MatchResult>> request);
-        Task<ScoreResult> ScoreDonorHlaAgainstPatientHla(ScoringRequest<PhenotypeInfo<string>> request);
+        Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstPatientHla(MatchResultsScoringRequest request);
+        Task<ScoreResult> ScoreDonorHlaAgainstPatientHla(DonorHlaScoringRequest request);
     }
 
     public class DonorScoringService : IDonorScoringService
@@ -51,17 +51,17 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             this.scoreResultAggregator = scoreResultAggregator;
         }
 
-        public async Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstPatientHla(ScoringRequest<IEnumerable<MatchResult>> request)
+        public async Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstPatientHla(MatchResultsScoringRequest request)
         {
             if (request.LociToScore.IsNullOrEmpty())
             {
-                return request.DonorData.Select(m => new MatchAndScoreResult { MatchResult = m });
+                return request.MatchResults.Select(m => new MatchAndScoreResult { MatchResult = m });
             }
 
             var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla, request.LociToScore);
 
             var matchAndScoreResults = new List<MatchAndScoreResult>();
-            foreach (var matchResult in request.DonorData)
+            foreach (var matchResult in request.MatchResults)
             {
                 matchAndScoreResults.Add(new MatchAndScoreResult
                 {
@@ -73,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             return rankingService.RankSearchResults(matchAndScoreResults);
         }
 
-        public async Task<ScoreResult> ScoreDonorHlaAgainstPatientHla(ScoringRequest<PhenotypeInfo<string>> request)
+        public async Task<ScoreResult> ScoreDonorHlaAgainstPatientHla(DonorHlaScoringRequest request)
         {
             if (request.LociToScore.IsNullOrEmpty())
             {
@@ -81,12 +81,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             }
 
             var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla, request.LociToScore);
-            return await ScoreDonorHlaAgainstPatientMetadata(request.DonorData, request, patientScoringMetadata);
+            return await ScoreDonorHlaAgainstPatientMetadata(request.DonorHla, request, patientScoringMetadata);
         }
 
-        private async Task<ScoreResult> ScoreDonorHlaAgainstPatientMetadata<T>(
+        private async Task<ScoreResult> ScoreDonorHlaAgainstPatientMetadata(
             PhenotypeInfo<string> donorHla,
-            ScoringRequest<T> request,
+            ScoringRequest request,
             PhenotypeInfo<IHlaScoringMetadata> patientScoringMetadata)
         {
             var donorScoringMetadata = await GetHlaScoringMetadata(donorHla, request.LociToScore);
@@ -171,5 +171,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             public IReadOnlyCollection<Locus> LociToScore { get; set; }
             public IReadOnlyCollection<Locus> LociToExcludeFromAggregateScoring { get; set; }
         }
+    }
+
+    public class MatchResultsScoringRequest : ScoringRequest
+    {
+        public IEnumerable<MatchResult> MatchResults { get; set; }
     }
 }

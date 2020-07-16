@@ -33,7 +33,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             scenarioContext.Set(searchRequest.WithSearchType(donorType));
         }
 
-        [Given(@"scoring includes (.*)")]
+        [Given(@"scoring is enabled at (.*)")]
         public void GivenScoringIsAppliedToLoci(string locusString)
         {
             var loci = LocusParser.ParseLoci(locusString).ToList();
