@@ -8,7 +8,7 @@ using NUnit.Framework;
 namespace Atlas.Common.Test.Matching.Services
 {
     [TestFixture]
-    public class AlleleGroupsMatchingCountTests
+    public class LocusMatchCalculatorTests
     {
         private ILocusMatchCalculator locusMatchCalculator;
 
@@ -51,7 +51,7 @@ namespace Atlas.Common.Test.Matching.Services
         }
 
         [Test]
-        public void CalculateMatchesForDonors_WhenOnlyDonorPositionOneNull_ThrowsException()
+        public void MatchCount_WhenOnlyDonorPositionOneNull_ThrowsException()
         {
             var donorPGroups = new List<string> {ArbitraryPGroup};
             var donorHla = new LocusInfo<IEnumerable<string>>(null, donorPGroups);
@@ -59,9 +59,8 @@ namespace Atlas.Common.Test.Matching.Services
             Assert.Throws<ArgumentException>(() => locusMatchCalculator.MatchCount(defaultHla, donorHla));
         }
 
-
         [Test]
-        public void CalculateMatchesForDonors_WhenOnlyDonorPositionTwoNull_ThrowsException()
+        public void MatchCount_WhenOnlyDonorPositionTwoNull_ThrowsException()
         {
             var donorPGroups = new List<string> {ArbitraryPGroup};
             var donorHla = new LocusInfo<IEnumerable<string>>(donorPGroups, null);

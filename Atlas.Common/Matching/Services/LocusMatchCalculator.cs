@@ -8,7 +8,7 @@ namespace Atlas.Common.Matching.Services
     public interface ILocusMatchCalculator
     {
         /// <summary>
-        /// Compares two different LocusInfo with  group of allele representations at each position for any possible matches.
+        /// Compares two different LocusInfo with a group of allele representations at each position for any possible matches.
         /// PGroups are the recommended typing to use here to guarantee a match.
         /// Other typings can be used, but the match count might not be correct if other typings are used, you should be certain you know what your doing if doing this.
         /// </summary>
