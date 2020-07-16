@@ -1,6 +1,7 @@
 output "function_app" {
   value = {
     hostname = azurerm_function_app.atlas_donor_import_function.default_hostname
+    app_name = "${var.general.environment}-ATLAS-DONOR-IMPORT-FUNCTION"
   }
 }
 
