@@ -119,7 +119,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             );
         }
 
-        private static ISet<Locus> GetAllowedLoci(PhenotypeInfo<string> hla)
+        private static ISet<Locus> GetAllowedLoci(MatchProbabilityInput matchProbabilityInput)
         {
             return matchProbabilityInput.PatientHla.Reduce((locus, value, accumulator) =>
             {

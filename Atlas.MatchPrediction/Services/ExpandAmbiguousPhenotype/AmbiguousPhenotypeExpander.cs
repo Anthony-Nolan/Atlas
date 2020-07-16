@@ -16,7 +16,8 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
     {
         public ISet<PhenotypeInfo<string>> ExpandPhenotype(PhenotypeInfo<IReadOnlyCollection<string>> allelesPerLocus)
         {
-            var genotypes = (from a1 in allelesPerLocus.A.Position1
+            var genotypes = (
+                from a1 in allelesPerLocus.A.Position1
                 from a2 in allelesPerLocus.A.Position2
                 from b1 in allelesPerLocus.B.Position1
                 from b2 in allelesPerLocus.B.Position2
