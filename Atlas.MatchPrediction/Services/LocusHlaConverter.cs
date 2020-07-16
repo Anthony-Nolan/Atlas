@@ -16,7 +16,14 @@ namespace Atlas.MatchPrediction.Services
             PhenotypeInfo<string> hlaInfo,
             TargetHlaCategory targetHlaCategory,
             string hlaNomenclatureVersion,
-            ISet<Locus> allowedLoci);
+            ISet<Locus> allowedLoci
+        );
+
+        public Task<PhenotypeInfo<string>> ConvertGroupsToPGroups(
+            PhenotypeInfo<string> hlaAsGGroups,
+            string hlaNomenclatureVersion,
+            ISet<Locus> allowedLoci
+        );
     }
 
     internal class LocusHlaConverter : ILocusHlaConverter
@@ -36,8 +43,21 @@ namespace Atlas.MatchPrediction.Services
         {
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
 
-            return await hlaInfo.MapAsync(async (locus, position, hla) =>
+            return await hlaInfo.MapAsync(async (locus, _, hla) =>
                 allowedLoci.Contains(locus) ? await hlaMetadataDictionary.ConvertHla(locus, hla, targetHlaCategory) : null
+            );
+        }
+
+        /// <inheritdoc />
+        public async Task<PhenotypeInfo<string>> ConvertGroupsToPGroups(
+            PhenotypeInfo<string> hlaAsGGroups,
+            string hlaNomenclatureVersion,
+            ISet<Locus> allowedLoci)
+        {
+            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
+
+            return await hlaAsGGroups.MapAsync(async (locus, _, gGroup) =>
+                allowedLoci.Contains(locus) ? await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, gGroup) : null
             );
         }
     }

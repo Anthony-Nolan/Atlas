@@ -25,14 +25,14 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
     internal class MatchCalculationService : IMatchCalculationService
     {
         private readonly ILocusHlaConverter locusHlaConverter;
-        private readonly ILocusMatchCalculator locusMatchCalculator;
+        private readonly IStringBasedLocusMatchCalculator stringBasedLocusMatchCalculator;
 
         public MatchCalculationService(
             ILocusHlaConverter locusHlaConverter,
-            ILocusMatchCalculator locusMatchCalculator)
+            IStringBasedLocusMatchCalculator stringBasedLocusMatchCalculator)
         {
             this.locusHlaConverter = locusHlaConverter;
-            this.locusMatchCalculator = locusMatchCalculator;
+            this.stringBasedLocusMatchCalculator = stringBasedLocusMatchCalculator;
         }
 
         public async Task<GenotypeMatchDetails> MatchAtPGroupLevel(
@@ -43,17 +43,18 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
         {
             const TargetHlaCategory matchingResolution = TargetHlaCategory.PGroup;
 
-            var patientGenotypeAsPGroups =
-                await locusHlaConverter.ConvertHla(patientGenotype, matchingResolution, hlaNomenclatureVersion, allowedLoci);
-            var donorGenotypeAsPGroups =
-                await locusHlaConverter.ConvertHla(donorGenotype, matchingResolution, hlaNomenclatureVersion, allowedLoci);
+            var patientGenotypeAsSinglePGroups =
+                await locusHlaConverter.ConvertGroupsToPGroups(patientGenotype, hlaNomenclatureVersion, allowedLoci);
+
+            var donorGenotypeAsSinglePGroups =
+                await locusHlaConverter.ConvertGroupsToPGroups(donorGenotype, hlaNomenclatureVersion, allowedLoci);
 
             var matchCounts = new LociInfo<int?>().Map((locus, matchCount) =>
-                allowedLoci.Contains(locus)
-                    ? locusMatchCalculator.MatchCount(
-                        patientGenotypeAsPGroups.GetLocus(locus).Map(x => x as IEnumerable<string>),
-                        donorGenotypeAsPGroups.GetLocus(locus).Map(x => x as IEnumerable<string>))
-                    : (int?) null);
+            {
+                var patientHla = patientGenotypeAsSinglePGroups.GetLocus(locus);
+                var donorHla = donorGenotypeAsSinglePGroups.GetLocus(locus);
+                return allowedLoci.Contains(locus) ? stringBasedLocusMatchCalculator.MatchCount(patientHla, donorHla) : (int?) null;
+            });
 
             return new GenotypeMatchDetails {MatchCounts = matchCounts, PatientGenotype = patientGenotype, DonorGenotype = donorGenotype,
                 AvailableLoci = allowedLoci
