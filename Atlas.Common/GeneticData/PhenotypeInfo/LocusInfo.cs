@@ -91,7 +91,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             return new List<T> {Position1, Position2};
         }
 
-        internal bool Position1And2NotNull()
+        public bool Position1And2NotNull()
         {
             return Position1 != null && Position2 != null;
         }
