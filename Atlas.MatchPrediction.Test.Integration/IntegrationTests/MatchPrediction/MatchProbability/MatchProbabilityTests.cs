@@ -28,7 +28,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var expectedProbabilityPerLocus = new LociInfo<decimal?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0};
 
-            var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.ZeroMismatchProbability.Decimal.Should().Be(0m);
             matchDetails.OneMismatchProbability.Decimal.Should().Be(0m);
@@ -51,7 +51,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var expectedProbabilityPerLocus = new LociInfo<decimal?> {A = 1, B = 1, C = 1, Dpb1 = null, Dqb1 = 1, Drb1 = 1};
 
-            var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.ZeroMismatchProbability.Decimal.Should().Be(1m);
             matchDetails.OneMismatchProbability.Decimal.Should().Be(0m);
@@ -89,7 +89,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var expectedProbabilityPerLocus = new LociInfo<decimal?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0};
 
-            var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.ZeroMismatchProbability.Decimal.Should().Be(0m);
             matchDetails.OneMismatchProbability.Decimal.Should().Be(0m);
@@ -154,7 +154,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 Drb1 = 0.8888888888888888888888888889m
             };
 
-            var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.ZeroMismatchProbability.Decimal.Should().Be(0.008230452674897119341563786m);
             matchDetails.OneMismatchProbability.Decimal.Should().Be(0.1687242798353909465020576132m);
@@ -245,7 +245,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .With(i => i.DonorHla, donorHla)
                 .Build();
 
-            var matchProbability = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchProbability = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
             matchProbability.ZeroMismatchProbability.Percentage.Should().Be(22);
         }

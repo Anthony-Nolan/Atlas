@@ -29,8 +29,7 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="IntegrationTests\MatchPrediction\IndividualSteps" />
-  </ItemGroup>
-
+    <ItemGroup>
+        <EmbeddedResource Include="Resources\HaplotypeFrequencySets\large.csv" />
+    </ItemGroup>
 </Project>

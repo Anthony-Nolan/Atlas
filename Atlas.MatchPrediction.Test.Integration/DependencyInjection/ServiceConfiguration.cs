@@ -73,7 +73,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
         }
 
         private static Func<IServiceProvider, ApplicationInsightsSettings> ApplicationInsightsSettingsReader =>
-            _ => new ApplicationInsightsSettings {LogLevel = "Info"};
+            _ => new ApplicationInsightsSettings {LogLevel = "Verbose"};
         
         private static Func<IServiceProvider, MacDictionarySettings> MacDictionarySettingsReader => 
         _ => new MacDictionarySettings();
