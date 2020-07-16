@@ -1,5 +1,9 @@
+locals {
+  atlas_match_prediction_function_name = "${var.general.environment}-ATLAS-MATCH-PREDICTION-FUNCTION"
+}
+
 resource "azurerm_function_app" "atlas_match_prediction_function" {
-  name                      = "${var.general.environment}-ATLAS-MATCH-PREDICTION-FUNCTION"
+  name                      = local.atlas_match_prediction_function_name
   resource_group_name       = var.app_service_plan.resource_group_name
   location                  = var.general.location
   app_service_plan_id       = var.app_service_plan.id

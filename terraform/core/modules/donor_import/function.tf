@@ -1,5 +1,9 @@
+locals {
+  donor_import_function_name = "${var.general.environment}-ATLAS-DONOR-IMPORT-FUNCTION"
+}
+
 resource "azurerm_function_app" "atlas_donor_import_function" {
-  name                      = "${var.general.environment}-ATLAS-DONOR-IMPORT-FUNCTION"
+  name                      = local.donor_import_function_name
   resource_group_name       = var.app_service_plan.resource_group_name
   location                  = var.general.location
   app_service_plan_id       = var.app_service_plan.id
