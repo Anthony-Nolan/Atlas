@@ -7,7 +7,6 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Maths;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
-using Atlas.MatchPrediction.Config;
 
 namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 {
@@ -75,7 +74,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             ).ToList();
 
             var allowedDiplotypes = Combinations.AllPairs(allowedHaplotypes.ToArray(), true).ToList();
-            var filteredDiplotypes = FilterDiplotypes(allowedDiplotypes, gGroupsPerPosition);
+            var filteredDiplotypes = FilterDiplotypes(allowedDiplotypes, gGroupsPerPosition, allowedLoci);
 
             logger.SendTrace($"Filtered expanded genotypes: {filteredDiplotypes.Count}");
             return filteredDiplotypes.Select(dp => new PhenotypeInfo<string>(dp.Item1, dp.Item2)).ToHashSet();
@@ -86,10 +85,11 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         /// </summary>
         /// <param name="diplotypes">Source of diplotypes to filter.</param>
         /// <param name="gGroupsPerPosition">GGroups present in the phenotype being expanded.</param>
+        /// <param name="allowedLoci">List of loci that are being considered.</param>
         private static List<Tuple<LociInfo<string>, LociInfo<string>>> FilterDiplotypes(
             IReadOnlyCollection<Tuple<LociInfo<string>, LociInfo<string>>> diplotypes,
-            PhenotypeInfo<IReadOnlyCollection<string>> gGroupsPerPosition
-        )
+            PhenotypeInfo<IReadOnlyCollection<string>> gGroupsPerPosition,
+            ISet<Locus> allowedLoci)
         {
             // ReSharper disable once UseDeconstructionOnParameter
             return diplotypes.Where(diplotype =>
@@ -103,7 +103,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 
                     // If MPA does not support locus - e.g. DPB1: the haplotypes will have no data at such loci
                     // Distinct from the "allowedLoci", as there loci can be excluded even if supported
-                    if (!LocusSettings.MatchPredictionLoci.Contains(l))
+                    if (!allowedLoci.Contains(l))
                     {
                         return false;
                     }
