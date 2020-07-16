@@ -95,6 +95,11 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         {
             return Position1 != null && Position2 != null;
         }
+        
+        internal bool Position1And2Null()
+        {
+            return Position1 == null && Position2 == null;
+        }
 
         internal bool SinglePositionNull()
         {
