@@ -100,6 +100,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
             return this;
         }
 
+        public SearchRequestFromHlasBuilder WithLociToScore(IReadOnlyCollection<Locus> loci)
+        {
+            matchingRequestBuilder.WithLociToScore(loci);
+            return this;
+        }
+
         public SearchRequestFromHlasBuilder WithDpb1ExcludedFromScoringAggregation()
         {
             matchingRequestBuilder.WithLociExcludedFromScoringAggregates(new List<Locus> {Locus.Dpb1});

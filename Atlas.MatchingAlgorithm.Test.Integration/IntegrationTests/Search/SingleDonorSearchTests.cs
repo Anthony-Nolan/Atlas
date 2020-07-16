@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
@@ -78,7 +79,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
                 var donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForActiveHlaNomenclatureVersion();
-                var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo {HlaNames = donorHlas}).Result.MatchingHla;
+                var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = donorHlas }).Result.MatchingHla;
                 var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
                 var donorRepository = repositoryFactory.GetDonorUpdateRepository();
 
@@ -89,7 +90,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                     HlaNames = donorHlas,
                     MatchingHla = matchingHlaPhenotype
                 };
-                donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor}).Wait();
+                donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }).Wait();
             });
         }
 
@@ -166,41 +167,41 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_LociExcludedFromMatchingButIncludedInScoringHaveMatchCounts()
+        public async Task Search_SixOutOfSix_LociExcludedFromMatchingButIncludedInScoring_ReturnsMatchCounts()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithAllLociScored()
+                .WithLociToScore(new List<Locus> { Locus.C, Locus.Dqb1 })
                 .Build();
 
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
-            // C & DQB1 should both be populated from scoring data in a 6/6 only search
             result?.SearchResultAtLocusC.MatchCount.Should().Be(2);
             result?.SearchResultAtLocusDqb1.MatchCount.Should().Be(2);
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_LociExcludedFromMatchingButIncludedInScoringAreInTotalMatchCount()
+        public async Task Search_SixOutOfSix_LociExcludedFromMatchingButIncludedInScoring_TotalMatchCountOnlyConsidersMatchingLoci()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithAllLociScored()
+                .WithLociToScore(new List<Locus> { Locus.C, Locus.Dqb1 })
                 .Build();
 
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
+            // 3 match loci (A, B, DRB1) x 2
             result?.TotalMatchCount.Should().Be(6);
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_TypedLociExcludedFromMatchingButIncludedInScoringHaveIsLocusTypedAsTrue()
+        public async Task Search_SixOutOfSix_TypedLociExcludedFromMatchingButIncludedInScoring_ReturnsIsLocusTypedAsTrue()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithAllLociScored()
+                .WithLociToScore(new List<Locus> { Locus.C })
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -211,11 +212,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_TypedLociIncludedInMatchingAndScoringHaveIsLocusTypedAsTrue()
+        public async Task Search_SixOutOfSix_TypedLociIncludedInBothMatchingAndScoring_ReturnsIsLocusTypedAsTrue()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithAllLociScored()
+                .WithLociToScore(new List<Locus> { Locus.A })
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -226,11 +227,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_UntypedLociExcludedFromMatchingButIncludedInScoringHaveIsLocusTypedAsFalse()
+        public async Task Search_SixOutOfSix_UntypedLociExcludedFromMatchingButIncludedInScoring_ReturnsIsLocusTypedAsFalse()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithAllLociScored()
+                .WithLociToScore(new List<Locus> { Locus.Dqb1 })
                 .Build();
 
             var results = await searchService.Search(searchRequest);
