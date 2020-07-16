@@ -428,7 +428,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         public async Task ApplyDonorUpdatesToDatabase_ImportingFurtherSingleBatchOperationBatch_WhichExplicitlyExercisesAllPaths_CompletesWithoutErrors()
         {
             //This is a useful way to populate varied baseline data :)
-            await ApplyDonorUpdatesToDatabase_ImportingAllDonorsFromExistingTestsAsSeparateBatches_ResultsInCorrectNumberOfDonorsAtEnd();
+            await ApplyDonorUpdatesToDatabase_ImportingAllDonorsFromExistingTestsAsSingleBatch_ResultsInCorrectNumberOfDonorsAtEnd();
             await PopulateSomeUnavailableDonors();
 
             var existingDonors = new Queue<DonorWithLog>(donorInspectionRepository.GetAllDonorsWithLogs().Values.OrderBy(d => d.Donor.DonorId));
