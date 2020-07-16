@@ -23,7 +23,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         /// Functionally the same as calling ConvertHla on GGroup typed hla, with a target type of PGroup.
         /// As GGroups are guaranteed to correspond to exactly 0 or 1 PGroups, this method makes this specific conversion much faster.  
         /// </summary>
-        public Task<string> GetSinglePGroupForGGroup(Locus locus, string gGroup);
+        public Task<string> ConvertGGroupToPGroup(Locus locus, string gGroup);
 
         Task<LocusInfo<IHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
         Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
@@ -118,7 +118,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         }
 
         /// <inheritdoc />
-        public async Task<string> GetSinglePGroupForGGroup(Locus locus, string gGroup)
+        public async Task<string> ConvertGGroupToPGroup(Locus locus, string gGroup)
         {
             return await hlaConverter.ConvertGGroupToPGroup(locus, gGroup, ActiveHlaNomenclatureVersion);
         }
