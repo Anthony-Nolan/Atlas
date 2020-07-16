@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Models;
 using LochNessBuilder;
@@ -23,6 +25,12 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
         {
             return builder
                 .With(gmd => gmd.MatchCounts, matchCounts);
+        }
+
+        public static Builder<GenotypeMatchDetails> WithAvailableLoci(this Builder<GenotypeMatchDetails> builder, ISet<Locus> availableLoci)
+        {
+            return builder
+                .With(gmd => gmd.AvailableLoci, availableLoci);
         }
     }
 }
