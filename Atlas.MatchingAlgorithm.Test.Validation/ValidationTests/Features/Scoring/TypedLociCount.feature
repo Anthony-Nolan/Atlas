@@ -17,6 +17,13 @@
     When I run a 10/10 search
     Then the typed loci count should be 5
 
+  Scenario: Fully Typed Donor with scoring only enabled at DPB1
+    Given a patient has a match
+    And the matching donor is unambiguously typed at each locus
+    And scoring is enabled at locus DPB1
+    When I run a 10/10 search
+    Then the typed loci count should be 1
+
   Scenario: Poorly Typed Donor
     Given a patient has a match
     And the matching donor is untyped at locus DPB1

@@ -46,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 testDonor = BuildTestDonor();
                 var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
                 var donorRepository = repositoryFactory.GetDonorUpdateRepository();
-                donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] {testDonor}).Wait();
+                donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { testDonor }).Wait();
             });
         }
 
@@ -55,6 +55,95 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         {
             searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
         }
+
+        #region Score no, some or all loci
+
+        [Test]
+        public async Task Search_ScoreNoLoci_DoesNotReturnAggregatedScoringResults()
+        {
+            var searchRequest = new SearchRequestFromHlasBuilder(
+                    defaultHlaSet.SixLocus_SingleExpressingAlleles,
+                    mismatchHlaSet.SixLocus_SingleExpressingAlleles)
+                .TenOutOfTen()
+                .WithLociToScore(new List<Locus>())
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
+
+            result.TypedLociCount.Should().BeNull();
+            result.GradeScore.Should().BeNull();
+            result.ConfidenceScore.Should().BeNull();
+            result.MatchCategory.Should().BeNull();
+        }
+
+        [Test]
+        public async Task Search_ScoreSomeLoci_ReturnsAggregatedScoringResults()
+        {
+            var searchRequest = new SearchRequestFromHlasBuilder(
+                    defaultHlaSet.SixLocus_SingleExpressingAlleles,
+                    mismatchHlaSet.SixLocus_SingleExpressingAlleles)
+                .TenOutOfTen()
+                .WithLociToScore(new List<Locus> { Locus.A })
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
+
+            result.TypedLociCount.Should().Be(1);
+            result.GradeScore.Should().NotBeNull();
+            result.ConfidenceScore.Should().NotBeNull();
+            result.MatchCategory.Should().NotBeNull();
+        }
+
+        [Test]
+        public async Task Search_ScoreAllLoci_ReturnsAggregatedScoringResults()
+        {
+            var searchRequest = new SearchRequestFromHlasBuilder(
+                    defaultHlaSet.SixLocus_SingleExpressingAlleles,
+                    mismatchHlaSet.SixLocus_SingleExpressingAlleles)
+                .TenOutOfTen()
+                .WithAllLociScored()
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
+
+            result.TypedLociCount.Should().Be(6);
+            result.GradeScore.Should().NotBeNull();
+            result.ConfidenceScore.Should().NotBeNull();
+            result.MatchCategory.Should().NotBeNull();
+        }
+
+        [Test]
+        public async Task Search_ScoreSomeLoci_OnlyReturnsLocusScoringResultsForScoredLoci()
+        {
+            var searchRequest = new SearchRequestFromHlasBuilder(
+                    defaultHlaSet.SixLocus_SingleExpressingAlleles,
+                    mismatchHlaSet.SixLocus_SingleExpressingAlleles)
+                .TenOutOfTen()
+                .WithLociToScore(new List<Locus> { Locus.Dpb1 })
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.Single(d => d.AtlasDonorId == testDonor.DonorId);
+
+            var scoredLocus = result.SearchResultAtLocusDpb1;
+            scoredLocus.IsLocusTyped.Should().BeTrue();
+            scoredLocus.MatchGradeScore.Should().NotBeNull();
+            scoredLocus.MatchConfidenceScore.Should().NotBeNull();
+            scoredLocus.ScoreDetailsAtPositionOne.Should().NotBeNull();
+            scoredLocus.ScoreDetailsAtPositionTwo.Should().NotBeNull();
+
+            var notScoredLocus = result.SearchResultAtLocusA;
+            notScoredLocus.IsLocusTyped.Should().BeNull();
+            notScoredLocus.MatchGradeScore.Should().BeNull();
+            notScoredLocus.MatchConfidenceScore.Should().BeNull();
+            notScoredLocus.ScoreDetailsAtPositionOne.Should().BeNull();
+            notScoredLocus.ScoreDetailsAtPositionTwo.Should().BeNull();
+        }
+
+        #endregion
 
         #region Scoring of the different HLA typing categories
 
@@ -243,13 +332,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_GradesAndConfidencesCalculatedForLociExcludedFromMatching()
+        public async Task Search_SixOutOfSix_GradesAndConfidencesCalculatedForLociExcludedFromMatchingButIncludedInScoring()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(
                     defaultHlaSet.SixLocus_XxCodes,
                     mismatchHlaSet.SixLocus_XxCodes)
                 .SixOutOfSix()
-                .WithAllLociScored()
+                .WithLociToScore(new List<Locus> { Locus.C, Locus.Dpb1, Locus.Dqb1 })
                 .Build();
 
             var results = await searchService.Search(searchRequest);

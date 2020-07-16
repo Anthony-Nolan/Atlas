@@ -168,11 +168,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Poorly Typed Donor")]
-        public virtual void PoorlyTypedDonor()
+        [NUnit.Framework.DescriptionAttribute("Fully Typed Donor with scoring only at DPB1")]
+        public virtual void FullyTypedDonorWithScoringOnlyAtDPB1()
         {
             string[] tagsOfScenario = ((string[])(null));
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Poorly Typed Donor", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fully Typed Donor with scoring only at DPB1", null, ((string[])(null)));
 #line 20
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -197,21 +197,66 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 22
-    testRunner.And("the matching donor is untyped at locus DPB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("the matching donor is unambiguously typed at each locus", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
 #line 23
-    testRunner.And("the matching donor is untyped at locus DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+    testRunner.And("scoring is enabled at locus DPB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
 #line 24
-    testRunner.And("the matching donor is untyped at locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line hidden
-#line 25
-    testRunner.And("scoring is enabled at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line hidden
-#line 26
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
+#line 25
+    testRunner.Then("the typed loci count should be 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Poorly Typed Donor")]
+        public virtual void PoorlyTypedDonor()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Poorly Typed Donor", null, ((string[])(null)));
 #line 27
+  this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 28
+    testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 29
+    testRunner.And("the matching donor is untyped at locus DPB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 30
+    testRunner.And("the matching donor is untyped at locus DQB1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 31
+    testRunner.And("the matching donor is untyped at locus C", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 32
+    testRunner.And("scoring is enabled at all loci", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 33
+    testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 34
     testRunner.Then("the typed loci count should be 3", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
