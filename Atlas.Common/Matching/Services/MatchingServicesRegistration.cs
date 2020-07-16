@@ -7,6 +7,7 @@ namespace Atlas.Common.Matching.Services
         public static void RegisterCommonMatchingServices(this IServiceCollection services)
         {
             services.AddScoped<ILocusMatchCalculator, LocusMatchCalculator>();
+            services.AddScoped<IStringBasedLocusMatchCalculator, StringBasedLocusMatchCalculator>();
         }
     }
 }
