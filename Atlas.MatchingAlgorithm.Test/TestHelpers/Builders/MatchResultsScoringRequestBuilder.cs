@@ -1,22 +1,20 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.MatchingAlgorithm.Client.Models.Scoring;
-using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
 using LochNessBuilder;
-using System.Collections.Generic;
 using System.Linq;
 using static EnumStringValues.EnumExtensions;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 {
     [Builder]
-    public static class ScoringRequestBuilder
+    public static class MatchResultsScoringRequestBuilder
     {
-        public static Builder<ScoringRequest<IEnumerable<MatchResult>>> New =>
-            Builder<ScoringRequest<IEnumerable<MatchResult>>>.New
+        public static Builder<MatchResultsScoringRequest> New =>
+            Builder<MatchResultsScoringRequest>.New
                 .With(x => x.PatientHla, new PhenotypeInfo<string>())
-                .With(x => x.DonorData, new[] { new MatchResultBuilder().Build() })
+                .With(x => x.MatchResults, new[] { new MatchResultBuilder().Build() })
                 .With(x => x.LociToScore, EnumerateValues<Locus>().ToList());
     }
 }

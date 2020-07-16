@@ -17,7 +17,7 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
 
         [HttpPost]
         [Route("score")]
-        public async Task<ScoringResult> Score(ScoringRequest<PhenotypeInfo<string>> scoringRequest)
+        public async Task<ScoringResult> Score(DonorHlaScoringRequest scoringRequest)
         {
             return await scoringRequestService.Score(scoringRequest);
         }

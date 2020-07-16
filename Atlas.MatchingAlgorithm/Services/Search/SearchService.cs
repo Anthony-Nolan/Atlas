@@ -62,10 +62,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var scoredMatches = await logger.RunTimedAsync(
                 async () =>
                 {
-                    var request = new ScoringRequest<IEnumerable<MatchResult>>
+                    var request = new MatchResultsScoringRequest
                     {
                         PatientHla = matchingRequest.SearchHlaData,
-                        DonorData = matches,
+                        MatchResults = matches,
                         LociToScore = matchingRequest.LociToScore.ToList(),
                         LociToExcludeFromAggregateScoring = matchingRequest.LociToExcludeFromAggregateScore.ToList()
                     };

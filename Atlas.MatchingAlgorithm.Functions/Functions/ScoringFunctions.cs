@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         [FunctionName(nameof(Score))]
         public async Task<ScoringResult> Score([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
         {
-            var scoringRequest = JsonConvert.DeserializeObject<ScoringRequest<PhenotypeInfo<string>>>(await new StreamReader(httpRequest.Body).ReadToEndAsync());
+            var scoringRequest = JsonConvert.DeserializeObject<DonorHlaScoringRequest>(await new StreamReader(httpRequest.Body).ReadToEndAsync());
             return await scoringRequestService.Score(scoringRequest);
         }
     }

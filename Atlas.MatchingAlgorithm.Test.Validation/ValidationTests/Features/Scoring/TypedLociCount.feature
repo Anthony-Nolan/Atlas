@@ -5,7 +5,7 @@
   Scenario: Fully Typed Donor with no loci excluded from aggregate scoring
     Given a patient has a match
     And the matching donor is unambiguously typed at each locus
-    And scoring includes all loci
+    And scoring is enabled at all loci
     When I run a 10/10 search
     Then the typed loci count should be 6
 
@@ -13,7 +13,7 @@
     Given a patient has a match
     And the matching donor is untyped at locus DPB1
     And locus DPB1 is excluded from aggregate scoring
-    And scoring includes all loci
+    And scoring is enabled at all loci
     When I run a 10/10 search
     Then the typed loci count should be 5
 
@@ -22,6 +22,6 @@
     And the matching donor is untyped at locus DPB1
     And the matching donor is untyped at locus DQB1
     And the matching donor is untyped at locus C
-    And scoring includes all loci
+    And scoring is enabled at all loci
     When I run a 10/10 search
     Then the typed loci count should be 3
