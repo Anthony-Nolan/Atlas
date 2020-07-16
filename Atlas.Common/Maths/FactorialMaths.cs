@@ -5,17 +5,19 @@ namespace Atlas.Common.Maths
     internal static class FactorialMaths
     {
         /// <remarks>
+        /// Calculates (a!/b!).
+        /// 
         /// Expected use case is when numerator is larger than denominator.
         /// </remarks>
-        internal static long FactorialDivision(int topFactorial, int divisorFactorial)
+        internal static long FactorialDivision(int numeratorFactorial, int denominatorFactorial)
         {
-            if (divisorFactorial > topFactorial)
+            if (denominatorFactorial > numeratorFactorial)
             {
                 throw new NotImplementedException("Factorial division where denominator > numerator is not supported.");
             }
 
             long result = 1;
-            for (var i = topFactorial; i > divisorFactorial; i--)
+            for (var i = numeratorFactorial; i > denominatorFactorial; i--)
             {
                 result *= i;
             }
@@ -29,7 +31,7 @@ namespace Atlas.Common.Maths
             {
                 throw new InvalidOperationException("Cannot calculate factorial of negative number");
             }
-            return i <= 1 ? 1 : i * Factorial(i - 1);
+            return i == 0 ? 1 : i * Factorial(i - 1);
         }
     }
 }
