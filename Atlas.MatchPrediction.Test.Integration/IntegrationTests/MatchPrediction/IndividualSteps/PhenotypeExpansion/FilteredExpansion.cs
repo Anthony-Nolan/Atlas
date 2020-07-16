@@ -35,13 +35,27 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        public async Task ExpandCompressedPhenotype_DoesNotIncludeDuplicateGenotypes()
+        public async Task ExpandCompressedPhenotype_IncludesSwappedGenotypes()
         {
             var phenotype = new PhenotypeInfoBuilder<string>(UnambiguousAlleleDetails.Alleles()).Build();
             var haplotypes = new List<LociInfo<string>> {HaplotypeBuilder1.Build(), HaplotypeBuilder2.Build()};
 
             var genotypes = await expander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultLoci, haplotypes);
 
+            // Expect (a,b) and (b,a) to both be returned
+            genotypes.Count.Should().Be(2);
+        }
+
+        [Test]
+        public async Task ExpandCompressedPhenotype_ForSingleHaplotype_DoesNotIncludeHomozygousPairTwice()
+        {
+            var haplotypeAsLociInfo = UnambiguousAlleleDetails.Alleles().Split().Item1;
+            var phenotype = new PhenotypeInfo<string>(haplotypeAsLociInfo, haplotypeAsLociInfo);
+            var haplotypes = new List<LociInfo<string>> {HaplotypeBuilder1.Build()};
+
+            var genotypes = await expander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultLoci, haplotypes);
+
+            // Expect (a,a) not to be duplicated
             genotypes.Count.Should().Be(1);
         }
 
@@ -66,22 +80,22 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [TestCaseSource(nameof(DefaultLoci))]
-        public async Task ExpandCompressedPhenotype_WhenOneLocusExcluded_ReturnsSumOfAllHaplotypesThatDifferOnlyAtExcludedLoci(Locus locus)
+        public async Task ExpandCompressedPhenotype_WhenOneLocusExcluded_ReturnsCombinationsOfAllHaplotypesThatDifferOnlyAtExcludedLoci(Locus locus)
         {
             var phenotype = new PhenotypeInfoBuilder<string>(UnambiguousAlleleDetails.Alleles()).Build();
-            
+
             var haplotypes = new List<LociInfo<string>>
             {
-                HaplotypeBuilder1.Build(), 
+                HaplotypeBuilder1.Build(),
                 HaplotypeBuilder2.Build(),
                 HaplotypeBuilder1.WithDataAt(locus, "g-group-at-excluded-locus").Build()
             };
 
             var genotypes = await expander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultLoci, haplotypes);
 
-            genotypes.Count.Should().Be(1);
+            genotypes.Count.Should().Be(2);
         }
-        
+
         // This test is fairly slow, as tests go: ~3 seconds.
         // With the naive approach, this would take *significantly* longer - the number of permutations would overflow a long!
         [Test]
@@ -112,7 +126,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     .WithDataAt(Locus.Dqb1, "02:01:01G")
                     .WithDataAt(Locus.Drb1, "03:01:01G")
                     .Build(),
-                
+
                 // Two haplotypes that do not match genotype
                 HaplotypeBuilder1.Build(),
                 HaplotypeBuilder2.Build()
@@ -120,8 +134,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var genotypes = await expander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultLoci, haplotypes);
 
-            // Of two matching haplotypes, three possible combinations as diplotypes: x & y => (xx)/(xy)/(yy)
-            genotypes.Count.Should().Be(3);
+            // Of two matching haplotypes, four possible combinations as diplotypes: x & y => (xx)/(xy)/(yy)/(yx)
+            genotypes.Count.Should().Be(4);
         }
     }
 }

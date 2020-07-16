@@ -78,7 +78,17 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             var filteredDiplotypes = FilterDiplotypes(allowedDiplotypes, gGroupsPerPosition);
 
             logger.SendTrace($"Filtered expanded genotypes: {filteredDiplotypes.Count}");
-            return filteredDiplotypes.Select(dp => new PhenotypeInfo<string>(dp.Item1, dp.Item2)).ToHashSet();
+            return filteredDiplotypes.Select(dp => new PhenotypeInfo<string>(dp.Item1, dp.Item2))
+                // TODO: ATLAS-528: Remove need for his by re-purposing of the "homozygous correction factor" logic
+                .SelectMany(d => new List<PhenotypeInfo<string>>
+                {
+                    d,
+                    // For pairs of haplotypes that are not fully identical, the haplotypes can be combined in two ways - (a,b) and (b,a)
+                    // Combinations method does not include such cases, considering them duplicates, so we explicitly add them here.
+                    // Any true duplicates introduced here due to homozygous haplotype pairs will be removed by the call to "ToHashSet()"
+                    d.Swap()
+                })
+                .ToHashSet();
         }
 
         /// <summary>
