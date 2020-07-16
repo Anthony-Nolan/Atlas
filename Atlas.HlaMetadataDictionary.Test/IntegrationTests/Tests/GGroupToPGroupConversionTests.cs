@@ -28,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [TestCase(Locus.Drb1, "03:01:01G", "03:01P")]
         public async Task GetSinglePGroupForGGroup_WithMatchingPGroup_ReturnsPGroup(Locus locus, string gGroup, string expectedPGroup)
         {
-            var pGroup = await hlaMetadataDictionary.GetSinglePGroupForGGroup(locus, gGroup);
+            var pGroup = await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, gGroup);
 
             pGroup.Should().Be(expectedPGroup);
         }
@@ -40,7 +40,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [TestCase(Locus.Drb1, "08:78N")]
         public async Task GetSinglePGroupForGGroup_WithNoMatchingPGroup_ReturnsNull(Locus locus, string gGroup)
         {
-            var pGroup = await hlaMetadataDictionary.GetSinglePGroupForGGroup(locus, gGroup);
+            var pGroup = await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, gGroup);
 
             pGroup.Should().Be(null);
         }
@@ -48,7 +48,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [Test]
         public async Task GetSinglePGroupForGGroup_ForInvalidGGroup_ThrowsException()
         {
-            await hlaMetadataDictionary.Invoking(h => h.GetSinglePGroupForGGroup(Locus.A, "not-a-valid-g-group"))
+            await hlaMetadataDictionary.Invoking(h => h.ConvertGGroupToPGroup(Locus.A, "not-a-valid-g-group"))
                 .Should().ThrowAsync<HlaMetadataDictionaryException>();
         }
     }
