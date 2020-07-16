@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Matching.Services;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using FluentAssertions;
 using NUnit.Framework;
@@ -136,6 +138,26 @@ namespace Atlas.Common.Test.Matching.Services
             var donorHla = new LocusInfo<string>(ArbitraryPGroup1);
 
             matchCalculator.MatchCount(patientHla, donorHla).Should().Be(1);
+        }
+
+        [Test]
+        // Each iteration runs 7 variations of the calculation
+        [Repeat(100000)]
+        [IgnoreExceptOnCiPerfTest("Ran in ~1s")]
+        public void MatchCount_PerformanceTest()
+        {
+            var nonMatchingHla = new List<LocusInfo<string>>
+            {
+                new LocusInfo<string>(ArbitraryPGroup1, "not-a-match"),
+                new LocusInfo<string>("not-a-match", ArbitraryPGroup1),
+                new LocusInfo<string>("not-a-match", "not-a-match-2")
+            };
+            matchCalculator.MatchCount(defaultPGroups, defaultPGroups);
+            foreach (var hla in nonMatchingHla)
+            {
+                matchCalculator.MatchCount(defaultPGroups, hla);
+                matchCalculator.MatchCount( hla, defaultPGroups);
+            }
         }
     }
 }
