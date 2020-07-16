@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Matching.Services;
 using Atlas.MatchPrediction.Services;
@@ -18,6 +20,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchCalculation
 
         private IMatchCalculationService matchCalculationService;
 
+        private static readonly ISet<Locus> AllowedLoci = new HashSet<Locus> {Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1};
+
         [SetUp]
         public void SetUp()
         {
@@ -32,27 +36,33 @@ namespace Atlas.MatchPrediction.Test.Services.MatchCalculation
             matchCalculationService = new MatchCalculationService(locusHlaConverter, locusMatchCalculator);
         }
 
-        [Test]
-        public async Task MatchAtPGroupLevel_MatchCountIsCalledPerLocus()
+        [TestCase(5)]
+        [TestCase(4)]
+        [TestCase(3)]
+        public async Task MatchAtPGroupLevel_MatchCountIsCalledPerLocus(int numberOfLoci)
         {
-            await matchCalculationService.MatchAtPGroupLevel(default, default, default, default, default);
+            await matchCalculationService.MatchAtPGroupLevel(default, default, default, AllowedLoci.Take(numberOfLoci).ToHashSet());
 
-            locusMatchCalculator.Received(5)
+            locusMatchCalculator.Received(numberOfLoci)
                 .MatchCount(Arg.Any<LocusInfo<IEnumerable<string>>>(), Arg.Any<LocusInfo<IEnumerable<string>>>());
         }
 
-        [TestCase(2, 10)]
-        [TestCase(1, 5)]
-        [TestCase(0, 0)]
-        public async Task MatchAtPGroupLevel_MatchCountsShouldAddUpToExpectedNumber(int perLocusMatchCount, int expectedTotalMatchCount)
+        [TestCase(2, 10, 5)]
+        [TestCase(1, 5, 5)]
+        [TestCase(0, 0, 5)]
+        [TestCase(2, 8, 4)]
+        [TestCase(1, 4, 4)]
+        [TestCase(0, 0, 4)]
+        [TestCase(2, 6, 3)]
+        [TestCase(1, 3, 3)]
+        [TestCase(0, 0, 3)]
+        public async Task MatchAtPGroupLevel_MatchCountsShouldAddUpToExpectedNumber(int perLocusMatchCount, int expectedTotalMatchCount, int numberOfLoci)
         {
             locusMatchCalculator.MatchCount(Arg.Any<LocusInfo<IEnumerable<string>>>(), Arg.Any<LocusInfo<IEnumerable<string>>>()).Returns(perLocusMatchCount);
 
-            var match = await matchCalculationService.MatchAtPGroupLevel(default, default, default, default, default);
+            var match = await matchCalculationService.MatchAtPGroupLevel(default, default, default, AllowedLoci.Take(numberOfLoci).ToHashSet());
 
-            // Not including Dpb1 as it's not included in match prediction
-            var actualTotal = match.MatchCounts.A + match.MatchCounts.B + match.MatchCounts.C + match.MatchCounts.Dqb1 + match.MatchCounts.Drb1;
-            actualTotal.Should().Be(expectedTotalMatchCount);
+            match.MatchCount.Should().Be(expectedTotalMatchCount);
         }
     }
 }
