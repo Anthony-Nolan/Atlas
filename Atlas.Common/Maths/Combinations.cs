@@ -14,7 +14,7 @@ namespace Atlas.Common.Maths
         /// </summary>
         /// <param name="n"></param>
         /// <param name="shouldIncludeSelfPairs">
-        /// If set, includes the number of pairs consisting of the same element twice.
+        /// If <c>true</c>, includes the number of pairs consisting of the same element twice.
         /// Otherwise, each element can only be paired with distinct other elements.
         /// </param>
         /// <returns></returns>
@@ -24,7 +24,7 @@ namespace Atlas.Common.Maths
             {
                 throw new InvalidOperationException("A collection cannot have a negative length. Cannot count number of pairs.");
             }
-            
+
             var selfPairs = n;
             var nonSelfPairs = nCr(n, 2);
             return shouldIncludeSelfPairs ? nonSelfPairs + selfPairs : nonSelfPairs;
@@ -46,33 +46,27 @@ namespace Atlas.Common.Maths
         /// Does not include repetitions - each item cannot be in a combination with itself.  
         /// </summary>
         /// <param name="collection"></param>
-        /// <param name="m"></param>
+        /// <param name="combinationSize"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        private static IEnumerable<T[]> AllCombinations<T>(IReadOnlyList<T> collection, int m)
+        private static IEnumerable<IReadOnlyList<T>> AllCombinations<T>(IReadOnlyList<T> collection, int combinationSize)
         {
-            var result = new T[m];
-            foreach (var j in AllCombinations(m, collection.Count))
-            {
-                for (var i = 0; i < m; i++)
-                {
-                    result[i] = collection[j[i]];
-                }
-
-                yield return result;
-            }
+            return AllCombinations(collection.Count, combinationSize).Select(indexCombination =>
+                Enumerable.Range(0, combinationSize).Select(index => collection[indexCombination[index]]).ToList()
+            );
         }
 
         /// <summary>
-        /// Enumerate all possible m-size combinations of [0, 1, ..., n-1] array
-        /// in lexicographic order (first [0, 1, 2, ..., m-1]). 
+        /// This is the algorithm for generating combinatorics without recursion, taken from Rosetta code:https://rosettacode.org/wiki/Combinations#C.23
+        ///
+        /// From Rosetta code: Given non-negative integers m & n, generate all size m combinations of the integers from 0 to n-1 in sorted order  
         /// </summary>
-        /// <param name="m"></param>
         /// <param name="n"></param>
-        private static IEnumerable<int[]> AllCombinations(int m, int n)
+        /// <param name="combinationSize"></param>
+        private static IEnumerable<int[]> AllCombinations(int n, int combinationSize)
         {
-            var result = new int[m];
-            var stack = new Stack<int>(m);
+            var result = new int[combinationSize];
+            var stack = new Stack<int>(combinationSize);
             stack.Push(0);
             while (stack.Count > 0)
             {
@@ -80,9 +74,10 @@ namespace Atlas.Common.Maths
                 var value = stack.Pop();
                 while (value < n)
                 {
+                    //"value++;" rather than "++value;", because we want the values in this array to be 0-indexed not 1-indexed.
                     result[index++] = value++;
                     stack.Push(value);
-                    if (index != m)
+                    if (index != combinationSize)
                     {
                         continue;
                     }
