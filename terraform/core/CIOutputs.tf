@@ -64,3 +64,7 @@ output "donor-import-function-name" {
 output "test_value" {
   value = "This is the result"
 }
+
+output "test" {
+  value = "testtest"
+}
