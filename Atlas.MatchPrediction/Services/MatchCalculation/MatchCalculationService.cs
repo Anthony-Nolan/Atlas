@@ -55,7 +55,13 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
                         donorGenotypeAsPGroups.GetLocus(locus).Map(x => x as IEnumerable<string>))
                     : (int?) null);
 
-            return new GenotypeMatchDetails{MatchCounts = matchCounts, PatientGenotype = patientGenotype, DonorGenotype = donorGenotype};
+            return new GenotypeMatchDetails
+            {
+                MatchCounts = matchCounts,
+                PatientGenotype = patientGenotype,
+                DonorGenotype = donorGenotype,
+                AvailableLoci = allowedLoci
+            };
         }
     }
 }
