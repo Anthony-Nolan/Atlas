@@ -26,7 +26,7 @@ output "matching-algorithm-b-conn-string" {
 }
 
 output "sql-server" {
-  value = module.matching_algorithm.sql_database.sql_server
+  value = azurerm_sql_server.atlas_sql_server.fully_qualified_domain_name
 }
 
 output "matching-algorithm-function-name" {
