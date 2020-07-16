@@ -38,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 DonorId = donorInfo.DonorId,
                 IsAvailableForSearch = isAvailable,
                 UpdateDateTime = DateTimeOffset.UtcNow,
-                // UpdateSequenceNumber is never used. QQ Delete it entirely? Check the LogInfo usage.
+                // UpdateSequenceNumber is never used.
             };
         }
 
@@ -137,17 +137,20 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             // Look there to establish what these blocks were intended to test in their original state.
             // Note that there's no desperate need to keep the 2 sets of code in sync.
 
+            //New Donor.
             var expectedRunningTotal = 0;
             var donorInfo0 = new DonorInfoBuilder().Build();
             await Import(donorInfo0);
             expectedRunningTotal++;
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
+            //New Invalid Donor.
             var donorInfo0B = new DonorInfoBuilder().WithHlaAtLocus(A, One, "invalid-hla-name").Build();
             await Import(donorInfo0B);
             //expectedRunningTotal unchanged
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
+            //New Donor with the same message delivered 3 times, separately.
             var donorInfo1 = new DonorInfoBuilder().Build();
             await Import(donorInfo1);
             await Import(donorInfo1);
@@ -155,11 +158,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             expectedRunningTotal++;
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
+            //New Donor with the same message delivered 3 times, in a single batch.
             var donorInfo1B = new DonorInfoBuilder().Build();
             await Import(donorInfo1B, donorInfo1B, donorInfo1B);
             expectedRunningTotal++;
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
+            //New Donor, later updated with different type.
             var donorInfo2 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var updatedDonor2 = new DonorInfoBuilder(donorInfo2.DonorId).WithDonorType(Cord).Build();
             await Import(donorInfo2);
@@ -167,6 +172,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             expectedRunningTotal++;
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
+            //New Donor, later updated with different hla.
             var donorInfo3 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02").Build();
             var updatedDonor3 = new DonorInfoBuilder(donorInfo3.DonorId).WithHlaAtLocus(A, One, "*01:XX").Build();
             await Import(donorInfo3);
@@ -174,6 +180,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             expectedRunningTotal++;
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
+            //New Donor, later updated with different type but with an Invalid hla
             var donorInfo4 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var updatedDonor4 = new DonorInfoBuilder(donorInfo4.DonorId).WithDonorType(Cord).WithHlaAtLocus(A, One, "invalid-hla-name").Build();
             await Import(donorInfo4);
@@ -181,6 +188,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             expectedRunningTotal++;
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
+            //New Donor, later updated with invalid HLA.
             var donorInfo5 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02").Build();
             var updatedDonor5 = new DonorInfoBuilder(donorInfo5.DonorId).WithHlaAtLocus(A, One, "invalid-hla-name").Build();
             await Import(donorInfo5);
@@ -188,12 +196,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             expectedRunningTotal++;
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
+            //Multiple new donors in a single batch
             var donorInfo6 = new DonorInfoBuilder().Build();
             var donorInfo7 = new DonorInfoBuilder().Build();
             await Import(donorInfo6, donorInfo7);
             expectedRunningTotal += 2;
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
+            //Multiple updated (type) donors in a single batch
             var donorInfo8 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var donorInfo9 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var updatedDonor8 = new DonorInfoBuilder(donorInfo8.DonorId).WithDonorType(Cord).Build();
@@ -203,6 +213,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             expectedRunningTotal += 2;
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
+            //Multiple updated (hla) donors in a single batch
             var donorInfo10 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02").Build();
             var donorInfo11 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02:01").Build();
             var updatedDonor10 = new DonorInfoBuilder(donorInfo10.DonorId).WithHlaAtLocus(A, One, "*01:XX").Build();
@@ -211,7 +222,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             await Import(updatedDonor10, updatedDonor11);
             expectedRunningTotal += 2;
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
-            
+
+            //Single Batch containing both updates and also new donors
             var donorInfo12 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var donorInfo13 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var donorInfo14 = new DonorInfoBuilder().WithDonorType(Adult).Build();
@@ -223,17 +235,20 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             expectedRunningTotal += 4;
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
+            //Newly created Donor is unavailable at point of creation.
             var donorInfo16 = new DonorInfoBuilder().Build().ToUnavailableUpdate();
             await Import(donorInfo16);
             //expectedRunningTotal unchanged. Non-Available Creations are just ignored.
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
+            //Single batch has a mix of available and unavailable donors.
             var donorInfo17 = new DonorInfoBuilder().Build().ToUpdate();
             var donorInfo18 = new DonorInfoBuilder().Build().ToUnavailableUpdate();
             await Import(donorInfo17, donorInfo18);
             expectedRunningTotal++; //Non-Available Creations are just ignored.
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
+            //Single batch has updates that mix changing from available to unavailable, and vice versa.
             var donorInfo19 = new DonorInfoBuilder().Build().ToUpdate();
             var donorInfo20 = new DonorInfoBuilder().Build().ToUnavailableUpdate();
             var updatedDonor19 = new DonorInfoBuilder(donorInfo19.DonorId).Build().ToUnavailableUpdate();
@@ -243,6 +258,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             expectedRunningTotal += 2;
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
+            //Donor is created, marked as unavailable, then marked as available. As 3 separate batches.
             var donorInfo21 = new DonorInfoBuilder().Build().ToUpdate();
             var updatedDonor21 = new DonorInfoBuilder(donorInfo21.DonorId).Build().ToUnavailableUpdate();
             var reUpdatedDonor21 = new DonorInfoBuilder(donorInfo21.DonorId).Build().ToUpdate();
@@ -252,6 +268,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             expectedRunningTotal++;
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
+            //Donor is created as initially unavailable, marked as available, then marked as unavailable again. As 3 separate batches.
             var donorInfo21B = new DonorInfoBuilder().Build().ToUnavailableUpdate();
             var updatedDonor21B = new DonorInfoBuilder(donorInfo21B.DonorId).Build().ToUpdate();
             var reUpdatedDonor21B = new DonorInfoBuilder(donorInfo21B.DonorId).Build().ToUnavailableUpdate();
@@ -261,6 +278,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             expectedRunningTotal++;
             Debug_ExpectDonorCountToBe(expectedRunningTotal);
 
+            //New Donor, later updated with different type and hla
             var donorInfo22 = new DonorInfoBuilder().WithDonorType(Adult).WithHlaAtLocus(A, One, "*01:02").Build();
             var updatedDonor22 = new DonorInfoBuilder(donorInfo22.DonorId).WithDonorType(Cord).WithHlaAtLocus(A, One, "*01:XX").Build();
             await Import(donorInfo22);
@@ -276,50 +294,58 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         {
             var expectedRunningTotal = 0;
 
+            //New Donor.
             var donorInfo0 = new DonorInfoBuilder().Build();
             expectedRunningTotal++;
 
+            //New Invalid Donor.
             var donorInfo0B = new DonorInfoBuilder().WithHlaAtLocus(A, One, "invalid-hla-name").Build();
             //expectedRunningTotal unchanged
 
+            //New Donor with the same message delivered 3 times, in a single batch. (will be added to batch repeatedly, below)
             var donorInfo1 = new DonorInfoBuilder().Build();
             expectedRunningTotal++;
 
-            var donorInfo1B = new DonorInfoBuilder().Build();
-            expectedRunningTotal++;
-
+            //New Donor, then updated with different type.
             var donorInfo2 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var updatedDonor2 = new DonorInfoBuilder(donorInfo2.DonorId).WithDonorType(Cord).Build();
             expectedRunningTotal++;
 
+            //New Donor, then updated with different hla.
             var donorInfo3 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02").Build();
             var updatedDonor3 = new DonorInfoBuilder(donorInfo3.DonorId).WithHlaAtLocus(A, One, "*01:XX").Build();
             expectedRunningTotal++;
-            
+
+            //New Donor, then updated with different type but with an Invalid hla
             var donorInfo4 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var updatedDonor4 = new DonorInfoBuilder(donorInfo4.DonorId).WithDonorType(Cord).WithHlaAtLocus(A, One, "invalid-hla-name").Build();
             //expectedRunningTotal unchanged. The 2nd record supercedes the first, but isn't valid.
 
+            //New Donor, then updated with invalid HLA.
             var donorInfo5 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02").Build();
             var updatedDonor5 = new DonorInfoBuilder(donorInfo5.DonorId).WithHlaAtLocus(A, One, "invalid-hla-name").Build();
             //expectedRunningTotal unchanged. The 2nd record supercedes the first, but isn't valid.
 
+            //Multiple new donors in a single batch
             var donorInfo6 = new DonorInfoBuilder().Build();
             var donorInfo7 = new DonorInfoBuilder().Build();
             expectedRunningTotal += 2;
-            
+
+            //Multiple updated (type) donors in a single batch
             var donorInfo8 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var donorInfo9 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var updatedDonor8 = new DonorInfoBuilder(donorInfo8.DonorId).WithDonorType(Cord).Build();
             var updatedDonor9 = new DonorInfoBuilder(donorInfo9.DonorId).WithDonorType(Cord).Build();
             expectedRunningTotal += 2;
-            
+
+            //Multiple updated (hla) donors in a single batch
             var donorInfo10 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02").Build();
             var donorInfo11 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02:01").Build();
             var updatedDonor10 = new DonorInfoBuilder(donorInfo10.DonorId).WithHlaAtLocus(A, One, "*01:XX").Build();
             var updatedDonor11 = new DonorInfoBuilder(donorInfo11.DonorId).WithHlaAtLocus(A, One, "*01:XX").Build();
             expectedRunningTotal += 2;
-            
+
+            //Single Batch containing both updates and also new donors
             var donorInfo12 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var donorInfo13 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var donorInfo14 = new DonorInfoBuilder().WithDonorType(Adult).Build();
@@ -327,30 +353,36 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             var updatedDonor12 = new DonorInfoBuilder(donorInfo12.DonorId).WithDonorType(Cord).Build();
             var updatedDonor13 = new DonorInfoBuilder(donorInfo13.DonorId).WithDonorType(Cord).Build();
             expectedRunningTotal += 4;
-            
+
+            //Newly created Donor is unavailable at point of creation.
             var donorInfo16 = new DonorInfoBuilder().Build().ToUnavailableUpdate();
             //expectedRunningTotal unchanged. Non-Available Creations are just ignored.
 
+            //Single batch has a mix of available and unavailable donors.
             var donorInfo17 = new DonorInfoBuilder().Build().ToUpdate();
             var donorInfo18 = new DonorInfoBuilder().Build().ToUnavailableUpdate();
             expectedRunningTotal++; //Non-Available Creations are just ignored.
 
+            //Single batch has updates that mix changing from available to unavailable, and vice versa.
             var donorInfo19 = new DonorInfoBuilder().Build().ToUpdate();
             var donorInfo20 = new DonorInfoBuilder().Build().ToUnavailableUpdate();
             var updatedDonor19 = new DonorInfoBuilder(donorInfo19.DonorId).Build().ToUnavailableUpdate();
             var updatedDonor20 = new DonorInfoBuilder(donorInfo20.DonorId).Build().ToUpdate();
             expectedRunningTotal++;   //expectedRunningTotal unchanged. The updatedDonor19 supercedes donorInfo19, and thus isn't imported. (Which is good, because we don't really want the unavailable donors anyway.)
 
+            //Donor is created, marked as unavailable, then marked as available, within the same batch.
             var donorInfo21 = new DonorInfoBuilder().Build().ToUpdate();
             var updatedDonor21 = new DonorInfoBuilder(donorInfo21.DonorId).Build().ToUnavailableUpdate();
             var reUpdatedDonor21 = new DonorInfoBuilder(donorInfo21.DonorId).Build().ToUpdate();
             expectedRunningTotal++;
 
+            //Donor is created as initially unavailable, marked as available, then marked as unavailable again. As 3 separate batches.
             var donorInfo21B = new DonorInfoBuilder().Build().ToUnavailableUpdate();
             var updatedDonor21B = new DonorInfoBuilder(donorInfo21B.DonorId).Build().ToUpdate();
             var reUpdatedDonor21B = new DonorInfoBuilder(donorInfo21B.DonorId).Build().ToUnavailableUpdate();
             //expectedRunningTotal unchanged. The 3rd record supercedes the 2nd, and thus isn't imported. (which is good, as above)
 
+            //New Donor, then updated with different type and hla
             var donorInfo22 = new DonorInfoBuilder().WithDonorType(Adult).WithHlaAtLocus(A, One, "*01:01").Build();
             var updatedDonor22 = new DonorInfoBuilder(donorInfo22.DonorId).WithDonorType(Cord).WithHlaAtLocus(A, One, "*01:XX").Build();
             expectedRunningTotal++;
@@ -359,10 +391,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             await Import(
                 donorInfo0.ToUpdate(),
                 donorInfo0B.ToUpdate(),
-                donorInfo1.ToUpdate(),
-                donorInfo1.ToUpdate(),
-                donorInfo1.ToUpdate(),
-                donorInfo1B.ToUpdate(), donorInfo1B.ToUpdate(), donorInfo1B.ToUpdate(),
+                donorInfo1.ToUpdate(), donorInfo1.ToUpdate(), donorInfo1.ToUpdate(),
                 donorInfo2.ToUpdate(),
                 updatedDonor2.ToUpdate(),
                 donorInfo3.ToUpdate(),
@@ -505,7 +534,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 .WithHlaAtLocus(Dpb1, One, "*05:02:01G")
                 .WithHlaAtLocus(Dpb1, Two, "*06:01:01G")
                 .WithHlaAtLocus(Dqb1, One, "*15:02:01")
-                .WithHlaAtLocus(Dqb1, Two, "**11:01:01G")
+                .WithHlaAtLocus(Dqb1, Two, "*11:01:01G")
                 .WithHlaAtLocus(Drb1, One, "*02:01:02G")
                 .WithHlaAtLocus(Drb1, Two, "*04:02:01G")
                 .Build().ToUpdate();
@@ -548,19 +577,19 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         private IEnumerable<DonorAvailabilityUpdate> Ensure_UpdateDonorBatch_ChangeJustHla_IsExercised(Queue<DonorWithLog> existingDonors)
         {
             var existingEnabled = existingDonors.UnorderedDequeueWhere(d => d.Donor.IsAvailableForSearch).Donor;
-            var updateToHla = new DonorInfoBuilder(existingEnabled.DonorId) //QQ
-                .WithHlaAtLocus(A, One, "*24:02:01G")
-                .WithHlaAtLocus(A, Two, "*26:01:01G")
-                .WithHlaAtLocus(B, One, "*35:01:01G")
-                .WithHlaAtLocus(B, Two, "*52:01:01G")
-                .WithHlaAtLocus(C, One, "*04:01:01G")
-                .WithHlaAtLocus(C, Two, "*12:02:01G")
-                .WithHlaAtLocus(Dpb1, One, "*05:02:01G")
-                .WithHlaAtLocus(Dpb1, Two, "*06:01:01G")
-                .WithHlaAtLocus(Dqb1, One, "*15:02:01")
-                .WithHlaAtLocus(Dqb1, Two, "**11:01:01G")
-                .WithHlaAtLocus(Drb1, One, "*02:01:02G")
-                .WithHlaAtLocus(Drb1, Two, "*04:02:01G")
+            var updateToHla = new DonorInfoBuilder(existingEnabled.DonorId)
+                .WithHlaAtLocus(A, One, "*03:01")
+                .WithHlaAtLocus(A, Two, "*30:02")
+                .WithHlaAtLocus(B, One, "*18:01")
+                .WithHlaAtLocus(B, Two, "*53:01")
+                .WithHlaAtLocus(C, One, "*04:01")
+                .WithHlaAtLocus(C, Two, "*12:03")
+                .WithHlaAtLocus(Dpb1, One, "*02:01")
+                .WithHlaAtLocus(Dpb1, Two, "*02:01")
+                .WithHlaAtLocus(Dqb1, One, "*02:01")
+                .WithHlaAtLocus(Dqb1, Two, "*06:04")
+                .WithHlaAtLocus(Drb1, One, "*03:01")
+                .WithHlaAtLocus(Drb1, Two, "*03:01")
                 .Build().ToUpdate();
             yield return updateToHla;
         }
@@ -582,58 +611,58 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             var existingEnabled = existingDonors.UnorderedDequeueWhere(d => d.Donor.IsAvailableForSearch).Donor;
             var existingDisabled = existingDonors.UnorderedDequeueWhere(d => !d.Donor.IsAvailableForSearch).Donor;
 
-            var updateToDisabledAndNewTypeAndNewHla = new DonorInfoBuilder(existingEnabled)
-                .WithHlaAtLocus(A, One, "*24:02:01G") //QQ
-                .WithHlaAtLocus(A, Two, "*26:01:01G")
-                .WithHlaAtLocus(B, One, "*35:01:01G")
-                .WithHlaAtLocus(B, Two, "*52:01:01G")
-                .WithHlaAtLocus(C, One, "*04:01:01G")
-                .WithHlaAtLocus(C, Two, "*12:02:01G")
-                .WithHlaAtLocus(Dpb1, One, "*05:02:01G")
-                .WithHlaAtLocus(Dpb1, Two, "*06:01:01G")
-                .WithHlaAtLocus(Dqb1, One, "*15:02:01")
-                .WithHlaAtLocus(Dqb1, Two, "**11:01:01G")
-                .WithHlaAtLocus(Drb1, One, "*02:01:02G")
-                .WithHlaAtLocus(Drb1, Two, "*04:02:01G")
+            var updateToDisabledAndNewHla = new DonorInfoBuilder(existingEnabled)
+                .WithHlaAtLocus(A, One, "*01:01:01:01")
+                .WithHlaAtLocus(A, Two, "*11:01:01:01")
+                .WithHlaAtLocus(B, One, "*08:01:01")
+                .WithHlaAtLocus(B, Two, "*27:05:02")
+                .WithHlaAtLocus(C, One, "*02:02:02")
+                .WithHlaAtLocus(C, Two, "*07:01:01")
+                .WithHlaAtLocus(Dpb1, One, "*04:01:01")
+                .WithHlaAtLocus(Dpb1, Two, "*06:01:01")
+                .WithHlaAtLocus(Dqb1, One, "*02:01:01")
+                .WithHlaAtLocus(Dqb1, Two, "*03:01:01")
+                .WithHlaAtLocus(Drb1, One, "*03:01:01")
+                .WithHlaAtLocus(Drb1, Two, "*03:01:01")
                 .Build().ToUnavailableUpdate();
-            var updateToEnabledAndNewTypeAndNewHla = new DonorInfoBuilder(existingDisabled)
-                .WithHlaAtLocus(A, One, "*24:02:01G") //QQ
-                .WithHlaAtLocus(A, Two, "*26:01:01G")
-                .WithHlaAtLocus(B, One, "*35:01:01G")
-                .WithHlaAtLocus(B, Two, "*52:01:01G")
-                .WithHlaAtLocus(C, One, "*04:01:01G")
-                .WithHlaAtLocus(C, Two, "*12:02:01G")
-                .WithHlaAtLocus(Dpb1, One, "*05:02:01G")
-                .WithHlaAtLocus(Dpb1, Two, "*06:01:01G")
-                .WithHlaAtLocus(Dqb1, One, "*15:02:01")
-                .WithHlaAtLocus(Dqb1, Two, "**11:01:01G")
-                .WithHlaAtLocus(Drb1, One, "*02:01:02G")
-                .WithHlaAtLocus(Drb1, Two, "*04:02:01G")
+            var updateToEnabledAndNewHla = new DonorInfoBuilder(existingDisabled)
+                .WithHlaAtLocus(A, One, "*03:01:01:01")
+                .WithHlaAtLocus(A, Two, "*30:01:01")
+                .WithHlaAtLocus(B, One, "*13:02:01:01")
+                .WithHlaAtLocus(B, Two, "*13:02:01:01")
+                .WithHlaAtLocus(C, One, "*06:02:01")
+                .WithHlaAtLocus(C, Two, "*06:02:01")
+                .WithHlaAtLocus(Dpb1, One, "*02:01")
+                .WithHlaAtLocus(Dpb1, Two, "*04:01:01")
+                .WithHlaAtLocus(Dqb1, One, "*02:02:01")
+                .WithHlaAtLocus(Dqb1, Two, "*03:01:01")
+                .WithHlaAtLocus(Drb1, One, "*11:01:01")
+                .WithHlaAtLocus(Drb1, Two, "*11:01:01")
                 .Build().ToUpdate();
 
-            yield return updateToDisabledAndNewTypeAndNewHla;
-            yield return updateToEnabledAndNewTypeAndNewHla;
+            yield return updateToDisabledAndNewHla;
+            yield return updateToEnabledAndNewHla;
         }
         
         private IEnumerable<DonorAvailabilityUpdate> Ensure_UpdateDonorBatch_ChangeTypeAndHla_IsExercised(Queue<DonorWithLog> existingDonors)
         {
             var existingEnabled = existingDonors.UnorderedDequeueWhere(d => d.Donor.IsAvailableForSearch).Donor;
-            var updateToHla = new DonorInfoBuilder(existingEnabled.DonorId) //QQ
+            var updateToNewTypeAndNewHla = new DonorInfoBuilder(existingEnabled.DonorId)
                 .WithDonorType(existingEnabled.DonorType.Other())
-                .WithHlaAtLocus(A, One, "*24:02:01G")
-                .WithHlaAtLocus(A, Two, "*26:01:01G")
-                .WithHlaAtLocus(B, One, "*35:01:01G")
-                .WithHlaAtLocus(B, Two, "*52:01:01G")
-                .WithHlaAtLocus(C, One, "*04:01:01G")
-                .WithHlaAtLocus(C, Two, "*12:02:01G")
-                .WithHlaAtLocus(Dpb1, One, "*05:02:01G")
-                .WithHlaAtLocus(Dpb1, Two, "*06:01:01G")
-                .WithHlaAtLocus(Dqb1, One, "*15:02:01")
-                .WithHlaAtLocus(Dqb1, Two, "**11:01:01G")
-                .WithHlaAtLocus(Drb1, One, "*02:01:02G")
-                .WithHlaAtLocus(Drb1, Two, "*04:02:01G")
+                .WithHlaAtLocus(A, One, "*02:01")
+                .WithHlaAtLocus(A, Two, "*24:02")
+                .WithHlaAtLocus(B, One, "*35:02")
+                .WithHlaAtLocus(B, Two, "*52:01")
+                .WithHlaAtLocus(C, One, "*04:01")
+                .WithHlaAtLocus(C, Two, "*12:02")
+                .WithHlaAtLocus(Dpb1, One, "*04:01")
+                .WithHlaAtLocus(Dpb1, Two, "*16:01")
+                .WithHlaAtLocus(Dqb1, One, "*03:01")
+                .WithHlaAtLocus(Dqb1, Two, "*03:01")
+                .WithHlaAtLocus(Drb1, One, "*11:04")
+                .WithHlaAtLocus(Drb1, Two, "*11:04")
                 .Build().ToUpdate();
-            yield return updateToHla;
+            yield return updateToNewTypeAndNewHla;
         }
 
         private IEnumerable<DonorAvailabilityUpdate> Ensure_UpdateDonorBatch_ChangeAll_IsExercised(Queue<DonorWithLog> existingDonors)
@@ -643,33 +672,33 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
 
             var updateToDisabledAndNewTypeAndNewHla = new DonorInfoBuilder(existingEnabled)
                 .WithDonorType(existingEnabled.DonorType.Other())
-                .WithHlaAtLocus(A, One, "*24:02:01G") //QQ
-                .WithHlaAtLocus(A, Two, "*26:01:01G")
-                .WithHlaAtLocus(B, One, "*35:01:01G")
-                .WithHlaAtLocus(B, Two, "*52:01:01G")
-                .WithHlaAtLocus(C, One, "*04:01:01G")
-                .WithHlaAtLocus(C, Two, "*12:02:01G")
-                .WithHlaAtLocus(Dpb1, One, "*05:02:01G")
-                .WithHlaAtLocus(Dpb1, Two, "*06:01:01G")
-                .WithHlaAtLocus(Dqb1, One, "*15:02:01")
-                .WithHlaAtLocus(Dqb1, Two, "**11:01:01G")
-                .WithHlaAtLocus(Drb1, One, "*02:01:02G")
-                .WithHlaAtLocus(Drb1, Two, "*04:02:01G")
+                .WithHlaAtLocus(A, One, "*02:01:01G")
+                .WithHlaAtLocus(A, Two, "*68:01:02G")
+                .WithHlaAtLocus(B, One, "*35:05:01")
+                .WithHlaAtLocus(B, Two, "*40:01:01G")
+                .WithHlaAtLocus(C, One, "*03:04:01G")
+                .WithHlaAtLocus(C, Two, "*04:01:01G")
+                .WithHlaAtLocus(Dpb1, One, "*02:01:02G")
+                .WithHlaAtLocus(Dpb1, Two, "*04:02:01G")
+                .WithHlaAtLocus(Dqb1, One, "*03:01:01G")
+                .WithHlaAtLocus(Dqb1, Two, "*03:02:01G")
+                .WithHlaAtLocus(Drb1, One, "*04:07:01G")
+                .WithHlaAtLocus(Drb1, Two, "*04:07:01G")
                 .Build().ToUnavailableUpdate();
             var updateToEnabledAndNewTypeAndNewHla = new DonorInfoBuilder(existingDisabled)
                 .WithDonorType(existingDisabled.DonorType.Other())
-                .WithHlaAtLocus(A, One, "*24:02:01G") //QQ
-                .WithHlaAtLocus(A, Two, "*26:01:01G")
-                .WithHlaAtLocus(B, One, "*35:01:01G")
-                .WithHlaAtLocus(B, Two, "*52:01:01G")
-                .WithHlaAtLocus(C, One, "*04:01:01G")
-                .WithHlaAtLocus(C, Two, "*12:02:01G")
-                .WithHlaAtLocus(Dpb1, One, "*05:02:01G")
-                .WithHlaAtLocus(Dpb1, Two, "*06:01:01G")
-                .WithHlaAtLocus(Dqb1, One, "*15:02:01")
-                .WithHlaAtLocus(Dqb1, Two, "**11:01:01G")
-                .WithHlaAtLocus(Drb1, One, "*02:01:02G")
-                .WithHlaAtLocus(Drb1, Two, "*04:02:01G")
+                .WithHlaAtLocus(A, One, "*11:XX")
+                .WithHlaAtLocus(A, Two, "*24:XX")
+                .WithHlaAtLocus(B, One, "*07:XX")
+                .WithHlaAtLocus(B, Two, "*51:XX")
+                .WithHlaAtLocus(C, One, "*02:02:02")
+                .WithHlaAtLocus(C, Two, "*07:02:01")
+                .WithHlaAtLocus(Dpb1, One, "*04:01:01")
+                .WithHlaAtLocus(Dpb1, Two, "*04:01:01")
+                .WithHlaAtLocus(Dqb1, One, "*02:01:01")
+                .WithHlaAtLocus(Dqb1, Two, "*06:04:01")
+                .WithHlaAtLocus(Drb1, One, "*03:01:01G")
+                .WithHlaAtLocus(Drb1, Two, "*03:01:01G")
                 .Build().ToUpdate();
 
             yield return updateToDisabledAndNewTypeAndNewHla;
