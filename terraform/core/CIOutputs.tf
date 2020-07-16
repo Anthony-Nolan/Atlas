@@ -41,11 +41,11 @@ output "match-prediction-database-name" {
   value = module.match_prediction.sql_database.name
 }
 
-output "sql_server_admin_login" {
+output "sql-server-admin-login" {
   value = var.DATABASE_SERVER_ADMIN_LOGIN
 }
 
-output "sql-server_admin_login_password" {
+output "sql-server-admin-login-password" {
   value = var.DATABASE_SERVER_ADMIN_LOGIN_PASSWORD
 }
 
