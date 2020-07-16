@@ -35,15 +35,15 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        public async Task ExpandCompressedPhenotype_IncludesSwappedGenotypes()
+        public async Task ExpandCompressedPhenotype_DoesNotIncludesSwappedGenotypes()
         {
             var phenotype = new PhenotypeInfoBuilder<string>(UnambiguousAlleleDetails.Alleles()).Build();
             var haplotypes = new List<LociInfo<string>> {HaplotypeBuilder1.Build(), HaplotypeBuilder2.Build()};
 
             var genotypes = await expander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultLoci, haplotypes);
 
-            // Expect (a,b) and (b,a) to both be returned
-            genotypes.Count.Should().Be(2);
+            // Expect (a,b) to only be returned once - homozygous correction factor takes care of this.
+            genotypes.Count.Should().Be(1);
         }
 
         [Test]
@@ -93,7 +93,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var genotypes = await expander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultLoci, haplotypes);
 
-            genotypes.Count.Should().Be(2);
+            genotypes.Count.Should().Be(1);
         }
 
         // This test is fairly slow, as tests go: ~3 seconds.
@@ -134,8 +134,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var genotypes = await expander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultLoci, haplotypes);
 
-            // Of two matching haplotypes, four possible combinations as diplotypes: x & y => (xx)/(xy)/(yy)/(yx)
-            genotypes.Count.Should().Be(4);
+            // Of two matching haplotypes, four possible combinations as diplotypes: x & y => (xx)/(xy)/(yy)
+            genotypes.Count.Should().Be(3);
         }
     }
 }

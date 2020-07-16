@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Test.Integration.Resources;
@@ -140,7 +141,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .Build();
 
             var matchProbabilityInput = DefaultInputBuilder.With(i => i.PatientHla, patientHla).Build();
-            
+
             var expectedProbabilityPerLocus = new LociInfo<decimal?>
             {
                 A = 0.0823045267489711934156378601m,
@@ -160,11 +161,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        public async Task CalculateMatchProbability_WithAmbiguousHomozygousHla_ReturnsCorrectProbability()
+        public async Task CalculateMatchProbability_WithAmbiguousHomozygousHlaAtSingleLocus_ReturnsCorrectProbability()
         {
             var patientHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, "02:XX").Build();
             var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.Two, "11:03/02:01").Build();
-            
+
             await ImportFrequencies(new List<HaplotypeFrequency>
             {
                 DefaultHaplotypeFrequency1.WithFrequency(0.05m),
@@ -175,10 +176,51 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .With(i => i.PatientHla, patientHla)
                 .With(i => i.DonorHla, donorHla)
                 .Build();
-            
+
             var matchProbability = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
             matchProbability.ZeroMismatchProbability.Percentage.Should().Be(22);
+        }
+
+        // These test cases were calculated by hand to ensure we are asserting the correct percentages
+        [TestCase(10, 90, 5)]
+        [TestCase(90, 10, 82)]
+        public async Task CalculateMatchProbability_WhenOnlyMatchingGenotypeIsHomozygousAtAllLoci_ReturnsCorrectProbability(
+            int sharedHaplotypeFrequencyAsPercentage,
+            int otherHaplotypeFrequencyAsPercentage,
+            int expectedZeroMismatchPercentage
+        )
+        {
+            var sharedHaplotypeHla = Alleles.UnambiguousAlleleDetails.GGroups().Split().Item1;
+
+            // patientHla entirely homozygous
+            var patientHla = new PhenotypeInfo<string>(sharedHaplotypeHla, sharedHaplotypeHla);
+
+            const Locus ambiguousLocus = Locus.B;
+            const LocusPosition ambiguousPosition = LocusPosition.Two;
+
+            var alleleDetailsAtAmbiguousLocus = Alleles.UnambiguousAlleleDetails.GetLocus(ambiguousLocus);
+            var donorHla = new PhenotypeInfoBuilder<string>(patientHla)
+                .WithDataAt(ambiguousLocus, ambiguousPosition,
+                    $"{alleleDetailsAtAmbiguousLocus.Position1.Allele}/{alleleDetailsAtAmbiguousLocus.Position2.Allele}")
+                .Build();
+
+            var matchProbabilityInput = DefaultInputBuilder
+                .With(i => i.PatientHla, patientHla)
+                .With(i => i.DonorHla, donorHla)
+                .Build();
+            await ImportFrequencies(new List<HaplotypeFrequency>
+            {
+                DefaultHaplotypeFrequency1
+                    .WithFrequencyAsPercentage(sharedHaplotypeFrequencyAsPercentage),
+                DefaultHaplotypeFrequency1
+                    .WithDataAt(ambiguousLocus, alleleDetailsAtAmbiguousLocus.Position2.GGroup)
+                    .WithFrequencyAsPercentage(otherHaplotypeFrequencyAsPercentage),
+            });
+
+            var matchProbability = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+
+            matchProbability.ZeroMismatchProbability.Percentage.Should().Be(expectedZeroMismatchPercentage);
         }
     }
 }

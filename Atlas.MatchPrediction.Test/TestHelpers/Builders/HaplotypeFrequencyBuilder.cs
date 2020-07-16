@@ -39,5 +39,10 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
         {
             return builder.With(f => f.Frequency, frequency);
         }
+
+        public static Builder WithFrequencyAsPercentage(this Builder builder, int frequencyPercentage)
+        {
+            return builder.With(f => f.Frequency, decimal.Divide(frequencyPercentage, 100));
+        }
     }
 }

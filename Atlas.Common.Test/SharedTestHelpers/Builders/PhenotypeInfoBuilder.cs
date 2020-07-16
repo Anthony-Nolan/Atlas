@@ -29,7 +29,7 @@ namespace Atlas.Common.Test.SharedTestHelpers.Builders
 
         public PhenotypeInfoBuilder(PhenotypeInfo<T> initialValues)
         {
-            phenotypeInfo = initialValues;
+            phenotypeInfo = new PhenotypeInfo<T>(initialValues);
         }
 
         public PhenotypeInfoBuilder<T> WithDataAt(Locus locus, LocusPosition position, T value)
