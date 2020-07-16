@@ -11,6 +11,6 @@ namespace Atlas.MatchPrediction.Models
         public LociInfo<int?> MatchCounts { get; set; }
         public ISet<Locus> AvailableLoci { get; set; }
         public int MatchCount => MatchCounts.Reduce((locus, value, accumulator) => accumulator + value ?? accumulator, 0);
-        public int MismatchCount => AvailableLoci.Count - MatchCount;
+        public int MismatchCount => (AvailableLoci.Count * 2) - MatchCount;
     }
 }

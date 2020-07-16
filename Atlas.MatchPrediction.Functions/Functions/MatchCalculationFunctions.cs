@@ -35,8 +35,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
                     matchCalculationInput.PatientHla,
                     matchCalculationInput.DonorHla,
                     matchCalculationInput.HlaNomenclatureVersion,
-                    matchCalculationInput.AllowedPatientLoci,
-                    matchCalculationInput.AllowedDonorLoci);
+                    matchCalculationInput.AllowedLoci);
 
                 return new JsonResult(new MatchCalculationResponse {MatchCounts = match.MatchCounts, IsTenOutOfTenMatch = match.MismatchCount == 0});
             }
