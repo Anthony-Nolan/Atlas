@@ -37,6 +37,18 @@ namespace Atlas.Common.Maths
         /// </param>
         public static IEnumerable<Tuple<T, T>> AllPairs<T>(T[] array, bool shouldIncludeSelfPairs = false)
         {
+            var empty = Enumerable.Empty<Tuple<T, T>>();
+            if (array.Length == 0)
+            {
+                return empty;
+            }
+
+            if (array.Length == 1)
+            {
+                var single = array.Single();
+                return shouldIncludeSelfPairs ? new []{ Tuple.Create(single, single) } : empty;
+            }
+
             var nonSelfPairs = AllCombinations(array, 2).Select(p => new Tuple<T, T>(p[0], p[1]));
             return shouldIncludeSelfPairs ? nonSelfPairs.Concat(AllSelfPairs(array)) : nonSelfPairs;
         }
@@ -70,10 +82,21 @@ namespace Atlas.Common.Maths
         /// <param name="n_sourceCollectionSize"></param>
         /// <param name="r_combinationSize"></param>
         // ReSharper disable twice InconsistentNaming
-        private static IEnumerable<int[]> AllCombinations(int n_sourceCollectionSize, int r_combinationSize)
+        public static IEnumerable<int[]> AllCombinations(int n_sourceCollectionSize, int r_combinationSize)
         {
+            if (n_sourceCollectionSize * r_combinationSize <= 0 || n_sourceCollectionSize <= 0)
+            {
+                throw new ArgumentOutOfRangeException($"Both 'n' and 'r' must be strictly positive.  r was '{r_combinationSize}', n was '{n_sourceCollectionSize}'.");
+            }
+
+            if (r_combinationSize > n_sourceCollectionSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(r_combinationSize), $"'r' may not be greater than 'n'. r was '{r_combinationSize}', n was '{n_sourceCollectionSize}'.");
+            }
+
             var result = new int[r_combinationSize];
             var stack = new Stack<int>(r_combinationSize);
+
             stack.Push(0);
             while (stack.Count > 0)
             {
@@ -105,7 +128,7 @@ namespace Atlas.Common.Maths
         }
 
         // ReSharper disable once InconsistentNaming
-        private static long nCr(int n_sourceCollectionSize, int r_combinationSize)
+        public static long nCr(int n_sourceCollectionSize, int r_combinationSize)
         {
             // naive: return Factorial(n) / (Factorial(r) * Factorial(n - r));
             return nPr(n_sourceCollectionSize, r_combinationSize) / Factorial(r_combinationSize);
