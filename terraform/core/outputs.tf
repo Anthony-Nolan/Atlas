@@ -1,4 +1,4 @@
-// This file is for outputs that are read by otherr terraforms.
+// This file is for outputs that are read by other terraforms.
 // If you want an output to be read by azure, use CIOutputs.tf
 
 output "donor_import" {
