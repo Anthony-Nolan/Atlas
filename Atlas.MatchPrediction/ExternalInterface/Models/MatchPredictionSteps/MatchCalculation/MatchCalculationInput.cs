@@ -9,7 +9,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.Ma
         public PhenotypeInfo<string> DonorHla { get; set; }
         public PhenotypeInfo<string> PatientHla { get; set; }
         public string HlaNomenclatureVersion { get; set; }
-        public ISet<Locus> AllowedPatientLoci { get; set; }
-        public ISet<Locus> AllowedDonorLoci { get; set; }
+        public ISet<Locus> AllowedLoci { get; set; }
     }
 }

@@ -28,8 +28,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         private static readonly LociInfo<int?> DoubleMismatchAtA = new LociInfo<int?>
             {A = 0, B = 2, C = 2, Dpb1 = null, Dqb1 = 2, Drb1 = 2};
 
-
-        private static readonly ISet<Locus> allowedLoci = new HashSet<Locus> {Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1};
+        private static readonly ISet<Locus> AllowedLoci = new HashSet<Locus> {Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1};
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -46,8 +45,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     DefaultUnambiguousAllelesBuilder.Build(),
                     DefaultUnambiguousAllelesBuilder.Build(),
                     HlaNomenclatureVersion,
-                    allowedLoci,
-                    allowedLoci);
+                    AllowedLoci);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -62,8 +60,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 patientGenotype,
                 donorGenotype, 
                 HlaNomenclatureVersion,
-                allowedLoci,
-                allowedLoci);
+                AllowedLoci);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -78,8 +75,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 patientGenotype,
                 donorGenotype,
                 HlaNomenclatureVersion,
-                allowedLoci,
-                allowedLoci);
+                AllowedLoci);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -94,8 +90,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 patientGenotype,
                 donorGenotype,
                 HlaNomenclatureVersion,
-                allowedLoci,
-                allowedLoci);
+                AllowedLoci);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -112,8 +107,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     DefaultUnambiguousAllelesBuilder.Build(),
                     donorGenotype,
                     HlaNomenclatureVersion,
-                    allowedLoci,
-                    allowedLoci);
+                    AllowedLoci);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(TenOutOfTenMatch);
         }
@@ -128,8 +122,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     patientGenotype,
                     DefaultUnambiguousAllelesBuilder.Build(),
                     HlaNomenclatureVersion,
-                    allowedLoci,
-                    allowedLoci);
+                    AllowedLoci);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(SingleMismatchAtA);
         }
@@ -144,8 +137,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     DefaultUnambiguousAllelesBuilder.Build(),
                     donorGenotype,
                     HlaNomenclatureVersion,
-                    allowedLoci,
-                    allowedLoci);
+                    AllowedLoci);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(SingleMismatchAtA);
         }
@@ -160,8 +152,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 patientGenotype,
                 donorGenotype,
                 HlaNomenclatureVersion,
-                allowedLoci,
-                allowedLoci);
+                AllowedLoci);
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(DoubleMismatchAtA);
         }
