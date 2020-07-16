@@ -9,7 +9,6 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         /// <summary>
         ///  Returns all possible unambiguous genotypes by calculating the cartesian product of a set of possible alleles at each position.
         /// </summary>
-        // ReSharper disable once ReturnTypeCanBeEnumerable.Global
         public ISet<PhenotypeInfo<string>> ExpandPhenotype(PhenotypeInfo<IReadOnlyCollection<string>> allelesPerLocus);
     }
 

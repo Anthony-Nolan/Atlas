@@ -32,7 +32,6 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             PhenotypeInfo<string> phenotype,
             string hlaNomenclatureVersion,
             ISet<Locus> allowedLoci,
-            // ReSharper disable once ParameterTypeCanBeEnumerable.Global
             IReadOnlyCollection<LociInfo<string>> allPossibleHaplotypes = null);
     }
 
@@ -76,8 +75,24 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             ).ToList();
 
             var allowedDiplotypes = Combinations.AllPairs(allowedHaplotypes.ToArray(), true).ToList();
+            var filteredDiplotypes = FilterDiplotypes(allowedDiplotypes, gGroupsPerPosition);
 
-            var filteredDiplotypes = allowedDiplotypes.Where(diplotype =>
+            logger.SendTrace($"Filtered expanded genotypes: {filteredDiplotypes.Count}");
+            return filteredDiplotypes.Select(dp => new PhenotypeInfo<string>(dp.Item1, dp.Item2)).ToHashSet();
+        }
+
+        /// <summary>
+        /// Filters a collection of diplotypes down to only those which are possible for an input phenotype, typed to G-Group resolution
+        /// </summary>
+        /// <param name="diplotypes">Source of diplotypes to filter.</param>
+        /// <param name="gGroupsPerPosition">GGroups present in the phenotype being expanded.</param>
+        private static List<Tuple<LociInfo<string>, LociInfo<string>>> FilterDiplotypes(
+            IReadOnlyCollection<Tuple<LociInfo<string>, LociInfo<string>>> diplotypes,
+            PhenotypeInfo<IReadOnlyCollection<string>> gGroupsPerPosition
+        )
+        {
+            // ReSharper disable once UseDeconstructionOnParameter
+            return diplotypes.Where(diplotype =>
             {
                 return !gGroupsPerPosition.Reduce((l, gGroups, toExclude) =>
                 {
@@ -100,9 +115,6 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
                              gGroups.Position1.Contains(diplotypeGGroup2) && gGroups.Position2.Contains(diplotypeGGroup1));
                 }, false);
             }).ToList();
-
-            logger.SendTrace($"Filtered expanded genotypes: {filteredDiplotypes.Count}");
-            return filteredDiplotypes.Select(dp => new PhenotypeInfo<string>(dp.Item1, dp.Item2)).ToHashSet();
         }
 
         /// <summary>
