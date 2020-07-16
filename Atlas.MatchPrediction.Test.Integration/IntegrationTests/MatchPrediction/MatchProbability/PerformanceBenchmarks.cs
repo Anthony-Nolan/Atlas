@@ -46,7 +46,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        [IgnoreExceptOnCiPerfTest("Ran in ~4.4s")]
+        // [IgnoreExceptOnCiPerfTest("Ran in ~5s")]
         public async Task MatchPrediction_WithSmallAmbiguityAtEachDonorLocus_CalculatesProbabilityCorrectly()
         {
             var donorHla = new PhenotypeInfoBuilder<string>()
@@ -66,14 +66,14 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Percentage.Should().Be(75);
-            matchDetails.OneMismatchProbability.Percentage.Should().Be(22);
-            matchDetails.TwoMismatchProbability.Percentage.Should().Be(3);
+            matchDetails.ZeroMismatchProbability.Percentage.Should().Be(60);
+            matchDetails.OneMismatchProbability.Percentage.Should().Be(35);
+            matchDetails.TwoMismatchProbability.Percentage.Should().Be(4);
         }
 
         [Test]
         // TODO: ATLAS-400: This should be runnable
-        // [Ignore("Too slow to complete yet.")]
+        [Ignore("Too slow to complete yet.")]
         public async Task MatchPrediction_WithDonorFullyTyped_AtTruncatedTwoFieldAlleleResolution_CalculatesProbabilityCorrectly()
         {
             var donorHla = new PhenotypeInfoBuilder<string>()
