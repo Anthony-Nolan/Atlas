@@ -34,6 +34,10 @@ function generateSearchRequest(patientHlaData) {
         "LocusMismatchDqb1": ${buildLocusPreferences(config.mismatchesDqb1)},
         "LocusMismatchDrb1": ${buildLocusPreferences(config.mismatchesDrb1)}
     },
+    "ScoringCriteria": {
+        "LociToScore": [],
+        "LociToExcludeFromAggregateScore": []
+    },
     "SearchHlaData":{
         "LocusSearchHlaA": ${buildHlaLocus(rawData[0], rawData[1])},
         "LocusSearchHlaB": ${buildHlaLocus(rawData[2], rawData[3])},
@@ -41,8 +45,7 @@ function generateSearchRequest(patientHlaData) {
         "LocusSearchHlaDPB1": ${buildHlaLocus(rawData[6], rawData[7])},
         "LocusSearchHlaDQB1": ${buildHlaLocus(rawData[8], rawData[9])},
         "LocusSearchHlaDRB1": ${buildHlaLocus(rawData[10], rawData[11])},
-    },
-    "LociToExcludeFromAggregateScore": []
+    }
 }
     `;
 }

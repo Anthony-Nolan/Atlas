@@ -4,6 +4,7 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
+using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
@@ -53,12 +54,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
         public async Task<IEnumerable<MatchAndScoreResult>> ScoreMatchesAgainstPatientHla(MatchResultsScoringRequest request)
         {
-            if (request.LociToScore.IsNullOrEmpty())
+            if (request.ScoringCriteria.LociToScore.IsNullOrEmpty())
             {
                 return request.MatchResults.Select(m => new MatchAndScoreResult { MatchResult = m });
             }
 
-            var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla, request.LociToScore);
+            var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla, request.ScoringCriteria.LociToScore);
 
             var matchAndScoreResults = new List<MatchAndScoreResult>();
             foreach (var matchResult in request.MatchResults)
@@ -75,12 +76,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 
         public async Task<ScoreResult> ScoreDonorHlaAgainstPatientHla(DonorHlaScoringRequest request)
         {
-            if (request.LociToScore.IsNullOrEmpty())
+            if (request.ScoringCriteria.LociToScore.IsNullOrEmpty())
             {
                 return default;
             }
 
-            var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla, request.LociToScore);
+            var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla, request.ScoringCriteria.LociToScore);
             return await ScoreDonorHlaAgainstPatientMetadata(request.DonorHla, request, patientScoringMetadata);
         }
 
@@ -89,7 +90,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             ScoringRequest request,
             PhenotypeInfo<IHlaScoringMetadata> patientScoringMetadata)
         {
-            var donorScoringMetadata = await GetHlaScoringMetadata(donorHla, request.LociToScore);
+            var donorScoringMetadata = await GetHlaScoringMetadata(donorHla, request.ScoringCriteria.LociToScore);
 
             var grades = gradingService.CalculateGrades(patientScoringMetadata, donorScoringMetadata);
             var confidences = confidenceService.CalculateMatchConfidences(patientScoringMetadata, donorScoringMetadata, grades);
@@ -98,15 +99,13 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             {
                 Grades = grades,
                 Confidences = confidences,
-                DonorHla = donorHla,
-                LociToScore = request.LociToScore,
-                LociToExcludeFromAggregateScoring = request.LociToExcludeFromAggregateScoring
+                DonorHla = donorHla
             };
 
-            return BuildScoreResult(donorScoringInfo);
+            return BuildScoreResult(request.ScoringCriteria, donorScoringInfo);
         }
 
-        private async Task<PhenotypeInfo<IHlaScoringMetadata>> GetHlaScoringMetadata(PhenotypeInfo<string> hlaNames, IReadOnlyCollection<Locus> lociToScore)
+        private async Task<PhenotypeInfo<IHlaScoringMetadata>> GetHlaScoringMetadata(PhenotypeInfo<string> hlaNames, IEnumerable<Locus> lociToScore)
         {
             return await hlaNames.MapAsync(
                 async (locus, position, hla) =>
@@ -121,11 +120,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                 });
         }
 
-        private ScoreResult BuildScoreResult(DonorScoringInfo donorScoringInfo)
+        private ScoreResult BuildScoreResult(ScoringCriteria criteria, DonorScoringInfo donorScoringInfo)
         {
             var scoreResult = new ScoreResult();
 
-            foreach (var locus in donorScoringInfo.LociToScore)
+            foreach (var locus in criteria.LociToScore)
             {
                 var gradeResultAtPosition1 = donorScoringInfo.Grades.GetPosition(locus, LocusPosition.One).GradeResult;
                 var confidenceAtPosition1 = donorScoringInfo.Confidences.GetPosition(locus, LocusPosition.One);
@@ -145,8 +144,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                 new ScoreResultAggregatorParameters
                 {
                     ScoreResult = scoreResult,
-                    ScoredLoci = donorScoringInfo.LociToScore,
-                    LociToExclude = donorScoringInfo.LociToExcludeFromAggregateScoring
+                    ScoredLoci = criteria.LociToScore.ToList(),
+                    LociToExclude = criteria.LociToExcludeFromAggregateScore.ToList()
                 });
 
             return scoreResult;
@@ -168,8 +167,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
             public PhenotypeInfo<MatchGradeResult> Grades { get; set; }
             public PhenotypeInfo<MatchConfidence> Confidences { get; set; }
             public PhenotypeInfo<string> DonorHla { get; set; }
-            public IReadOnlyCollection<Locus> LociToScore { get; set; }
-            public IReadOnlyCollection<Locus> LociToExcludeFromAggregateScoring { get; set; }
         }
     }
 

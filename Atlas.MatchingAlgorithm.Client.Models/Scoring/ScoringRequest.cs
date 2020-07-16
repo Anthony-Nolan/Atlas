@@ -1,14 +1,12 @@
-﻿using System.Collections.Generic;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 
 namespace Atlas.MatchingAlgorithm.Client.Models.Scoring
 {
     public abstract class ScoringRequest
     {
         public PhenotypeInfo<string> PatientHla { get; set; }
-        public IReadOnlyCollection<Locus> LociToScore { get; set; }
-        public IReadOnlyCollection<Locus> LociToExcludeFromAggregateScoring { get; set; }
+        public ScoringCriteria ScoringCriteria { get; set; }
     }
 
     public class DonorHlaScoringRequest : ScoringRequest

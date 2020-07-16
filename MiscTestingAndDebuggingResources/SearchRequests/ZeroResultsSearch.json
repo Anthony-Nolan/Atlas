@@ -1,48 +1,51 @@
 {
-    "SearchType": "Adult",
-    "MatchCriteria": {
-        "DonorMismatchCount": 0,
-        "LocusMismatchA": {
-            "MismatchCount": 0
-        },
-        "LocusMismatchB": {
-            "MismatchCount": 0
-        },
-        "LocusMismatchC": {
-            "MismatchCount": 0
-        },
-        "LocusMismatchDqb1": {
-            "MismatchCount": 0
-        },
-        "LocusMismatchDrb1": {
-            "MismatchCount": 0
-        }
+  "SearchType": "Adult",
+  "MatchCriteria": {
+    "DonorMismatchCount": 0,
+    "LocusMismatchA": {
+      "MismatchCount": 0
     },
-    "SearchHlaData": {
-        "LocusSearchHlaA": {
-            "SearchHla1": "*01:01:01",
-            "SearchHla2": "*25:01:01"
-        },
-        "LocusSearchHlaB": {
-            "SearchHla1": "*08:01:01",
-            "SearchHla2": "*18:01:01"
-        },
-        "LocusSearchHlaC": {
-            "SearchHla1": "*07:01:01",
-            "SearchHla2": "*12:03:01"
-        },
-        "LocusSearchHlaDpb1": {
-            "SearchHla1": "01:01:01",
-            "SearchHla2": "04:01:01"
-        },
-        "LocusSearchHlaDqb1": {
-            "SearchHla1": "*02:01:01",
-            "SearchHla2": "*03:03:02"
-        },
-        "LocusSearchHlaDrb1": {
-            "SearchHla1": "*03:01:01",
-            "SearchHla2": "*07:01:01"
-        }
+    "LocusMismatchB": {
+      "MismatchCount": 0
     },
+    "LocusMismatchC": {
+      "MismatchCount": 0
+    },
+    "LocusMismatchDqb1": {
+      "MismatchCount": 0
+    },
+    "LocusMismatchDrb1": {
+      "MismatchCount": 0
+    }
+  },
+  "ScoringCriteria": {
+    "LociToScore": [],
     "LociToExcludeFromAggregateScore": []
+  },
+  "SearchHlaData": {
+    "LocusSearchHlaA": {
+      "SearchHla1": "*01:01:01",
+      "SearchHla2": "*25:01:01"
+    },
+    "LocusSearchHlaB": {
+      "SearchHla1": "*08:01:01",
+      "SearchHla2": "*18:01:01"
+    },
+    "LocusSearchHlaC": {
+      "SearchHla1": "*07:01:01",
+      "SearchHla2": "*12:03:01"
+    },
+    "LocusSearchHlaDpb1": {
+      "SearchHla1": "01:01:01",
+      "SearchHla2": "04:01:01"
+    },
+    "LocusSearchHlaDqb1": {
+      "SearchHla1": "*02:01:01",
+      "SearchHla2": "*03:03:02"
+    },
+    "LocusSearchHlaDrb1": {
+      "SearchHla1": "*03:01:01",
+      "SearchHla2": "*07:01:01"
+    }
+  }
 }

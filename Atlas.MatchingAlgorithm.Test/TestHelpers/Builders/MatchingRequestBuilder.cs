@@ -35,8 +35,11 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                     B = new LocusInfo<string>("default-hla-b"),
                     Drb1 = new LocusInfo<string>("default-hla-drb1")
                 },
-                LociToScore = new List<Locus>(),
-                LociToExcludeFromAggregateScore = new List<Locus>()
+                ScoringCriteria = new ScoringCriteria()
+                {
+                    LociToScore = new List<Locus>(),
+                    LociToExcludeFromAggregateScore = new List<Locus>()
+                }
             };
         }
 
@@ -61,6 +64,22 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         public MatchingRequestBuilder WithMismatchCountAtLoci(IEnumerable<Locus> loci, int locusMismatchCount)
         {
             return loci.Aggregate(this, (current, locus) => current.WithLocusMismatchCount(locus, locusMismatchCount));
+        }
+
+        #endregion
+
+        #region Scoring Criteria
+
+        public MatchingRequestBuilder WithLociToScore(IEnumerable<Locus> loci)
+        {
+            matchingRequest.ScoringCriteria.LociToScore = loci;
+            return this;
+        }
+
+        public MatchingRequestBuilder WithLociExcludedFromScoringAggregates(IEnumerable<Locus> loci)
+        {
+            matchingRequest.ScoringCriteria.LociToExcludeFromAggregateScore = loci;
+            return this;
         }
 
         #endregion
@@ -117,18 +136,6 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         public MatchingRequestBuilder WithSearchType(DonorType donorType)
         {
             matchingRequest.SearchType = donorType;
-            return this;
-        }
-
-        public MatchingRequestBuilder WithLociToScore(IEnumerable<Locus> loci)
-        {
-            matchingRequest.LociToScore = loci;
-            return this;
-        }
-
-        public MatchingRequestBuilder WithLociExcludedFromScoringAggregates(IEnumerable<Locus> loci)
-        {
-            matchingRequest.LociToExcludeFromAggregateScore = loci;
             return this;
         }
 
