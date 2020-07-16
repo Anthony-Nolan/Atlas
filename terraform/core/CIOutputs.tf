@@ -60,3 +60,7 @@ output "donor-import-database-name" {
 output "donor-import-function-name" {
   value = module.donor_import.function_app.app_name
 }
+
+output "test_value" {
+  value = "This is the result"
+}
