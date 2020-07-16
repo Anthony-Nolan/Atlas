@@ -286,7 +286,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     .WithFrequencyAsPercentage(otherHaplotypeFrequencyAsPercentage),
             });
 
-            var matchProbability = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchProbability = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
             matchProbability.ZeroMismatchProbability.Percentage.Should().Be(expectedZeroMismatchPercentage);
         }
