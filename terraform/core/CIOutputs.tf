@@ -36,3 +36,27 @@ output "matching-algorithm-function-name" {
 output "donor-matching-function-name" {
   value = module.matching_algorithm.function_app.donor_matching_app_name
 }
+
+output "match-prediction-database-name" {
+  value = module.match_prediction.sql_database.name
+}
+
+output "sql_server_admin_login" {
+  value = var.DATABASE_SERVER_ADMIN_LOGIN
+}
+
+output "sql-server_admin_login_password" {
+  value = var.DATABASE_SERVER_ADMIN_LOGIN_PASSWORD
+}
+
+output "match-prediction-function-name" {
+  value = module.match_prediction.function_app.app_name
+}
+
+output "donor-import-database-name" {
+  value= module.donor_import.sql_database.name
+}
+
+output "donor-import-function-name" {
+  value = module.donor_import.function_app.app_name
+}
