@@ -3,6 +3,13 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.Common.Matching.Services
 {
+    public enum UntypedLocusBehaviour
+    {
+        TreatAsMatch,
+        TreatAsMismatch,
+        Throw
+    }
+
     public interface IStringBasedLocusMatchCalculator
     {
         /// <summary>
@@ -15,12 +22,15 @@ namespace Atlas.Common.Matching.Services
         /// This method is significantly faster than that in <see cref="ILocusMatchCalculator"/>, but can only be used in very limited cases. 
         /// </summary>
         /// <returns></returns>
-        int MatchCount(LocusInfo<string> patientHla, LocusInfo<string> donorHla);
+        int MatchCount(
+            LocusInfo<string> patientHla,
+            LocusInfo<string> donorHla,
+            UntypedLocusBehaviour untypedLocusBehaviour = UntypedLocusBehaviour.TreatAsMatch);
     }
 
     internal class StringBasedLocusMatchCalculator : IStringBasedLocusMatchCalculator
     {
-        public int MatchCount(LocusInfo<string> patientHla, LocusInfo<string> donorHla)
+        public int MatchCount(LocusInfo<string> patientHla, LocusInfo<string> donorHla, UntypedLocusBehaviour untypedLocusBehaviour)
         {
             if (patientHla.SinglePositionNull() || donorHla.SinglePositionNull())
             {
@@ -31,9 +41,16 @@ namespace Atlas.Common.Matching.Services
             // Untyped loci are considered to have a "potential" match count of 2 - as they are not guaranteed not to match.
             if (IsUntyped(patientHla) || IsUntyped(donorHla))
             {
-                return 2;
+                return untypedLocusBehaviour switch
+                {
+                    UntypedLocusBehaviour.TreatAsMatch => 2,
+                    UntypedLocusBehaviour.TreatAsMismatch => 0,
+                    UntypedLocusBehaviour.Throw => throw new ArgumentException(
+                        $"Locus is untyped, and {nameof(UntypedLocusBehaviour)} is set to {UntypedLocusBehaviour.Throw}"),
+                    _ => throw new ArgumentOutOfRangeException(nameof(untypedLocusBehaviour))
+                };
             }
-            
+
             if (TwoOutOfTwoStringMatch(patientHla, donorHla))
             {
                 return 2;
