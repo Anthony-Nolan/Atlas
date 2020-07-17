@@ -39,7 +39,8 @@ namespace Atlas.Common.Matching.Services
                 return 2;
             }
 
-            return OneOutOfTwoStringMatch(patientHla, donorHla) ? 1 : 0;
+            // relies on 2/2 being called first
+            return AtLeastOneStringMatch(patientHla, donorHla) ? 1 : 0;
         }
 
         private static bool TwoOutOfTwoStringMatch(LocusInfo<string> locus1, LocusInfo<string> locus2)
@@ -49,22 +50,21 @@ namespace Atlas.Common.Matching.Services
                 return false;
             }
 
-            var directMatch = NonNullMatch(locus1.Position1, locus2.Position1) && NonNullMatch(locus1.Position2, locus2.Position2);
-            var crossMatch = NonNullMatch(locus1.Position1, locus2.Position2) && NonNullMatch(locus1.Position2, locus2.Position1);
+            var directMatch = ExpressingHlaMatch(locus1.Position1, locus2.Position1) && ExpressingHlaMatch(locus1.Position2, locus2.Position2);
+            var crossMatch = ExpressingHlaMatch(locus1.Position1, locus2.Position2) && ExpressingHlaMatch(locus1.Position2, locus2.Position1);
             return directMatch || crossMatch;
         }
 
-        // relies on 2/2 being called first
-        private static bool OneOutOfTwoStringMatch(LocusInfo<string> locus1, LocusInfo<string> locus2)
+        private static bool AtLeastOneStringMatch(LocusInfo<string> locus1, LocusInfo<string> locus2)
         {
-            return NonNullMatch(locus1.Position1, locus2.Position1) ||
-                   NonNullMatch(locus1.Position1, locus2.Position2) ||
-                   NonNullMatch(locus1.Position2, locus2.Position1) ||
-                   NonNullMatch(locus1.Position2, locus2.Position2);
+            return ExpressingHlaMatch(locus1.Position1, locus2.Position1) ||
+                   ExpressingHlaMatch(locus1.Position1, locus2.Position2) ||
+                   ExpressingHlaMatch(locus1.Position2, locus2.Position1) ||
+                   ExpressingHlaMatch(locus1.Position2, locus2.Position2);
         }
 
-        // nulls = null alleles for pGroups.
-        private static bool NonNullMatch(string locus1, string locus2)
+        // nulls = non expressing alleles (aka "null alleles") for pGroups.
+        private static bool ExpressingHlaMatch(string locus1, string locus2)
         {
             if (locus1 == null || locus2 == null)
             {
@@ -74,7 +74,7 @@ namespace Atlas.Common.Matching.Services
             return locus1 == locus2;
         }
 
-        public static bool IsUntyped(LocusInfo<string> hla)
+        private static bool IsUntyped(LocusInfo<string> hla)
         {
             return hla.Position1And2Null();
         }

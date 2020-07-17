@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Matching.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
-using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.Services.MatchCalculation
@@ -56,7 +54,11 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
                 return allowedLoci.Contains(locus) ? stringBasedLocusMatchCalculator.MatchCount(patientHla, donorHla) : (int?) null;
             });
 
-            return new GenotypeMatchDetails {MatchCounts = matchCounts, PatientGenotype = patientGenotype, DonorGenotype = donorGenotype,
+            return new GenotypeMatchDetails
+            {
+                MatchCounts = matchCounts,
+                PatientGenotype = patientGenotype,
+                DonorGenotype = donorGenotype,
                 AvailableLoci = allowedLoci
             };
         }
