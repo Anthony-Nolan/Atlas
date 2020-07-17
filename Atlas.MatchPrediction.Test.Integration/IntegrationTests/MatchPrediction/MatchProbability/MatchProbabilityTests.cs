@@ -220,7 +220,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 Drb1 = 0.8333333333333333333333333333m
             };
 
-            var matchDetails = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.ZeroMismatchProbability.Decimal.Should().Be(0.012345679012345679012345679m);
             matchDetails.OneMismatchProbability.Decimal.Should().Be(0.1975308641975308641975308642m);

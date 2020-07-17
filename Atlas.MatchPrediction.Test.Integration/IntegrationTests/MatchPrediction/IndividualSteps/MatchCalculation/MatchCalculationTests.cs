@@ -10,7 +10,6 @@ using Atlas.MatchPrediction.Test.Integration.Resources;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using MoreLinq.Extensions;
 using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.IndividualSteps.MatchCalculation
@@ -27,8 +26,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            matchCalculationService =
-                DependencyInjection.DependencyInjection.Provider.GetService<IMatchCalculationService>();
+            matchCalculationService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchCalculationService>();
         }
 
         [TestCase(new Locus[0])]
@@ -45,71 +43,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     DefaultGGroupsBuilder.Build(),
                     HlaNomenclatureVersion,
                     loci);
-
-            var expectedMatchCounts = new MatchCountsBuilder().ZeroMismatch(loci).Build();
-
-            matchDetails.MatchCounts.Should().BeEquivalentTo(expectedMatchCounts);
-        }
-
-        [TestCase(new Locus[0])]
-        [TestCase(new[] {Locus.Dqb1})]
-        [TestCase(new[] {Locus.C})]
-        [TestCase(new[] {Locus.Dqb1, Locus.C})]
-        public async Task MatchAtPGroupLevel_WhenGenotypesWithDifferentAllelesWithSameGGroup_IsTenOutOfTenMatch(Locus[] lociToExclude)
-        {
-            var loci = AllowedLoci.Where(l => !lociToExclude.Contains(l)).ToHashSet();
-            var donorGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.B, LocusPosition.Two, "15:228").Build();
-            var patientGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.B, LocusPosition.Two, "15:146").Build();
-
-            var matchDetails = await matchCalculationService.MatchAtPGroupLevel(
-                patientGenotype,
-                donorGenotype, 
-                HlaNomenclatureVersion,
-                loci.ToHashSet());
-
-            var expectedMatchCounts = new MatchCountsBuilder().ZeroMismatch(loci).Build();
-
-            matchDetails.MatchCounts.Should().BeEquivalentTo(expectedMatchCounts);
-        }
-
-        [TestCase(new Locus[0])]
-        [TestCase(new[] {Locus.Dqb1})]
-        [TestCase(new[] {Locus.C})]
-        [TestCase(new[] {Locus.Dqb1, Locus.C})]
-        public async Task MatchAtPGroupLevel_WhenGenotypesWithDifferentAllelesWithSamePGroup_IsTenOutOfTenMatch(Locus[] lociToExclude)
-        {
-            var loci = AllowedLoci.Where(l => !lociToExclude.Contains(l)).ToHashSet();
-            var donorGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.Two, "02:09").Build();
-            var patientGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.Two, "02:66").Build();
-
-            var matchDetails = await matchCalculationService.MatchAtPGroupLevel(
-                patientGenotype,
-                donorGenotype,
-                HlaNomenclatureVersion,
-                loci.ToHashSet());
-
-            var expectedMatchCounts = new MatchCountsBuilder().ZeroMismatch(loci).Build();
-
-            matchDetails.MatchCounts.Should().BeEquivalentTo(expectedMatchCounts);
-        }
-
-        [TestCase(new Locus[0])]
-        [TestCase(new[] {Locus.Dqb1})]
-        [TestCase(new[] {Locus.C})]
-        [TestCase(new[] {Locus.Dqb1, Locus.C})]
-        public async Task MatchAtPGroupLevel_WhenDonorIsSerologicallyTyped_AndDonorHasMatchingAllele_IsTenOutOfTenMatch(Locus[] lociToExclude)
-        {
-            var loci = AllowedLoci.Where(l => !lociToExclude.Contains(l)).ToHashSet();
-            var donorGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.One, "2").Build();
-            var patientGenotype = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, LocusPosition.One, "02:09").Build();
-
-            var matchDetails = await matchCalculationService.MatchAtPGroupLevel(
-                patientGenotype,
-                donorGenotype,
-                HlaNomenclatureVersion,
-                loci.ToHashSet());
-                    AllowedLoci,
-                    AllowedLoci);
 
             var expectedMatchCounts = new MatchCountsBuilder().ZeroMismatch(loci).Build();
 
@@ -201,6 +134,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             matchDetails.MatchCounts.Should().BeEquivalentTo(expectedMatchCounts);
         }
+
+        private static PhenotypeInfoBuilder<string> DefaultUnambiguousAllelesBuilder =>
+            new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles());
 
         private static PhenotypeInfoBuilder<string> DefaultGGroupsBuilder =>
             new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.GGroups());
