@@ -137,10 +137,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             IEnumerable<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>> allPatientDonorCombinations,
             ISet<Locus> allowedLoci)
         {
-            return await logger.RunTimedAsync(
-                async () => (await Task.WhenAll(allPatientDonorCombinations
-                        .Select(pd => CalculateMatch(pd, matchProbabilityInput.HlaNomenclatureVersion, allowedLoci))))
-                    .ToHashSet(),
+            return await logger.RunTimedAsync(async () =>
+                   {
+                       var genotypeMatchingTasks = allPatientDonorCombinations
+                           .Select(pd => CalculateMatch(pd, matchProbabilityInput.HlaNomenclatureVersion, allowedLoci))
+                           .ToList();
+                       return (await Task.WhenAll(genotypeMatchingTasks)).ToHashSet();
+                   },
                 $"{LoggingPrefix}Calculated genotype matches",
                 LogLevel.Verbose
             );
