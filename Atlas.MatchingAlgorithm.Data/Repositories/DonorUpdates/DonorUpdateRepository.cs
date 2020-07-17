@@ -109,9 +109,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     }
                 }
 
-                await ReplaceMatchingGroupsForExistingDonorBatch(donorsWhereHlaHasChanged);
-
                 conn.Close();
+
+                await ReplaceMatchingGroupsForExistingDonorBatch(donorsWhereHlaHasChanged);
             }
         }
 
