@@ -237,7 +237,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             donors = donors.ToList();
 
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
-            var dataTable = CreateDonorDataTableForLocus(donors, locus);
+            var dataTable = BuildPerLocusPGroupDataTable(donors, locus);
 
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
@@ -256,41 +256,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        private DataTable CreateDonorDataTableForLocus(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
+        private async Task BulkInsertDataTable(SqlConnection conn, SqlTransaction transaction, string tableName, DataTable dataTable)
         {
-            var dt = new DataTable();
-            dt.Columns.Add("Id");
-            dt.Columns.Add("DonorId");
-            dt.Columns.Add("TypePosition");
-            dt.Columns.Add("PGroup_Id");
-
-            foreach (var donor in donors)
+            using (var sqlBulk = BuildSqlBulkCopy(tableName, conn, transaction, 14400))
             {
-                donor.MatchingHla.GetLocus(locus).EachPosition((p, h) =>
-                {
-                    if (h == null)
-                    {
-                        return;
-                    }
-
-                    foreach (var pGroup in h.MatchingPGroups)
-                    {
-                        // Data should be written as "TypePosition" so we can guarantee control over the backing int values for this enum
-                        dt.Rows.Add(0, donor.DonorId, (int)p.ToTypePosition(), pGroupRepository.FindOrCreatePGroup(pGroup));
-                    }
-                });
-            }
-
-            return dt;
-        }
-
-        private static async Task BulkInsertDataTable(SqlConnection conn, SqlTransaction transaction, string tableName, DataTable dataTable)
-        {
-            using (var sqlBulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.Default, transaction))
-            {
-                sqlBulk.BatchSize = 10000;
-                sqlBulk.DestinationTableName = tableName;
-                sqlBulk.BulkCopyTimeout = 14400;
                 await sqlBulk.WriteToServerAsync(dataTable);
             }
         }

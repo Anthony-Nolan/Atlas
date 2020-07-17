@@ -41,7 +41,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         };
 
         // The order of these matters when setting up the datatable - if re-ordering, also re-order datatable contents
-        private readonly string[] donorPGroupInsertDataTableColumnNames =
+        private readonly string[] donorPGroupDataTableColumnNames =
         {
             "Id",
             "DonorId",
@@ -56,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             this.pGroupRepository = pGroupRepository;
         }
 
-        protected async Task InsertBatchOfDonors(IEnumerable<DonorInfo> donors)
+        public async Task InsertBatchOfDonors(IEnumerable<DonorInfo> donors)
         {
             var donorInfos = donors.ToList();
 
@@ -70,16 +70,17 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             await BulkInsertDataTable("Donors", dataTable, donorInsertDataTableColumnNames);
         }
 
-        protected async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorInfos)
+        public async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorInfos)
         {
+            donorInfos = donorInfos.ToList();
             await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => AddMatchingGroupsForExistingDonorBatchAtLocus(donorInfos, l)));
         }
 
         private async Task AddMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
         {
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
-            var dataTable = BuildPerLocusPGroupInsertDataTable(donors, locus);
-            await BulkInsertDataTable(matchingTableName, dataTable, donorPGroupInsertDataTableColumnNames);
+            var dataTable = BuildPerLocusPGroupDataTable(donors, locus);
+            await BulkInsertDataTable(matchingTableName, dataTable, donorPGroupDataTableColumnNames);
         }
 
         private DataTable BuildDonorInsertDataTable(IEnumerable<DonorInfo> donorInfos)
@@ -113,33 +114,33 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             return dataTable;
         }
 
-        private DataTable BuildPerLocusPGroupInsertDataTable(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
+        protected DataTable BuildPerLocusPGroupDataTable(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
         {
             var dataTable = new DataTable();
-            foreach (var columnName in donorPGroupInsertDataTableColumnNames)
+            foreach (var columnName in donorPGroupDataTableColumnNames)
             {
                 dataTable.Columns.Add(columnName);
             }
 
-            var tempPositionDictionary = EnumExtensions.EnumerateValues<LocusPosition>().ToDictionary(p => p, p => (int) p.ToTypePosition());
+            // Data should be written as "TypePosition" so we can guarantee control over the backing int values for this enum
+            var dbPositionIdDictionary = EnumExtensions.EnumerateValues<LocusPosition>().ToDictionary(p => p, p => (int) p.ToTypePosition());
             foreach (var donor in donors)
             {
-                donor.MatchingHla.GetLocus(locus).EachPosition((p, h) =>
+                donor.MatchingHla.GetLocus(locus).EachPosition((position, hlaAtLocusPosition) =>
                 {
-                    if (h == null)
+                    if (hlaAtLocusPosition == null)
                     {
                         return;
                     }
 
-                    var position = tempPositionDictionary[p];
+                    var positionId = dbPositionIdDictionary[position];
 
-                    foreach (var pGroup in h.MatchingPGroups)
+                    foreach (var pGroup in hlaAtLocusPosition.MatchingPGroups)
                     {
-                        // Data should be written as "TypePosition" so we can guarantee control over the backing int values for this enum
                         dataTable.Rows.Add(
                             0,
                             donor.DonorId,
-                            position,
+                            positionId,
                             pGroupRepository.FindOrCreatePGroup(pGroup));
                     }
                 });
@@ -178,13 +179,13 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        private static SqlBulkCopy BuildSqlBulkCopy(string tableName, SqlConnection connection, SqlTransaction transaction)
+        protected SqlBulkCopy BuildSqlBulkCopy(string tableName, SqlConnection connection, SqlTransaction transaction, int timeout = 3600)
         {
             return new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction)
             {
                 BatchSize = 10000,
                 DestinationTableName = tableName,
-                BulkCopyTimeout = 3600
+                BulkCopyTimeout = timeout
             };
         }
     }
