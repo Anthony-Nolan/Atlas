@@ -81,19 +81,41 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         private string fileBackedHmdHlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
         private TransientDatabase activeDb;
 
+
+        #region Dependency Scoping.
+        private IServiceScope perTestDependencyScope;
         [SetUp]
         public void SetUp()
         {
-            var dbProvider = DependencyInjection.DependencyInjection.Provider.GetService<IActiveDatabaseProvider>();
-            activeDb = dbProvider.GetActiveDatabase();
+            // We need each test to be run with new objects, which means a new DependencyInjection scope
+            // for each test.
+            // If we use a `using` block on that scope, then we dispose everything we made in that block,
+            // at the end of that block (when the scope 'ends')
+            // In particular, we would dispose any dbContexts ... before we actually run the tests! :(
+            //
+            // Which means the contexts that we kept an (indirect) reference to will then error, when we
+            // use them in the actual tests :_(
+            // So we have to hold onto the Scope, and manually dispose it, in the TearDown method.
+            perTestDependencyScope = DependencyInjection.DependencyInjection.Provider.CreateScope();
+            
+                var dbProvider = scope.ServiceProvider.GetService<IActiveDatabaseProvider>();
+                activeDb = dbProvider.GetActiveDatabase();
 
-            var activeDbConnectionStringProvider = DependencyInjection.DependencyInjection.Provider.GetService<ActiveTransientSqlConnectionStringProvider>();
-            donorInspectionRepository = new TestDonorInspectionRepository(activeDbConnectionStringProvider);
+                var activeDbConnectionStringProvider = perTestDependencyScope.ServiceProvider.GetService<ActiveTransientSqlConnectionStringProvider>();
+                donorInspectionRepository = new TestDonorInspectionRepository(activeDbConnectionStringProvider);
 
-            managementService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorManagementService>();
+                managementService = perTestDependencyScope.ServiceProvider.GetService<IDonorManagementService>();
 
-            DatabaseManager.ClearDatabases();
+                DatabaseManager.ClearDatabases();
         }
+
+        [TearDown]
+        public void DisposeDependencyScope()
+        {
+            //See notes in SetUp.
+            perTestDependencyScope.Dispose();
+        }
+        #endregion
 
         private async Task Import(params DonorAvailabilityUpdate[] updates)
         {
