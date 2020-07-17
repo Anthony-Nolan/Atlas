@@ -41,7 +41,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         }
 
         [Test, Repeat(1000)]
-        [IgnoreExceptOnCiPerfTest("1000 Reps = 54.33s (ave of 5 runs. SD: 6.25) [other tests covered test data load time]")]
+        //[IgnoreExceptOnCiPerfTest("1000 Reps = 54.33s (ave of 5 runs. SD: 6.25) [other tests covered test data load time]")]
+        [Ignore("This takes 14 minutes to run on DevOps CI. We're not really sure why. TODO: ATLAS-551")]
         public async Task ApplyDonorUpdatesToDatabase_ImportingSingleDonorWith_Invalid_Hlas_CompletesWithoutErrors_WithAnExpectedPerformance()
         {
             var donor = new Donor
@@ -66,7 +67,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         }
 
         [Test, Repeat(1000)]
-        [IgnoreExceptOnCiPerfTest(@"1000 Reps = 48.84s (ave of 5 runs. SD: 2.33) [other tests covered test data load time]")]
+        //[IgnoreExceptOnCiPerfTest(@"1000 Reps = 48.84s (ave of 5 runs. SD: 2.33) [other tests covered test data load time]")]
+        [Ignore("This takes 14 minutes to run on DevOps CI. We're not really sure why. TODO: ATLAS-551")]
         public async Task ApplyDonorUpdatesToDatabase_ImportingSingleDonorWith_Valid_Hlas_CompletesWithoutErrors_WithAnExpectedPerformance()
         {
             var donor = new Donor
@@ -127,7 +129,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
          TestCase(400, 200, 100, 150, 100, 100, 100, 1000),        // Ave:  11.39 s SD: 0.60 [950 donors => 83.4 donor/s, 0.012 s/donor] (over 5 runs, includes Donor data parse, but other tests covered HMD data parse.)
          TestCase(8000, 4000, 2000, 3000, 2000, 2000, 2000, 1000), // Ave: 162.24 s SD: 5.41 [19k donors => 117.1 donor/s, 0.0085 s/donor] (over 5 runs, includes Donor data parse, but other tests covered HMD data parse.)
         ]// Note the conclusion that HLA expansion covers ~1/3rd of donor processing time for large volumes.
-        [IgnoreExceptOnCiPerfTest(@"See comments per scale.")]
+        //[IgnoreExceptOnCiPerfTest(@"See comments per scale.")]
+        [Ignore("These take 3 and 14 minutes respectively to run on DevOps CI. We're not really sure why. TODO: ATLAS-551")]
         public async Task ApplyDonorUpdatesToDatabase_RunningHighVolumeMassImport_CompletesWithoutErrors_AndRunsWithExpectedPerformance(
             int initialAvailableCreationsCount,
             int initialUnavailableCreationsCount,
