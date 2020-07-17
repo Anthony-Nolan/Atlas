@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Data.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
@@ -45,31 +46,34 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
 
             var transientContextA = new ContextFactory().Create(connStringA);
             var transientContextB = new ContextFactory().Create(connStringB);
-            ClearTransientDatabase(transientContextA);
-            ClearTransientDatabase(transientContextB);
-
             var persistentContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmPersistentContext>();
-            ClearPersistentDatabase(persistentContext);
+            Task.WaitAll(
+                ClearTransientDatabase(transientContextA),
+                ClearTransientDatabase(transientContextB),
+                ClearPersistentDatabase(persistentContext)
+            );
         }
 
-        private static void ClearTransientDatabase(DbContext context)
+        private static Task ClearTransientDatabase(DbContext context)
         {
             if (context != null)
             {
-                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [DonorManagementLogs]");
-                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [Donors]");
-                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtA]");
-                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtB]");
-                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtC]");
-                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtDrb1]");
-                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtDqb1]");
-                context.Database.ExecuteSqlRaw("DELETE FROM PGroupNames");
+                return context.Database.ExecuteSqlRawAsync(@"
+TRUNCATE TABLE [DonorManagementLogs];
+TRUNCATE TABLE [Donors];
+TRUNCATE TABLE [MatchingHlaAtA];
+TRUNCATE TABLE [MatchingHlaAtB];
+TRUNCATE TABLE [MatchingHlaAtC];
+TRUNCATE TABLE [MatchingHlaAtDrb1];
+TRUNCATE TABLE [MatchingHlaAtDqb1];
+DELETE FROM [PGroupNames];");
             }
+            return Task.CompletedTask;
         }
 
-        private static void ClearPersistentDatabase(SearchAlgorithmPersistentContext context)
+        private static Task ClearPersistentDatabase(SearchAlgorithmPersistentContext context)
         {
-            context?.Database.ExecuteSqlRaw("TRUNCATE TABLE [DataRefreshHistory]");
+            return context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE [DataRefreshHistory]");
         }
     }
 }
