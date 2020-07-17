@@ -163,16 +163,6 @@ END
             }
         }
 
-        public new async Task InsertBatchOfDonors(IEnumerable<DonorInfo> donors)
-        {
-            await base.InsertBatchOfDonors(donors);
-        }
-
-        public new async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donors)
-        {
-            await base.AddMatchingPGroupsForExistingDonorBatch(donors);
-        }
-
         public async Task RemovePGroupsForDonorBatch(IEnumerable<int> donorIds)
         {
             donorIds = donorIds.ToList();
