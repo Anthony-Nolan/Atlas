@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 // ReSharper disable InconsistentNaming - want to use T/R to easily distinguish contained type and target type(s)
 // ReSharper disable MemberCanBeInternal
@@ -107,11 +107,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         public bool Position1And2NotNull()
         {
             return Position1 != null && Position2 != null;
-        }
-        
-        internal bool Position1And2Null()
-        {
-            return Position1 == null && Position2 == null;
         }
 
         internal bool SinglePositionNull()
