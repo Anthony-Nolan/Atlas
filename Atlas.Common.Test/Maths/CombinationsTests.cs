@@ -147,9 +147,15 @@ namespace Atlas.Common.Test.Maths
          TestCase(13, 1),
          TestCase(9, 5),
          TestCase(10, 5),
-         TestCase(20, 3), // ~0.5 s
-         TestCase(20, 4), // ~6.2 s
-         TestCase(15, 5), // ~2.5 s
+
+         // These cases don't actually get exercised by the prod code, and take several seconds to run,
+         // So don't do them in general.
+         //TestCase(20, 3), // ~0.5 s 
+         //TestCase(20, 4), // ~6.2 s
+         //TestCase(15, 5), // ~2.5 s
+         // Note that all the time is in the TESTing of the output - not the combination generation itself!
+         // The generation runs in << 0.1s, even for these moderately sized tests.
+         // To make the generation be "slow" I had to go up ~(26 C 13), which is O(10,000,000) combinations.
         ]
         public void AllCombinations_ReturnedCollectionsHaveExpectedProperties(int n, int r)
         {
