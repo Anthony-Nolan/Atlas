@@ -76,7 +76,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 DonorId = 1990644,
                 DonorType = (DonorType)1,
                 IsAvailableForSearch = true,
-                A_1 = " * 02:01:01G",
+                A_1 = "*02:01:01G",
                 A_2 = "*11:01:01G",
                 B_1 = "*07:02:01G",
                 B_2 = "*35:09:01",
