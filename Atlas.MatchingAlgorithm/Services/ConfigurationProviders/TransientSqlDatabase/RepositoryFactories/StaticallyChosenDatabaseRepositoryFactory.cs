@@ -1,4 +1,3 @@
-using Atlas.MatchingAlgorithm.Common.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
