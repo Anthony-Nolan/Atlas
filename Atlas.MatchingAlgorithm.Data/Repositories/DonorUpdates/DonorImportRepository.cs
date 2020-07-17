@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
-using Atlas.MatchingAlgorithm.Common.Repositories;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
