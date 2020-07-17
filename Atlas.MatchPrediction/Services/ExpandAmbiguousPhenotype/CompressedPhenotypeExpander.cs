@@ -101,8 +101,6 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
                         return true;
                     }
 
-                    // If MPA does not support locus - e.g. DPB1: the haplotypes will have no data at such loci
-                    // Distinct from the "allowedLoci", as there loci can be excluded even if supported
                     if (!allowedLoci.Contains(l))
                     {
                         return false;
