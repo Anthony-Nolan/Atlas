@@ -62,7 +62,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         {
             if (!haplotypesWithFrequencies.TryGetValue(hla, out var frequency))
             {
-                if (allowedLoci != LocusSettings.MatchPredictionLoci.ToHashSet() && frequency == default)
+                if (!allowedLoci.SetEquals(LocusSettings.MatchPredictionLoci.ToHashSet()) && frequency == default)
                 {
                     frequency = haplotypesWithFrequencies
                         .Where(kvp => kvp.Key.EqualsAtLoci(hla, allowedLoci)).Select(kvp => kvp.Value)
