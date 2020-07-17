@@ -73,6 +73,37 @@ namespace Atlas.Common.Test.Matching.Services
         }
 
         [Test]
+        public void MatchCount_WhenInputUntyped_AndUntypedLocusBehaviourSetToMismatch_ReturnsZero()
+        {
+            const UntypedLocusBehaviour untypedLocusBehaviour = UntypedLocusBehaviour.TreatAsMismatch;
+
+            var untypedLocus = new LocusInfo<string>(null);
+            var patientHla = new LocusInfo<string>("p1", "p2");
+            var donorHla = new LocusInfo<string>("p3", "p4");
+
+            matchCalculator.MatchCount(patientHla, untypedLocus, untypedLocusBehaviour).Should().Be(0);
+            matchCalculator.MatchCount(untypedLocus, donorHla, untypedLocusBehaviour).Should().Be(0);
+            matchCalculator.MatchCount(untypedLocus, untypedLocus, untypedLocusBehaviour).Should().Be(0);
+        }
+
+        [Test]
+        public void MatchCount_WhenInputUntyped_AndUntypedLocusBehaviourSetToThrow_Throws()
+        {
+            const UntypedLocusBehaviour untypedLocusBehaviour = UntypedLocusBehaviour.Throw;
+
+            var untypedLocus = new LocusInfo<string>(null);
+            var patientHla = new LocusInfo<string>("p1", "p2");
+            var donorHla = new LocusInfo<string>("p3", "p4");
+
+            matchCalculator.Invoking(m => m.MatchCount(patientHla, untypedLocus, untypedLocusBehaviour))
+                .Should().Throw<ArgumentException>();
+            matchCalculator.Invoking(m => m.MatchCount(untypedLocus, donorHla, untypedLocusBehaviour))
+                .Should().Throw<ArgumentException>();
+            matchCalculator.Invoking(m => m.MatchCount(untypedLocus, untypedLocus, untypedLocusBehaviour))
+                .Should().Throw<ArgumentException>();
+        }
+
+        [Test]
         public void MatchCount_ForDoubleDirectMatch_ReturnsTwo()
         {
             var patientHla = new LocusInfo<string>(ArbitraryPGroup1, ArbitraryPGroup2);
@@ -156,7 +187,7 @@ namespace Atlas.Common.Test.Matching.Services
             foreach (var hla in nonMatchingHla)
             {
                 matchCalculator.MatchCount(defaultPGroups, hla);
-                matchCalculator.MatchCount( hla, defaultPGroups);
+                matchCalculator.MatchCount(hla, defaultPGroups);
             }
         }
     }

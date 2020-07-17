@@ -51,7 +51,9 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
             {
                 var patientHla = patientGenotypeAsSinglePGroups.GetLocus(locus);
                 var donorHla = donorGenotypeAsSinglePGroups.GetLocus(locus);
-                return allowedLoci.Contains(locus) ? stringBasedLocusMatchCalculator.MatchCount(patientHla, donorHla) : (int?) null;
+                return allowedLoci.Contains(locus)
+                    ? stringBasedLocusMatchCalculator.MatchCount(patientHla, donorHla, UntypedLocusBehaviour.Throw)
+                    : (int?) null;
             });
 
             return new GenotypeMatchDetails
