@@ -15,6 +15,10 @@
     </Target>
 
     <ItemGroup>
+        <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
         <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="4.1.1" />
         <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.4" />
