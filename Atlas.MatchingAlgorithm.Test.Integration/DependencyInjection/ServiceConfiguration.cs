@@ -101,7 +101,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             services.AddScoped(sp => Substitute.For<IAzureDatabaseManager>());
 
             // Log to file, not to ApplicationInsights!
-            services.AddScoped<ILogger, FileBasedLogger>();
+            services.AddSingleton<ILogger, FileBasedLogger>();
         }
 
         private static void RegisterIntegrationTestServices(IServiceCollection services)

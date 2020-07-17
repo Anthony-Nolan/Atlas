@@ -40,14 +40,15 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             services.SetUpMacDictionaryWithFileBackedRepository(fetchApplicationInsightsSettings, fetchMacDictionarySettings);
 
             services.RegisterConfiguration();
-            // Replace Repositories with File-Backed equivalents.
-            services.AddScoped<IHlaScoringMetadataRepository, FileBackedHlaScoringMetadataRepository>();
-            services.AddScoped<IHlaMatchingMetadataRepository, FileBackedHlaMatchingMetadataRepository>();
-            services.AddScoped<IAlleleNamesMetadataRepository, FileBackedAlleleNamesMetadataRepository>();
-            services.AddScoped<IDpb1TceGroupsMetadataRepository, FileBackedTceMetadataRepository>();
-            services.AddScoped<IAlleleGroupsMetadataRepository, FileBackedAlleleGroupsMetadataRepository>();
 
-            services.AddScoped(sp =>
+            // Replace Repositories with File-Backed equivalents.
+            // Register them as singletons so that we don't have to re-populate for every new scope.
+            services.AddSingleton<IHlaScoringMetadataRepository, FileBackedHlaScoringMetadataRepository>();
+            services.AddSingleton<IHlaMatchingMetadataRepository, FileBackedHlaMatchingMetadataRepository>();
+            services.AddSingleton<IAlleleNamesMetadataRepository, FileBackedAlleleNamesMetadataRepository>();
+            services.AddSingleton<IDpb1TceGroupsMetadataRepository, FileBackedTceMetadataRepository>();
+            services.AddSingleton<IAlleleGroupsMetadataRepository, FileBackedAlleleGroupsMetadataRepository>();
+            services.AddSingleton(sp =>
             {
                 var wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
                 wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().Returns(FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion);
