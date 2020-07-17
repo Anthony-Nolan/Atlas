@@ -173,6 +173,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             const string alleleStringB = "08:182";
             const string GGroupB = "08:01:01G";
 
+            const string alleleStringC = "04:82";
+
             const string alleleStringDrb1 = "11:129";
             const string GGroupDrb1 = "11:06:01G";
 
@@ -194,7 +196,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     $"{Alleles.UnambiguousAlleleDetails.A.Position1.Allele}/{alleleStringA}",
                     $"{Alleles.UnambiguousAlleleDetails.A.Position2.Allele}/{anotherAlleleStringA}")
                 .WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{alleleStringB}")
-                .WithDataAt(Locus.C, null as string)
+                .WithDataAt(Locus.C, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.C.Position1.Allele}/{alleleStringC}")
                 .WithDataAt(Locus.Dqb1, null as string)
                 .WithDataAt(Locus.Drb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
                 .Build();
@@ -202,7 +204,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var matchProbabilityInput = new MatchProbabilityInput
             {
                 PatientHla = patientHla,
-                DonorHla = DefaultUnambiguousAllelesBuilder.Build(),
+                DonorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.C, null as string).Build(),
                 HlaNomenclatureVersion = HlaNomenclatureVersion,
                 DonorFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode },
                 PatientFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode }
