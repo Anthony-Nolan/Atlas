@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -81,6 +83,23 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         private string fileBackedHmdHlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
         private TransientDatabase activeDb;
 
+        [OneTimeSetUp]
+        public void PopulateHMDCacheOutsideOfTestTiming()
+        {
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                // This object resolution triggers the reading of the HMD files.
+                // We don't want that time included in the tests as it's not relevant to the perf figures
+                // and would skew the results depending on which test ran first.
+                // So run it once here to get it done before timing starts.
+                // Don't need to worry about scopes as the FileBacked repos are all singletons.
+                var factory = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMetadataDictionaryFactory>();
+
+                // This isn't going to change between tests, and since it uses a Transient cache, it's a tiny bit slow.
+                var dbProvider = DependencyInjection.DependencyInjection.Provider.GetService<IActiveDatabaseProvider>();
+                activeDb = dbProvider.GetActiveDatabase();
+            });
+        }
 
         #region Dependency Scoping.
         private IServiceScope perTestDependencyScope;
@@ -98,9 +117,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             // So we have to hold onto the Scope, and manually dispose it, in the TearDown method.
             perTestDependencyScope = DependencyInjection.DependencyInjection.Provider.CreateScope();
             
-                var dbProvider = scope.ServiceProvider.GetService<IActiveDatabaseProvider>();
-                activeDb = dbProvider.GetActiveDatabase();
-
                 var activeDbConnectionStringProvider = perTestDependencyScope.ServiceProvider.GetService<ActiveTransientSqlConnectionStringProvider>();
                 donorInspectionRepository = new TestDonorInspectionRepository(activeDbConnectionStringProvider);
 
@@ -150,6 +166,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         // But when a developer is trying to figure out what broke, it'll be really useful!
         // Delete the " { } //" to "turn it on".
         private void Debug_ExpectDonorCountToBe(int expectedCount) { } // => ExpectDonorCountToBe(expectedCount);
+
+        [Test, Repeat(1000)] //~3seconds
+        public void SetupIsFastNow()
+        {
+            Assert.Pass();
+        }
 
         [Test]
         public async Task ApplyDonorUpdatesToDatabase_ImportingAllDonorsFromExistingTestsAsSeparateBatches_ResultsInCorrectNumberOfDonorsAtEnd()
