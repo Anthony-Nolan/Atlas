@@ -15,6 +15,10 @@ using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.MatchProbability
 {
+    /// <summary>
+    /// Note that all timing information logged for these tests is considering these tests run as part of the whole suite.
+    /// Running an individual test alone will add a few seconds, due to one-off suite startup time. (e.g. populating in memory metadata dictionary).  
+    /// </summary>
     [TestFixture]
     internal class PerformanceBenchmarks : MatchProbabilityTestsBase
     {
@@ -46,7 +50,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        // [IgnoreExceptOnCiPerfTest("Ran in ~5s")]
+        // Runs in ~2 seconds. Quick enough to not ignore.
         public async Task MatchPrediction_WithSmallAmbiguityAtEachDonorLocus_CalculatesProbabilityCorrectly()
         {
             var donorHla = new PhenotypeInfoBuilder<string>()
@@ -72,8 +76,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        // TODO: ATLAS-400: This should be runnable
-        [Ignore("Too slow to complete yet.")]
+        // Runs in ~3s. Quick enough to not ignore.
         public async Task MatchPrediction_WithDonorFullyTyped_AtTruncatedTwoFieldAlleleResolution_CalculatesProbabilityCorrectly()
         {
             var donorHla = new PhenotypeInfoBuilder<string>()
@@ -93,14 +96,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Percentage.Should().Be(97);
-            matchDetails.OneMismatchProbability.Percentage.Should().Be(3);
+            matchDetails.ZeroMismatchProbability.Percentage.Should().Be(100);
+            matchDetails.OneMismatchProbability.Percentage.Should().Be(0);
             matchDetails.TwoMismatchProbability.Percentage.Should().Be(0);
         }
 
         [Test]
-        // TODO: ATLAS-400: This should be runnable
-        [Ignore("Too slow to complete yet.")]
+        // Runs in ~4s. Quick enough to not ignore.
         public async Task MatchPrediction_WithDonorFullyTyped_AtXXCodeResolution_CalculatesProbabilityCorrectly()
         {
             var donorHla = new PhenotypeInfoBuilder<string>()
@@ -120,8 +122,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Percentage.Should().Be(97);
-            matchDetails.OneMismatchProbability.Percentage.Should().Be(3);
+            matchDetails.ZeroMismatchProbability.Percentage.Should().Be(99);
+            matchDetails.OneMismatchProbability.Percentage.Should().Be(1);
             matchDetails.TwoMismatchProbability.Percentage.Should().Be(0);
         }
 
