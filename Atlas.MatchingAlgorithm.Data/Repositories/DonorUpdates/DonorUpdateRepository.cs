@@ -1,9 +1,7 @@
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Config;
-using Atlas.MatchingAlgorithm.Common.Repositories;
 using Atlas.MatchingAlgorithm.Data.Extensions;
 using Atlas.MatchingAlgorithm.Data.Helpers;
-using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
