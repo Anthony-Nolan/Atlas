@@ -145,7 +145,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         /// </remarks>
         private void EnsureAllPGroupsExist(IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHlas)
         {
-            var allPGroups = donorsWithHlas.SelectMany(d => d.MatchingHla.ToEnumerable().SelectMany(hla => hla.MatchingPGroups)).ToList();
+            var allPGroups = donorsWithHlas
+                .SelectMany(d =>
+                    d.MatchingHla?.ToEnumerable().SelectMany(hla =>
+                        hla?.MatchingPGroups ?? new string[0]
+                    ) ?? new List<string>()
+                ).ToList();
+
             pGroupRepository.FindOrCreatePGroupIds(allPGroups);
         }
 
