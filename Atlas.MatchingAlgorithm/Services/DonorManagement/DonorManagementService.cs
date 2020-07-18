@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Data.Models;
@@ -157,12 +159,22 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             var (availableUpdates, unavailableUpdates) = updatesList.ReifyAndSplit(upd => upd.IsAvailableForSearch);
             var recordOfUpdatesApplied = updatesList.Select(upd => new DonorManagementInfo{ DonorId = upd.DonorId, UpdateDateTime = upd.UpdateDateTime, UpdateSequenceNumber = upd.UpdateSequenceNumber}).ToList();
 
-            //TODO: ATLAS-491 all of this needs to be bound up into a single transaction, so that we write updates atomically and thus can consume or release the messages atomically.
-            // Note, the management log must be written to last to prevent the undesirable
-            // scenario of the donor update failing after the log has been successfully updated.
-            await AddOrUpdateDonors(availableUpdates, targetDatabase, targetHlaNomenclatureVersion);
-            await SetDonorsAsUnavailableForSearch(unavailableUpdates, targetDatabase);
-            await CreateOrUpdateManagementLogBatch(recordOfUpdatesApplied, targetDatabase);
+            // Note that as of .NET Core 3, TransactionScope does not support Distributed Transactions: https://github.com/dotnet/runtime/issues/715
+            // It's slated for .NET Core 5, which is some way off.
+            // TransactionScope will (attempt to) escalate to a DT as soon as it detects 2 simultaneously open Connections.
+            // Having multiple *sequential* connections is fine - it's only running in parallel that breaks.
+            // Accordingly the entire code path below this point has to run its connections in series not in parallel.
+            // This is a shame as it causes a ~30% performance hit, from not being able to write the different matching PGroup tables in parallel.
+            // Any attempt to use a single connection across multiple threads will also fail, as MARS allows queries to be "run"
+            // in parallel, but not to *EXECUTE* in parallel - they get interleaved, so we lose all the benefit.
+            // Hopefully DT support will comeback sooner rather than later, and we can re-parallelize the per-Loci matching PGroup writing.
+            using (var transactionScope = new AsyncTransactionScope())
+            {
+                await AddOrUpdateDonors(availableUpdates, targetDatabase, targetHlaNomenclatureVersion);
+                await SetDonorsAsUnavailableForSearch(unavailableUpdates, targetDatabase);
+                await CreateOrUpdateManagementLogBatch(recordOfUpdatesApplied, targetDatabase);
+                transactionScope.Complete();
+            }
         }
 
         private async Task AddOrUpdateDonors(
