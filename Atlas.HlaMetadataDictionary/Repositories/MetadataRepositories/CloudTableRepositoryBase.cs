@@ -61,8 +61,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         /// </summary>
         public async Task LoadDataIntoMemory(string hlaNomenclatureVersion)
         {
-            var data = await FetchAllRowsInTable(hlaNomenclatureVersion);
-            Cache.Add(VersionedCacheKey(hlaNomenclatureVersion), data);
+            await TableData(hlaNomenclatureVersion);
         }
 
         protected async Task RecreateDataTable(IEnumerable<TStorable> tableContents, string hlaNomenclatureVersion)
