@@ -95,7 +95,6 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
         protected async Task UpsertMatchingPGroupsAtSpecifiedLoci(List<DonorWithChangedMatchingLoci> donors, bool isKnownToBeCreate)
         {
-            var perLocusUpsertTasks = new List<Task>();
             foreach (var locus in LocusSettings.MatchingOnlyLoci)
             {
                 var donorsWhichChangedAtThisLocus = donors
@@ -105,12 +104,21 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
                 if (donorsWhichChangedAtThisLocus.Any())
                 {
-                    var task = UpsertMatchingPGroupsAtLocus(donorsWhichChangedAtThisLocus, locus, isKnownToBeCreate);
-                    perLocusUpsertTasks.Add(task);
+                    // This is a bit sad.
+                    // BulkInserting to unrelated tables, should be an easy win for
+                    // "don't await the Tasks separately, use Task.WhenAll() and let them run in parallel".
+                    // And that DOES work ... if you can start separate connections for each one.
+                    //
+                    // But our TransactionScope requires that there only be a single connection at a time.
+                    // And for reasons unknown, if you WhenAll() with a shared transaction you lose all
+                    // the perf benefits.
+                    // 
+                    // See here for more detail of the tests done, the perf results achieved and the probable
+                    // cause of the problem.
+                    // https://stackoverflow.com/questions/62970038/performance-of-multiple-parallel-async-sqlbulkcopy-inserts-against-different
+                    await UpsertMatchingPGroupsAtLocus(donorsWhichChangedAtThisLocus, locus, isKnownToBeCreate);
                 }
             }
-
-            await Task.WhenAll(perLocusUpsertTasks);
         }
 
         private async Task UpsertMatchingPGroupsAtLocus(List<DonorInfoWithExpandedHla> donors, Locus locus, bool isKnownToBeCreate)
