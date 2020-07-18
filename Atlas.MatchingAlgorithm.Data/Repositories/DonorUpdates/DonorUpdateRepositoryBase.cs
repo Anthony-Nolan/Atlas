@@ -95,7 +95,6 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
         protected async Task UpsertMatchingPGroupsAtSpecifiedLoci(List<DonorWithChangedMatchingLoci> donors, bool isKnownToBeCreate)
         {
-            var perLocusUpsertTasks = new List<Task>();
             foreach (var locus in LocusSettings.MatchingOnlyLoci)
             {
                 var donorsWhichChangedAtThisLocus = donors
@@ -105,12 +104,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
                 if (donorsWhichChangedAtThisLocus.Any())
                 {
-                    var task = UpsertMatchingPGroupsAtLocus(donorsWhichChangedAtThisLocus, locus, isKnownToBeCreate);
-                    perLocusUpsertTasks.Add(task);
+                    await UpsertMatchingPGroupsAtLocus(donorsWhichChangedAtThisLocus, locus, isKnownToBeCreate);
                 }
             }
-
-            await Task.WhenAll(perLocusUpsertTasks);
         }
 
         private async Task UpsertMatchingPGroupsAtLocus(List<DonorInfoWithExpandedHla> donors, Locus locus, bool isKnownToBeCreate)
