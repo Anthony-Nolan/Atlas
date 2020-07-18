@@ -266,20 +266,17 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 case DataRefreshStage.DonorImport:
                     if (executionMode == DataRefreshStageExecutionMode.Continuation)
                     {
-                        // Resuming mid-donor import is not supported, instead we will restart the whole stage.
+                        // Resuming mid-donor import is not supported, as we need to ensure that we have consistent
+                        // HLA data throughout the whole donor dataset. Instead we will restart the whole stage.
                         await donorImportRepository.RemoveAllDonorInformation();
                     }
                     await donorImporter.ImportDonors();
                     break;
                 case DataRefreshStage.DonorHlaProcessing:
-                    logger.SendTrace($"{LoggingPrefix} Using HLA Nomenclature version: {refreshRecord.HlaNomenclatureVersion}");
-                    if (executionMode == DataRefreshStageExecutionMode.Continuation)
-                    {
-                        // TODO: ATLAS-251: Allow continuation mid-hla processing.
-                        // For now, resuming mid-hla processing is not yet supported, instead we will restart the whole stage.
-                        await donorImportRepository.RemoveAllProcessedDonorHla();
-                    }
-                    await hlaProcessor.UpdateDonorHla(refreshRecord.HlaNomenclatureVersion);
+                    var isContinuation = (executionMode == DataRefreshStageExecutionMode.Continuation);
+                    var verbPhrase = isContinuation ? "Continuing existing processing of" : "Beginning processing of";
+                    logger.SendTrace($"{LoggingPrefix} {verbPhrase} Donors using HLA Nomenclature version: {refreshRecord.HlaNomenclatureVersion}");
+                    await hlaProcessor.UpdateDonorHla(refreshRecord.HlaNomenclatureVersion, isContinuation);
                     break;
                 case DataRefreshStage.IndexRecreation:
                     await donorImportRepository.CreateHlaTableIndexes();
