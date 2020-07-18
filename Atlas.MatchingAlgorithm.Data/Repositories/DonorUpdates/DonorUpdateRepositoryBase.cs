@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -131,7 +132,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     await conn.ExecuteAsync(deleteSql, null, transaction, commandTimeout: 600);
                 }
 
-                await BulkInsertDataTable(matchingTableName, dataTable, donorPGroupDataTableColumnNames, 14400);
+                await BulkInsertDataTable(
+                    matchingTableName,
+                    dataTable,
+                    donorPGroupDataTableColumnNames,
+                    existingTransaction: transaction,
+                    timeout: 14400);
 
                 transaction.Commit();
                 conn.Close();
@@ -204,6 +210,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             return dataTable;
         }
 
+        #region BulkInsertDataTable
         /// <summary>
         /// Opens a new connection and performs a bulk insert wrapped in a transaction.
         /// If columnNames provided, sets up a map from dataTable to SQL, assuming a 1:1 mapping between dataTable and SQL column names  
@@ -211,38 +218,112 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         private async Task BulkInsertDataTable(
             string tableName,
             DataTable dataTable,
-            IEnumerable<string> columnNames = null,
+            string[] columnNames,
+            SqlConnection existingConnection = null,
+            SqlTransaction existingTransaction = null,
             int timeout = 3600)
         {
-            columnNames ??= new List<string>();
-            await using (var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
-            {
-                connection.Open();
-                var transaction = connection.BeginTransaction();
-                using (var sqlBulk = BuildSqlBulkCopy(tableName, connection, transaction, timeout))
-                {
-                    foreach (var columnName in columnNames)
-                    {
-                        // Relies on setting up the data table with column names matching the database columns.
-                        sqlBulk.ColumnMappings.Add(columnName, columnName);
-                    }
+            var providedExistingConnection = existingConnection != null;
+            var providedExistingTransaction = existingTransaction != null;
 
+            var transactionToUse = DetermineConnectionAndTransactionForBulkInsert(existingConnection, existingTransaction);
+            //Begin Implied Using Block
+                using (var sqlBulk = BuildSqlBulkCopy(tableName, columnNames, transactionToUse, timeout))
+                {
                     await sqlBulk.WriteToServerAsync(dataTable);
                 }
-
-                transaction.Commit();
-                connection.Close();
-            }
+            //End Implied Using Block
+            ResolveTransactionAndConnectionAsAppropriate(transactionToUse, providedExistingConnection, providedExistingTransaction);
         }
 
-        protected SqlBulkCopy BuildSqlBulkCopy(string tableName, SqlConnection connection, SqlTransaction transaction, int timeout = 3600)
+        /// <remarks>
+        /// This code **MUST** stay in sync with the matching code in <see cref="ResolveTransactionAndConnectionAsAppropriate"/>
+        /// </remarks>
+        private SqlTransaction DetermineConnectionAndTransactionForBulkInsert(SqlConnection existingConnection, SqlTransaction existingTransaction)
         {
-            return new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction)
+            var providedExistingConnection = existingConnection != null;
+            var providedExistingTransaction = existingTransaction != null;
+
+            if (providedExistingConnection &&
+                providedExistingTransaction &&
+                existingTransaction.Connection != existingConnection)
+            {
+                throw new InvalidOperationException("You cannot provide both an existing Connection to use AND an existing, unrelated Transaction to use!");
+            }
+
+            if (providedExistingTransaction)
+            {
+                return existingTransaction;
+            }
+
+            if (providedExistingConnection)
+            {
+                return existingConnection.BeginTransaction();
+            }
+
+            var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
+            connection.Open();
+            var transactionOnNewConnection = connection.BeginTransaction();
+
+            return transactionOnNewConnection;
+        }
+
+        /// <remarks>
+        /// This code **MUST** stay in sync with the matching code in <see cref="DetermineConnectionAndTransactionForBulkInsert"/>
+        /// </remarks>
+        private void ResolveTransactionAndConnectionAsAppropriate(
+            SqlTransaction transactionUsed,
+            bool existingConnectionWasProvided,
+            bool existingTransactionWasProvided)
+        {
+            if (existingTransactionWasProvided)
+            {
+                // Do nothing!
+                // The calling code gave us these objects and so
+                // A) is responsible for managing them.
+                // and
+                // B) wants to continue using them.
+                // We mustn't close them.
+                return;
+            }
+
+            if (existingConnectionWasProvided)
+            {
+                //We created our own Transaction, so commit that.
+                transactionUsed.Commit();
+
+                // But the calling code gave us this connection and so
+                // A) is responsible for managing it.
+                // and
+                // B) wants to continue using it.
+                // We mustn't close it.
+                return;
+            }
+
+            // We made these objects so we're responsible for closing them.
+            var connection = transactionUsed.Connection;
+            transactionUsed.Commit();
+            connection.Close();
+            connection.Dispose();
+        }
+
+        private SqlBulkCopy BuildSqlBulkCopy(string tableName, string[] columnNames, SqlTransaction transaction, int timeout = 3600)
+        {
+            var bulkCopy = new SqlBulkCopy(transaction.Connection, SqlBulkCopyOptions.Default, transaction)
             {
                 BatchSize = 10000,
                 DestinationTableName = tableName,
                 BulkCopyTimeout = timeout
             };
+
+            foreach (var columnName in columnNames)
+            {
+                // Relies on setting up the data table with column names matching the database columns.
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+            }
+
+            return bulkCopy;
         }
+        #endregion
     }
 }
