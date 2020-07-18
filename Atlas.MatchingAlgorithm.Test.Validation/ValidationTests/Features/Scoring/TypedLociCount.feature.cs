@@ -168,11 +168,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.Scori
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Fully Typed Donor with scoring only at DPB1")]
-        public virtual void FullyTypedDonorWithScoringOnlyAtDPB1()
+        [NUnit.Framework.DescriptionAttribute("Fully Typed Donor with scoring only enabled at DPB1")]
+        public virtual void FullyTypedDonorWithScoringOnlyEnabledAtDPB1()
         {
             string[] tagsOfScenario = ((string[])(null));
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fully Typed Donor with scoring only at DPB1", null, ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fully Typed Donor with scoring only enabled at DPB1", null, ((string[])(null)));
 #line 20
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
