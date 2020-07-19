@@ -44,22 +44,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                 dt.Rows.Add(0, pg);
             }
 
-            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            using (var sqlBulk = new SqlBulkCopy(
+                ConnectionStringProvider.GetConnectionString(), 
+                SqlBulkCopyOptions.TableLock | SqlBulkCopyOptions.UseInternalTransaction))
             {
-                conn.Open();
-                var transaction = conn.BeginTransaction();
-                using (var sqlBulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.TableLock, transaction))
-                {
-                    sqlBulk.BulkCopyTimeout = 600;
-                    sqlBulk.BatchSize = 10000;
-                    sqlBulk.DestinationTableName = "PGroupNames";
-                    sqlBulk.WriteToServer(dt);
-                }
-
-                transaction.Commit();
-                conn.Close();
+                sqlBulk.BulkCopyTimeout = 600;
+                sqlBulk.BatchSize = 10000;
+                sqlBulk.DestinationTableName = "PGroupNames";
+                sqlBulk.WriteToServer(dt);
             }
-
             // We need to get the new Ids back out.
             ForceCachePGroupDictionary();
         }
