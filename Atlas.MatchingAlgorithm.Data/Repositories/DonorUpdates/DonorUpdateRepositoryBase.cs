@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Data.Helpers;
@@ -95,29 +97,33 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
         protected async Task UpsertMatchingPGroupsAtSpecifiedLoci(List<DonorWithChangedMatchingLoci> donors, bool isKnownToBeCreate)
         {
-            foreach (var locus in LocusSettings.MatchingOnlyLoci)
+            using (var transactionScope = new AsyncTransactionScope())
             {
-                var donorsWhichChangedAtThisLocus = donors
-                    .Where(d => d.ChangedMatchingLoci.Contains(locus))
-                    .Select(d => d.DonorInfo)
-                    .ToList();
-
-                if (donorsWhichChangedAtThisLocus.Any())
+                foreach (var locus in LocusSettings.MatchingOnlyLoci)
                 {
-                    // This is a bit sad.
-                    // BulkInserting to unrelated tables, should be an easy win for
-                    // "don't await the Tasks separately, use Task.WhenAll() and let them run in parallel".
-                    // And that DOES work ... if you can start separate connections for each one.
-                    //
-                    // But our TransactionScope requires that there only be a single connection at a time.
-                    // And for reasons unknown, if you WhenAll() with a shared transaction you lose all
-                    // the perf benefits.
-                    // 
-                    // See here for more detail of the tests done, the perf results achieved and the probable
-                    // cause of the problem.
-                    // https://stackoverflow.com/questions/62970038/performance-of-multiple-parallel-async-sqlbulkcopy-inserts-against-different
-                    await UpsertMatchingPGroupsAtLocus(donorsWhichChangedAtThisLocus, locus, isKnownToBeCreate);
+                    var donorsWhichChangedAtThisLocus = donors
+                        .Where(d => d.ChangedMatchingLoci.Contains(locus))
+                        .Select(d => d.DonorInfo)
+                        .ToList();
+
+                    if (donorsWhichChangedAtThisLocus.Any())
+                    {
+                        // This is a bit sad.
+                        // BulkInserting to unrelated tables, should be an easy win for
+                        // "don't await the Tasks separately, use Task.WhenAll() and let them run in parallel".
+                        // And that DOES work ... if you can start separate connections for each one.
+                        //
+                        // But our TransactionScope requires that there only be a single connection at a time.
+                        // And for reasons unknown, if you WhenAll() with a shared transaction you lose all
+                        // the perf benefits.
+                        // 
+                        // See here for more detail of the tests done, the perf results achieved and the probable
+                        // cause of the problem.
+                        // https://stackoverflow.com/questions/62970038/performance-of-multiple-parallel-async-sqlbulkcopy-inserts-against-different
+                        await UpsertMatchingPGroupsAtLocus(donorsWhichChangedAtThisLocus, locus, isKnownToBeCreate);
+                    }
                 }
+                transactionScope.Complete();
             }
         }
 
@@ -126,29 +132,27 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
             var dataTable = BuildPerLocusPGroupDataTable(donors, locus);
 
-            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            using (var transactionScope = new AsyncTransactionScope())
             {
-                conn.Open();
-                var transaction = conn.BeginTransaction();
-
                 if (!isKnownToBeCreate)
                 {
                     var deleteSql = $@"
                     DELETE FROM {matchingTableName}
                     WHERE DonorId IN ({donors.Select(d => d.DonorId.ToString()).StringJoin(",")})
                     ";
-                    await conn.ExecuteAsync(deleteSql, null, transaction, commandTimeout: 600);
+                    await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+                    {
+                        await conn.ExecuteAsync(deleteSql, null, commandTimeout: 600);
+                    }
                 }
 
                 await BulkInsertDataTable(
                     matchingTableName,
                     dataTable,
                     donorPGroupDataTableColumnNames,
-                    existingTransaction: transaction,
                     timeout: 14400);
 
-                transaction.Commit();
-                conn.Close();
+                transactionScope.Complete();
             }
         }
 
@@ -227,97 +231,17 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             string tableName,
             DataTable dataTable,
             string[] columnNames,
-            SqlConnection existingConnection = null,
-            SqlTransaction existingTransaction = null,
             int timeout = 3600)
         {
-            var providedExistingConnection = existingConnection != null;
-            var providedExistingTransaction = existingTransaction != null;
-
-            var transactionToUse = DetermineConnectionAndTransactionForBulkInsert(existingConnection, existingTransaction);
-            //Begin Implied Using Block
-                using (var sqlBulk = BuildSqlBulkCopy(tableName, columnNames, transactionToUse, timeout))
+                using (var sqlBulk = BuildSqlBulkCopy(tableName, columnNames, timeout))
                 {
                     await sqlBulk.WriteToServerAsync(dataTable);
                 }
-            //End Implied Using Block
-            ResolveTransactionAndConnectionAsAppropriate(transactionToUse, providedExistingConnection, providedExistingTransaction);
         }
 
-        /// <remarks>
-        /// This code **MUST** stay in sync with the matching code in <see cref="ResolveTransactionAndConnectionAsAppropriate"/>
-        /// </remarks>
-        private SqlTransaction DetermineConnectionAndTransactionForBulkInsert(SqlConnection existingConnection, SqlTransaction existingTransaction)
+        private SqlBulkCopy BuildSqlBulkCopy(string tableName, string[] columnNames, int timeout = 3600)
         {
-            var providedExistingConnection = existingConnection != null;
-            var providedExistingTransaction = existingTransaction != null;
-
-            if (providedExistingConnection &&
-                providedExistingTransaction &&
-                existingTransaction.Connection != existingConnection)
-            {
-                throw new InvalidOperationException("You cannot provide both an existing Connection to use AND an existing, unrelated Transaction to use!");
-            }
-
-            if (providedExistingTransaction)
-            {
-                return existingTransaction;
-            }
-
-            if (providedExistingConnection)
-            {
-                return existingConnection.BeginTransaction();
-            }
-
-            var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
-            connection.Open();
-            var transactionOnNewConnection = connection.BeginTransaction();
-
-            return transactionOnNewConnection;
-        }
-
-        /// <remarks>
-        /// This code **MUST** stay in sync with the matching code in <see cref="DetermineConnectionAndTransactionForBulkInsert"/>
-        /// </remarks>
-        private void ResolveTransactionAndConnectionAsAppropriate(
-            SqlTransaction transactionUsed,
-            bool existingConnectionWasProvided,
-            bool existingTransactionWasProvided)
-        {
-            if (existingTransactionWasProvided)
-            {
-                // Do nothing!
-                // The calling code gave us these objects and so
-                // A) is responsible for managing them.
-                // and
-                // B) wants to continue using them.
-                // We mustn't close them.
-                return;
-            }
-
-            if (existingConnectionWasProvided)
-            {
-                //We created our own Transaction, so commit that.
-                transactionUsed.Commit();
-
-                // But the calling code gave us this connection and so
-                // A) is responsible for managing it.
-                // and
-                // B) wants to continue using it.
-                // We mustn't close it.
-                return;
-            }
-
-            // We made these objects so we're responsible for closing them.
-            var connection = transactionUsed.Connection;
-            transactionUsed.Commit();
-            connection.Close();
-            connection.Dispose();
-        }
-
-        private SqlBulkCopy BuildSqlBulkCopy(string tableName, string[] columnNames, SqlTransaction transaction, int timeout = 3600)
-        {
-            var bulkCopy = new SqlBulkCopy(transaction.Connection, SqlBulkCopyOptions.Default, transaction)
+            var bulkCopy = new SqlBulkCopy(ConnectionStringProvider.GetConnectionString(), SqlBulkCopyOptions.UseInternalTransaction)
             {
                 BatchSize = 10000,
                 DestinationTableName = tableName,

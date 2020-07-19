@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Notifications;
+using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
@@ -103,8 +104,12 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             var existingDonorIds = (await GetExistingDonorIds(donorsWithHla, targetDatabase)).ToList();
             var (updatedDonors, newDonors) = donorsWithHla.ReifyAndSplit(id => existingDonorIds.Contains(id.DonorId));
 
-            await CreateDonorBatch(newDonors, targetDatabase);
-            await UpdateDonorBatch(updatedDonors, targetDatabase);
+            using (var transactionScope = new AsyncTransactionScope())
+            {
+                await CreateDonorBatch(newDonors, targetDatabase);
+                await UpdateDonorBatch(updatedDonors, targetDatabase);
+                transactionScope.Complete();
+            }
         }
 
         private async Task<IEnumerable<int>> GetExistingDonorIds(IEnumerable<DonorInfoWithExpandedHla> donorInfos, TransientDatabase targetDatabase)

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 
 // ReSharper disable InconsistentNaming
@@ -43,8 +44,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 return;
             }
 
-            await InsertBatchOfDonors(donors);
-            await AddMatchingPGroupsForExistingDonorBatch(donors);
+            using (var transactionScope = new AsyncTransactionScope())
+            {
+                await InsertBatchOfDonors(donors);
+                await AddMatchingPGroupsForExistingDonorBatch(donors);
+                transactionScope.Complete();
+            }
         }
 
         // This implementation has *not* been aggressively tuned for performance, yet.
@@ -58,15 +63,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 return;
             }
 
-            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            using (var transactionScope = new AsyncTransactionScope())
+            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 conn.Open();
-
                 var existingDonors = (await conn.QueryAsync<Donor>($@"
                     SELECT * FROM Donors 
                     WHERE DonorId IN ({string.Join(",", donorsToUpdate.Select(d => d.DonorId))})
                     ", commandTimeout: 300)
-                    ).ToDictionary(d => d.DonorId);
+                    ).ToDictionary(d => d.DonorId); //TODO: ATLAS-501. Once we've established that this is a complete waste of time ... Delete this extra DB query!
 
                 await SetAvailabilityOfDonorBatch(donorsToUpdate.Select(d => d.DonorId), true, conn);
 
@@ -79,6 +84,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     {
                         // Shouldn't really happen - it suggests that 2 processes are updating the DB at the same time!
                         // Previous iterations of this code just dropped these cases entirely".
+                        // Note that we already ran exactly the same query in DonorService.CreateOrUpdateDonorsWithHla() and split
+                        // the donors based on this, so every donor in this set has already had its presence confirmed.
+                        // And we don't (I believe?) have any process for deleting donors or changing their IDs, so this really
+                        // should be completely impossible.
                         // TODO: ATLAS-501. Investigate whether this ever actually happens and decide what should happen if it does?
                         continue;
                     }
@@ -96,10 +105,13 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                         await UpdateDonorHla(donorToUpdate, conn);
                     }
                 }
-
+                // The code for the final step (updating the PGroups) uses its own Connection,
+                // and we mustn't have multiple connections open at once otherwise the
+                // TransactionScope will cry. So close this Connection now.
                 conn.Close();
 
                 await ReplaceMatchingPGroupsForExistingDonorBatch(donorsWhereHlaHasChanged);
+                transactionScope.Complete();
             }
         }
 
