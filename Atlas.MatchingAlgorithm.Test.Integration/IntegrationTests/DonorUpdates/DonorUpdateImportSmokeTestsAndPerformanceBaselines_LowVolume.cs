@@ -141,7 +141,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 await managementService.ApplyDonorUpdatesToDatabase(
                     updateBatch.ToList().AsReadOnly(),
                     activeDb,
-                    fileBackedHmdHlaNomenclatureVersion);
+                    fileBackedHmdHlaNomenclatureVersion,
+                    false);//This makes a substantial difference to the runtime: 25-35% atm.
             }
         }
 
