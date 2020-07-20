@@ -14,11 +14,14 @@ locals {
     "MessagingServiceBus:DonorManagement:SubscriptionForDbB" = azurerm_servicebus_subscription.matching_transient_b.name
     "MessagingServiceBus:DonorManagement:BatchSize"          = var.MESSAGING_BUS_DONOR_BATCH_SIZE
     "MessagingServiceBus:DonorManagement:CronSchedule"       = var.MESSAGING_BUS_DONOR_CRON_SCHEDULE
-    "NotificationsServiceBus:ConnectionString"               = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
-    "NotificationsServiceBus:AlertsTopic"                    = var.servicebus_topics.alerts.name
-    "NotificationsServiceBus:NotificationsTopic"             = var.servicebus_topics.notifications.name
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"              = "1"
-    "WEBSITE_RUN_FROM_PACKAGE"                               = var.WEBSITE_RUN_FROM_PACKAGE
+
+    "MessagingServiceBus:DonorManagement:OngoingDifferentialDonorUpdatesShouldBeFullyTransactional" = var.DONOR_WRITE_TRANSACTIONALITY__DONOR_UPDATES
+
+    "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
+    "NotificationsServiceBus:NotificationsTopic" = var.servicebus_topics.notifications.name
+    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"  = "1"
+    "WEBSITE_RUN_FROM_PACKAGE"                   = var.WEBSITE_RUN_FROM_PACKAGE
   }
   donor_management_function_app_name = "${var.general.environment}-ATLAS-MATCHING-DONOR-MANAGEMENT-FUNCTION"
 }
