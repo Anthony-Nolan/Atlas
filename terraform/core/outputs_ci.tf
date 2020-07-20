@@ -25,24 +25,12 @@ output "match-prediction-function-name" {
   value = module.match_prediction.function_app.app_name
 }
 
-output "matching-algorithm-database-persistent-conn-string" {
-  value = module.matching_algorithm.sql_database.persistent_database_connection_string
-}
-
 output "matching-algorithm-database-persistent-name" {
   value = module.matching_algorithm.sql_database.persistent_database_name
 }
 
-output "matching-algorithm-database-transient-a-conn-string" {
-  value = module.matching_algorithm.sql_database.transient_a_database_connection_string
-}
-
 output "matching-algorithm-database-transient-a-name" {
   value = module.matching_algorithm.sql_database.transient_a_database_name
-}
-
-output "matching-algorithm-database-transient-b-conn-string" {
-  value = module.matching_algorithm.sql_database.transient_b_database_connection_string
 }
 
 output "matching-algorithm-database-transient-b-name" {
