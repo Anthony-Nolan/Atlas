@@ -11,6 +11,7 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
+using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 using FluentAssertions;
 using NSubstitute;
@@ -57,8 +58,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                 donorManagementService,
                 searchableDonorUpdateConverter,
                 hlaVersionAccessor,
-                logger,
-                BatchSize);
+                new DonorManagementSettings {BatchSize = BatchSize, OngoingDifferentialDonorUpdatesShouldBeFullyTransactional = false},
+                logger);
 
             messageProcessorServiceForA.ClearReceivedCalls();
             messageProcessorServiceForB.ClearReceivedCalls();

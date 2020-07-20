@@ -146,7 +146,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                     cordDonorInfoWithFullMatchAtLocus1AndNoMatchAtLocus2
                 };
 
-                Task.Run(() => donorRepo.InsertBatchOfDonorsWithExpandedHla(allDonors)).Wait();
+                Task.Run(() => donorRepo.InsertBatchOfDonorsWithExpandedHla(allDonors, false)).Wait();
             });
         }
         

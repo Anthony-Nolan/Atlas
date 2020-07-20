@@ -166,7 +166,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 adultDonorInfoWithFullMatch
             };
 
-            Task.Run(() => donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(allDonors)).Wait();
+            Task.Run(() => donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(allDonors, false)).Wait();
         }
 
         private void AddTestDonorUnavailableForSearch(IDonorUpdateRepository donorUpdateRepository)
@@ -175,7 +175,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
             Task.Run(() =>
             {
-                donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { unavailableMatchingCordDonor });
+                donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { unavailableMatchingCordDonor }, false);
                 donorUpdateRepository.SetDonorBatchAsUnavailableForSearch(new[] { unavailableMatchingCordDonor.DonorId });
             }).Wait();
         }

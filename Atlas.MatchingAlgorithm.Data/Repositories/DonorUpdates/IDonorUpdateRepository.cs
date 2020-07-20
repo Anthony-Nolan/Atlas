@@ -13,12 +13,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// Insert a batch of donors into the database.
         /// Will create the hla matches.
         /// </summary>
-        Task InsertBatchOfDonorsWithExpandedHla(IEnumerable<DonorInfoWithExpandedHla> donors);
+        Task InsertBatchOfDonorsWithExpandedHla(IEnumerable<DonorInfoWithExpandedHla> donors, bool runAllHlaInsertionsInASingleTransactionScope);
 
         /// <summary>
         /// Updates info and/or HLA for a batch of donors.
         /// </summary>
-        Task UpdateDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorsToUpdate);
+        Task UpdateDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorsToUpdate, bool runAllHlaInsertionsInASingleTransactionScope);
         
         /// <summary>
         /// Sets a batch of donors as unavailable for search.

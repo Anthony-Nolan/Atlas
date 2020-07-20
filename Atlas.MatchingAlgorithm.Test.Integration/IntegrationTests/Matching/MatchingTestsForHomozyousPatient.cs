@@ -174,7 +174,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var donorRepo = repositoryFactory.GetDonorUpdateRepository();
-            Task.Run(() => donorRepo.InsertBatchOfDonorsWithExpandedHla(BuildDonors())).Wait();
+            Task.Run(() => donorRepo.InsertBatchOfDonorsWithExpandedHla(BuildDonors(), false)).Wait();
         }
 
         private IEnumerable<DonorInfoWithExpandedHla> BuildDonors()

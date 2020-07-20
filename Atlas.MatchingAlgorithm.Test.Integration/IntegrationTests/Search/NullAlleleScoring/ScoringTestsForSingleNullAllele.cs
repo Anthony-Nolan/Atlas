@@ -180,7 +180,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var repositoryFactory =
                 DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var donorRepository = repositoryFactory.GetDonorUpdateRepository();
-            donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { testDonor }).Wait();
+            donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { testDonor }, false).Wait();
 
             return testDonor.DonorId;
         }

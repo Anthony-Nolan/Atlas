@@ -158,7 +158,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                     donorInfoWithFullCrossHeterozygousMatchAtLocus
                 };
 
-                Task.Run(() => updateRepo.InsertBatchOfDonorsWithExpandedHla(allDonors)).Wait();
+                Task.Run(() => updateRepo.InsertBatchOfDonorsWithExpandedHla(allDonors, false)).Wait();
             });
         }
 

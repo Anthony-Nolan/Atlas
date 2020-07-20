@@ -31,7 +31,8 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
             await donorService.CreateOrUpdateDonorBatch(
                 donorBatch.Donors,
                 activeDatabaseProvider.GetActiveDatabase(),
-                hlaVersionAccessor.GetActiveHlaNomenclatureVersion());
+                hlaVersionAccessor.GetActiveHlaNomenclatureVersion(),
+                true);
         }
     }
 }

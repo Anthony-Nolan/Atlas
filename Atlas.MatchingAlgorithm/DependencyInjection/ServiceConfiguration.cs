@@ -268,8 +268,9 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                     managementService,
                     updateConverter,
                     hlaVersionAccessor,
-                    logger,
-                    int.Parse(settings.BatchSize));
+                    settings,
+                    logger
+                    );
             });
         }
 

@@ -23,7 +23,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
         /// <param name="hlaNomenclatureVersion">
         ///  This method includes processing the HLA, thus we need to know which version of the HLA nomenclature to be using for that interpretation
         /// </param>
-        Task CreateOrUpdateDonorBatch(IEnumerable<DonorInfo> donorInfos, TransientDatabase targetDatabase, string hlaNomenclatureVersion);
+        Task CreateOrUpdateDonorBatch(IEnumerable<DonorInfo> donorInfos, TransientDatabase targetDatabase, string hlaNomenclatureVersion, bool runAllHlaInsertionsInASingleTransactionScope);
     }
 
     public class DonorService : IDonorService
@@ -57,7 +57,8 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
         public async Task CreateOrUpdateDonorBatch(
             IEnumerable<DonorInfo> donorInfos,
             TransientDatabase targetDatabase,
-            string hlaNomenclatureVersion)
+            string hlaNomenclatureVersion,
+            bool runAllHlaInsertionsInASingleTransactionScope)
         {
             donorInfos = donorInfos.ToList();
 
@@ -69,7 +70,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             var expansionResult = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorInfos, ExpansionFailureEventName);
             EnsureAllPGroupsExist(expansionResult.ProcessingResults, targetDatabase);
 
-            await CreateOrUpdateDonorsWithHla(expansionResult.ProcessingResults, targetDatabase);
+            await CreateOrUpdateDonorsWithHla(expansionResult.ProcessingResults, targetDatabase, runAllHlaInsertionsInASingleTransactionScope);
             await SendFailedDonorsAlert(expansionResult.FailedDonors);
         }
 
@@ -94,7 +95,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             pGroupRepo.FindOrCreatePGroupIds(allPGroups);
         }
 
-        private async Task CreateOrUpdateDonorsWithHla(IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHla, TransientDatabase targetDatabase)
+        private async Task CreateOrUpdateDonorsWithHla(IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHla, TransientDatabase targetDatabase, bool runAllHlaInsertionsInASingleTransactionScope)
         {
             if (!donorsWithHla.Any())
             {
@@ -104,10 +105,10 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             var existingDonorIds = (await GetExistingDonorIds(donorsWithHla, targetDatabase)).ToList();
             var (updatedDonors, newDonors) = donorsWithHla.ReifyAndSplit(id => existingDonorIds.Contains(id.DonorId));
 
-            using (var transactionScope = new AsyncTransactionScope())
+            using (var transactionScope = new OptionalAsyncTransactionScope(runAllHlaInsertionsInASingleTransactionScope))
             {
-                await CreateDonorBatch(newDonors, targetDatabase);
-                await UpdateDonorBatch(updatedDonors, targetDatabase);
+                await CreateDonorBatch(newDonors, targetDatabase, runAllHlaInsertionsInASingleTransactionScope);
+                await UpdateDonorBatch(updatedDonors, targetDatabase, runAllHlaInsertionsInASingleTransactionScope);
                 transactionScope.Complete();
             }
         }
@@ -120,23 +121,23 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             return existingDonors.Keys;
         }
 
-        private async Task CreateDonorBatch(List<DonorInfoWithExpandedHla> newDonors, TransientDatabase targetDatabase)
+        private async Task CreateDonorBatch(List<DonorInfoWithExpandedHla> newDonors, TransientDatabase targetDatabase, bool runAllHlaInsertionsInASingleTransactionScope)
         {
             if (newDonors.Any())
             {
                 var donorUpdateRepository = repositoryFactory.GetDonorUpdateRepositoryForDatabase(targetDatabase);
 
-                await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(newDonors);
+                await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(newDonors, runAllHlaInsertionsInASingleTransactionScope);
             }
         }
 
-        private async Task UpdateDonorBatch(List<DonorInfoWithExpandedHla> updateDonors, TransientDatabase targetDatabase)
+        private async Task UpdateDonorBatch(List<DonorInfoWithExpandedHla> updateDonors, TransientDatabase targetDatabase, bool runAllHlaInsertionsInASingleTransactionScope)
         {
             if (updateDonors.Any())
             {
                 var donorUpdateRepository = repositoryFactory.GetDonorUpdateRepositoryForDatabase(targetDatabase);
 
-                await donorUpdateRepository.UpdateDonorBatch(updateDonors);
+                await donorUpdateRepository.UpdateDonorBatch(updateDonors, runAllHlaInsertionsInASingleTransactionScope);
             }
         }
 

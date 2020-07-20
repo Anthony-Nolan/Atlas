@@ -61,6 +61,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     IsAvailableForSearch = true
                 }},
                 default,
+                default,
                 default);
 
             await donorService
@@ -69,7 +70,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                         x.Single().DonorId == donorId &&
                         x.Single().DonorType == donorType),
                     Arg.Any<TransientDatabase>(),
-                    Arg.Any<string>());
+                    Arg.Any<string>(),
+                    Arg.Any<bool>());
         }
 
         [Test]
@@ -89,6 +91,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     IsAvailableForSearch = true
                 }},
                 default,
+                default,
                 default);
 
             await donorService
@@ -107,6 +110,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     DonorId = donorId,
                     IsAvailableForSearch = false
                 }},
+                default,
                 default,
                 default);
 
@@ -129,11 +133,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     IsAvailableForSearch = false
                 }},
                 default,
+                default,
                 default);
 
             await donorService
                 .DidNotReceiveWithAnyArgs()
-                .CreateOrUpdateDonorBatch(default, default, default);
+                .CreateOrUpdateDonorBatch(default, default, default, default);
         }
 
         [Test]
@@ -164,6 +169,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
             await donorManagementService.ApplyDonorUpdatesToDatabase(
                 new[] { olderUnavailableUpdate, newerAvailableUpdate },
                 default,
+                default,
                 default);
 
             await donorService
@@ -172,7 +178,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                         x.Single().DonorId == donorId &&
                         x.Single().DonorType == donorType),
                     Arg.Any<TransientDatabase>(),
-                    Arg.Any<string>());
+                    Arg.Any<string>(),
+                    Arg.Any<bool>());
         }
 
         [Test]
@@ -201,6 +208,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorManagementService.ApplyDonorUpdatesToDatabase(
                 new[] { olderUnavailableUpdate, newerAvailableUpdate },
+                default,
                 default,
                 default);
 
@@ -235,6 +243,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorManagementService.ApplyDonorUpdatesToDatabase(
                 new[] { olderAvailableUpdate, newerUnavailableUpdate },
+                default,
                 default,
                 default);
 
@@ -272,11 +281,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
             await donorManagementService.ApplyDonorUpdatesToDatabase(
                 new[] { olderAvailableUpdate, newerUnavailableUpdate },
                 default,
+                default,
                 default);
 
             await donorService
                 .DidNotReceiveWithAnyArgs()
-                .CreateOrUpdateDonorBatch(default, default, default);
+                .CreateOrUpdateDonorBatch(default, default, default, default);
         }
 
         [Test]
@@ -305,11 +315,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     UpdateDateTime = newerTimestamp
                 }},
                 default,
+                default,
                 default);
 
             await donorService
                 .ReceivedWithAnyArgs(1)
-                .CreateOrUpdateDonorBatch(default, default, default);
+                .CreateOrUpdateDonorBatch(default, default, default, default);
         }
 
         [Test]
@@ -338,11 +349,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     UpdateDateTime = olderTimestamp
                 }},
                 default,
+                default,
                 default);
 
             await donorService
                 .DidNotReceiveWithAnyArgs()
-                .CreateOrUpdateDonorBatch(default, default, default);
+                .CreateOrUpdateDonorBatch(default, default, default, default);
         }
 
         [Test]
@@ -369,6 +381,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     IsAvailableForSearch = false,
                     UpdateDateTime = newerTimestamp
                 }},
+                default,
                 default,
                 default);
 
@@ -401,6 +414,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     IsAvailableForSearch = false,
                     UpdateDateTime = olderTimestamp
                 }},
+                default,
                 default,
                 default);
 
@@ -449,6 +463,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     DonorId = donorId3
                 }},
                 default,
+                default,
                 default);
 
             // third donor update is applicable; only 2 events should be logged
@@ -479,6 +494,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                     IsAvailableForSearch = true
                 }},
                 default,
+                default,
                 default);
 
             await donorService
@@ -493,7 +509,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
                         x.Single().DonorId == availableDonorId &&
                         x.Single().DonorType == donorType),
                     Arg.Any<TransientDatabase>(),
-                    Arg.Any<string>());
+                    Arg.Any<string>(),
+                    Arg.Any<bool>());
         }
 
         [Test]
@@ -505,6 +522,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
 
             await donorManagementService.ApplyDonorUpdatesToDatabase(
                 new[] { new DonorAvailabilityUpdate { DonorId = donorId, UpdateDateTime = updateDateTime, UpdateSequenceNumber = sequenceNumber} },
+                default,
                 default,
                 default);
 
