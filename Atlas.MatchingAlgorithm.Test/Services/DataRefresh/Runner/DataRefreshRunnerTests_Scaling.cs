@@ -160,7 +160,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 .Build();
             dataRefreshRunner = BuildDataRefreshRunner(settings);
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
-            hlaProcessor.UpdateDonorHla(Arg.Any<string>()).Throws(new Exception());
+            hlaProcessor.UpdateDonorHla(default, default).ThrowsForAnyArgs<Exception>();
 
             try
             {

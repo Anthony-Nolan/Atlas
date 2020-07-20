@@ -64,21 +64,37 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             var actualPGroupCount = await GetPGroupCountAtLocusAPositionOne(donorInfo.DonorId);
             actualPGroupCount.Should().Be(expectedPGroupCount);
         }
-
+        
         [Test]
-        public async Task UpdateDonorHla_WhenHlaUpdateIsRerun_DoesNotAddMorePGroups()
+        public async Task UpdateDonorHla_WhenHlaUpdateIsContinued_DoesNotAddMorePGroups()
         {
             var donorInfo = new DonorInfoBuilder().Build();
             await importRepo.InsertBatchOfDonors(new List<DonorInfo> { donorInfo });
 
-            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion);
+            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion, false);
 
             var initialPGroupCount = await GetPGroupCountAtLocusAPositionOne(donorInfo.DonorId);
 
-            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion);
+            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion, true);
 
-            var pGroupCount = await GetPGroupCountAtLocusAPositionOne(donorInfo.DonorId);
-            pGroupCount.Should().Be(initialPGroupCount);
+            var finalPGroupCount = await GetPGroupCountAtLocusAPositionOne(donorInfo.DonorId);
+            finalPGroupCount.Should().Be(initialPGroupCount);
+        }
+
+        [Test]
+        public async Task UpdateDonorHla_WhenHlaUpdateIsContinued_ButIsToldItsANewRun_ReAddsPGroups()
+        {
+            var donorInfo = new DonorInfoBuilder().Build();
+            await importRepo.InsertBatchOfDonors(new List<DonorInfo> { donorInfo });
+
+            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion, false);
+
+            var initialPGroupCount = await GetPGroupCountAtLocusAPositionOne(donorInfo.DonorId);
+
+            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion, false);
+
+            var finalPGroupCount = await GetPGroupCountAtLocusAPositionOne(donorInfo.DonorId);
+            finalPGroupCount.Should().Be(initialPGroupCount * 2);
         }
 
         [Test]
