@@ -70,14 +70,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             }
         }
 
-        private async Task PerformHlaUpdate(string hlaNomenclatureVersion, bool continueExistingImport)
+        private async Task PerformHlaUpdate(string hlaNomenclatureVersion, bool continueExistingProcessing)
         {
             var totalDonorCount = await dataRefreshRepository.GetDonorCount();
-            var batchedDonors = await dataRefreshRepository.NewOrderedDonorBatchesToImport(BatchSize, continueExistingImport);
-            var (donorsProcessed, lastDonorIdSuspectedOfBeingReimported) = await DetermineProgressAndReimportBoundaries(batchedDonors, continueExistingImport);
+            var batchedDonors = await dataRefreshRepository.NewOrderedDonorBatchesToImport(BatchSize, continueExistingProcessing);
+            var (donorsProcessed, lastDonorIdSuspectedOfBeingReprocessed) = await DetermineProgressAndReprocessingBoundaries(batchedDonors, continueExistingProcessing);
             var failedDonors = new List<FailedDonorInfo>();
 
-            if (continueExistingImport)
+            if (continueExistingProcessing)
             {
                 logger.SendTrace($"Hla Processing continuing, from {Decimal.Divide(donorsProcessed, totalDonorCount):0.00%} complete");
             }
@@ -89,7 +89,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 // When continuing a donor import there will be some overlap of donors to ensure all donors are processed. 
                 // This ensures we do not end up with duplicate p-groups in the matching hla tables
                 // We do not want to attempt to remove p-groups for all batches as it would be detrimental to performance, so we limit it to the first two batches
-                var shouldRemovePGroups = donorBatch.First().DonorId <= lastDonorIdSuspectedOfBeingReimported;
+                var shouldRemovePGroups = donorBatch.First().DonorId <= lastDonorIdSuspectedOfBeingReprocessed;
 
                 var failedDonorsFromBatch = await UpdateDonorBatch(donorBatch, hlaNomenclatureVersion, shouldRemovePGroups);
                 failedDonors.AddRange(failedDonorsFromBatch);
@@ -104,15 +104,20 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             }
         }
 
-        private async Task<(int,int)> DetermineProgressAndReimportBoundaries(
+        private async Task<(int,int)> DetermineProgressAndReprocessingBoundaries(
             List<List<DonorInfo>> batchedDonors,
             bool continueExistingImport
         )
         {
             if (continueExistingImport)
             {
-                var initialDonor = batchedDonors.First().First(); // Only safe because we AREN'T streaming these donors. Revisit this if we change that!
-                var donorsPreviouslyProcessed = await dataRefreshRepository.GetDonorCountLessThan(initialDonor.DonorId);
+                // Only safe because we AREN'T streaming these donors. Revisit this if we change that!
+                var initialDonorToReprocess = batchedDonors.First().First();
+
+                // Literally, the following query counts donors that exist in Donors table, < DonorIdX, but since donors
+                // are imported strictly in order, that's equivalent to the number of processed donors already handled.
+                var donorsPreviouslyProcessed = await dataRefreshRepository.GetDonorCountLessThan(initialDonorToReprocess.DonorId);
+
                 var overlapDonors = batchedDonors.Take(DataRefreshRepository.NumberOfBatchesOverlapOnRestart).ToList();
                 var lastDonorIdInOverlap = overlapDonors.Last().Last().DonorId;
 
@@ -121,8 +126,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             else
             {
                 var noDonorsWerePreviouslyProcessed = 0;
-                var noDonorsAreBeingReimported = 0;
-                return (noDonorsWerePreviouslyProcessed, noDonorsAreBeingReimported);
+                var noDonorsAreBeingReprocessed = 0;
+                return (noDonorsWerePreviouslyProcessed, noDonorsAreBeingReprocessed);
             }
         }
 

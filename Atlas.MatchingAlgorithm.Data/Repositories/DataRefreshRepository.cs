@@ -88,12 +88,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         private async Task<int?> DetermineFirstDonorToImportInThisPass(int batchSize)
         {
             var highestDonorId = await DetermineHighestDonorIdForWhichHlaHasBeenProcessed();
-            await VerifyThatDonorExistsInAllRequiredTables(highestDonorId);
 
-            // Continue from an earlier donor than the highest imported donor id, in case hla processing was only successful for some loci for previous batch;
-            // That shouldn't be possible, but it's relatively harmless paranoia to apply - each batch tends to take < a minute, in a 9+ hour process.
+            // Having identified this highest Donor that MIGHT have been fully imported, we locate a donor
+            // several batches backwards in time. Since we don't start a new batch until the previous one
+            // was successfully completed, this means that even if the last batch was left in a mess, the
+            // Donor that we've just identified is guaranteed to be clean.
+            // So we'll start again from there, cleaning out anything since then.
             var donorToContinueFrom = await DetermineDonorIdNDonorsBeforeThis(highestDonorId, batchSize * NumberOfBatchesOverlapOnRestart);
 
+            // As noted above, this donor should be completely clean. So let's double check that.
             if (donorToContinueFrom != null)
             {
                 await VerifyThatDonorExistsInAllRequiredTables(donorToContinueFrom.Value);
@@ -104,8 +107,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
         /// <summary>
         /// Make a reasonable guess at the last DonorId to have been processed.
-        /// We choose not to rely on any single table, in case the write managed to be
-        /// non-transactional in some way.
+        /// We can't rely on any single table, in case the last batch failed part-way through
+        /// and not all tables were written fully written.
         /// Instead, we identify the highest Id in each of the tables that we expect to be edited,
         /// and take the min of those Ids.
         /// </summary>
@@ -124,7 +127,6 @@ SELECT MIN(MaxId) FROM (
     SELECT MAX(DonorId) AS MaxId FROM MatchingHlaAtA
 ) AS temp
 ");
-
                 return maxDonorPresentInAllRequiredTables;
             }
         }
