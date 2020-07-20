@@ -22,6 +22,9 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
         {
             var services = new ServiceCollection();
 
+            // Note that because the MatchAlg validation tests run from a virtual Server running the API project, all of
+            // the configuration for the actual 'Prod code under test' gets taken from the config files in the API project.
+            // (Comment duplicated in Validation.ServiceConfiguration, Validation.appSettings, Api.Startup(twice), Api.appSettings)
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .AddUserSecrets(Assembly.GetExecutingAssembly())
