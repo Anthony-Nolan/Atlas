@@ -73,7 +73,11 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
                 allowedLoci.All(l => gGroupsPerLocus.GetLocus(l).Contains(h.GetLocus(l)))
             ).ToList();
 
-            var allowedDiplotypes = Combinations.AllPairs(allowedHaplotypes.ToArray(), true).ToList();
+            var allowedHaplotypesExcludingLoci = new HashSet<LociInfo<string>>(allowedHaplotypes.Select(h =>
+                h.Map((l, hla) => allowedLoci.Contains(l) ? hla : null)
+            ));
+
+            var allowedDiplotypes = Combinations.AllPairs(allowedHaplotypesExcludingLoci.ToArray(), true).ToList();
             var filteredDiplotypes = FilterDiplotypes(allowedDiplotypes, gGroupsPerPosition, allowedLoci);
 
             logger.SendTrace($"Filtered expanded genotypes: {filteredDiplotypes.Count}");

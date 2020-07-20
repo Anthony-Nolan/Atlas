@@ -137,5 +137,34 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             // Of two matching haplotypes, four possible combinations as diplotypes: x & y => (xx)/(xy)/(yy)
             genotypes.Count.Should().Be(3);
         }
+
+        [Test]
+        public async Task ExpandCompressedPhenotype_WithExcludedLocus_DoesNotExpandAtThatLocus()
+        {
+            const Locus excludedLocus = Locus.C;
+            const string otherGGroupAtMissingLocus = "01:01:01G";
+
+            var phenotype = new PhenotypeInfoBuilder<string>(UnambiguousAlleleDetails.Alleles())
+                .WithDataAt(excludedLocus, (string) null)
+                .Build();
+
+            var haplotypes = new List<LociInfo<string>>
+            {
+                HaplotypeBuilder1.Build(),
+                HaplotypeBuilder2.Build(),
+                HaplotypeBuilder1.WithDataAt(excludedLocus, otherGGroupAtMissingLocus).Build(),
+                HaplotypeBuilder2.WithDataAt(excludedLocus, otherGGroupAtMissingLocus).Build(),
+            };
+
+            var genotypes = await expander.ExpandCompressedPhenotype(
+                phenotype,
+                HlaNomenclatureVersion,
+                DefaultLoci.Except(new List<Locus> {excludedLocus}).ToHashSet(),
+                haplotypes
+            );
+
+            genotypes.Count.Should().Be(1);
+            genotypes.Single().GetLocus(excludedLocus).Position1And2Null().Should().BeTrue();
+        }
     }
 }
