@@ -45,7 +45,7 @@ namespace Atlas.Common.Test.SharedTestHelpers.Builders
         }
 
 
-        public PhenotypeInfoBuilder<T> WithDataAt(T value, params Locus[] loci)
+        public PhenotypeInfoBuilder<T> WithDataAtLoci(T value, params Locus[] loci)
         {
             foreach (var locus in loci)
             {
