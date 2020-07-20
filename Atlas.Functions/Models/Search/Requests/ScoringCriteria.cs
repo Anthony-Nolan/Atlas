@@ -25,8 +25,8 @@ namespace Atlas.Functions.Models.Search.Requests
         {
             return new MatchingAlgorithm.Client.Models.SearchRequests.ScoringCriteria
             {
-                LociToScore = scoringCriteria.LociToScore,
-                LociToExcludeFromAggregateScore = scoringCriteria.LociToExcludeFromAggregateScore
+                LociToScore = scoringCriteria?.LociToScore,
+                LociToExcludeFromAggregateScore = scoringCriteria?.LociToExcludeFromAggregateScore
             };
         }
     }

@@ -46,9 +46,9 @@ namespace Atlas.Functions.Models.Search.Requests
             return new MatchingRequest
             {
                 SearchType = searchRequest.SearchType.ToMatchingAlgorithmDonorType(),
-                MatchCriteria = searchRequest.MatchCriteria.ToMatchingAlgorithmMatchCriteria(),
-                ScoringCriteria = searchRequest.ScoringCriteria.ToMatchingAlgorithmScoringCriteria(),
-                SearchHlaData = searchRequest.SearchHlaData.ToPhenotypeInfo()
+                MatchCriteria = searchRequest.MatchCriteria?.ToMatchingAlgorithmMatchCriteria(),
+                ScoringCriteria = searchRequest.ScoringCriteria?.ToMatchingAlgorithmScoringCriteria(),
+                SearchHlaData = searchRequest.SearchHlaData?.ToPhenotypeInfo()
             };
         }
     }
