@@ -142,7 +142,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                     updateBatch.ToList().AsReadOnly(),
                     activeDb,
                     fileBackedHmdHlaNomenclatureVersion,
-                    false);//This makes a substantial difference to the runtime: 25-35% atm.
+                    false//This makes a substantial difference to the runtime: 25-35% atm.
+                );
             }
         }
 
