@@ -44,6 +44,17 @@ namespace Atlas.Common.Test.SharedTestHelpers.Builders
             return this;
         }
 
+
+        public PhenotypeInfoBuilder<T> WithDataAt(T value, params Locus[] loci)
+        {
+            foreach (var locus in loci)
+            {
+                phenotypeInfo.SetLocus(locus, value);
+            }
+
+            return this;
+        }
+
         public PhenotypeInfoBuilder<T> WithDataAt(Locus locus, T value1, T value2)
         {
             phenotypeInfo.SetPosition(locus, LocusPosition.One, value1);
