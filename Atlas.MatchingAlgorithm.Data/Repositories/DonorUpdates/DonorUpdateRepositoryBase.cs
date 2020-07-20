@@ -117,8 +117,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                         // "don't await the Tasks separately, use Task.WhenAll() and let them run in parallel".
                         // And that DOES work ... if you can start separate connections for each one.
                         //
-                        // But our TransactionScope requires that there only be a single connection at a time.
-                        // And due to the nature of MARS, if you WhenAll() with a shared transaction you lose all
+                        // But currently our TransactionScope requires that there only be a single connection at a
+                        // time, due to limitations of .NET Core 3. See ATLAS-562 for more notes.
+                        //
+                        // Due to the nature of MARS, if you WhenAll() with a shared transaction you lose all
                         // the perf benefits.
                         // 
                         // See here for more detail of the tests done, the perf results achieved and the probable
@@ -132,7 +134,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 }
 
                 // Note that we may have already awaited these tasks to support TransactionScope.
-                // In that case this `WhenAll` in a no-op. But it makes the difference
+                // In that case this `WhenAll` is a no-op. But it makes the difference
                 // between the two cases easy to define.
                 await Task.WhenAll(perLocusUpsertTasks);
                 transactionScope.Complete();
