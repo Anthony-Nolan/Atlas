@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
+﻿using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 
 namespace Atlas.Functions.Models.Search.Requests
 {

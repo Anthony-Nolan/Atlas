@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.Functions.Models.Search.Requests
 {
