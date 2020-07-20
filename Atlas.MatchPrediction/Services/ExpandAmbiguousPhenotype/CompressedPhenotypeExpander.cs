@@ -119,6 +119,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         /// Expands phenotype naively - i.e. with no haplotype filtering.
         /// Will throw an exception if input is too ambiguous. 
         /// </summary>
+        // TODO: ATLAS-558: Figure out if this should be deleted or if we should update it to take the allowed loci
         private async Task<ISet<PhenotypeInfo<string>>> NaivelyExpandPhenotype(
             PhenotypeInfo<string> phenotype,
             string hlaNomenclatureVersion,
@@ -134,7 +135,6 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
                 );
             }
 
-            // TODO: ATLAS-235: Pass in excludedLoci here if lost in merge
             return ambiguousPhenotypeExpander.ExpandPhenotype(gGroupsPerPosition);
         }
 
