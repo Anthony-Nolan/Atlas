@@ -27,6 +27,10 @@ locals {
     "DataRefresh:DonorManagement:SubscriptionForDbB"            = azurerm_servicebus_subscription.matching_transient_b.name
     "DataRefresh:DonorManagement:BatchSize"                     = var.MESSAGING_BUS_DONOR_BATCH_SIZE
     "DataRefresh:DonorManagement:CronSchedule"                  = "NotActuallyUsedInThisFunction"
+
+    "DataRefresh:DataRefreshDonorUpdatesShouldBeFullyTransactional"                         = var.DONOR_WRITE_TRANSACTIONALITY__DATA_REFRESH
+    "DataRefresh:DonorManagement:OngoingDifferentialDonorUpdatesShouldBeFullyTransactional" = var.DONOR_WRITE_TRANSACTIONALITY__DONOR_UPDATES
+
     "HlaMetadataDictionary:AzureStorageConnectionString"        = var.azure_storage.primary_connection_string,
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"            = var.WMDA_FILE_URL,
     "MacDictionary:AzureStorageConnectionString"                = var.azure_storage.primary_connection_string
