@@ -41,7 +41,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         }
 
         [Test, Repeat(1000)]
-        //[IgnoreExceptOnCiPerfTest("1000 Reps = 54.33s (ave of 5 runs. SD: 6.25) [other tests covered test data load time]")]
+        //[IgnoreExceptOnCiPerfTest("1000 Reps = 41.7s (ave of 20 runs. SD: 2.31)")]
         [Ignore("This takes 14 minutes to run on DevOps CI. We're not really sure why. TODO: ATLAS-551")]
         public async Task ApplyDonorUpdatesToDatabase_ImportingSingleDonorWith_Invalid_Hlas_CompletesWithoutErrors_WithAnExpectedPerformance()
         {
@@ -67,7 +67,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         }
 
         [Test, Repeat(1000)]
-        //[IgnoreExceptOnCiPerfTest(@"1000 Reps = 48.84s (ave of 5 runs. SD: 2.33) [other tests covered test data load time]")]
+        //[IgnoreExceptOnCiPerfTest("1000 Reps = 39.6s(ave of 10 runs. SD: 2.51)")]
         [Ignore("This takes 14 minutes to run on DevOps CI. We're not really sure why. TODO: ATLAS-551")]
         public async Task ApplyDonorUpdatesToDatabase_ImportingSingleDonorWith_Valid_Hlas_CompletesWithoutErrors_WithAnExpectedPerformance()
         {
@@ -93,9 +93,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         }
 
         [Test,
-         TestCase(1_000),  // Ave:  2.75 s SD: 0.07 [=> 0.0027 s/hla] (over 5 runs, includes Donor data parse, but other tests covered HMD data parse.)
-         TestCase(20_000), // Ave: 62.57 s SD: 3.52 [=> 0.0031 s/hla] (over 5 runs, includes Donor data parse, but other tests covered HMD data parse.)
-         TestCase(5_000),  // Ave: 14.44 s SD: 0.46 [=> 0.0029 s/hla] (over 5 runs, includes Donor data parse, but other tests covered HMD data parse.)
+         TestCase(1_000),  // Ave:  2.67 s SD: 0.07 [=> 0.0027 s/hla] (over 10 runs, includes Donor data parse, but not HMD data parse.)
+         TestCase(20_000), // Ave: 59.07 s SD: 0.96 [=> 0.0030 s/hla] (over 10 runs, includes Donor data parse, but not HMD data parse.)
+         TestCase(5_000),  // Ave: 13.53 s SD: 0.34 [=> 0.0027 s/hla] (over 10 runs, includes Donor data parse, but not HMD data parse.)
         ]
         [IgnoreExceptOnCiPerfTest(@"See comments per scale.")]
         public async Task ExpandDonorHlaBatchAsync_OnLargeNumbersOfDonors_RunsWithExpectedPerformance(int n)
@@ -105,10 +105,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
 
         [Test,
          TestCase(1),
-         TestCase(10),  // Ave:  0.19 s SD: 0.010 [=> 0.0185 s/hla] (over 5 runs, includes Donor data parse, but other tests covered HMD data parse.)
-         TestCase(100), // Ave:  0.61 s SD: 0.052 [=> 0.0061 s/hla] (over 5 runs, includes Donor data parse, but other tests covered HMD data parse.)
-         TestCase(50),  // Ave:  0.24 s SD: 0.018 [=> 0.0047 s/hla] (over 5 runs, includes Donor data parse, but other tests covered HMD data parse.)
-         TestCase(500), // Ave:  1.22 s SD: 0.048 [=> 0.0024 s/hla] (over 5 runs, includes Donor data parse, but other tests covered HMD data parse.)
+         TestCase(10),  // Ave:  0.17 s SD: 0.009 [=> 0.0170 s/hla] (over 10 runs, includes Donor data parse, but not HMD data parse.)
+         TestCase(100), // Ave:  0.36 s SD: 0.016 [=> 0.0036 s/hla] (over 10 runs, includes Donor data parse, but not HMD data parse.)
+         TestCase(50),  // Ave:  0.22 s SD: 0.007 [=> 0.0044 s/hla] (over 10 runs, includes Donor data parse, but not HMD data parse.)
+         TestCase(500), // Ave:  0.98 s SD: 0.011 [=> 0.0020 s/hla] (over 10 runs, includes Donor data parse, but not HMD data parse.)
         ]
         public async Task ExpandDonorHlaBatchAsync_OnModerateNumbersOfDonors_RunsWithExpectedPerformance(int n)
         {
@@ -126,8 +126,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         }
 
         [Test,
-         TestCase(400, 200, 100, 150, 100, 100, 100, 1000),        // Ave:  11.39 s SD: 0.60 [950 donors => 83.4 donor/s, 0.012 s/donor] (over 5 runs, includes Donor data parse, but other tests covered HMD data parse.)
-         TestCase(8000, 4000, 2000, 3000, 2000, 2000, 2000, 1000), // Ave: 162.24 s SD: 5.41 [19k donors => 117.1 donor/s, 0.0085 s/donor] (over 5 runs, includes Donor data parse, but other tests covered HMD data parse.)
+         TestCase(400, 200, 100, 150, 100, 100, 100, 1000),        // Ave:  9.78 s SD: 0.10  [950 donors => 97.1 donor/s, 0.010 s/donor] (over 20 runs, includes Donor data parse, but other tests covered HMD data parse. With Full TransactionScope and serial write.
+         TestCase(8000, 4000, 2000, 3000, 2000, 2000, 2000, 1000), // Ave: 175.95 s SD: 4.08 [19k donors => 108.0 donor/s, 0.0093 s/donor] (over 20 runs, includes Donor data parse, but other tests covered HMD data parse.) With Full TransactionScope and serial write.
         ]// Note the conclusion that HLA expansion covers ~1/3rd of donor processing time for large volumes.
         //[IgnoreExceptOnCiPerfTest(@"See comments per scale.")]
         [Ignore("These take 3 and 14 minutes respectively to run on DevOps CI. We're not really sure why. TODO: ATLAS-551")]
@@ -155,7 +155,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         }
 
         [Test,
-         TestCase(100, 50, 25, 35, 25, 25, 25, 100),  // Ave: 5.79 s SD: 0.33 [235 donors => 40.6 donor/s, 0.025 s/donor] (over 5 runs, includes Donor data parse, but other tests covered HMD data parse.)
+         TestCase(100, 50, 25, 35, 25, 25, 25, 100),  // Ave: 3.19 s SD: 0.307 [235 donors => 73.7 donor/s, 0.014 s/donor] (over 20 runs, includes Donor data parse, but other tests covered HMD data parse.) With Full TransactionScope and serial write.
         ]
         public async Task ApplyDonorUpdatesToDatabase_RunningModerateVolumeMassImport_CompletesWithoutErrors_AndRunsWithExpectedPerformance(
             int initialAvailableCreationsCount,
