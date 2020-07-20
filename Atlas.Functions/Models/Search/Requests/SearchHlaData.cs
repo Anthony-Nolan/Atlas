@@ -60,11 +60,11 @@ namespace Atlas.Functions.Models.Search.Requests
         {
             return new PhenotypeInfo<string>
             {
-                A = hlaData?.LocusSearchHlaA?.ToLocusInfo(),
-                B = hlaData?.LocusSearchHlaB?.ToLocusInfo(),
-                C = hlaData?.LocusSearchHlaC?.ToLocusInfo(),
-                Dqb1 = hlaData?.LocusSearchHlaDqb1?.ToLocusInfo(),
-                Drb1 = hlaData?.LocusSearchHlaDrb1?.ToLocusInfo(),
+                A = hlaData?.LocusSearchHlaA?.ToLocusInfo() ?? new LocusInfo<string>(null),
+                B = hlaData?.LocusSearchHlaB?.ToLocusInfo() ?? new LocusInfo<string>(null),
+                C = hlaData?.LocusSearchHlaC?.ToLocusInfo() ?? new LocusInfo<string>(null),
+                Dqb1 = hlaData?.LocusSearchHlaDqb1?.ToLocusInfo() ?? new LocusInfo<string>(null),
+                Drb1 = hlaData?.LocusSearchHlaDrb1?.ToLocusInfo() ?? new LocusInfo<string>(null),
             };
         }
 
