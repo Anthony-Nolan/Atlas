@@ -482,7 +482,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithHla(donorPhenotype)
                 .Build();
 
-            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }, false);
 
             return donor.DonorId;
         }

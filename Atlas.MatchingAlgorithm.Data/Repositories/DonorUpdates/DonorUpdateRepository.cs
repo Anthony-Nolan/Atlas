@@ -35,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        public async Task InsertBatchOfDonorsWithExpandedHla(IEnumerable<DonorInfoWithExpandedHla> donors)
+        public async Task InsertBatchOfDonorsWithExpandedHla(IEnumerable<DonorInfoWithExpandedHla> donors, bool runAllHlaInsertionsInASingleTransactionScope)
         {
             donors = donors.ToList();
 
@@ -44,17 +44,17 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 return;
             }
 
-            using (var transactionScope = new AsyncTransactionScope())
+            using (var transactionScope = new OptionalAsyncTransactionScope(runAllHlaInsertionsInASingleTransactionScope))
             {
                 await InsertBatchOfDonors(donors);
-                await AddMatchingPGroupsForExistingDonorBatch(donors);
+                await AddMatchingPGroupsForExistingDonorBatch(donors, runAllHlaInsertionsInASingleTransactionScope);
                 transactionScope.Complete();
             }
         }
 
         // This implementation has *not* been aggressively tuned for performance, yet.
         // Feel free to make changes.
-        public async Task UpdateDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorsToUpdate)
+        public async Task UpdateDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorsToUpdate, bool runAllHlaInsertionsInASingleTransactionScope)
         {
             donorsToUpdate = donorsToUpdate.ToList();
 
@@ -63,55 +63,62 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 return;
             }
 
-            using (var transactionScope = new AsyncTransactionScope())
-            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            using (var outerTransactionScope = new OptionalAsyncTransactionScope(runAllHlaInsertionsInASingleTransactionScope))
             {
-                conn.Open();
-                var existingDonors = (await conn.QueryAsync<Donor>($@"
+                var donorsWhereHlaHasChanged = new List<DonorWithChangedMatchingLoci>();
+
+                using (var innerNonHlaTransactionScope = new AsyncTransactionScope())
+                await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+                {
+                    conn.Open();
+                    var existingDonors = (await conn.QueryAsync<Donor>($@"
                     SELECT * FROM Donors 
                     WHERE DonorId IN ({string.Join(",", donorsToUpdate.Select(d => d.DonorId))})
                     ", commandTimeout: 300)
-                    ).ToDictionary(d => d.DonorId); //TODO: ATLAS-501. Once we've established that this is a complete waste of time ... Delete this extra DB query!
+                        ).ToDictionary(d =>
+                            d.DonorId); //TODO: ATLAS-501. Once we've established that this is a complete waste of time ... Delete this extra DB query!
 
-                await SetAvailabilityOfDonorBatch(donorsToUpdate.Select(d => d.DonorId), true, conn);
+                    await SetAvailabilityOfDonorBatch(donorsToUpdate.Select(d => d.DonorId), true, conn);
 
-                var donorsWhereHlaHasChanged = new List<DonorWithChangedMatchingLoci>();
 
-                foreach (var donorToUpdate in donorsToUpdate)
-                {
-                    var donorExists = existingDonors.TryGetValue(donorToUpdate.DonorId, out var existingDonor);
-                    if (!donorExists)
+                    foreach (var donorToUpdate in donorsToUpdate)
                     {
-                        // Shouldn't really happen - it suggests that 2 processes are updating the DB at the same time!
-                        // Previous iterations of this code just dropped these cases entirely".
-                        // Note that we already ran exactly the same query in DonorService.CreateOrUpdateDonorsWithHla() and split
-                        // the donors based on this, so every donor in this set has already had its presence confirmed.
-                        // And we don't (I believe?) have any process for deleting donors or changing their IDs, so this really
-                        // should be completely impossible.
-                        // TODO: ATLAS-501. Investigate whether this ever actually happens and decide what should happen if it does?
-                        continue;
+                        var donorExists = existingDonors.TryGetValue(donorToUpdate.DonorId, out var existingDonor);
+                        if (!donorExists)
+                        {
+                            // Shouldn't really happen - it suggests that 2 processes are updating the DB at the same time!
+                            // Previous iterations of this code just dropped these cases entirely".
+                            // Note that we already ran exactly the same query in DonorService.CreateOrUpdateDonorsWithHla() and split
+                            // the donors based on this, so every donor in this set has already had its presence confirmed.
+                            // And we don't (I believe?) have any process for deleting donors or changing their IDs, so this really
+                            // should be completely impossible.
+                            // TODO: ATLAS-501. Investigate whether this ever actually happens and decide what should happen if it does?
+                            continue;
+                        }
+
+                        if (DonorTypeHasChanged(existingDonor, donorToUpdate))
+                        {
+                            await UpdateDonorType(donorToUpdate, conn);
+                        }
+
+                        var existingDonorResult = existingDonor.ToDonorInfo();
+                        if (DonorHlaHasChanged(existingDonorResult, donorToUpdate))
+                        {
+                            var changedLoci = GetChangedMatchingOnlyLoci(existingDonorResult, donorToUpdate);
+                            donorsWhereHlaHasChanged.Add(new DonorWithChangedMatchingLoci(donorToUpdate, changedLoci));
+                            await UpdateDonorHla(donorToUpdate, conn);
+                        }
                     }
 
-                    if (DonorTypeHasChanged(existingDonor, donorToUpdate))
-                    {
-                        await UpdateDonorType(donorToUpdate, conn);
-                    }
-
-                    var existingDonorResult = existingDonor.ToDonorInfo();
-                    if (DonorHlaHasChanged(existingDonorResult, donorToUpdate))
-                    {
-                        var changedLoci = GetChangedMatchingOnlyLoci(existingDonorResult, donorToUpdate);
-                        donorsWhereHlaHasChanged.Add(new DonorWithChangedMatchingLoci(donorToUpdate, changedLoci));
-                        await UpdateDonorHla(donorToUpdate, conn);
-                    }
+                    // The code for the final step (updating the PGroups) uses its own Connection,
+                    // and we mustn't have multiple connections open at once otherwise the
+                    // TransactionScope will cry. So close this Connection now.
+                    conn.Close();
+                    innerNonHlaTransactionScope.Complete();
                 }
-                // The code for the final step (updating the PGroups) uses its own Connection,
-                // and we mustn't have multiple connections open at once otherwise the
-                // TransactionScope will cry. So close this Connection now.
-                conn.Close();
 
-                await ReplaceMatchingPGroupsForExistingDonorBatch(donorsWhereHlaHasChanged);
-                transactionScope.Complete();
+                await UpsertMatchingPGroupsAtSpecifiedLoci(donorsWhereHlaHasChanged, false, runAllHlaInsertionsInASingleTransactionScope);
+                outerTransactionScope.Complete();
             }
         }
 
@@ -204,11 +211,6 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                         WHERE DonorId = @DonorId
                         ";
             await connection.ExecuteAsync(sql, donor, commandTimeout: 600);
-        }
-
-        private async Task ReplaceMatchingPGroupsForExistingDonorBatch(List<DonorWithChangedMatchingLoci> donors)
-        {
-            await UpsertMatchingPGroupsAtSpecifiedLoci(donors, false);
         }
     }
 }

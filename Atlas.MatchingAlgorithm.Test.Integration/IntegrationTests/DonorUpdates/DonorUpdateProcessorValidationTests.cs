@@ -10,6 +10,7 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
+using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -65,8 +66,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 donorManagementService,
                 searchableDonorUpdateConverter,
                 hlaVersionAccessor,
-                logger,
-                batchSize
+                new DonorManagementSettings{BatchSize = batchSize, OngoingDifferentialDonorUpdatesShouldBeFullyTransactional = false},
+                logger
                 );
         }
 
@@ -83,7 +84,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
                 Arg.Is<IReadOnlyCollection<DonorAvailabilityUpdate>>(x => x.Count == 1),
                 Arg.Any<TransientDatabase>(),
-                Arg.Any<string>());
+                Arg.Any<string>(),
+                Arg.Any<bool>());
         }
 
         [Test]
@@ -106,7 +108,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
-            await donorManagementService.DidNotReceiveWithAnyArgs().ApplyDonorUpdatesToDatabase(default, default, default);
+            await donorManagementService.DidNotReceiveWithAnyArgs().ApplyDonorUpdatesToDatabase(default, default, default, default);
         }
 
         [Test]
@@ -156,7 +158,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(dbTarget);
 
-            await donorManagementService.DidNotReceiveWithAnyArgs().ApplyDonorUpdatesToDatabase(default, default, default);
+            await donorManagementService.DidNotReceiveWithAnyArgs().ApplyDonorUpdatesToDatabase(default, default, default, default);
         }
 
         [TestCase(null)]
@@ -215,7 +217,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
                 Arg.Is<IReadOnlyCollection<DonorAvailabilityUpdate>>(x => x.Count == 1),
                 Arg.Any<TransientDatabase>(),
-                Arg.Any<string>());
+                Arg.Any<string>(),
+                Arg.Any<bool>());
         }
 
         [Test]
@@ -232,7 +235,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
                 Arg.Is<IReadOnlyCollection<DonorAvailabilityUpdate>>(x => x.Count == updateCount),
                 Arg.Any<TransientDatabase>(),
-                Arg.Any<string>());
+                Arg.Any<string>(),
+                Arg.Any<bool>());
         }
 
         [Test]
@@ -264,7 +268,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             await donorManagementService.Received().ApplyDonorUpdatesToDatabase(
                 Arg.Is<IReadOnlyCollection<DonorAvailabilityUpdate>>(x => x.Count == 1),
                 Arg.Any<TransientDatabase>(),
-                Arg.Any<string>());
+                Arg.Any<string>(),
+                Arg.Any<bool>());
         }
     }
 }

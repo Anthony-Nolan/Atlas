@@ -121,7 +121,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorInfoWithAllelesAtThreeLoci;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }, false);
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -134,7 +134,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             var donor = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId()).Build();
 
             Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }));
+                await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }, false));
         }
 
         [Test]
@@ -142,7 +142,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorInfoWithAllelesAtThreeLoci;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }, false);
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -154,7 +154,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorInfoWithXxCodesAtThreeLoci;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }, false);
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -217,7 +217,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             var donor = donorInfoWithAllelesAtThreeLoci;
             donor.DonorId = donorInfo.DonorId;
             await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> {donorInfo});
-            await donorUpdateRepository.UpdateDonorBatch(new List<DonorInfoWithExpandedHla> { donor });
+            await donorUpdateRepository.UpdateDonorBatch(new List<DonorInfoWithExpandedHla> { donor }, false);
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -231,7 +231,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             var donor = donorInfoWithXxCodesAtThreeLoci;
             donor.DonorId = donorInfo.DonorId;
             await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> { donorInfo });
-            await donorUpdateRepository.UpdateDonorBatch(new List<DonorInfoWithExpandedHla> { donor });
+            await donorUpdateRepository.UpdateDonorBatch(new List<DonorInfoWithExpandedHla> { donor }, false);
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -246,12 +246,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             var donor = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(new PhenotypeInfo<IHlaMatchingMetadata>(expandedHla))
                 .Build();
-            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }, false);
 
             donor.HlaNames.A.Position1 = null;
 
             Assert.ThrowsAsync<SqlException>(async () =>
-                await donorUpdateRepository.UpdateDonorBatch(new[] { donor }));
+                await donorUpdateRepository.UpdateDonorBatch(new[] { donor }, false));
         }
 
         [Test]
@@ -262,10 +262,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             var donor = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(new PhenotypeInfo<IHlaMatchingMetadata>(expandedHla))
                 .Build();
-            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor });
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }, false);
 
             donor.HlaNames.Dqb1.Position1 = null;
-            await donorUpdateRepository.UpdateDonorBatch(new[] { donor });
+            await donorUpdateRepository.UpdateDonorBatch(new[] { donor }, false);
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 

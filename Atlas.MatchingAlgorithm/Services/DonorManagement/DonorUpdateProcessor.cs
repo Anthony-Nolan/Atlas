@@ -9,6 +9,7 @@ using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+using Atlas.MatchingAlgorithm.Settings;
 using EnumStringValues;
 
 namespace Atlas.MatchingAlgorithm.Services.DonorManagement
@@ -52,8 +53,9 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         private readonly IDonorManagementService donorManagementService;
         private readonly ISearchableDonorUpdateConverter searchableDonorUpdateConverter;
         private readonly IActiveHlaNomenclatureVersionAccessor activeHlaNomenclatureVersionAccessor;
-        private readonly ILogger logger;
+        private readonly DonorManagementSettings settings;
         private readonly int batchSize;
+        private readonly ILogger logger;
 
         public DonorUpdateProcessor(
             IMessageProcessorForDbADonorUpdates dbAMessageProcessorService,
@@ -62,8 +64,8 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             IDonorManagementService donorManagementService,
             ISearchableDonorUpdateConverter searchableDonorUpdateConverter,
             IActiveHlaNomenclatureVersionAccessor activeHlaNomenclatureVersionAccessor,
-            ILogger logger,
-            int batchSize)
+            DonorManagementSettings settings,
+            ILogger logger)
         {
             this.dbAMessageProcessorService = dbAMessageProcessorService;
             this.dbBMessageProcessorService = dbBMessageProcessorService;
@@ -71,8 +73,9 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             this.donorManagementService = donorManagementService;
             this.searchableDonorUpdateConverter = searchableDonorUpdateConverter;
             this.activeHlaNomenclatureVersionAccessor = activeHlaNomenclatureVersionAccessor;
+            this.settings = settings;
+            this.batchSize = settings.BatchSize;
             this.logger = logger;
-            this.batchSize = batchSize;
         }
 
         /// <remarks>
@@ -208,7 +211,11 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 
             if (converterResults.ProcessingResults.Any())
             {
-                await donorManagementService.ApplyDonorUpdatesToDatabase(converterResults.ProcessingResults, targetDatabase, targetHlaNomenclatureVersion);
+                await donorManagementService.ApplyDonorUpdatesToDatabase(
+                    converterResults.ProcessingResults,
+                    targetDatabase,
+                    targetHlaNomenclatureVersion,
+                    settings.OngoingDifferentialDonorUpdatesShouldBeFullyTransactional);
             }
         }
 

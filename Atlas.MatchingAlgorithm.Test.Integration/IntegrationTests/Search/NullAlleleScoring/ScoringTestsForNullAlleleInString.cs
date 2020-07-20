@@ -966,7 +966,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .WithHla(matchingHlaPhenotype)
                 .Build();
 
-            await donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] {testDonor});
+            await donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] {testDonor}, false);
 
             return testDonor.DonorId;
         }

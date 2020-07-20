@@ -47,7 +47,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// Adds pre-processed matching p-groups for a batch of donors
         /// Used when adding donors
         /// </summary>
-        Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donors);
+        Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donors, bool runAllHlaInsertionsInASingleTransactionScope);
 
         Task RemovePGroupsForDonorBatch(IEnumerable<int> donorIds);
     }
