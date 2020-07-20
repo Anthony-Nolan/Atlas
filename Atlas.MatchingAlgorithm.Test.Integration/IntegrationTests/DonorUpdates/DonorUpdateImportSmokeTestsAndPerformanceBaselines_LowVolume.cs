@@ -159,89 +159,93 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             await Import(infosList.Select(TestExtensions.ToUnavailableUpdate));
         }
 
-        private void ExpectDonorCountToBe(int expectedCount)
+        private void ExpectDonorsToBe(List<int> expectedDonorIds)
         {
-            donorInspectionRepository.GetDonorCount().Should().Be(expectedCount);
+            donorInspectionRepository.GetAllDonorIds().Should().BeEquivalentTo(expectedDonorIds);
+            donorInspectionRepository.GetDonorCount().Should().Be(expectedDonorIds.Count); //Just in case, as a backup.
         }
 
         // When running this as a perf test, we don't want to spend time doing this check.
         // But when a developer is trying to figure out what broke, it'll be really useful!
         // Delete the " { } //" to "turn it on".
-        private void Debug_ExpectDonorCountToBe(int expectedCount) { } // => ExpectDonorCountToBe(expectedCount);
+        private void Debug_ExpectDonorsToBe(List<int> expectedDonorIds) { } // => ExpectDonorsToBe(expectedDonorIds);
 
         [Test]
         public async Task ApplyDonorUpdatesToDatabase_ImportingAllDonorsFromExistingTestsAsSeparateBatches_ResultsInCorrectNumberOfDonorsAtEnd()
         {
             // All of these "test cases" have been lifted directly from the DonorServiceTests class, with little further thought.
-            // Each Debug_ExpectDonorCountToBe() represents the end of a test (as of writing of this class!)
+            // Each Debug_ExpectDonorsToBe() represents the end of a test (as of writing of this class!)
             // Look there to establish what these blocks were intended to test in their original state.
             // Note that there's no desperate need to keep the 2 sets of code in sync.
 
+            var expectedDonorIds = new List<int>();
+            ExpectDonorsToBe(expectedDonorIds); // We keep seeing intermittent errors where the final count has 1 extra donor. Try to work out why.
+
             //New Donor.
-            var expectedRunningTotal = 0;
             var donorInfo0 = new DonorInfoBuilder().Build();
             await Import(donorInfo0);
-            expectedRunningTotal++;
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            expectedDonorIds.Add(donorInfo0.DonorId);
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //New Invalid Donor.
             var donorInfo0B = new DonorInfoBuilder().WithHlaAtLocus(A, One, "invalid-hla-name").Build();
             await Import(donorInfo0B);
-            //expectedRunningTotal unchanged
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
-
+            //expectedDonorIds unchanged
+            Debug_ExpectDonorsToBe(expectedDonorIds);
+                
             //New Donor with the same message delivered 3 times, separately.
             var donorInfo1 = new DonorInfoBuilder().Build();
             await Import(donorInfo1);
             await Import(donorInfo1);
             await Import(donorInfo1);
-            expectedRunningTotal++;
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            expectedDonorIds.Add(donorInfo1.DonorId);
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //New Donor with the same message delivered 3 times, in a single batch.
             var donorInfo1B = new DonorInfoBuilder().Build();
             await Import(donorInfo1B, donorInfo1B, donorInfo1B);
-            expectedRunningTotal++;
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            expectedDonorIds.Add(donorInfo1B.DonorId);
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //New Donor, later updated with different type.
             var donorInfo2 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var updatedDonor2 = new DonorInfoBuilder(donorInfo2.DonorId).WithDonorType(Cord).Build();
             await Import(donorInfo2);
             await Import(updatedDonor2);
-            expectedRunningTotal++;
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            expectedDonorIds.Add(donorInfo2.DonorId);
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //New Donor, later updated with different hla.
             var donorInfo3 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02").Build();
             var updatedDonor3 = new DonorInfoBuilder(donorInfo3.DonorId).WithHlaAtLocus(A, One, "*01:XX").Build();
             await Import(donorInfo3);
             await Import(updatedDonor3);
-            expectedRunningTotal++;
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            expectedDonorIds.Add(donorInfo3.DonorId);
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //New Donor, later updated with different type but with an Invalid hla
             var donorInfo4 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var updatedDonor4 = new DonorInfoBuilder(donorInfo4.DonorId).WithDonorType(Cord).WithHlaAtLocus(A, One, "invalid-hla-name").Build();
             await Import(donorInfo4);
             await Import(updatedDonor4);
-            expectedRunningTotal++;
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            expectedDonorIds.Add(donorInfo4.DonorId);
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //New Donor, later updated with invalid HLA.
             var donorInfo5 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02").Build();
             var updatedDonor5 = new DonorInfoBuilder(donorInfo5.DonorId).WithHlaAtLocus(A, One, "invalid-hla-name").Build();
             await Import(donorInfo5);
             await Import(updatedDonor5);
-            expectedRunningTotal++;
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            expectedDonorIds.Add(donorInfo5.DonorId);
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //Multiple new donors in a single batch
             var donorInfo6 = new DonorInfoBuilder().Build();
             var donorInfo7 = new DonorInfoBuilder().Build();
             await Import(donorInfo6, donorInfo7);
-            expectedRunningTotal += 2;
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            expectedDonorIds.Add(donorInfo6.DonorId);
+            expectedDonorIds.Add(donorInfo7.DonorId);
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //Multiple updated (type) donors in a single batch
             var donorInfo8 = new DonorInfoBuilder().WithDonorType(Adult).Build();
@@ -250,8 +254,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             var updatedDonor9 = new DonorInfoBuilder(donorInfo9.DonorId).WithDonorType(Cord).Build();
             await Import(donorInfo8, donorInfo9);
             await Import(updatedDonor8, updatedDonor9);
-            expectedRunningTotal += 2;
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            expectedDonorIds.Add(donorInfo8.DonorId);
+            expectedDonorIds.Add(donorInfo9.DonorId);
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //Multiple updated (hla) donors in a single batch
             var donorInfo10 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02").Build();
@@ -260,8 +265,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             var updatedDonor11 = new DonorInfoBuilder(donorInfo11.DonorId).WithHlaAtLocus(A, One, "*01:XX").Build();
             await Import(donorInfo10, donorInfo11);
             await Import(updatedDonor10, updatedDonor11);
-            expectedRunningTotal += 2;
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            expectedDonorIds.Add(donorInfo10.DonorId);
+            expectedDonorIds.Add(donorInfo11.DonorId);
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //Single Batch containing both updates and also new donors
             var donorInfo12 = new DonorInfoBuilder().WithDonorType(Adult).Build();
@@ -272,21 +278,25 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             var updatedDonor13 = new DonorInfoBuilder(donorInfo13.DonorId).WithDonorType(Cord).Build();
             await Import(donorInfo12, donorInfo13);
             await Import(donorInfo14, donorInfo15, updatedDonor12, updatedDonor13);
-            expectedRunningTotal += 4;
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            expectedDonorIds.Add(donorInfo12.DonorId);
+            expectedDonorIds.Add(donorInfo13.DonorId);
+            expectedDonorIds.Add(donorInfo14.DonorId);
+            expectedDonorIds.Add(donorInfo15.DonorId);
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //Newly created Donor is unavailable at point of creation.
             var donorInfo16 = new DonorInfoBuilder().Build().ToUnavailableUpdate();
             await Import(donorInfo16);
-            //expectedRunningTotal unchanged. Non-Available Creations are just ignored.
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            //expectedDonorIds unchanged. Non-Available Creations are just ignored.
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //Single batch has a mix of available and unavailable donors.
             var donorInfo17 = new DonorInfoBuilder().Build().ToUpdate();
             var donorInfo18 = new DonorInfoBuilder().Build().ToUnavailableUpdate();
             await Import(donorInfo17, donorInfo18);
-            expectedRunningTotal++; //Non-Available Creations are just ignored.
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            expectedDonorIds.Add(donorInfo17.DonorId);
+            //Non-Available Creations are just ignored.
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //Single batch has updates that mix changing from available to unavailable, and vice versa.
             var donorInfo19 = new DonorInfoBuilder().Build().ToUpdate();
@@ -295,8 +305,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             var updatedDonor20 = new DonorInfoBuilder(donorInfo20.DonorId).Build().ToUpdate();
             await Import(donorInfo19, donorInfo20);
             await Import(updatedDonor19, updatedDonor20);
-            expectedRunningTotal += 2;
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            expectedDonorIds.Add(donorInfo19.DonorId);
+            expectedDonorIds.Add(donorInfo20.DonorId);
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //Donor is created, marked as unavailable, then marked as available. As 3 separate batches.
             var donorInfo21 = new DonorInfoBuilder().Build().ToUpdate();
@@ -305,8 +316,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             await Import(donorInfo21);
             await Import(updatedDonor21);
             await Import(reUpdatedDonor21);
-            expectedRunningTotal++;
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            expectedDonorIds.Add(donorInfo21.DonorId);
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //Donor is created as initially unavailable, marked as available, then marked as unavailable again. As 3 separate batches.
             var donorInfo21B = new DonorInfoBuilder().Build().ToUnavailableUpdate();
@@ -315,75 +326,79 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             await Import(donorInfo21B);
             await Import(updatedDonor21B);
             await Import(reUpdatedDonor21B);
-            expectedRunningTotal++;
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            expectedDonorIds.Add(donorInfo21B.DonorId);
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
             //New Donor, later updated with different type and hla
             var donorInfo22 = new DonorInfoBuilder().WithDonorType(Adult).WithHlaAtLocus(A, One, "*01:02").Build();
             var updatedDonor22 = new DonorInfoBuilder(donorInfo22.DonorId).WithDonorType(Cord).WithHlaAtLocus(A, One, "*01:XX").Build();
             await Import(donorInfo22);
             await Import(updatedDonor22);
-            expectedRunningTotal++;
-            Debug_ExpectDonorCountToBe(expectedRunningTotal);
+            expectedDonorIds.Add(donorInfo22.DonorId);
+            Debug_ExpectDonorsToBe(expectedDonorIds);
 
-            ExpectDonorCountToBe(expectedRunningTotal);
+            ExpectDonorsToBe(expectedDonorIds);
         }
 
         [Test]
         public async Task ApplyDonorUpdatesToDatabase_ImportingAllDonorsFromExistingTestsAsSingleBatch_ResultsInCorrectNumberOfDonorsAtEnd()
         {
-            var expectedRunningTotal = 0;
+            var expectedDonorIds = new List<int>();
+            ExpectDonorsToBe(expectedDonorIds); // We keep seeing intermittent errors where the final count has 1 extra donor. Try to work out why.
 
             //New Donor.
             var donorInfo0 = new DonorInfoBuilder().Build();
-            expectedRunningTotal++;
+            expectedDonorIds.Add(donorInfo0.DonorId);
 
             //New Invalid Donor.
             var donorInfo0B = new DonorInfoBuilder().WithHlaAtLocus(A, One, "invalid-hla-name").Build();
-            //expectedRunningTotal unchanged
+            //expectedDonorIds unchanged
 
             //New Donor with the same message delivered 3 times, in a single batch. (will be added to batch repeatedly, below)
             var donorInfo1 = new DonorInfoBuilder().Build();
-            expectedRunningTotal++;
+            expectedDonorIds.Add(donorInfo1.DonorId);
 
             //New Donor, then updated with different type.
             var donorInfo2 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var updatedDonor2 = new DonorInfoBuilder(donorInfo2.DonorId).WithDonorType(Cord).Build();
-            expectedRunningTotal++;
+            expectedDonorIds.Add(donorInfo2.DonorId);
 
             //New Donor, then updated with different hla.
             var donorInfo3 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02").Build();
             var updatedDonor3 = new DonorInfoBuilder(donorInfo3.DonorId).WithHlaAtLocus(A, One, "*01:XX").Build();
-            expectedRunningTotal++;
+            expectedDonorIds.Add(donorInfo3.DonorId);
 
             //New Donor, then updated with different type but with an Invalid hla
             var donorInfo4 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var updatedDonor4 = new DonorInfoBuilder(donorInfo4.DonorId).WithDonorType(Cord).WithHlaAtLocus(A, One, "invalid-hla-name").Build();
-            //expectedRunningTotal unchanged. The 2nd record supercedes the first, but isn't valid.
+            //expectedDonorIds unchanged. The 2nd record supercedes the first, but isn't valid.
 
             //New Donor, then updated with invalid HLA.
             var donorInfo5 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02").Build();
             var updatedDonor5 = new DonorInfoBuilder(donorInfo5.DonorId).WithHlaAtLocus(A, One, "invalid-hla-name").Build();
-            //expectedRunningTotal unchanged. The 2nd record supercedes the first, but isn't valid.
+            //expectedDonorIds unchanged. The 2nd record supercedes the first, but isn't valid.
 
             //Multiple new donors in a single batch
             var donorInfo6 = new DonorInfoBuilder().Build();
             var donorInfo7 = new DonorInfoBuilder().Build();
-            expectedRunningTotal += 2;
+            expectedDonorIds.Add(donorInfo6.DonorId);
+            expectedDonorIds.Add(donorInfo7.DonorId);
 
             //Multiple updated (type) donors in a single batch
             var donorInfo8 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var donorInfo9 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var updatedDonor8 = new DonorInfoBuilder(donorInfo8.DonorId).WithDonorType(Cord).Build();
             var updatedDonor9 = new DonorInfoBuilder(donorInfo9.DonorId).WithDonorType(Cord).Build();
-            expectedRunningTotal += 2;
+            expectedDonorIds.Add(donorInfo8.DonorId);
+            expectedDonorIds.Add(donorInfo9.DonorId);
 
             //Multiple updated (hla) donors in a single batch
             var donorInfo10 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02").Build();
             var donorInfo11 = new DonorInfoBuilder().WithHlaAtLocus(A, One, "*01:02:01").Build();
             var updatedDonor10 = new DonorInfoBuilder(donorInfo10.DonorId).WithHlaAtLocus(A, One, "*01:XX").Build();
             var updatedDonor11 = new DonorInfoBuilder(donorInfo11.DonorId).WithHlaAtLocus(A, One, "*01:XX").Build();
-            expectedRunningTotal += 2;
+            expectedDonorIds.Add(donorInfo10.DonorId);
+            expectedDonorIds.Add(donorInfo11.DonorId);
 
             //Single Batch containing both updates and also new donors
             var donorInfo12 = new DonorInfoBuilder().WithDonorType(Adult).Build();
@@ -392,41 +407,45 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             var donorInfo15 = new DonorInfoBuilder().WithDonorType(Adult).Build();
             var updatedDonor12 = new DonorInfoBuilder(donorInfo12.DonorId).WithDonorType(Cord).Build();
             var updatedDonor13 = new DonorInfoBuilder(donorInfo13.DonorId).WithDonorType(Cord).Build();
-            expectedRunningTotal += 4;
+            expectedDonorIds.Add(donorInfo12.DonorId);
+            expectedDonorIds.Add(donorInfo13.DonorId);
+            expectedDonorIds.Add(donorInfo14.DonorId);
+            expectedDonorIds.Add(donorInfo15.DonorId);
 
             //Newly created Donor is unavailable at point of creation.
             var donorInfo16 = new DonorInfoBuilder().Build().ToUnavailableUpdate();
-            //expectedRunningTotal unchanged. Non-Available Creations are just ignored.
+            //expectedDonorIds unchanged. Non-Available Creations are just ignored.
 
             //Single batch has a mix of available and unavailable donors.
             var donorInfo17 = new DonorInfoBuilder().Build().ToUpdate();
             var donorInfo18 = new DonorInfoBuilder().Build().ToUnavailableUpdate();
-            expectedRunningTotal++; //Non-Available Creations are just ignored.
+            expectedDonorIds.Add(donorInfo17.DonorId);
+            //Non-Available Creations are just ignored.
 
             //Single batch has updates that mix changing from available to unavailable, and vice versa.
             var donorInfo19 = new DonorInfoBuilder().Build().ToUpdate();
             var donorInfo20 = new DonorInfoBuilder().Build().ToUnavailableUpdate();
             var updatedDonor19 = new DonorInfoBuilder(donorInfo19.DonorId).Build().ToUnavailableUpdate();
             var updatedDonor20 = new DonorInfoBuilder(donorInfo20.DonorId).Build().ToUpdate();
-            expectedRunningTotal++;   //expectedRunningTotal unchanged. The updatedDonor19 supercedes donorInfo19, and thus isn't imported. (Which is good, because we don't really want the unavailable donors anyway.)
-
+            //The updatedDonor19 supercedes donorInfo19, and thus isn't imported. (Which is good, because we don't really want the unavailable donors anyway.)
+            expectedDonorIds.Add(donorInfo20.DonorId);
+            
             //Donor is created, marked as unavailable, then marked as available, within the same batch.
             var donorInfo21 = new DonorInfoBuilder().Build().ToUpdate();
             var updatedDonor21 = new DonorInfoBuilder(donorInfo21.DonorId).Build().ToUnavailableUpdate();
             var reUpdatedDonor21 = new DonorInfoBuilder(donorInfo21.DonorId).Build().ToUpdate();
-            expectedRunningTotal++;
-
+            expectedDonorIds.Add(donorInfo21.DonorId);
+            
             //Donor is created as initially unavailable, marked as available, then marked as unavailable again. As 3 separate batches.
             var donorInfo21B = new DonorInfoBuilder().Build().ToUnavailableUpdate();
             var updatedDonor21B = new DonorInfoBuilder(donorInfo21B.DonorId).Build().ToUpdate();
             var reUpdatedDonor21B = new DonorInfoBuilder(donorInfo21B.DonorId).Build().ToUnavailableUpdate();
-            //expectedRunningTotal unchanged. The 3rd record supercedes the 2nd, and thus isn't imported. (which is good, as above)
+            //expectedDonorIds unchanged. The 3rd record supercedes the 2nd, and thus isn't imported. (which is good, as above)
 
             //New Donor, then updated with different type and hla
             var donorInfo22 = new DonorInfoBuilder().WithDonorType(Adult).WithHlaAtLocus(A, One, "*01:01").Build();
             var updatedDonor22 = new DonorInfoBuilder(donorInfo22.DonorId).WithDonorType(Cord).WithHlaAtLocus(A, One, "*01:XX").Build();
-            expectedRunningTotal++;
-
+            expectedDonorIds.Add(donorInfo22.DonorId);
 
             await Import(
                 donorInfo0.ToUpdate(),
@@ -461,7 +480,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                 updatedDonor22.ToUpdate()
             );
 
-            ExpectDonorCountToBe(expectedRunningTotal);
+            ExpectDonorsToBe(expectedDonorIds);
         }
 
         [Test]
