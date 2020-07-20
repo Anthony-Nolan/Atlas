@@ -48,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         public async Task<List<List<DonorInfo>>> NewOrderedDonorBatchesToImport(int batchSize, bool continueExistingImport)
         {
             var sql = await DetermineAppropriateOrderedSqlQuery(continueExistingImport, batchSize);
-            
+
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 // Note 1:
@@ -69,28 +69,36 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
         private async Task<string> DetermineAppropriateOrderedSqlQuery(bool continueExistingImport, int batchSize)
         {
+            var nonFilteredSqlQuery = "SELECT * FROM Donors ORDER BY DonorId ASC";
             if (!continueExistingImport)
             {
-                return "SELECT * FROM Donors ORDER BY DonorId ASC";
+                return nonFilteredSqlQuery;
             }
 
             var donorToContinueFrom = await DetermineFirstDonorToImportInThisPass(batchSize);
+
+            if (donorToContinueFrom == null)
+            {
+                return nonFilteredSqlQuery;
+            }
+
             return $@"SELECT * FROM Donors WHERE DonorId > {donorToContinueFrom} ORDER BY DonorId ASC";
         }
 
-        private async Task<int> DetermineFirstDonorToImportInThisPass(int batchSize)
+        private async Task<int?> DetermineFirstDonorToImportInThisPass(int batchSize)
         {
             var highestDonorId = await DetermineHighestDonorIdForWhichHlaHasBeenProcessed();
-            var existsInAllTables = await VerifyThatDonorExistsInAllRequiredTables(highestDonorId);
-
-            if (!existsInAllTables)
-            {
-                throw new InvalidOperationException("When attempting to continue inconsistent DonorId existence was found. DonorId in question: " + highestDonorId);
-            }
+            await VerifyThatDonorExistsInAllRequiredTables(highestDonorId);
 
             // Continue from an earlier donor than the highest imported donor id, in case hla processing was only successful for some loci for previous batch;
             // That shouldn't be possible, but it's relatively harmless paranoia to apply - each batch tends to take < a minute, in a 9+ hour process.
             var donorToContinueFrom = await DetermineDonorIdNDonorsBeforeThis(highestDonorId, batchSize * NumberOfBatchesOverlapOnRestart);
+
+            if (donorToContinueFrom != null)
+            {
+                await VerifyThatDonorExistsInAllRequiredTables(donorToContinueFrom.Value);
+            }
+
             return donorToContinueFrom;
         }
 
@@ -123,21 +131,21 @@ SELECT MIN(MaxId) FROM (
             }
         }
 
-        private async Task<bool> VerifyThatDonorExistsInAllRequiredTables(int candidateId)
+        private async Task VerifyThatDonorExistsInAllRequiredTables(int donorIdToVerify)
         {
             await using (var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 var idPresentInAllTables = await connection.QuerySingleAsync<int>($@"
 IF (
-        EXISTS(SELECT * FROM Donors WHERE DonorId = {candidateId})
+        EXISTS(SELECT * FROM Donors WHERE DonorId = {donorIdToVerify})
         AND
-        EXISTS(SELECT * FROM DonorManagementLogs WHERE DonorId = {candidateId})
+        EXISTS(SELECT * FROM DonorManagementLogs WHERE DonorId = {donorIdToVerify})
         AND
-        EXISTS(SELECT * FROM MatchingHlaAtDrb1 WHERE DonorId = {candidateId})
+        EXISTS(SELECT * FROM MatchingHlaAtDrb1 WHERE DonorId = {donorIdToVerify})
         AND
-        EXISTS(SELECT * FROM MatchingHlaAtB WHERE DonorId = {candidateId})
+        EXISTS(SELECT * FROM MatchingHlaAtB WHERE DonorId = {donorIdToVerify})
         AND
-        EXISTS(SELECT * FROM MatchingHlaAtA WHERE DonorId = {candidateId})
+        EXISTS(SELECT * FROM MatchingHlaAtA WHERE DonorId = {donorIdToVerify})
 )
 BEGIN
     SELECT 1
@@ -147,15 +155,38 @@ BEGIN
     SELECT 0
 END
 ");
-                return idPresentInAllTables == 1;
+                if (idPresentInAllTables == 0)
+                {
+                    throw new InvalidOperationException("When attempting to continue an import, inconsistent DonorId existence was found. DonorId in question: " + donorIdToVerify);
+                }
             }
         }
 
-        private async Task<int> DetermineDonorIdNDonorsBeforeThis(int highestDonorId, int n)
+        private async Task<int?> DetermineDonorIdNDonorsBeforeThis(int highestDonorId, int n)
         {
-            // Replace this with a LAG lookup query to actually be accurate.
-            return await Task.FromResult(highestDonorId - n);
-        }
+            // We can't guarantee that DonorIds will be sequential. Indeed gaps have been actively observed!
+            // So we can't just subtract N from the Id - we have to actually look it up.
+            // This query still only takes ~4 seconds on 2M records, so we should be fine.
+            var sql = $@"
+-- The LAG has to be done in a sub-query!
+-- If you combine it directly with the WHERE clause, the WHERE applies first
+-- so the LAG always returns null, because it's only looking at 1 row.
+WITH DonorIdsWithLaggedDonorIds AS (
+    SELECT
+        DonorId,
+        LAG(DonorId, {n}) OVER (ORDER BY DonorId ASC) AS LaggedDonorId
+        FROM Donors
+)
+SELECT LaggedDonorId
+    FROM DonorIdsWithLaggedDonorIds
+    WHERE DonorId = {highestDonorId}";
 
+            await using (var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            {
+                // Note that this might return null, if the import failed very early on.
+                // In that case return null and expect the calling code to handle it.
+                return await connection.QuerySingleAsync<int?>(sql);
+            }
+        }
     }
 }
