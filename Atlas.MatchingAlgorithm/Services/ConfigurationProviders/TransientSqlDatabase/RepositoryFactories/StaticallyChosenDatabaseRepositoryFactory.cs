@@ -37,10 +37,12 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         readonly Dictionary<TransientDatabase, AvailableRepositories> cachedRepositories = EnumerateValues<TransientDatabase>().ToDictionary(db => db, db => new AvailableRepositories());
 
         /* **********************************************************
-         * ** All of this is working around the lack of
-         * ** Func<TArg, TDependency> support in MS DI.
-         * ** If we ever migrate to Autofac, it can all go away :(
-         * **********************************************************   */
+         * ** All of this is working around the lack of            **
+         * ** Func<TArg, TDependency> support in MS DI.            **
+         * ** If we ever migrate to some other DI framework, which **
+         * ** DOES support that dependency declaration structure,  **
+         * ** then it can all go away :)                           **
+         * ********************************************************** */
 
         private IConnectionStringProvider GetConnectionStringProvider(TransientDatabase targetDatabase) => connectionStringProviderFactory.GenerateConnectionStringProvider(targetDatabase);
 

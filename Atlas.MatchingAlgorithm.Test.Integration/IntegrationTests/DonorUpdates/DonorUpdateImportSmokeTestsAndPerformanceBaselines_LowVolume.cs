@@ -167,12 +167,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         // Delete the " { } //" to "turn it on".
         private void Debug_ExpectDonorCountToBe(int expectedCount) { } // => ExpectDonorCountToBe(expectedCount);
 
-        [Test, Repeat(1000)] //~3seconds
-        public void SetupIsFastNow()
-        {
-            Assert.Pass();
-        }
-
         [Test]
         public async Task ApplyDonorUpdatesToDatabase_ImportingAllDonorsFromExistingTestsAsSeparateBatches_ResultsInCorrectNumberOfDonorsAtEnd()
         {
