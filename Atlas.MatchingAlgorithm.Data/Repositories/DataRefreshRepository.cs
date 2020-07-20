@@ -117,8 +117,6 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 SELECT MIN(MaxId) FROM (
     SELECT MAX(DonorId) AS MaxId FROM Donors
     UNION ALL
-    SELECT MAX(DonorId) AS MaxId FROM DonorManagementLogs
-    UNION ALL
     SELECT MAX(DonorId) AS MaxId FROM MatchingHlaAtDrb1
     UNION ALL
     SELECT MAX(DonorId) AS MaxId FROM MatchingHlaAtB
@@ -138,8 +136,6 @@ SELECT MIN(MaxId) FROM (
                 var idPresentInAllTables = await connection.QuerySingleAsync<int>($@"
 IF (
         EXISTS(SELECT * FROM Donors WHERE DonorId = {donorIdToVerify})
-        AND
-        EXISTS(SELECT * FROM DonorManagementLogs WHERE DonorId = {donorIdToVerify})
         AND
         EXISTS(SELECT * FROM MatchingHlaAtDrb1 WHERE DonorId = {donorIdToVerify})
         AND

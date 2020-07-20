@@ -56,8 +56,6 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [Test]
         public void GetHlaMetadata_WhenNmdpCodeContainsAlleleNotInHlaMetadataDictionary_ThrowsException()
         {
-            const string missingAllele = "9999:9999";
-
             // MAC value does not matter, but does need to conform to the expected pattern
             const string macWithFirstField = "9999:FAKE";
 
