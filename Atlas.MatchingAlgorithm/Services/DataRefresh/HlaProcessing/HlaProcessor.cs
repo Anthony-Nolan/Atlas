@@ -28,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 
     public class HlaProcessor : IHlaProcessor
     {
-        private const int BatchSize = 1000;
+        private const int BatchSize = 2000; // At 1k this definitely works fine. At 4k it's been seen throwing OOM Exceptions
         private const string HlaFailureEventName = "Imported Donor Hla Processing Failure(s) in the Matching Algorithm's DataRefresh";
 
         private readonly ILogger logger;
