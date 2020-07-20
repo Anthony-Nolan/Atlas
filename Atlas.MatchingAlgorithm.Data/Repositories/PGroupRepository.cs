@@ -14,8 +14,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
     public interface IPGroupRepository
     {
         /// <summary>
-        /// Inserts a batch of p groups into storage.
-        /// This is only relevant for relational databases (i.e. SQL), where the PGroups are stored separately to the match data.
+        /// Given a collection of PGroups, inserts any that don't already exist into the Database, and updates the in-memory map to their Ids
         /// </summary>
         void InsertPGroups(IEnumerable<string> pGroups);
         Task<IEnumerable<int>> GetPGroupIds(IEnumerable<string> pGroupNames);
