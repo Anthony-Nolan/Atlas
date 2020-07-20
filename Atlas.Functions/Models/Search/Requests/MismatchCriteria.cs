@@ -59,11 +59,11 @@ namespace Atlas.Functions.Models.Search.Requests
                 DonorMismatchCount = mismatchCriteria.DonorMismatchCount,
                 LocusMismatchCounts = new LociInfo<int?>
                 {
-                    A = mismatchCriteria.LocusMismatchA.MismatchCount,
-                    B = mismatchCriteria.LocusMismatchB.MismatchCount,
-                    C = mismatchCriteria.LocusMismatchC.MismatchCount,
-                    Dqb1 = mismatchCriteria.LocusMismatchDqb1.MismatchCount,
-                    Drb1 = mismatchCriteria.LocusMismatchDrb1.MismatchCount,
+                    A = mismatchCriteria.LocusMismatchA?.MismatchCount,
+                    B = mismatchCriteria.LocusMismatchB?.MismatchCount,
+                    C = mismatchCriteria.LocusMismatchC?.MismatchCount,
+                    Dqb1 = mismatchCriteria.LocusMismatchDqb1?.MismatchCount,
+                    Drb1 = mismatchCriteria.LocusMismatchDrb1?.MismatchCount,
                 }
             };
         }
