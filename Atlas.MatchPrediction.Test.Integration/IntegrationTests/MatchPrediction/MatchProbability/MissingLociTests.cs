@@ -2,9 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
-using Atlas.Common.Utils.Extensions;
+using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Test.Integration.Resources;
 using FluentAssertions;
@@ -16,17 +15,16 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
     public class MissingLociTests : MatchProbabilityTestsBase
     {
         [Test]
-        public async Task CalculateMatchProbability_WhenNoNullLoci_DoesNotIncludeLociInResult()
+        public async Task CalculateMatchProbability_WhenNoNullLoci_IncludesAllLociInResults()
         {
             var matchProbabilityInput = DefaultInputBuilder.Build();
 
             await ImportFrequencies(new List<HaplotypeFrequency> { Builder<HaplotypeFrequency>.New.Build() });
 
-            var expectedProbabilityPerLocus = new LociInfo<decimal?> { A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0 };
-
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedProbabilityPerLocus);
+            LocusSettings.MatchPredictionLoci.Should()
+                .OnlyContain(l => matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(l) != null, "only excluded loci should be null");
         }
 
         [TestCase(new[] {Locus.Dqb1})]
@@ -36,14 +34,15 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.PatientHla,
-                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAt(null, lociToExclude).Build())
+                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, lociToExclude).Build())
                 .Build();
 
             await ImportFrequencies(new List<HaplotypeFrequency> {Builder<HaplotypeFrequency>.New.Build()});
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            lociToExclude.Should().OnlyContain(l => matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(l) == null, "excluded loci should be null");
+            lociToExclude.Should()
+                .OnlyContain(l => matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(l) == null, "excluded loci should be null");
         }
 
         [TestCase(new[] {Locus.Dqb1})]
@@ -53,14 +52,15 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.DonorHla,
-                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAt(null, lociToExclude).Build())
+                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, lociToExclude).Build())
                 .Build();
 
             await ImportFrequencies(new List<HaplotypeFrequency> { Builder<HaplotypeFrequency>.New.Build() });
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            lociToExclude.Should().OnlyContain(l => matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(l) == null, "excluded loci should be null");
+            lociToExclude.Should()
+                .OnlyContain(l => matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(l) == null, "excluded loci should be null");
         }
 
         [TestCase(new[] {Locus.Dqb1}, new[] {Locus.C})]
@@ -72,9 +72,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.DonorHla,
-                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAt(null, donorLociToExclude).Build())
+                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, donorLociToExclude).Build())
                 .With(h => h.PatientHla,
-                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAt(null, patientLociToExclude).Build())
+                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, patientLociToExclude).Build())
                 .Build();
 
             await ImportFrequencies(new List<HaplotypeFrequency> {Builder<HaplotypeFrequency>.New.Build()});
@@ -83,7 +83,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            lociToExclude.Should().OnlyContain(l => matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(l) == null, "excluded loci should be null");
+            lociToExclude.Should()
+                .OnlyContain(l => matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(l) == null, "excluded loci should be null");
         }
     }
 }
