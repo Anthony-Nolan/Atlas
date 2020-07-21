@@ -1,10 +1,10 @@
 $variablesArray = 
-"matchingUsername=matchingUser",
-"matchingPassword={$env:matchingPassword}",
-"matchPredictionUsername=matchPredictionUser",
-"matchPredictionPassword={$env:matchPredictionPassword}",
-"donorImportUsername=donorImportUser",
-"donorImportPassword={$env:donorImportPassword}"
+"matchingUsername=$env:matchingUser",
+"matchingPassword=$env:matchingPassword",
+"matchPredictionUsername=$env:matchPredictionUser",
+"matchPredictionPassword=$env:matchPredictionPassword",
+"donorImportUsername=$env:donorImportUser",
+"donorImportPassword=$env:donorImportPassword"
 
 Write-Host $variablesArray
 
