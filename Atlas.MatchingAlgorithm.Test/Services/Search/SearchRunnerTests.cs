@@ -10,6 +10,7 @@ using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using FluentAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -20,6 +21,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
     [TestFixture]
     public class SearchRunnerTests
     {
+        private MatchingRequest DefaultMatchingRequest => new MatchingRequestBuilder().Build();
+
         private ISearchServiceBusClient searchServiceBusClient;
         private ISearchService searchService;
         private IResultsBlobStorageClient resultsBlobStorageClient;
@@ -49,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_RunsSearch()
         {
-            var searchRequest = new MatchingRequest();
+            var searchRequest = new MatchingRequestBuilder().Build();
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest {MatchingRequest = searchRequest});
 
@@ -61,7 +64,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         {
             const string id = "id";
 
-            await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = id});
+            await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = id, MatchingRequest = DefaultMatchingRequest});
 
             await resultsBlobStorageClient.Received().UploadResults(Arg.Any<MatchingAlgorithmResultSet>());
         }
@@ -71,7 +74,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         {
             const string id = "id";
 
-            await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = id});
+            await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = id, MatchingRequest = DefaultMatchingRequest});
 
             await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
                 r.WasSuccessful && r.SearchRequestId == id
@@ -84,7 +87,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             const string hlaNomenclatureVersion = "hla-nomenclature-version";
             hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion().Returns(hlaNomenclatureVersion);
 
-            await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = "id"});
+            await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = "id", MatchingRequest = DefaultMatchingRequest});
 
             await searchServiceBusClient.PublishToResultsNotificationTopic(Arg.Is<MatchingResultsNotification>(r =>
                 r.HlaNomenclatureVersion == hlaNomenclatureVersion
@@ -99,7 +102,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             try
             {
-                await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = id});
+                await searchRunner.RunSearch(new IdentifiedSearchRequest {Id = id, MatchingRequest = DefaultMatchingRequest});
             }
             catch (AtlasHttpException)
             {
@@ -117,7 +120,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         {
             searchService.Search(default).ThrowsForAnyArgs(new AtlasHttpException(HttpStatusCode.InternalServerError, "dummy error message"));
 
-            await searchRunner.Invoking(r => r.RunSearch(new IdentifiedSearchRequest{ Id = "id"})).Should().ThrowAsync<AtlasHttpException>();
+            await searchRunner.Invoking(r => r.RunSearch(new IdentifiedSearchRequest {Id = "id", MatchingRequest = DefaultMatchingRequest}))
+                .Should().ThrowAsync<AtlasHttpException>();
         }
     }
 }
