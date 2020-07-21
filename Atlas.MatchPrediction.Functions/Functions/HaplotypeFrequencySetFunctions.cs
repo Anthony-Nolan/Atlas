@@ -1,6 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
@@ -8,6 +8,7 @@ using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
@@ -58,26 +59,37 @@ namespace Atlas.MatchPrediction.Functions.Functions
         [QueryStringParameter(PatientEthnicityQueryParam, "Ethnicity ID of the patient", DataType = typeof(string))]
         [FunctionName((nameof(GetHaplotypeFrequencySet)))]
         [StorageAccount("AzureStorage:ConnectionString")]
-        public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet(
+        public async Task<IActionResult> GetHaplotypeFrequencySet(
             [HttpTrigger(AuthorizationLevel.Function, "get")]
             HttpRequest request)
         {
-            var donorInfo = new FrequencySetMetadata
+            try
             {
-                EthnicityCode = request.Query[DonorEthnicityQueryParam],
-                RegistryCode = request.Query[DonorRegistryQueryParam]
-            };
-
-            var patientInfo = new FrequencySetMetadata
-            {
-                EthnicityCode = request.Query[PatientEthnicityQueryParam],
-            };
-            return await matchPredictionAlgorithm.GetHaplotypeFrequencySet(
-                new HaplotypeFrequencySetInput
+                var donorInfo = new FrequencySetMetadata
                 {
-                    DonorInfo = donorInfo,
-                    PatientInfo = patientInfo
-                });
+                    EthnicityCode = request.Query[DonorEthnicityQueryParam],
+                    RegistryCode = request.Query[DonorRegistryQueryParam]
+                };
+
+                var patientInfo = new FrequencySetMetadata
+                {
+                    EthnicityCode = request.Query[PatientEthnicityQueryParam],
+                };
+                var result = await matchPredictionAlgorithm.GetHaplotypeFrequencySet(
+                    new HaplotypeFrequencySetInput
+                    {
+                        DonorInfo = donorInfo,
+                        PatientInfo = patientInfo
+                    });
+                return new JsonResult(result);
+            }
+            catch(Exception exception)
+            {
+                return new ObjectResult(exception.Message)
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
         }
     }
 }
