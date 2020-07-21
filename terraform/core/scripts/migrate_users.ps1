@@ -1,16 +1,17 @@
 $variablesArray = 
 "matchingUsername=matchingUser",
-"matchingPassword='$(TF_VAR_MATCHING_DATABASE_PASSWORD)'",
+"matchingPassword={$env:matchingPassword}",
 "matchPredictionUsername=matchPredictionUser",
-"matchPredictionPassword='$(TF_VAR_MATCH_PREDICTION_DATABASE_PASSWORD)'",
+"matchPredictionPassword={$env:matchPredictionPassword}",
 "donorImportUsername=donorImportUser",
-"donorImportPassword='$(TF_VAR_DONOR_DATABASE_PASSWORD)'"
+"donorImportPassword={$env:donorImportPassword}"
 
+Write-Host $variablesArray
 
-Invoke-Sqlcmd -InputFile "sql/matchPrediction.sql" -ServerInstance $(TERRAFORM.sql-server) -Database $(TERRAFORM.match-prediction-database-name) -Username $(TERRAFORM.sql-server-admin-login) -Password $(TERRAFORM.sql-server-admin-login-password) -Variable $variablesArray
+Invoke-Sqlcmd -InputFile "sql/matchPrediction.sql" -ServerInstance $env:sqlServer -Database $env:matchPredictionDatabaseName -Username $env:sqlServerLogin -Password $env:sqlServerLoginPassword -Variable $variablesArray
 
-Invoke-Sqlcmd -InputFile "sql/matchingTransient.sql" -ServerInstance $(TERRAFORM.sql-server) -Database $(TERRAFORM.matching-algorithm-a-name) -Username $(TERRAFORM.sql-server-admin-login) -Password $(TERRAFORM.sql-server-admin-login-password) -Variable $variablesArray
-Invoke-Sqlcmd -InputFile "sql/matchingTransient.sql" -ServerInstance $(TERRAFORM.sql-server) -Database $(TERRAFORM.matching-algorithm-b-name) -Username $(TERRAFORM.sql-server-admin-login) -Password $(TERRAFORM.sql-server-admin-login-password) -Variable $variablesArray
-Invoke-Sqlcmd -InputFile "sql/matchingPersistent.sql" -ServerInstance $(TERRAFORM.sql-server) -Database $(TERRAFORM.matching-algorithm-persistent-db-name) -Username $(TERRAFORM.sql-server-admin-login) -Password $(TERRAFORM.sql-server-admin-login-password) -Variable $variablesArray
+Invoke-Sqlcmd -InputFile "sql/matchingTransient.sql" -ServerInstance $env:sqlServer -Database $env:matchingAlgorithmDatabaseTransientAName -Username $env:sqlServerLogin -Password $env:sqlServerLoginPassword -Variable $variablesArray
+Invoke-Sqlcmd -InputFile "sql/matchingTransient.sql" -ServerInstance $env:sqlServer -Database $env:matchingAlgorithmDatabaseTransientBName -Username $env:sqlServerLogin -Password $env:sqlServerLoginPassword -Variable $variablesArray
+Invoke-Sqlcmd -InputFile "sql/matchingPersistent.sql" -ServerInstance $env:sqlServer -Database $env:matchingAlgorithmDatabasePersistentName -Username $env:sqlServerLogin -Password $env:sqlServerLoginPassword -Variable $variablesArray
 
-Invoke-Sqlcmd -InputFile "sql/donorImport.sql" -ServerInstance $(TERRAFORM.sql-server) -Database $(TERRAFORM.donor-import-database-name) -Username $(TERRAFORM.sql-server-admin-login) -Password $(TERRAFORM.sql-server-admin-login-password) -Variable $variablesArray
+Invoke-Sqlcmd -InputFile "sql/donorImport.sql" -ServerInstance $env:sqlServer -Database $env:donorImportDatabase -Username $env:sqlServerLogin -Password $env:sqlServerLoginPassword -Variable $variablesArray
