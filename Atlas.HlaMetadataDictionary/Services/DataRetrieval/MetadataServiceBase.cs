@@ -1,12 +1,23 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
+using LazyCache;
+using System;
+using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
     internal abstract class MetadataServiceBase<T>
     {
+        private readonly string cacheKey;
+        private readonly IAppCache cache;
+
+        protected MetadataServiceBase(string cacheKey, IPersistentCacheProvider cacheProvider)
+        {
+            this.cacheKey = cacheKey;
+            cache = cacheProvider.Cache;
+        }
+
         protected async Task<T> GetMetadata(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
             try
@@ -18,7 +29,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
                 var formattedLookupName = FormatLookupName(lookupName);
 
-                return await PerformLookup(locus, formattedLookupName, hlaNomenclatureVersion);
+                return await GetOrAddCachedMetadata(locus, formattedLookupName, hlaNomenclatureVersion);
             }
             catch (Exception ex)
             {
@@ -35,5 +46,13 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         {
             return lookupName.Trim().TrimStart('*');
         }
+
+        private async Task<T> GetOrAddCachedMetadata(Locus locus, string lookupName, string hlaNomenclatureVersion)
+        {
+            var key = BuildCacheKey(locus, lookupName, hlaNomenclatureVersion);
+            return await cache.GetOrAddAsync(key, () => PerformLookup(locus, lookupName, hlaNomenclatureVersion));
+        }
+
+        private string BuildCacheKey(Locus locus, string lookupName, string hlaNomenclatureVersion) => $"{cacheKey}-{hlaNomenclatureVersion}-{locus}-{lookupName}";
     }
 }

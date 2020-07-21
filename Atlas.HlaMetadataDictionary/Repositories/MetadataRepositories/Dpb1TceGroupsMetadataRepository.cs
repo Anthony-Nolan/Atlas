@@ -11,7 +11,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
     internal class Dpb1TceGroupsMetadataRepository : HlaMetadataRepositoryBase, IDpb1TceGroupsMetadataRepository
     {
         private const string DataTableReferencePrefix = "Dpb1TceGroupsLookupData";
-        private const string CacheKey = "Dpb1TceGroupsLookup";
+        private const string CacheKey = nameof(Dpb1TceGroupsMetadataRepository);
 
         public Dpb1TceGroupsMetadataRepository(
             ICloudTableFactory factory,

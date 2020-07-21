@@ -6,11 +6,14 @@ using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
+using LazyCache;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.Caching;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.MetadataServices
 {
@@ -30,6 +33,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
         private IAlleleStringSplitterService alleleStringSplitterService;
         private IMacDictionary macDictionary;
         private IAlleleGroupExpander alleleGroupExpander;
+        private IAppCache cache;
 
         [SetUp]
         public void SetUp()
@@ -41,13 +45,18 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
             macDictionary = Substitute.For<IMacDictionary>();
             alleleGroupExpander = Substitute.For<IAlleleGroupExpander>();
 
+            cache = AppCacheBuilder.NewDefaultCache();
+            var cacheProvider = Substitute.For<IPersistentCacheProvider>();
+            cacheProvider.Cache.Returns(cache);
+
             metadataService = new HlaMatchingMetadataService(
                 hlaMetadataRepository,
                 alleleNamesMetadataService,
                 hlaCategorisationService,
                 alleleStringSplitterService,
                 macDictionary,
-                alleleGroupExpander);
+                alleleGroupExpander,
+                cacheProvider);
 
             #region Set up to prevent exceptions that would incorrectly fail tests
             hlaMetadataRepository

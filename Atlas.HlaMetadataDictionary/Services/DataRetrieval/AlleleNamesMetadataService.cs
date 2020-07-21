@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
@@ -16,12 +17,16 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
     internal class AlleleNamesMetadataService : MetadataServiceBase<IEnumerable<string>>, IAlleleNamesMetadataService
     {
+        private const string CacheKey = nameof(AlleleNamesMetadataService);
+
         private readonly IAlleleNamesMetadataRepository alleleNamesMetadataRepository;
         private readonly IHlaCategorisationService hlaCategorisationService;
 
         public AlleleNamesMetadataService(
             IAlleleNamesMetadataRepository alleleNamesMetadataRepository, 
-            IHlaCategorisationService hlaCategorisationService)
+            IHlaCategorisationService hlaCategorisationService,
+            IPersistentCacheProvider cacheProvider)
+            : base(CacheKey, cacheProvider)
         {
             this.alleleNamesMetadataRepository = alleleNamesMetadataRepository;
             this.hlaCategorisationService = hlaCategorisationService;

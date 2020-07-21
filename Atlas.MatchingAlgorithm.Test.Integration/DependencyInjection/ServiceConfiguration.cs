@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.Test.SharedTestHelpers;
@@ -106,6 +107,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 
         private static void RegisterIntegrationTestServices(IServiceCollection services)
         {
+            services.RegisterLifeTimeScopedCacheTypes();
             services.AddScoped<ITestDataRefreshHistoryRepository, TestDataRefreshHistoryRepository>();
         }
     }

@@ -17,7 +17,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
     internal class AlleleGroupsMetadataRepository : HlaMetadataRepositoryBase, IAlleleGroupsMetadataRepository
     {
         private const string DataTableReferencePrefix = "AlleleGroupsLookupData";
-        private const string CacheKey = "AlleleGroupsLookup";
+        private const string CacheKey = nameof(AlleleGroupsMetadataRepository);
 
         public AlleleGroupsMetadataRepository(
             ICloudTableFactory factory,

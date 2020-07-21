@@ -1,4 +1,5 @@
-﻿using Atlas.Common.GeneticData;
+﻿using Atlas.Common.Caching;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
@@ -22,6 +23,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         SearchRelatedMetadataServiceBase<IHlaMatchingMetadata>, 
         IHlaMatchingMetadataService
     {
+        private const string CacheKey = nameof(HlaMatchingMetadataService);
         private readonly IHlaMatchingMetadataRepository typedMatchingRepository;
 
         public HlaMatchingMetadataService(
@@ -30,14 +32,17 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
             IMacDictionary macDictionary,
-            IAlleleGroupExpander alleleGroupExpander
-        ) : base(
-            hlaMatchingMetadataRepository,
-            alleleNamesMetadataService,
-            hlaCategorisationService,
-            alleleSplitter,
-            macDictionary,
-            alleleGroupExpander)
+            IAlleleGroupExpander alleleGroupExpander,
+            IPersistentCacheProvider cacheProvider)
+            : base(
+                hlaMatchingMetadataRepository,
+                alleleNamesMetadataService,
+                hlaCategorisationService,
+                alleleSplitter,
+                macDictionary,
+                alleleGroupExpander,
+                CacheKey,
+                cacheProvider)
         {
             typedMatchingRepository = hlaMatchingMetadataRepository;
         }
