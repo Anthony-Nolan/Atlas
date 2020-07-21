@@ -4,7 +4,6 @@ using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
-using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
@@ -41,13 +40,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.AlleleNames
                 .GetAlleleNameIfExists(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
                 .Returns(new AlleleNameMetadata(MatchedLocus, "FAKE-ALLELE-TO-PREVENT-INVALID-HLA-EXCEPTION", new List<string>()));
         }
-
-        [TearDown]
-        public void TearDown()
-        {
-            metadataRepository.ClearReceivedCalls();
-        }
-
+        
         [TestCase(null)]
         [TestCase("")]
         public void GetCurrentAlleleNames_WhenStringNullOrEmpty_ThrowsException(string nullOrEmptyString)
