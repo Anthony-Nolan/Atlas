@@ -24,7 +24,6 @@ const fileContent = generateInputFromHlaData([
 
 function generateInputFromHlaData(rawDonors) {
     const donorHlaSets = rawDonors.map(d => d.split(/\s/));
-    
 
     return `{
     "updateMode": "${config.updateMode}",
@@ -62,14 +61,18 @@ function buildHla(rawData) {
 }
 
 function buildMolecularLocus(hla1, hla2) {
+    const isHla1Null = hla1 === "null" || !hla1;
+    const isHla2Null = hla2 === "null" || !hla2;
+
     return `{
         "dna": {
-            "field1": "${hla1}",
-            "field2": "${hla2}"
+            "field1": ${isHla1Null ? null : `"${hla1}"`},
+            "field2": ${isHla2Null ? null : `"${hla2}"`},
         }, 
         "ser": {
         }
     }`
 }
 
-fs.writeFile(`${config.fileName}.json`, fileContent, () => {})
+fs.writeFile(`${config.fileName}.json`, fileContent, () => {
+})
