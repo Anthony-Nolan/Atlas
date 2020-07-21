@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Models;
-using Atlas.MatchPrediction.Config;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 {
@@ -37,6 +35,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
             return new MatchProbabilityResponse
             {
                 ZeroMismatchProbability = ZeroMismatchProbability.Round(decimalPlaces),
+                OneMismatchProbability = OneMismatchProbability.Round(decimalPlaces),
+                TwoMismatchProbability = TwoMismatchProbability.Round(decimalPlaces), 
                 ZeroMismatchProbabilityPerLocus = ZeroMismatchProbabilityPerLocus.Map(p => p?.Round(decimalPlaces))
             };
         }
