@@ -117,7 +117,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await hlaProcessor.Received().UpdateDonorHla(hlaNomenclatureVersion);
+            await hlaProcessor.Received().UpdateDonorHla(hlaNomenclatureVersion, false);
         }
 
         [Test]
@@ -132,7 +132,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             dataRefreshRunner = BuildDataRefreshRunner(settings);
 
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
-            hlaProcessor.UpdateDonorHla(Arg.Any<string>()).Throws(new Exception());
+            hlaProcessor.UpdateDonorHla(default, default).ThrowsForAnyArgs(new Exception());
             azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), databaseSize).Throws(new Exception());
 
             try

@@ -69,7 +69,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await hlaProcessor.Received().UpdateDonorHla(oldVersion);
+            await hlaProcessor.Received().UpdateDonorHla(oldVersion, false);
         }
 
         [Test]
@@ -129,7 +129,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         }
 
         [Test]
-        public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToDonorImport_RepeatsNarrowDataDeletion_AndContinuesFromHlaProcessing()
+        public async Task ContinuedRefreshData_WhenRunWasPartiallyCompleteUpToDonorImport_ContinuesFromHlaProcessing()
         {
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
                 DataRefreshRecordBuilder.New.WithStagesCompletedUpToAndIncluding(DataRefreshStage.DonorImport).Build()
@@ -139,8 +139,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await donorImporter.DidNotReceive().ImportDonors();
             await donorImportRepository.DidNotReceive().RemoveAllDonorInformation();
-            await donorImportRepository.Received(1).RemoveAllProcessedDonorHla();
-            await hlaProcessor.ReceivedWithAnyArgs(1).UpdateDonorHla(default);
+            await donorImportRepository.DidNotReceive().RemoveAllProcessedDonorHla();
+            await hlaProcessor.Received().UpdateDonorHla(Arg.Any<string>(), true);
         }
 
         [Test]
@@ -280,7 +280,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         }
 
         [Test]
-        public async Task ContinuedRefreshData_WhenContinuingFromHlaProcessingStep_DeletesOnlyProcessedHlaData()
+        public async Task ContinuedRefreshData_WhenContinuingFromHlaProcessingStep_DoesNotDeleteData()
         {
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
                 DataRefreshRecordBuilder.New.WithStagesCompletedUpToButNotIncluding(DataRefreshStage.DonorHlaProcessing).Build()
@@ -289,7 +289,19 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             await dataRefreshRunner.RefreshData(default);
 
             await donorImportRepository.DidNotReceive().RemoveAllDonorInformation();
-            await donorImportRepository.Received().RemoveAllProcessedDonorHla();
+            await donorImportRepository.DidNotReceive().RemoveAllProcessedDonorHla();
+        }
+
+        [Test]
+        public async Task ContinuedRefreshData_WhenContinuingFromHlaProcessingStep_PassesContinuationArgCorrectly()
+        {
+            dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
+                DataRefreshRecordBuilder.New.WithStagesCompletedUpToButNotIncluding(DataRefreshStage.DonorHlaProcessing).Build()
+            );
+
+            await dataRefreshRunner.RefreshData(default);
+
+            await hlaProcessor.Received().UpdateDonorHla(Arg.Any<string>(), true);
         }
 
         [Test]
