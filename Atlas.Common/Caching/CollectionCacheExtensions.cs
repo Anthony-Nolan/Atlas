@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
+using Atlas.Common.Utils.Concurrency;
 using LazyCache;
 
 namespace Atlas.Common.Caching
@@ -39,6 +41,16 @@ namespace Atlas.Common.Caching
         /// </summary>
         private static readonly ConcurrentDictionary<string, bool> CollectionCacheKeysBeingPopulatedInBackground =
             new ConcurrentDictionary<string, bool>();
+
+        // Azure applications have a limitation on the number of concurrently open connections.
+        // see: https://docs.microsoft.com/en-us/azure/app-service/troubleshoot-intermittent-outbound-connection-errors#:~:text=TCP%20Connections%3A%20There%20is%20a,connections%20that%20can%20be%20made.&text=Each%20instance%20on%20Azure%20App,same%20host%20and%20port%20combination.
+        // Each instance is allocated 128 SNAT ports. We should stay well below this limit here to allow for other connection types. 
+        private const int MaxConcurrentSingleItemFetches = 64;
+
+        // Fetching a single item will, in most use cases, open a connection (e.g. fetching data from azure storage)
+        // Azure services have a limitation on the number of concurrent open connections, and saturating this allowance causes socket exceptions
+        private static readonly SemaphoreSlim SingleItemFetchingSemaphore =
+            new SemaphoreSlim(MaxConcurrentSingleItemFetches, MaxConcurrentSingleItemFetches);
 
         /// <returns>
         /// Returns <c>true</c> if the key is in the process of being cached.
@@ -140,7 +152,7 @@ namespace Atlas.Common.Caching
             if (CollectionIsCurrentlyBeingCached(collectionCacheKey))
             {
                 // The cache of this collection is currently being populated for key, do not either wait for cache to complete, or kick off new cache population.
-                return await fetchSingleItemDirectly();
+                return await SingleItemFetchingSemaphore.WaitAndRunAsync(fetchSingleItemDirectly);
             }
 
             //See docs on CollectionCacheKeysBeingPopulatedInBackground, for the possible return values here.
@@ -148,18 +160,19 @@ namespace Atlas.Common.Caching
             if (cachedCollection == null)
             {
                 // Item is neither in the cache, nor being populated.
-
-                // So the first thing we want to do is initiate a read of the single item.
-                var desiredSingleItemTask = fetchSingleItemDirectly();
-
-                // Then, kick off the larger cache warming process.
-                // We explicitly do NOT await this! We want it to run **in the background**, so as not to delay our single item returning.
-                // Errors are the calling code's responsibility.
+                return await SingleItemFetchingSemaphore.WaitAndRunAsync(async () =>
+                {
+                    // So the first thing we want to do is initiate a read of the single item.
+                    var desiredSingleItemTask = fetchSingleItemDirectly();
+                    // Then, kick off the larger cache warming process.
+                    // We explicitly do NOT await this! We want it to run **in the background**, so as not to delay our single item returning.
+                    // Errors are the calling code's responsibility.
 #pragma warning disable 4014
-                _ = Task.Factory.StartNew((Action) (() => cache.GenerateAndCacheCollectionWithTracking(collectionCacheKey, fetchFullCollection)));
+                    _ = Task.Factory.StartNew((Action) (() => cache.GenerateAndCacheCollectionWithTracking(collectionCacheKey, fetchFullCollection)));
 #pragma warning restore 4014
 
-                return await desiredSingleItemTask;
+                    return await desiredSingleItemTask;
+                });
             }
 
             return readSingleItemFromCollection(cachedCollection);
