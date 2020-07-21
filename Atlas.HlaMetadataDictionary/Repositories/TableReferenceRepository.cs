@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using Atlas.Common.AzureStorage.TableStorage;
 using Atlas.HlaMetadataDictionary.InternalModels;
-using Microsoft.WindowsAzure.Storage.Table;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
+using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Atlas.HlaMetadataDictionary.Repositories
 {
@@ -55,7 +55,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories
 
         private async Task<CloudTable> GetTable()
         {
-            return table ?? (table = await factory.GetTable(CloudTableReference));
+            return table ??= await factory.GetTable(CloudTableReference);
         }
 
         private async Task<TableReferenceRow> GetExistingTableReferenceRow(string tablePrefix)

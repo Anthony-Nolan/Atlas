@@ -37,16 +37,15 @@ namespace Atlas.Common.Caching
         /// We want to be able to return a bool indicating whether or not a collection is being populated, without
         /// waiting if it is.
         /// </summary>
-        private static readonly ConcurrentDictionary<string, bool> CollectionCacheKeysBeingPopulatedInBackground = new ConcurrentDictionary<string, bool>();
+        private static readonly ConcurrentDictionary<string, bool> CollectionCacheKeysBeingPopulatedInBackground =
+            new ConcurrentDictionary<string, bool>();
 
         /// <returns>
         /// Returns <c>true</c> if the key is in the process of being cached.
         /// Returns <c>false</c> if the key is already present, or if caching has not yet been initiated.
         /// </returns>
-        private static bool CollectionIsCurrentlyBeingCached(string collectionCacheKey)
-        {
-            return CollectionCacheKeysBeingPopulatedInBackground.TryGetValue(collectionCacheKey, out _);
-        }
+        private static bool CollectionIsCurrentlyBeingCached(string collectionCacheKey) =>
+            CollectionCacheKeysBeingPopulatedInBackground.TryGetValue(collectionCacheKey, out _);
 
         /// <summary>
         /// ** SEE CLASS DOC-COMMENT **
@@ -91,6 +90,8 @@ namespace Atlas.Common.Caching
         ) where TCollection : ICollection // See typeparam comment.
         {
             var value = await cache.GetAsync<TCollection>(collectionCacheKey);
+
+            // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
             if (value == null)
             {
                 value = await cache.GenerateAndCacheCollectionWithTracking(collectionCacheKey, fetchFullCollection, true);
@@ -147,7 +148,7 @@ namespace Atlas.Common.Caching
             if (cachedCollection == null)
             {
                 // Item is neither in the cache, nor being populated.
-                
+
                 // So the first thing we want to do is initiate a read of the single item.
                 var desiredSingleItemTask = fetchSingleItemDirectly();
 
@@ -157,7 +158,7 @@ namespace Atlas.Common.Caching
 #pragma warning disable 4014
                 _ = Task.Factory.StartNew((Action) (() => cache.GenerateAndCacheCollectionWithTracking(collectionCacheKey, fetchFullCollection)));
 #pragma warning restore 4014
-                
+
                 return await desiredSingleItemTask;
             }
 
@@ -178,7 +179,8 @@ namespace Atlas.Common.Caching
             }
             catch (Exception e)
             {
-                var message = $"Exception thrown in {nameof(GenerateAndCacheCollectionWithTracking)}, with {nameof(collectionCacheKey)}: '{collectionCacheKey}'. Exception details: {e.ToString()}";
+                var message =
+                    $"Exception thrown in {nameof(GenerateAndCacheCollectionWithTracking)}, with {nameof(collectionCacheKey)}: '{collectionCacheKey}'. Exception details: {e.ToString()}";
                 Console.WriteLine(message);
                 Debug.WriteLine(message);
                 //TODO: ATLAS-542 Create static Logger?
@@ -186,6 +188,7 @@ namespace Atlas.Common.Caching
                 {
                     throw;
                 }
+
                 return default;
             }
             finally
