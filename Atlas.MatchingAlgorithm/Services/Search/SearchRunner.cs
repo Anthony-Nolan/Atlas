@@ -10,6 +10,8 @@ using Atlas.MatchingAlgorithm.Clients.AzureStorage;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+using Atlas.MatchingAlgorithm.Validators.SearchRequest;
+using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
 {
@@ -45,6 +47,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
         public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
         {
+            await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.MatchingRequest);
+            
             var searchRequestId = identifiedSearchRequest.Id;
             searchRequestContext.SearchRequestId = searchRequestId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
