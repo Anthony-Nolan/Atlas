@@ -103,14 +103,14 @@ variable "MATCHING_DATABASE_USERNAME" {
 }
 
 variable "MATCHING_DONOR_WRITE_TRANSACTIONALITY__DATA_REFRESH" {
-  type    = bool
-  default = false
+  type        = bool
+  default     = false
   description = "Should the Write for a Donor be entirely Transactional when running DataRefresh. 'false' for greater performance. 'true' for greater reliability"
 }
 
 variable "MATCHING_DONOR_WRITE_TRANSACTIONALITY__DONOR_UPDATES" {
-  type    = bool
-  default = true
+  type        = bool
+  default     = true
   description = "Should the Write for a Donor be entirely Transactional when running DataRefresh. 'false' for greater performance. 'true' for greater reliability"
 }
 
