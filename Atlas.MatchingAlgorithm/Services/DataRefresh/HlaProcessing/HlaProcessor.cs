@@ -7,7 +7,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights;
-using Atlas.MatchingAlgorithm.Common.Repositories;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
@@ -125,16 +124,35 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 
             var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersion);
             var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName);
+            EnsureAllPGroupsExist(hlaExpansionResults.ProcessingResults);
             await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(hlaExpansionResults.ProcessingResults);
 
             stopwatch.Stop();
             logger.SendTrace("Updated Donors", LogLevel.Verbose, new Dictionary<string, string>
             {
-                {"NumberOfDonors", hlaExpansionResults.ProcessingResults.Count().ToString()},
+                {"NumberOfDonors", hlaExpansionResults.ProcessingResults.Count.ToString()},
                 {"UpdateTime", stopwatch.ElapsedMilliseconds.ToString()}
             });
 
             return hlaExpansionResults.FailedDonors;
+        }
+
+        /// <remarks>
+        /// See notes in FindOrCreatePGroupIds.
+        /// In practice this will never do anything in Prod code.
+        /// But it means that during tests the DonorUpdate code behaves more like
+        /// "the real thing", since the PGroups have already been inserted into the DB.
+        /// </remarks>
+        private void EnsureAllPGroupsExist(IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHlas)
+        {
+            var allPGroups = donorsWithHlas
+                .SelectMany(d =>
+                    d.MatchingHla?.ToEnumerable().SelectMany(hla =>
+                        hla?.MatchingPGroups ?? new string[0]
+                    ) ?? new List<string>()
+                ).ToList();
+
+            pGroupRepository.FindOrCreatePGroupIds(allPGroups);
         }
 
         private async Task PerformUpfrontSetup(string hlaNomenclatureVersion)

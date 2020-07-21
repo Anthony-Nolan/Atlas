@@ -7,6 +7,7 @@ using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+using Microsoft.Extensions.Primitives;
 
 namespace Atlas.MatchingAlgorithm.Services.Donors
 {
@@ -65,9 +66,31 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             }
             var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersion);
             var expansionResult = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorInfos, ExpansionFailureEventName);
+            EnsureAllPGroupsExist(expansionResult.ProcessingResults, targetDatabase);
 
             await CreateOrUpdateDonorsWithHla(expansionResult.ProcessingResults, targetDatabase);
             await SendFailedDonorsAlert(expansionResult.FailedDonors);
+        }
+
+        /// <remarks>
+        /// See notes in FindOrCreatePGroupIds.
+        /// In practice this will never do anything in Prod code.
+        /// But it means that during tests the DonorUpdate code behaves more like
+        /// "the real thing", since the PGroups have already been inserted into the DB.
+        /// </remarks>
+        private void EnsureAllPGroupsExist(
+            IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHlas,
+            TransientDatabase targetDatabase)
+        {
+            var pGroupRepo = repositoryFactory.GetPGroupRepositoryForDatabase(targetDatabase);
+            var allPGroups = donorsWithHlas
+                .SelectMany(d =>
+                    d.MatchingHla?.ToEnumerable().SelectMany(hla =>
+                        hla?.MatchingPGroups ?? new string[0]
+                    ) ?? new List<string>()
+                ).ToList();
+
+            pGroupRepo.FindOrCreatePGroupIds(allPGroups);
         }
 
         private async Task CreateOrUpdateDonorsWithHla(IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHla, TransientDatabase targetDatabase)

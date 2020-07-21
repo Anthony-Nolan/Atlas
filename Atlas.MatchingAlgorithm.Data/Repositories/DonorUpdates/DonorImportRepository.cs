@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
-using Atlas.MatchingAlgorithm.Common.Repositories;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
@@ -161,16 +160,6 @@ END
             {
                 await conn.ExecuteAsync(BuildDropAllPreProcessedDonorHlaSql(), commandTimeout: 300);
             }
-        }
-
-        public new async Task InsertBatchOfDonors(IEnumerable<DonorInfo> donors)
-        {
-            await base.InsertBatchOfDonors(donors);
-        }
-
-        public new async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donors)
-        {
-            await base.AddMatchingPGroupsForExistingDonorBatch(donors);
         }
 
         public async Task RemovePGroupsForDonorBatch(IEnumerable<int> donorIds)

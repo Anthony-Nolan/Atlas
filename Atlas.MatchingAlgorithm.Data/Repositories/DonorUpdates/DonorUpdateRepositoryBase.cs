@@ -1,14 +1,16 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Common.Config;
-using Atlas.MatchingAlgorithm.Common.Repositories;
 using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Services;
+using Dapper;
 using EnumStringValues;
 using Microsoft.Data.SqlClient;
 
@@ -41,7 +43,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         };
 
         // The order of these matters when setting up the datatable - if re-ordering, also re-order datatable contents
-        private readonly string[] donorPGroupInsertDataTableColumnNames =
+        private readonly string[] donorPGroupDataTableColumnNames =
         {
             "Id",
             "DonorId",
@@ -56,7 +58,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             this.pGroupRepository = pGroupRepository;
         }
 
-        protected async Task InsertBatchOfDonors(IEnumerable<DonorInfo> donors)
+        public async Task InsertBatchOfDonors(IEnumerable<DonorInfo> donors)
         {
             var donorInfos = donors.ToList();
 
@@ -70,16 +72,84 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             await BulkInsertDataTable("Donors", dataTable, donorInsertDataTableColumnNames);
         }
 
-        protected async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorInfos)
+        public async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorInfos)
         {
-            await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(l => AddMatchingGroupsForExistingDonorBatchAtLocus(donorInfos, l)));
+            var donorsWithUpdatesAtEveryLocus = donorInfos
+                .Select(info => new DonorWithChangedMatchingLoci(info, LocusSettings.MatchingOnlyLoci))
+                .ToList();
+
+            await UpsertMatchingPGroupsAtSpecifiedLoci(donorsWithUpdatesAtEveryLocus, true);
         }
 
-        private async Task AddMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
+        protected class DonorWithChangedMatchingLoci
+        {
+            public DonorInfoWithExpandedHla DonorInfo { get; }
+            public HashSet<Locus> ChangedMatchingLoci { get; }
+
+            public DonorWithChangedMatchingLoci(DonorInfoWithExpandedHla donorInfo, HashSet<Locus> changedMatchingLoci)
+            {
+                DonorInfo = donorInfo;
+                ChangedMatchingLoci = changedMatchingLoci;
+            }
+        }
+
+        protected async Task UpsertMatchingPGroupsAtSpecifiedLoci(List<DonorWithChangedMatchingLoci> donors, bool isKnownToBeCreate)
+        {
+            foreach (var locus in LocusSettings.MatchingOnlyLoci)
+            {
+                var donorsWhichChangedAtThisLocus = donors
+                    .Where(d => d.ChangedMatchingLoci.Contains(locus))
+                    .Select(d => d.DonorInfo)
+                    .ToList();
+
+                if (donorsWhichChangedAtThisLocus.Any())
+                {
+                    // This is a bit sad.
+                    // BulkInserting to unrelated tables, should be an easy win for
+                    // "don't await the Tasks separately, use Task.WhenAll() and let them run in parallel".
+                    // And that DOES work ... if you can start separate connections for each one.
+                    //
+                    // But our TransactionScope requires that there only be a single connection at a time.
+                    // And for reasons unknown, if you WhenAll() with a shared transaction you lose all
+                    // the perf benefits.
+                    // 
+                    // See here for more detail of the tests done, the perf results achieved and the probable
+                    // cause of the problem.
+                    // https://stackoverflow.com/questions/62970038/performance-of-multiple-parallel-async-sqlbulkcopy-inserts-against-different
+                    await UpsertMatchingPGroupsAtLocus(donorsWhichChangedAtThisLocus, locus, isKnownToBeCreate);
+                }
+            }
+        }
+
+        private async Task UpsertMatchingPGroupsAtLocus(List<DonorInfoWithExpandedHla> donors, Locus locus, bool isKnownToBeCreate)
         {
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
-            var dataTable = BuildPerLocusPGroupInsertDataTable(donors, locus);
-            await BulkInsertDataTable(matchingTableName, dataTable, donorPGroupInsertDataTableColumnNames);
+            var dataTable = BuildPerLocusPGroupDataTable(donors, locus);
+
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            {
+                conn.Open();
+                var transaction = conn.BeginTransaction();
+
+                if (!isKnownToBeCreate)
+                {
+                    var deleteSql = $@"
+                    DELETE FROM {matchingTableName}
+                    WHERE DonorId IN ({donors.Select(d => d.DonorId.ToString()).StringJoin(",")})
+                    ";
+                    await conn.ExecuteAsync(deleteSql, null, transaction, commandTimeout: 600);
+                }
+
+                await BulkInsertDataTable(
+                    matchingTableName,
+                    dataTable,
+                    donorPGroupDataTableColumnNames,
+                    existingTransaction: transaction,
+                    timeout: 14400);
+
+                transaction.Commit();
+                conn.Close();
+            }
         }
 
         private DataTable BuildDonorInsertDataTable(IEnumerable<DonorInfo> donorInfos)
@@ -113,33 +183,33 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             return dataTable;
         }
 
-        private DataTable BuildPerLocusPGroupInsertDataTable(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
+        protected DataTable BuildPerLocusPGroupDataTable(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
         {
             var dataTable = new DataTable();
-            foreach (var columnName in donorPGroupInsertDataTableColumnNames)
+            foreach (var columnName in donorPGroupDataTableColumnNames)
             {
                 dataTable.Columns.Add(columnName);
             }
 
-            var tempPositionDictionary = EnumExtensions.EnumerateValues<LocusPosition>().ToDictionary(p => p, p => (int) p.ToTypePosition());
+            // Data should be written as "TypePosition" so we can guarantee control over the backing int values for this enum
+            var dbPositionIdDictionary = EnumExtensions.EnumerateValues<LocusPosition>().ToDictionary(p => p, p => (int) p.ToTypePosition());
             foreach (var donor in donors)
             {
-                donor.MatchingHla.GetLocus(locus).EachPosition((p, h) =>
+                donor.MatchingHla.GetLocus(locus).EachPosition((position, hlaAtLocusPosition) =>
                 {
-                    if (h == null)
+                    if (hlaAtLocusPosition == null)
                     {
                         return;
                     }
 
-                    var position = tempPositionDictionary[p];
+                    var positionId = dbPositionIdDictionary[position];
 
-                    foreach (var pGroup in h.MatchingPGroups)
+                    foreach (var pGroup in hlaAtLocusPosition.MatchingPGroups)
                     {
-                        // Data should be written as "TypePosition" so we can guarantee control over the backing int values for this enum
                         dataTable.Rows.Add(
                             0,
                             donor.DonorId,
-                            position,
+                            positionId,
                             pGroupRepository.FindOrCreatePGroup(pGroup));
                     }
                 });
@@ -148,6 +218,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             return dataTable;
         }
 
+        #region BulkInsertDataTable
         /// <summary>
         /// Opens a new connection and performs a bulk insert wrapped in a transaction.
         /// If columnNames provided, sets up a map from dataTable to SQL, assuming a 1:1 mapping between dataTable and SQL column names  
@@ -155,37 +226,112 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         private async Task BulkInsertDataTable(
             string tableName,
             DataTable dataTable,
-            IEnumerable<string> columnNames = null)
+            string[] columnNames,
+            SqlConnection existingConnection = null,
+            SqlTransaction existingTransaction = null,
+            int timeout = 3600)
         {
-            columnNames ??= new List<string>();
-            await using (var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
-            {
-                connection.Open();
-                var transaction = connection.BeginTransaction();
-                using (var sqlBulk = BuildSqlBulkCopy(tableName, connection, transaction))
-                {
-                    foreach (var columnName in columnNames)
-                    {
-                        // Relies on setting up the data table with column names matching the database columns.
-                        sqlBulk.ColumnMappings.Add(columnName, columnName);
-                    }
+            var providedExistingConnection = existingConnection != null;
+            var providedExistingTransaction = existingTransaction != null;
 
+            var transactionToUse = DetermineConnectionAndTransactionForBulkInsert(existingConnection, existingTransaction);
+            //Begin Implied Using Block
+                using (var sqlBulk = BuildSqlBulkCopy(tableName, columnNames, transactionToUse, timeout))
+                {
                     await sqlBulk.WriteToServerAsync(dataTable);
                 }
-
-                transaction.Commit();
-                connection.Close();
-            }
+            //End Implied Using Block
+            ResolveTransactionAndConnectionAsAppropriate(transactionToUse, providedExistingConnection, providedExistingTransaction);
         }
 
-        private static SqlBulkCopy BuildSqlBulkCopy(string tableName, SqlConnection connection, SqlTransaction transaction)
+        /// <remarks>
+        /// This code **MUST** stay in sync with the matching code in <see cref="ResolveTransactionAndConnectionAsAppropriate"/>
+        /// </remarks>
+        private SqlTransaction DetermineConnectionAndTransactionForBulkInsert(SqlConnection existingConnection, SqlTransaction existingTransaction)
         {
-            return new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction)
+            var providedExistingConnection = existingConnection != null;
+            var providedExistingTransaction = existingTransaction != null;
+
+            if (providedExistingConnection &&
+                providedExistingTransaction &&
+                existingTransaction.Connection != existingConnection)
+            {
+                throw new InvalidOperationException("You cannot provide both an existing Connection to use AND an existing, unrelated Transaction to use!");
+            }
+
+            if (providedExistingTransaction)
+            {
+                return existingTransaction;
+            }
+
+            if (providedExistingConnection)
+            {
+                return existingConnection.BeginTransaction();
+            }
+
+            var connection = new SqlConnection(ConnectionStringProvider.GetConnectionString());
+            connection.Open();
+            var transactionOnNewConnection = connection.BeginTransaction();
+
+            return transactionOnNewConnection;
+        }
+
+        /// <remarks>
+        /// This code **MUST** stay in sync with the matching code in <see cref="DetermineConnectionAndTransactionForBulkInsert"/>
+        /// </remarks>
+        private void ResolveTransactionAndConnectionAsAppropriate(
+            SqlTransaction transactionUsed,
+            bool existingConnectionWasProvided,
+            bool existingTransactionWasProvided)
+        {
+            if (existingTransactionWasProvided)
+            {
+                // Do nothing!
+                // The calling code gave us these objects and so
+                // A) is responsible for managing them.
+                // and
+                // B) wants to continue using them.
+                // We mustn't close them.
+                return;
+            }
+
+            if (existingConnectionWasProvided)
+            {
+                //We created our own Transaction, so commit that.
+                transactionUsed.Commit();
+
+                // But the calling code gave us this connection and so
+                // A) is responsible for managing it.
+                // and
+                // B) wants to continue using it.
+                // We mustn't close it.
+                return;
+            }
+
+            // We made these objects so we're responsible for closing them.
+            var connection = transactionUsed.Connection;
+            transactionUsed.Commit();
+            connection.Close();
+            connection.Dispose();
+        }
+
+        private SqlBulkCopy BuildSqlBulkCopy(string tableName, string[] columnNames, SqlTransaction transaction, int timeout = 3600)
+        {
+            var bulkCopy = new SqlBulkCopy(transaction.Connection, SqlBulkCopyOptions.Default, transaction)
             {
                 BatchSize = 10000,
                 DestinationTableName = tableName,
-                BulkCopyTimeout = 3600
+                BulkCopyTimeout = timeout
             };
+
+            foreach (var columnName in columnNames)
+            {
+                // Relies on setting up the data table with column names matching the database columns.
+                bulkCopy.ColumnMappings.Add(columnName, columnName);
+            }
+
+            return bulkCopy;
         }
+        #endregion
     }
 }

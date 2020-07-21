@@ -1,9 +1,7 @@
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Config;
-using Atlas.MatchingAlgorithm.Common.Repositories;
 using Atlas.MatchingAlgorithm.Data.Extensions;
 using Atlas.MatchingAlgorithm.Data.Helpers;
-using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
@@ -21,18 +19,6 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 {
     public class DonorUpdateRepository : DonorUpdateRepositoryBase, IDonorUpdateRepository
     {
-        private class DonorWithChangedMatchingLoci
-        {
-            public DonorInfoWithExpandedHla DonorInfo { get; }
-            public IEnumerable<Locus> ChangedMatchingLoci { get; }
-
-            public DonorWithChangedMatchingLoci(DonorInfoWithExpandedHla donorInfo, IEnumerable<Locus> changedMatchingLoci)
-            {
-                DonorInfo = donorInfo;
-                ChangedMatchingLoci = changedMatchingLoci;
-            }
-        }
-
         public DonorUpdateRepository(IPGroupRepository pGroupRepository, IConnectionStringProvider connectionStringProvider) : base(pGroupRepository,
             connectionStringProvider)
         {
@@ -111,9 +97,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     }
                 }
 
-                await ReplaceMatchingGroupsForExistingDonorBatch(donorsWhereHlaHasChanged);
-
                 conn.Close();
+
+                await ReplaceMatchingPGroupsForExistingDonorBatch(donorsWhereHlaHasChanged);
             }
         }
 
@@ -127,14 +113,14 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             return !existingDonorInfo.HlaNames.Equals(incomingDonorInfo.HlaNames); //PhenotypeInfo implements IEquatable.
         }
 
-        private static IEnumerable<Locus> GetChangedMatchingOnlyLoci(DonorInfo existingDonorInfo, DonorInfo incomingDonorInfo)
+        private static HashSet<Locus> GetChangedMatchingOnlyLoci(DonorInfo existingDonorInfo, DonorInfo incomingDonorInfo)
         {
             return LocusSettings.MatchingOnlyLoci.Where(locus =>
             {
                 var existingNames = existingDonorInfo.HlaNames.GetLocus(locus);
                 var incomingNames = incomingDonorInfo.HlaNames.GetLocus(locus);
                 return !existingNames.Equals(incomingNames); //LocusInfo implements IEquatable.
-            });
+            }).ToHashSet();
         }
 
         /// <summary>
@@ -208,91 +194,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             await connection.ExecuteAsync(sql, donor, commandTimeout: 600);
         }
 
-        private async Task ReplaceMatchingGroupsForExistingDonorBatch(IEnumerable<DonorWithChangedMatchingLoci> donorsWithChangedMatchingLoci)
+        private async Task ReplaceMatchingPGroupsForExistingDonorBatch(List<DonorWithChangedMatchingLoci> donors)
         {
-            var donors = donorsWithChangedMatchingLoci.ToList();
-
-            if (!donors.Any())
-            {
-                return;
-            }
-
-            await Task.WhenAll(LocusSettings.MatchingOnlyLoci.Select(async locus =>
-                {
-                    var donorsToUpdate = donors
-                        .Where(d => d.ChangedMatchingLoci.Contains(locus))
-                        .Select(d => d.DonorInfo)
-                        .ToList();
-
-                    if (donorsToUpdate.Any())
-                    {
-                        await ReplaceMatchingGroupsForExistingDonorBatchAtLocus(donorsToUpdate, locus);
-                    }
-                }
-            ));
-        }
-
-        private async Task ReplaceMatchingGroupsForExistingDonorBatchAtLocus(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
-        {
-            donors = donors.ToList();
-
-            var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
-            var dataTable = CreateDonorDataTableForLocus(donors, locus);
-
-            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
-            {
-                conn.Open();
-                var transaction = conn.BeginTransaction();
-
-                var deleteSql = $@"
-                    DELETE FROM {matchingTableName}
-                    WHERE DonorId IN ({string.Join(",", donors.Select(d => d.DonorId))})
-                    ";
-                await conn.ExecuteAsync(deleteSql, null, transaction, commandTimeout: 600);
-                await BulkInsertDataTable(conn, transaction, matchingTableName, dataTable);
-
-                transaction.Commit();
-                conn.Close();
-            }
-        }
-
-        private DataTable CreateDonorDataTableForLocus(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
-        {
-            var dt = new DataTable();
-            dt.Columns.Add("Id");
-            dt.Columns.Add("DonorId");
-            dt.Columns.Add("TypePosition");
-            dt.Columns.Add("PGroup_Id");
-
-            foreach (var donor in donors)
-            {
-                donor.MatchingHla.GetLocus(locus).EachPosition((p, h) =>
-                {
-                    if (h == null)
-                    {
-                        return;
-                    }
-
-                    foreach (var pGroup in h.MatchingPGroups)
-                    {
-                        // Data should be written as "TypePosition" so we can guarantee control over the backing int values for this enum
-                        dt.Rows.Add(0, donor.DonorId, (int)p.ToTypePosition(), pGroupRepository.FindOrCreatePGroup(pGroup));
-                    }
-                });
-            }
-
-            return dt;
-        }
-
-        private static async Task BulkInsertDataTable(SqlConnection conn, SqlTransaction transaction, string tableName, DataTable dataTable)
-        {
-            using (var sqlBulk = new SqlBulkCopy(conn, SqlBulkCopyOptions.Default, transaction))
-            {
-                sqlBulk.BatchSize = 10000;
-                sqlBulk.DestinationTableName = tableName;
-                sqlBulk.BulkCopyTimeout = 14400;
-                await sqlBulk.WriteToServerAsync(dataTable);
-            }
+            await UpsertMatchingPGroupsAtSpecifiedLoci(donors, false);
         }
     }
 }

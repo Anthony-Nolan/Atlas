@@ -75,7 +75,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjectio
             );
 
             services.RegisterLifeTimeScopedCacheTypes();
-            services.AddScoped<IMacRepository, FileBackedMacDictionaryRepository>();
+            services.AddSingleton<IMacRepository, FileBackedMacDictionaryRepository>();
         }
     }
 }

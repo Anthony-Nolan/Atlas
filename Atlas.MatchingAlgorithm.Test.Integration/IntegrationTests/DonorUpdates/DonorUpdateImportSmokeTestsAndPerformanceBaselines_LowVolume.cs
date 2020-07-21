@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -81,19 +83,55 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         private string fileBackedHmdHlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
         private TransientDatabase activeDb;
 
+        [OneTimeSetUp]
+        public void PopulateHMDCacheOutsideOfTestTiming()
+        {
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                // This object resolution triggers the reading of the HMD files.
+                // We don't want that time included in the tests as it's not relevant to the perf figures
+                // and would skew the results depending on which test ran first.
+                // So run it once here to get it done before timing starts.
+                // Don't need to worry about scopes as the FileBacked repos are all singletons.
+                var factory = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMetadataDictionaryFactory>();
+
+                // This isn't going to change between tests, and since it uses a Transient cache, it's a tiny bit slow.
+                var dbProvider = DependencyInjection.DependencyInjection.Provider.GetService<IActiveDatabaseProvider>();
+                activeDb = dbProvider.GetActiveDatabase();
+            });
+        }
+
+        #region Dependency Scoping.
+        private IServiceScope perTestDependencyScope;
         [SetUp]
         public void SetUp()
         {
-            var dbProvider = DependencyInjection.DependencyInjection.Provider.GetService<IActiveDatabaseProvider>();
-            activeDb = dbProvider.GetActiveDatabase();
+            // We need each test to be run with new objects, which means a new DependencyInjection scope
+            // for each test.
+            // If we use a `using` block on that scope, then we dispose everything we made in that block,
+            // at the end of that block (when the scope 'ends')
+            // In particular, we would dispose any dbContexts ... before we actually run the tests! :(
+            //
+            // Which means the contexts that we kept an (indirect) reference to will then error, when we
+            // use them in the actual tests :_(
+            // So we have to hold onto the Scope, and manually dispose it, in the TearDown method.
+            perTestDependencyScope = DependencyInjection.DependencyInjection.Provider.CreateScope();
+            
+                var activeDbConnectionStringProvider = perTestDependencyScope.ServiceProvider.GetService<ActiveTransientSqlConnectionStringProvider>();
+                donorInspectionRepository = new TestDonorInspectionRepository(activeDbConnectionStringProvider);
 
-            var activeDbConnectionStringProvider = DependencyInjection.DependencyInjection.Provider.GetService<ActiveTransientSqlConnectionStringProvider>();
-            donorInspectionRepository = new TestDonorInspectionRepository(activeDbConnectionStringProvider);
+                managementService = perTestDependencyScope.ServiceProvider.GetService<IDonorManagementService>();
 
-            managementService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorManagementService>();
-
-            DatabaseManager.ClearDatabases();
+                DatabaseManager.ClearDatabases();
         }
+
+        [TearDown]
+        public void DisposeDependencyScope()
+        {
+            //See notes in SetUp.
+            perTestDependencyScope.Dispose();
+        }
+        #endregion
 
         private async Task Import(params DonorAvailabilityUpdate[] updates)
         {
@@ -425,7 +463,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         }
 
         [Test]
-        public async Task ApplyDonorUpdatesToDatabase_ImportingFurtherSingleBatchOperationBatch_WhichExplicitlyExercisesAllPaths_CompletesWithoutErrors()
+        public async Task ApplyDonorUpdatesToDatabase_ImportingAFurtherSingleBatch_WhichExplicitlyExercisesAllPaths_CompletesWithoutErrors()
         {
             //This is a useful way to populate varied baseline data :)
             await ApplyDonorUpdatesToDatabase_ImportingAllDonorsFromExistingTestsAsSingleBatch_ResultsInCorrectNumberOfDonorsAtEnd();
