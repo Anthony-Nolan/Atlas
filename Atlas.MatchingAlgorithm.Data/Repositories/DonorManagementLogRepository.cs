@@ -7,8 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
@@ -56,8 +56,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
             var (logsToUpdate, logsToCreate) = infos.ReifyAndSplit(i => donorIdsWithLogs.Contains(i.DonorId));
 
-            await UpdateLogBatch(logsToUpdate);
-            await CreateLogBatch(logsToCreate);
+            using (var transactionScope = new AsyncTransactionScope())
+            {
+                await UpdateLogBatch(logsToUpdate);
+                await CreateLogBatch(logsToCreate);
+                transactionScope.Complete();
+            }
         }
 
         private async Task<IEnumerable<int>> GetDonorIdsWithExistingLogs(IEnumerable<int> donorIdsToCheck)
@@ -112,7 +116,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             return "SELECT " +
                     $"{info.DonorId} AS {DonorIdColumnName}, " +
                     $"{info.UpdateSequenceNumber} AS {SequenceNumberColumnName}, " +
-                    $"'{info.UpdateDateTime.ToString("O")}' AS {UpdateDateTimeColumnName}";
+                    $"'{info.UpdateDateTime.ToString("O")}' AS {UpdateDateTimeColumnName}"; //Formatter needed to avoid culture date format bugs.
         }
 
         private async Task CreateLogBatch(IEnumerable<DonorManagementInfo> donorManagementInfos)
@@ -139,7 +143,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                     );
             }
 
-            using (var sqlBulk = new SqlBulkCopy(ConnectionStringProvider.GetConnectionString()))
+            using (var sqlBulk = new SqlBulkCopy(ConnectionStringProvider.GetConnectionString(), SqlBulkCopyOptions.UseInternalTransaction))
             {
                 sqlBulk.BulkCopyTimeout = 600;
                 sqlBulk.BatchSize = 1000;
