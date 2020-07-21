@@ -1,4 +1,5 @@
-﻿using Atlas.Common.Caching;
+﻿using System.Threading.Tasks;
+using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
@@ -9,7 +10,6 @@ using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using LazyCache;
 using NSubstitute;
 using NUnit.Framework;
-using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.MetadataServices
 {
@@ -36,17 +36,14 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
 
             metadataService = new AlleleNamesMetadataService(repository, hlaCategorisationService, cacheProvider);
 
-            #region Set up to prevent exceptions that would incorrectly fail tests
             repository.GetAlleleNameIfExists(default, default, default)
                 .ReturnsForAnyArgs(new AlleleNameMetadata("A*", default, default));
 
             hlaCategorisationService.GetHlaTypingCategory(default).ReturnsForAnyArgs(HlaTypingCategory.Allele);
-            #endregion
-
         }
 
         [Test]
-        public async Task GetMetadata_CacheDoesNotContainLookup_FetchesMetadataFromRepository()
+        public async Task GetMetadata_CacheDoesNotContainMetadataValue_FetchesMetadataFromRepository()
         {
             const Locus locus = Locus.A;
             const string lookupName = "hla";
