@@ -1,7 +1,7 @@
 IF USER_ID('$(matchingUsername)') IS NULL
 BEGIN 
 	CREATE USER $(matchingUsername) WITH PASSWORD = '$(matchingPassword)';
-  ALTER ROLE db_datareader ADD MEMBER $(matchPredictionUsername)
+  ALTER ROLE db_datareader ADD MEMBER $(matchingUsername)
 END
 
 ELSE
