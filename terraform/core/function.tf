@@ -6,7 +6,7 @@ resource "azurerm_function_app" "atlas_function" {
   name                      = local.atlas_function_app_name
   resource_group_name       = azurerm_resource_group.atlas_resource_group.name
   location                  = local.location
-  app_service_plan_id       = azurerm_app_service_plan.atlas.id
+  app_service_plan_id       = azurerm_app_service_plan.atlas-consumption-plan.id
   https_only                = true
   version                   = "~3"
   storage_connection_string = azurerm_storage_account.function_storage.primary_connection_string
