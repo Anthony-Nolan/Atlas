@@ -74,13 +74,13 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             await BulkInsertDataTable("Donors", dataTable, donorInsertDataTableColumnNames);
         }
 
-        public async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorInfos)
+        public async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorInfos, bool runAllHlaInsertionsInASingleTransactionScope)
         {
             var donorsWithUpdatesAtEveryLocus = donorInfos
                 .Select(info => new DonorWithChangedMatchingLoci(info, LocusSettings.MatchingOnlyLoci))
                 .ToList();
 
-            await UpsertMatchingPGroupsAtSpecifiedLoci(donorsWithUpdatesAtEveryLocus, true);
+            await UpsertMatchingPGroupsAtSpecifiedLoci(donorsWithUpdatesAtEveryLocus, true, runAllHlaInsertionsInASingleTransactionScope);
         }
 
         protected class DonorWithChangedMatchingLoci
@@ -95,10 +95,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        protected async Task UpsertMatchingPGroupsAtSpecifiedLoci(List<DonorWithChangedMatchingLoci> donors, bool isKnownToBeCreate)
+        protected async Task UpsertMatchingPGroupsAtSpecifiedLoci(List<DonorWithChangedMatchingLoci> donors, bool isKnownToBeCreate, bool runAllHlaInsertionsInASingleTransactionScope)
         {
-            using (var transactionScope = new AsyncTransactionScope())
+            using (var transactionScope = new OptionalAsyncTransactionScope(runAllHlaInsertionsInASingleTransactionScope))
             {
+                var perLocusUpsertTasks = new List<Task>();
                 foreach (var locus in LocusSettings.MatchingOnlyLoci)
                 {
                     var donorsWhichChangedAtThisLocus = donors
@@ -108,21 +109,34 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
                     if (donorsWhichChangedAtThisLocus.Any())
                     {
+                        var upsertTask = UpsertMatchingPGroupsAtLocus(donorsWhichChangedAtThisLocus, locus, isKnownToBeCreate);
+                        perLocusUpsertTasks.Add(upsertTask);
+
                         // This is a bit sad.
                         // BulkInserting to unrelated tables, should be an easy win for
                         // "don't await the Tasks separately, use Task.WhenAll() and let them run in parallel".
                         // And that DOES work ... if you can start separate connections for each one.
                         //
-                        // But our TransactionScope requires that there only be a single connection at a time.
-                        // And for reasons unknown, if you WhenAll() with a shared transaction you lose all
+                        // But currently our TransactionScope requires that there only be a single connection at a
+                        // time, due to limitations of .NET Core 3. See ATLAS-562 for more notes.
+                        //
+                        // Due to the nature of MARS, if you WhenAll() with a shared transaction you lose all
                         // the perf benefits.
                         // 
                         // See here for more detail of the tests done, the perf results achieved and the probable
                         // cause of the problem.
                         // https://stackoverflow.com/questions/62970038/performance-of-multiple-parallel-async-sqlbulkcopy-inserts-against-different
-                        await UpsertMatchingPGroupsAtLocus(donorsWhichChangedAtThisLocus, locus, isKnownToBeCreate);
+                        if (runAllHlaInsertionsInASingleTransactionScope)
+                        {
+                            await upsertTask;
+                        }
                     }
                 }
+
+                // Note that we may have already awaited these tasks to support TransactionScope.
+                // In that case this `WhenAll` is a no-op. But it makes the difference
+                // between the two cases easy to define.
+                await Task.WhenAll(perLocusUpsertTasks);
                 transactionScope.Complete();
             }
         }

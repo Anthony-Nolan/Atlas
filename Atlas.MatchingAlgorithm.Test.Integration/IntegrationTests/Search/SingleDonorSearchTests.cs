@@ -90,7 +90,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                     HlaNames = donorHlas,
                     MatchingHla = matchingHlaPhenotype
                 };
-                donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }).Wait();
+                donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }, false).Wait();
             });
         }
 

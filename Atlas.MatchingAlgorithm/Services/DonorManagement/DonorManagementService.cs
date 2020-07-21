@@ -21,7 +21,11 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
     /// </summary>
     public interface IDonorManagementService
     {
-        Task ApplyDonorUpdatesToDatabase(IReadOnlyCollection<DonorAvailabilityUpdate> donorAvailabilityUpdates, TransientDatabase targetDatabase, string targetHlaNomenclatureVersion);
+        Task ApplyDonorUpdatesToDatabase(
+            IReadOnlyCollection<DonorAvailabilityUpdate> donorAvailabilityUpdates,
+            TransientDatabase targetDatabase,
+            string targetHlaNomenclatureVersion,
+            bool runAllHlaInsertionsInASingleTransactionScope);
     }
 
     public class DonorManagementService : IDonorManagementService
@@ -57,10 +61,11 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         public async Task ApplyDonorUpdatesToDatabase(
             IReadOnlyCollection<DonorAvailabilityUpdate> donorAvailabilityUpdates,
             TransientDatabase targetDatabase,
-            string targetHlaNomenclatureVersion)
+            string targetHlaNomenclatureVersion,
+            bool runAllHlaInsertionsInASingleTransactionScope)
         {
             var filteredUpdates = await FilterUpdates(donorAvailabilityUpdates, targetDatabase);
-            await ApplyDonorUpdates(filteredUpdates, targetDatabase, targetHlaNomenclatureVersion);
+            await ApplyDonorUpdates(filteredUpdates, targetDatabase, targetHlaNomenclatureVersion, runAllHlaInsertionsInASingleTransactionScope);
         }
 
         private async Task<List<DonorAvailabilityUpdate>> FilterUpdates(IReadOnlyCollection<DonorAvailabilityUpdate> updates, TransientDatabase targetDatabase)
@@ -152,7 +157,9 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         private async Task ApplyDonorUpdates(
             List<DonorAvailabilityUpdate> updatesList,
             TransientDatabase targetDatabase,
-            string targetHlaNomenclatureVersion)
+            string targetHlaNomenclatureVersion,
+            bool runAllHlaInsertionsInASingleTransactionScope
+            )
         {
             logger.SendTrace($"{TraceMessagePrefix}: {updatesList.Count} donor updates to be applied.");
 
@@ -168,9 +175,9 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             // Any attempt to use a single connection across multiple threads will also fail, as MARS allows queries to be "run"
             // in parallel, but not to *EXECUTE* in parallel - they get interleaved, so we lose all the benefit.
             // Hopefully DT support will comeback sooner rather than later, and we can re-parallelize the per-Loci matching PGroup writing.
-            using (var transactionScope = new AsyncTransactionScope())
+            using (var transactionScope = new OptionalAsyncTransactionScope(runAllHlaInsertionsInASingleTransactionScope))
             {
-                await AddOrUpdateDonors(availableUpdates, targetDatabase, targetHlaNomenclatureVersion);
+                await AddOrUpdateDonors(availableUpdates, targetDatabase, targetHlaNomenclatureVersion, runAllHlaInsertionsInASingleTransactionScope);
                 await SetDonorsAsUnavailableForSearch(unavailableUpdates, targetDatabase);
                 await CreateOrUpdateManagementLogBatch(recordOfUpdatesApplied, targetDatabase);
                 transactionScope.Complete();
@@ -180,7 +187,8 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         private async Task AddOrUpdateDonors(
             List<DonorAvailabilityUpdate> availableUpdates,
             TransientDatabase targetDatabase,
-            string targetHlaNomenclatureVersion)
+            string targetHlaNomenclatureVersion,
+            bool runAllHlaInsertionsInASingleTransactionScope)
         {
             var (updatesWithoutInfo, updatesWithInfo) = availableUpdates.ReifyAndSplit(upd => upd.DonorInfo == null);
 
@@ -200,7 +208,7 @@ Invalid DonorIds: " + donorIds);
             {
                 logger.SendTrace($"{TraceMessagePrefix}: {availableDonors.Count} donors to be added or updated.");
 
-                await donorService.CreateOrUpdateDonorBatch(availableDonors, targetDatabase, targetHlaNomenclatureVersion);
+                await donorService.CreateOrUpdateDonorBatch(availableDonors, targetDatabase, targetHlaNomenclatureVersion, runAllHlaInsertionsInASingleTransactionScope);
             }
         }
 

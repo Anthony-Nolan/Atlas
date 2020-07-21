@@ -13,6 +13,7 @@ using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Donors;
+using Atlas.MatchingAlgorithm.Settings;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 {
@@ -28,13 +29,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 
     public class HlaProcessor : IHlaProcessor
     {
-        private const int BatchSize = 1000;
+        private const int BatchSize = 2000; // At 1k this definitely works fine. At 4k it's been seen throwing OOM Exceptions
         private const string HlaFailureEventName = "Imported Donor Hla Processing Failure(s) in the Matching Algorithm's DataRefresh";
 
         private readonly ILogger logger;
         private readonly IDonorHlaExpanderFactory donorHlaExpanderFactory;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
+        private readonly DataRefreshSettings settings;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IPGroupRepository pGroupRepository;
@@ -44,12 +46,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             IDonorHlaExpanderFactory donorHlaExpanderFactory,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             IFailedDonorsNotificationSender failedDonorsNotificationSender,
-            IDormantRepositoryFactory repositoryFactory)
+            IDormantRepositoryFactory repositoryFactory,
+            DataRefreshSettings settings)
         {
             this.logger = logger;
             this.donorHlaExpanderFactory = donorHlaExpanderFactory;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
             this.failedDonorsNotificationSender = failedDonorsNotificationSender;
+            this.settings = settings;
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
             pGroupRepository = repositoryFactory.GetPGroupRepository();
@@ -125,7 +129,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersion);
             var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName);
             EnsureAllPGroupsExist(hlaExpansionResults.ProcessingResults);
-            await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(hlaExpansionResults.ProcessingResults);
+            await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(hlaExpansionResults.ProcessingResults, settings.DataRefreshDonorUpdatesShouldBeFullyTransactional);
 
             stopwatch.Stop();
             logger.SendTrace("Updated Donors", LogLevel.Verbose, new Dictionary<string, string>

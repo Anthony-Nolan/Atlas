@@ -22,7 +22,11 @@ namespace Atlas.MatchingAlgorithm.Api
         // Configuration has been set up by the framework via WebHost.CreateDefaultBuilder
         public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
-            // TODO: Find a better setup that works for both validation tests and local user-secrets
+            // Note that this code is also initiated by the MatchAlg Validation tests when running a virtual Server.
+            // When it does so, the appSettings file that is being looked at is the one *in the Validation folder*,
+            // so anything that this project looks for needs to be defined over there, as well as in this project's
+            // appSettings file.
+            // (Comment duplicated in Validation.ServiceConfiguration, Validation.appSettings, Api.Startup (twice), Api.appSettings)
             if (!env.ContentRootPath.Contains("Test"))
             {
                 var builder = new ConfigurationBuilder();
@@ -82,6 +86,11 @@ namespace Atlas.MatchingAlgorithm.Api
 
         private static void RegisterSettings(IServiceCollection services)
         {
+            // Note that this code is also initiated by the MatchAlg Validation tests when running a virtual Server.
+            // When it does so, the appSettings file that is being looked at is the one *in the Validation folder*,
+            // so all these properties that are being looked for need to be defined over there, as well as in this
+            // project's appSettings file.
+            // (Comment duplicated in Validation.ServiceConfiguration, Validation.appSettings, Api.Startup (twice), Api.appSettings)
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<AzureAuthenticationSettings>("AzureManagement:Authentication");
             services.RegisterAsOptions<AzureDatabaseManagementSettings>("AzureManagement:Database");

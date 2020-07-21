@@ -14,6 +14,7 @@
     "MessagingServiceBus:DonorManagement:Topic": "updated-searchable-donors",
     "MessagingServiceBus:DonorManagement:SubscriptionForDbA": "matching-transient-a",
     "MessagingServiceBus:DonorManagement:SubscriptionForDbB": "matching-transient-b",
+    "MessagingServiceBus:DonorManagement:OngoingDifferentialDonorUpdatesShouldBeFullyTransactional": "true",
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications"
