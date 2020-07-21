@@ -75,6 +75,15 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 "patient"
             );
 
+            //TODO: ATLAS-566 : Currently for patient/donor pairs the threshold is about one million before the request starts taking  >2 minuets
+            if (donorGenotypes.Count * patientGenotypes.Count > 1_000_000)
+            {
+                throw new NotImplementedException(
+                    "Calculating the MatchCounts of provided donor patient pairs would take upwards of 2 minuets." +
+                    " This code path is not currently supported for such a large data set."
+                );
+            } 
+
             var allPatientDonorCombinations = patientGenotypes.SelectMany(patientHla =>
                     donorGenotypes.Select(donorHla => new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla, donorHla)))
                 .ToList();
