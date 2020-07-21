@@ -1,4 +1,6 @@
-﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+﻿using System;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.Functions.Models.Search.Requests
 {
@@ -15,7 +17,7 @@ namespace Atlas.Functions.Models.Search.Requests
         /// Required.
         /// </summary>
         public LocusMismatchCriteria LocusMismatchA { get; set; }
-        
+
         /// <summary>
         /// Mismatch preferences for HLA at locus B.
         /// Required.
@@ -39,8 +41,22 @@ namespace Atlas.Functions.Models.Search.Requests
         /// Required.
         /// </summary>
         public LocusMismatchCriteria LocusMismatchDrb1 { get; set; }
+
+        public LocusMismatchCriteria MismatchCriteriaAtLocus(Locus locus)
+        {
+            return locus switch
+            {
+                Locus.A => LocusMismatchA,
+                Locus.B => LocusMismatchB,
+                Locus.C => LocusMismatchC,
+                Locus.Dqb1 => LocusMismatchDqb1,
+                Locus.Drb1 => LocusMismatchDrb1,
+                Locus.Dpb1 => null,
+                _ => throw new ArgumentOutOfRangeException(nameof(locus))
+            };
+        }
     }
-    
+
     public class LocusMismatchCriteria
     {
         /// <summary>
