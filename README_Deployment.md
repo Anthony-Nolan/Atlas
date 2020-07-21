@@ -63,22 +63,18 @@ Once terraform has created ATLAS resources for the first time, certain actions m
   - Service Accounts
     - Each service (e.g. matching) within ATLAS should have a service account created on the appropriate databases. The username and password for such accounts should then be set as a variable in the release pipeline.
     - Passwords should be created by a Password Generator, such as <https://passwordsgenerator.net/>.Sensible generation settings might be:
-      - 16 characters
-      - Upper, Lower, Numbers, (maybe not Symbols)
+      - 16+ characters
+      - Upper, Lower, Numbers.
+      - Special characters should not be used.
       - Exclude ambiguous letters.
       - Exclude ambiguous Symbols (if using).
     - By default, `db_datareader` and `db_datawriter` will be necessary for a given component to access its corresponding database(s)  
     - Note that the user for the matching component to access the *transient matching databases* (a and b) will need to be granted `db_owner` permission, as a `truncate table` command is used in the full data refresh, which requires elevated permissions
 
-      ```sql
-      CREATE USER [USERNAME] WITH PASSWORD = 'PASSWORD'
-      ALTER ROLE db_datareader ADD MEMBER [USERNAME]
-      -- uncomment more lines as indicated in table below
-      -- ALTER ROLE db_datawriter ADD MEMBER [USERNAME]
-      -- ALTER ROLE db_owner ADD MEMBER [USERNAME]
-      ```
+    - To ensure this happens add a Powershell task to your azure release pipeline. This should run `/terraform-atlas-core/scripts/migrate_users.ps1`, passing in the relevant variables as environment variables.
+    - This script will add appropriate roles to all accounts as listed in the table below. Note that it will not remove roles if they later should be revoked, so this should be done manually.
 
-    Expected Access Requirements:
+    Access Requirements:
 
       |Database             |User            |Permissions                 |
       |---------------------|----------------|----------------------------|
