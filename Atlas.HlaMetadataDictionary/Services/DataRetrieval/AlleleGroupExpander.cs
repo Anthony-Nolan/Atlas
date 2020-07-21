@@ -1,4 +1,5 @@
-﻿using Atlas.Common.GeneticData;
+﻿using Atlas.Common.Caching;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.InternalExceptions;
@@ -17,12 +18,16 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
     internal class AlleleGroupExpander : MetadataServiceBase<IEnumerable<string>>, IAlleleGroupExpander
     {
+        private const string CacheKey = nameof(AlleleGroupExpander);
+
         private readonly IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository;
         private readonly IHlaCategorisationService hlaCategorisationService;
 
         public AlleleGroupExpander(
-            IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository, 
-            IHlaCategorisationService hlaCategorisationService)
+            IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository,
+            IHlaCategorisationService hlaCategorisationService,
+            IPersistentCacheProvider cacheProvider)
+        : base(CacheKey, cacheProvider)
         {
             this.alleleGroupsMetadataRepository = alleleGroupsMetadataRepository;
             this.hlaCategorisationService = hlaCategorisationService;

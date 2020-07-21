@@ -1,4 +1,5 @@
-﻿using Atlas.Common.GeneticData;
+﻿using Atlas.Common.Caching;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
@@ -22,6 +23,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         SearchRelatedMetadataServiceBase<IDpb1TceGroupsMetadata>, 
         IDpb1TceGroupMetadataService
     {
+        private const string CacheKey = nameof(Dpb1TceGroupMetadataService);
         private const string NoTceGroupAssignment = "";
 
         public Dpb1TceGroupMetadataService(
@@ -30,14 +32,17 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
             IMacDictionary macDictionary,
-            IAlleleGroupExpander alleleGroupExpander
-        ) : base(
-            dpb1TceGroupsMetadataRepository,
-            alleleNamesMetadataService,
-            hlaCategorisationService,
-            alleleSplitter,
-            macDictionary,
-            alleleGroupExpander)
+            IAlleleGroupExpander alleleGroupExpander,
+            IPersistentCacheProvider cacheProvider)
+            : base(
+                dpb1TceGroupsMetadataRepository,
+                alleleNamesMetadataService,
+                hlaCategorisationService,
+                alleleSplitter,
+                macDictionary,
+                alleleGroupExpander,
+                CacheKey,
+                cacheProvider)
         {
         }
 

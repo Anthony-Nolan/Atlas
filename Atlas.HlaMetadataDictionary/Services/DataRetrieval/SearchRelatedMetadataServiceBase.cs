@@ -1,4 +1,5 @@
-﻿using Atlas.Common.GeneticData;
+﻿using Atlas.Common.Caching;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
@@ -38,7 +39,10 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
             IMacDictionary macDictionary,
-            IAlleleGroupExpander alleleGroupExpander)
+            IAlleleGroupExpander alleleGroupExpander,
+            string cacheKey,
+            IPersistentCacheProvider cacheProvider)
+            : base(cacheKey, cacheProvider)
         {
             this.hlaMetadataRepository = hlaMetadataRepository;
             this.alleleNamesMetadataService = alleleNamesMetadataService;

@@ -16,7 +16,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
     internal class HlaMatchingMetadataRepository : HlaMetadataRepositoryBase, IHlaMatchingMetadataRepository
     {
         private const string DataTableReferencePrefix = "HlaMatchingLookupData";
-        private const string CacheKey = "HlaMatchingLookup";
+        private const string CacheKey = nameof(HlaMatchingMetadataRepository);
 
         public HlaMatchingMetadataRepository(
             ICloudTableFactory factory, 

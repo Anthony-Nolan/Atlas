@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Caching;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
@@ -27,6 +28,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         SearchRelatedMetadataServiceBase<IHlaScoringMetadata>,
         IHlaScoringMetadataService
     {
+        private const string CacheKey = nameof(HlaScoringMetadataService);
         private readonly IHlaScoringMetadataRepository hlaScoringMetadataRepository;
 
         public HlaScoringMetadataService(
@@ -35,14 +37,17 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleSplitter,
             IMacDictionary macDictionary,
-            IAlleleGroupExpander alleleGroupExpander
-        ) : base(
-            hlaScoringMetadataRepository,
-            alleleNamesMetadataService,
-            hlaCategorisationService,
-            alleleSplitter,
-            macDictionary,
-            alleleGroupExpander)
+            IAlleleGroupExpander alleleGroupExpander,
+            IPersistentCacheProvider cacheProvider
+            ) : base(
+                hlaScoringMetadataRepository,
+                alleleNamesMetadataService,
+                hlaCategorisationService,
+                alleleSplitter,
+                macDictionary,
+                alleleGroupExpander,
+                CacheKey,
+                cacheProvider)
         {
             this.hlaScoringMetadataRepository = hlaScoringMetadataRepository;
         }

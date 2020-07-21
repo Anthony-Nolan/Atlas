@@ -17,7 +17,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
     internal class HlaScoringMetadataRepository : HlaMetadataRepositoryBase, IHlaScoringMetadataRepository
     {
         private const string DataTableReferencePrefix = "HlaScoringLookupData";
-        private const string CacheKey = "HlaScoringLookup";
+        private const string CacheKey = nameof(HlaScoringMetadataRepository);
 
         public HlaScoringMetadataRepository(
             ICloudTableFactory factory,
