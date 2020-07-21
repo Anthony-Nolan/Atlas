@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.Models.Search.Requests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
@@ -77,13 +78,13 @@ namespace Atlas.Functions.Services
             {
                 SearchRequestId = searchRequestId,
                 DonorId = matchingAlgorithmResult.AtlasDonorId,
-                DonorHla = matchingAlgorithmResult.DonorHla,
+                DonorHla = ExcludeHla(matchingAlgorithmResult.DonorHla, searchRequest.MatchCriteria),
                 DonorFrequencySetMetadata = new FrequencySetMetadata
                 {
                     EthnicityCode = donorInfo.EthnicityCode,
                     RegistryCode = donorInfo.RegistryCode
                 },
-                PatientHla = searchRequest.SearchHlaData.ToPhenotypeInfo(),
+                PatientHla = ExcludeHla(searchRequest.SearchHlaData.ToPhenotypeInfo(), searchRequest.MatchCriteria),
                 PatientFrequencySetMetadata = new FrequencySetMetadata
                 {
                     EthnicityCode = searchRequest.PatientEthnicityCode,
@@ -91,6 +92,15 @@ namespace Atlas.Functions.Services
                 },
                 HlaNomenclatureVersion = hlaNomenclatureVersion
             };
+        }
+
+        /// <summary>
+        /// If a locus did not have match criteria provided, we do not want to calculate match probabilities at that locus -
+        /// so we set the patient and donor hla to null for the purposes of match prediction 
+        /// </summary>
+        private static PhenotypeInfo<string> ExcludeHla(PhenotypeInfo<string> hla, MismatchCriteria mismatchCriteria)
+        {
+            return hla.Map((locus, data) => mismatchCriteria.MismatchCriteriaAtLocus(locus) == null ? null : data);
         }
     }
 }
