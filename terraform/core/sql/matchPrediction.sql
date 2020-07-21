@@ -9,5 +9,7 @@ ELSE
 
 BEGIN
 	ALTER USER $(matchPredictionUsername) WITH PASSWORD = '$(matchPredictionPassword)'
+  ALTER ROLE db_datareader ADD MEMBER $(matchPredictionUsername)
+  ALTER ROLE db_datawriter ADD MEMBER $(matchPredictionUsername)
 END
 
