@@ -1,7 +1,6 @@
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Data.Extensions;
-using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
@@ -11,6 +10,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 
@@ -20,8 +20,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 {
     public class DonorUpdateRepository : DonorUpdateRepositoryBase, IDonorUpdateRepository
     {
-        public DonorUpdateRepository(IPGroupRepository pGroupRepository, IConnectionStringProvider connectionStringProvider) : base(pGroupRepository,
-            connectionStringProvider)
+        public DonorUpdateRepository(
+            IPGroupRepository pGroupRepository,
+            IConnectionStringProvider connectionStringProvider,
+            ILogger logger)
+            :base(pGroupRepository, connectionStringProvider, logger)
         {
         }
 
@@ -35,7 +38,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        public async Task InsertBatchOfDonorsWithExpandedHla(IEnumerable<DonorInfoWithExpandedHla> donors, bool runAllHlaInsertionsInASingleTransactionScope)
+        public async Task InsertBatchOfDonorsWithExpandedHla(
+            IEnumerable<DonorInfoWithExpandedHla> donors,
+            bool runAllHlaInsertionsInASingleTransactionScope)
         {
             donors = donors.ToList();
 

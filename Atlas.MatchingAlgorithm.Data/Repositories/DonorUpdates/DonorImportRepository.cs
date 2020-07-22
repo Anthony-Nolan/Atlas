@@ -1,10 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
+using LoggingStopwatch;
 using Microsoft.Data.SqlClient;
 
 // ReSharper disable InconsistentNaming
@@ -47,7 +50,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// Adds pre-processed matching p-groups for a batch of donors
         /// Used when adding donors
         /// </summary>
-        Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donors, bool runAllHlaInsertionsInASingleTransactionScope);
+        Task AddMatchingPGroupsForExistingDonorBatch(
+            IEnumerable<DonorInfoWithExpandedHla> donors,
+            bool runAllHlaInsertionsInASingleTransactionScope,
+            ILongOperationLoggingStopwatch donorInsertTimer,
+            ILongOperationLoggingStopwatch pGroupInsertTimer);
 
         Task RemovePGroupsForDonorBatch(IEnumerable<int> donorIds);
     }
@@ -56,7 +63,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
     {
         public DonorImportRepository(
             IPGroupRepository pGroupRepository,
-            IConnectionStringProvider connectionStringProvider) : base(pGroupRepository, connectionStringProvider)
+            IConnectionStringProvider connectionStringProvider,
+            ILogger logger) : base(pGroupRepository, connectionStringProvider, logger)
         {
         }
 
@@ -116,15 +124,31 @@ END
 
         public async Task CreateHlaTableIndexes()
         {
-            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            var logSettings = new LongLoggingSettings
             {
-                foreach (var table in HlaTables)
+                ExpectedNumberOfIterations = HlaTables.Length * 2,
+                InnerOperationLoggingPeriod = 1,
+                ReportProjectedCompletionTime = false,
+                ReportPercentageCompletion = false,
+            };
+            var text = "Creating HLA Table Indexes. Tables in order: A, B, C, Drb1, Dqb1. PGroup then DonorId, for each table.";
+            using (var timer = logger.RunLongOperationWithTimer(text, logSettings))
+            {
+                await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
                 {
-                    var pGroupIndexSql = BuildPGroupIndexSqlFor(table);
-                    await conn.ExecuteAsync(pGroupIndexSql, commandTimeout: 7200);
-
-                    var donorIdIndexSql = BuildDonorIdIndexSqlFor(table);
-                    await conn.ExecuteAsync(donorIdIndexSql, commandTimeout: 7200);
+                    foreach (var table in HlaTables)
+                    {
+                        using (timer.TimeInnerOperation())
+                        {
+                            var pGroupIndexSql = BuildPGroupIndexSqlFor(table);
+                            await conn.ExecuteAsync(pGroupIndexSql, commandTimeout: 7200);
+                        }
+                        using (timer.TimeInnerOperation())
+                        {
+                            var donorIdIndexSql = BuildDonorIdIndexSqlFor(table);
+                            await conn.ExecuteAsync(donorIdIndexSql, commandTimeout: 7200);
+                        }
+                    }
                 }
             }
         }

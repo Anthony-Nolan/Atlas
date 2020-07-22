@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
@@ -14,6 +15,7 @@ using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
 using EnumStringValues;
+using LoggingStopwatch;
 using Microsoft.Data.SqlClient;
 
 // ReSharper disable InconsistentNaming
@@ -23,6 +25,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
     public abstract class DonorUpdateRepositoryBase : Repository
     {
         protected readonly IPGroupRepository pGroupRepository;
+        protected readonly ILogger logger;
 
         // The order of these matters when setting up the datatable - if re-ordering, also re-order datatable contents
         private readonly string[] donorInsertDataTableColumnNames =
@@ -55,9 +58,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
         protected DonorUpdateRepositoryBase(
             IPGroupRepository pGroupRepository,
-            IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
+            IConnectionStringProvider connectionStringProvider,
+            ILogger logger) : base(connectionStringProvider)
         {
             this.pGroupRepository = pGroupRepository;
+            this.logger = logger;
         }
 
         public async Task InsertBatchOfDonors(IEnumerable<DonorInfo> donors)
@@ -74,13 +79,22 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             await BulkInsertDataTable("Donors", dataTable, donorInsertDataTableColumnNames);
         }
 
-        public async Task AddMatchingPGroupsForExistingDonorBatch(IEnumerable<DonorInfoWithExpandedHla> donorInfos, bool runAllHlaInsertionsInASingleTransactionScope)
+        public async Task AddMatchingPGroupsForExistingDonorBatch(
+            IEnumerable<DonorInfoWithExpandedHla> donorInfos,
+            bool runAllHlaInsertionsInASingleTransactionScope,
+            ILongOperationLoggingStopwatch pGroupLinearWaitTimer = null,
+            ILongOperationLoggingStopwatch pGroupDbInsertTimer = null)
         {
             var donorsWithUpdatesAtEveryLocus = donorInfos
                 .Select(info => new DonorWithChangedMatchingLoci(info, LocusSettings.MatchingOnlyLoci))
                 .ToList();
 
-            await UpsertMatchingPGroupsAtSpecifiedLoci(donorsWithUpdatesAtEveryLocus, true, runAllHlaInsertionsInASingleTransactionScope);
+            await UpsertMatchingPGroupsAtSpecifiedLoci(
+                donorsWithUpdatesAtEveryLocus, 
+                true,
+                runAllHlaInsertionsInASingleTransactionScope,
+                pGroupLinearWaitTimer,
+                pGroupDbInsertTimer);
         }
 
         protected class DonorWithChangedMatchingLoci
@@ -95,7 +109,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             }
         }
 
-        protected async Task UpsertMatchingPGroupsAtSpecifiedLoci(List<DonorWithChangedMatchingLoci> donors, bool isKnownToBeCreate, bool runAllHlaInsertionsInASingleTransactionScope)
+        protected async Task UpsertMatchingPGroupsAtSpecifiedLoci(
+            List<DonorWithChangedMatchingLoci> donors,
+            bool isKnownToBeCreate,
+            bool runAllHlaInsertionsInASingleTransactionScope,
+            ILongOperationLoggingStopwatch pGroupLinearWaitTimer = null,
+            ILongOperationLoggingStopwatch pGroupDbInsertTimer = null)
         {
             using (var transactionScope = new OptionalAsyncTransactionScope(runAllHlaInsertionsInASingleTransactionScope))
             {
@@ -109,7 +128,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
                     if (donorsWhichChangedAtThisLocus.Any())
                     {
-                        var upsertTask = UpsertMatchingPGroupsAtLocus(donorsWhichChangedAtThisLocus, locus, isKnownToBeCreate);
+                        var upsertTask = UpsertMatchingPGroupsAtLocus(donorsWhichChangedAtThisLocus, locus, isKnownToBeCreate, pGroupDbInsertTimer);
                         perLocusUpsertTasks.Add(upsertTask);
 
                         // This is a bit sad.
@@ -128,7 +147,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                         // https://stackoverflow.com/questions/62970038/performance-of-multiple-parallel-async-sqlbulkcopy-inserts-against-different
                         if (runAllHlaInsertionsInASingleTransactionScope)
                         {
-                            await upsertTask;
+                            using (pGroupLinearWaitTimer?.TimeInnerOperation())
+                            {
+                                await upsertTask;
+                            }
                         }
                     }
                 }
@@ -136,12 +158,18 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 // Note that we may have already awaited these tasks to support TransactionScope.
                 // In that case this `WhenAll` is a no-op. But it makes the difference
                 // between the two cases easy to define.
-                await Task.WhenAll(perLocusUpsertTasks);
+                using (pGroupLinearWaitTimer?.TimeInnerOperation())
+                {
+                    await Task.WhenAll(perLocusUpsertTasks);
+                }
                 transactionScope.Complete();
             }
         }
 
-        private async Task UpsertMatchingPGroupsAtLocus(List<DonorInfoWithExpandedHla> donors, Locus locus, bool isKnownToBeCreate)
+        private async Task UpsertMatchingPGroupsAtLocus(
+            List<DonorInfoWithExpandedHla> donors,
+            Locus locus, bool isKnownToBeCreate,
+            ILongOperationLoggingStopwatch pGroupDbInsertTimer = null)
         {
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
             var dataTable = BuildPerLocusPGroupDataTable(donors, locus);
@@ -164,7 +192,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     matchingTableName,
                     dataTable,
                     donorPGroupDataTableColumnNames,
-                    timeout: 14400);
+                    timeout: 14400,
+                    pGroupDbInsertTimer);
 
                 transactionScope.Complete();
             }
@@ -245,12 +274,14 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             string tableName,
             DataTable dataTable,
             string[] columnNames,
-            int timeout = 3600)
+            int timeout = 3600,
+            ILongOperationLoggingStopwatch longLoopDbWriteTimer = null)
         {
-                using (var sqlBulk = BuildSqlBulkCopy(tableName, columnNames, timeout))
-                {
-                    await sqlBulk.WriteToServerAsync(dataTable);
-                }
+            using (longLoopDbWriteTimer?.TimeInnerOperation())
+            using (var sqlBulk = BuildSqlBulkCopy(tableName, columnNames, timeout))
+            {
+                await sqlBulk.WriteToServerAsync(dataTable);
+            }
         }
 
         private SqlBulkCopy BuildSqlBulkCopy(string tableName, string[] columnNames, int timeout = 3600)

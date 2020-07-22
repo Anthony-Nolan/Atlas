@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
@@ -21,9 +22,15 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
     public class StaticallyChosenDatabaseRepositoryFactory : IStaticallyChosenDatabaseRepositoryFactory
     {
         private readonly StaticallyChosenTransientSqlConnectionStringProviderFactory connectionStringProviderFactory;
-        public StaticallyChosenDatabaseRepositoryFactory(StaticallyChosenTransientSqlConnectionStringProviderFactory connectionStringProviderFactory)
+        private readonly ILogger logger;
+
+        public StaticallyChosenDatabaseRepositoryFactory(
+            StaticallyChosenTransientSqlConnectionStringProviderFactory connectionStringProviderFactory,
+            ILogger logger
+            )
         {
             this.connectionStringProviderFactory = connectionStringProviderFactory;
+            this.logger = logger;
         }
 
         private class AvailableRepositories
@@ -67,7 +74,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         public IDonorUpdateRepository GetDonorUpdateRepositoryForDatabase(TransientDatabase targetDatabase)
         {
             var available = cachedRepositories[targetDatabase];
-            return available.DonorUpdate ?? (available.DonorUpdate = new DonorUpdateRepository(GetPGroupRepositoryForDatabase(targetDatabase), GetConnectionStringProvider(targetDatabase)));
+            return available.DonorUpdate ?? (available.DonorUpdate = new DonorUpdateRepository(GetPGroupRepositoryForDatabase(targetDatabase), GetConnectionStringProvider(targetDatabase), logger));
         }
     }
 }
