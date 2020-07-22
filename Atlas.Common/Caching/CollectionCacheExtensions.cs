@@ -167,10 +167,13 @@ namespace Atlas.Common.Caching
         {
             var semaphore = GetCollectionSemaphore(collectionCacheKey);
 
+            // The cache of this collection is currently being populated for key, do not either wait for cache to complete, or kick off new cache population.
             if (CollectionIsCurrentlyBeingCached(collectionCacheKey))
             {
-                // The cache of this collection is currently being populated for key, do not either wait for cache to complete, or kick off new cache population.
-                return await semaphore.WaitAndRunAsync(async () => await fetchSingleItemDirectly());
+                using (await semaphore.SemaphoreSlot())
+                {
+                    return await fetchSingleItemDirectly();
+                }
             }
 
             //See docs on CollectionCacheKeysBeingPopulatedInBackground, for the possible return values here.
@@ -178,7 +181,7 @@ namespace Atlas.Common.Caching
             if (cachedCollection == null)
             {
                 // Item is neither in the cache, nor being populated.
-                return await semaphore.WaitAndRunAsync(async () =>
+                using (await semaphore.SemaphoreSlot())
                 {
                     // So the first thing we want to do is initiate a read of the single item.
                     var desiredSingleItemTask = fetchSingleItemDirectly();
@@ -190,7 +193,7 @@ namespace Atlas.Common.Caching
 #pragma warning restore 4014
 
                     return await desiredSingleItemTask;
-                });
+                }
             }
 
             return readSingleItemFromCollection(cachedCollection);
