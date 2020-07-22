@@ -144,7 +144,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.AddScoped<IThreadSleeper, ThreadSleeper>();
 
-            services.AddScoped<ISearchRequestContext, SearchRequestContext>();
+            services.AddScoped<ISearchRequestLoggingContext, SearchRequestLoggingContext>();
             services.AddApplicationInsightsTelemetryWorkerService();
             services.AddScoped<ILogger, SearchRequestAwareLogger>();
 

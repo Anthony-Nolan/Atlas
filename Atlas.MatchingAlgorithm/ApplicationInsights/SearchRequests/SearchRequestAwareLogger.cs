@@ -8,19 +8,19 @@ namespace Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests
     {
         private const string SearchRequestIdPropName = "SearchRequestId";
 
-        private readonly ISearchRequestContext context;
+        private readonly ISearchRequestLoggingContext loggingContext;
 
         public SearchRequestAwareLogger(
-            ISearchRequestContext context,
+            ISearchRequestLoggingContext loggingContext,
             TelemetryClient client, 
             ApplicationInsightsSettings applicationInsightsSettings) : base(client, applicationInsightsSettings)
         {
-            this.context = context;
+            this.loggingContext = loggingContext;
         }
 
         public override void SendEvent(EventModel eventModel)
         {
-            var searchRequestId = context.SearchRequestId;
+            var searchRequestId = loggingContext.SearchRequestId;
 
             if (!string.IsNullOrEmpty(searchRequestId))
             {
@@ -34,7 +34,7 @@ namespace Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests
         {
             props ??= new Dictionary<string, string>();
 
-            var searchRequestId = context.SearchRequestId;
+            var searchRequestId = loggingContext.SearchRequestId;
             if (!string.IsNullOrEmpty(searchRequestId))
             {
                 props.Add(SearchRequestIdPropName, searchRequestId);

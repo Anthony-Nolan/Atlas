@@ -38,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             resultsBlobStorageClient = Substitute.For<IResultsBlobStorageClient>();
             hlaNomenclatureVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
             var logger = Substitute.For<ILogger>();
-            var context = Substitute.For<ISearchRequestContext>();
+            var context = Substitute.For<ISearchRequestLoggingContext>();
 
             searchRunner = new SearchRunner(
                 searchServiceBusClient,
