@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.TableStorage;
 using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
@@ -10,6 +11,7 @@ using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using LazyCache;
+using LoggingStopwatch;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
@@ -93,26 +95,24 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 
         private async Task<Dictionary<string, TTableRow>> FetchAllRowsInTable(string hlaNomenclatureVersion)
         {
-            return await Logger.RunTimedAsync(async () =>
-                {
-                    var currentDataTable = await GetVersionedDataTable(hlaNomenclatureVersion);
-                    var tableResults = new CloudTableBatchQueryAsync<TTableRow>(currentDataTable);
-                    var dataToLoad = new Dictionary<string, TTableRow>();
+            var operationDescription = $"Fetch and cache Hla Metadata Dictionary data: {cacheKey} at version: '{hlaNomenclatureVersion}'.";
+            using (Logger.RunTimed(operationDescription))
+            {
+                var currentDataTable = await GetVersionedDataTable(hlaNomenclatureVersion);
+                var tableResults = new CloudTableBatchQueryAsync<TTableRow>(currentDataTable);
+                var dataToLoad = new Dictionary<string, TTableRow>();
 
-                    while (tableResults.HasMoreResults)
+                while (tableResults.HasMoreResults)
+                { 
+                    var results = await tableResults.RequestNextAsync();
+                    foreach (var result in results)
                     {
-                        var results = await tableResults.RequestNextAsync();
-                        foreach (var result in results)
-                        {
-                            dataToLoad.Add(RowPrimaryKey(result.PartitionKey, result.RowKey), result);
-                        }
+                        dataToLoad.Add(RowPrimaryKey(result.PartitionKey, result.RowKey), result);
                     }
+                }
 
-                    return dataToLoad;
-                },
-                $"Fetched and cached Hla Metadata Dictionary data: {cacheKey}",
-                customProperties: new Dictionary<string, string> {{"HlaNomenclatureVersion", hlaNomenclatureVersion}}
-            );
+                return dataToLoad;
+            }
         }
 
         private static string RowPrimaryKey(string partitionKey, string rowKey) => partitionKey + rowKey;

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
@@ -66,12 +67,11 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
 
         private async Task<Dictionary<string, string>> BuildGGroupToPGroupDictionary(Locus locus, string hlaNomenclatureVersion)
         {
-            return await logger.RunTimedAsync(async () =>
-                {
-                    var perLocusGGroups = (await scoringMetadataService.GetAllGGroups(hlaNomenclatureVersion))[locus];
-                    return await BuildPerLocusGGroupToPGroupDictionary(locus, perLocusGGroups, hlaNomenclatureVersion);
-                },
-                $"Calculated GGroup to PGroup lookup for locus {locus}");
+            using (logger.RunTimed($"Calculate GGroup to PGroup lookup for locus {locus}"))
+            {
+                var perLocusGGroups = (await scoringMetadataService.GetAllGGroups(hlaNomenclatureVersion))[locus];
+                return await BuildPerLocusGGroupToPGroupDictionary(locus, perLocusGGroups, hlaNomenclatureVersion);
+            }
         }
 
         private async Task<Dictionary<string, string>> BuildPerLocusGGroupToPGroupDictionary(

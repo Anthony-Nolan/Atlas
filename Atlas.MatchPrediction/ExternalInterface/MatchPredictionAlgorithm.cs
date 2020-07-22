@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -33,12 +34,11 @@ namespace Atlas.MatchPrediction.ExternalInterface
         /// <inheritdoc />
         public async Task<MatchProbabilityResponse> RunMatchPredictionAlgorithm(MatchProbabilityInput matchProbabilityInput)
         {
-            var result = await logger.RunTimedAsync(
-                async () => await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput),
-                "Match Prediction Algorithm Completed"
-            );
-
-            return result.Round(4);
+            using (logger.RunTimed("Run Match Prediction Algorithm"))
+            {
+                var result = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+                return result.Round(4);
+            }
         }
 
         public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet(HaplotypeFrequencySetInput haplotypeFrequencySetInput)
