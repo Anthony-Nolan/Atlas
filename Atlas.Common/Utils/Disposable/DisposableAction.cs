@@ -16,6 +16,10 @@ namespace Atlas.Common.Utils.Disposable
         }
 
         /// <inheritdoc />
+        /// <remarks>
+        /// Implementations of Dispose must be Idempotent, but we do not require <see cref="onDispose"/> to be idempotent.
+        /// Hence we track the disposed status with <see cref="hasDisposed"/> to avoid calling the action multiple times. 
+        /// </remarks>
         public void Dispose()
         {
             if (!hasDisposed)
