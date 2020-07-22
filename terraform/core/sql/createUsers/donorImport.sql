@@ -1,14 +1,14 @@
-IF USER_ID('$(matchingUsername)') IS NULL
+IF USER_ID('$(matchingUsernameForDonorDB)') IS NULL
 BEGIN 
-	CREATE USER $(matchingUsername) WITH PASSWORD = '$(matchingPassword)';
-  ALTER ROLE db_datareader ADD MEMBER $(matchingUsername)
+	CREATE USER $(matchingUsernameForDonorDB) WITH PASSWORD = '$(matchingPasswordForDonorDB)';
+  ALTER ROLE db_datareader ADD MEMBER $(matchingUsernameForDonorDB)
 END
 
 ELSE
 
 BEGIN
-	ALTER USER $(matchingUsername) WITH PASSWORD = '$(matchingPassword)';
-	ALTER ROLE db_datareader ADD MEMBER $(matchingUsername)
+	ALTER USER $(matchingUsernameForDonorDB) WITH PASSWORD = '$(matchingPasswordForDonorDB)';
+	ALTER ROLE db_datareader ADD MEMBER $(matchingUsernameForDonorDB)
 END
 
 

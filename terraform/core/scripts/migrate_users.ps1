@@ -4,7 +4,9 @@ $variablesArray =
 "matchPredictionUsername=$env:matchPredictionUser",
 "matchPredictionPassword=$env:matchPredictionPassword",
 "donorImportUsername=$env:donorImportUser",
-"donorImportPassword=$env:donorImportPassword"
+"donorImportPassword=$env:donorImportPassword",
+"matchingUsernameForDonorDB=$env:matchingUsernameForDonorDB",
+"matchingPasswordForDonorDB=$env:matchingPasswordForDonorDB"
 
 Write-Host $variablesArray
 
