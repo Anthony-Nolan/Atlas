@@ -2,11 +2,11 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
-using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
@@ -49,31 +49,25 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
         public async Task<IEnumerable<MatchingAlgorithmResult>> Search(MatchingRequest matchingRequest)
         {
-            var criteria = await logger.RunTimedAsync(
-                async () => await GetMatchCriteria(matchingRequest),
-                $"{LoggingPrefix}Expanded patient HLA."
-            );
+            var expansionTimer = logger.RunTimed($"{LoggingPrefix}Expand patient HLA");
+                var criteria = await GetMatchCriteria(matchingRequest);
+            expansionTimer.Dispose();
 
-            var matches = await logger.RunTimedAsync(
-                async () => (await matchingService.GetMatches(criteria)).ToList(),
-                $"{LoggingPrefix}Matching complete"
-            );
+            var matchingTimer = logger.RunTimed($"{LoggingPrefix}Matching");
+                var matches = (await matchingService.GetMatches(criteria)).ToList();
+            matchingTimer.Dispose();
 
             logger.SendTrace($"{LoggingPrefix}Matched {matches.Count} donors.");
-
-            var scoredMatches = await logger.RunTimedAsync(
-                async () =>
+            
+            var scoringTimer = logger.RunTimed($"{LoggingPrefix}Scoring");
+                var request = new MatchResultsScoringRequest
                 {
-                    var request = new MatchResultsScoringRequest
-                    {
-                        PatientHla = matchingRequest.SearchHlaData,
-                        MatchResults = matches,
-                        ScoringCriteria = matchingRequest.ScoringCriteria
-                    };
-                    return await donorScoringService.ScoreMatchesAgainstPatientHla(request);
-                },
-                $"{LoggingPrefix}Scoring complete"
-            );
+                    PatientHla = matchingRequest.SearchHlaData,
+                    MatchResults = matches,
+                    ScoringCriteria = matchingRequest.ScoringCriteria
+                };
+                var scoredMatches= await donorScoringService.ScoreMatchesAgainstPatientHla(request);
+            scoringTimer.Dispose();
 
             return scoredMatches.Select(MapSearchResultToApiSearchResult);
         }

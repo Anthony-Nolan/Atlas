@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
@@ -37,19 +38,16 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         private async Task<IDictionary<Locus, List<string>>> CalculateAllGGroups(string hlaNomenclatureVersion)
         {
             var metadataDictionary = await TableData(hlaNomenclatureVersion);
-            return Logger.RunTimed(
-                () =>
-                {
-                    var byLocus = metadataDictionary.Values.GroupBy(v => v.Locus);
-                    return byLocus.ToDictionary(
-                        g => g.Key,
-                        g => new HashSet<string>(g.SelectMany(v => v.ToHlaScoringMetadata()?.HlaScoringInfo.MatchingGGroups))
-                            .Where(x => x != null)
-                            .ToList()
-                    );
-                },
-                "Calculated all GGroups"
-            );
+            using (Logger.RunTimed("Calculate all GGroups"))
+            {
+                var byLocus = metadataDictionary.Values.GroupBy(v => v.Locus);
+                return byLocus.ToDictionary(
+                    g => g.Key,
+                    g => new HashSet<string>(g.SelectMany(v => v.ToHlaScoringMetadata()?.HlaScoringInfo.MatchingGGroups))
+                        .Where(x => x != null)
+                        .ToList()
+                );
+            }
         }
     }
 }
