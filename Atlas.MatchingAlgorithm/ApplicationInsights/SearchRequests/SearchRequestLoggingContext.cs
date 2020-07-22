@@ -2,12 +2,12 @@
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests
 {
-    public interface ISearchRequestContext
+    public interface ISearchRequestLoggingContext
     {
         string SearchRequestId { get; set; }
     }
 
-    public class SearchRequestContext : ISearchRequestContext
+    public class SearchRequestLoggingContext : ISearchRequestLoggingContext
     {
         private string searchRequestId;
 
