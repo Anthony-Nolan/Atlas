@@ -116,6 +116,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ManualTesting", "ManualTest
 		README_ManualTesting.md = README_ManualTesting.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.MatchPrediction.Test.Verification", "Atlas.MatchPrediction.Test.Verification\Atlas.MatchPrediction.Test.Verification.csproj", "{2D4D9130-B6B4-49CD-BFB8-FB2779277220}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -309,6 +311,12 @@ Global
 		{DA4729BC-8829-474F-9DDC-257F61AC07BC}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{DA4729BC-8829-474F-9DDC-257F61AC07BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA4729BC-8829-474F-9DDC-257F61AC07BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D4D9130-B6B4-49CD-BFB8-FB2779277220}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D4D9130-B6B4-49CD-BFB8-FB2779277220}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D4D9130-B6B4-49CD-BFB8-FB2779277220}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D4D9130-B6B4-49CD-BFB8-FB2779277220}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{2D4D9130-B6B4-49CD-BFB8-FB2779277220}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D4D9130-B6B4-49CD-BFB8-FB2779277220}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -345,6 +353,7 @@ Global
 		{506F18FC-DAF2-4DE5-B853-F50E5638EC11} = {86922A44-CA43-4DC8-A6A0-3973117C77EB}
 		{DA4729BC-8829-474F-9DDC-257F61AC07BC} = {DCB9E81B-16A1-4D0D-BB02-42A138B4D078}
 		{122DA7C4-50ED-45A5-97D9-9CFC3391A87B} = {E5979876-0294-475D-8970-A384B2DDEB8C}
+		{2D4D9130-B6B4-49CD-BFB8-FB2779277220} = {EF1B180D-37D3-4A7A-9F2D-0E7DF3F14D36}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB0B0AD5-58AC-4CDF-826D-C653D03DC2AC}
