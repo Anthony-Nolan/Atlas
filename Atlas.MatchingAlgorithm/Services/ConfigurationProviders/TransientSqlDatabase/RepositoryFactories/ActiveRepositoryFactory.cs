@@ -18,9 +18,8 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 
         // ReSharper disable once SuggestBaseTypeForParameter
         public ActiveRepositoryFactory(ActiveTransientSqlConnectionStringProvider activeConnectionStringProvider, ILogger logger)
-            : base(activeConnectionStringProvider)
+            : base(activeConnectionStringProvider, logger)
         {
-            this.logger = logger;
         }
 
         public IDonorSearchRepository GetDonorSearchRepository()
