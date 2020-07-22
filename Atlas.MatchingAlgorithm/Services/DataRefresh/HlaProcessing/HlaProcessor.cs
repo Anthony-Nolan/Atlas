@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights;
@@ -14,6 +15,7 @@ using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Settings;
+using LoggingStopwatch;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 {
@@ -78,28 +80,51 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         {
             var totalDonorCount = await dataRefreshRepository.GetDonorCount();
             var batchedDonors = await dataRefreshRepository.NewOrderedDonorBatchesToImport(BatchSize, continueExistingProcessing);
-            var (donorsProcessed, lastDonorIdSuspectedOfBeingReprocessed) = await DetermineProgressAndReprocessingBoundaries(batchedDonors, continueExistingProcessing);
+            var (donorsPreviouslyProcessed, lastDonorIdSuspectedOfBeingReprocessed) = await DetermineProgressAndReprocessingBoundaries(batchedDonors, continueExistingProcessing);
             var failedDonors = new List<FailedDonorInfo>();
+            var donorsToImport = totalDonorCount - donorsPreviouslyProcessed;
 
             if (continueExistingProcessing)
             {
-                logger.SendTrace($"Hla Processing continuing, from {Decimal.Divide(donorsProcessed, totalDonorCount):0.00%} complete");
+                logger.SendTrace($"Hla Processing continuing. {donorsPreviouslyProcessed} donors previously processed. {donorsToImport} remain.");
             }
             
-            foreach (var donorBatch in batchedDonors)
+            var progressReports = new LongLoggingSettings
             {
-                var donorsInBatch = donorBatch.Count;
+                ExpectedNumberOfIterations = batchedDonors.Count,
+                InnerOperationLoggingPeriod = 10, // Note this is every 10 *Batches*
+                ReportPercentageCompletion = true,
+                ReportProjectedCompletionTime = true
+            };
+            var summaryReportOnly = new LongLoggingSettings { InnerOperationLoggingPeriod = int.MaxValue };
+            var summaryReportWithThreadingBreakdown = new LongLoggingSettings { InnerOperationLoggingPeriod = int.MaxValue, ReportPerThreadTime = true};
+            using (var batchProgressTimer = logger.RunLongOperationWithTimer($"Hla Batch Overall Processing. Inner Operation is UpdateDonorBatch", progressReports))
+            using (var hlaExpansionTimer = logger.RunLongOperationWithTimer($"Hla Expansion during HlaProcessing", summaryReportOnly))
+            using (var pGroupLinearWaitTimer = logger.RunLongOperationWithTimer($"Linear wait on HlaInsert during HlaProcessing", summaryReportOnly))
+            using (var pGroupInsertTimer = logger.RunLongOperationWithTimer($"Parallel Write time on HlaInsert during HlaProcessing", summaryReportWithThreadingBreakdown))
+            {
+                foreach (var donorBatch in batchedDonors)
+                {
+                    var donorsInBatch = donorBatch.Count;
 
-                // When continuing a donor import there will be some overlap of donors to ensure all donors are processed. 
-                // This ensures we do not end up with duplicate p-groups in the matching hla tables
-                // We do not want to attempt to remove p-groups for all batches as it would be detrimental to performance, so we limit it to the first two batches
-                var shouldRemovePGroups = donorBatch.First().DonorId <= lastDonorIdSuspectedOfBeingReprocessed;
+                    // When continuing a donor import there will be some overlap of donors to ensure all donors are processed. 
+                    // This ensures we do not end up with duplicate p-groups in the matching hla tables
+                    // We do not want to attempt to remove p-groups for all batches as it would be detrimental to performance, so we limit it to the first two batches
+                    var shouldRemovePGroups = donorBatch.First().DonorId <= lastDonorIdSuspectedOfBeingReprocessed;
 
-                var failedDonorsFromBatch = await UpdateDonorBatch(donorBatch, hlaNomenclatureVersion, shouldRemovePGroups);
-                failedDonors.AddRange(failedDonorsFromBatch);
-
-                donorsProcessed += donorsInBatch;
-                logger.SendTrace($"Hla Processing {Decimal.Divide(donorsProcessed, totalDonorCount):0.00%} complete");
+                    using (batchProgressTimer.TimeInnerOperation())
+                    {
+                        var failedDonorsFromBatch = await UpdateDonorBatch(
+                            donorBatch,
+                            hlaNomenclatureVersion,
+                            shouldRemovePGroups,
+                            hlaExpansionTimer,
+                            pGroupLinearWaitTimer,
+                            pGroupInsertTimer
+                            );
+                        failedDonors.AddRange(failedDonorsFromBatch);
+                    }
+                }
             }
 
             if (failedDonors.Any())
@@ -145,28 +170,28 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         private async Task<IEnumerable<FailedDonorInfo>> UpdateDonorBatch(
             List<DonorInfo> donorBatch,
             string hlaNomenclatureVersion,
-            bool shouldRemovePGroups)
+            bool shouldRemovePGroups,
+            LongOperationLoggingStopwatch hlaExpansionTimer,
+            LongOperationLoggingStopwatch pGroupLinearWaitTimer,
+            LongOperationLoggingStopwatch pGroupInsertTimer)
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
             if (shouldRemovePGroups)
             {
                 await donorImportRepository.RemovePGroupsForDonorBatch(donorBatch.Select(d => d.DonorId));
             }
-
             var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersion);
-            var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName);
+
+            var timedInnerOperation = hlaExpansionTimer.TimeInnerOperation();
+                var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName);
+            timedInnerOperation.Dispose();
+
             EnsureAllPGroupsExist(hlaExpansionResults.ProcessingResults);
 
-            await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(hlaExpansionResults.ProcessingResults, settings.DataRefreshDonorUpdatesShouldBeFullyTransactional);
-
-            stopwatch.Stop();
-            logger.SendTrace("Updated Donors", LogLevel.Verbose, new Dictionary<string, string>
-            {
-                {"NumberOfDonors", hlaExpansionResults.ProcessingResults.Count.ToString()},
-                {"UpdateTime", stopwatch.ElapsedMilliseconds.ToString()}
-            });
+            await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(
+                hlaExpansionResults.ProcessingResults,
+                settings.DataRefreshDonorUpdatesShouldBeFullyTransactional,
+                pGroupLinearWaitTimer,
+                pGroupInsertTimer);
 
             return hlaExpansionResults.FailedDonors;
         }
@@ -193,32 +218,32 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         {
             try
             {
-                logger.SendTrace("HLA PROCESSOR: Caching HlaMetadataDictionary tables");
+                using (logger.RunTimed("HLA PROCESSOR: Caching HlaMetadataDictionary tables", LogLevel.Info, true))
+                {
+                    // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
+                    var dictionaryCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaNomenclatureVersion);
+                    await dictionaryCacheControl.PreWarmAllCaches();
+                }
 
-                // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
-                var dictionaryCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaNomenclatureVersion);
-                await dictionaryCacheControl.PreWarmAllCaches();
-
-                logger.SendTrace("HLA PROCESSOR: Inserting new P-Groups to database");
-
-                // P Groups are inserted upfront, for performance reasons. All groups are extracted from the
-                // HlaMetadataDictionary, and any that are new are added to the SQL database.
-                //
-                // In most realistic continuations this step could be skipped, but it's just about possible that
-                // the previous import could have been killed during the Pre-Warm, in which case the PGroups might
-                // not have been inserted yet.
-                //
-                // Fortunately, since we've pre-warmed the cache, the PGroup fetch will be instantaneous and the
-                // PGroupInsertion filters existing PGroups, so it will end up being a no-op if this is repeated.
-                // So it should be almost instantaneous for a continuation.
-                //
-                // Lastly it only takes a few seconds to run even the first time it's run, so there's no realistic
-                // bad out-come from allowing it to re-run.
-                var hlaDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
-                var pGroups = await hlaDictionary.GetAllPGroups();
-                pGroupRepository.InsertPGroups(pGroups);
-
-                logger.SendTrace("HLA PROCESSOR: P-Groups inserted.");
+                using (logger.RunTimed("HLA PROCESSOR: Inserting new P-Groups to database", LogLevel.Info, true))
+                {
+                    // P Groups are inserted upfront, for performance reasons. All groups are extracted from the
+                    // HlaMetadataDictionary, and any that are new are added to the SQL database.
+                    //
+                    // In most realistic continuations this step could be skipped, but it's just about possible that
+                    // the previous import could have been killed during the Pre-Warm, in which case the PGroups might
+                    // not have been inserted yet.
+                    //
+                    // Fortunately, since we've pre-warmed the cache, the PGroup fetch will be instantaneous and the
+                    // PGroupInsertion filters existing PGroups, so it will end up being a no-op if this is repeated.
+                    // So it should be almost instantaneous for a continuation.
+                    //
+                    // Lastly it only takes a few seconds to run even the first time it's run, so there's no realistic
+                    // bad out-come from allowing it to re-run.
+                    var hlaDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
+                    var pGroups = await hlaDictionary.GetAllPGroups();
+                    pGroupRepository.InsertPGroups(pGroups);
+                }
             }
             catch (Exception e)
             {

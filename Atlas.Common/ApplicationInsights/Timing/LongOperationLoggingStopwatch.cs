@@ -62,14 +62,12 @@ namespace LoggingStopwatch
         /// String to identify in the logs what operation was timed.
         /// A unique identifier will be generated in addition to this, so that multiple executions are distinguishable.
         /// </param>
-        /// <param name="logger">
-        /// Logger object to perform the logging when complete
-        /// </param>
+        /// <param name="loggingAction">Method to call whenever some text should be logged.</param>
         /// <param name="loggingSettings">
         /// Override the defaults for how the inner operations get logged.
         /// </param>
-        public LongOperationLoggingStopwatch(string identifier, IStopwatchLogger logger, LongLoggingSettings loggingSettings = null) :
-            base(identifier, logger)
+        public LongOperationLoggingStopwatch(string identifier, Action<string> loggingAction, LongLoggingSettings loggingSettings = null) :
+            base(identifier, loggingAction)
         {
             settings?.Validate();
             settings = loggingSettings ?? new LongLoggingSettings();
@@ -89,24 +87,6 @@ namespace LoggingStopwatch
 
             Log(initiationMessage);
         }
-
-        /// <inheritdoc/>
-        /// <param name="identifier">Defers to Inherited paramDoc</param>
-        /// <param name="loggingAction">Method to call whenever some text should be logged.</param>
-        /// <param name="settings">Defers to Inherited paramDoc</param>
-        public LongOperationLoggingStopwatch(string identifier, Action<string> loggingAction, LongLoggingSettings settings = null)
-            : this(identifier, new LambdaLogger(loggingAction), settings)
-        {
-        }
-
-        //Note if you copy-paste this code, feel free to delete this if you don't want the Microsoft.Extensions.Logging dependency.
-        /// <inheritdoc/>
-        /// <param name="identifier">Defers to Inherited paramDoc</param>
-        /// <param name="microsoftLogger">Accepts an <see cref="ILogger"/> and logs to it at the <see cref="LogLevel.Information"/> level.</param>
-        /// <param name="logAtStart">Defers to Inherited paramDoc</param>
-        public LongOperationLoggingStopwatch(string identifier, ILogger microsoftLogger, LongLoggingSettings settings = null)
-            : this(identifier, new MicrosoftLoggerWrapper(microsoftLogger), settings)
-        { }
         #endregion
 
         /// <summary>
