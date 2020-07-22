@@ -1,13 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using Atlas.Common.ApplicationInsights;
 
 namespace Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests
 {
-    public interface ISearchRequestLoggingContext
-    {
-        string SearchRequestId { get; set; }
-    }
-
-    public class SearchRequestLoggingContext : ISearchRequestLoggingContext
+    public class MatchingAlgorithmLoggingContext : LoggingContext
     {
         private string searchRequestId;
 
@@ -24,6 +21,15 @@ namespace Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests
 
                 searchRequestId = value;
             }
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> PropertiesToLog()
+        {
+            return new Dictionary<string, string>
+            {
+                {nameof(SearchRequestId), SearchRequestId}
+            };
         }
     }
 }

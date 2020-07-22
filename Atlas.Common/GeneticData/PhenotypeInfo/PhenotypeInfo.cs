@@ -406,6 +406,9 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 Drb1.Position2,
             };
         }
+        
+        public string PrettyPrint() =>
+            $"A: {A.Position1}, {A.Position2}; B: {B.Position1}, {B.Position2}; C: {C.Position1}, {C.Position2}; DPB1: {Dpb1.Position1}, {Dpb1.Position2}; DQB1: {Dqb1.Position1}, {Dpb1.Position2}; DRB1: {Drb1.Position1}, {Drb1.Position2};";
 
         #region IEquatable<T> implementation (Defers to EqualityComparer of LocusInfo, which defers to inner type.)
 

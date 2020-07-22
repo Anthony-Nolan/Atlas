@@ -4,7 +4,8 @@ using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
-using Atlas.MatchPrediction.Data.Context;
+ using Atlas.MatchPrediction.ApplicationInsights;
+ using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Services;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
@@ -70,6 +71,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 
         private static void RegisterServices(this IServiceCollection services)
         {
+            services.AddScoped<MatchPredictionLoggingContext>();
+            services.AddScoped<IMatchPredictionLogger, MatchPredictionLogger>();
+            
             services.AddScoped<IMatchPredictionAlgorithm, MatchPredictionAlgorithm>();
             
             services.AddScoped<IFrequencySetMetadataExtractor, FrequencySetMetadataExtractor>();
