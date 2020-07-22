@@ -13,7 +13,10 @@ The following are the steps that are required to be taken manually when deployin
 
 - An *Azure subscription* must exist into which the Atlas system will be deployed.
 - An *Azure storage account* must be available for Terraform to use as a backend.
-- An *App Registration* should be created within Azure Active Directory, used to by Terraform for authentication.
+- An *App Registration* should be created within Azure Active Directory, to be used by Terraform for authentication.
+- A second "App Registration* should be created within Azure Active Directory, to be used by the code itself for managing azure resources at runtime
+    - e.g. The matching algorithm Data Refresh needs to be able to scale azure databases at runtime.  
+    - This information is set up as app settings by Terraform - the relevant Terraform variables are `AZURE_CLIENT_ID` and `AZURE_CLIENT_SECRET`
 
 ### Azure Devops Configuration
 
