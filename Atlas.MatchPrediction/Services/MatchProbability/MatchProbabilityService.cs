@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
@@ -123,16 +124,15 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             string subjectLogDescription = null)
         {
             var haplotypeFrequencies = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySetId);
-            return await logger.RunTimedAsync(
-                async () => await compressedPhenotypeExpander.ExpandCompressedPhenotype(
+            using (logger.RunTimed($"{LoggingPrefix}Expand {subjectLogDescription} phenotype", LogLevel.Verbose))
+            {
+                return await compressedPhenotypeExpander.ExpandCompressedPhenotype(
                     phenotype,
                     hlaNomenclatureVersion,
                     allowedLoci,
                     haplotypeFrequencies.Keys
-                ),
-                $"{LoggingPrefix}Expanded {subjectLogDescription} phenotype",
-                LogLevel.Verbose
-            );
+                );
+            }
         }
 
         private static ISet<Locus> GetAllowedLoci(MatchProbabilityInput matchProbabilityInput)
@@ -153,16 +153,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             IEnumerable<Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>> allPatientDonorCombinations,
             ISet<Locus> allowedLoci)
         {
-            return await logger.RunTimedAsync(async () =>
-                {
-                    var genotypeMatchingTasks = allPatientDonorCombinations
-                        .Select(pd => CalculateMatch(pd, matchProbabilityInput.HlaNomenclatureVersion, allowedLoci))
-                        .ToList();
-                    return (await Task.WhenAll(genotypeMatchingTasks)).ToHashSet();
-                },
-                $"{LoggingPrefix}Calculated genotype matches",
-                LogLevel.Verbose
-            );
+            using (logger.RunTimed($"{LoggingPrefix}Calculate genotype matches", LogLevel.Verbose))
+            {
+                var genotypeMatchingTasks = allPatientDonorCombinations
+                    .Select(pd => CalculateMatch(pd, matchProbabilityInput.HlaNomenclatureVersion, allowedLoci))
+                    .ToList();
+                return (await Task.WhenAll(genotypeMatchingTasks)).ToHashSet();
+            }
         }
 
         private async Task<Dictionary<PhenotypeInfo<string>, decimal>> CalculateGenotypeLikelihoods(
@@ -170,15 +167,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             HaplotypeFrequencySet frequencySet,
             ISet<Locus> allowedLoci)
         {
-            return (await logger.RunTimedAsync(async () =>
-                    {
-                        var genotypeLikelihoodTasks = genotypes.Select(genotype => CalculateLikelihood(genotype, frequencySet, allowedLoci));
-                        return await Task.WhenAll(genotypeLikelihoodTasks);
-                    },
-                    $"{LoggingPrefix}Calculated likelihoods for genotypes",
-                    LogLevel.Verbose
-                ))
-                .ToDictionary();
+            using (logger.RunTimed($"{LoggingPrefix}Calculate likelihoods for genotypes", LogLevel.Verbose))
+            {
+                var genotypeLikelihoodTasks = genotypes.Select(genotype => CalculateLikelihood(genotype, frequencySet, allowedLoci)).ToList();
+                var genotypeLikelihoods = await Task.WhenAll(genotypeLikelihoodTasks);
+                return genotypeLikelihoods.ToDictionary();
+            }
         }
 
         private async Task<GenotypeMatchDetails> CalculateMatch(
