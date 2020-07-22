@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
@@ -42,7 +43,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             IActiveRepositoryFactory repositoryFactory,
             IMatchFilteringService matchFilteringService,
             IDatabaseFilteringAnalyser databaseFilteringAnalyser,
-            ILogger logger
+            // ReSharper disable once SuggestBaseTypeForParameter
+            IMatchingAlgorithmLogger logger
         )
         {
             donorSearchRepository = repositoryFactory.GetDonorSearchRepository();

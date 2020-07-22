@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -22,7 +23,8 @@ namespace Atlas.MatchPrediction.ExternalInterface
 
         public MatchPredictionAlgorithm(
             IMatchProbabilityService matchProbabilityService,
-            ILogger logger,
+            // ReSharper disable once SuggestBaseTypeForParameter
+            IMatchPredictionLogger logger,
             IHaplotypeFrequencyService haplotypeFrequencyService)
         {
             this.matchProbabilityService = matchProbabilityService;

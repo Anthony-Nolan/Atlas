@@ -7,6 +7,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Maths;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
+using Atlas.MatchPrediction.ApplicationInsights;
 
 namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 {
@@ -45,7 +46,8 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         public CompressedPhenotypeExpander(
             IAmbiguousPhenotypeExpander ambiguousPhenotypeExpander,
             ILocusHlaConverter locusHlaConverter,
-            ILogger logger)
+            // ReSharper disable once SuggestBaseTypeForParameter
+            IMatchPredictionLogger logger)
         {
             this.ambiguousPhenotypeExpander = ambiguousPhenotypeExpander;
             this.locusHlaConverter = locusHlaConverter;

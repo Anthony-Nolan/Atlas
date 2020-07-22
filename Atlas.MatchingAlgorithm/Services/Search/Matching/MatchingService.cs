@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
+using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
@@ -33,7 +34,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             IActiveRepositoryFactory transientRepositoryFactory,
             IMatchFilteringService matchFilteringService,
             IMatchCriteriaAnalyser matchCriteriaAnalyser,
-            ILogger logger)
+            // ReSharper disable once SuggestBaseTypeForParameter
+            IMatchingAlgorithmLogger logger)
         {
             this.donorMatchingService = donorMatchingService;
             this.preFilteredDonorMatchingService = preFilteredDonorMatchingService;

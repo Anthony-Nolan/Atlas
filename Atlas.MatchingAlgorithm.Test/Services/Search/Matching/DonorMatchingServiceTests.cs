@@ -17,6 +17,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 
 // ReSharper disable InconsistentNaming
 
@@ -31,21 +32,25 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         private const string PGroupDrb1 = "pgDRB1";
 
         private readonly DonorInfoWithExpandedHla donor_ExactMatch_AtLocusA =
-            new DonorInfoWithExpandedHla { DonorId = 1, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>() };
+            new DonorInfoWithExpandedHla
+                {DonorId = 1, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>()};
 
         private readonly DonorInfoWithExpandedHla donor_BothPositionsMatchPatientPositionOne_AtLocusA =
-            new DonorInfoWithExpandedHla { DonorId = 2, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>() };
+            new DonorInfoWithExpandedHla
+                {DonorId = 2, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>()};
 
         private readonly DonorInfoWithExpandedHla donor_OnePositionMatchesBothPatientPositions_AtLocusA =
-            new DonorInfoWithExpandedHla { DonorId = 3, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>() };
+            new DonorInfoWithExpandedHla
+                {DonorId = 3, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>()};
 
         private readonly DonorInfoWithExpandedHla donor_NoMatch_AtLocusA =
-            new DonorInfoWithExpandedHla { DonorId = 4, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>() };
+            new DonorInfoWithExpandedHla
+                {DonorId = 4, MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>(), HlaNames = new PhenotypeInfo<string>()};
 
         private IDonorMatchingService matchingService;
 
         private DonorMatchCriteriaBuilder criteriaBuilder;
-        private readonly List<Locus> loci = new List<Locus> { Locus.A, Locus.B, Locus.Drb1 };
+        private readonly List<Locus> loci = new List<Locus> {Locus.A, Locus.B, Locus.Drb1};
 
         [SetUp]
         public void SetUp()
@@ -59,7 +64,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
             repositoryFactory.GetDonorSearchRepository().Returns(donorSearchRepository);
             repositoryFactory.GetPGroupRepository().Returns(pGroupRepository);
 
-            matchingService = new DonorMatchingService(repositoryFactory, matchFilteringService, databaseFilteringAnalyser, Substitute.For<ILogger>());
+            matchingService = new DonorMatchingService(
+                repositoryFactory,
+                matchFilteringService,
+                databaseFilteringAnalyser,
+                Substitute.For<IMatchingAlgorithmLogger>()
+            );
 
             donorSearchRepository.GetDonorMatchesAtLocus(Locus.A, Arg.Any<LocusSearchCriteria>(), Arg.Any<MatchingFilteringOptions>())
                 .Returns(new List<PotentialHlaMatchRelation>

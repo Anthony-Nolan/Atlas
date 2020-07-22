@@ -26,22 +26,23 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private readonly ISearchService searchService;
         private readonly IResultsBlobStorageClient resultsBlobStorageClient;
         private readonly ILogger logger;
-        private readonly ISearchRequestLoggingContext searchRequestLoggingContext;
+        private readonly MatchingAlgorithmLoggingContext loggingContext;
         private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
 
         public SearchRunner(
             ISearchServiceBusClient searchServiceBusClient,
             ISearchService searchService,
             IResultsBlobStorageClient resultsBlobStorageClient,
-            ILogger logger,
-            ISearchRequestLoggingContext searchRequestLoggingContext,
+            // ReSharper disable once SuggestBaseTypeForParameter
+            IMatchingAlgorithmLogger logger,
+            MatchingAlgorithmLoggingContext loggingContext,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
         {
             this.searchServiceBusClient = searchServiceBusClient;
             this.searchService = searchService;
             this.resultsBlobStorageClient = resultsBlobStorageClient;
             this.logger = logger;
-            this.searchRequestLoggingContext = searchRequestLoggingContext;
+            this.loggingContext = loggingContext;
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
         }
 
@@ -50,7 +51,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.MatchingRequest);
             
             var searchRequestId = identifiedSearchRequest.Id;
-            searchRequestLoggingContext.SearchRequestId = searchRequestId;
+            loggingContext.SearchRequestId = searchRequestId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
 

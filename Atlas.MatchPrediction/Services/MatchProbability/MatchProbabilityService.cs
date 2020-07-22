@@ -6,6 +6,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
+using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
@@ -32,6 +33,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         private readonly IMatchProbabilityCalculator matchProbabilityCalculator;
         private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
         private readonly ILogger logger;
+        private readonly MatchPredictionLoggingContext matchPredictionLoggingContext;
 
         public MatchProbabilityService(
             ICompressedPhenotypeExpander compressedPhenotypeExpander,
@@ -39,7 +41,9 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             IMatchCalculationService matchCalculationService,
             IMatchProbabilityCalculator matchProbabilityCalculator,
             IHaplotypeFrequencyService haplotypeFrequencyService,
-            ILogger logger)
+            // ReSharper disable once SuggestBaseTypeForParameter
+            IMatchPredictionLogger logger,
+            MatchPredictionLoggingContext matchPredictionLoggingContext)
         {
             this.compressedPhenotypeExpander = compressedPhenotypeExpander;
             this.genotypeLikelihoodService = genotypeLikelihoodService;
@@ -47,10 +51,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             this.matchProbabilityCalculator = matchProbabilityCalculator;
             this.haplotypeFrequencyService = haplotypeFrequencyService;
             this.logger = logger;
+            this.matchPredictionLoggingContext = matchPredictionLoggingContext;
         }
 
         public async Task<MatchProbabilityResponse> CalculateMatchProbability(MatchProbabilityInput matchProbabilityInput)
         {
+            matchPredictionLoggingContext.Initialise(matchProbabilityInput);
+            
             var allowedLoci = GetAllowedLoci(matchProbabilityInput);
             var hlaNomenclatureVersion = matchProbabilityInput.HlaNomenclatureVersion;
 
@@ -82,7 +89,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     "Calculating the MatchCounts of provided donor patient pairs would take upwards of 2 minutes." +
                     " This code path is not currently supported for such a large data set."
                 );
-            } 
+            }
 
             var allPatientDonorCombinations = patientGenotypes.SelectMany(patientHla =>
                     donorGenotypes.Select(donorHla => new Tuple<PhenotypeInfo<string>, PhenotypeInfo<string>>(patientHla, donorHla)))
@@ -147,12 +154,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             ISet<Locus> allowedLoci)
         {
             return await logger.RunTimedAsync(async () =>
-                   {
-                       var genotypeMatchingTasks = allPatientDonorCombinations
-                           .Select(pd => CalculateMatch(pd, matchProbabilityInput.HlaNomenclatureVersion, allowedLoci))
-                           .ToList();
-                       return (await Task.WhenAll(genotypeMatchingTasks)).ToHashSet();
-                   },
+                {
+                    var genotypeMatchingTasks = allPatientDonorCombinations
+                        .Select(pd => CalculateMatch(pd, matchProbabilityInput.HlaNomenclatureVersion, allowedLoci))
+                        .ToList();
+                    return (await Task.WhenAll(genotypeMatchingTasks)).ToHashSet();
+                },
                 $"{LoggingPrefix}Calculated genotype matches",
                 LogLevel.Verbose
             );

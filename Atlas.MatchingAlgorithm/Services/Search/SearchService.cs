@@ -5,6 +5,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
@@ -36,7 +37,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
             IDonorScoringService donorScoringService,
             IMatchingService matchingService,
-            ILogger logger
+            // ReSharper disable once SuggestBaseTypeForParameter
+            IMatchingAlgorithmLogger logger
         )
         {
             this.donorScoringService = donorScoringService;

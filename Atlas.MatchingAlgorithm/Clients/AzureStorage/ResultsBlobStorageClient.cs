@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
+using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Newtonsoft.Json;
@@ -17,7 +18,8 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureStorage
     {
         private readonly string resultsContainerName;
 
-        public ResultsBlobStorageClient(AzureStorageSettings azureStorageSettings, ILogger logger)
+        // ReSharper disable once SuggestBaseTypeForParameter
+        public ResultsBlobStorageClient(AzureStorageSettings azureStorageSettings, IMatchingAlgorithmLogger logger)
             : base(azureStorageSettings.ConnectionString, logger)
         {
             this.resultsContainerName = azureStorageSettings.SearchResultsBlobContainer;
