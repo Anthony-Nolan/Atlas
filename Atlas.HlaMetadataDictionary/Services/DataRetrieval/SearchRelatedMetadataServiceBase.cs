@@ -40,9 +40,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IAlleleStringSplitterService alleleSplitter,
             IMacDictionary macDictionary,
             IAlleleGroupExpander alleleGroupExpander,
-            string cacheKey,
+            string perTypeCacheKey,
             IPersistentCacheProvider cacheProvider)
-            : base(cacheKey, cacheProvider)
+            : base(perTypeCacheKey, cacheProvider)
         {
             this.hlaMetadataRepository = hlaMetadataRepository;
             this.alleleNamesMetadataService = alleleNamesMetadataService;

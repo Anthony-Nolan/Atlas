@@ -9,32 +9,26 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
     internal abstract class MetadataServiceBase<T>
     {
-        private readonly string cacheKey;
+        private readonly string perTypeCacheKey;
         private readonly IAppCache cache;
 
-        protected MetadataServiceBase(string cacheKey, IPersistentCacheProvider cacheProvider)
+        protected MetadataServiceBase(string perTypeCacheKey, IPersistentCacheProvider cacheProvider)
         {
-            this.cacheKey = cacheKey;
+            this.perTypeCacheKey = perTypeCacheKey;
             cache = cacheProvider.Cache;
         }
 
-        protected async Task<T> GetMetadata(Locus locus, string lookupName, string hlaNomenclatureVersion)
+        protected async Task<T> GetMetadata(Locus locus, string rawLookupName, string hlaNomenclatureVersion)
         {
             try
             {
-                if (!LookupNameIsValid(lookupName))
-                {
-                    throw new ArgumentException($"{lookupName} at locus {locus} is not a valid lookup name.");
-                }
-
-                var formattedLookupName = FormatLookupName(lookupName);
-
+                var formattedLookupName = FormatLookupName(rawLookupName);
                 return await GetOrAddCachedMetadata(locus, formattedLookupName, hlaNomenclatureVersion);
             }
             catch (Exception ex)
             {
-                var msg = $"Failed to lookup '{lookupName}' at locus {locus}.";
-                throw new HlaMetadataDictionaryException(locus, lookupName, msg, ex);
+                var msg = $"Failed to lookup '{rawLookupName}' at locus {locus}.";
+                throw new HlaMetadataDictionaryException(locus, rawLookupName, msg, ex);
             }
         }
 
@@ -44,15 +38,27 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
         private static string FormatLookupName(string lookupName)
         {
-            return lookupName.Trim().TrimStart('*');
+            return lookupName?.Trim().TrimStart('*');
         }
 
-        private async Task<T> GetOrAddCachedMetadata(Locus locus, string lookupName, string hlaNomenclatureVersion)
+        private async Task<T> GetOrAddCachedMetadata(Locus locus, string formattedLookupName, string hlaNomenclatureVersion)
         {
-            var key = BuildCacheKey(locus, lookupName, hlaNomenclatureVersion);
-            return await cache.GetOrAddAsync(key, () => PerformLookup(locus, lookupName, hlaNomenclatureVersion));
+            var key = BuildCacheKey(locus, formattedLookupName, hlaNomenclatureVersion);
+            var existingRecord = cache.Get<T>(key);
+            if (existingRecord != null)
+            {
+                return existingRecord;
+            }
+            
+            if (!LookupNameIsValid(formattedLookupName))
+            {
+                throw new ArgumentException($"{formattedLookupName} at locus {locus} is not a valid lookup name.");
+            }
+            
+            return await cache.GetOrAddAsync(key, () => PerformLookup(locus, formattedLookupName, hlaNomenclatureVersion));
         }
 
-        private string BuildCacheKey(Locus locus, string lookupName, string hlaNomenclatureVersion) => $"{cacheKey}-{hlaNomenclatureVersion}-{locus}-{lookupName}";
+        private string BuildCacheKey(Locus locus, string lookupName, string hlaNomenclatureVersion)
+            => $"{perTypeCacheKey}-{hlaNomenclatureVersion}-{locus}-{lookupName}";
     }
 }
