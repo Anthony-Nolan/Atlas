@@ -53,7 +53,7 @@ output "matching-database-username" {
   value = var.MATCHING_DATABASE_USERNAME
 }
 
-output "matching-username-for-donor-import-db" {
+output "matching-username-for-donor-import-database" {
   value = var.MATCHING_USERNAME_FOR_DONOR_IMPORT_DATABASE
 }
 
