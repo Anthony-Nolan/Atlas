@@ -36,7 +36,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [TestCase(Locus.A, "01:11N")]
         [TestCase(Locus.B, "13:56:01")]
         [TestCase(Locus.C, "07:491:01N")]
-        [TestCase(Locus.Dqb1, "02:18")]
+        [TestCase(Locus.Dqb1, "02:20N")]
         [TestCase(Locus.Drb1, "08:78N")]
         public async Task GetSinglePGroupForGGroup_WithNoMatchingPGroup_ReturnsNull(Locus locus, string gGroup)
         {
