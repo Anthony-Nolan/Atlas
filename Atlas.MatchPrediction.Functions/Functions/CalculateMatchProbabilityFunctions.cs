@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.MatchProbability;
@@ -26,10 +27,17 @@ namespace Atlas.MatchPrediction.Functions.Functions
             [RequestBodyType(typeof(MatchProbabilityInput), nameof(MatchProbabilityInput))]
             HttpRequest request)
         {
-            var matchProbabilityInput = JsonConvert.DeserializeObject<MatchProbabilityInput>(await new StreamReader(request.Body).ReadToEndAsync());
+            try
+            {
+                var matchProbabilityInput = JsonConvert.DeserializeObject<MatchProbabilityInput>(await new StreamReader(request.Body).ReadToEndAsync());
 
-            var matchProbabilityResponse = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
-            return new JsonResult(matchProbabilityResponse);
+                var matchProbabilityResponse = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+                return new JsonResult(matchProbabilityResponse);
+            }
+            catch (Exception exception)
+            {
+                return new BadRequestObjectResult(exception);
+            }
         }
     }
 }
