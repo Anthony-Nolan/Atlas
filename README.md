@@ -61,7 +61,7 @@ Contains code that can be shared between multiple Atlas components. E.g. Utility
 
 Top level functions app, exposing public API of the Atlas system.
 
-###[Manual Testing](README_ManualTesting.md)
+#### [Manual Testing](README_ManualTesting.md)
 
 Projects dedicated to the manual, non-automated testing of various aspects of the Atlas solution.
 
