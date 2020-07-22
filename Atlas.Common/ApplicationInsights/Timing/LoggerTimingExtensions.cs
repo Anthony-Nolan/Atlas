@@ -11,9 +11,10 @@ namespace Atlas.Common.ApplicationInsights.Timing
         public static IDisposable RunTimed(
             this ILogger logger,
             string completionMessage,
-            LogLevel logLevel = LogLevel.Info)
+            LogLevel logLevel = LogLevel.Info,
+            bool logAtStart = false)
         {
-            return new LoggingStopwatch.LoggingStopwatch(completionMessage, text => logger.SendTrace(text, logLevel));
+            return new LoggingStopwatch.LoggingStopwatch(completionMessage, text => logger.SendTrace(text, logLevel), logAtStart);
         }
 
         /// <summary>

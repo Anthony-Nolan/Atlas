@@ -1,3 +1,4 @@
+using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
@@ -15,10 +16,12 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
     public abstract class TransientRepositoryFactoryBase : ITransientRepositoryFactory
     {
         protected readonly IConnectionStringProvider ConnectionStringProvider;
+        protected readonly ILogger logger;
 
-        protected TransientRepositoryFactoryBase(IConnectionStringProvider connectionStringProvider)
+        protected TransientRepositoryFactoryBase(IConnectionStringProvider connectionStringProvider, ILogger logger)
         {
             this.ConnectionStringProvider = connectionStringProvider;
+            this.logger = logger;
         }
 
         public IPGroupRepository GetPGroupRepository()
@@ -33,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 
         public IDonorUpdateRepository GetDonorUpdateRepository()
         {
-            return new DonorUpdateRepository(GetPGroupRepository(), ConnectionStringProvider);
+            return new DonorUpdateRepository(GetPGroupRepository(), ConnectionStringProvider, logger);
         }
     }
 }
