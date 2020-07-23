@@ -10,3 +10,4 @@ This code is designed to be run locally; it is not production quality and cannot
   - Web API project for manual verification of the Match Prediction Algorithm (MPA).
   - Verification involves generating a harness of simulated patients and donors, running it through search requests,
 	and collating the final results to determine the accuracy of match probabilities.
+  - Includes minimal suite of unit tests, with sufficient coverage only to ensure the reliability of the generated data.

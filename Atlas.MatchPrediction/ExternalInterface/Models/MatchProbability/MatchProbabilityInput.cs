@@ -1,4 +1,5 @@
 ﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 {
