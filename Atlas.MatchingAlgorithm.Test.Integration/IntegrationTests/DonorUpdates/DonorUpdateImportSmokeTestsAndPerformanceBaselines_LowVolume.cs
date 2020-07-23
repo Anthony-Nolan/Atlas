@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
-using Atlas.HlaMetadataDictionary.Test.IntegrationTests;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
@@ -31,15 +30,27 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         public static DonorAvailabilityUpdate ToUpdate(this DonorInfo donorInfo) => donorInfo.ToUpdateWithAvailability(true);
         public static DonorAvailabilityUpdate ToUnavailableUpdate(this DonorInfo donorInfo) => donorInfo.ToUpdateWithAvailability(false);
 
+        private static int updateCounter = 0;
         private static DonorAvailabilityUpdate ToUpdateWithAvailability(this DonorInfo donorInfo, bool isAvailable)
         {
             donorInfo.IsAvailableForSearch = isAvailable;
+
+            // The import process uses UpdateDateTime as a sequencing tool, which means the tests rely on 
+            // order of update creation to determine the ordering of the UpdateDateTime.
+            // Very occasionally, this code manages to execute fast enough that the timestamps are the same
+            // for 2 records that need to be in a certain order.
+            // That causes errors with the import.
+            // So introduce a guaranteed separation between every update, to prevent that.
+            // Note that adding a Thread.Sleep() [even Thread.Sleep(1)] causes meaningful slowdown of the tests.
+            updateCounter++;
+            var utcNowPlusOffset = DateTimeOffset.UtcNow.AddTicks(updateCounter);
+
             return new DonorAvailabilityUpdate
             {
                 DonorInfo = donorInfo,
                 DonorId = donorInfo.DonorId,
                 IsAvailableForSearch = isAvailable,
-                UpdateDateTime = DateTimeOffset.UtcNow,
+                UpdateDateTime = utcNowPlusOffset,
                 // UpdateSequenceNumber is never used.
             };
         }
@@ -179,7 +190,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             // Note that there's no desperate need to keep the 2 sets of code in sync.
 
             var expectedDonorIds = new List<int>();
-            ExpectDonorsToBe(expectedDonorIds); // We keep seeing intermittent errors where the final count has 1 extra donor. Try to work out why.
+            ExpectDonorsToBe(expectedDonorIds);
 
             //New Donor.
             var donorInfo0 = new DonorInfoBuilder().Build();
@@ -344,7 +355,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         public async Task ApplyDonorUpdatesToDatabase_ImportingAllDonorsFromExistingTestsAsSingleBatch_ResultsInCorrectNumberOfDonorsAtEnd()
         {
             var expectedDonorIds = new List<int>();
-            ExpectDonorsToBe(expectedDonorIds); // We keep seeing intermittent errors where the final count has 1 extra donor. Try to work out why.
+            ExpectDonorsToBe(expectedDonorIds);
 
             //New Donor.
             var donorInfo0 = new DonorInfoBuilder().Build();
@@ -788,13 +799,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             var editToExistingDonor = new DonorInfoBuilder(existing.DonorId).WithHlaAtLocus(A, Two, newHla).Build().ToUpdate();
             yield return editToExistingDonor;
 
-            var anotherExisting = existingDonors.Dequeue().Donor;
+            var anotherExistingDonorWithLog = existingDonors.Dequeue();
             var nonEditToExistingDonor = new DonorAvailabilityUpdate
             {
-                DonorId = anotherExisting.DonorId,
-                IsAvailableForSearch = anotherExisting.IsAvailableForSearch,
-                UpdateDateTime = DateTimeOffset.UtcNow,
-                DonorInfo = anotherExisting.ToDonorInfo()
+                DonorId = anotherExistingDonorWithLog.Donor.DonorId,
+                IsAvailableForSearch = anotherExistingDonorWithLog.Donor.IsAvailableForSearch,
+                UpdateDateTime = anotherExistingDonorWithLog.Log.LastUpdateDateTime.AddMinutes(1),
+                DonorInfo = anotherExistingDonorWithLog.Donor.ToDonorInfo()
             };
             yield return nonEditToExistingDonor;
         }
