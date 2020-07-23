@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -15,25 +16,48 @@ namespace Atlas.MatchPrediction.Data.Models
         [Column(TypeName = "decimal(20,20)")]
         public decimal Frequency { get; set; }
 
-        [Required]
-        [MaxLength(64)]
-        public string A { get; set; }
+        [NotMapped]
+        public LociInfo<string> Hla { get; } = new LociInfo<string>();
 
         [Required]
         [MaxLength(64)]
-        public string B { get; set; }
+        public string A
+        {
+            get => Hla.A;
+            set => Hla.SetLocus(Locus.A, value);
+        }
 
         [Required]
         [MaxLength(64)]
-        public string C { get; set; }
+        public string B
+        {
+            get => Hla.B;
+            set => Hla.SetLocus(Locus.B, value);
+        }
 
         [Required]
         [MaxLength(64)]
-        public string DQB1 { get; set; }
+        public string C
+        {
+            get => Hla.C;
+            set => Hla.SetLocus(Locus.C, value);
+        }
 
         [Required]
         [MaxLength(64)]
-        public string DRB1 { get; set; }
+        public string DQB1
+        {
+            get => Hla.Dqb1;
+            set => Hla.SetLocus(Locus.Dqb1, value);
+        }
+
+        [Required]
+        [MaxLength(64)]
+        public string DRB1
+        {
+            get => Hla.Drb1;
+            set => Hla.SetLocus(Locus.Drb1, value);
+        }
 
         public const string SetIdColumnName = "Set_Id";
 
