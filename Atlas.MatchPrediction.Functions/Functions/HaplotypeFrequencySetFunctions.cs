@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using Atlas.MatchPrediction.ExternalInterface;
-using Atlas.MatchPrediction.ExternalInterface.Models;
+﻿using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -13,8 +9,9 @@ using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using HaplotypeFrequencySet =
-    Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Functions.Functions
 {

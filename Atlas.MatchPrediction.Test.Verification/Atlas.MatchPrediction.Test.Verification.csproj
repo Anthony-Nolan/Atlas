@@ -7,13 +7,41 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20200723134406_InitialCreate.cs" />
+    <Compile Remove="Migrations\20200723134406_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\20200723134626_CreateNormalisedHaplotypeFrequencyPoolTable.cs" />
+    <Compile Remove="Migrations\20200723134626_CreateNormalisedHaplotypeFrequencyPoolTable.Designer.cs" />
+    <Compile Remove="Migrations\20200724122946_CreateNormalisedHaplotypeFrequencyPool.cs" />
+    <Compile Remove="Migrations\20200724122946_CreateNormalisedHaplotypeFrequencyPool.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="5.10.3" />
+    <PackageReference Include="LochNessBuilder" Version="1.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.Design" Version="1.1.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
+    <PackageReference Include="NSubstitute" Version="4.2.1" />
     <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.16.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
+    <ProjectReference Include="..\Atlas.MatchPrediction\Atlas.MatchPrediction.csproj" />
   </ItemGroup>
 
 

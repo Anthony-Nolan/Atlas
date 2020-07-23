@@ -44,6 +44,17 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             );
         }
 
+        public static void RegisterHaplotypeFrequenciesReader(
+            this IServiceCollection services,
+            Func<IServiceProvider, string> fetchMatchPredictionDatabaseConnectionString)
+        {
+            services.RegisterHaplotypeFrequenciesReaderServices();
+
+            services.AddScoped<IHaplotypeFrequenciesReadRepository>(sp =>
+                new HaplotypeFrequenciesReadRepository(fetchMatchPredictionDatabaseConnectionString(sp))
+            );
+        }
+
         private static void RegisterSettings(
             this IServiceCollection services,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings)
@@ -59,6 +70,11 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.AddTransient<IHaplotypeFrequenciesRepository, HaplotypeFrequenciesRepository>(sp =>
                 new HaplotypeFrequenciesRepository(fetchSqlConnectionString(sp))
             );
+        }
+
+        private static void RegisterHaplotypeFrequenciesReaderServices(this IServiceCollection services)
+        {
+            services.AddScoped<IHaplotypeFrequenciesReader, HaplotypeFrequenciesReader>();
         }
 
         private static void RegisterClientServices(this IServiceCollection services)
