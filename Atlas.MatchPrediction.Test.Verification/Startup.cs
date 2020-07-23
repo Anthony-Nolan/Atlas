@@ -1,8 +1,10 @@
+using Atlas.MatchPrediction.Test.Verification.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchPrediction.Test.Verification
 {
@@ -19,6 +21,10 @@ namespace Atlas.MatchPrediction.Test.Verification
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+            services.RegisterVerificationServices(
+                ConnectionStringReader("MatchPredictionVerification:Sql"),
+                ConnectionStringReader("MatchPrediction:Sql"));
 
             services.ConfigureSwaggerService();
 
