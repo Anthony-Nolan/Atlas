@@ -96,8 +96,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 ReportPercentageCompletion = true,
                 ReportProjectedCompletionTime = true
             };
-            var summaryReportOnly = new LongLoggingSettings { InnerOperationLoggingPeriod = int.MaxValue };
-            var summaryReportWithThreadingBreakdown = new LongLoggingSettings { InnerOperationLoggingPeriod = int.MaxValue, ReportPerThreadTime = true};
+            var summaryReportOnly = new LongLoggingSettings { InnerOperationLoggingPeriod = int.MaxValue, ReportOuterTimerStart = false};
+            var summaryReportWithThreadingBreakdown = new LongLoggingSettings { InnerOperationLoggingPeriod = int.MaxValue, ReportOuterTimerStart = false, ReportPerThreadTime = true };
             using (var batchProgressTimer = logger.RunLongOperationWithTimer($"Hla Batch Overall Processing. Inner Operation is UpdateDonorBatch", progressReports))
             using (var hlaExpansionTimer = logger.RunLongOperationWithTimer($"Hla Expansion during HlaProcessing", summaryReportOnly))
             using (var pGroupLinearWaitTimer = logger.RunLongOperationWithTimer($"Linear wait on HlaInsert during HlaProcessing", summaryReportOnly))
@@ -182,7 +182,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersion);
 
             var timedInnerOperation = hlaExpansionTimer.TimeInnerOperation();
-                var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName);
+            var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName);
             timedInnerOperation.Dispose();
 
             EnsureAllPGroupsExist(hlaExpansionResults.ProcessingResults);
@@ -220,7 +220,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             {
                 using (logger.RunTimed("HLA PROCESSOR: Caching HlaMetadataDictionary tables", LogLevel.Info, true))
                 {
-                    // Cloud tables are cached for performance reasons - this must be done upfront to avoid multiple tasks attempting to set up the cache
+                    // Cloud tables are cached for performance reasons
                     var dictionaryCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaNomenclatureVersion);
                     await dictionaryCacheControl.PreWarmAllCaches();
                 }
