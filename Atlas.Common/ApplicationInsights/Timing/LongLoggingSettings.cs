@@ -1,6 +1,8 @@
 ﻿/* ******************************
    **  Copyright Softwire 2020 ** 
    ****************************** */
+// This was taken from a Softwire shareable Repo. At soem point it may get nugetified, in which case we might want
+// migrate to that. Worth checking whether we've diverged, from the original code, though.
 using System;
 
 namespace LoggingStopwatch
@@ -24,7 +26,7 @@ namespace LoggingStopwatch
         /// it will just lead to the percentage and Completion Time reports
         /// being inaccurate (if used).
         /// </summary>
-        public int? ExpectedNumberOfIterations { get; set; }
+        public int? ExpectedNumberOfIterations { get; set; } = null;
 
         /// <summary>How frequently should the progress of inner operations be logged. default is 1, i.e. after every loop of the inner operation</summary>
         public int InnerOperationLoggingPeriod { get; set; } = 1;
@@ -46,13 +48,12 @@ namespace LoggingStopwatch
 
         internal void Validate()
         {
-            if (ExpectedNumberOfIterations == null &&
-                (ReportPercentageCompletion || ReportProjectedCompletionTime))
+            if (ExpectedNumberOfIterations == null)
             {
-                throw new ArgumentException($"{nameof(ReportPercentageCompletion)} and {nameof(ReportProjectedCompletionTime)} require {nameof(ExpectedNumberOfIterations)} to be provided.");
+                ReportPercentageCompletion = false;
+                ReportProjectedCompletionTime = false;
             }
-
-            if (ExpectedNumberOfIterations <= 0)
+            else if (ExpectedNumberOfIterations <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(ExpectedNumberOfIterations), $"{nameof(ExpectedNumberOfIterations)} must be strictly positive! (Received '{ExpectedNumberOfIterations}')");
             }
@@ -61,7 +62,6 @@ namespace LoggingStopwatch
             {
                 ReportThreadCount = true;
             }
-
         }
     }
 }
