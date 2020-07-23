@@ -13,12 +13,13 @@ variable "AZURE_SUBSCRIPTION_ID" {
   description = "ID of the Azure subscription into which the system will be deployed."
 }
 
-// TODO: ATLAS-379: Fetch this via Azure CLI
-// https://github.com/terraform-providers/terraform-provider-azurerm/issues/699 - if this issue is resolved, we can remove this variable and use terraform for this.
-variable "DONOR_IMPORT_FUNCTION_MASTER_KEY" {
-  type        = string
-  description = "The master host key for the donor import function - required to set up event grid webhooks. The core ATLAS terraform script must have been run to generate this value."
-}
+# // TODO: ATLAS-379: Fetch this via Azure CLI
+# // https://github.com/terraform-providers/terraform-provider-azurerm/issues/699 - if this issue is resolved, we can remove this variable and use terraform for this.
+# variable "DONOR_IMPORT_FUNCTION_MASTER_KEY" {
+#   type        = string
+#   description = "The master host key for the donor import function - required to set up event grid webhooks. The core ATLAS terraform script must have been run to generate this value."
+#   default = 
+# }
 
 variable "ENVIRONMENT" {
   type        = string
@@ -31,12 +32,12 @@ variable "LOCATION" {
   description = "GeoLocation of all Azure resources for this ATLAS installation."
 }
 
-// TODO: ATLAS-379: Fetch this via Azure CLI
-// https://github.com/terraform-providers/terraform-provider-azurerm/issues/699 - if this issue is resolved, we can remove this variable and use terraform for this.
-variable "MATCH_PREDICTION_FUNCTION_MASTER_KEY" {
-  type        = string
-  description = "The master host key for the match prediction function - required to set up event grid webhooks. The core ATLAS terraform script must have been run to generate this value."
-}
+# // TODO: ATLAS-379: Fetch this via Azure CLI
+# // https://github.com/terraform-providers/terraform-provider-azurerm/issues/699 - if this issue is resolved, we can remove this variable and use terraform for this.
+# variable "MATCH_PREDICTION_FUNCTION_MASTER_KEY" {
+#   type        = string
+#   description = "The master host key for the match prediction function - required to set up event grid webhooks. The core ATLAS terraform script must have been run to generate this value."
+# }
 
 variable "TERRAFORM_KEY" {
   type        = string
