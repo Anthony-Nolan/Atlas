@@ -1,17 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Repositories;
-using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using LazyCache;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies

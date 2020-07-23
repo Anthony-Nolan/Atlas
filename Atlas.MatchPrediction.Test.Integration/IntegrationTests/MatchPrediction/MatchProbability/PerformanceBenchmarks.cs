@@ -1,9 +1,7 @@
-using System.Reflection;
-using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
-using Atlas.MatchPrediction.ExternalInterface.Models;
+using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
@@ -12,6 +10,8 @@ using FluentAssertions;
 using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.MatchProbability
 {
