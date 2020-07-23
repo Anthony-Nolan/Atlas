@@ -50,23 +50,23 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         public async Task<IEnumerable<MatchingAlgorithmResult>> Search(MatchingRequest matchingRequest)
         {
             var expansionTimer = logger.RunTimed($"{LoggingPrefix}Expand patient HLA");
-                var criteria = await GetMatchCriteria(matchingRequest);
+            var criteria = await GetMatchCriteria(matchingRequest);
             expansionTimer.Dispose();
 
             var matchingTimer = logger.RunTimed($"{LoggingPrefix}Matching");
-                var matches = (await matchingService.GetMatches(criteria)).ToList();
+            var matches = (await matchingService.GetMatches(criteria)).ToList();
             matchingTimer.Dispose();
 
             logger.SendTrace($"{LoggingPrefix}Matched {matches.Count} donors.");
             
             var scoringTimer = logger.RunTimed($"{LoggingPrefix}Scoring");
-                var request = new MatchResultsScoringRequest
-                {
-                    PatientHla = matchingRequest.SearchHlaData,
-                    MatchResults = matches,
-                    ScoringCriteria = matchingRequest.ScoringCriteria
-                };
-                var scoredMatches= await donorScoringService.ScoreMatchesAgainstPatientHla(request);
+            var request = new MatchResultsScoringRequest
+            {
+                PatientHla = matchingRequest.SearchHlaData,
+                MatchResults = matches,
+                ScoringCriteria = matchingRequest.ScoringCriteria
+            };
+            var scoredMatches= await donorScoringService.ScoreMatchesAgainstPatientHla(request);
             scoringTimer.Dispose();
 
             return scoredMatches.Select(MapSearchResultToApiSearchResult);
