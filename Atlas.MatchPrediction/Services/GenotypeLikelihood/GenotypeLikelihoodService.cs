@@ -64,7 +64,9 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
             {
                 if (!allowedLoci.SetEquals(LocusSettings.MatchPredictionLoci.ToHashSet()) && frequency == default)
                 {
-                    frequency = haplotypesWithFrequencies
+                    //This can get called in parallel (see MPS.CalculateGenotypeLikelihoods) so this .Where() would get "Collection was modified" errors.
+                    var isolatedHaplotypesWithFrequencies = haplotypesWithFrequencies.ToList();
+                    frequency = isolatedHaplotypesWithFrequencies
                         .Where(kvp => kvp.Key.EqualsAtLoci(hla, allowedLoci)).Select(kvp => kvp.Value)
                         .DefaultIfEmpty(0m)
                         .Sum();
