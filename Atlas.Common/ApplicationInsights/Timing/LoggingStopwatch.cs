@@ -1,9 +1,10 @@
 ﻿/* ******************************
    **  Copyright Softwire 2020 ** 
    ****************************** */
+// This was taken from a Softwire shareable Repo. At soem point it may get nugetified, in which case we might want
+// migrate to that. Worth checking whether we've diverged, from the original code, though.
 using System;
 using System.Diagnostics;
-using Microsoft.Extensions.Logging;
 
 namespace LoggingStopwatch
 {
@@ -25,10 +26,9 @@ namespace LoggingStopwatch
     {
         private readonly string identifier;
         private readonly string uniqueId;
-        private readonly IStopwatchLogger logger;
+        private readonly Action<string> loggingAction;
         protected readonly Stopwatch timer = new Stopwatch();
 
-        #region Constructors
         /// <summary>
         /// Starts a System.Diagnostics.Stopwatch on construction, and logs the elapsed time when `.Dispose()` is called.
         /// </summary>
@@ -36,16 +36,14 @@ namespace LoggingStopwatch
         /// String to identify which operation was timed, in the logs.
         /// A random unique identifier will be generated in addition to this, so that multiple executions are distinguishable.
         /// </param>
-        /// <param name="logger">
-        /// Logger object to perform the logging when appropriate. 
-        /// </param>
+        /// <param name="loggingAction">Method to call whenever some text should be logged.</param>
         /// <param name="logAtStart">
         /// Indicates whether a log record should be written at the start of the process.
         /// Consider using the <see cref="LongOperationLoggingStopwatch"/> if you want this.
         /// </param>
-        public LoggingStopwatch(string identifier, IStopwatchLogger logger, bool logAtStart = false)
+        public LoggingStopwatch(string identifier, Action<string> loggingAction, bool logAtStart = false)
         {
-            this.logger = logger;
+            this.loggingAction = loggingAction;
             this.identifier = identifier;
             //Ensure that if we time the same operation repeatedly, we can tell which logs are associated with which execution.
             uniqueId = GenerateRandomStringId();
@@ -56,27 +54,9 @@ namespace LoggingStopwatch
             timer.Start();
         }
 
-        /// <inheritdoc/>
-        /// <param name="identifier">Defers to Inherited paramDoc</param>
-        /// <param name="loggingAction">Method to call whenever some text should be logged.</param>
-        /// <param name="logAtStart">Defers to Inherited paramDoc</param>
-        public LoggingStopwatch(string identifier, Action<string> loggingAction, bool logAtStart = false)
-            : this(identifier, new LambdaLogger(loggingAction), logAtStart)
-        { }
-
-        //Note if you copy-paste this code, feel free to delete this if you don't want the Microsoft.Extensions.Logging dependency.
-        /// <inheritdoc/>
-        /// <param name="identifier">Defers to Inherited paramDoc</param>
-        /// <param name="microsoftLogger">Accepts an <see cref="ILogger"/> and logs to it at the <see cref="LogLevel.Information"/> level.</param>
-        /// <param name="logAtStart">Defers to Inherited paramDoc</param>
-        public LoggingStopwatch(string identifier, ILogger microsoftLogger, bool logAtStart = false)
-            : this(identifier, new MicrosoftLoggerWrapper(microsoftLogger), logAtStart)
-        { }
-        #endregion
-
         protected void Log(string text)
         {
-            logger.Log($"{identifier}|{uniqueId}|{text}");
+            loggingAction($"{identifier}|{uniqueId}|{text}");
         }
 
         public virtual void Dispose()
@@ -84,7 +64,7 @@ namespace LoggingStopwatch
             //TODO: What about errors throw in the using block.
             Log($"Completed in: {timer.Elapsed}");
         }
-
+        
         private static readonly Random RandomSource = new Random();
         private static string GenerateRandomStringId()
         {
