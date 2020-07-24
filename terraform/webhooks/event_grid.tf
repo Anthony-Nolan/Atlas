@@ -6,19 +6,17 @@ locals {
 }
 
 module "donor_import_function_key" {
-  source = "github.com/eltimmo/terraform-azure-function-app-get-keys"
-  resource_group_name  = var.TERRAFORM_RESOURCE_GROUP_NAME
-  function_app_id = "/subscriptions/6114522f-eea5-44ab-94ab-af37ffffc4d3/resourceGroups/DEV-ATLAS-RESOURCE-GROUP/providers/Microsoft.Web/sites/DEV-ATLAS-DONOR-IMPORT-FUNCTION"
-  key_set = "masterKey"
-  key = "masterKey"
+  source = "./modules/fetch_key"
+  function_app_id = data.terraform_remote_state.atlas.outputs.donor_import.function_app.id
+  client_id = var.AZURE_CLIENT_ID
+  client_secret = var.AZURE_CLIENT_SECRET
 }
 
 module "match_prediction_function_key" {
-  source = "github.com/eltimmo/terraform-azure-function-app-get-keys"
-  resource_group_name  = var.TERRAFORM_RESOURCE_GROUP_NAME
-  function_app_id = "/subscriptions/6114522f-eea5-44ab-94ab-af37ffffc4d3/resourceGroups/DEV-ATLAS-RESOURCE-GROUP/providers/Microsoft.Web/sites/DEV-ATLAS-MATCH-PREDICTION-FUNCTION"
-  key_set = "masterKey"
-  key = "masterKey"
+  source = "./modules/fetch_key"
+  function_app_id = data.terraform_remote_state.atlas.outputs.match_prediction.function_app.id
+  client_id = var.AZURE_CLIENT_ID
+  client_secret = var.AZURE_CLIENT_SECRET
 }
 
 resource "azurerm_eventgrid_event_subscription" "donor-file-upload" {
@@ -31,7 +29,7 @@ resource "azurerm_eventgrid_event_subscription" "donor-file-upload" {
   }
 
   webhook_endpoint {
-    url = "https://${data.terraform_remote_state.atlas.outputs.donor_import.function_app.hostname}/runtime/webhooks/EventGrid?functionName=${local.import_donor_file_function_name}&code=${module.donor_import_function_key.function_key}"
+    url = "https://${data.terraform_remote_state.atlas.outputs.donor_import.function_app.hostname}/runtime/webhooks/EventGrid?functionName=${local.import_donor_file_function_name}&code=${module.donor_import_function_key.function_key.key}"
   }
 }
 
@@ -45,6 +43,6 @@ resource "azurerm_eventgrid_event_subscription" "haplotype-frequency-set-upload"
   }
 
   webhook_endpoint {
-    url = "https://${data.terraform_remote_state.atlas.outputs.match_prediction.function_app.hostname}/runtime/webhooks/EventGrid?functionName=${local.import_haplotype_frequency_set_function_name}&code=${module.match_prediction_function_key.function_key}"
+    url = "https://${data.terraform_remote_state.atlas.outputs.match_prediction.function_app.hostname}/runtime/webhooks/EventGrid?functionName=${local.import_haplotype_frequency_set_function_name}&code=${module.match_prediction_function_key.function_key.key}"
   }
 }
