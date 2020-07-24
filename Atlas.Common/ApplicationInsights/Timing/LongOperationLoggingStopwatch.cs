@@ -225,8 +225,18 @@ namespace LoggingStopwatch
         private class InnerOperationExecutionTimer : IDisposable
         {
             private readonly LongOperationLoggingStopwatch parent;
-            private readonly ThreadLocal<Stopwatch> timer = new ThreadLocal<Stopwatch>(() => new Stopwatch(), true);
-            
+
+            // The StartOperation() method is going to be called from multiple threads, in parallel, and we want each call to Start a different StopWatch.
+            // That's exactly what ThreadLocal does - gives you distinct objects on distinct threads.
+            // Unfortunately, ThreadLocal will NOT (necessarily) give you the same object when called either side of an await call! https://stackoverflow.com/questions/48973599/c-net-using-threadlocal-with-async-await
+            // Which would mean that the Stop() method wouldn't necessarily get the same timer that we started previously.
+            // Fortunately, AsyncLocal DOES guarantee to give you the same object on either side of the await call.
+            // But AsyncLocal doesn't keep track of all the OTHER threads :(
+            // So we need to use ThreadLocal in the StartOperation to *provision* the StopWatch, and AsyncLocal to retain a reference to it on the other side of the .Dispose call.
+
+            private readonly ThreadLocal<Stopwatch> timers_OnThread = new ThreadLocal<Stopwatch>(() => new Stopwatch(), true);
+            private readonly AsyncLocal<Stopwatch> asyncSafeTimerHolder = new AsyncLocal<Stopwatch>();
+
             public InnerOperationExecutionTimer(LongOperationLoggingStopwatch parent)
             {
                 this.parent = parent;
@@ -234,18 +244,21 @@ namespace LoggingStopwatch
 
             public void StartOperation()
             {
-                timer.Value.Start();
+                var thisExecutionTimer = timers_OnThread.Value;
+                asyncSafeTimerHolder.Value = thisExecutionTimer;
+                thisExecutionTimer.Start();
             }
 
             public void Dispose()
             {
-                timer.Value.Stop();
+                var thisExecutionTimer = asyncSafeTimerHolder.Value;
+                thisExecutionTimer.Stop();
                 parent.ReportInnerExecutionComplete();
             }
 
-            public IList<TimeSpan> ListAllThreadTimes() => timer.Values.Select(watch => watch.Elapsed).ToArray();
-            public int DistinctThreads => timer.Values.Count;
-            public TimeSpan TotalLinearTime => new TimeSpan(timer.Values.Sum(watches => watches.ElapsedTicks));
+            public IList<TimeSpan> ListAllThreadTimes() => timers_OnThread.Values.Select(watch => watch.Elapsed).Where(elapsed => elapsed != TimeSpan.Zero).ToArray();
+            public int DistinctThreads => ListAllThreadTimes().Count;
+            public TimeSpan TotalLinearTime => new TimeSpan(ListAllThreadTimes().Sum(watches => watches.Ticks));
         }
     }
 }
