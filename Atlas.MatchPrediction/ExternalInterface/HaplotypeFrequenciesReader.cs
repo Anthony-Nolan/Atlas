@@ -25,7 +25,9 @@ namespace Atlas.MatchPrediction.ExternalInterface
 
         public async Task<IReadOnlyCollection<HaplotypeFrequency>> GetActiveGlobalHaplotypeFrequencies()
         {
-            return (await repository.GetActiveGlobalHaplotypeFrequencies()).Select(MapFromDataModelToExternalModel).ToList();
+            return (await repository.GetActiveHaplotypeFrequencies(null, null))
+                .Select(MapFromDataModelToExternalModel)
+                .ToList();
         }
 
         private static HaplotypeFrequency MapFromDataModelToExternalModel(Data.Models.HaplotypeFrequency frequency)
