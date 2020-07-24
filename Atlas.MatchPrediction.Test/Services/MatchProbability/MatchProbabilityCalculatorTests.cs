@@ -193,9 +193,9 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 AllowedLoci
             );
 
-            actualProbability.ZeroMismatchProbability.Decimal.Should().Be(null);
-            actualProbability.OneMismatchProbability.Decimal.Should().Be(null);
-            actualProbability.TwoMismatchProbability.Decimal.Should().Be(null);
+            actualProbability.ZeroMismatchProbability.Decimal.Should().Be(0m);
+            actualProbability.OneMismatchProbability.Decimal.Should().Be(0m);
+            actualProbability.TwoMismatchProbability.Decimal.Should().Be(0m);
         }
     }
 }
