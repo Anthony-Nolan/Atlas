@@ -25,7 +25,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var matchProbabilityInput = DefaultInputBuilder.Build();
 
-            await ImportFrequencies(new List<HaplotypeFrequency> {Builder<HaplotypeFrequency>.New.Build()});
+            await ImportFrequencies(new List<HaplotypeFrequency> {DefaultHaplotypeFrequency1.WithDataAt(Locus.A, "68:24").Build()});
 
             var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>(null);
 

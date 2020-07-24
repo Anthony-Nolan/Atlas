@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 {
     public interface IFrequencySetImporter
     {
-        Task Import(FrequencySetFile file);
+        Task Import(FrequencySetFile file, bool convertToPGroups = true);
     }
 
     internal class FrequencySetImporter : IFrequencySetImporter
@@ -40,7 +41,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
         }
 
-        public async Task Import(FrequencySetFile file)
+        public async Task Import(FrequencySetFile file, bool convertToPGroups)
         {
             if (file.FullPath.IsNullOrEmpty() || file.Contents == null)
             {
@@ -49,7 +50,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
             var metadata = GetMetadata(file);
             var set = await AddNewInactiveSet(metadata);
-            await StoreFrequencies(file.Contents, set.Id);
+            await StoreFrequencies(file.Contents, set.Id, convertToPGroups);
             await setRepository.ActivateSet(set.Id);
         }
 
@@ -79,7 +80,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             return await setRepository.AddSet(newSet);
         }
 
-        private async Task StoreFrequencies(Stream stream, int setId)
+        private async Task StoreFrequencies(Stream stream, int setId, bool convertToPGroups)
         {
             const int batchSize = 10000;
             var frequencies = frequencyCsvReader.GetFrequencies(stream);
@@ -92,34 +93,14 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
             foreach (var frequencyBatch in frequencies.Batch(batchSize))
             {
-                var convertedFrequencies = await Task.WhenAll(frequencyBatch.Select(async haplotypeFrequency =>
-                {
-                    var pGroupTyped = await hlaMetadataDictionary.ConvertGGroupsToPGroups(haplotypeFrequency.Hla, LocusSettings.MatchPredictionLoci);
-
-                    if (!pGroupTyped.AnyAtLoci(x => x == null, LocusSettings.MatchPredictionLoci))
+                var batch = convertToPGroups
+                    ? await ConvertHaplotypesToPGroupResolutionAndConsolidate(frequencyBatch, hlaMetadataDictionary)
+                    : frequencyBatch.Select(f =>
                     {
-                        haplotypeFrequency.Hla = pGroupTyped;
-                        haplotypeFrequency.TypingCategory = HaplotypeTypingCategory.PGroup;
-                    }
-                    else
-                    {
-                        haplotypeFrequency.TypingCategory = HaplotypeTypingCategory.GGroup;
-                    }
-
-                    return haplotypeFrequency;
-                }));
-
-                var combined = convertedFrequencies
-                    .GroupBy(f => f.Hla)
-                    .Select(groupByHla =>
-                    {
-                        // arbitrary haplotype frequency object, as everything but the frequency will be the same in all cases 
-                        var frequency = groupByHla.First();
-                        frequency.Frequency = groupByHla.Sum(x => x.Frequency);
-                        return frequency;
+                        f.TypingCategory = HaplotypeTypingCategory.GGroup;
+                        return f;
                     });
-
-                await frequenciesRepository.AddOrUpdateHaplotypeFrequencies(setId, combined);
+                await frequenciesRepository.AddOrUpdateHaplotypeFrequencies(setId, batch);
                 hasImportedAnyFrequencies = true;
             }
 
@@ -127,6 +108,39 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             {
                 throw new Exception("No haplotype frequencies provided");
             }
+        }
+
+        private static async Task<IEnumerable<HaplotypeFrequency>> ConvertHaplotypesToPGroupResolutionAndConsolidate(
+            IEnumerable<HaplotypeFrequency> frequencyBatch,
+            IHlaMetadataDictionary hlaMetadataDictionary)
+        {
+            var convertedFrequencies = await Task.WhenAll(frequencyBatch.Select(async haplotypeFrequency =>
+            {
+                var pGroupTyped = await hlaMetadataDictionary.ConvertGGroupsToPGroups(haplotypeFrequency.Hla, LocusSettings.MatchPredictionLoci);
+
+                if (!pGroupTyped.AnyAtLoci(x => x == null, LocusSettings.MatchPredictionLoci))
+                {
+                    haplotypeFrequency.Hla = pGroupTyped;
+                    haplotypeFrequency.TypingCategory = HaplotypeTypingCategory.PGroup;
+                }
+                else
+                {
+                    haplotypeFrequency.TypingCategory = HaplotypeTypingCategory.GGroup;
+                }
+
+                return haplotypeFrequency;
+            }));
+
+            var combined = convertedFrequencies
+                .GroupBy(f => f.Hla)
+                .Select(groupByHla =>
+                {
+                    // arbitrary haplotype frequency object, as everything but the frequency will be the same in all cases 
+                    var frequency = groupByHla.First();
+                    frequency.Frequency = groupByHla.Sum(x => x.Frequency);
+                    return frequency;
+                });
+            return combined;
         }
     }
 }

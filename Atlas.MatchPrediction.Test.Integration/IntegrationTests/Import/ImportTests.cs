@@ -210,6 +210,38 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
+        public async Task Import_ForHaplotypeWithoutNullAlleles_WhenPGroupConversionDisabled_DoesNotConvertToPGroups()
+        {
+            var hla = new LociInfo<string>
+            {
+                A = "01:01:01G",
+                B = "13:01:01G",
+                C = "04:01:01G",
+                Dqb1 = "06:02:01G",
+                Drb1 = "03:07:01G",
+            };
+            using var file = FrequencySetFileBuilder
+                .New(null, null)
+                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                {
+                    new HaplotypeFrequency
+                    {
+                        Hla = hla,
+                        Frequency = 0.5m
+                    }
+                })
+                .Build();
+
+            await service.ImportFrequencySet(file, false);
+
+            var activeSet = await setRepository.GetActiveSet(null, null);
+            var importedFrequency = await inspectionRepository.GetFirstHaplotypeFrequency(activeSet.Id);
+
+            importedFrequency.TypingCategory.Should().Be(HaplotypeTypingCategory.GGroup);
+            importedFrequency.Hla.Should().BeEquivalentTo(hla);
+        }
+
+        [Test]
         public async Task Import_ForHaplotypeWithNullAllele_DoesNotConvertsToPGroups()
         {
             var hla = new LociInfo<string>

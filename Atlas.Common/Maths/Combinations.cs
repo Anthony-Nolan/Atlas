@@ -30,20 +30,21 @@ namespace Atlas.Common.Maths
             return shouldIncludeSelfPairs ? nonSelfPairs + selfPairs : nonSelfPairs;
         }
 
-        /// <param name="array">Array of initial values to form pairs from.</param>
+        /// <param name="collection">Array of initial values to form pairs from.</param>
         /// <param name="shouldIncludeSelfPairs">
         /// When false, returns pairs of items in the list.
         /// When true, returns combinations *including* each item paired with itself.
         /// </param>
-        public static IEnumerable<Tuple<T, T>> AllPairs<T>(T[] array, bool shouldIncludeSelfPairs = false)
+        public static IEnumerable<Tuple<T, T>> AllPairs<T>(IEnumerable<T> collection, bool shouldIncludeSelfPairs = false)
         {
+            var array = collection.ToArray();
             var empty = Enumerable.Empty<Tuple<T, T>>();
-            if (array.Length == 0)
+            if (!array.Any())
             {
                 return empty;
             }
 
-            if (array.Length == 1)
+            if (array.Count() == 1)
             {
                 var single = array.Single();
                 return shouldIncludeSelfPairs ? new []{ Tuple.Create(single, single) } : empty;
@@ -104,7 +105,7 @@ namespace Atlas.Common.Maths
                 var value = stack.Pop();
                 while (value < n_sourceCollectionSize)
                 {
-                    //"value++;" rather than "++value;", because we want the values in this array to be 0-indexed not 1-indexed.
+                    //"value++;" rather than "++value;", because we want the values in this collection to be 0-indexed not 1-indexed.
                     result[index++] = value++;
                     stack.Push(value);
                     if (index != r_combinationSize)
@@ -119,7 +120,7 @@ namespace Atlas.Common.Maths
         }
 
         /// <returns>
-        /// All elements of the array as pairs with itself.
+        /// All elements of the collection as pairs with itself.
         /// e.g. [1, 2] => [[1,1], [2,2]]
         /// </returns>
         private static IEnumerable<Tuple<T, T>> AllSelfPairs<T>(IEnumerable<T> array)

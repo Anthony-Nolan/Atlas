@@ -3,6 +3,7 @@ using Atlas.Common.Caching;
 using Atlas.Common.Notifications;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Config;
+using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
@@ -11,17 +12,33 @@ using LazyCache;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 {
     public interface IHaplotypeFrequencyService
     {
-        public Task ImportFrequencySet(FrequencySetFile file);
+        /// <summary>
+        /// Imports all haplotype frequencies from a given frequency set file.
+        /// </summary>
+        /// <param name="file">Contains both the haplotype frequencies as file contents, as well as metadata about the file itself.</param>
+        /// <param name="convertToPGroups">
+        /// When set, the import process will convert haplotypes to PGroup typing where possible (i.e. when haplotype has no null expressing GGroups).
+        /// For any haplotypes that are different at G-Group level, but the same at P-Group, frequency values will be consolidated.
+        ///
+        /// Defaults to true, as this yields a significantly faster algorithm.
+        ///
+        /// When set to false, all frequencies will be imported at the original G-Group resolutions.
+        /// This is only expected to be used in test code, where it is much easier to keep track of a single set of frequencies,
+        /// than of GGroup typed haplotypes *and* their corresponding P-Group typed ones.  
+        /// </param>
+        /// <returns></returns>
+        public Task ImportFrequencySet(FrequencySetFile file, bool convertToPGroups = true);
         public Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(FrequencySetMetadata donorInfo, FrequencySetMetadata patientInfo);
         public Task<HaplotypeFrequencySet> GetSingleHaplotypeFrequencySet(FrequencySetMetadata setMetaData);
 
-        Task<Dictionary<HaplotypeHla, decimal>> GetAllHaplotypeFrequencies(int setId);
+        Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId);
     }
 
     internal class HaplotypeFrequencyService : IHaplotypeFrequencyService
@@ -53,11 +70,11 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             cache = persistentCacheProvider.Cache;
         }
 
-        public async Task ImportFrequencySet(FrequencySetFile file)
+        public async Task ImportFrequencySet(FrequencySetFile file, bool convertToPGroups)
         {
             try
             {
-                await frequencySetImporter.Import(file);
+                await frequencySetImporter.Import(file, convertToPGroups);
                 file.ImportedDateTime = DateTimeOffset.UtcNow;
 
                 await SendSuccessNotification(file);
@@ -117,7 +134,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         }
 
         /// <inheritdoc />
-        public async Task<Dictionary<HaplotypeHla, decimal>> GetAllHaplotypeFrequencies(int setId)
+        public async Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId)
         {
             var cacheKey = $"hf-set-{setId}";
             return await cache.GetOrAddAsync(cacheKey, async () => await frequencyRepository.GetAllHaplotypeFrequencies(setId));

@@ -4,13 +4,14 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Config;
-using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
+using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using NSubstitute;
 using NUnit.Framework;
+using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 
 namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
 {
@@ -39,7 +40,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 .Returns(new ExpandedGenotype {Diplotypes = new List<Diplotype> {DiplotypeBuilder.New.Build()}});
 
             frequencyService.GetAllHaplotypeFrequencies(Arg.Any<int>())
-                .Returns(new Dictionary<LociInfo<string>, decimal> {{new LociInfo<string>(), 0}});
+                .Returns(new Dictionary<LociInfo<string>, HaplotypeFrequency> {{new LociInfo<string>(), HaplotypeFrequencyBuilder.New.Build()}});
 
             genotypeLikelihoodCalculator.CalculateLikelihood(Arg.Any<ExpandedGenotype>()).Returns(0);
 
