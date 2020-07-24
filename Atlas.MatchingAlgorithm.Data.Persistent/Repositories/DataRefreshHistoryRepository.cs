@@ -65,7 +65,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         public async Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion, DateTime? finishTimeUtc)
         {
             var record = await GetRecord(recordId);
-            record.HlaNomenclatureVersion = wmdaHlaNomenclatureVersion;
+            record.HlaNomenclatureVersion = wmdaHlaNomenclatureVersion ?? record.HlaNomenclatureVersion; // Don't wipe the HLA version if we already recorded it.
             record.RefreshEndUtc = finishTimeUtc;
             await Context.SaveChangesAsync();
         }
