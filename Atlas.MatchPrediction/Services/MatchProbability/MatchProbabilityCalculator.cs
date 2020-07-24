@@ -40,11 +40,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var sumOfPatientLikelihoods = patientInfo.Genotypes.Select(p => patientLikelihoods[p]).Sum();
             var sumOfDonorLikelihoods = donorInfo.Genotypes.Select(d => donorLikelihoods[d]).Sum();
 
-            if (sumOfPatientLikelihoods == 0 || sumOfDonorLikelihoods == 0)
-            {
-                return new MatchProbabilityResponse(Probability.Zero(), allowedLoci);
-            }
-
             decimal CalculateProbability(Func<ISet<GenotypeMatchDetails>, IEnumerable<GenotypeMatchDetails>> filterMatches)
             {
                 var filteredMatches = filterMatches(patientDonorMatchDetails);

@@ -180,22 +180,5 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             actualProbability.ZeroMismatchProbability.Decimal.Should().Be(0.1428571428571428571428571429m);
         }
-
-        [Test]
-        public void CalculateMatchProbability_WithUnrepresentedPhenotypes_HasNullProbability()
-        {
-            var likelihoods = DictionaryWithCommonValue(0m, defaultDonorHla1, defaultDonorHla2, defaultPatientHla1, defaultPatientHla2);
-
-            var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(
-                SubjectCalculatorInputsBuilder.New.WithLikelihoods(likelihoods).WithGenotypes(defaultPatientHla1, defaultPatientHla2).Build(),
-                SubjectCalculatorInputsBuilder.New.WithLikelihoods(likelihoods).WithGenotypes(defaultDonorHla1, defaultDonorHla2).Build(),
-                new HashSet<GenotypeMatchDetails>(),
-                AllowedLoci
-            );
-
-            actualProbability.ZeroMismatchProbability.Decimal.Should().Be(0m);
-            actualProbability.OneMismatchProbability.Decimal.Should().Be(0m);
-            actualProbability.TwoMismatchProbability.Decimal.Should().Be(0m);
-        }
     }
 }
