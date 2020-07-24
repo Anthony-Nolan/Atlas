@@ -4,9 +4,10 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Config;
-using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
+using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
@@ -43,7 +44,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         }
 
         private static void UpdateFrequenciesForDiplotype(
-            Dictionary<HaplotypeHla, decimal> haplotypesWithFrequencies,
+            Dictionary<HaplotypeHla, HaplotypeFrequency> haplotypesWithFrequencies,
             IEnumerable<Diplotype> diplotypes,
             ISet<Locus> allowedLoci)
         {
@@ -56,26 +57,28 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
         }
 
         private static decimal GetFrequencyForHla(
-            Dictionary<HaplotypeHla, decimal> haplotypesWithFrequencies,
+            Dictionary<HaplotypeHla, HaplotypeFrequency> haplotypesWithFrequencies,
             HaplotypeHla hla,
             ISet<Locus> allowedLoci)
         {
-            if (!haplotypesWithFrequencies.TryGetValue(hla, out var frequency))
+            if (!haplotypesWithFrequencies.TryGetValue(hla, out var hf))
             {
-                if (!allowedLoci.SetEquals(LocusSettings.MatchPredictionLoci) && frequency == default)
+                hf = new HaplotypeFrequency();
+                if (!allowedLoci.SetEquals(LocusSettings.MatchPredictionLoci))
                 {
                     //This can get called in parallel (see MPS.CalculateGenotypeLikelihoods) so this .Where() would get "Collection was modified" errors.
                     var isolatedHaplotypesWithFrequencies = haplotypesWithFrequencies.ToList();
-                    frequency = isolatedHaplotypesWithFrequencies
-                        .Where(kvp => kvp.Key.EqualsAtLoci(hla, allowedLoci)).Select(kvp => kvp.Value)
+                    hf.Frequency = isolatedHaplotypesWithFrequencies
+                        .Where(kvp => kvp.Key.EqualsAtLoci(hla, allowedLoci))
+                        .Select(kvp => kvp.Value.Frequency)
                         .DefaultIfEmpty(0m)
                         .Sum();
 
-                    haplotypesWithFrequencies.Add(hla, frequency);
+                    haplotypesWithFrequencies.Add(hla, hf);
                 }
             }
 
-            return frequency;
+            return hf?.Frequency ?? 0;
         }
     }
 }

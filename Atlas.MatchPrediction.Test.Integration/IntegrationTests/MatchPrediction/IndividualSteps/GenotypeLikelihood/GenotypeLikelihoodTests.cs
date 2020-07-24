@@ -205,7 +205,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode, haplotypes)
                 .Build();
-            await importService.ImportFrequencySet(file);
+            await importService.ImportFrequencySet(file, false);
 
             var individualInfo = new FrequencySetMetadata
             {

@@ -50,8 +50,11 @@ namespace Atlas.Common.Caching
         /// <summary>
         /// Each cached collection is allowed <see cref="MaxConcurrentSingleItemFetches"/> concurrent threads.
         /// The absolute maximum number of open connections in Azure is 128.
-        /// Therefore we are restricting the number of tracked collections to 128/[threads-per-collection] - representing the worst case scenario
-        /// where all collections are using all threads.
+        /// Therefore we would ideally be restricting the number of tracked collections to 128/[threads-per-collection] -
+        /// representing the worst case scenario where all collections are using all threads.
+        ///
+        /// In practice we have doubled this number to allow for two HLA Metadata Dictionary caches in integration tests.
+        /// This means that our Azure thread limit could theoretically be broken - but in practice this is unlikely.
         /// 
         /// If more collections are needed, either:
         ///     - Increase this limit and decrease the per-collection thread count.
@@ -59,7 +62,7 @@ namespace Atlas.Common.Caching
         ///       cause port saturation in an Azure environment.
         ///     - Make further changes such that the thread count is either dynamic, or configurable per-collection use-case. 
         /// </summary>
-        private const int MaxCollectionCaches = 8;
+        private const int MaxCollectionCaches = 16;
 
         // Fetching a single item will, in most use cases, open a connection (e.g. fetching data from azure storage)
         // Azure services have a limitation on the number of concurrent open connections, and saturating this allowance causes socket exceptions

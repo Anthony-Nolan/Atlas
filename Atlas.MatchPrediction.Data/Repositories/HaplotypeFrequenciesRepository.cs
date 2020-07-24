@@ -20,7 +20,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
         Task AddOrUpdateHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies);
 
         Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypeFrequencies(IEnumerable<HaplotypeHla> haplotypes, int setId);
-        Task<Dictionary<HaplotypeHla, decimal>> GetAllHaplotypeFrequencies(int setId);
+        Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId);
     }
 
     public class HaplotypeFrequenciesRepository : IHaplotypeFrequenciesRepository
@@ -67,7 +67,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
             // TODO: ATLAS-590: Actually, this probably won't fly on devops - the import uses 12K SQL connections
             foreach (var update in updates)
             {
-                var existingFrequency = existingFrequencies[update.Hla];
+                var existingFrequency = existingFrequencies[update.Hla].Frequency;
                 var combinedFrequency = existingFrequency + update.Frequency;
                 const string sql = @"
 UPDATE HaplotypeFrequencies
@@ -173,7 +173,7 @@ WHERE A = @A AND B = @B AND C = @C AND DQB1 = @Dqb1 AND DRB1 = @Drb1 AND Set_Id 
         }
 
         /// <inheritdoc />
-        public async Task<Dictionary<HaplotypeHla, decimal>> GetAllHaplotypeFrequencies(int setId)
+        public async Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId)
         {
             const string sql = "SELECT * FROM HaplotypeFrequencies WHERE Set_Id = @setId";
             await using (var conn = new SqlConnection(connectionString))
@@ -181,7 +181,7 @@ WHERE A = @A AND B = @B AND C = @C AND DQB1 = @Dqb1 AND DRB1 = @Drb1 AND Set_Id 
                 var frequencyModels = await conn.QueryAsync<HaplotypeFrequency>(sql, new {setId}, commandTimeout: 600);
                 return frequencyModels.ToDictionary(
                     f => f.Haplotype(),
-                    f => f.Frequency
+                    f => f
                 );
             }
         }
