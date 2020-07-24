@@ -87,7 +87,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             if (donorGenotypes.IsNullOrEmpty() || patientGenotypes.IsNullOrEmpty())
             {
-                return new MatchProbabilityResponse(Probability.Null(), allowedLoci);
+                return new MatchProbabilityResponse(null, allowedLoci)
+                {
+                    UnrepresentedDonorHla = donorGenotypes.IsNullOrEmpty(),
+                    UnrepresentedPatientHla = patientGenotypes.IsNullOrEmpty()
+                };
             }
 
             //TODO: ATLAS-566 : Currently for patient/donor pairs the threshold is about one million before the request starts taking  >2 minutes

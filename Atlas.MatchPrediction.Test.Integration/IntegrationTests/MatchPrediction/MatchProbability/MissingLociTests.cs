@@ -19,7 +19,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var matchProbabilityInput = DefaultInputBuilder.Build();
 
-            await ImportFrequencies(new List<HaplotypeFrequency> { Builder<HaplotypeFrequency>.New.Build() });
+            var possibleHaplotypes = new List<HaplotypeFrequency>
+            {
+                DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
+                DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build(),
+            };
+
+            await ImportFrequencies(possibleHaplotypes, null, null);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -37,7 +43,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, lociToExclude).Build())
                 .Build();
 
-            await ImportFrequencies(new List<HaplotypeFrequency> {Builder<HaplotypeFrequency>.New.Build()});
+            var possibleHaplotypes = new List<HaplotypeFrequency>
+            {
+                DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
+                DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build(),
+            };
+
+            await ImportFrequencies(possibleHaplotypes, null, null);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -55,7 +67,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, lociToExclude).Build())
                 .Build();
 
-            await ImportFrequencies(new List<HaplotypeFrequency> { Builder<HaplotypeFrequency>.New.Build() });
+            var possibleHaplotypes = new List<HaplotypeFrequency>
+            {
+                DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
+                DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build(),
+            };
+
+            await ImportFrequencies(possibleHaplotypes, null, null);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -77,7 +95,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, patientLociToExclude).Build())
                 .Build();
 
-            await ImportFrequencies(new List<HaplotypeFrequency> {Builder<HaplotypeFrequency>.New.Build()});
+            var possibleHaplotypes = new List<HaplotypeFrequency>
+            {
+                DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
+                DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build(),
+            };
+
+            await ImportFrequencies(possibleHaplotypes, null, null);
 
             var lociToExclude = donorLociToExclude.Union(patientLociToExclude);
 

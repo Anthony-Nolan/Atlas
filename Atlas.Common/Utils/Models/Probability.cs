@@ -5,21 +5,20 @@ namespace Atlas.Common.Utils.Models
 {
     public class Probability
     {
-        public static Probability Null() => new Probability(null);
         public static Probability Zero() => new Probability(0m);
         public static Probability One() => new Probability(1m);
 
-        public Probability(decimal? value)
+        public Probability(decimal value)
         {
             Decimal = value;
         }
 
         [JsonProperty]
-        public decimal? Decimal { get; private set; }
+        public decimal Decimal { get; private set; }
 
         public Probability Round(int decimalPlaces)
         {
-            return Decimal != null ? new Probability(decimal.Round((decimal) Decimal, decimalPlaces)) : new Probability(null);
+            return new Probability(decimal.Round(Decimal, decimalPlaces));
         }
 
         public int Percentage => Convert.ToInt32(Decimal * 100);

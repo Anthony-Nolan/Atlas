@@ -4,6 +4,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.Common.Utils.Extensions;
+using Atlas.Common.Utils.Models;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
@@ -26,14 +27,14 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(new List<HaplotypeFrequency> {Builder<HaplotypeFrequency>.New.Build()});
 
-            var expectedProbabilityPerLocus = new LociInfo<decimal?>(null);
+            var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>(null);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Decimal.Should().Be(null);
-            matchDetails.OneMismatchProbability.Decimal.Should().Be(null);
-            matchDetails.TwoMismatchProbability.Decimal.Should().Be(null);
-            matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedProbabilityPerLocus);
+            matchDetails.ZeroMismatchProbability.Should().Be(null);
+            matchDetails.OneMismatchProbability.Should().Be(null);
+            matchDetails.TwoMismatchProbability.Should().Be(null);
+            matchDetails.ZeroMismatchProbabilityPerLocus.Should().Be(expectedMismatchProbabilityPerLocus);
         }
 
         [Test]
