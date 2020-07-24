@@ -26,13 +26,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(new List<HaplotypeFrequency> {Builder<HaplotypeFrequency>.New.Build()});
 
-            var expectedProbabilityPerLocus = new LociInfo<decimal?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0};
+            var expectedProbabilityPerLocus = new LociInfo<decimal?>(null);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Decimal.Should().Be(0m);
-            matchDetails.OneMismatchProbability.Decimal.Should().Be(0m);
-            matchDetails.TwoMismatchProbability.Decimal.Should().Be(0m);
+            matchDetails.ZeroMismatchProbability.Decimal.Should().Be(null);
+            matchDetails.OneMismatchProbability.Decimal.Should().Be(null);
+            matchDetails.TwoMismatchProbability.Decimal.Should().Be(null);
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedProbabilityPerLocus);
         }
 
@@ -62,15 +62,26 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [Test]
         public async Task CalculateMatchProbability_WhenGenotypesAreNonMatching_ZeroPercentProbability()
         {
-            const string alleleStringA1 = "23:17";
-            const string alleleStringA2 = "23:18";
+            const string gGroupA = "23:01:01G";
+            const string gGroupB = "07:05:01G";
+            const string gGroupC = "07:01:01G";
+            const string gGroupDqb1 = "06:01:01G";
+            const string gGroupDrb1 = "01:01:01G";
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
             {
-                DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
-                DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build(),
-                DefaultHaplotypeFrequency1.With(h => h.A, alleleStringA1).With(h => h.Frequency, 0.00002m).Build(),
-                DefaultHaplotypeFrequency2.With(h => h.A, alleleStringA2).With(h => h.Frequency, 0.00001m).Build()
+                DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00001m).Build(),
+                DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00002m).Build(),
+                HaplotypeFrequencyBuilder.New
+                    .WithHaplotype(new LociInfo<string>()
+                    {
+                        A = gGroupA,
+                        B = gGroupB,
+                        C = gGroupC,
+                        Dpb1 = null,
+                        Dqb1 = gGroupDqb1,
+                        Drb1 =  gGroupDrb1
+                    }).With(h => h.Frequency, 0.00003m).Build()
             };
 
             await ImportFrequencies(possibleHaplotypes);
@@ -80,7 +91,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     Alleles.UnambiguousAlleleDetails.A.Position1.Allele,
                     Alleles.UnambiguousAlleleDetails.A.Position2.Allele)
                 .Build();
-            var donorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.A, alleleStringA1, alleleStringA2).Build();
+
+            var donorHla = new PhenotypeInfoBuilder<string>()
+                .WithDataAt(Locus.A, gGroupA)
+                .WithDataAt(Locus.B, gGroupB)
+                .WithDataAt(Locus.C, gGroupC)
+                .WithDataAt(Locus.Dqb1, gGroupDqb1)
+                .WithDataAt(Locus.Drb1, gGroupDrb1).Build();
 
             var matchProbabilityInput = DefaultInputBuilder
                 .With(i => i.PatientHla, patientHla)

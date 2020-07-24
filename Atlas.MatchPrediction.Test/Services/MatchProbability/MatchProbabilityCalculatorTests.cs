@@ -182,7 +182,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         }
 
         [Test]
-        public void CalculateMatchProbability_WithUnrepresentedPhenotypes_HasZeroProbability()
+        public void CalculateMatchProbability_WithUnrepresentedPhenotypes_HasNullProbability()
         {
             var likelihoods = DictionaryWithCommonValue(0m, defaultDonorHla1, defaultDonorHla2, defaultPatientHla1, defaultPatientHla2);
 
@@ -193,9 +193,9 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 AllowedLoci
             );
 
-            actualProbability.ZeroMismatchProbability.Decimal.Should().Be(0m);
-            actualProbability.OneMismatchProbability.Decimal.Should().Be(0m);
-            actualProbability.TwoMismatchProbability.Decimal.Should().Be(0m);
+            actualProbability.ZeroMismatchProbability.Decimal.Should().Be(null);
+            actualProbability.OneMismatchProbability.Decimal.Should().Be(null);
+            actualProbability.TwoMismatchProbability.Decimal.Should().Be(null);
         }
     }
 }
