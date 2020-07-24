@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
@@ -39,6 +40,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             var sumOfPatientLikelihoods = patientInfo.Genotypes.Select(p => patientLikelihoods[p]).Sum();
             var sumOfDonorLikelihoods = donorInfo.Genotypes.Select(d => donorLikelihoods[d]).Sum();
+
+            if (sumOfPatientLikelihoods == 0 || sumOfDonorLikelihoods == 0)
+            {
+                throw new InvalidDataException("Cannot calculate match probability for unrepresented hla");
+            }
 
             decimal CalculateProbability(Func<ISet<GenotypeMatchDetails>, IEnumerable<GenotypeMatchDetails>> filterMatches)
             {
