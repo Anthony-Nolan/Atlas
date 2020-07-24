@@ -9,7 +9,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
 {
     public interface IHaplotypeFrequenciesReadRepository
     {
-        Task<IReadOnlyCollection<HaplotypeFrequency>> GetActiveGlobalHaplotypeFrequencies();
+        Task<IReadOnlyCollection<HaplotypeFrequency>> GetActiveHaplotypeFrequencies(string registryCode, string ethnicityCode);
     }
 
     public class HaplotypeFrequenciesReadRepository : IHaplotypeFrequenciesReadRepository
@@ -21,17 +21,20 @@ namespace Atlas.MatchPrediction.Data.Repositories
             this.connectionString = connectionString;
         }
 
-        public async Task<IReadOnlyCollection<HaplotypeFrequency>> GetActiveGlobalHaplotypeFrequencies()
+        public async Task<IReadOnlyCollection<HaplotypeFrequency>> GetActiveHaplotypeFrequencies(string registryCode, string ethnicityCode)
         {
-            const string sql = @"SELECT h.*
+            var sql = @$"SELECT h.*
                 FROM HaplotypeFrequencySets s
                 JOIN HaplotypeFrequencies h
                 ON s.Id = h.Set_Id
-                WHERE s.Active = 1 AND s.RegistryCode IS NULL AND s.EthnicityCode IS NULL";
+                WHERE
+                    s.Active = 1 AND
+                    ISNULL(s.RegistryCode,'') = ISNULL(@{nameof(registryCode)},'') AND
+                    ISNULL(s.ethnicityCode,'') = ISNULL(@{nameof(ethnicityCode)},'')";
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                return (await conn.QueryAsync<HaplotypeFrequency>(sql, commandTimeout: 600)).ToList();
+                return (await conn.QueryAsync<HaplotypeFrequency>(sql, new {registryCode, ethnicityCode}, commandTimeout: 600)).ToList();
             }
         }
     }
