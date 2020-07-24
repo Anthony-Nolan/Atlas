@@ -61,9 +61,9 @@ Once terraform has created ATLAS resources for the first time, certain actions m
 
 - Azure Function Host Keys
   - Any host keys other than the default should be created manually
-  - Master host keys for any functions with Webhooks must be specified as variables in the release pipeline.
-    - The webhooks terraform script will fail without these values. Running the first terraform script will create the functions and allow you to fetch the host keys.
-    - TODO: ATLAS-379: Fetch this via Azure CLI as part of release
+  - Master host keys for any functions with Webhooks are necessary for setting up the webhook
+    - The webhooks terraform script will fetch these values itself. 
+    - The first terraform script must be run first, as it will create the functions and allow the second to fetch the host keys.
 - Azure SQL Permissions
   - Service Accounts
     - Each service (e.g. matching) within ATLAS should have a service account created on the appropriate databases. The username and password for such accounts should then be set as a variable in the release pipeline.
