@@ -13,7 +13,12 @@ The following are the steps that are required to be taken manually when deployin
 
 - An *Azure subscription* must exist into which the Atlas system will be deployed.
 - An *Azure storage account* must be available for Terraform to use as a backend.
-- An *App Registration* should be created within Azure Active Directory, used to by Terraform for authentication.
+- An *App Registration* should be created within Azure Active Directory, to be used by Terraform for authentication.
+- A second *App Registration* should be created within Azure Active Directory, to be used by the code itself for managing azure resources at runtime
+    - e.g. The matching algorithm Data Refresh needs to be able to scale azure databases at runtime.
+    - This information is set up as app settings by Terraform - the relevant Terraform variables are `AZURE_CLIENT_ID` and `AZURE_CLIENT_SECRET`
+    - These variables (`AZURE_CLIENT_ID` and `AZURE_CLIENT_SECRET`) are also used by Terraform to fetch function keys .
+
 
 ### Azure Devops Configuration
 
@@ -89,7 +94,7 @@ Once terraform has created ATLAS resources for the first time, certain actions m
   - IP Whitelisting (Optional)
     - By default, only other azure services will be allowed to access the database server through the firewall. For development access, any known IP addresses should be manually added to the IP whitelist in Azure.  
 
-### System Testsazure
+### System Tests
 
 The system tests require some Azure resources of their own - primarily SQL databases. For now these are manually created, in Azure.
 // TODO: ATLAS-314: Create these resources using terraform.
