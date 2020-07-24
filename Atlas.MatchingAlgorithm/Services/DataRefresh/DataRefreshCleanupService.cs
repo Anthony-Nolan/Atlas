@@ -101,7 +101,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             var dataRefreshRecords = dataRefreshHistoryRepository.GetInProgressJobs().ToList();
             foreach (var job in dataRefreshRecords)
             {
-                await dataRefreshHistoryRepository.UpdateExecutionDetails(job.Id, null, DateTime.UtcNow);
+                await dataRefreshHistoryRepository.UpdateExecutionDetails(job.Id, job.HlaNomenclatureVersion, DateTime.UtcNow);
                 await dataRefreshHistoryRepository.UpdateSuccessFlag(job.Id, false);
             }
         }
