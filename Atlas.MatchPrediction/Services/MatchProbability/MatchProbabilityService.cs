@@ -89,8 +89,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             {
                 return new MatchProbabilityResponse(null, allowedLoci)
                 {
-                    UnrepresentedDonorHla = donorGenotypes.IsNullOrEmpty(),
-                    UnrepresentedPatientHla = patientGenotypes.IsNullOrEmpty()
+                    IsDonorPhenotypeUnrepresented = donorGenotypes.IsNullOrEmpty(),
+                    IsPatientPhenotypeUnrepresented = patientGenotypes.IsNullOrEmpty()
                 };
             }
 
