@@ -18,7 +18,6 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
     public class AzureAuthenticationClient : IAzureAuthenticationClient
     {
         private const string OAuthBaseUrl = "https://login.microsoftonline.com/ukmarrow.org/oauth2/v2.0/token";
-
         private readonly HttpClient httpClient;
         private readonly AzureAuthenticationSettings settings;
 

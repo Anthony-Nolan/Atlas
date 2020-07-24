@@ -2,6 +2,7 @@ output "function_app" {
   value = {
     hostname = azurerm_function_app.atlas_match_prediction_function.default_hostname
     app_name = local.atlas_match_prediction_function_name
+    id = azurerm_function_app.atlas_match_prediction_function.id
   }
 }
 
