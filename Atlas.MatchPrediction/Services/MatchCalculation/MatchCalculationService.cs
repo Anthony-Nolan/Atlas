@@ -39,8 +39,6 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
             string hlaNomenclatureVersion,
             ISet<Locus> allowedLoci)
         {
-            const TargetHlaCategory matchingResolution = TargetHlaCategory.PGroup;
-
             var patientGenotypeAsSinglePGroups =
                 await locusHlaConverter.ConvertGroupsToPGroups(patientGenotype, hlaNomenclatureVersion, allowedLoci);
 

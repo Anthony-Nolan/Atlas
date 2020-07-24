@@ -7,6 +7,7 @@ using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
+using Atlas.Common.Utils.Models;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
@@ -16,6 +17,7 @@ using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchCalculation;
+using Microsoft.Azure.Documents.SystemFunctions;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
@@ -83,6 +85,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 "patient"
             );
 
+            if (donorGenotypes.IsNullOrEmpty() || patientGenotypes.IsNullOrEmpty())
+            {
+                return new MatchProbabilityResponse(Probability.Null(), allowedLoci);
+            }
+
             //TODO: ATLAS-566 : Currently for patient/donor pairs the threshold is about one million before the request starts taking  >2 minutes
             if (donorGenotypes.Count * patientGenotypes.Count > 1_000_000)
             {
@@ -105,7 +112,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             );
 
             // TODO: ATLAS-233: Re-introduce hardcoded 100% probability for guaranteed match but no represented genotypes
-
             var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientGenotypes, frequencySets.PatientSet, allowedLoci);
             var donorGenotypeLikelihoods = await CalculateGenotypeLikelihoods(donorGenotypes, frequencySets.DonorSet, allowedLoci);
 
