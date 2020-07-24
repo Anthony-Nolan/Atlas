@@ -11,8 +11,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         public Probability OneMismatchProbability { get; set; }
         public Probability TwoMismatchProbability { get; set; }
         public LociInfo<Probability> ZeroMismatchProbabilityPerLocus { get; set; }
-        public bool UnrepresentedPatientHla { get; set; }
-        public bool UnrepresentedDonorHla { get; set; }
+        public bool IsPatientPhenotypeUnrepresented { get; set; }
+        public bool IsDonorPhenotypeUnrepresented { get; set; }
 
         public MatchProbabilityResponse()
         {
