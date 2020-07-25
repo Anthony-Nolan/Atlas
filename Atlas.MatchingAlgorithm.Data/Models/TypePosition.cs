@@ -26,14 +26,19 @@ namespace Atlas.MatchingAlgorithm.Data.Models
             };
         }
 
+        /// <remarks>
+        /// For 100,000,000 reps:
+        ///   if = 0.6s
+        ///   dictionary = 1.2s
+        ///   switch = 1.5s
+        /// !!
+        /// </remarks>
         public static TypePosition ToTypePosition(this LocusPosition locusPosition)
         {
-            return locusPosition switch
-            {
-                LocusPosition.One => TypePosition.One,
-                LocusPosition.Two => TypePosition.Two,
-                _ => throw new ArgumentOutOfRangeException(nameof(locusPosition), locusPosition, null)
-            };
+            if (locusPosition == LocusPosition.One) { return TypePosition.One; }
+            if (locusPosition == LocusPosition.Two) { return TypePosition.Two; }
+
+            throw new ArgumentOutOfRangeException(nameof(locusPosition), locusPosition, null);
         }
     }
 }
