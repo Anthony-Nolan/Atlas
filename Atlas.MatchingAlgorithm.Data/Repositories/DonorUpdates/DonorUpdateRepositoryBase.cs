@@ -230,7 +230,21 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             return dataTable;
         }
 
-        protected DataTable BuildPerLocusPGroupDataTable(List<DonorInfoWithExpandedHla> donors, Locus locus)
+        /// <summary>
+        /// Builds the dataTable to add the Donor's HLAs to the Database.
+        /// </summary>
+        /// <remarks>
+        /// This is actually the pinch point of DataRefresh!
+        /// Largely because we will be adding >1B rows to the DataTable over the course of the Refresh.
+        ///
+        /// So this method needs to be very aggressively tuned. Note that by default the timing is all
+        /// turned off, as it introduces a significant overhead!
+        /// When it's surpassing 1B operations, the timing an operation appears to take nearly 20 minutes!
+        /// See HlaProcessor to re-enable it.
+        /// </remarks>
+        protected DataTable BuildPerLocusPGroupDataTable(
+            List<DonorInfoWithExpandedHla> donors,
+            Locus locus)
         {
             var dataTable = new DataTable();
             foreach (var columnName in donorPGroupDataTableColumnNames)
@@ -238,29 +252,38 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 dataTable.Columns.Add(columnName);
             }
 
-            // Data should be written as "TypePosition" so we can guarantee control over the backing int values for this enum
-            var dbPositionIdDictionary = EnumExtensions.EnumerateValues<LocusPosition>().ToDictionary(p => p, p => (int) p.ToTypePosition());
+            dataTable.BeginLoadData();
+            //During a 2M donor dataRefresh. This line (outside the loop) is run ~5.6K times.
             foreach (var donor in donors)
             {
                 donor.MatchingHla.GetLocus(locus).EachPosition((position, hlaAtLocusPosition) =>
                 {
+                    //During a 2M donor dataRefresh. This line (inside all these loops, but before the filter) is run ~22.2M times.
                     if (hlaAtLocusPosition == null)
                     {
                         return;
                     }
+                    //During a 2M donor dataRefresh. This line (after the filter) is run ~18.1M times.
 
-                    var positionId = dbPositionIdDictionary[position];
+                    //Data should be written as "TypePosition" so we can guarantee control over the backing int values for this enum
+                    var positionId = (int) position.ToTypePosition();
 
                     foreach (var pGroup in hlaAtLocusPosition.MatchingPGroups)
                     {
+                        //During a 2M donor dataRefresh. This line (inside the tightest loop) is run ~1.01B times.
+                        //As noted above, this is the pinch point for DataRefresh performance.
+                        var pGroupId = pGroupRepository.FindOrCreatePGroup(pGroup);
+
                         dataTable.Rows.Add(
                             0,
                             donor.DonorId,
                             positionId,
-                            pGroupRepository.FindOrCreatePGroup(pGroup));
+                            pGroupId);
                     }
                 });
             }
+
+            dataTable.EndLoadData();
 
             return dataTable;
         }
