@@ -201,6 +201,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         /// In practice this will never do anything in Prod code, because of the InsertPGroups prep step, below.
         /// But it means that during tests the DonorUpdate code behaves more like
         /// "the real thing", since the PGroups have already been inserted into the DB.
+        ///
+        /// Note that over the course of a 2M donor import, this is flattening a total of ~1B records, which
+        /// ends up taking 2-3 minutes. The EnsureAllPGroupsExist check also takes 2-3 minutes.
         /// </remarks>
         private void EnsureAllPGroupsExist(IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHlas)
         {
@@ -211,7 +214,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                     ) ?? new List<string>()
                 ).ToList();
 
-            pGroupRepository.FindOrCreatePGroupIds(allPGroups);
+            pGroupRepository.EnsureAllPGroupsExist(allPGroups);
         }
 
         private async Task PerformUpfrontSetup(string hlaNomenclatureVersion)
