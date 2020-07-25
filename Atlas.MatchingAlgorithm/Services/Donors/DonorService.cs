@@ -92,7 +92,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
                     ) ?? new List<string>()
                 ).ToList();
 
-            pGroupRepo.FindOrCreatePGroupIds(allPGroups);
+            pGroupRepo.EnsureAllPGroupsExist(allPGroups);
         }
 
         private async Task CreateOrUpdateDonorsWithHla(IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHla, TransientDatabase targetDatabase, bool runAllHlaInsertionsInASingleTransactionScope)

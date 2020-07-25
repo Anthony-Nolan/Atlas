@@ -7,7 +7,8 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
-using MoreLinq;
+using MoreLinq.Extensions;
+
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
 {
@@ -18,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         /// </summary>
         void InsertPGroups(IEnumerable<string> pGroups);
         Task<IEnumerable<int>> GetPGroupIds(IEnumerable<string> pGroupNames);
-        Dictionary<string, int> FindOrCreatePGroupIds(List<string> allPGroups);
+        void EnsureAllPGroupsExist(List<string> allPGroups);
         int FindOrCreatePGroup(string pGroupName);
     }
 
@@ -34,7 +35,14 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         {
             EnsurePGroupDictionaryCacheIsPopulated();
 
-            var newPGroups = pGroups.Distinct().Except(pGroupNameToIdDictionary.Keys.ToList()).ToList();
+            var newPGroups = pGroups.Distinct().Except(pGroupNameToIdDictionary.Keys).ToList();
+
+            if (!newPGroups.Any())
+            {
+                //Nothing needs doing.
+                return;
+            }
+
             var dt = new DataTable();
             dt.Columns.Add("Id");
             dt.Columns.Add("Name");
@@ -77,9 +85,7 @@ WHERE p.Name IN ({pGroupNames.Select(name => $"'{name}'").StringJoin(", ")})
         }
 
         /// <summary>
-        /// Returns a dictionary of pGroups to pGroup-DB-Ids.
-        /// Achieves this by reading from an in-memory cache, for the PGroups that already exist.
-        /// For the PGroups that are new, creates those PGroups in the DB, and then reads their newly created IDs.
+        /// For the PGroups that are new, creates those PGroups in the DB, and then reads their newly created IDs, to populate the in-memory cache.
         /// </summary>
         /// <remarks>
         /// Whilst in *principle* this method can create new PGroups, we don't believe this will ever actually happen in Prod code.
@@ -88,22 +94,26 @@ WHERE p.Name IN ({pGroupNames.Select(name => $"'{name}'").StringJoin(", ")})
         /// But during DataRefresh we actively create DB Records for every known PGroup in the HLA Version.
         ///
         /// Thus it should not be possible for this code to receive a PGroup that isn't already in the DB ... in prod.
-        ///
         /// In *TESTS* however, we don't pre-populate PGroups, so the "or create" branch of the code is necessary.
+        ///
+        /// **Note that this method gets used *heavily* during DataRefresh (despite being a no-op!) and has been aggressively optimised for that use-case.**
+        /// Over the course of a 2M donor import, we must check ~1B pGroup strings, which ends up taking 2-3 minutes. All in the actual dictionary lookup line.
         /// </remarks>
-        public Dictionary<string, int> FindOrCreatePGroupIds(List<string> allPGroups)
+        public void EnsureAllPGroupsExist(List<string> allPGroups)
         {
-            allPGroups = allPGroups.Distinct().ToList();
             EnsurePGroupDictionaryCacheIsPopulated();
-            var (existingPGroups, newPGroups) = allPGroups.ReifyAndSplit(pGrp => pGroupNameToIdDictionary.ContainsKey(pGrp));
 
-            InsertPGroups(newPGroups); //This method refreshes the Cache after adding.
+            // Note that it turns out that it's quicker to run this WITHOUT a .Distinct() in it.
+            var newPGroups = allPGroups.Where(pGrp => !pGroupNameToIdDictionary.ContainsKey(pGrp)).ToList();
 
-            return allPGroups.ToDictionary(pGrp => pGrp, pGrp => pGroupNameToIdDictionary[pGrp]);
+            if (newPGroups.Any())
+            {
+                InsertPGroups(newPGroups); //This method refreshes the Cache after adding.
+            }
         }
 
         /// <remarks>
-        /// See note on <see cref="FindOrCreatePGroupIds"/>.
+        /// See note on <see cref="EnsureAllPGroupsExist"/>.
         /// We don't think the "OrCreate" branch of this code gets used in prod - only in Tests.
         /// </remarks>
         public int FindOrCreatePGroup(string pGroupName)
