@@ -70,7 +70,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversi
 
             var pGroups = sources
                 .SelectMany(resultSource => resultSource.MatchingPGroups)
-                .Distinct();
+                .Distinct()
+                .ToList();
 
             return new HlaMatchingMetadata(
                 firstAllele.Locus,

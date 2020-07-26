@@ -10,7 +10,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
     {
         public string OriginalName { get; set; }
         public string LookupName { get; set; }
-        public IEnumerable<string> MatchingPGroups { get; set; }
+        public IList<string> MatchingPGroups { get; set; }
         public Locus Locus { get; set; }
         public TypingMethod TypingMethod { get; }
         public object HlaInfoToSerialise { get; }
@@ -36,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 
         public TestHlaBuilder WithPGroups(params string[] pGroups)
         {
-            hlaMetadata.MatchingPGroups = hlaMetadata.MatchingPGroups.Concat(pGroups);
+            hlaMetadata.MatchingPGroups = hlaMetadata.MatchingPGroups.Concat(pGroups).ToList();
             return this;
         }
         

@@ -64,11 +64,13 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IHlaMatchingMetadata metadata,
             IHlaMatchingMetadata otherMetadata)
         {
+            var mergedPGroups = metadata.MatchingPGroups.Union(otherMetadata.MatchingPGroups).ToList();
             return new HlaMatchingMetadata(
                 metadata.Locus,
                 metadata.LookupName,
                 metadata.TypingMethod,
-                metadata.MatchingPGroups.Union(otherMetadata.MatchingPGroups));
+                mergedPGroups
+                );
         }
     }
 }

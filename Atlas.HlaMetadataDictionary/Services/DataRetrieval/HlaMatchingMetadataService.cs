@@ -64,7 +64,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
             var pGroups = metadata
                 .SelectMany(data => data.MatchingPGroups)
-                .Distinct();
+                .Distinct()
+                .ToList();
 
             return new HlaMatchingMetadata(
                 locus,

@@ -7,8 +7,8 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
     {
         public HlaTyping HlaTyping { get; }
         public HlaTyping TypingUsedInMatching { get; }
-        public IEnumerable<string> MatchingPGroups { get; }
-        public IEnumerable<string> MatchingGGroups { get; }
+        public List<string> MatchingPGroups { get; }
+        public List<string> MatchingGGroups { get; }
         public IEnumerable<MatchingSerology> MatchingSerologies { get; }
         public AlleleTyping TypingForHlaMetadata => (AlleleTyping) HlaTyping;
 

@@ -19,8 +19,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
                     var allelesInfo = SerologyToAlleleMapper.GetAlleleMappingsForSerology(serologyInfo, hlaInfo).ToList();
                     return new MatchedSerology(
                         serologyInfo,
-                        allelesInfo.SelectMany(a => a.MatchingPGroups).Distinct(),
-                        allelesInfo.SelectMany(a => a.MatchingGGroups).Distinct()
+                        allelesInfo.SelectMany(a => a.MatchingPGroups).Distinct().ToList(),
+                        allelesInfo.SelectMany(a => a.MatchingGGroups).Distinct().ToList()
                     );
                 })
                 .AsEnumerable();

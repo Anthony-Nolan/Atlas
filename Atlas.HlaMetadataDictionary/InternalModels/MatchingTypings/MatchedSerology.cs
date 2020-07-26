@@ -8,12 +8,12 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
     {
         public HlaTyping HlaTyping { get; }
         public HlaTyping TypingUsedInMatching { get; }
-        public IEnumerable<string> MatchingPGroups { get; }
-        public IEnumerable<string> MatchingGGroups { get; }
+        public List<string> MatchingPGroups { get; }
+        public List<string> MatchingGGroups { get; }
         public IEnumerable<MatchingSerology> MatchingSerologies { get; }
         public SerologyTyping TypingForHlaMetadata => (SerologyTyping) HlaTyping;
 
-        public MatchedSerology(ISerologyInfoForMatching matchedSerology, IEnumerable<string> matchingPGroups, IEnumerable<string> matchingGGroups)
+        public MatchedSerology(ISerologyInfoForMatching matchedSerology, List<string> matchingPGroups, List<string> matchingGGroups)
         {
             HlaTyping = matchedSerology.HlaTyping;
             TypingUsedInMatching = matchedSerology.TypingUsedInMatching;
