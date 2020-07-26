@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
@@ -85,7 +86,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Mat
         {
             var hlaTyping = new AlleleTyping(MatchedLocus, alleleName);
             var alleleGroup = new[] { alleleName };
-            var infoForMatching = new AlleleInfoForMatching(hlaTyping, hlaTyping, alleleGroup, alleleGroup);
+            var infoForMatching = new AlleleInfoForMatching(hlaTyping, hlaTyping, alleleGroup.ToList(), alleleGroup.ToList());
 
             var serologyTyping = new SerologyTyping(MatchedLocus.ToString(), SerologyName, SeroSubtype);
             var matchingSerologies = new[] { new MatchingSerology(serologyTyping, true) };

@@ -12,7 +12,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
         public string SerialisedHlaInfoType { get; }
-        public IEnumerable<string> MatchingPGroups { get; }
+        public IList<string> MatchingPGroups { get; }
         public bool IsNullExpressingTyping { get; }
         [JsonIgnore] // This property isn't actually used anywhere for the FileBacked objects, but it's on the interface. But we don't want to write these to file when we regenerate the FileBacked HMD's file.
         public object HlaInfoToSerialise => MatchingPGroups;

@@ -7,18 +7,18 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings
 {
     internal interface IAlleleInfoForMatching : IMatchedOn
     {
-        IEnumerable<string> MatchingPGroups { get; }
-        IEnumerable<string> MatchingGGroups { get; }
+        List<string> MatchingPGroups { get; }
+        List<string> MatchingGGroups { get; }
     }
 
     internal class AlleleInfoForMatching : IAlleleInfoForMatching, IEquatable<IAlleleInfoForMatching>
     {
         public HlaTyping HlaTyping { get; }
         public HlaTyping TypingUsedInMatching { get; }
-        public IEnumerable<string> MatchingPGroups { get; }
-        public IEnumerable<string> MatchingGGroups { get; }
+        public List<string> MatchingPGroups { get; }
+        public List<string> MatchingGGroups { get; }
 
-        public AlleleInfoForMatching(AlleleTyping hlaTyping, AlleleTyping typingUsedInMatching, IEnumerable<string> pGroup, IEnumerable<string> gGroup)
+        public AlleleInfoForMatching(AlleleTyping hlaTyping, AlleleTyping typingUsedInMatching, List<string> pGroup, List<string> gGroup)
         {
             HlaTyping = hlaTyping;
             TypingUsedInMatching = typingUsedInMatching;
