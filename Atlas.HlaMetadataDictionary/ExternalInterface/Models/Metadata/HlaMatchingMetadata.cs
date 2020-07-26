@@ -11,7 +11,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata
     /// </summary>
     public interface IHlaMatchingMetadata : ISerialisableHlaMetadata
     {
-        IEnumerable<string> MatchingPGroups { get; }
+        IList<string> MatchingPGroups { get; } //This must NOT be an IEnumerable. IReadOnlyCollection would be fine, if we wanted to enforce Immutability.
         bool IsNullExpressingTyping { get; }
     }
 
@@ -20,7 +20,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata
         IHlaMatchingMetadata,
         IEquatable<HlaMatchingMetadata>
     {
-        public IEnumerable<string> MatchingPGroups { get; }
+        public IList<string> MatchingPGroups { get; }
         public bool IsNullExpressingTyping => TypingMethod == TypingMethod.Molecular && !MatchingPGroups.Any();
         public override object HlaInfoToSerialise => MatchingPGroups.ToList(); //Needs to be reified for deserialisation Type validation
 
@@ -28,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata
             Locus locus,
             string lookupName,
             TypingMethod typingMethod,
-            IEnumerable<string> matchingPGroups)
+            IList<string> matchingPGroups)
         : base(locus, lookupName, typingMethod)
         {
             MatchingPGroups = matchingPGroups;

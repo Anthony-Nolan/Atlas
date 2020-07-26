@@ -69,17 +69,17 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalcula
             return alleleStatus.ToAlleleTypingStatus();
         }
 
-        private IEnumerable<string> GetPGroup(IWmdaHlaTyping allele, string hlaNomenclatureVersion)
+        private List<string> GetPGroup(IWmdaHlaTyping allele, string hlaNomenclatureVersion)
         {
             return GetAlleleGroup(dataRepository.GetWmdaDataset(hlaNomenclatureVersion).PGroups, allele);
         }
 
-        private IEnumerable<string> GetGGroup(IWmdaHlaTyping allele, string hlaNomenclatureVersion)
+        private List<string> GetGGroup(IWmdaHlaTyping allele, string hlaNomenclatureVersion)
         {
             return GetAlleleGroup(dataRepository.GetWmdaDataset(hlaNomenclatureVersion).GGroups, allele);
         }
 
-        private static IEnumerable<string> GetAlleleGroup(IEnumerable<IWmdaAlleleGroup> alleleGroups, IWmdaHlaTyping allele)
+        private static List<string> GetAlleleGroup(IEnumerable<IWmdaAlleleGroup> alleleGroups, IWmdaHlaTyping allele)
         {
             var alleleGroup = alleleGroups
                 .Where(group => group.LocusEquals(allele))

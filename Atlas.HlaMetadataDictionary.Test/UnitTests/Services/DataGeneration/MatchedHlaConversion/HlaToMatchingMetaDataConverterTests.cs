@@ -23,7 +23,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Mat
             var expectedMetadata = new List<IHlaMetadata>
             {
                 BuildMolecularHlaMetadata(alleleName),
-                BuildMolecularHlaMetadata(xxCodeLookupName, new []{alleleName})
+                BuildMolecularHlaMetadata(xxCodeLookupName, alleleName)
             };
 
             actualMetadata.Should().BeEquivalentTo(expectedMetadata);
@@ -41,14 +41,14 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Mat
             var expectedMetadata = new List<IHlaMetadata>
             {
                 BuildMolecularHlaMetadata(alleleName),
-                BuildMolecularHlaMetadata(nmdpCodeLookupName, new []{alleleName}),
-                BuildMolecularHlaMetadata(xxCodeLookupName, new[] {alleleName})
+                BuildMolecularHlaMetadata(nmdpCodeLookupName, alleleName),
+                BuildMolecularHlaMetadata(xxCodeLookupName, alleleName)
             };
 
             if (!string.IsNullOrEmpty(expressionSuffix))
             {
                 expectedMetadata.Add(
-                    BuildMolecularHlaMetadata(nmdpCodeLookupName + expressionSuffix, new[] {alleleName}));
+                    BuildMolecularHlaMetadata(nmdpCodeLookupName + expressionSuffix, alleleName));
             }
 
             actualMetadata.Should().BeEquivalentTo(expectedMetadata);
@@ -85,7 +85,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Mat
                 BuildMolecularHlaMetadata(alleles[0]),
                 BuildMolecularHlaMetadata(alleles[1]),
                 BuildMolecularHlaMetadata(alleles[2]),
-                BuildMolecularHlaMetadata(nmdpCodeLookupName, new[] {alleles[0], alleles[1], alleles[2]}),
+                BuildMolecularHlaMetadata(nmdpCodeLookupName, alleles),
                 BuildMolecularHlaMetadata(xxCodeLookupName, alleles)
             };
 
@@ -107,15 +107,29 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration.Mat
 
         /// <summary>
         /// Builds Molecular Metadata with the allele name used as the Matching P Group by default,
-        /// unless a list of 1 or more P Groups is supplied.
+        /// unless an alternate PGroup is supplied.
         /// </summary>
-        private static IHlaMetadata BuildMolecularHlaMetadata(string alleleName, IEnumerable<string> pGroups = null)
+        private static IHlaMetadata BuildMolecularHlaMetadata(string alleleName, string pGroup = null)
         {
             return new HlaMatchingMetadata(
                 MatchedLocus,
                 alleleName,
                 TypingMethod.Molecular,
-                pGroups ?? new[] { alleleName }
+                new[] { pGroup ?? alleleName }
+            );
+        }
+
+        /// <summary>
+        /// Builds Molecular Metadata with the allele name used as the Matching P Group by default,
+        /// unless a list of 1 or more P Groups is supplied.
+        /// </summary>
+        private static IHlaMetadata BuildMolecularHlaMetadata(string alleleName, string[] pGroups)
+        {
+            return new HlaMatchingMetadata(
+                MatchedLocus,
+                alleleName,
+                TypingMethod.Molecular,
+                pGroups
             );
         }
     }

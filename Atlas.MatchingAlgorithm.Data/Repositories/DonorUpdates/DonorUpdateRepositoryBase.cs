@@ -230,7 +230,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             return dataTable;
         }
 
-        protected DataTable BuildPerLocusPGroupDataTable(IEnumerable<DonorInfoWithExpandedHla> donors, Locus locus)
+        protected DataTable BuildPerLocusPGroupDataTable(List<DonorInfoWithExpandedHla> donors, Locus locus)
         {
             var dataTable = new DataTable();
             foreach (var columnName in donorPGroupDataTableColumnNames)
