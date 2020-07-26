@@ -99,6 +99,27 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
         }
 
         [Test]
+        public async Task UpdateDatabaseSize_FiresAnInitialQuickPoll()
+        {
+            const string databaseName = "db";
+
+            var operationTime = DateTime.UtcNow;
+            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>()).Returns(operationTime);
+            azureManagementClient.GetDatabaseOperations(Arg.Any<string>()).Returns(
+                new List<DatabaseOperation>
+                {
+                    new DatabaseOperation
+                    {
+                        State = AzureDatabaseOperationState.Succeeded, StartTime = operationTime
+                    }
+                });
+
+            await azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3);
+
+            threadSleeper.Received(1).Sleep(Arg.Is<int>(sleepTime => sleepTime < 250));
+        }
+
+        [Test]
         public async Task UpdateDatabaseSize_WaitsBeforeEachPollOfOperations()
         {
             const string databaseName = "db";

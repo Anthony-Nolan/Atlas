@@ -55,15 +55,16 @@ namespace Atlas.MatchingAlgorithm.Services.AzureManagement
             {
                 var operationStartTime = await databaseManagementClient.TriggerDatabaseScaling(databaseName, databaseSize);
 
-                DatabaseOperation databaseOperation;
+                threadSleeper.Sleep(10);
+                var databaseOperation = await GetDatabaseOperation(databaseName, operationStartTime);
 
-                do
+                while (databaseOperation.State == AzureDatabaseOperationState.InProgress ||
+                       databaseOperation.State == AzureDatabaseOperationState.Pending)
                 {
                     logger.SendTrace($"Waiting for scaling to complete: {scaleDescription}");
                     threadSleeper.Sleep(OperationPollTimeMilliseconds);
                     databaseOperation = await GetDatabaseOperation(databaseName, operationStartTime);
-                } while (databaseOperation.State == AzureDatabaseOperationState.InProgress ||
-                         databaseOperation.State == AzureDatabaseOperationState.Pending);
+                }
 
                 if (databaseOperation.State != AzureDatabaseOperationState.Succeeded)
                 {
