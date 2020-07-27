@@ -1,10 +1,6 @@
 terraform {
-  // TODO: ATLAS-324: Do not hard code nova values
   backend "azurerm" {
-    storage_account_name = "novaterraform"
-    container_name       = "terraform-state"
-    key                  = "atlas.webhooks.terraform.tfstate"
-    resource_group_name  = "AN-RESOURCE-GROUP"
+    key = "atlas.webhooks.terraform.tfstate"
   }
 }
 
