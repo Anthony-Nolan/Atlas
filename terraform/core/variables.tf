@@ -152,6 +152,22 @@ variable "SERVICE_PLAN_SKU" {
   }
 }
 
+
+variable "TERRAFORM_RESOURCE_GROUP_NAME" {
+  type        = string
+  description = "Resource group in which the terraform backend is deployed."
+}
+
+variable "TERRAFORM_STORAGE_ACCOUNT_NAME" {
+  type        = string
+  description = "Name of the storage account in which the terraform backend is deployed."
+}
+
+variable "TERRAFORM_STORAGE_CONTAINER_NAME" {
+  type        = string
+  description = "Name of the container within the storage account in which the terraform backend is deployed."
+}
+
 variable "WMDA_FILE_URL" {
   type        = string
   default     = "https://raw.githubusercontent.com/ANHIG/IMGTHLA/"
