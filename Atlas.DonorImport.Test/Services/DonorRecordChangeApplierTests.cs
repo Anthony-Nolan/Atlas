@@ -96,6 +96,9 @@ namespace Atlas.DonorImport.Test.Services
             donorInspectionRepository.GetDonorIdsByExternalDonorCodes(default)
                 .ReturnsForAnyArgs(args => args.Arg<ICollection<string>>().ToDictionary(code => code, code => 0));
 
+            donorInspectionRepository.GetDonorsByExternalDonorCodes(default)
+                .ReturnsForAnyArgs(args => args.Arg<ICollection<string>>().ToDictionary(code => code, code => new Donor {AtlasId = 0}));
+
             // Capture all the Calls to MessageServiceBus.
             var sequenceOfMassCalls = new List<List<SearchableDonorUpdate>>();
             var sequenceOfIndividualCalls = new List<SearchableDonorUpdate>();
