@@ -98,7 +98,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task ImportDonors_ForSingleEdits_WhereNoPertinentInfoChanged_RecordNotChangedInDatabase()
+        public async Task ImportDonors_ForSingleEdits_WhereNoPertinentInfoChanged_RecordNotChangedInDatabase_NorSendMessages()
         {
             var donorEdit = donorEditBuilderForInitialDonors
                 .With(donor => donor.Hla, hlaObject1)
@@ -106,12 +106,17 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             var donorEditFile = fileBuilder.WithDonors(donorEdit);
 
+            serviceBusClient.ClearReceivedCalls();
+
             //ACT
             await donorFileImporter.ImportDonorFile(donorEditFile);
 
             var updatedDonor = await donorRepository.GetDonor(donorEdit.RecordId);
             var unchangedDonorAtInsertion = InitialDonors.Take(1).Single();
             unchangedDonorAtInsertion.Should().BeEquivalentTo(updatedDonor);
+
+            await serviceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
+            await serviceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessage(default);
         }
 
         [Test]
