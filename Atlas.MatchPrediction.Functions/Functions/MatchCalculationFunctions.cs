@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchPredictionSteps.MatchCalculation;
+using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
@@ -31,13 +32,23 @@ namespace Atlas.MatchPrediction.Functions.Functions
 
             try
             {
-                var match = await matchCalculatorService.MatchAtPGroupLevel(
-                    matchCalculationInput.PatientHla,
-                    matchCalculationInput.DonorHla,
-                    matchCalculationInput.HlaNomenclatureVersion,
-                    matchCalculationInput.AllowedLoci);
-
-                return new JsonResult(new MatchCalculationResponse {MatchCounts = match.MatchCounts, IsTenOutOfTenMatch = match.MismatchCount == 0});
+                var genotypeMatchDetails = new GenotypeMatchDetails
+                {
+                    AvailableLoci = matchCalculationInput.AllowedLoci,
+                    DonorGenotype = matchCalculationInput.DonorHla,
+                    PatientGenotype = matchCalculationInput.PatientHla,
+                    MatchCounts = await matchCalculatorService.CalculateMatchCounts(
+                        matchCalculationInput.PatientHla,
+                        matchCalculationInput.DonorHla,
+                        matchCalculationInput.HlaNomenclatureVersion,
+                        matchCalculationInput.AllowedLoci)
+                }; 
+                
+                return new JsonResult(new MatchCalculationResponse
+                {
+                    MatchCounts = genotypeMatchDetails.MatchCounts,
+                    IsTenOutOfTenMatch = genotypeMatchDetails.MismatchCount == 0
+                });
             }
             catch (Exception exception)
             {

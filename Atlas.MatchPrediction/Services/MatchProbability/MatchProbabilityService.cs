@@ -58,7 +58,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         public async Task<MatchProbabilityResponse> CalculateMatchProbability(MatchProbabilityInput matchProbabilityInput)
         {
             matchPredictionLoggingContext.Initialise(matchProbabilityInput);
-            
+
             var allowedLoci = GetAllowedLoci(matchProbabilityInput);
             var hlaNomenclatureVersion = matchProbabilityInput.HlaNomenclatureVersion;
 
@@ -89,6 +89,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 {
                     logger.SendTrace($"{LoggingPrefix}Donor genotype unrepresented.", LogLevel.Verbose);
                 }
+
                 if (patientGenotypes.IsNullOrEmpty())
                 {
                     logger.SendTrace($"{LoggingPrefix}Patient genotype unrepresented.", LogLevel.Verbose);
@@ -198,11 +199,14 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             string hlaNomenclatureVersion,
             ISet<Locus> allowedLoci)
         {
-            return await matchCalculationService.MatchAtPGroupLevel(
-                patientDonorPair.Item1,
-                patientDonorPair.Item2,
-                hlaNomenclatureVersion,
-                allowedLoci);
+            var (patient, donor) = patientDonorPair;
+            return new GenotypeMatchDetails
+            {
+                AvailableLoci = allowedLoci,
+                DonorGenotype = donor,
+                PatientGenotype = patient,
+                MatchCounts = await matchCalculationService.CalculateMatchCounts(patient, donor, hlaNomenclatureVersion, allowedLoci)
+            };
         }
 
         private async Task<KeyValuePair<PhenotypeInfo<string>, decimal>> CalculateLikelihood(

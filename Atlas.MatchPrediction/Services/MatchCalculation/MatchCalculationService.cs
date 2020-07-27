@@ -3,8 +3,6 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Matching.Services;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
-using Atlas.MatchPrediction.Models;
 
 namespace Atlas.MatchPrediction.Services.MatchCalculation
 {
@@ -13,7 +11,7 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
         /// <returns>
         /// null for non calculated, 0, 1, or 2 if calculated representing the match count.
         /// </returns>
-        public Task<GenotypeMatchDetails> MatchAtPGroupLevel(
+        public Task<LociInfo<int?>> CalculateMatchCounts(
             PhenotypeInfo<string> patientGenotype,
             PhenotypeInfo<string> donorGenotype,
             string hlaNomenclatureVersion,
@@ -33,7 +31,7 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
             this.stringBasedLocusMatchCalculator = stringBasedLocusMatchCalculator;
         }
 
-        public async Task<GenotypeMatchDetails> MatchAtPGroupLevel(
+        public async Task<LociInfo<int?>> CalculateMatchCounts(
             PhenotypeInfo<string> patientGenotype,
             PhenotypeInfo<string> donorGenotype,
             string hlaNomenclatureVersion,
@@ -45,7 +43,7 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
             var donorGenotypeAsSinglePGroups =
                 await locusHlaConverter.ConvertGroupsToPGroups(donorGenotype, hlaNomenclatureVersion, allowedLoci);
 
-            var matchCounts = new LociInfo<int?>().Map((locus, matchCount) =>
+            return new LociInfo<int?>().Map((locus, matchCount) =>
             {
                 var patientHla = patientGenotypeAsSinglePGroups.GetLocus(locus);
                 var donorHla = donorGenotypeAsSinglePGroups.GetLocus(locus);
@@ -53,14 +51,6 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
                     ? stringBasedLocusMatchCalculator.MatchCount(patientHla, donorHla, UntypedLocusBehaviour.Throw)
                     : (int?) null;
             });
-
-            return new GenotypeMatchDetails
-            {
-                MatchCounts = matchCounts,
-                PatientGenotype = patientGenotype,
-                DonorGenotype = donorGenotype,
-                AvailableLoci = allowedLoci
-            };
         }
     }
 }
