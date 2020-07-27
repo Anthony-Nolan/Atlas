@@ -21,7 +21,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
-        private static readonly IEnumerable<Locus> AllowedLoci = LocusSettings.MatchPredictionLoci;
+        private static readonly HashSet<Locus> AllowedLoci = LocusSettings.MatchPredictionLoci;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -33,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [TestCase(new[] {Locus.Dqb1})]
         [TestCase(new[] {Locus.C})]
         [TestCase(new[] {Locus.Dqb1, Locus.C})]
-        public async Task MatchAtPGroupLevel_WhenIdenticalGenotypes_IsTenOutOfTenMatch(Locus[] lociToExclude)
+        public async Task CalculateMatchCounts_WhenIdenticalGenotypes_IsTenOutOfTenMatch(Locus[] lociToExclude)
         {
             var loci = AllowedLoci.Where(l => !lociToExclude.Contains(l)).ToHashSet();
 
@@ -53,7 +53,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [TestCase(new[] {Locus.Dqb1})]
         [TestCase(new[] {Locus.C})]
         [TestCase(new[] {Locus.Dqb1, Locus.C})]
-        public async Task MatchAtPGroupLevel_WhenGenotypesDifferInPhase_IsTenOutOfTenMatch(Locus[] lociToExclude)
+        public async Task CalculateMatchCounts_WhenGenotypesDifferInPhase_IsTenOutOfTenMatch(Locus[] lociToExclude)
         {
             var loci = AllowedLoci.Where(l => !lociToExclude.Contains(l)).ToHashSet();
             var donorGenotype = DefaultGGroupsBuilder
@@ -76,7 +76,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [TestCase(new[] {Locus.Dqb1})]
         [TestCase(new[] {Locus.C})]
         [TestCase(new[] {Locus.Dqb1, Locus.C})]
-        public async Task MatchAtPGroupLevel_WhenPatientGenotypeHomozygous_AndMatchesExactlyOneOfPatientHla_IsNineOutOfTenMatch(Locus[] lociToExclude)
+        public async Task CalculateMatchCounts_WhenPatientGenotypeHomozygous_AndMatchesExactlyOneOfPatientHla_IsNineOutOfTenMatch(
+            Locus[] lociToExclude)
         {
             var loci = AllowedLoci.Where(l => !lociToExclude.Contains(l)).ToHashSet();
             var patientGenotype = DefaultGGroupsBuilder.WithDataAt(Locus.A, Alleles.UnambiguousAlleleDetails.A.Position1.GGroup).Build();
@@ -97,7 +98,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [TestCase(new[] {Locus.Dqb1})]
         [TestCase(new[] {Locus.C})]
         [TestCase(new[] {Locus.Dqb1, Locus.C})]
-        public async Task MatchAtPGroupLevel_WhenDonorGenotypeHomozygous_AndMatchesExactlyOneOfDonorHla_IsNineOutOfTenMatch(Locus[] lociToExclude)
+        public async Task CalculateMatchCounts_WhenDonorGenotypeHomozygous_AndMatchesExactlyOneOfDonorHla_IsNineOutOfTenMatch(Locus[] lociToExclude)
         {
             var loci = AllowedLoci.Where(l => !lociToExclude.Contains(l)).ToHashSet();
             var donorGenotype = DefaultGGroupsBuilder.WithDataAt(Locus.A, Alleles.UnambiguousAlleleDetails.A.Position1.GGroup).Build();
@@ -118,7 +119,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [TestCase(new[] {Locus.Dqb1})]
         [TestCase(new[] {Locus.C})]
         [TestCase(new[] {Locus.Dqb1, Locus.C})]
-        public async Task MatchAtPGroupLevel_WhenDonorGenotypeHasLocusMismatch_IsEightOutOfTenMatch(Locus[] lociToExclude)
+        public async Task CalculateMatchCounts_WhenDonorGenotypeHasLocusMismatch_IsEightOutOfTenMatch(Locus[] lociToExclude)
         {
             var loci = AllowedLoci.Where(l => !lociToExclude.Contains(l)).ToHashSet();
             var donorGenotype = DefaultGGroupsBuilder.WithDataAt(Locus.A, "01:120").Build();

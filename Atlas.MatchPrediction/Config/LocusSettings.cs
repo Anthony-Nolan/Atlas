@@ -13,6 +13,6 @@ namespace Atlas.MatchPrediction.Config
         /// <summary>
         /// Only these loci are considered during match prediction.
         /// </summary>
-        public static IEnumerable<Locus> MatchPredictionLoci => EnumerateValues<Locus>().Except(new[] {Locus.Dpb1});
+        public static HashSet<Locus> MatchPredictionLoci => EnumerateValues<Locus>().Except(new[] {Locus.Dpb1}).ToHashSet();
     }
 }
