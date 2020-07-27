@@ -101,7 +101,9 @@ namespace Atlas.DonorImport.Services
             string fileLocation)
 
         {
-            var existingAtlasDonorIds = await donorInspectionRepository.GetDonorIdsByExternalDonorCodes(externalCodes);
+            var existingAtlasDonors = await donorInspectionRepository.GetDonorsByExternalDonorCodes(externalCodes);
+            var existingAtlasDonorIds = existingAtlasDonors.ToDictionary(d => d.Key, d => d.Value.AtlasId);
+            var existingAtlasDonorHashes = existingAtlasDonors.Select(r => r.Value.Hash).ToList();
 
             var editedDonorsWithAtlasIds = editUpdates.Select(edit =>
             {
@@ -110,9 +112,11 @@ namespace Atlas.DonorImport.Services
                 return dbDonor;
             }).ToList();
 
-            await donorImportRepository.UpdateDonorBatch(editedDonorsWithAtlasIds);
+            var editedDonors = editedDonorsWithAtlasIds.Where(d => !existingAtlasDonorHashes.Contains(d.Hash)).ToList();
 
-            var donorEditMessages = editedDonorsWithAtlasIds.Select(MapToMatchingUpdateMessage).ToList();
+            await donorImportRepository.UpdateDonorBatch(editedDonors);
+
+            var donorEditMessages = editedDonors.Select(MapToMatchingUpdateMessage).ToList();
             await messagingServiceBusClient.PublishDonorUpdateMessages(donorEditMessages);
         }
 
