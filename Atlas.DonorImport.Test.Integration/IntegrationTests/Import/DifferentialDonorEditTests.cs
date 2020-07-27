@@ -85,16 +85,33 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
                 .With(donor => donor.Hla, hlaObject3)
                 .Build();
 
-            var donorDeleteFile = fileBuilder.WithDonors(donorEdit);
+            var donorEditFile = fileBuilder.WithDonors(donorEdit);
 
             //ACT
-            await donorFileImporter.ImportDonorFile(donorDeleteFile);
+            await donorFileImporter.ImportDonorFile(donorEditFile);
 
             var updatedDonor = await donorRepository.GetDonor(donorEdit.RecordId);
             var unchangedDonorAtInsertion = InitialDonors.Skip(1).Take(1).Single();
             var unchangedDonor = await donorRepository.GetDonor(unchangedDonorAtInsertion.ExternalDonorCode);
             updatedDonor.A_1.Should().Be(hla3);
             unchangedDonor.Should().BeEquivalentTo(unchangedDonorAtInsertion);
+        }
+
+        [Test]
+        public async Task ImportDonors_ForSingleEdits_WhereNoPertinentInfoChanged_RecordNotChangedInDatabase()
+        {
+            var donorEdit = donorEditBuilderForInitialDonors
+                .With(donor => donor.Hla, hlaObject1)
+                .Build();
+
+            var donorEditFile = fileBuilder.WithDonors(donorEdit);
+
+            //ACT
+            await donorFileImporter.ImportDonorFile(donorEditFile);
+
+            var updatedDonor = await donorRepository.GetDonor(donorEdit.RecordId);
+            var unchangedDonorAtInsertion = InitialDonors.Take(1).Single();
+            unchangedDonorAtInsertion.Should().BeEquivalentTo(updatedDonor);
         }
 
         [Test]
@@ -112,6 +129,25 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var updatedDonor1 = await donorRepository.GetDonor(donorEdit[0].RecordId);
             var updatedDonor2 = await donorRepository.GetDonor(donorEdit[1].RecordId);
             updatedDonor1.A_1.Should().Be(hla3);
+            updatedDonor2.A_2.Should().Be(hla3);
+        }
+
+        [Test]
+        public async Task ImportDonors_ForMultipleEdits_WhereNoPertinentInfoChangedForSingleDonor_RecordsAreChangedInDatabaseForDonorWithPertinentInfoThatChanged()
+        {
+            var donorEdit = donorEditBuilderForInitialDonors
+                .With(donor => donor.Hla, new[] {hlaObject1,  hlaObject3})
+                .Build(2).ToArray();
+
+            var donorEditFile = fileBuilder.WithDonors(donorEdit);
+
+            //ACT
+            await donorFileImporter.ImportDonorFile(donorEditFile);
+
+            var unchangedDonorAtInsertion = InitialDonors.Take(1).Single();
+            var updatedDonor1 = await donorRepository.GetDonor(donorEdit[0].RecordId);
+            var updatedDonor2 = await donorRepository.GetDonor(donorEdit[1].RecordId);
+            unchangedDonorAtInsertion.Should().BeEquivalentTo(updatedDonor1);
             updatedDonor2.A_2.Should().Be(hla3);
         }
 
