@@ -10,6 +10,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models
 {
     public class NormalisedHaplotypeFrequency
     {
+        public int Id { get; set; }
+
+        public int NormalisedPool_Id { get; set; }
+
         [Required]
         [MaxLength(64)]
         public string A { get; set; }
@@ -37,9 +41,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models
         [Required]
         public int CopyNumber { get; set; }
 
-        public static IReadOnlyCollection<string> GetColumnNames()
+        public static IReadOnlyCollection<string> GetColumnNamesForBulkInsert()
         {
-            return typeof(NormalisedHaplotypeFrequency).GetProperties().Select(p => p.Name).ToList();
+            var columns = typeof(NormalisedHaplotypeFrequency).GetProperties().Select(p => p.Name).ToList();
+            columns.Remove(nameof(Id));
+            return columns;
         }
     }
 
@@ -47,7 +53,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models
     {
         public static void SetUpModel(this EntityTypeBuilder<NormalisedHaplotypeFrequency> modelBuilder)
         {
-            modelBuilder.HasNoKey();
+            modelBuilder
+                .HasOne<NormalisedPool>()
+                .WithMany()
+                .HasForeignKey(n => n.NormalisedPool_Id);
         }
     }
 }

@@ -12,10 +12,16 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<NormalisedPool>().SetUpModel();
             modelBuilder.Entity<NormalisedHaplotypeFrequency>().SetUpModel();
+            modelBuilder.Entity<TestHarness>().SetUpModel();
+            modelBuilder.Entity<Simulant>().SetUpModel();
             base.OnModelCreating(modelBuilder);
         }
 
-        public DbSet<NormalisedHaplotypeFrequency> NormalisedHaplotypeFrequencyPool { get; set; }
+        public DbSet<NormalisedPool> NormalisedPool { get; set; }
+        public DbSet<NormalisedHaplotypeFrequency> NormalisedHaplotypeFrequencies { get; set; }
+        public DbSet<TestHarness> TestHarnesses { get; set; }
+        public DbSet<Simulant> Simulants { get; set; }
     }
 }

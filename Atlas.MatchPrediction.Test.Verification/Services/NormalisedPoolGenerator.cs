@@ -3,6 +3,7 @@ using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
+using Atlas.MatchPrediction.Test.Verification.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +15,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
     {
         /// <summary>
         /// Generates the normalised haplotype frequency pool.
-        /// Note: generated pool is written to database for logging purposes only; any existing data is overwritten.
+        /// Note: the normalised frequencies are written to the database for logging purposes only; any existing data is overwritten.
         /// </summary>
-        Task<IReadOnlyCollection<NormalisedHaplotypeFrequency>> GenerateNormalisedHaplotypeFrequencyPool();
+        Task<NormalisedHaplotypePool> GenerateNormalisedHaplotypeFrequencyPool();
     }
 
     internal class NormalisedPoolGenerator : INormalisedPoolGenerator
@@ -30,7 +31,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
             this.poolRepository = poolRepository;
         }
 
-        public async Task<IReadOnlyCollection<NormalisedHaplotypeFrequency>> GenerateNormalisedHaplotypeFrequencyPool()
+        public async Task<NormalisedHaplotypePool> GenerateNormalisedHaplotypeFrequencyPool()
         {
             var sourceData = await GetSourceData();
 
@@ -39,7 +40,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
                 throw new Exception("No haplotype frequencies found - cannot generate normalised pool.");
             }
 
-            var normalisedPool = GenerateNormalisedPool(sourceData);
+            var normalisedPool = await GenerateNormalisedPool(sourceData);
 
             // presently for logging purposes only
             await OverwritePoolInDatabase(normalisedPool);
@@ -52,26 +53,29 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
             return await reader.GetActiveGlobalHaplotypeFrequencies();
         }
 
-        private static IReadOnlyCollection<NormalisedHaplotypeFrequency> GenerateNormalisedPool(IReadOnlyCollection<HaplotypeFrequency> sourceData)
+        private async Task<NormalisedHaplotypePool> GenerateNormalisedPool(IReadOnlyCollection<HaplotypeFrequency> sourceData)
         {
             var lowestFrequency = sourceData.OrderBy(s => s.Frequency).First().Frequency;
-            return sourceData
-                .Select(h => NormaliseHaplotypesAgainstLowestFrequency(h, lowestFrequency))
-                .ToList();
-        }
 
-        private static NormalisedHaplotypeFrequency NormaliseHaplotypesAgainstLowestFrequency(HaplotypeFrequency haplotypeFrequency, decimal lowestFrequency)
-        {
-            return new NormalisedHaplotypeFrequency
+            var poolMembers = new List<NormalisedPoolMember>();
+            var lastUpperBoundary = -1;
+
+            foreach (var haplotypeFrequency in sourceData)
             {
-                A = haplotypeFrequency.A,
-                B = haplotypeFrequency.B,
-                C = haplotypeFrequency.C,
-                DQB1 = haplotypeFrequency.Dqb1,
-                DRB1 = haplotypeFrequency.Drb1,
-                Frequency = haplotypeFrequency.Frequency,
-                CopyNumber = CalculateCopyNumber(haplotypeFrequency, lowestFrequency)
-            };
+                var poolMember = new NormalisedPoolMember
+                {
+                    HaplotypeFrequency = haplotypeFrequency,
+                    CopyNumber = CalculateCopyNumber(haplotypeFrequency, lowestFrequency),
+                    PoolIndexLowerBoundary = 1 + lastUpperBoundary
+                };
+
+                poolMembers.Add(poolMember);
+                lastUpperBoundary = poolMember.PoolIndexUpperBoundary;
+            }
+
+            var poolId = await poolRepository.AddNormalisedPool();
+
+            return new NormalisedHaplotypePool(poolId, poolMembers);
         }
 
         private static int CalculateCopyNumber(HaplotypeFrequency next, decimal lowestFrequency)
@@ -79,10 +83,26 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
             return (int)decimal.Round(next.Frequency / lowestFrequency);
         }
 
-        private async Task OverwritePoolInDatabase(IReadOnlyCollection<NormalisedHaplotypeFrequency> pool)
+        private async Task OverwritePoolInDatabase(NormalisedHaplotypePool pool)
         {
-            await poolRepository.DeleteNormalisedHaplotypeFrequencyPool();
-            await poolRepository.BulkInsertNormalisedHaplotypes(pool);
+            await poolRepository.TruncateNormalisedHaplotypeFrequencies();
+            var haplotypeFrequencies = pool.PoolMembers.Select(p => MapToDatabaseModel(pool.Id, p)).ToList();
+            await poolRepository.BulkInsertNormalisedHaplotypeFrequencies(haplotypeFrequencies);
+        }
+
+        private static NormalisedHaplotypeFrequency MapToDatabaseModel(int poolId, NormalisedPoolMember poolMember)
+        {
+            return new NormalisedHaplotypeFrequency
+            {
+                NormalisedPool_Id = poolId,
+                A = poolMember.HaplotypeFrequency.A,
+                B = poolMember.HaplotypeFrequency.B,
+                C = poolMember.HaplotypeFrequency.C,
+                DQB1 = poolMember.HaplotypeFrequency.Dqb1,
+                DRB1 = poolMember.HaplotypeFrequency.Drb1,
+                Frequency = poolMember.HaplotypeFrequency.Frequency,
+                CopyNumber = poolMember.CopyNumber
+            };
         }
     }
 }

@@ -4,7 +4,7 @@ using LochNessBuilder;
 namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.TestHelpers
 {
     [Builder]
-    public static class HaplotypeFrequencyBuilder
+    internal static class HaplotypeFrequencyBuilder
     {
         private const string DefaultHla = "hla";
 
