@@ -71,7 +71,6 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
         {
             return new LociInfo<int?>().Map((locus, matchCount) =>
             {
-                // TODO: ATLAS-595: Test switch performance in GetLocus?
                 var patientHla = patientGenotype.GetLocus(locus);
                 var donorHla = donorGenotype.GetLocus(locus);
                 return allowedLoci.Contains(locus)
