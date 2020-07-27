@@ -2,7 +2,8 @@
 // This code has not been tested, it was dropped mid way through when deemed out of scope of another ticket.
 // It has been deemed likely enough to be useful in ATLAS-314 that it has been left in regardless
 
-// TODO: ATLAS-324: Parameterise backend details 
+// TODO: ATLAS-314: Parameterise backend details 
+// See non-test terraform for examples.
 terraform {
   backend "azurerm" {
     storage_account_name = "novaterraform"
