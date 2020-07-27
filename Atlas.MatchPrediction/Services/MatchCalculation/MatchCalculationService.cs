@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Matching.Services;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.MatchPrediction.Utils;
 
 namespace Atlas.MatchPrediction.Services.MatchCalculation
 {
@@ -10,6 +12,8 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
     {
         /// <returns>
         /// null for non calculated, 0, 1, or 2 if calculated representing the match count.
+        ///
+        /// Patient genotype and donor genotype *MUST* be provided at G Group typing resolution.
         /// </returns>
         public Task<LociInfo<int?>> CalculateMatchCounts(
             PhenotypeInfo<string> patientGenotype,
@@ -20,15 +24,15 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
 
     internal class MatchCalculationService : IMatchCalculationService
     {
-        private readonly ILocusHlaConverter locusHlaConverter;
         private readonly IStringBasedLocusMatchCalculator stringBasedLocusMatchCalculator;
+        private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
 
         public MatchCalculationService(
-            ILocusHlaConverter locusHlaConverter,
-            IStringBasedLocusMatchCalculator stringBasedLocusMatchCalculator)
+            IStringBasedLocusMatchCalculator stringBasedLocusMatchCalculator,
+            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory)
         {
-            this.locusHlaConverter = locusHlaConverter;
             this.stringBasedLocusMatchCalculator = stringBasedLocusMatchCalculator;
+            this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
         }
 
         public async Task<LociInfo<int?>> CalculateMatchCounts(
@@ -37,11 +41,10 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
             string hlaNomenclatureVersion,
             ISet<Locus> allowedLoci)
         {
-            var patientGenotypeAsSinglePGroups =
-                await locusHlaConverter.ConvertGroupsToPGroups(patientGenotype, hlaNomenclatureVersion, allowedLoci);
+            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
 
-            var donorGenotypeAsSinglePGroups =
-                await locusHlaConverter.ConvertGroupsToPGroups(donorGenotype, hlaNomenclatureVersion, allowedLoci);
+            var patientGenotypeAsSinglePGroups = await hlaMetadataDictionary.ConvertGGroupsToPGroups(patientGenotype, allowedLoci);
+            var donorGenotypeAsSinglePGroups = await hlaMetadataDictionary.ConvertGGroupsToPGroups(donorGenotype, allowedLoci);
 
             return new LociInfo<int?>().Map((locus, matchCount) =>
             {

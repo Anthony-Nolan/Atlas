@@ -6,8 +6,10 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Maths;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.ApplicationInsights;
+using Atlas.MatchPrediction.Utils;
 
 namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 {
@@ -40,18 +42,18 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         private const TargetHlaCategory FrequencyResolution = TargetHlaCategory.GGroup;
 
         private readonly IAmbiguousPhenotypeExpander ambiguousPhenotypeExpander;
-        private readonly ILocusHlaConverter locusHlaConverter;
         private readonly ILogger logger;
+        private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
 
         public CompressedPhenotypeExpander(
             IAmbiguousPhenotypeExpander ambiguousPhenotypeExpander,
-            ILocusHlaConverter locusHlaConverter,
             // ReSharper disable once SuggestBaseTypeForParameter
-            IMatchPredictionLogger logger)
+            IMatchPredictionLogger logger,
+            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory)
         {
             this.ambiguousPhenotypeExpander = ambiguousPhenotypeExpander;
-            this.locusHlaConverter = locusHlaConverter;
             this.logger = logger;
+            this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
         }
 
         /// <inheritdoc />
@@ -61,7 +63,9 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             ISet<Locus> allowedLoci,
             IReadOnlyCollection<LociInfo<string>> allPossibleHaplotypes)
         {
-            var gGroupsPerPosition = await locusHlaConverter.ConvertHla(phenotype, FrequencyResolution, hlaNomenclatureVersion, allowedLoci);
+            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
+
+            var gGroupsPerPosition = await hlaMetadataDictionary.ConvertAllHla(phenotype, FrequencyResolution, allowedLoci);
             var gGroupsPerLocus = gGroupsPerPosition.ToLociInfo((l, gGroups1, gGroups2)
                 => gGroups1 != null && gGroups2 != null ? new HashSet<string>(gGroups1.Concat(gGroups2)) : null
             );
@@ -149,7 +153,8 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             string hlaNomenclatureVersion,
             ISet<Locus> allowedLoci)
         {
-            var allelesPerLocus = await locusHlaConverter.ConvertHla(phenotype, FrequencyResolution, hlaNomenclatureVersion, allowedLoci);
+            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
+            var allelesPerLocus = await hlaMetadataDictionary.ConvertAllHla(phenotype, FrequencyResolution, allowedLoci);
 
             return allelesPerLocus.Reduce((l, p, alleles, count) => allowedLoci.Contains(l) ? count * alleles.Count : count, 1L);
         }
