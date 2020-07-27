@@ -17,7 +17,6 @@ using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchCalculation;
-using Microsoft.Azure.Documents.SystemFunctions;
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
@@ -87,6 +86,17 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             if (donorGenotypes.IsNullOrEmpty() || patientGenotypes.IsNullOrEmpty())
             {
+                if (donorGenotypes.IsNullOrEmpty())
+                {
+                    logger.SendTrace($"{LoggingPrefix}Donor genotype unrepresented." +
+                                     $" DonorId: {matchProbabilityInput.DonorId}, SearchRequestId: {matchProbabilityInput.DonorId}", LogLevel.Verbose);
+                }
+                if (patientGenotypes.IsNullOrEmpty())
+                {
+                    logger.SendTrace($"{LoggingPrefix}Patient genotype unrepresented." +
+                                     $" SearchRequestId: {matchProbabilityInput.DonorId}", LogLevel.Verbose);
+                }
+
                 return new MatchProbabilityResponse(null, allowedLoci)
                 {
                     IsDonorPhenotypeUnrepresented = donorGenotypes.IsNullOrEmpty(),
