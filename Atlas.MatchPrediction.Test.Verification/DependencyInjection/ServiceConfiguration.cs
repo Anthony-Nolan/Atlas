@@ -3,6 +3,7 @@ using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Atlas.MatchPrediction.Test.Verification.Data.Context;
 
 namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 {
@@ -21,14 +22,21 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 
         private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)
         {
-            services.AddTransient<INormalisedPoolRepository, NormalisedPoolRepository>(sp =>
-                new NormalisedPoolRepository(fetchSqlConnectionString(sp))
-            );
+            services.AddScoped<INormalisedPoolRepository, NormalisedPoolRepository>(sp =>
+                new NormalisedPoolRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<ISimulantsRepository, SimulantsRepository>(sp =>
+                new SimulantsRepository(fetchSqlConnectionString(sp)));
+
+            services.AddScoped(sp => new ContextFactory().Create(fetchSqlConnectionString(sp)));
+            services.AddScoped<ITestHarnessRepository, TestHarnessRepository>();
         }
 
         private static void RegisterServices(this IServiceCollection services)
         {
             services.AddScoped<INormalisedPoolGenerator, NormalisedPoolGenerator>();
+            services.AddScoped<IGenotypeSimulator, GenotypeSimulator>();
+            services.AddScoped<IRandomNumberPairGenerator, RandomNumberPairGenerator>();
+            services.AddScoped<ITestHarnessGenerator, TestHarnessGenerator>();
         }
     }
 }

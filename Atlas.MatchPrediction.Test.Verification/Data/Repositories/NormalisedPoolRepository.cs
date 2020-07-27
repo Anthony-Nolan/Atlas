@@ -11,8 +11,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {
     public interface INormalisedPoolRepository
     {
-        Task DeleteNormalisedHaplotypeFrequencyPool();
-        Task BulkInsertNormalisedHaplotypes(IReadOnlyCollection<NormalisedHaplotypeFrequency> haplotypeFrequencies);
+        Task<int> AddNormalisedPool();
+        Task TruncateNormalisedHaplotypeFrequencies();
+        Task BulkInsertNormalisedHaplotypeFrequencies(IReadOnlyCollection<NormalisedHaplotypeFrequency> haplotypeFrequencies);
     }
 
     internal class NormalisedPoolRepository : INormalisedPoolRepository
@@ -24,9 +25,21 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             this.connectionString = connectionString;
         }
 
-        public async Task DeleteNormalisedHaplotypeFrequencyPool()
+        public async Task<int> AddNormalisedPool()
         {
-            var sql = $"TRUNCATE TABLE {nameof(MatchPredictionVerificationContext.NormalisedHaplotypeFrequencyPool)}";
+            var sql = @$"
+                INSERT INTO {nameof(MatchPredictionVerificationContext.NormalisedPool)} DEFAULT VALUES;
+                SELECT CAST(SCOPE_IDENTITY() as int);";
+
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                return (await conn.QueryAsync<int>(sql)).Single();
+            }
+        }
+
+        public async Task TruncateNormalisedHaplotypeFrequencies()
+        {
+            var sql = $"TRUNCATE TABLE {nameof(MatchPredictionVerificationContext.NormalisedHaplotypeFrequencies)}";
 
             await using (var conn = new SqlConnection(connectionString))
             {
@@ -34,7 +47,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             }
         }
 
-        public async Task BulkInsertNormalisedHaplotypes(IReadOnlyCollection<NormalisedHaplotypeFrequency> haplotypeFrequencies)
+        public async Task BulkInsertNormalisedHaplotypeFrequencies(IReadOnlyCollection<NormalisedHaplotypeFrequency> haplotypeFrequencies)
         {
             if (!haplotypeFrequencies.Any())
             {
@@ -52,7 +65,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
         private static DataTable BuildDataTable(IReadOnlyCollection<NormalisedHaplotypeFrequency> haplotypeFrequencies)
         {
             var dataTable = new DataTable();
-            foreach (var columnName in NormalisedHaplotypeFrequency.GetColumnNames())
+            foreach (var columnName in NormalisedHaplotypeFrequency.GetColumnNamesForBulkInsert())
             {
                 dataTable.Columns.Add(columnName);
             }
@@ -60,6 +73,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             foreach (var haplotypeFrequency in haplotypeFrequencies)
             {
                 dataTable.Rows.Add(
+                    haplotypeFrequency.NormalisedPool_Id,
                     haplotypeFrequency.A,
                     haplotypeFrequency.B,
                     haplotypeFrequency.C,
@@ -78,10 +92,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             {
                 BulkCopyTimeout = 3600,
                 BatchSize = 10000,
-                DestinationTableName = nameof(MatchPredictionVerificationContext.NormalisedHaplotypeFrequencyPool)
+                DestinationTableName = nameof(MatchPredictionVerificationContext.NormalisedHaplotypeFrequencies)
             };
 
-            foreach (var columnName in NormalisedHaplotypeFrequency.GetColumnNames())
+            foreach (var columnName in NormalisedHaplotypeFrequency.GetColumnNamesForBulkInsert())
             {
                 // Relies on setting up the data table with column names matching the database columns.
                 sqlBulk.ColumnMappings.Add(columnName, columnName);

@@ -7,6 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20200724123724_CreateTable_NormalisedHaplotypeFrequencyPool.cs" />
+    <Compile Remove="Migrations\20200724123724_CreateTable_NormalisedHaplotypeFrequencyPool.Designer.cs" />
+    <Compile Remove="Migrations\20200726162747_CreateTable_Simulants.cs" />
+    <Compile Remove="Migrations\20200726162747_CreateTable_Simulants.Designer.cs" />
+    <Compile Remove="Migrations\20200726162910_CreateTable_Simulants.cs" />
+    <Compile Remove="Migrations\20200726162910_CreateTable_Simulants.Designer.cs" />
+    <Compile Remove="Migrations\20200727132408_CreateTestHarnessTables.cs" />
+    <Compile Remove="Migrations\20200727132408_CreateTestHarnessTables.Designer.cs" />
+    <Compile Remove="Migrations\20200727133357_CreateTestHarnessTables.cs" />
+    <Compile Remove="Migrations\20200727133357_CreateTestHarnessTables.Designer.cs" />
+    <Compile Remove="Migrations\20200727150810_InitialiseDatabase.cs" />
+    <Compile Remove="Migrations\20200727150810_InitialiseDatabase.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
     <PackageReference Include="LochNessBuilder" Version="1.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.4" />
