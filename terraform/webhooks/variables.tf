@@ -48,6 +48,5 @@ variable "TERRAFORM_STORAGE_ACCOUNT_NAME" {
 
 variable "TERRAFORM_STORAGE_CONTAINER_NAME" {
   type        = string
-  default     = "terraform-state"
   description = "Name of the container within the storage account in which the terraform backend is deployed."
 }
