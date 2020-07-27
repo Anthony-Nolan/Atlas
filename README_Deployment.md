@@ -29,6 +29,12 @@ The following are the steps that are required to be taken manually when deployin
   - *ARM_CLIENT_SECRET*
   - *ARM_TENANT_ID*
     - Details available from the azure AD app registration
+  - *BACKEND_RESOURCE_GROUP_NAME*
+  - *BACKEND_STORAGE_ACCOUNT_NAME*
+  - *BACKEND_STORAGE_CONTAINER_NAME* 
+    - Information regarding the location of the Terraform backend, hosted in an Azure Storage instance
+    - Note that this is currently duplicated as release variables - ensure that the release and build use the same values to ensure that both validate and apply use the same backend! 
+    
 - New Devops build pipelines should be created, using the checked in `<pipeline>.yml` files.
 - An Azure service connection should be set up to the target Azure subscription, scoped to the new resource group for this Atlas installation
   - Due to the restriction by resource group, terraform must be run before this can be set up - either via a partial release or manually
