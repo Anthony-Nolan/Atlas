@@ -88,13 +88,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             {
                 if (donorGenotypes.IsNullOrEmpty())
                 {
-                    logger.SendTrace($"{LoggingPrefix}Donor genotype unrepresented." +
-                                     $" DonorId: {matchProbabilityInput.DonorId}, SearchRequestId: {matchProbabilityInput.DonorId}", LogLevel.Verbose);
+                    logger.SendTrace($"{LoggingPrefix}Donor genotype unrepresented.", LogLevel.Verbose);
                 }
                 if (patientGenotypes.IsNullOrEmpty())
                 {
-                    logger.SendTrace($"{LoggingPrefix}Patient genotype unrepresented." +
-                                     $" SearchRequestId: {matchProbabilityInput.DonorId}", LogLevel.Verbose);
+                    logger.SendTrace($"{LoggingPrefix}Patient genotype unrepresented.", LogLevel.Verbose);
                 }
 
                 return new MatchProbabilityResponse(null, allowedLoci)
