@@ -57,12 +57,12 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         [Test]
         public async Task ImportDonors_WithUnexpectedColumns_SwallowsErrorAndCompletesSuccessfully()
         {
-            var malformedDonorFile = DonorImportFileWithPatientsBuilder.New.Build();
+            var malformedDonorFile = DonorImportFileWithUnexpectedFieldBuilder.New.Build();
             var file = new DonorImportFile {Contents = malformedDonorFile.ToStream()};
 
             await donorFileImporter.ImportDonorFile(file);
 
-            await mockNotificationSender.Received().SendAlert("Unrecognised property: patients encountered in donor import file.", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
+            await mockNotificationSender.Received().SendAlert("Unrecognised property: unexpectedField encountered in donor import file.", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
         }
 
         [Test]

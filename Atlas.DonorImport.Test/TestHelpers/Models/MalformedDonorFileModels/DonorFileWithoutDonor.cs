@@ -3,7 +3,7 @@ using System.Text;
 using Atlas.DonorImport.Models.FileSchema;
 using Newtonsoft.Json;
 
-namespace Atlas.DonorImport.Test.TestHelpers.Models
+namespace Atlas.DonorImport.Test.TestHelpers.Models.MalformedDonorFileModels
 {
     internal class DonorFileWithoutDonor
     {

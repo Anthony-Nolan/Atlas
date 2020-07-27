@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Atlas.DonorImport.Helpers
+namespace Atlas.DonorImport.Exceptions
 {
     internal class MalformedDonorFileException : Exception
     {

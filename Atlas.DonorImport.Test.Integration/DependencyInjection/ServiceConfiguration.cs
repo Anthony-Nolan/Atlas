@@ -24,7 +24,6 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
         {
             var services = new ServiceCollection();
             
-            services.AddScoped(sp => Substitute.For<ILogger>());
             SetUpConfiguration(services);
             services.RegisterDonorImport(
                 sp => new ApplicationInsightsSettings {LogLevel = "Info"},

@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
+using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
-using Atlas.DonorImport.Helpers;
 using MoreLinq.Extensions;
 
 // ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
@@ -57,10 +57,9 @@ namespace Atlas.DonorImport.Services
             catch (EmptyDonorFileException e)
             {
                 const string summary = "Donor file was present but it was empty.";
-                var description = e.StackTrace;
-                
+
                 logger.SendTrace(summary, LogLevel.Warn);
-                await notificationSender.SendAlert(summary, description, Priority.Medium, nameof(ImportDonorFile));
+                await notificationSender.SendAlert(summary, e.StackTrace, Priority.Medium, nameof(ImportDonorFile));
             }
             catch (MalformedDonorFileException e)
             {
