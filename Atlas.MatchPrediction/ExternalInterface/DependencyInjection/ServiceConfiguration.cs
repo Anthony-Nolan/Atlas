@@ -1,13 +1,12 @@
-﻿﻿using System;
+﻿using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
- using Atlas.MatchPrediction.ApplicationInsights;
- using Atlas.MatchPrediction.Data.Context;
+using Atlas.MatchPrediction.ApplicationInsights;
+using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.Data.Repositories;
-using Atlas.MatchPrediction.Services;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -109,8 +108,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 
             services.AddScoped<IMatchProbabilityService, MatchProbabilityService>();
             services.AddScoped<IMatchProbabilityCalculator, MatchProbabilityCalculator>();
-
-            services.AddScoped<ILocusHlaConverter, LocusHlaConverter>();
         }
     }
 }
