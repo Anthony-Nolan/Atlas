@@ -7,7 +7,6 @@ using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
-using Atlas.Common.Utils.Models;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
@@ -174,6 +173,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             using (logger.RunTimed($"{LoggingPrefix}Calculate genotype matches", LogLevel.Verbose))
             {
                 var genotypeMatchingTasks = allPatientDonorCombinations
+                    .AsParallel()
                     .Select(pd => CalculateMatch(pd, matchProbabilityInput.HlaNomenclatureVersion, allowedLoci))
                     .ToList();
                 return (await Task.WhenAll(genotypeMatchingTasks)).ToHashSet();
