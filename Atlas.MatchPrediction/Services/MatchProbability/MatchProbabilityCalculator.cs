@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Atlas.Common.GeneticData;
@@ -8,7 +7,8 @@ using Atlas.Common.Utils.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Models;
 
-// ReSharper disable ParameterTypeCanBeEnumerable.Global
+// ReSharper disable ParameterTypeCanBeEnumerable.Local
+// ReSharper disable SuggestBaseTypeForParameter
 
 namespace Atlas.MatchPrediction.Services.MatchProbability
 {
@@ -25,6 +25,21 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             SubjectCalculatorInputs donorInfo,
             ISet<GenotypeMatchDetails> patientDonorMatchDetails,
             ISet<Locus> allowedLoci);
+    }
+
+    /// <summary>
+    /// Match probability calculation involves running the same equation multiple times with the same denominator, and different numerators
+    /// depending on what probability is being calculated.
+    ///
+    /// To avoid iterating a large collection of patient/donor pairs multiple times, this class allows us to calculate all the numerators
+    /// together in one pass of the collection. 
+    /// </summary>
+    internal class MatchProbabilityEquationNumerators
+    {
+        public decimal ZeroMismatchProbability { get; set; } = 0;
+        public decimal OneMismatchProbability { get; set; } = 0;
+        public decimal TwoMismatchProbability { get; set; } = 0;
+        public LociInfo<decimal?> ZeroMismatchProbabilityPerLocus { get; set; } = new LociInfo<decimal?>(0);
     }
 
     internal class MatchProbabilityCalculator : IMatchProbabilityCalculator
@@ -46,35 +61,63 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 throw new InvalidDataException("Cannot calculate match probability for unrepresented hla");
             }
 
-            decimal CalculateProbability(Func<ISet<GenotypeMatchDetails>, IEnumerable<GenotypeMatchDetails>> filterMatches)
-            {
-                var filteredMatches = filterMatches(patientDonorMatchDetails);
-                var sumOfMatchingLikelihoods = filteredMatches.Sum(g => patientLikelihoods[g.PatientGenotype] * donorLikelihoods[g.DonorGenotype]);
+            var denominator = sumOfDonorLikelihoods * sumOfPatientLikelihoods;
+            decimal MatchProbability(decimal numerator) => numerator / denominator;
 
-                return sumOfMatchingLikelihoods / (sumOfPatientLikelihoods * sumOfDonorLikelihoods);
-            }
-
-            var probabilityPerLocus = new LociInfo<decimal?>().Map((locus, info) =>
-            {
-                if (!allowedLoci.Contains(locus))
-                {
-                    return (decimal?) null;
-                }
-
-                return CalculateProbability(m => m.Where(g => g.MatchCounts.GetLocus(locus) == 2));
-            });
-
-            var zeroMismatchProbability = CalculateProbability(m => m.Where(g => g.MismatchCount == 0));
-            var singleMismatchProbability = CalculateProbability(m => m.Where(g => g.MismatchCount == 1));
-            var twoMismatchProbability = CalculateProbability(m => m.Where(g => g.MismatchCount == 2));
+            var matchProbabilityNumerators = CalculateEquationNumerators(patientDonorMatchDetails, allowedLoci, patientLikelihoods, donorLikelihoods);
 
             return new MatchProbabilityResponse
             {
-                ZeroMismatchProbability = new Probability(zeroMismatchProbability),
-                OneMismatchProbability = new Probability(singleMismatchProbability),
-                TwoMismatchProbability = new Probability(twoMismatchProbability),
-                ZeroMismatchProbabilityPerLocus = probabilityPerLocus.Map((l, v) => v.HasValue ? new Probability(v.Value) : null)
+                ZeroMismatchProbability = new Probability(MatchProbability(matchProbabilityNumerators.ZeroMismatchProbability)),
+                OneMismatchProbability = new Probability(MatchProbability(matchProbabilityNumerators.OneMismatchProbability)),
+                TwoMismatchProbability = new Probability(MatchProbability(matchProbabilityNumerators.TwoMismatchProbability)),
+                ZeroMismatchProbabilityPerLocus = matchProbabilityNumerators.ZeroMismatchProbabilityPerLocus.Map((l, v) =>
+                    v.HasValue ? new Probability(MatchProbability(v.Value)) : null
+                )
             };
+        }
+
+        private static MatchProbabilityEquationNumerators CalculateEquationNumerators(
+            ISet<GenotypeMatchDetails> patientDonorMatchDetails,
+            ISet<Locus> allowedLoci,
+            IReadOnlyDictionary<PhenotypeInfo<string>, decimal> patientLikelihoods,
+            IReadOnlyDictionary<PhenotypeInfo<string>, decimal> donorLikelihoods
+        )
+        {
+            return patientDonorMatchDetails.Aggregate(new MatchProbabilityEquationNumerators(), (numerators, pair) =>
+            {
+                var pairLikelihood = patientLikelihoods[pair.PatientGenotype] * donorLikelihoods[pair.DonorGenotype];
+
+                switch (pair.MismatchCount)
+                {
+                    case 0:
+                        numerators.ZeroMismatchProbability += pairLikelihood;
+                        break;
+                    case 1:
+                        numerators.OneMismatchProbability += pairLikelihood;
+                        break;
+                    case 2:
+                        numerators.TwoMismatchProbability += pairLikelihood;
+                        break;
+                }
+
+                numerators.ZeroMismatchProbabilityPerLocus = numerators.ZeroMismatchProbabilityPerLocus.Map((locus, n) =>
+                {
+                    if (!allowedLoci.Contains(locus))
+                    {
+                        return (decimal?) null;
+                    }
+
+                    if (pair.MatchCounts.GetLocus(locus) == 2)
+                    {
+                        return n + pairLikelihood;
+                    }
+
+                    return n;
+                });
+
+                return numerators;
+            });
         }
     }
 }
