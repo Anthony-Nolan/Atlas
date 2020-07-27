@@ -27,20 +27,20 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
         }
 
         [Test]
-        public async Task GenerateNormalisedHaplotypeFrequencyPool_ReturnsNormalisedHaplotypeForEachHaplotype()
+        public async Task GenerateNormalisedHaplotypeFrequencyPool_ReturnsPoolMemberForEachHaplotype()
         {
             const int haplotypeCount = 12;
 
             reader.GetActiveGlobalHaplotypeFrequencies()
                 .ReturnsForAnyArgs(HaplotypeFrequencyBuilder.Default.Build(haplotypeCount).ToList());
 
-            var results = (await generator.GenerateNormalisedHaplotypeFrequencyPool()).ToList();
+            var results = await generator.GenerateNormalisedHaplotypeFrequencyPool();
 
-            results.Count.Should().Be(haplotypeCount);
+            results.PoolMembers.Count.Should().Be(haplotypeCount);
         }
 
         [Test]
-        public async Task GenerateNormalisedHaplotypeFrequencyPool_CalculatesCorrectCopyNumber()
+        public async Task GenerateNormalisedHaplotypeFrequencyPool_CalculatesCorrectCopyNumbers()
         {
             const int lowestFrequencyCopyNumber = 1;
             const int middleFrequencyCopyNumber = 2;
@@ -53,20 +53,61 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
             var highestFrequency = HaplotypeFrequencyBuilder.Default
                 .With(x => x.Frequency, lowestFrequency.Frequency * highestFrequencyCopyNumber)
                 .Build();
-            
+
             reader.GetActiveGlobalHaplotypeFrequencies().ReturnsForAnyArgs(new[] {
                 lowestFrequency,
                 middleFrequency,
                 highestFrequency
             });
-            
-            var results = (await generator.GenerateNormalisedHaplotypeFrequencyPool())
-                .OrderBy(x => x.Frequency)
-                .ToList();
 
-            results[0].CopyNumber.Should().Be(lowestFrequencyCopyNumber);
-            results[1].CopyNumber.Should().Be(middleFrequencyCopyNumber);
-            results[2].CopyNumber.Should().Be(highestFrequencyCopyNumber);
+            var results = await generator.GenerateNormalisedHaplotypeFrequencyPool();
+            var poolMembers = results.PoolMembers.ToList();
+
+            results.TotalCopyNumber.Should().Be(lowestFrequencyCopyNumber + middleFrequencyCopyNumber + highestFrequencyCopyNumber);
+            poolMembers[0].CopyNumber.Should().Be(lowestFrequencyCopyNumber);
+            poolMembers[1].CopyNumber.Should().Be(middleFrequencyCopyNumber);
+            poolMembers[2].CopyNumber.Should().Be(highestFrequencyCopyNumber);
+        }
+
+        [Test]
+        public async Task GenerateNormalisedHaplotypeFrequencyPool_CalculatesCorrectPoolIndexBoundaries()
+        {
+            const int haplotype2CopyNumber = 1;
+            const int haplotype3CopyNumber = 3;
+            const int haplotype4CopyNumber = 5;
+
+            var haplotype1 = HaplotypeFrequencyBuilder.Default.Build();
+            var haplotype2 = HaplotypeFrequencyBuilder.Default
+                .With(x => x.Frequency, haplotype1.Frequency * haplotype2CopyNumber)
+                .Build();
+            var haplotype3 = HaplotypeFrequencyBuilder.Default
+                .With(x => x.Frequency, haplotype1.Frequency * haplotype3CopyNumber)
+                .Build();
+            var haplotype4 = HaplotypeFrequencyBuilder.Default
+                .With(x => x.Frequency, haplotype1.Frequency * haplotype4CopyNumber)
+                .Build();
+
+            reader.GetActiveGlobalHaplotypeFrequencies().ReturnsForAnyArgs(new[] {
+                haplotype1,
+                haplotype2,
+                haplotype3,
+                haplotype4
+            });
+
+            var results = await generator.GenerateNormalisedHaplotypeFrequencyPool();
+            var poolMembers = results.PoolMembers.ToList();
+
+            poolMembers[0].PoolIndexLowerBoundary.Should().Be(0);
+            poolMembers[0].PoolIndexUpperBoundary.Should().Be(0);
+
+            poolMembers[1].PoolIndexLowerBoundary.Should().Be(1);
+            poolMembers[1].PoolIndexUpperBoundary.Should().Be(1);
+
+            poolMembers[2].PoolIndexLowerBoundary.Should().Be(2);
+            poolMembers[2].PoolIndexUpperBoundary.Should().Be(4);
+
+            poolMembers[3].PoolIndexLowerBoundary.Should().Be(5);
+            poolMembers[3].PoolIndexUpperBoundary.Should().Be(9);
         }
     }
 }
