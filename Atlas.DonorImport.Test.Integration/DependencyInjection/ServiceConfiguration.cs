@@ -23,6 +23,8 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
         public static IServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
+            
+            services.AddScoped(sp => Substitute.For<ILogger>());
             SetUpConfiguration(services);
             services.RegisterDonorImport(
                 sp => new ApplicationInsightsSettings {LogLevel = "Info"},
@@ -58,7 +60,8 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
             mockSearchServiceBusClient
                 .PublishDonorUpdateMessage(Arg.Any<SearchableDonorUpdate>())
                 .Returns(Task.CompletedTask);
-
+            
+            services.AddScoped(sp => Substitute.For<ILogger>());
             services.AddScoped(sp => mockSearchServiceBusClient);
             services.AddScoped(sp => Substitute.For<INotificationSender>());
         }

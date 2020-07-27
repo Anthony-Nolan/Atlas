@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Atlas.DonorImport.Helpers;
 using Atlas.DonorImport.Models.FileSchema;
 using Newtonsoft.Json;
 
@@ -33,6 +34,10 @@ namespace Atlas.DonorImport.Services
 
         public IEnumerable<DonorUpdate> ReadLazyDonorUpdates()
         {
+            if (underlyingDataStream == null)
+            {
+                throw new EmptyDonorFileException();
+            }
             using (var streamReader = new StreamReader(underlyingDataStream))
             using (var reader = new JsonTextReader(streamReader))
             {
@@ -59,7 +64,7 @@ namespace Atlas.DonorImport.Services
                                 {
                                     if (!updateMode.HasValue)
                                     {
-                                        throw new Exception("Update Mode must be provided before donor list in donor import JSON file.");
+                                        throw new MalformedDonorFileException("Update Mode must be provided before donor list in donor import JSON file.");
                                     }
 
                                     var donorOperation = serializer.Deserialize<DonorUpdate>(reader);
@@ -83,7 +88,7 @@ namespace Atlas.DonorImport.Services
 
                                 break;
                             default:
-                                throw new Exception($"Unrecognised property: {propertyName} encountered in donor import file.");
+                                throw new MalformedDonorFileException($"Unrecognised property: {propertyName} encountered in donor import file.");
                         }
                     }
                 }

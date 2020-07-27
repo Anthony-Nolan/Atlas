@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.Helpers;
 using MoreLinq.Extensions;
 
 // ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
@@ -50,7 +51,21 @@ namespace Atlas.DonorImport.Services
                     await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file.FileLocation);
                     importedDonorCount += reifiedDonorBatch.Count;
                 }
+
                 logger.SendTrace($"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).");
+            }
+            catch (EmptyDonorFileException e)
+            {
+                const string summary = "Donor file was present but it was empty.";
+                var description = e.StackTrace;
+                
+                logger.SendTrace(summary, LogLevel.Warn);
+                await notificationSender.SendAlert(summary, description, Priority.Medium, nameof(ImportDonorFile));
+            }
+            catch (MalformedDonorFileException e)
+            {
+                logger.SendTrace(e.Message, LogLevel.Warn);
+                await notificationSender.SendAlert(e.Message, e.StackTrace, Priority.Medium, nameof(ImportDonorFile));
             }
             catch (Exception e)
             {
