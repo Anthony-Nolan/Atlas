@@ -5,6 +5,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.Common.Utils.Models;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
@@ -49,6 +50,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             matchCalculationService = Substitute.For<IMatchCalculationService>();
             matchProbabilityCalculator = Substitute.For<IMatchProbabilityCalculator>();
             haplotypeFrequencyService = Substitute.For<IHaplotypeFrequencyService>();
+            var hlaMetadataDictionaryFactory = Substitute.For<IHlaMetadataDictionaryFactory>();
             var logger = Substitute.For<IMatchPredictionLogger>();
 
             matchCalculationService.CalculateMatchCounts(default, default, default, default)
@@ -71,7 +73,8 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 matchProbabilityCalculator,
                 haplotypeFrequencyService,
                 logger,
-                new MatchPredictionLoggingContext()
+                new MatchPredictionLoggingContext(),
+                hlaMetadataDictionaryFactory
             );
         }
 
@@ -96,7 +99,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 .Returns(new HashSet<PhenotypeInfo<string>> {PatientHla});
             matchCalculationService.CalculateMatchCounts(PatientHla, DonorHla, Arg.Any<string>(), default)
                 .Returns(new MatchCountsBuilder().TenOutOfTen().Build());
-            
+
             matchProbabilityCalculator.CalculateMatchProbability(
                     default,
                     default,
@@ -147,10 +150,9 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            await matchCalculationService.Received(numberOfPossibleCombinations).CalculateMatchCounts(
+            matchCalculationService.Received(numberOfPossibleCombinations).CalculateMatchCounts_Fast(
                 Arg.Any<PhenotypeInfo<string>>(),
                 Arg.Any<PhenotypeInfo<string>>(),
-                Arg.Any<string>(),
                 Arg.Any<ISet<Locus>>());
         }
     }
