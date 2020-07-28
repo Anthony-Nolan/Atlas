@@ -17,6 +17,20 @@ namespace Atlas.Common.ApplicationInsights.Timing
             return new LoggingStopwatch.LoggingStopwatch(completionMessage, text => logger.SendTrace(text, logLevel), logAtStart);
         }
 
+        public static T RunTimed<T>(
+            this ILogger logger,
+            string completionMessage,
+            Func<T> action,
+            LogLevel logLevel = LogLevel.Info,
+            bool logAtStart = false
+        )
+        {
+            using (logger.RunTimed(completionMessage, logLevel, logAtStart))
+            {
+                return action();
+            }
+        }
+
         /// <summary>
         /// Allow you to select using sub-blocks to time.
         /// Tracks how long it takes to run the contents of those blocks, then logs the elapsed time along with a provided message. 
@@ -29,6 +43,5 @@ namespace Atlas.Common.ApplicationInsights.Timing
         {
             return new LoggingStopwatch.LongOperationLoggingStopwatch(completionMessage, text => logger.SendTrace(text, logLevel), settings);
         }
-
     }
 }
