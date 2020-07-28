@@ -28,7 +28,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         private const string Drb11 = "Drb11:Drb11";
         private const string Drb12 = "Drb12:Drb12";
 
-        private readonly ISet<Locus> allLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
+        private readonly ISet<Locus> allLoci = LocusSettings.MatchPredictionLoci;
 
         [SetUp]
         public void SetUp()

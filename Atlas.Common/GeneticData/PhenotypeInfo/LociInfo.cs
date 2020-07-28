@@ -24,6 +24,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         protected T c;
         protected T dpb1;
         protected T dqb1;
+
         protected T drb1;
         // ReSharper restore InconsistentNaming
 
@@ -245,7 +246,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
-        public virtual bool EqualsAtLoci(LociInfo<T> other, ISet<Locus> lociToMatchAt)
+        public bool EqualsAtLoci(LociInfo<T> other, ISet<Locus> lociToMatchAt)
         {
             if (ReferenceEquals(null, other))
             {
@@ -271,7 +272,13 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                    (!lociToMatchAt.Contains(Locus.Drb1) || EqualityComparer<T>.Default.Equals(Drb1, other.Drb1));
         }
 
+        public bool AnyAtLoci(Func<T, bool> condition, ISet<Locus> loci)
+        {
+            return Reduce((locus, value, result) => result || loci.Contains(locus) && condition(value), false);
+        }
+
         #region IEquatable<T> implementation (Defers to EqualityComparer of inner type.)
+
         public static bool operator ==(LociInfo<T> left, LociInfo<T> right)
         {
             return Equals(left, right);
@@ -327,6 +334,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 return hashCode;
             }
         }
+
         #endregion
     }
 }

@@ -17,7 +17,7 @@ namespace Atlas.MatchPrediction.Data.Models
         public decimal Frequency { get; set; }
 
         [NotMapped]
-        public LociInfo<string> Hla { get; } = new LociInfo<string>();
+        public LociInfo<string> Hla { get; set; } = new LociInfo<string>();
 
         [Required]
         [MaxLength(64)]
@@ -71,6 +71,8 @@ namespace Atlas.MatchPrediction.Data.Models
         [ForeignKey(nameof(Set))]
         [Column(SetIdColumnName)]
         public int SetId { get; set; }
+        
+        public HaplotypeTypingCategory TypingCategory { get; set; }
     }
 
     internal static class HaplotypeFrequencyModelBuilder

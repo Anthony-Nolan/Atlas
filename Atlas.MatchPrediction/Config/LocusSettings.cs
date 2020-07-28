@@ -8,11 +8,11 @@ namespace Atlas.MatchPrediction.Config
     /// <summary>
     /// Central location from which locus-based functionality can be controlled.
     /// </summary>
-    public static class LocusSettings
+    internal static class LocusSettings
     {
         /// <summary>
         /// Only these loci are considered during match prediction.
         /// </summary>
-        public static HashSet<Locus> MatchPredictionLoci => EnumerateValues<Locus>().Except(new[] {Locus.Dpb1}).ToHashSet();
+        public static ISet<Locus> MatchPredictionLoci => EnumerateValues<Locus>().Except(new[] {Locus.Dpb1}).ToHashSet();
     }
 }

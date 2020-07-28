@@ -1,4 +1,6 @@
-﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Data.Models;
@@ -6,14 +8,12 @@ using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
-using Atlas.MatchPrediction.Test.Integration.Resources;
+using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.MatchProbability
 {
@@ -24,7 +24,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         protected const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
-        protected static readonly PhenotypeInfo<string> DefaultGGroups = Alleles.UnambiguousAlleleDetails.GGroups();
+        protected static readonly PhenotypeInfo<string> DefaultGGroups = UnambiguousAlleles.UnambiguousAlleleDetails.GGroups();
         
         protected const string DefaultRegistryCode = "default-registry-code";
         protected const string DefaultEthnicityCode = "default-ethnicity-code";
@@ -46,13 +46,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         protected static Builder<HaplotypeFrequency> DefaultHaplotypeFrequency1 => HaplotypeFrequencyBuilder.New
-            .WithHaplotype(Alleles.UnambiguousAlleleDetails.GGroups().Split().Item1);
+            .WithHaplotype(UnambiguousAlleles.UnambiguousAlleleDetails.GGroups().Split().Item1);
 
         protected static Builder<HaplotypeFrequency> DefaultHaplotypeFrequency2 => Builder<HaplotypeFrequency>.New
-            .WithHaplotype(Alleles.UnambiguousAlleleDetails.GGroups().Split().Item2);
+            .WithHaplotype(UnambiguousAlleles.UnambiguousAlleleDetails.GGroups().Split().Item2);
 
         protected static PhenotypeInfoBuilder<string> DefaultUnambiguousAllelesBuilder =>
-            new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles());
+            new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles());
 
         protected static Builder<MatchProbabilityInput> DefaultInputBuilder => Builder<MatchProbabilityInput>.New
             .With(i => i.HlaNomenclatureVersion, HlaNomenclatureVersion)

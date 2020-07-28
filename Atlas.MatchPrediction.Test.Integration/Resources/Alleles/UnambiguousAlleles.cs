@@ -1,9 +1,9 @@
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 
-namespace Atlas.MatchPrediction.Test.Integration.Resources
+namespace Atlas.MatchPrediction.Test.Integration.Resources.Alleles
 {
-    internal static class Alleles
+    internal static class UnambiguousAlleles
     {
         /// <summary>
         /// Alleles selected, such that each position has a single allele that corresponds to a single G-Group.

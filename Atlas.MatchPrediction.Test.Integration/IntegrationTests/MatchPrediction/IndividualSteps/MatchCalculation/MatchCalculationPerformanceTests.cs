@@ -7,7 +7,7 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Services.MatchCalculation;
-using Atlas.MatchPrediction.Test.Integration.Resources;
+using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -20,7 +20,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
-        private static readonly HashSet<Locus> AllowedLoci = LocusSettings.MatchPredictionLoci;
+        private static readonly ISet<Locus> AllowedLoci = LocusSettings.MatchPredictionLoci;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -93,7 +93,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         
         /// <summary>
         /// Note that while in practice this method should be called with P Group typed hla, under the hood the work done is string comparison.
-        /// A performance test of this method does not care about biological correctness, so running with G Groups is sufficient here.
+        /// A performance test of this method does not care about biological correctness, so running with G AlleleGroups is sufficient here.
         /// 
         /// As such, we've used the same test data as for <see cref="CalculateMatchCounts_PerformanceTest"/>, to enable reasonable comparison. 
         /// </summary>
@@ -158,6 +158,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         private static PhenotypeInfoBuilder<string> DefaultGGroupsBuilder =>
-            new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.GGroups());
+            new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.GGroups());
     }
 }

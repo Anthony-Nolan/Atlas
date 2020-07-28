@@ -1,7 +1,11 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Utils.Extensions;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using EnumStringValues;
 using FluentAssertions;
+using MoreLinq.Extensions;
 using NUnit.Framework;
 
 namespace Atlas.Common.Test.Core.PhenotypeInfo
@@ -9,7 +13,7 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
     [TestFixture]
     public class LociInfoTests
     {
-        private readonly IEnumerable<Locus> supportedLoci = EnumStringValues.EnumExtensions.EnumerateValues<Locus>();
+        private readonly IEnumerable<Locus> supportedLoci = EnumExtensions.EnumerateValues<Locus>();
 
         [SetUp]
         public void SetUp()
@@ -77,6 +81,26 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
             var reducedData = data.Reduce((locus, value, accumulator) => accumulator + value, 0);
 
             reducedData.Should().Be(21);
+        }
+
+        [Test]
+        public void AnyAtLoci_WhenOnlyExcludedLociReturnTrue_ReturnsFalse()
+        {
+            const string toMatch = "string-to-match";
+            const Locus excludedLocus = Locus.C;
+            var lociInfo = new LociInfoBuilder<string>().WithDataAt(excludedLocus, toMatch).Build();
+
+            lociInfo.AnyAtLoci(x => x == toMatch, supportedLoci.Except(excludedLocus).ToHashSet()).Should().BeFalse();
+        }
+
+        [Test]
+        public void AnyAtLoci_WhenSingleLocusReturnsTrue_ReturnsTrue()
+        {
+            const string toMatch = "string-to-match";
+            const Locus includedLocus = Locus.C;
+            var lociInfo = new LociInfoBuilder<string>().WithDataAt(includedLocus, toMatch).Build();
+
+            lociInfo.AnyAtLoci(x => x == toMatch, new HashSet<Locus> {includedLocus}).Should().BeTrue();
         }
     }
 }

@@ -1,7 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Notifications;
 using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
@@ -52,7 +57,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
             await service.ImportFrequencySet(file);
 
             var activeSet = await setRepository.GetActiveSet(registryCode, ethnicityCode);
-            
+
             activeSet.Name.Should().Be(file.FileName);
         }
 
@@ -87,7 +92,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
             var activeSet = await setRepository.GetActiveSet(registryCode, ethnicityCode);
             var count = await inspectionRepository.HaplotypeFrequencyCount(activeSet.Id);
 
-            count.Should().Be(frequencyCount);
+            count.Should().BeGreaterThan(0);
         }
 
         [TestCase(null, null)]
@@ -164,6 +169,131 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
             {
                 await notificationSender.DidNotReceiveWithAnyArgs().SendNotification(default, default, default);
             }
+        }
+
+        [Test]
+        public async Task Import_ForHaplotypeWithoutNullAlleles_ConvertsToPGroups()
+        {
+            using var file = FrequencySetFileBuilder
+                .New(null, null)
+                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                {
+                    new HaplotypeFrequency
+                    {
+                        Hla = new LociInfo<string>
+                        {
+                            A = "01:01:01G",
+                            B = "13:01:01G",
+                            C = "04:01:01G",
+                            Dqb1 = "06:02:01G",
+                            Drb1 = "03:07:01G",
+                        },
+                        Frequency = 0.5m
+                    }
+                })
+                .Build();
+
+            await service.ImportFrequencySet(file);
+
+            var activeSet = await setRepository.GetActiveSet(null, null);
+            var importedFrequency = await inspectionRepository.GetFirstHaplotypeFrequency(activeSet.Id);
+
+            importedFrequency.TypingCategory.Should().Be(HaplotypeTypingCategory.PGroup);
+            importedFrequency.Hla.Should().BeEquivalentTo(new LociInfo<string>
+            {
+                A = "01:01P",
+                B = "13:01P",
+                C = "04:01P",
+                Dqb1 = "06:02P",
+                Drb1 = "03:07P"
+            });
+        }
+
+        [Test]
+        public async Task Import_ForHaplotypeWithNullAllele_DoesNotConvertsToPGroups()
+        {
+            var hla = new LociInfo<string>
+            {
+                A = "01:01:01G",
+                B = "13:63N",
+                C = "04:01:01G",
+                Dqb1 = "06:02:01G",
+                Drb1 = "03:07:01G",
+            };
+            using var file = FrequencySetFileBuilder
+                .New(null, null)
+                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                {
+                    new HaplotypeFrequency {Hla = hla, Frequency = 0.5m}
+                })
+                .Build();
+
+            await service.ImportFrequencySet(file);
+
+            var activeSet = await setRepository.GetActiveSet(null, null);
+            var importedFrequency = await inspectionRepository.GetFirstHaplotypeFrequency(activeSet.Id);
+
+            importedFrequency.TypingCategory.Should().Be(HaplotypeTypingCategory.GGroup);
+            importedFrequency.Hla.Should().BeEquivalentTo(hla);
+        }
+        
+        [Test]
+        public async Task Import_WhenMultipleHaplotypesConvertToSamePGroups_ConsolidatesFrequencies()
+        {
+            var gGroupsBuilder = new LociInfoBuilder<string>()
+                .WithDataAt(Locus.A, "01:01:01G")
+                .WithDataAt(Locus.B, "13:01:01G")
+                .WithDataAt(Locus.C, "04:01:01G")
+                .WithDataAt(Locus.Dqb1, "06:02:01G")
+                .WithDataAt(Locus.Drb1, "03:02:01G");
+            
+            using var file = FrequencySetFileBuilder
+                .New(null, null)
+                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                {
+                    new HaplotypeFrequency
+                    {
+                        Hla = gGroupsBuilder.Build(),
+                        Frequency = 0.5m
+                    },
+                    new HaplotypeFrequency
+                    {
+                        Hla = gGroupsBuilder.WithDataAt(Locus.A, "01:01:02").Build(),
+                        Frequency = 0.04m
+                    },
+                    new HaplotypeFrequency
+                    {
+                        Hla = gGroupsBuilder.WithDataAt(Locus.B, "13:01:02").Build(),
+                        Frequency = 0.003m
+                    },
+                    new HaplotypeFrequency
+                    {
+                        Hla = gGroupsBuilder.WithDataAt(Locus.Drb1, "03:02:02").Build(),
+                        Frequency = 0.0002m
+                    },
+                    new HaplotypeFrequency
+                    {
+                        Hla = gGroupsBuilder.WithDataAt(Locus.C, "04:01:02").WithDataAt(Locus.Dqb1, "06:02:02").Build(),
+                        Frequency = 0.0000001m
+                    },
+                })
+                .Build();
+
+            await service.ImportFrequencySet(file);
+
+            var activeSet = await setRepository.GetActiveSet(null, null);
+            var importedFrequency = await inspectionRepository.GetFirstHaplotypeFrequency(activeSet.Id);
+
+            importedFrequency.TypingCategory.Should().Be(HaplotypeTypingCategory.PGroup);
+            importedFrequency.Hla.Should().BeEquivalentTo(new LociInfo<string>
+            {
+                A = "01:01P",
+                B = "13:01P",
+                C = "04:01P",
+                Dqb1 = "06:02P",
+                Drb1 = "03:02P"
+            });
+            importedFrequency.Frequency.Should().Be(0.5432001m);
         }
     }
 }

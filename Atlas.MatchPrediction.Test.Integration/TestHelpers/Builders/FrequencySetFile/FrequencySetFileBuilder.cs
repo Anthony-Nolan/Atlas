@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Data.Models;
+using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
+using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using LochNessBuilder;
 using Builder = LochNessBuilder.Builder<Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile.TestFrequencySetFile>;
 
@@ -13,7 +16,7 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
     [Builder]
     internal static class FrequencySetFileBuilder
     {
-        private const string CsvHeader = "a;b;c;drb1;dqb1;freq";
+        private const string CsvHeader = "a;b;c;dqb1;drb1;freq";
 
         internal static Builder FileWithoutContents(string registryCode, string ethnicityCode)
         {
@@ -32,14 +35,18 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
 
         internal static Builder New(string registryCode, string ethnicityCode, IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
         {
-            return FileWithoutContents(registryCode, ethnicityCode)
-                .With(x => x.Contents, GetStream(BuildCsvFile(haplotypeFrequencies)));
+            return FileWithoutContents(registryCode, ethnicityCode).WithHaplotypeFrequencies(haplotypeFrequencies);
         }
 
         internal static Builder New(IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
         {
             return FileWithoutContents(null, null)
                 .With(x => x.Contents, GetStream(BuildCsvFile(haplotypeFrequencies)));
+        }
+
+        internal static Builder WithHaplotypeFrequencies(this Builder builder, IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
+        {
+            return builder.With(x => x.Contents, GetStream(BuildCsvFile(haplotypeFrequencies)));
         }
 
         internal static Builder WithHaplotypeFrequencyFileStream(this Builder builder, Stream stream)
@@ -72,19 +79,32 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
         {
             var file = new StringBuilder(CsvHeader + Environment.NewLine);
 
-            for (var i = 0; i < frequencyCount; i++)
-            {
-                var csvFileBodySingleFrequency = $"A-HLA-{i};B-HLA-{i};C-HLA-{i};DRB1-HLA-{i};DQB1-HLA-{i};{frequencyValue}";
-                file.AppendLine(csvFileBodySingleFrequency);
-            }
+            var validHaplotypes = new AmbiguousPhenotypeExpander()
+                .LazilyExpandPhenotype(AlleleGroups.GGroups.ToPhenotypeInfo((_, x) => x));
 
-            return file.ToString();
+            using (var enumerator = validHaplotypes.GetEnumerator())
+            {
+                for (var i = 0; i < frequencyCount; i++)
+                {
+                    enumerator.MoveNext();
+                    var haplotype = enumerator.Current ?? new PhenotypeInfo<string>();
+                    var csvFileBodySingleFrequency = $"{haplotype.A.Position1};" +
+                                                     $"{haplotype.B.Position1};" +
+                                                     $"{haplotype.C.Position1};" +
+                                                     $"{haplotype.Dqb1.Position1};" +
+                                                     $"{haplotype.Drb1.Position1};" +
+                                                     $"{frequencyValue}";
+                    file.AppendLine(csvFileBodySingleFrequency);
+                }
+
+                return file.ToString();
+            }
         }
 
         private static string BuildCsvFile(IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
         {
             var csvFileBodyFrequencies = haplotypeFrequencies
-                .Select(h => $"{h.A};{h.B};{h.C};{h.DRB1};{h.DQB1};{h.Frequency}").ToList();
+                .Select(h => $"{h.A};{h.B};{h.C};{h.DQB1};{h.DRB1};{h.Frequency}").ToList();
 
             var file = new StringBuilder(CsvHeader + Environment.NewLine);
 

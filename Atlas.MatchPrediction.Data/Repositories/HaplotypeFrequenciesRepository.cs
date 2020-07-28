@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Data.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
@@ -12,6 +13,12 @@ namespace Atlas.MatchPrediction.Data.Repositories
     public interface IHaplotypeFrequenciesRepository
     {
         Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies);
+
+        /// <summary>
+        /// If HF already present, add frequencies together.
+        /// </summary>
+        Task AddOrUpdateHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies);
+
         Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypeFrequencies(IEnumerable<HaplotypeHla> haplotypes, int setId);
         Task<Dictionary<HaplotypeHla, decimal>> GetAllHaplotypeFrequencies(int setId);
     }
@@ -41,9 +48,52 @@ namespace Atlas.MatchPrediction.Data.Repositories
             }
         }
 
+        /// <inheritdoc />
+        public async Task AddOrUpdateHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
+        {
+            haplotypeFrequencies = haplotypeFrequencies.ToList();
+            if (!haplotypeFrequencies.Any())
+            {
+                return;
+            }
+
+            var existingFrequencies = await GetAllHaplotypeFrequencies(haplotypeFrequencySetId);
+
+            var (updates, inserts) = haplotypeFrequencies.ReifyAndSplit(f => existingFrequencies.ContainsKey(f.Hla));
+
+            // TODO: ATLAS-590: This might not be the most time-efficient way of performing this import.
+            // Reading entire file in-memory and bulk inserting might be faster. 
+            // Raise card to tackle efficiency as this seems to be "good enough"? (2 min locally for largest set)
+            // TODO: ATLAS-590: Actually, this probably won't fly on devops - the import uses 12K SQL connections
+            foreach (var update in updates)
+            {
+                var existingFrequency = existingFrequencies[update.Hla];
+                var combinedFrequency = existingFrequency + update.Frequency;
+                const string sql = @"
+UPDATE HaplotypeFrequencies
+SET Frequency = @frequency 
+WHERE A = @A AND B = @B AND C = @C AND DQB1 = @Dqb1 AND DRB1 = @Drb1 AND Set_Id = @setId;";
+
+                await using (var conn = new SqlConnection(connectionString))
+                {
+                    await conn.ExecuteAsync(sql,
+                        new {update.A, update.B, update.C, update.DQB1, update.DRB1, SetId = haplotypeFrequencySetId, Frequency = combinedFrequency}
+                    );
+                }
+            }
+
+            var dataTable = BuildFrequencyInsertDataTable(haplotypeFrequencySetId, inserts);
+
+            using (var sqlBulk = BuildFrequencySqlBulkCopy())
+            {
+                await sqlBulk.WriteToServerAsync(dataTable);
+            }
+        }
+
         private SqlBulkCopy BuildFrequencySqlBulkCopy()
         {
-            var sqlBulk = new SqlBulkCopy(connectionString) {BulkCopyTimeout = 3600, BatchSize = 10000, DestinationTableName = "HaplotypeFrequencies"};
+            var sqlBulk = new SqlBulkCopy(connectionString)
+                {BulkCopyTimeout = 3600, BatchSize = 10000, DestinationTableName = "HaplotypeFrequencies"};
 
             sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.Id), nameof(HaplotypeFrequency.Id));
             sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.Frequency), nameof(HaplotypeFrequency.Frequency));
@@ -53,6 +103,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
             sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.DQB1), nameof(HaplotypeFrequency.DQB1));
             sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.DRB1), nameof(HaplotypeFrequency.DRB1));
             sqlBulk.ColumnMappings.Add(HaplotypeFrequency.SetIdColumnName, HaplotypeFrequency.SetIdColumnName);
+            sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.TypingCategory), nameof(HaplotypeFrequency.TypingCategory));
 
             return sqlBulk;
         }
@@ -68,6 +119,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
             dataTable.Columns.Add(nameof(HaplotypeFrequency.DQB1));
             dataTable.Columns.Add(nameof(HaplotypeFrequency.DRB1));
             dataTable.Columns.Add(HaplotypeFrequency.SetIdColumnName);
+            dataTable.Columns.Add(nameof(HaplotypeFrequency.TypingCategory));
 
             foreach (var frequency in frequencies)
             {
@@ -79,7 +131,8 @@ namespace Atlas.MatchPrediction.Data.Repositories
                     frequency.C,
                     frequency.DQB1,
                     frequency.DRB1,
-                    setId
+                    setId,
+                    (int) frequency.TypingCategory
                 );
             }
 
@@ -104,7 +157,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
                     Set_Id = @setId
                 ";
 
-            using (var conn = new SqlConnection(connectionString))
+            await using (var conn = new SqlConnection(connectionString))
             {
                 foreach (var haplotype in distinctHaplotypes)
                 {
@@ -118,7 +171,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
 
             return haplotypeInfo;
         }
-        
+
         /// <inheritdoc />
         public async Task<Dictionary<HaplotypeHla, decimal>> GetAllHaplotypeFrequencies(int setId)
         {

@@ -40,5 +40,21 @@ namespace Atlas.MatchPrediction.Utils
                 allowedLoci.Contains(locus) ? await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, gGroup) : null
             );
         }
+
+        /// <summary>
+        /// Runs <see cref="IHlaMetadataDictionary.ConvertGGroupToPGroup"/> for each HLA in a LociInfo, at selected loci.
+        /// Input hla *MUST* be typed to GGroup resolution.
+        /// Excluded loci will not be converted, and will be set to null. 
+        /// </summary>
+        public static async Task<LociInfo<string>> ConvertGGroupsToPGroups(
+            this IHlaMetadataDictionary hlaMetadataDictionary,
+            LociInfo<string> hlaAsGGroups,
+            ISet<Locus> allowedLoci
+        )
+        {
+            return await hlaAsGGroups.MapAsync(async (locus, gGroup) =>
+                allowedLoci.Contains(locus) ? await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, gGroup) : null
+            );
+        }
     }
 }

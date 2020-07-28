@@ -1,10 +1,14 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Utils;
 using MoreLinq.Extensions;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
@@ -20,17 +24,20 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         private readonly IFrequencyCsvReader frequencyCsvReader;
         private readonly IHaplotypeFrequencySetRepository setRepository;
         private readonly IHaplotypeFrequenciesRepository frequenciesRepository;
+        private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
 
         public FrequencySetImporter(
             IFrequencySetMetadataExtractor metadataExtractor,
             IFrequencyCsvReader frequencyCsvReader,
             IHaplotypeFrequencySetRepository setRepository,
-            IHaplotypeFrequenciesRepository frequenciesRepository)
+            IHaplotypeFrequenciesRepository frequenciesRepository,
+            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory)
         {
             this.metadataExtractor = metadataExtractor;
             this.frequencyCsvReader = frequencyCsvReader;
             this.setRepository = setRepository;
             this.frequenciesRepository = frequenciesRepository;
+            this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
         }
 
         public async Task Import(FrequencySetFile file)
@@ -77,15 +84,45 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             const int batchSize = 10000;
             var frequencies = frequencyCsvReader.GetFrequencies(stream);
 
+            // TODO: ATLAS-600: Read HLA nomenclature version from file data, rather than hard-coding
+            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary("3400");
+
             // Cannot check if full frequency list has any entries without enumerating it, so we must check when processing rather than up-front
             var hasImportedAnyFrequencies = false;
-            
+
             foreach (var frequencyBatch in frequencies.Batch(batchSize))
             {
-                await frequenciesRepository.AddHaplotypeFrequencies(setId, frequencyBatch);
+                var convertedFrequencies = await Task.WhenAll(frequencyBatch.Select(async haplotypeFrequency =>
+                {
+                    var pGroupTyped = await hlaMetadataDictionary.ConvertGGroupsToPGroups(haplotypeFrequency.Hla, LocusSettings.MatchPredictionLoci);
+
+                    if (!pGroupTyped.AnyAtLoci(x => x == null, LocusSettings.MatchPredictionLoci))
+                    {
+                        haplotypeFrequency.Hla = pGroupTyped;
+                        haplotypeFrequency.TypingCategory = HaplotypeTypingCategory.PGroup;
+                    }
+                    else
+                    {
+                        haplotypeFrequency.TypingCategory = HaplotypeTypingCategory.GGroup;
+                    }
+
+                    return haplotypeFrequency;
+                }));
+
+                var combined = convertedFrequencies
+                    .GroupBy(f => f.Hla)
+                    .Select(groupByHla =>
+                    {
+                        // arbitrary haplotype frequency object, as everything but the frequency will be the same in all cases 
+                        var frequency = groupByHla.First();
+                        frequency.Frequency = groupByHla.Sum(x => x.Frequency);
+                        return frequency;
+                    });
+
+                await frequenciesRepository.AddOrUpdateHaplotypeFrequencies(setId, combined);
                 hasImportedAnyFrequencies = true;
             }
-            
+
             if (!hasImportedAnyFrequencies)
             {
                 throw new Exception("No haplotype frequencies provided");

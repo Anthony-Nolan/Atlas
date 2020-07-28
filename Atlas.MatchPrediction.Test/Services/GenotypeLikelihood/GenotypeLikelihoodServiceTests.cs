@@ -22,7 +22,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         private IGenotypeLikelihoodCalculator genotypeLikelihoodCalculator;
         private IGenotypeAlleleTruncater alleleTruncater;
 
-        private readonly ISet<Locus> allLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
+        private readonly ISet<Locus> allLoci = LocusSettings.MatchPredictionLoci;
 
         [SetUp]
         public void SetUp()

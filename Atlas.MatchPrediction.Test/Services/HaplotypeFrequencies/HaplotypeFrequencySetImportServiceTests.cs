@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models;
@@ -30,26 +31,32 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             setRepository = Substitute.For<IHaplotypeFrequencySetRepository>();
             frequenciesRepository = Substitute.For<IHaplotypeFrequenciesRepository>();
 
+            var hmd = Substitute.For<IHlaMetadataDictionary>();
+            var hmdFactory = Substitute.For<IHlaMetadataDictionaryFactory>();
+            hmdFactory.BuildDictionary(default).ReturnsForAnyArgs(hmd);
+
             metadataExtractor.GetMetadataFromFullPath(Arg.Any<string>()).Returns(new HaplotypeFrequencySetMetadata
             {
                 Name = "file"
             });
 
-            frequenciesStreamReader.GetFrequencies(Arg.Any<Stream>()).Returns(new List<HaplotypeFrequency> { new HaplotypeFrequency() });
+            frequenciesStreamReader.GetFrequencies(Arg.Any<Stream>()).Returns(new List<HaplotypeFrequency> {new HaplotypeFrequency()});
 
-            setRepository.AddSet(Arg.Any<HaplotypeFrequencySet>()).Returns(new HaplotypeFrequencySet { Id = 1 });
+            setRepository.AddSet(Arg.Any<HaplotypeFrequencySet>()).Returns(new HaplotypeFrequencySet {Id = 1});
 
             importer = new FrequencySetImporter(
                 metadataExtractor,
                 frequenciesStreamReader,
                 setRepository,
-                frequenciesRepository);
+                frequenciesRepository,
+                hmdFactory
+            );
         }
 
         [Test]
         public void Import_FullPathIsNull_ThrowsException()
         {
-            var file = new FrequencySetFile { FullPath = null, Contents = Stream.Null };
+            var file = new FrequencySetFile {FullPath = null, Contents = Stream.Null};
             importer.Invoking(async service => await service.Import(file))
                 .Should().Throw<Exception>();
         }
@@ -57,7 +64,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         [Test]
         public void Import_ContentsIsNull_ThrowsException()
         {
-            var file = new FrequencySetFile { FullPath = "file", Contents = null };
+            var file = new FrequencySetFile {FullPath = "file", Contents = null};
             importer.Invoking(async service => await service.Import(file))
                 .Should().Throw<Exception>();
         }
@@ -75,7 +82,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
                 Name = name
             });
 
-            var file = new FrequencySetFile { FullPath = fullPath, Contents = Stream.Null };
+            var file = new FrequencySetFile {FullPath = fullPath, Contents = Stream.Null};
 
             importer.Invoking(async service => await service.Import(file)).Should().Throw<Exception>();
         }
@@ -130,7 +137,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         [Test]
         public async Task Import_StoresFrequenciesInRepository()
         {
-            var frequencies = new List<HaplotypeFrequency> { new HaplotypeFrequency() };
+            var frequencies = new List<HaplotypeFrequency> {new HaplotypeFrequency()};
             frequenciesStreamReader.GetFrequencies(Arg.Any<Stream>()).Returns(frequencies);
 
             using var file = new FrequencySetFile
@@ -142,7 +149,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             await importer.Import(file);
 
             await frequenciesRepository.Received(1)
-                .AddHaplotypeFrequencies(Arg.Any<int>(), Arg.Any<IEnumerable<HaplotypeFrequency>>());
+                .AddOrUpdateHaplotypeFrequencies(Arg.Any<int>(), Arg.Any<IEnumerable<HaplotypeFrequency>>());
         }
 
         [Test]
