@@ -65,33 +65,57 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
         }
 
         [Test]
-        public void SimulateGenotypes_SimulatedGenotypeHasHlaAtEveryPosition()
+        public void SimulateGenotypes_CorrectlyMapsHlaWhenBuildingGenotype()
         {
-            const int requiredGenotypeCount = 1;
-            const int indexBoundary = 0;
+            // Arrange: Force simulator to build a single genotype from two haplotypes
+            // that have distinct HLA at each locus, so mapping can be tested.
+
+            var firstHaplotype = HaplotypeFrequencyBuilder.Default
+                .With(x => x.A, "a-1")
+                .With(x => x.B, "b-1")
+                .With(x => x.C, "c-1")
+                .With(x => x.Dqb1, "dqb1-1")
+                .With(x => x.Drb1, "drb1-1")
+                .Build();
+
+            var secondHaplotype = HaplotypeFrequencyBuilder.Default
+                .With(x => x.A, "a-2")
+                .With(x => x.B, "b-2")
+                .With(x => x.C, "c-2")
+                .With(x => x.Dqb1, "dqb1-2")
+                .With(x => x.Drb1, "drb1-2")
+                .Build();
 
             var pool = new NormalisedHaplotypePool(
-                default, 
-                new[] { NormalisedPoolMemberBuilder.New
-                    .With(x => x.CopyNumber, 1)
-                    .With(x => x.PoolIndexLowerBoundary, indexBoundary)
-                    .Build() });
+                default,
+                new[] {
+                    NormalisedPoolMemberBuilder.New
+                        .With(x => x.HaplotypeFrequency, firstHaplotype)
+                        .With(x => x.CopyNumber, 1)
+                        .With(x => x.PoolIndexLowerBoundary, 0)
+                        .Build(),
+                    NormalisedPoolMemberBuilder.New
+                        .With(x => x.HaplotypeFrequency, secondHaplotype)
+                        .With(x => x.CopyNumber, 1)
+                        .With(x => x.PoolIndexLowerBoundary, 1)
+                        .Build()
+                });
 
             randomNumberPairGenerator.GenerateRandomNumberPairs(default, default)
-                .ReturnsForAnyArgs(BuildPairsOfIdenticalNumbers(indexBoundary, requiredGenotypeCount));
+                .ReturnsForAnyArgs(new[] { new UnorderedPair<int>(0, 1) });
 
-            var result = genotypeSimulator.SimulateGenotypes(requiredGenotypeCount, pool).Single();
+            var result = genotypeSimulator.SimulateGenotypes(1, pool).Single();
 
-            result.A_1.Should().NotBeNullOrEmpty();
-            result.A_2.Should().NotBeNullOrEmpty();
-            result.B_1.Should().NotBeNullOrEmpty();
-            result.B_2.Should().NotBeNullOrEmpty();
-            result.C_1.Should().NotBeNullOrEmpty();
-            result.C_2.Should().NotBeNullOrEmpty();
-            result.Dqb1_1.Should().NotBeNullOrEmpty();
-            result.Dqb1_2.Should().NotBeNullOrEmpty();
-            result.Drb1_1.Should().NotBeNullOrEmpty();
-            result.Drb1_2.Should().NotBeNullOrEmpty();
+            result.A_1.Should().Be("a-1");
+            result.A_2.Should().Be("a-2");
+            result.B_1.Should().Be("b-1");
+            result.B_2.Should().Be("b-2");
+            result.C_1.Should().Be("c-1");
+            result.C_2.Should().Be("c-2");
+            result.Dqb1_1.Should().Be("dqb1-1");
+            result.Dqb1_2.Should().Be("dqb1-2");
+            result.Drb1_1.Should().Be("drb1-1");
+            result.Drb1_2.Should().Be("drb1-2");
         }
 
         [Test, Repeat(10)]
