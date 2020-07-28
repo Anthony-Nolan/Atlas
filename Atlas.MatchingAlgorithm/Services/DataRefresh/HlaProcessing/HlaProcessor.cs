@@ -103,11 +103,26 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 ReportProjectedCompletionTime = true
             };
             var summaryReportOnly = new LongLoggingSettings { InnerOperationLoggingPeriod = int.MaxValue, ReportOuterTimerStart = false};
-            var summaryReportWithThreadingBreakdown = new LongLoggingSettings { InnerOperationLoggingPeriod = int.MaxValue, ReportOuterTimerStart = false, ReportPerThreadTime = true };
-            using (var batchProgressTimer = logger.RunLongOperationWithTimer($"Hla Batch Overall Processing. Inner Operation is UpdateDonorBatch", progressReports))
-            using (var hlaExpansionTimer = logger.RunLongOperationWithTimer($"Hla Expansion during HlaProcessing", summaryReportOnly))
-            using (var pGroupLinearWaitTimer = logger.RunLongOperationWithTimer($"Linear wait on HlaInsert during HlaProcessing", summaryReportOnly))
-            using (var pGroupInsertTimer = logger.RunLongOperationWithTimer($"Parallel Write time on HlaInsert during HlaProcessing", summaryReportWithThreadingBreakdown))
+            var summaryReportWithThreadingCount = new LongLoggingSettings { InnerOperationLoggingPeriod = int.MaxValue, ReportOuterTimerStart = false, ReportThreadCount = true, ReportPerThreadTime = false };
+
+            var timerCollection = new LongStopwatchCollection(text => logger.SendTrace(text), summaryReportOnly);
+
+            using (timerCollection.InitialiseStopwatch("batchProgressTimer", "Hla Batch Overall Processing. Inner Operation is UpdateDonorBatch", null, progressReports)) 
+            using (timerCollection.InitialiseStopwatch("hlaExpansionTimer", " * Hla Expansion, during HlaProcessing")) 
+            using (timerCollection.InitialiseStopwatch("newPGroupInsertion", " * Ensuring all PGroups exist in the DB, during HlaProcessing (no actual DB writing, just processing)")) 
+            using (timerCollection.InitialiseStopwatch("newPGroupInsertion_Flattening", " * * Flatten the donors' PGroups, during EnsureAllPGroupsExist, during HlaProcessing")) 
+            using (timerCollection.InitialiseStopwatch("newPGroupInsertion_FindNew", " * * Check PGroups against known dictionary, during EnsureAllPGroupsExist, during HlaProcessing"))
+            using (timerCollection.InitialiseStopwatch("upsertTimer", " * UpsertMatchingPGroupsAtSpecifiedLoci, during HlaProcessing")) 
+            using (timerCollection.InitialiseStopwatch("pGroupInsertSetupTimer", " * * Time setting up Hla BulkInsert statements, during HlaProcessing")) 
+            using (timerCollection.InitialiseStopwatch("pGroupInsertSetup_BuildDataTableTimer", " * * * Data Table Build, in Hla BulkInsert SETUP, during HlaProcessing"))
+            using (timerCollection.InitialiseDisabledStopwatch("pGroupInsertSetup_CreateDataTableObject", " * * * * Creating blank DataTable object, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing"))
+            using (timerCollection.InitialiseDisabledStopwatch("pGroupInsertSetup_CreateDataTable_OutsideForeach", " * * * * Outside the innermost foreach of method, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing"))
+            using (timerCollection.InitialiseDisabledStopwatch("pGroupInsertSetup_CreateDataTable_InsideForeach", " * * * * Inside the innermost foreach of method, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing"))
+            using (timerCollection.InitialiseDisabledStopwatch("pGroupInsertSetup_FetchPGroupId", " * * * * Fetch PGroup Id, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing") )
+            using (timerCollection.InitialiseDisabledStopwatch("pGroupInsertSetup_AddRowsToDataTable", " * * * * Raw DataTable Row Add, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing") )
+            using (timerCollection.InitialiseStopwatch("pGroupInsertSetup_DeleteExistingRecordsTimer", " * * * Delete Existing records, in Hla BulkInsert SETUP, during HlaProcessing") )
+            using (timerCollection.InitialiseStopwatch("pGroupLinearWaitTimer", " * * Linear wait on HlaInsert operation, during HlaProcessing") )
+            using (timerCollection.InitialiseStopwatch("pGroupDbInsertTimer", " * * * Parallel Write time on HlaInsert operation, during HlaProcessing", null, summaryReportWithThreadingCount))
             {
                 // We only store the last Id in each batch so we only need to keep one Id per batch.
                 var completedDonors = new FixedSizedQueue<int>(NumberOfBatchesOverlapOnRestart);
@@ -119,16 +134,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                     // We do not want to attempt to remove p-groups for all batches as it would be detrimental to performance, so we limit it to the first two batches
                     var shouldRemovePGroups = donorBatch.First().DonorId <= lastDonorIdSuspectedOfBeingReprocessed;
 
-                    using (batchProgressTimer.TimeInnerOperation())
+                    using (timerCollection.TimeInnerOperation("batchProgressTimer"))
                     {
                         var failedDonorsFromBatch = await UpdateDonorBatch(
                             donorBatch,
                             hlaNomenclatureVersion,
                             shouldRemovePGroups,
-                            hlaExpansionTimer,
-                            pGroupLinearWaitTimer,
-                            pGroupInsertTimer
-                            );
+                            timerCollection
+                        );
                         failedDonors.AddRange(failedDonorsFromBatch);
                     }
 
@@ -186,9 +199,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             List<DonorInfo> donorBatch,
             string hlaNomenclatureVersion,
             bool shouldRemovePGroups,
-            LongOperationLoggingStopwatch hlaExpansionTimer,
-            LongOperationLoggingStopwatch pGroupLinearWaitTimer,
-            LongOperationLoggingStopwatch pGroupInsertTimer)
+            LongStopwatchCollection timerCollection)
         {
             if (shouldRemovePGroups)
             {
@@ -196,17 +207,19 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             }
             var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersion);
 
-            var timedInnerOperation = hlaExpansionTimer.TimeInnerOperation();
+            var timedInnerOperation = timerCollection.TimeInnerOperation("hlaExpansionTimer");
             var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName);
             timedInnerOperation.Dispose();
 
-            EnsureAllPGroupsExist(hlaExpansionResults.ProcessingResults);
+            using (timerCollection.TimeInnerOperation("newPGroupInsertion"))
+            {
+                EnsureAllPGroupsExist(hlaExpansionResults.ProcessingResults, timerCollection);
+            }
 
             await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(
                 hlaExpansionResults.ProcessingResults,
                 settings.DataRefreshDonorUpdatesShouldBeFullyTransactional,
-                pGroupLinearWaitTimer,
-                pGroupInsertTimer);
+                timerCollection);
 
             return hlaExpansionResults.FailedDonors;
         }
@@ -220,16 +233,21 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         /// Note that over the course of a 2M donor import, this is flattening a total of ~1B records, which
         /// ends up taking 2-3 minutes. The EnsureAllPGroupsExist check also takes 2-3 minutes.
         /// </remarks>
-        private void EnsureAllPGroupsExist(IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHlas)
+        private void EnsureAllPGroupsExist(
+            IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHlas,
+            LongStopwatchCollection timerCollection
+            )
         {
+            var block1 = timerCollection.TimeInnerOperation("newPGroupInsertion_Flattening");
             var allPGroups = donorsWithHlas
                 .SelectMany(d =>
                     d.MatchingHla?.ToEnumerable().SelectMany(hla =>
                         hla?.MatchingPGroups ?? new string[0]
                     ) ?? new List<string>()
                 ).ToList();
+            block1?.Dispose();
 
-            pGroupRepository.EnsureAllPGroupsExist(allPGroups);
+            pGroupRepository.EnsureAllPGroupsExist(allPGroups, timerCollection);
         }
 
         private async Task PerformUpfrontSetup(string hlaNomenclatureVersion)

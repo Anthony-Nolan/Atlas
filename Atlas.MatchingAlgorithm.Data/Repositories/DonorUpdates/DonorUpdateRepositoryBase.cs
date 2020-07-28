@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Transactions;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Utils;
@@ -82,19 +81,20 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         public async Task AddMatchingPGroupsForExistingDonorBatch(
             IEnumerable<DonorInfoWithExpandedHla> donorInfos,
             bool runAllHlaInsertionsInASingleTransactionScope,
-            ILongOperationLoggingStopwatch pGroupLinearWaitTimer = null,
-            ILongOperationLoggingStopwatch pGroupDbInsertTimer = null)
+            LongStopwatchCollection timerCollection = null)
         {
             var donorsWithUpdatesAtEveryLocus = donorInfos
                 .Select(info => new DonorWithChangedMatchingLoci(info, LocusSettings.MatchingOnlyLoci))
                 .ToList();
 
-            await UpsertMatchingPGroupsAtSpecifiedLoci(
-                donorsWithUpdatesAtEveryLocus, 
-                true,
-                runAllHlaInsertionsInASingleTransactionScope,
-                pGroupLinearWaitTimer,
-                pGroupDbInsertTimer);
+            using (timerCollection?.TimeInnerOperation("upsertTimer"))
+            {
+                await UpsertMatchingPGroupsAtSpecifiedLoci(
+                    donorsWithUpdatesAtEveryLocus,
+                    true,
+                    runAllHlaInsertionsInASingleTransactionScope,
+                    timerCollection);
+            }
         }
 
         protected class DonorWithChangedMatchingLoci
@@ -113,8 +113,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             List<DonorWithChangedMatchingLoci> donors,
             bool isKnownToBeCreate,
             bool runAllHlaInsertionsInASingleTransactionScope,
-            ILongOperationLoggingStopwatch pGroupLinearWaitTimer = null,
-            ILongOperationLoggingStopwatch pGroupDbInsertTimer = null)
+            LongStopwatchCollection timerCollection = null)
         {
             using (var transactionScope = new OptionalAsyncTransactionScope(runAllHlaInsertionsInASingleTransactionScope))
             {
@@ -128,8 +127,14 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
                     if (donorsWhichChangedAtThisLocus.Any())
                     {
-                        var upsertTask = UpsertMatchingPGroupsAtLocus(donorsWhichChangedAtThisLocus, locus, isKnownToBeCreate, pGroupDbInsertTimer);
+                        var insertSetupOperationTimer = timerCollection?.TimeInnerOperation("pGroupInsertSetupTimer");
+                        var upsertTask = UpsertMatchingPGroupsAtLocus(
+                            donorsWhichChangedAtThisLocus,
+                            locus,
+                            isKnownToBeCreate,
+                            timerCollection);
                         perLocusUpsertTasks.Add(upsertTask);
+                        insertSetupOperationTimer?.Dispose();
 
                         // This is a bit sad.
                         // BulkInserting to unrelated tables, should be an easy win for
@@ -147,7 +152,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                         // https://stackoverflow.com/questions/62970038/performance-of-multiple-parallel-async-sqlbulkcopy-inserts-against-different
                         if (runAllHlaInsertionsInASingleTransactionScope)
                         {
-                            using (pGroupLinearWaitTimer?.TimeInnerOperation())
+                            using (timerCollection?.TimeInnerOperation("pGroupLinearWaitTimer"))
                             {
                                 await upsertTask;
                             }
@@ -158,7 +163,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 // Note that we may have already awaited these tasks to support TransactionScope.
                 // In that case this `WhenAll` is a no-op. But it makes the difference
                 // between the two cases easy to define.
-                using (pGroupLinearWaitTimer?.TimeInnerOperation())
+                using (timerCollection?.TimeInnerOperation("pGroupLinearWaitTimer"))
                 {
                     await Task.WhenAll(perLocusUpsertTasks);
                 }
@@ -169,22 +174,31 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         private async Task UpsertMatchingPGroupsAtLocus(
             List<DonorInfoWithExpandedHla> donors,
             Locus locus, bool isKnownToBeCreate,
-            ILongOperationLoggingStopwatch pGroupDbInsertTimer = null)
+            LongStopwatchCollection timerCollection = null)
         {
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
-            var dataTable = BuildPerLocusPGroupDataTable(donors, locus);
+
+            var buildDataTableTimer = timerCollection?.TimeInnerOperation("pGroupInsertSetup_BuildDataTableTimer");
+            var dataTable = BuildPerLocusPGroupDataTable(
+                donors,
+                locus,
+                timerCollection);
+            buildDataTableTimer?.Dispose();
 
             using (var transactionScope = new AsyncTransactionScope())
             {
-                if (!isKnownToBeCreate)
+                using (timerCollection?.TimeInnerOperation("pGroupInsertSetup_DeleteExistingRecordsTimer"))
                 {
-                    var deleteSql = $@"
-                    DELETE FROM {matchingTableName}
-                    WHERE DonorId IN ({donors.Select(d => d.DonorId.ToString()).StringJoin(",")})
-                    ";
-                    await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+                    if (!isKnownToBeCreate)
                     {
-                        await conn.ExecuteAsync(deleteSql, null, commandTimeout: 600);
+                        var deleteSql = $@"
+                            DELETE FROM {matchingTableName}
+                            WHERE DonorId IN ({donors.Select(d => d.DonorId.ToString()).StringJoin(",")})
+                            ";
+                        await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+                        {
+                            await conn.ExecuteAsync(deleteSql, null, commandTimeout: 600);
+                        }
                     }
                 }
 
@@ -193,7 +207,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     dataTable,
                     donorPGroupDataTableColumnNames,
                     timeout: 14400,
-                    pGroupDbInsertTimer);
+                    timerCollection?.GetStopwatch("pGroupDbInsertTimer"));
 
                 transactionScope.Complete();
             }
@@ -244,13 +258,16 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// </remarks>
         protected DataTable BuildPerLocusPGroupDataTable(
             List<DonorInfoWithExpandedHla> donors,
-            Locus locus)
+            Locus locus,
+            LongStopwatchCollection timerCollection = null)
         {
+            var createDataTableObjectTimer = timerCollection?.TimeInnerOperation("pGroupInsertSetup_CreateDataTableObject");
             var dataTable = new DataTable();
             foreach (var columnName in donorPGroupDataTableColumnNames)
             {
                 dataTable.Columns.Add(columnName);
             }
+            createDataTableObjectTimer?.Dispose();
 
             dataTable.BeginLoadData();
             //During a 2M donor dataRefresh. This line (outside the loop) is run ~5.6K times.
@@ -265,21 +282,32 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     }
                     //During a 2M donor dataRefresh. This line (after the filter) is run ~18.1M times.
 
-                    //Data should be written as "TypePosition" so we can guarantee control over the backing int values for this enum
+                    // Data should be written as "TypePosition" so we can guarantee control over the backing int values for this enum
                     var positionId = (int) position.ToTypePosition();
 
-                    foreach (var pGroup in hlaAtLocusPosition.MatchingPGroups)
+                    using (timerCollection?.TimeInnerOperation("pGroupInsertSetup_CreateDataTable_OutsideForeach"))
                     {
-                        //During a 2M donor dataRefresh. This line (inside the tightest loop) is run ~1.01B times.
-                        //As noted above, this is the pinch point for DataRefresh performance.
-                        var pGroupId = pGroupRepository.FindOrCreatePGroup(pGroup);
+                        foreach (var pGroup in hlaAtLocusPosition.MatchingPGroups)
+                        {
+                            using (timerCollection?.TimeInnerOperation("pGroupInsertSetup_CreateDataTable_InsideForeach"))
+                            {
+                                //During a 2M donor dataRefresh. This line (inside the tightest loop) is run ~1.01B times.
+                                //As noted above, this is the pinch point for DataRefresh performance.
+                                var fetchPGroupIdsTimer = timerCollection?.TimeInnerOperation("pGroupInsertSetup_FetchPGroupId");
+                                var pGroupId = pGroupRepository.FindOrCreatePGroup(pGroup);
+                                fetchPGroupIdsTimer?.Dispose();
 
-                        dataTable.Rows.Add(
-                            0,
-                            donor.DonorId,
-                            positionId,
-                            pGroupId);
-                    }
+                                using (timerCollection?.TimeInnerOperation("pGroupInsertSetup_AddRowsToDataTable"))
+                                {
+                                    dataTable.Rows.Add(
+                                        0,
+                                        donor.DonorId,
+                                        positionId,
+                                        pGroupId);
+                                }
+                            } //InsideForeach
+                        } //foreach
+                    } //OutsideForeach
                 });
             }
 

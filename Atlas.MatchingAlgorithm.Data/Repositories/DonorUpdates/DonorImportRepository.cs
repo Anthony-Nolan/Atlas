@@ -53,8 +53,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         Task AddMatchingPGroupsForExistingDonorBatch(
             IEnumerable<DonorInfoWithExpandedHla> donors,
             bool runAllHlaInsertionsInASingleTransactionScope,
-            ILongOperationLoggingStopwatch donorInsertTimer,
-            ILongOperationLoggingStopwatch pGroupInsertTimer);
+            LongStopwatchCollection timerCollection = null);
 
         Task RemovePGroupsForDonorBatch(IEnumerable<int> donorIds);
     }
@@ -188,10 +187,13 @@ END
 
         public async Task RemovePGroupsForDonorBatch(IEnumerable<int> donorIds)
         {
-            donorIds = donorIds.ToList();
-            foreach (var hlaTable in HlaTables)
+            using (logger.RunTimed("Delete existing PGroups"))
             {
-                await RemovePGroupsForDonorBatchAtLocus(donorIds, hlaTable);
+                donorIds = donorIds.ToList();
+                foreach (var hlaTable in HlaTables)
+                {
+                    await RemovePGroupsForDonorBatchAtLocus(donorIds, hlaTable);
+                }
             }
         }
 
