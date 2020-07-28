@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.ApplicationInsights;
@@ -64,7 +63,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
         /// <summary>
         /// HLA at the resolution at which they were stored.
-        /// TODO: ATLAS-590: The below comment will not be true until ATLAS-590 is complete.
         /// i.e. G group, or P group if any null alleles are present in the haplotype.
         /// </summary>
         public TypedGenotype HaplotypeResolution { get; }
@@ -171,7 +169,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
 
             async Task<List<GenotypeAtDesiredResolutions>> ConvertGenotypes(
-                ISet<PhenotypeInfo<HlaAtKnownTypingCategory>> genotypes,
+                ISet<TypedGenotype> genotypes,
                 string subjectLogDescription)
             {
                 using (logger.RunTimed($"Convert genotypes for matching: {subjectLogDescription}", LogLevel.Verbose))
@@ -205,8 +203,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             }
         }
 
-        private async Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandToGenotypes(
-            PhenotypeInfo<string> phenotype,
+        private async Task<ISet<TypedGenotype>> ExpandToGenotypes(
+            StringGenotype phenotype,
             int frequencySetId,
             ISet<Locus> allowedLoci,
             string hlaNomenclatureVersion,
@@ -288,8 +286,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             }
         }
 
-        private async Task<Dictionary<PhenotypeInfo<string>, decimal>> CalculateGenotypeLikelihoods(
-            ISet<PhenotypeInfo<string>> genotypes,
+        private async Task<Dictionary<StringGenotype, decimal>> CalculateGenotypeLikelihoods(
+            ISet<StringGenotype> genotypes,
             HaplotypeFrequencySet frequencySet,
             ISet<Locus> allowedLoci)
         {
@@ -301,13 +299,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             }
         }
 
-        private async Task<KeyValuePair<PhenotypeInfo<string>, decimal>> CalculateLikelihood(
-            PhenotypeInfo<string> genotype,
+        private async Task<KeyValuePair<StringGenotype, decimal>> CalculateLikelihood(
+            StringGenotype genotype,
             HaplotypeFrequencySet frequencySet,
             ISet<Locus> allowedLoci)
         {
             var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotype, frequencySet, allowedLoci);
-            return new KeyValuePair<PhenotypeInfo<string>, decimal>(genotype, likelihood);
+            return new KeyValuePair<StringGenotype, decimal>(genotype, likelihood);
         }
     }
 }
