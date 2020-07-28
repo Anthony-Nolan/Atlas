@@ -1,3 +1,5 @@
+using System.Reflection;
+using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
@@ -10,8 +12,6 @@ using FluentAssertions;
 using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.MatchProbability
 {
@@ -50,7 +50,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        // Runs in ~2 seconds. Quick enough to not ignore.
+        // Runs in ~0.1 seconds. Quick enough to not ignore.
         public async Task MatchPrediction_WithSmallAmbiguityAtEachDonorLocus_CalculatesProbabilityCorrectly()
         {
             var donorHla = new PhenotypeInfoBuilder<string>()
@@ -70,13 +70,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Percentage.Should().Be(75);
-            matchDetails.OneMismatchProbability.Percentage.Should().Be(22);
+            matchDetails.ZeroMismatchProbability.Percentage.Should().Be(73);
+            matchDetails.OneMismatchProbability.Percentage.Should().Be(23);
             matchDetails.TwoMismatchProbability.Percentage.Should().Be(3);
         }
 
         [Test]
-        // Runs in ~3s. Quick enough to not ignore.
+        // Runs in ~1s. Quick enough to not ignore.
         public async Task MatchPrediction_WithDonorFullyTyped_AtTruncatedTwoFieldAlleleResolution_CalculatesProbabilityCorrectly()
         {
             var donorHla = new PhenotypeInfoBuilder<string>()
@@ -102,7 +102,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        // Runs in ~4s. Quick enough to not ignore.
+        // Runs in ~0.1s. Quick enough to not ignore.
         public async Task MatchPrediction_WithDonorFullyTyped_AtXXCodeResolution_CalculatesProbabilityCorrectly()
         {
             var donorHla = new PhenotypeInfoBuilder<string>()
