@@ -54,7 +54,7 @@ namespace LoggingStopwatch
     public class LongOperationLoggingStopwatch : LoggingStopwatch, ILongOperationLoggingStopwatch
     {
         private readonly LongLoggingSettings settings;
-        private int iterationsCompleted = 0;
+        private long iterationsCompleted = 0;
         private int activeExecutions = 0;
         private readonly InnerOperationExecutionTimer innerTimingHandler;
 
@@ -130,7 +130,7 @@ namespace LoggingStopwatch
         // This is deliberately static, so that we're forced to explicitly pass in captured
         // values and can't use instance fields that might have been updated by other threads.
         // This is to ensure that it is fully threadsafe.
-        private static void LogPerExecutionMessageIfAppropriate(LongLoggingSettings settings, int newCompletedCount, Stopwatch outerStopwatch, Action<string> logAction)
+        private static void LogPerExecutionMessageIfAppropriate(LongLoggingSettings settings, long newCompletedCount, Stopwatch outerStopwatch, Action<string> logAction)
         {
             if (newCompletedCount % settings.InnerOperationLoggingPeriod == 0)
             {
