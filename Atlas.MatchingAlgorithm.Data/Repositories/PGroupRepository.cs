@@ -7,6 +7,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
+using LoggingStopwatch;
 using MoreLinq.Extensions;
 
 
@@ -19,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         /// </summary>
         void InsertPGroups(IEnumerable<string> pGroups);
         Task<IEnumerable<int>> GetPGroupIds(IEnumerable<string> pGroupNames);
-        void EnsureAllPGroupsExist(List<string> allPGroups);
+        void EnsureAllPGroupsExist(List<string> allPGroups, LongStopwatchCollection timerCollection = null);
         int FindOrCreatePGroup(string pGroupName);
     }
 
@@ -99,12 +100,16 @@ WHERE p.Name IN ({pGroupNames.Select(name => $"'{name}'").StringJoin(", ")})
         /// **Note that this method gets used *heavily* during DataRefresh (despite being a no-op!) and has been aggressively optimised for that use-case.**
         /// Over the course of a 2M donor import, we must check ~1B pGroup strings, which ends up taking 2-3 minutes. All in the actual dictionary lookup line.
         /// </remarks>
-        public void EnsureAllPGroupsExist(List<string> allPGroups)
+        public void EnsureAllPGroupsExist(
+            List<string> allPGroups,
+            LongStopwatchCollection timerCollection = null)
         {
             EnsurePGroupDictionaryCacheIsPopulated();
 
+            var dictionaryCheckTimer = timerCollection?.TimeInnerOperation("newPGroupInsertion_FindNew");
             // Note that it turns out that it's quicker to run this WITHOUT a .Distinct() in it.
             var newPGroups = allPGroups.Where(pGrp => !pGroupNameToIdDictionary.ContainsKey(pGrp)).ToList();
+            dictionaryCheckTimer?.Dispose();
 
             if (newPGroups.Any())
             {
