@@ -149,7 +149,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             await importer.Import(file);
 
             await frequenciesRepository.Received(1)
-                .AddOrUpdateHaplotypeFrequencies(Arg.Any<int>(), Arg.Any<IEnumerable<HaplotypeFrequency>>());
+                .AddHaplotypeFrequencies(Arg.Any<int>(), Arg.Any<IEnumerable<HaplotypeFrequency>>());
         }
 
         [Test]

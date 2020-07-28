@@ -10,7 +10,6 @@ using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Utils;
-using MoreLinq.Extensions;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 {
@@ -82,32 +81,26 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
         private async Task StoreFrequencies(Stream stream, int setId, bool convertToPGroups)
         {
-            const int batchSize = 10000;
-            var frequencies = frequencyCsvReader.GetFrequencies(stream);
+            // Load all frequencies into memory, to perform aggregation by PGroup.
+            // Largest known HF set is ~300,000 entries, which is reasonable to load into memory here.
+            var frequencies = frequencyCsvReader.GetFrequencies(stream).ToList();
+
+            if (!frequencies.Any())
+            {
+                throw new Exception("No haplotype frequencies provided");
+            }
 
             // TODO: ATLAS-600: Read HLA nomenclature version from file data, rather than hard-coding
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary("3400");
 
-            // Cannot check if full frequency list has any entries without enumerating it, so we must check when processing rather than up-front
-            var hasImportedAnyFrequencies = false;
-
-            foreach (var frequencyBatch in frequencies.Batch(batchSize))
-            {
-                var batch = convertToPGroups
-                    ? await ConvertHaplotypesToPGroupResolutionAndConsolidate(frequencyBatch, hlaMetadataDictionary)
-                    : frequencyBatch.Select(f =>
-                    {
-                        f.TypingCategory = HaplotypeTypingCategory.GGroup;
-                        return f;
-                    });
-                await frequenciesRepository.AddOrUpdateHaplotypeFrequencies(setId, batch);
-                hasImportedAnyFrequencies = true;
-            }
-
-            if (!hasImportedAnyFrequencies)
-            {
-                throw new Exception("No haplotype frequencies provided");
-            }
+            var convertedHaplotypes = convertToPGroups
+                ? await ConvertHaplotypesToPGroupResolutionAndConsolidate(frequencies, hlaMetadataDictionary)
+                : frequencies.Select(f =>
+                {
+                    f.TypingCategory = HaplotypeTypingCategory.GGroup;
+                    return f;
+                });
+            await frequenciesRepository.AddHaplotypeFrequencies(setId, convertedHaplotypes);
         }
 
         private static async Task<IEnumerable<HaplotypeFrequency>> ConvertHaplotypesToPGroupResolutionAndConsolidate(
@@ -137,7 +130,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 {
                     // arbitrary haplotype frequency object, as everything but the frequency will be the same in all cases 
                     var frequency = groupByHla.First();
-                    frequency.Frequency = groupByHla.Sum(x => x.Frequency);
+                    frequency.Frequency = groupByHla.OrderBy(x => x.Frequency).Sum(x => x.Frequency);
                     return frequency;
                 });
             return combined;
