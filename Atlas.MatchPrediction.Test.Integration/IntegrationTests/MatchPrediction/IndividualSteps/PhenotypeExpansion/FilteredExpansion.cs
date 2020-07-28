@@ -7,11 +7,11 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
-using Atlas.MatchPrediction.Test.Integration.Resources;
+using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using static Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
+using static Atlas.MatchPrediction.Test.Integration.Resources.Alleles.UnambiguousAlleles;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.IndividualSteps.PhenotypeExpansion
 {
@@ -19,7 +19,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
     internal class FilteredExpansion
     {
         private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
-        private static readonly ISet<Locus> DefaultLoci = LocusSettings.MatchPredictionLoci.ToHashSet();
+        private static readonly ISet<Locus> DefaultLoci = LocusSettings.MatchPredictionLoci;
 
         // The GGroups represented by the default alleles in UnambiguousAlleleDetails could theoretically be split into 16 haplotypes. 
         // We are only using two (as if allele phase was represented in the raw data) for simplicity

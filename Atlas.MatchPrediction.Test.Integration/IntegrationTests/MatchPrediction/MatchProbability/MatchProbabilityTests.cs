@@ -8,7 +8,7 @@ using Atlas.Common.Utils.Models;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
-using Atlas.MatchPrediction.Test.Integration.Resources;
+using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using FluentAssertions;
 using LochNessBuilder;
@@ -89,8 +89,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var patientHla = DefaultUnambiguousAllelesBuilder.WithDataAt(
                     Locus.A,
-                    Alleles.UnambiguousAlleleDetails.A.Position1.Allele,
-                    Alleles.UnambiguousAlleleDetails.A.Position2.Allele)
+                    UnambiguousAlleles.UnambiguousAlleleDetails.A.Position1.Allele,
+                    UnambiguousAlleles.UnambiguousAlleleDetails.A.Position2.Allele)
                 .Build();
 
             var donorHla = new PhenotypeInfoBuilder<string>()
@@ -152,12 +152,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var patientHla = DefaultUnambiguousAllelesBuilder
                 .WithDataAt(
                     Locus.A,
-                    $"{Alleles.UnambiguousAlleleDetails.A.Position1.Allele}/{alleleStringA}",
-                    $"{Alleles.UnambiguousAlleleDetails.A.Position2.Allele}/{anotherAlleleStringA}")
-                .WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{alleleStringB}")
-                .WithDataAt(Locus.C, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.C.Position1.Allele}/{alleleStringC}")
-                .WithDataAt(Locus.Dqb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Dqb1.Position1.Allele}/{alleleStringDqb1}")
-                .WithDataAt(Locus.Drb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
+                    $"{UnambiguousAlleles.UnambiguousAlleleDetails.A.Position1.Allele}/{alleleStringA}",
+                    $"{UnambiguousAlleles.UnambiguousAlleleDetails.A.Position2.Allele}/{anotherAlleleStringA}")
+                .WithDataAt(Locus.B, LocusPosition.One, $"{UnambiguousAlleles.UnambiguousAlleleDetails.B.Position1.Allele}/{alleleStringB}")
+                .WithDataAt(Locus.C, LocusPosition.One, $"{UnambiguousAlleles.UnambiguousAlleleDetails.C.Position1.Allele}/{alleleStringC}")
+                .WithDataAt(Locus.Dqb1, LocusPosition.One, $"{UnambiguousAlleles.UnambiguousAlleleDetails.Dqb1.Position1.Allele}/{alleleStringDqb1}")
+                .WithDataAt(Locus.Drb1, LocusPosition.One, $"{UnambiguousAlleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
                 .Build();
 
             var matchProbabilityInput = DefaultInputBuilder.With(i => i.PatientHla, patientHla).Build();
@@ -211,12 +211,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var patientHla = DefaultUnambiguousAllelesBuilder
                 .WithDataAt(
                     Locus.A,
-                    $"{Alleles.UnambiguousAlleleDetails.A.Position1.Allele}/{alleleStringA}",
-                    $"{Alleles.UnambiguousAlleleDetails.A.Position2.Allele}/{anotherAlleleStringA}")
-                .WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{alleleStringB}")
-                .WithDataAt(Locus.C, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.C.Position1.Allele}/{alleleStringC}")
+                    $"{UnambiguousAlleles.UnambiguousAlleleDetails.A.Position1.Allele}/{alleleStringA}",
+                    $"{UnambiguousAlleles.UnambiguousAlleleDetails.A.Position2.Allele}/{anotherAlleleStringA}")
+                .WithDataAt(Locus.B, LocusPosition.One, $"{UnambiguousAlleles.UnambiguousAlleleDetails.B.Position1.Allele}/{alleleStringB}")
+                .WithDataAt(Locus.C, LocusPosition.One, $"{UnambiguousAlleles.UnambiguousAlleleDetails.C.Position1.Allele}/{alleleStringC}")
                 .WithDataAt(Locus.Dqb1, null as string)
-                .WithDataAt(Locus.Drb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
+                .WithDataAt(Locus.Drb1, LocusPosition.One, $"{UnambiguousAlleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
                 .Build();
 
             var matchProbabilityInput = new MatchProbabilityInput
@@ -277,7 +277,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             int expectedZeroMismatchPercentage
         )
         {
-            var sharedHaplotypeHla = Alleles.UnambiguousAlleleDetails.GGroups().Split().Item1;
+            var sharedHaplotypeHla = UnambiguousAlleles.UnambiguousAlleleDetails.GGroups().Split().Item1;
 
             // patientHla entirely homozygous
             var patientHla = new PhenotypeInfo<string>(sharedHaplotypeHla, sharedHaplotypeHla);
@@ -285,7 +285,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             const Locus ambiguousLocus = Locus.B;
             const LocusPosition ambiguousPosition = LocusPosition.Two;
 
-            var alleleDetailsAtAmbiguousLocus = Alleles.UnambiguousAlleleDetails.GetLocus(ambiguousLocus);
+            var alleleDetailsAtAmbiguousLocus = UnambiguousAlleles.UnambiguousAlleleDetails.GetLocus(ambiguousLocus);
             var donorHla = new PhenotypeInfoBuilder<string>(patientHla)
                 .WithDataAt(ambiguousLocus, ambiguousPosition,
                     $"{alleleDetailsAtAmbiguousLocus.Position1.Allele}/{alleleDetailsAtAmbiguousLocus.Position2.Allele}")

@@ -55,5 +55,10 @@ namespace Atlas.Common.Utils.Extensions
             var lookup = values.ToLookup(splittingFunction);
             return (lookup[true].ToList(), lookup[false].ToList());
         }
+
+        public static IEnumerable<T> Except<T>(this IEnumerable<T> enumerable, T singleItem)
+        {
+            return enumerable.Except(new[] {singleItem});
+        }
     }
 }

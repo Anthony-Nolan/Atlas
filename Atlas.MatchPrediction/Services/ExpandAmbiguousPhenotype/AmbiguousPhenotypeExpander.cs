@@ -10,13 +10,25 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         ///  Returns all possible unambiguous genotypes by calculating the cartesian product of a set of possible alleles at each position.
         /// </summary>
         public ISet<PhenotypeInfo<string>> ExpandPhenotype(PhenotypeInfo<IReadOnlyCollection<string>> allelesPerLocus);
+
+        /// <returns>
+        /// An un-reified IEnumerable, representing all possible unambiguous genotypes by calculating the cartesian product of a set of possible alleles at each position.
+        /// </returns>
+        public IEnumerable<PhenotypeInfo<string>> LazilyExpandPhenotype(PhenotypeInfo<IReadOnlyCollection<string>> allelesPerLocus);
     }
 
     internal class AmbiguousPhenotypeExpander : IAmbiguousPhenotypeExpander
     {
         public ISet<PhenotypeInfo<string>> ExpandPhenotype(PhenotypeInfo<IReadOnlyCollection<string>> allelesPerLocus)
         {
-            var genotypes = (
+            var genotypes = LazilyExpandPhenotype(allelesPerLocus);
+            return genotypes.ToHashSet();
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<PhenotypeInfo<string>> LazilyExpandPhenotype(PhenotypeInfo<IReadOnlyCollection<string>> allelesPerLocus)
+        {
+            return
                 from a1 in allelesPerLocus.A.Position1
                 from a2 in allelesPerLocus.A.Position2
                 from b1 in allelesPerLocus.B.Position1
@@ -34,9 +46,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
                     C = new LocusInfo<string> {Position1 = c1, Position2 = c2},
                     Dqb1 = new LocusInfo<string> {Position1 = dqb1, Position2 = dqb2},
                     Drb1 = new LocusInfo<string> {Position1 = drb1, Position2 = drb2}
-                });
-
-            return genotypes.ToHashSet();
+                };
         }
     }
 }

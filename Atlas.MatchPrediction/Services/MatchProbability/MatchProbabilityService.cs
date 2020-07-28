@@ -216,7 +216,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 }
 
                 return accumulator;
-            }, LocusSettings.MatchPredictionLoci.ToHashSet());
+            }, LocusSettings.MatchPredictionLoci);
         }
 
         private List<Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>> CombineGenotypes(

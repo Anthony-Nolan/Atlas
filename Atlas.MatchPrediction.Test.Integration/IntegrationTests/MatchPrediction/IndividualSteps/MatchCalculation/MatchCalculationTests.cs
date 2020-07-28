@@ -6,7 +6,7 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Services.MatchCalculation;
-using Atlas.MatchPrediction.Test.Integration.Resources;
+using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +21,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
-        private static readonly HashSet<Locus> AllowedLoci = LocusSettings.MatchPredictionLoci;
+        private static readonly ISet<Locus> AllowedLoci = LocusSettings.MatchPredictionLoci;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -57,7 +57,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var loci = AllowedLoci.Where(l => !lociToExclude.Contains(l)).ToHashSet();
             var donorGenotype = DefaultGGroupsBuilder
-                .WithDataAt(Locus.A, Alleles.UnambiguousAlleleDetails.A.Position2.GGroup, Alleles.UnambiguousAlleleDetails.A.Position1.GGroup)
+                .WithDataAt(Locus.A, UnambiguousAlleles.UnambiguousAlleleDetails.A.Position2.GGroup, UnambiguousAlleles.UnambiguousAlleleDetails.A.Position1.GGroup)
                 .Build();
 
             var matchCounts = await matchCalculationService
@@ -80,7 +80,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             Locus[] lociToExclude)
         {
             var loci = AllowedLoci.Where(l => !lociToExclude.Contains(l)).ToHashSet();
-            var patientGenotype = DefaultGGroupsBuilder.WithDataAt(Locus.A, Alleles.UnambiguousAlleleDetails.A.Position1.GGroup).Build();
+            var patientGenotype = DefaultGGroupsBuilder.WithDataAt(Locus.A, UnambiguousAlleles.UnambiguousAlleleDetails.A.Position1.GGroup).Build();
 
             var matchCounts = await matchCalculationService
                 .CalculateMatchCounts(
@@ -101,7 +101,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         public async Task CalculateMatchCounts_WhenDonorGenotypeHomozygous_AndMatchesExactlyOneOfDonorHla_IsNineOutOfTenMatch(Locus[] lociToExclude)
         {
             var loci = AllowedLoci.Where(l => !lociToExclude.Contains(l)).ToHashSet();
-            var donorGenotype = DefaultGGroupsBuilder.WithDataAt(Locus.A, Alleles.UnambiguousAlleleDetails.A.Position1.GGroup).Build();
+            var donorGenotype = DefaultGGroupsBuilder.WithDataAt(Locus.A, UnambiguousAlleles.UnambiguousAlleleDetails.A.Position1.GGroup).Build();
 
             var matchCounts = await matchCalculationService
                 .CalculateMatchCounts(
@@ -137,6 +137,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         private static PhenotypeInfoBuilder<string> DefaultGGroupsBuilder =>
-            new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.GGroups());
+            new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.GGroups());
     }
 }

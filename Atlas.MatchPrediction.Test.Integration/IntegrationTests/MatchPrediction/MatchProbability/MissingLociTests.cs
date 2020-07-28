@@ -5,9 +5,8 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
-using Atlas.MatchPrediction.Test.Integration.Resources;
+using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using FluentAssertions;
-using LochNessBuilder;
 using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.MatchProbability
@@ -40,7 +39,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.PatientHla,
-                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, lociToExclude).Build())
+                    new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, lociToExclude).Build())
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
@@ -64,7 +63,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.DonorHla,
-                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, lociToExclude).Build())
+                    new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, lociToExclude).Build())
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
@@ -90,9 +89,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.DonorHla,
-                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, donorLociToExclude).Build())
+                    new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, donorLociToExclude).Build())
                 .With(h => h.PatientHla,
-                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, patientLociToExclude).Build())
+                    new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, patientLociToExclude).Build())
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>

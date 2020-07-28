@@ -7,7 +7,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
-using Atlas.MatchPrediction.Test.Integration.Resources;
+using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -27,7 +27,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
-        private readonly ISet<Locus> DefaultAllowedLoci = Config.LocusSettings.MatchPredictionLoci.ToHashSet();
+        private readonly ISet<Locus> DefaultAllowedLoci = Config.LocusSettings.MatchPredictionLoci;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -43,7 +43,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             // Alleles chosen in test cases for Locus A
             const Locus locus = Locus.A;
 
-            var alleleGGroupPairs = new PhenotypeInfoBuilder<AlleleWithGGroup>(Alleles.UnambiguousAlleleDetails)
+            var alleleGGroupPairs = new PhenotypeInfoBuilder<AlleleWithGGroup>(UnambiguousAlleles.UnambiguousAlleleDetails)
                 .WithDataAt(locus, new AlleleWithGGroup {Allele = allele, GGroup = GGroup})
                 .Build();
 
@@ -154,7 +154,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var genotypes = await compressedPhenotypeExpander.ExpandCompressedPhenotype(phenotype, HlaNomenclatureVersion, DefaultAllowedLoci);
 
-            // The two 2-field alleles represented by the MAC cover 86 G-Groups
+            // The two 2-field alleles represented by the MAC cover 86 G-AlleleGroups
             genotypes.Should().HaveCount(86);
         }
 
@@ -215,9 +215,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         private static PhenotypeInfoBuilder<string> DefaultUnambiguousAllelesBuilder =>
-            new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles());
+            new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles());
 
         private static PhenotypeInfoBuilder<string> DefaultUnambiguousGGroupsBuilder =>
-            new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.GGroups());
+            new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.GGroups());
     }
 }
