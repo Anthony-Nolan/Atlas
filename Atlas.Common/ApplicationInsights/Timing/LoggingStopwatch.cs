@@ -3,6 +3,7 @@
    ****************************** */
 // This was taken from a Softwire shareable Repo. At soem point it may get nugetified, in which case we might want
 // migrate to that. Worth checking whether we've diverged, from the original code, though.
+
 using System;
 using System.Diagnostics;
 
@@ -56,7 +57,7 @@ namespace LoggingStopwatch
 
         protected void Log(string text)
         {
-            loggingAction($"{identifier}|{uniqueId}|{text}");
+            loggingAction($"{identifier} |{uniqueId}| {text}");
         }
 
         public virtual void Dispose()
