@@ -4,12 +4,6 @@ This readme exists to give context to the test resources located in this folder 
 
 ## Matching Algorithm
 
-- InitialDonors.csv
-
-This is a set of some arbitrary pre-built donor data.
-Running the donor import using the FileOverride setting should populate the transient database locally, and give a small, searchable dataset without the need to run a **full** data refresh.
-Details for the steps necessary for this are in the Zero-To-Hero section of the master README.
-
 - InitialRefreshData.sql
 
 Normally Donor data would be inserted by a FullDataRefresh, which would create records in the Persistent DB recording the completion of a Refresh.
@@ -24,3 +18,11 @@ However, it also doesn't trigger any NMDP lookups, so it's a useful test to chec
 -EightResultsSearch.json
 
 This is a search that should actually return results! Created by taking a perfect copy of one of the first donor records.
+
+## Donor Import
+
+- `DonorImportFileGenerator.js` can be used to generate donor import files for testing or debugging. To use it:
+  * edit any of the config values in the `config` object. You will at least want to change `donorIdPrefix` as this is a primary key in the DB, and it will reject any duplicates.
+  * Select Donor information from the Donor database and edit it as appropriate, before adding them to the `donorsHla` array.
+    * (tip: When I copied the information from SSMS it resulted in literal tabs instead of `\t`. You can fix this in VSCode by doing a find and replace, with regex enabled from `\t` -> `\\t`)
+  * You can then run the code, either from your IDE (VSCode and Rider work fine for this), or from the command line with `node DonorImportFileGenerator.js`
