@@ -126,6 +126,30 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.OneMismatchProbability.Percentage.Should().Be(1);
             matchDetails.TwoMismatchProbability.Percentage.Should().Be(0);
         }
+        
+        [Test]
+        [IgnoreExceptOnCiPerfTest("Runs in ~50s")]
+        public async Task MatchPrediction_WithDonor_AndPatient_FullyTypedAtXXCodeResolution_CalculatesProbabilityCorrectly()
+        {
+            var xxTypedHla = new PhenotypeInfoBuilder<string>()
+                .WithDataAt(Locus.A, "01:XX")
+                .WithDataAt(Locus.B, "08:XX")
+                .WithDataAt(Locus.C, "07:XX")
+                .WithDataAt(Locus.Dqb1, "02:XX")
+                .WithDataAt(Locus.Drb1, "03:XX")
+                .Build();
+
+            var matchProbabilityInput = InputBuilder
+                .With(i => i.DonorHla, xxTypedHla)
+                .With(i => i.PatientHla, xxTypedHla)
+                .Build();
+
+            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+
+            matchDetails.ZeroMismatchProbability.Percentage.Should().Be(97);
+            matchDetails.OneMismatchProbability.Percentage.Should().Be(3);
+            matchDetails.TwoMismatchProbability.Percentage.Should().Be(0);
+        }
 
         private static async Task ImportHaplotypeFrequencies()
         {
