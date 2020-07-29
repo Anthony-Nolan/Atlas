@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Test.TestHelpers.Models;
 using Atlas.DonorImport.Test.TestHelpers.Models.MalformedDonorFileModels;
@@ -44,11 +45,35 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
     }
     
     [Builder]
-    internal static class DonorImportFileWithUnexpectedFieldBuilder
+    internal static class DonorImportFileWithMissingFieldBuilder
     {
-        public static Builder<DonorFileWithUnexpectedField> New => Builder<DonorFileWithUnexpectedField>.New
-            .With(c => c.unexpectedField, new List<DonorUpdate>())
+        public static Builder<DonorFileWithDonorUpdateWithMissingField> New => Builder<DonorFileWithDonorUpdateWithMissingField>.New
+            .With(c => c.donors, new List<DonorUpdateWithMissingField>())
             .With(c => c.updateMode, UpdateMode.Differential);
+        
+        public static Builder<DonorFileWithDonorUpdateWithMissingField> WithDonorCount(
+            this Builder<DonorFileWithDonorUpdateWithMissingField> builder,
+            int numberOfDonors)
+        {
+            var donors = DonorUpdateBuilder.New.Build(numberOfDonors).Select(x => new DonorUpdateWithMissingField(x));
+            return builder.With(c => c.donors, donors);
+        }
     }
     
+    [Builder]
+    internal static class DonorImportFileWithInvalidEnumBuilder
+    {
+        public static Builder<DonorFileWithDonorUpdateInvalidEnum> New => Builder<DonorFileWithDonorUpdateInvalidEnum>.New
+            .With(c => c.donors, new List<DonorUpdateWithInvalidEnums>())
+            .With(c => c.updateMode, "invalidEnum");
+
+        public static Builder<DonorFileWithDonorUpdateInvalidEnum> WithInvalidEnumDonor(
+            this Builder<DonorFileWithDonorUpdateInvalidEnum> builder)
+        {
+            var donor = DonorUpdateWithInvalidEnumBuilder.New.Build();
+            return builder.With(c => c.donors, new[] {donor})
+                .With(c => c.updateMode, UpdateMode.Differential.ToString());
+        }
+        
+    }
 }

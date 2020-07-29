@@ -66,6 +66,11 @@ namespace Atlas.DonorImport.Services
                 logger.SendTrace(e.Message, LogLevel.Warn);
                 await notificationSender.SendAlert(e.Message, e.StackTrace, Priority.Medium, nameof(ImportDonorFile));
             }
+            catch (DonorFormatException e)
+            {
+                logger.SendTrace(e.Message, LogLevel.Warn);
+                await notificationSender.SendAlert(e.Message, e.InnerException?.Message, Priority.Medium, nameof(ImportDonorFile));
+            }
             catch (Exception e)
             {
                 var summary = $"Donor Import Failed: {file.FileLocation}";

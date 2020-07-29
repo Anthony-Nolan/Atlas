@@ -43,12 +43,12 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         [Test]
         public async Task ImportDonors_WithUnexpectedColumns_SwallowsErrorAndCompletesSuccessfully()
         {
-            var malformedDonorFile = DonorImportFileWithUnexpectedFieldBuilder.New.Build();
+            var malformedDonorFile = DonorImportFileWithMissingFieldBuilder.New.Build();
             var file = new DonorImportFile {Contents = malformedDonorFile.ToStream()};
 
             await donorFileImporter.ImportDonorFile(file);
 
-            await mockNotificationSender.Received().SendAlert("Unrecognised property: unexpectedField encountered in donor import file.", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
+            await mockNotificationSender.Received().SendAlert("Error parsing Donor Format", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
         }
 
         [Test]
@@ -63,7 +63,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         }
 
         [Test]
-        public async Task ImportDonors_WithoutDonorsColumn_SwallowsErrorAndCompletesSuccessfully()
+        public async Task ImportDonors_WithoutDonorsColumn_CompletesSuccessfully()
         {
             var malformedFile = DonorImportFileWithNoDonorsBuilder.New.Build();
             var file = new DonorImportFile {Contents = malformedFile.ToStream()};
@@ -71,6 +71,37 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
             await donorFileImporter.ImportDonorFile(file);
             
             mockLogger.Received().SendTrace("Donor Import for file '' complete. Imported 0 donor(s).");
+        }
+        
+        [Test]
+        public async Task ImportDonors_WithoutADonorColumn_SwallowsErrorAndCompletesSuccessfully()
+        {
+            const int numberOfDonors = 5;
+            var malformedFile = DonorImportFileWithMissingFieldBuilder.New.WithDonorCount(numberOfDonors).Build();
+            var file = new DonorImportFile {Contents = malformedFile.ToStream(), FileLocation = "file-location"};
+
+            await donorFileImporter.ImportDonorFile(file);
+            await mockNotificationSender.Received().SendAlert("Donor property RecordId cannot be null.", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
+        }
+
+        [Test]
+        public async Task ImportDonors_WithInvalidEnumAtUpdateInFile_SwallowsErrorAndCompletesSuccessfully()
+        {
+            var malformedFile = DonorImportFileWithInvalidEnumBuilder.New.Build();
+            var file = new DonorImportFile {Contents = malformedFile.ToStream()};
+
+            await donorFileImporter.ImportDonorFile(file);
+            await mockNotificationSender.Received().SendAlert("Error parsing Donor Format", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
+        }
+
+        [Test]
+        public async Task ImportDonors_WithInvalidEnumAtDonorUpdate_SwallowsErrorAndCompletesSuccessfully()
+        {
+            var malformedFile = DonorImportFileWithInvalidEnumBuilder.New.WithInvalidEnumDonor().Build();
+            var file = new DonorImportFile {Contents = malformedFile.ToStream()};
+
+            await donorFileImporter.ImportDonorFile(file);
+            await mockNotificationSender.Received().SendAlert("Error parsing Donor Format", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
         }
     }
 }
