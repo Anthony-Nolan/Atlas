@@ -18,6 +18,11 @@ namespace Atlas.Common.Test.SharedTestHelpers.Builders
         {
             lociInfo = initialValues;
         }
+        
+        public LociInfoBuilder(T initialValue)
+        {
+            lociInfo = new LociInfo<T>(initialValue);
+        }
 
         public LociInfoBuilder<T> WithDataAt(Locus locus, T value)
         {
