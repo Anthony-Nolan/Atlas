@@ -2,6 +2,9 @@
 
 namespace Atlas.Common.Helpers
 {
+    /// <summary>
+    ///  Queue which automatically drops the oldest (first) entry upon new entry insertion when it gets full.
+    /// </summary>
     public class FixedSizedQueue<T> : Queue<T>
     {
         private readonly object syncObject = new object();
