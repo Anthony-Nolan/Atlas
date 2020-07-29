@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -27,6 +27,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         ///  - Fetches p-groups for all donor's hla
         ///  - Stores the pre-processed p-groups for use in matching
         /// </summary>
+        /// ,
         Task UpdateDonorHla(string hlaNomenclatureVersion, int refreshRecordId, int? lastProcessedDonor = null, bool continueExistingImport = false);
     }
 
@@ -44,6 +45,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IPGroupRepository pGroupRepository;
+
+        public const int NumberOfBatchesOverlapOnRestart = 3;
 
         public HlaProcessor(
             ILogger logger,
@@ -107,10 +110,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             using (var pGroupLinearWaitTimer = logger.RunLongOperationWithTimer($"Linear wait on HlaInsert during HlaProcessing", summaryReportOnly))
             using (var pGroupInsertTimer = logger.RunLongOperationWithTimer($"Parallel Write time on HlaInsert during HlaProcessing", summaryReportWithThreadingBreakdown))
             {
+                var completedDonors = new Queue<int>();
+
                 foreach (var donorBatch in batchedDonors)
                 {
-                    var donorsInBatch = donorBatch.Count;
-
                     // When continuing a donor import there will be some overlap of donors to ensure all donors are processed. 
                     // This ensures we do not end up with duplicate p-groups in the matching hla tables
                     // We do not want to attempt to remove p-groups for all batches as it would be detrimental to performance, so we limit it to the first two batches
@@ -129,13 +132,36 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                         failedDonors.AddRange(failedDonorsFromBatch);
                     }
 
-                    await dataRefreshHistoryRepository.UpdateLastProcessedDonor(refreshRecordId, donorBatch.Last().DonorId);
+                    completedDonors.Enqueue(donorBatch.Last().DonorId);
+
+                    if (completedDonors.Count >= NumberOfBatchesOverlapOnRestart)
+                    {
+                        await dataRefreshHistoryRepository
+                            .UpdateLastProcessedDonor(refreshRecordId, completedDonors.ElementAt(completedDonors.Count - NumberOfBatchesOverlapOnRestart));
+                    }
                 }
             }
 
             if (failedDonors.Any())
             {
                 await failedDonorsNotificationSender.SendFailedDonorsAlert(failedDonors, HlaFailureEventName, Priority.Low);
+            }
+        }
+
+        public class FixedSizedQueue<T>
+        {
+            ConcurrentQueue<T> q = new ConcurrentQueue<T>();
+            private object lockObject = new object();
+
+            public int Limit { get; set; }
+            public void Enqueue(T obj)
+            {
+                q.Enqueue(obj);
+                lock (lockObject)
+                {
+                    T overflow;
+                    while (q.Count > Limit && q.TryDequeue(out overflow)) ;
+                }
             }
         }
 
