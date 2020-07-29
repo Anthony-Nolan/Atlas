@@ -18,7 +18,6 @@ using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchCalculation;
-using Atlas.MatchPrediction.Services.MatchProbability;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 using TypedGenotype = Atlas.Common.GeneticData.PhenotypeInfo.PhenotypeInfo<Atlas.MatchPrediction.ExternalInterface.Models.HlaAtKnownTypingCategory>;
 using StringGenotype = Atlas.Common.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
@@ -26,7 +25,7 @@ using StringGenotype = Atlas.Common.GeneticData.PhenotypeInfo.PhenotypeInfo<stri
 // ReSharper disable ParameterTypeCanBeEnumerable.Local
 // ReSharper disable SuggestBaseTypeForParameter
 
-namespace Atlas.MatchPrediction.ExternalInterface.Services.MatchProbability
+namespace Atlas.MatchPrediction.Services.MatchProbability
 {
     public interface IMatchProbabilityService
     {
@@ -39,23 +38,22 @@ namespace Atlas.MatchPrediction.ExternalInterface.Services.MatchProbability
             TypedGenotype haplotypeResolutions,
             IHlaMetadataDictionary hlaMetadataDictionary)
         {
-            return new GenotypeAtDesiredResolutions(
-                haplotypeResolutions,
-                await haplotypeResolutions.MapAsync(async (locus, _, hla) =>
+            var stringMatchableResolutions = await haplotypeResolutions.MapAsync(async (locus, _, hla) =>
+            {
+                if (hla?.Hla == null)
                 {
-                    if (hla?.Hla == null)
-                    {
-                        return null;
-                    }
+                    return null;
+                }
 
-                    return hla.TypingCategory switch
-                    {
-                        HaplotypeTypingCategory.GGroup => await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, hla.Hla),
-                        HaplotypeTypingCategory.PGroup => hla.Hla,
-                        _ => throw new ArgumentOutOfRangeException(nameof(hla.TypingCategory))
-                    };
-                })
-            );
+                return hla.TypingCategory switch
+                {
+                    HaplotypeTypingCategory.GGroup => await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, hla.Hla) ?? hla.Hla,
+                    HaplotypeTypingCategory.PGroup => hla.Hla,
+                    _ => throw new ArgumentOutOfRangeException(nameof(hla.TypingCategory))
+                };
+            });
+
+            return new GenotypeAtDesiredResolutions(haplotypeResolutions, stringMatchableResolutions);
         }
 
         private GenotypeAtDesiredResolutions(TypedGenotype haplotypeResolution, StringGenotype stringMatchableResolution)
@@ -116,7 +114,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Services.MatchProbability
         {
             matchPredictionLoggingContext.Initialise(matchProbabilityInput);
 
-            var allowedLoci = GetAllowedLoci(matchProbabilityInput);
+            var allowedLoci = LocusSettings.MatchPredictionLoci.Except(matchProbabilityInput.ExcludedLoci).ToHashSet();
             var hlaNomenclatureVersion = matchProbabilityInput.HlaNomenclatureVersion;
 
             var frequencySets = await haplotypeFrequencyService.GetHaplotypeFrequencySets(
@@ -182,7 +180,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Services.MatchProbability
                         ).ToList();
                 }
             }
-
+            
             var allPatientDonorCombinations = CombineGenotypes(
                 await ConvertGenotypes(patientGenotypes, "patient"),
                 await ConvertGenotypes(donorGenotypes, "donor"));
@@ -236,19 +234,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.Services.MatchProbability
                     }
                 );
             }
-        }
-
-        private static ISet<Locus> GetAllowedLoci(MatchProbabilityInput matchProbabilityInput)
-        {
-            return matchProbabilityInput.PatientHla.Reduce((locus, value, accumulator) =>
-            {
-                if (value.Position1And2Null() || matchProbabilityInput.DonorHla.GetLocus(locus).Position1And2Null())
-                {
-                    accumulator.Remove(locus);
-                }
-
-                return accumulator;
-            }, LocusSettings.MatchPredictionLoci);
         }
 
         private List<Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>> CombineGenotypes(

@@ -6,108 +6,116 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
+using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using FluentAssertions;
 using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.MatchProbability
 {
+    // The tests in this suite are snapshots of frequencies calculated from the test data - they were not calculated or confirmed by hand  
+    // TODO: ATLAS-598: These tests pass on their own, but fail when run as part of the full suite 
     public class MissingLociTests : MatchProbabilityTestsBase
     {
-        [Test]
-        public async Task CalculateMatchProbability_WhenNoNullLoci_IncludesAllLociInResults()
+        private readonly Dictionary<Locus, string> otherGGroupsAtLoci = new Dictionary<Locus, string>
         {
-            var matchProbabilityInput = DefaultInputBuilder.Build();
-
-            var possibleHaplotypes = new List<HaplotypeFrequency>
-            {
-                DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
-                DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build(),
-            };
-
-            await ImportFrequencies(possibleHaplotypes, null, null);
-
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
-
-            LocusSettings.MatchPredictionLoci.Should()
-                .OnlyContain(l => matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(l) != null, "only excluded loci should be null");
-        }
-
-        [TestCase(new[] {Locus.Dqb1})]
-        [TestCase(new[] {Locus.C})]
-        [TestCase(new[] {Locus.Dqb1, Locus.C})]
-        public async Task CalculateMatchProbability_WhenPatientHlaHasNullLoci_DoesNotIncludeLociInResult(Locus[] lociToExclude)
+            {Locus.C, "12:03:01G"},
+            {Locus.Dqb1, "05:03:01G"},
+        };
+        
+        [TestCase(Locus.Dqb1, 40)]
+        [TestCase(Locus.C, 40)]
+        public async Task CalculateMatchProbability_WhenPatientHlaHasNullLoci_DoesNotIncludeLociInResult(Locus nullLocus, int expectedProbability)
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.PatientHla,
-                    new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, lociToExclude).Build())
+                    new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullLocus).Build())
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
             {
                 DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
                 DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build(),
+                DefaultHaplotypeFrequency1
+                    .WithDataAt(nullLocus, otherGGroupsAtLoci[nullLocus])
+                    .With(h => h.Frequency, 0.00003m)
+                    .Build(),
             };
 
             await ImportFrequencies(possibleHaplotypes, null, null);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            lociToExclude.Should()
-                .OnlyContain(l => matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(l) == null, "excluded loci should be null");
+            matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(nullLocus).Percentage.Should().Be(expectedProbability);
         }
 
-        [TestCase(new[] {Locus.Dqb1})]
-        [TestCase(new[] {Locus.C})]
-        [TestCase(new[] {Locus.Dqb1, Locus.C})]
-        public async Task CalculateMatchProbability_WhenDonorHlaHasNullLoci_DoesNotIncludeLociInResult(Locus[] lociToExclude)
+        [TestCase(Locus.Dqb1, 40)]
+        [TestCase(Locus.C, 40)]
+        public async Task CalculateMatchProbability_WhenDonorHlaHasNullLoci_CalculatesLociProbabilitiesCorrectly(
+            Locus nullLocus,
+            int expectedProbability)
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.DonorHla,
-                    new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, lociToExclude).Build())
+                    new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullLocus).Build())
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
             {
                 DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
                 DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build(),
+                DefaultHaplotypeFrequency1
+                    .WithDataAt(nullLocus, otherGGroupsAtLoci[nullLocus])
+                    .With(h => h.Frequency, 0.00003m)
+                    .Build(),
             };
 
             await ImportFrequencies(possibleHaplotypes, null, null);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            lociToExclude.Should()
-                .OnlyContain(l => matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(l) == null, "excluded loci should be null");
+            matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(nullLocus).Percentage.Should().Be(expectedProbability);
         }
 
-        [TestCase(new[] {Locus.Dqb1}, new[] {Locus.C})]
-        [TestCase(new[] {Locus.C}, new[] {Locus.C})]
-        [TestCase(new[] {Locus.Dqb1, Locus.C}, new[] {Locus.C})]
-        public async Task CalculateMatchProbability_WhenPatientAndDonorHlaHasNullLoci_DoesNotIncludeLociInResult(
-            Locus[] donorLociToExclude,
-            Locus[] patientLociToExclude)
+        [TestCase(new[] {Locus.Dqb1}, new[] {Locus.C}, 10, 45, 45)]
+        [TestCase(new[] {Locus.C}, new[] {Locus.C}, 52, 48, 0)]
+        [TestCase(new[] {Locus.Dqb1, Locus.C}, new[] {Locus.C}, 13, 51, 36)]
+        public async Task CalculateMatchProbability_WhenPatientAndDonorHlaHaveNullLoci_CalculatesOverallProbabilitiesCorrectly(
+            Locus[] nullDonorLoci,
+            Locus[] nullPatientLoci,
+            int zeroMismatchProbability,
+            int oneMismatchProbability,
+            int twoMismatchProbability)
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.DonorHla,
-                    new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, donorLociToExclude).Build())
+                    new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullDonorLoci)
+                        .Build())
                 .With(h => h.PatientHla,
-                    new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, patientLociToExclude).Build())
+                    new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullPatientLoci)
+                        .Build())
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
             {
                 DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
                 DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build(),
+                DefaultHaplotypeFrequency1
+                    .WithDataAt(Locus.C, "12:03:01G")
+                    .With(h => h.Frequency, 0.00003m)
+                    .Build(),
+                DefaultHaplotypeFrequency2
+                    .WithDataAt(Locus.Dqb1, "05:03:01G")
+                    .With(h => h.Frequency, 0.00003m)
+                    .Build(),
             };
 
             await ImportFrequencies(possibleHaplotypes, null, null);
 
-            var lociToExclude = donorLociToExclude.Union(patientLociToExclude);
-
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            lociToExclude.Should()
-                .OnlyContain(l => matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(l) == null, "excluded loci should be null");
+            matchDetails.ZeroMismatchProbability.Percentage.Should().Be(zeroMismatchProbability);
+            matchDetails.OneMismatchProbability.Percentage.Should().Be(oneMismatchProbability);
+            matchDetails.TwoMismatchProbability.Percentage.Should().Be(twoMismatchProbability);
         }
     }
 }

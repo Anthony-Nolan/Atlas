@@ -51,7 +51,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         [Test]
         // Runs in ~0.1 seconds. Quick enough to not ignore.
-        public async Task MatchPrediction_WithSmallAmbiguityAtEachDonorLocus_CalculatesProbabilityCorrectly()
+        public async Task MatchPrediction__WithSmallAmbiguityAtEachDonorLocus__CalculatesProbabilityCorrectly()
         {
             var donorHla = new PhenotypeInfoBuilder<string>()
                 .WithDataAt(Locus.A, "01:01:01/02:01:01")
@@ -77,7 +77,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         [Test]
         // Runs in ~1s. Quick enough to not ignore.
-        public async Task MatchPrediction_WithDonorFullyTyped_AtTruncatedTwoFieldAlleleResolution_CalculatesProbabilityCorrectly()
+        public async Task MatchPrediction__WithDonorFullyTyped_AtTruncatedTwoFieldAlleleResolution__CalculatesProbabilityCorrectly()
         {
             var donorHla = new PhenotypeInfoBuilder<string>()
                 .WithDataAt(Locus.A, "01:01")
@@ -103,7 +103,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         [Test]
         // Runs in ~0.1s. Quick enough to not ignore.
-        public async Task MatchPrediction_WithDonorFullyTyped_AtXXCodeResolution_CalculatesProbabilityCorrectly()
+        public async Task MatchPrediction__WithDonorFullyTyped_AtXXCodeResolution__CalculatesProbabilityCorrectly()
         {
             var donorHla = new PhenotypeInfoBuilder<string>()
                 .WithDataAt(Locus.A, "01:XX")
@@ -126,10 +126,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.OneMismatchProbability.Percentage.Should().Be(1);
             matchDetails.TwoMismatchProbability.Percentage.Should().Be(0);
         }
-        
+
         [Test]
         [IgnoreExceptOnCiPerfTest("Runs in ~50s")]
-        public async Task MatchPrediction_WithDonor_AndPatient_FullyTypedAtXXCodeResolution_CalculatesProbabilityCorrectly()
+        public async Task MatchPrediction__WithDonor_AndPatient_FullyTypedAtXXCodeResolution__CalculatesProbabilityCorrectly()
         {
             var xxTypedHla = new PhenotypeInfoBuilder<string>()
                 .WithDataAt(Locus.A, "01:XX")
@@ -151,11 +151,62 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.TwoMismatchProbability.Percentage.Should().Be(0);
         }
 
+        [Test]
+        // Runs in ~2s. Quick enough to not ignore.
+        public async Task MatchPrediction__WithDonor_TypedAtXXCodeResolution_AtRequiredLociOnly__CalculatesProbabilityCorrectly()
+        {
+            var donorHla = new PhenotypeInfoBuilder<string>((string) null)
+                .WithDataAt(Locus.A, "01:XX")
+                .WithDataAt(Locus.B, "08:XX")
+                .WithDataAt(Locus.Drb1, "03:XX")
+                .Build();
+
+            var patientHla = UnambiguousPhenotypeBuilder.Build();
+
+            var matchProbabilityInput = InputBuilder
+                .With(i => i.DonorHla, donorHla)
+                .With(i => i.PatientHla, patientHla)
+                .Build();
+
+            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+
+            matchDetails.ZeroMismatchProbability.Percentage.Should().Be(96);
+            matchDetails.OneMismatchProbability.Percentage.Should().Be(4);
+            matchDetails.TwoMismatchProbability.Percentage.Should().Be(0);
+        }
+
+        [Test]
+        [IgnoreExceptOnCiPerfTest("Runs in ~75s")]
+        public async Task
+            MatchPrediction__WithDonor_TypedAtXXCodeResolution_AtRequiredLociOnly_AndPatient_UnambiguouslyTyped_AtRequiredLociOnly__CalculatesProbabilityCorrectly()
+        {
+            var donorHla = new PhenotypeInfoBuilder<string>((string) null)
+                .WithDataAt(Locus.A, "01:XX")
+                .WithDataAt(Locus.B, "08:XX")
+                .WithDataAt(Locus.Drb1, "03:XX")
+                .Build();
+
+            var patientHla = UnambiguousPhenotypeBuilder
+                .WithDataAtLoci(null, Locus.C, Locus.Dqb1)
+                .Build();
+
+            var matchProbabilityInput = InputBuilder
+                .With(i => i.DonorHla, donorHla)
+                .With(i => i.PatientHla, patientHla)
+                .Build();
+
+            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+
+            matchDetails.ZeroMismatchProbability.Percentage.Should().Be(93);
+            matchDetails.OneMismatchProbability.Percentage.Should().Be(7);
+            matchDetails.TwoMismatchProbability.Percentage.Should().Be(0);
+        }
+
         private static async Task ImportHaplotypeFrequencies()
         {
             var importer = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
 
-            // This file is an actual test file, representing frequencies from one of the largest registries 
+            // This file is an actual test file, representing frequencies from one of the largest registries. Pop30 = NMDP.
             var filePath = $"Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.large.csv";
 
             await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(filePath))

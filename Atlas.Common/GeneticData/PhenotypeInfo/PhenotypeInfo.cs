@@ -17,7 +17,8 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
     /// A <see cref="PhenotypeInfo{T}"/> is a special case of <see cref="LociInfo{T}"/>, where T = LocusInfo.
     /// </summary>
     /// <typeparam name="T">The type of the information that is required for each loci position.</typeparam>
-    [DebuggerDisplay("A: {A.Position1}, {A.Position2}; B: {B.Position1}, {B.Position2}; C: {C.Position1}, {C.Position2}; DPB1: {Dpb1.Position1}, {Dpb1.Position2}; DQB1: {Dqb1.Position1}, {Dpb1.Position2}; DRB1: {Drb1.Position1}, {Drb1.Position2};")]
+    [DebuggerDisplay(
+        "A: {A.Position1}, {A.Position2}; B: {B.Position1}, {B.Position2}; C: {C.Position1}, {C.Position2}; DPB1: {Dpb1.Position1}, {Dpb1.Position2}; DQB1: {Dqb1.Position1}, {Dqb1.Position2}; DRB1: {Drb1.Position1}, {Drb1.Position2};")]
     public class PhenotypeInfo<T> : LociInfo<LocusInfo<T>>, IEquatable<PhenotypeInfo<T>>
     {
         private const string LocusInfoNullExceptionMessage = "LocusInfo<T> cannot be null in a PhenotypeInfo<T>. Set nested values to null instead.";
@@ -406,9 +407,9 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 Drb1.Position2,
             };
         }
-        
+
         public string PrettyPrint() =>
-            $"A: {A.Position1}, {A.Position2}; B: {B.Position1}, {B.Position2}; C: {C.Position1}, {C.Position2}; DPB1: {Dpb1.Position1}, {Dpb1.Position2}; DQB1: {Dqb1.Position1}, {Dpb1.Position2}; DRB1: {Drb1.Position1}, {Drb1.Position2};";
+            $"A: {A.Position1}, {A.Position2}; B: {B.Position1}, {B.Position2}; C: {C.Position1}, {C.Position2}; DPB1: {Dpb1.Position1}, {Dpb1.Position2}; DQB1: {Dqb1.Position1}, {Dqb1.Position2}; DRB1: {Drb1.Position1}, {Drb1.Position2};";
 
         #region IEquatable<T> implementation (Defers to EqualityComparer of LocusInfo, which defers to inner type.)
 

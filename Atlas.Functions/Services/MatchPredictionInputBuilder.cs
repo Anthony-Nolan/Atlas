@@ -7,6 +7,8 @@ using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.GeneticData;
+using EnumStringValues;
 
 namespace Atlas.Functions.Services
 {
@@ -78,13 +80,14 @@ namespace Atlas.Functions.Services
             {
                 SearchRequestId = searchRequestId,
                 DonorId = matchingAlgorithmResult.AtlasDonorId,
-                DonorHla = ExcludeHla(matchingAlgorithmResult.DonorHla, searchRequest.MatchCriteria),
+                ExcludedLoci = ExcludedLoci(searchRequest.MatchCriteria),
+                DonorHla = matchingAlgorithmResult.DonorHla,
                 DonorFrequencySetMetadata = new FrequencySetMetadata
                 {
                     EthnicityCode = donorInfo.EthnicityCode,
                     RegistryCode = donorInfo.RegistryCode
                 },
-                PatientHla = ExcludeHla(searchRequest.SearchHlaData.ToPhenotypeInfo(), searchRequest.MatchCriteria),
+                PatientHla = searchRequest.SearchHlaData.ToPhenotypeInfo(),
                 PatientFrequencySetMetadata = new FrequencySetMetadata
                 {
                     EthnicityCode = searchRequest.PatientEthnicityCode,
@@ -95,12 +98,9 @@ namespace Atlas.Functions.Services
         }
 
         /// <summary>
-        /// If a locus did not have match criteria provided, we do not want to calculate match probabilities at that locus -
-        /// so we set the patient and donor hla to null for the purposes of match prediction 
+        /// If a locus did not have match criteria provided, we do not want to calculate match probabilities at that locus.
         /// </summary>
-        private static PhenotypeInfo<string> ExcludeHla(PhenotypeInfo<string> hla, MismatchCriteria mismatchCriteria)
-        {
-            return hla.Map((locus, data) => mismatchCriteria.MismatchCriteriaAtLocus(locus) == null ? null : data);
-        }
+        private static IEnumerable<Locus> ExcludedLoci(MismatchCriteria mismatchCriteria) =>
+            EnumExtensions.EnumerateValues<Locus>().Where(l => mismatchCriteria.MismatchCriteriaAtLocus(l) == null);
     }
 }

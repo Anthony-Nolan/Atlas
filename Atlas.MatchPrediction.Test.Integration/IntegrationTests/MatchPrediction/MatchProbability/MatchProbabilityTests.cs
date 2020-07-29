@@ -232,9 +232,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             {
                 A = 0.0679012345679012345679012346m,
                 B = 0.6666666666666666666666666667m,
-                C = null,
+                C = 1m,
                 Dpb1 = null,
-                Dqb1 = null,
+                Dqb1 = 1m,
                 Drb1 = 0.8333333333333333333333333333m
             };
 
