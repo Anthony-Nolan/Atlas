@@ -80,7 +80,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models
         public static void SetUpModel(this EntityTypeBuilder<Simulant> modelBuilder)
         {
             modelBuilder
-                .HasIndex(s => new { s.TestIndividualCategory, s.SimulatedHlaTypingCategory });
+                .HasIndex(s => new { s.TestHarness_Id, s.TestIndividualCategory, s.SimulatedHlaTypingCategory });
 
             modelBuilder
                 .HasOne<TestHarness>()

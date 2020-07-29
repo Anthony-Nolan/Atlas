@@ -1,9 +1,11 @@
-﻿using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
+﻿using Atlas.MatchPrediction.ExternalInterface;
+using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
+using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Services;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Atlas.MatchPrediction.Test.Verification.Data.Context;
 
 namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 {
@@ -17,7 +19,7 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
         {
             services.RegisterDatabaseServices(fetchMatchPredictionVerificationSqlConnectionString);
             services.RegisterHaplotypeFrequenciesReader(fetchMatchPredictionSqlConnectionString);
-            services.RegisterServices();
+            services.RegisterServices(fetchMatchPredictionSqlConnectionString);
         }
 
         private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)
@@ -31,9 +33,17 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             services.AddScoped<ITestHarnessRepository, TestHarnessRepository>();
         }
 
-        private static void RegisterServices(this IServiceCollection services)
+        private static void RegisterServices(
+            this IServiceCollection services, 
+            Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString)
         {
-            services.AddScoped<INormalisedPoolGenerator, NormalisedPoolGenerator>();
+            services.AddScoped<INormalisedPoolGenerator, NormalisedPoolGenerator>(sp =>
+                {
+                    var reader = sp.GetService<IHaplotypeFrequenciesReader>();
+                    var repo = sp.GetService<INormalisedPoolRepository>();
+                    var dataSource = new SqlConnectionStringBuilder(fetchMatchPredictionSqlConnectionString(sp)).DataSource;
+                    return new NormalisedPoolGenerator(reader, repo, dataSource);
+                });
             services.AddScoped<IGenotypeSimulator, GenotypeSimulator>();
             services.AddScoped<IRandomNumberPairGenerator, RandomNumberPairGenerator>();
             services.AddScoped<ITestHarnessGenerator, TestHarnessGenerator>();
