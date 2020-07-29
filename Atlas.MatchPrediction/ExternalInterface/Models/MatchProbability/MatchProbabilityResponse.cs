@@ -2,6 +2,7 @@
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Models;
+// ReSharper disable MemberCanBeInternal
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 {
@@ -36,9 +37,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         {
             return new MatchProbabilityResponse
             {
-                ZeroMismatchProbability = ZeroMismatchProbability.Round(decimalPlaces),
-                OneMismatchProbability = OneMismatchProbability.Round(decimalPlaces),
-                TwoMismatchProbability = TwoMismatchProbability.Round(decimalPlaces), 
+                ZeroMismatchProbability = ZeroMismatchProbability?.Round(decimalPlaces),
+                OneMismatchProbability = OneMismatchProbability?.Round(decimalPlaces),
+                TwoMismatchProbability = TwoMismatchProbability?.Round(decimalPlaces), 
                 ZeroMismatchProbabilityPerLocus = ZeroMismatchProbabilityPerLocus.Map(p => p?.Round(decimalPlaces))
             };
         }
