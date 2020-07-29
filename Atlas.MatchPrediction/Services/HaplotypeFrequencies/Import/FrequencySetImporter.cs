@@ -132,7 +132,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 {
                     // arbitrary haplotype frequency object, as everything but the frequency will be the same in all cases 
                     var frequency = groupByHla.First();
-                    frequency.Frequency = groupByHla.OrderBy(x => x.Frequency).Sum(x => x.Frequency);
+                    frequency.Frequency = groupByHla.Select(g => g.Frequency).SumDecimals();
                     return frequency;
                 });
             return combined;

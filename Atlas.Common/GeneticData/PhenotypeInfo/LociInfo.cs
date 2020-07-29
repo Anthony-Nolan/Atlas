@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
+using EnumStringValues;
+
+// ReSharper disable InconsistentNaming
 
 // ReSharper disable MemberCanBeProtected.Global
 
@@ -19,13 +23,14 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
     public class LociInfo<T> : IEquatable<LociInfo<T>>
     {
         // ReSharper disable InconsistentNaming - recommended name clashes with property!
+
         protected T a;
         protected T b;
         protected T c;
         protected T dpb1;
         protected T dqb1;
-
         protected T drb1;
+
         // ReSharper restore InconsistentNaming
 
         /// <summary>
@@ -102,6 +107,8 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             get => drb1;
             set => drb1 = value;
         }
+
+        public ISet<Locus> SupportedLoci => EnumExtensions.EnumerateValues<Locus>().ToHashSet();
 
         public LociInfo<R> Map<R>(Func<Locus, T, R> mapping)
         {
@@ -272,9 +279,48 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                    (!lociToMatchAt.Contains(Locus.Drb1) || EqualityComparer<T>.Default.Equals(Drb1, other.Drb1));
         }
 
-        public bool AnyAtLoci(Func<T, bool> condition, ISet<Locus> loci)
+        /// <returns>
+        /// true if the given condition is met at any of the provided loci.
+        /// </returns>
+        /// <param name="condition">Condition to evaluate per-locus</param>
+        /// <param name="loci">If not set, will default to all supported loci.</param>
+        public bool AnyAtLoci(Func<Locus, T, bool> condition, ISet<Locus> loci = null)
         {
-            return Reduce((locus, value, result) => result || loci.Contains(locus) && condition(value), false);
+            loci ??= SupportedLoci;
+            return Reduce((locus, value, result) => result || loci.Contains(locus) && condition(locus, value), false);
+        }
+
+        /// <returns>
+        /// true if the given condition is met at any of the provided loci.
+        /// </returns>
+        /// <param name="condition">Condition to evaluate per-locus</param>
+        /// <param name="loci">If not set, will default to all supported loci.</param>
+        public bool AnyAtLoci(Func<T, bool> condition, ISet<Locus> loci = null)
+        {
+            return AnyAtLoci((_, value) => condition(value), loci);
+        }
+
+        /// <returns>
+        /// true if the given condition is met at all of the provided loci.
+        /// </returns>
+        /// <param name="condition">Condition to evaluate per-locus</param>
+        /// <param name="loci">If not set, will default to all supported loci.</param>
+        public bool AllAtLoci(Func<Locus, T, bool> condition, ISet<Locus> loci = null)
+        {
+            // x && y == !(!x || !y).
+            // This approach is taken over an `Enumerable.All` equivalent, to ensure early return - if one locus fails, we do not need/want to evaluate at other loci.
+            // It also allows commonisation of the core logic with the "Any" equivalent
+            return !AnyAtLoci((locus, value) => !condition(locus, value), loci);
+        }
+
+        /// <returns>
+        /// true if the given condition is met at all of the provided loci.
+        /// </returns>
+        /// <param name="condition">Condition to evaluate per-locus</param>
+        /// <param name="loci">If not set, will default to all supported loci.</param>
+        public bool AllAtLoci(Func<T, bool> condition, ISet<Locus> loci = null)
+        {
+            return AllAtLoci((_, value) => condition(value), loci);
         }
 
         #region IEquatable<T> implementation (Defers to EqualityComparer of inner type.)

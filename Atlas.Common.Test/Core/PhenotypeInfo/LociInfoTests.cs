@@ -86,21 +86,45 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
         [Test]
         public void AnyAtLoci_WhenOnlyExcludedLociReturnTrue_ReturnsFalse()
         {
-            const string toMatch = "string-to-match";
             const Locus excludedLocus = Locus.C;
-            var lociInfo = new LociInfoBuilder<string>().WithDataAt(excludedLocus, toMatch).Build();
+            var lociInfo = new LociInfoBuilder<bool>(false).WithDataAt(excludedLocus, true).Build();
 
-            lociInfo.AnyAtLoci(x => x == toMatch, supportedLoci.Except(excludedLocus).ToHashSet()).Should().BeFalse();
+            lociInfo.AnyAtLoci(x => x, supportedLoci.Except(excludedLocus).ToHashSet()).Should().BeFalse();
         }
 
         [Test]
         public void AnyAtLoci_WhenSingleLocusReturnsTrue_ReturnsTrue()
         {
-            const string toMatch = "string-to-match";
             const Locus includedLocus = Locus.C;
-            var lociInfo = new LociInfoBuilder<string>().WithDataAt(includedLocus, toMatch).Build();
+            var lociInfo = new LociInfoBuilder<bool>(false).WithDataAt(includedLocus, true).Build();
 
-            lociInfo.AnyAtLoci(x => x == toMatch, new HashSet<Locus> {includedLocus}).Should().BeTrue();
+            lociInfo.AnyAtLoci(x => x, new HashSet<Locus> {includedLocus}).Should().BeTrue();
+        }
+
+        [Test]
+        public void AllAtLoci_WhenSingleLocusReturnsFalse_ReturnsFalse()
+        {
+            const Locus includedLocus = Locus.Dqb1;
+            var lociInfo = new LociInfoBuilder<bool>(true).WithDataAt(includedLocus, false).Build();
+
+            lociInfo.AllAtLoci(x => x, new HashSet<Locus> {includedLocus}).Should().BeFalse();
+        }
+
+        [Test]
+        public void AllAtLoci_WhenOnlyExcludedLocusReturnsFalse_ReturnsTrue()
+        {
+            const Locus excludedLocus = Locus.Dqb1;
+            var lociInfo = new LociInfoBuilder<bool>(true).WithDataAt(excludedLocus, false).Build();
+
+            lociInfo.AllAtLoci(x => x, supportedLoci.Except(excludedLocus).ToHashSet()).Should().BeTrue();
+        }
+
+        [Test]
+        public void AllAtLoci_WhenAllLociReturnTrue_ReturnsTrue()
+        {
+            var lociInfo = new LociInfoBuilder<bool>(true).Build();
+
+            lociInfo.AllAtLoci(x => x, supportedLoci.ToHashSet()).Should().BeTrue();
         }
     }
 }
