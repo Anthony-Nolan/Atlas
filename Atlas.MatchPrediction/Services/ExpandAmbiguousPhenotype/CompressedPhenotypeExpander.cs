@@ -190,7 +190,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
                         IsRepresentedInTargetPhenotype(hla2, locus, LocusPosition.One);
 
                     return representedDirectly || representedInverted;
-                });
+                }, allowedLoci);
             }).ToList();
         }
 
