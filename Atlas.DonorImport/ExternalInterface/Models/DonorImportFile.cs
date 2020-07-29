@@ -8,6 +8,7 @@ namespace Atlas.DonorImport.ExternalInterface.Models
         public string FileLocation { get; set; }
         public Stream Contents { get; set; }
 
+        public DateTime UploadTime { get; set; }
         #region IDisposable
 
         /// <inheritdoc />
