@@ -30,6 +30,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         public DateTime? DatabaseScalingSetupCompleted { get; set; }
         public DateTime? MetadataDictionaryRefreshCompleted { get; set; }
         public DateTime? DonorImportCompleted { get; set; }
+        public int? LastDonorWithProcessedHla { get; set; }
         public DateTime? DonorHlaProcessingCompleted { get; set; }
         public DateTime? IndexRecreationCompleted { get; set; }
         public DateTime? DatabaseScalingTearDownCompleted { get; set; }
