@@ -31,9 +31,9 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
         
         [HttpPost]
         [Route("trigger-donor-hla-update")]
-        public async Task TriggerSingleImport()
+        public async Task TriggerSingleImport([FromBody] int refreshRecordId)
         {
-            await hlaProcessor.UpdateDonorHla(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
+            await hlaProcessor.UpdateDonorHla(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion(), refreshRecordId);
         }
     }
 }

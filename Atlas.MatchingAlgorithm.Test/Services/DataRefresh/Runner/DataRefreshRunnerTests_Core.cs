@@ -111,13 +111,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         public async Task RefreshData_WhenRunningFromScratch_PassesRefreshHlaVersionToLaterSteps()
         {
             const string hlaNomenclatureVersion = "3390";
+            const int refreshRecordId = 0;
             hlaMetadataDictionary
                 .RecreateHlaMetadataDictionary(CreationBehaviour.Latest)
                 .Returns(hlaNomenclatureVersion);
 
             await dataRefreshRunner.RefreshData(default);
 
-            await hlaProcessor.Received().UpdateDonorHla(hlaNomenclatureVersion, false);
+            await hlaProcessor.Received().UpdateDonorHla(hlaNomenclatureVersion, refreshRecordId);
         }
 
         [Test]
