@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
 {
     [DbContext(typeof(SearchAlgorithmPersistentContext))]
-    [Migration("20200729084843_LastDonorWithProcessedHla")]
-    partial class LastDonorWithProcessedHla
+    [Migration("20200729155553_AddLastSafelyProcessedDonorToDataRefreshHistory")]
+    partial class AddLastSafelyProcessedDonorToDataRefreshHistory
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -56,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
                     b.Property<DateTime?>("IndexRecreationCompleted")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("LastDonorWithProcessedHla")
+                    b.Property<int?>("LastSafelyProcessedDonor")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("MetadataDictionaryRefreshCompleted")
