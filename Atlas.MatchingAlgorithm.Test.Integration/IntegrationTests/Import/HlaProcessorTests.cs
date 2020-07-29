@@ -39,7 +39,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             var donorInfo = new DonorInfoBuilder().Build();
             await importRepo.InsertBatchOfDonors(new List<DonorInfo> { donorInfo });
 
-            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion);
+            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion, 1);
 
             var storedDonor = await inspectionRepo.GetDonor(donorInfo.DonorId);
             AssertStoredDonorInfoMatchesOriginalDonorInfo(storedDonor, donorInfo);
@@ -59,7 +59,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 
             await importRepo.InsertBatchOfDonors(new List<DonorInfo> { donorInfo });
 
-            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion);
+            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion, 1);
 
             var actualPGroupCount = await GetPGroupCountAtLocusAPositionOne(donorInfo.DonorId);
             actualPGroupCount.Should().Be(expectedPGroupCount);
@@ -71,11 +71,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             var donorInfo = new DonorInfoBuilder().Build();
             await importRepo.InsertBatchOfDonors(new List<DonorInfo> { donorInfo });
 
-            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion, false);
+            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion,1,null, false);
 
             var initialPGroupCount = await GetPGroupCountAtLocusAPositionOne(donorInfo.DonorId);
 
-            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion, true);
+            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion, 1, null, true);
 
             var finalPGroupCount = await GetPGroupCountAtLocusAPositionOne(donorInfo.DonorId);
             finalPGroupCount.Should().Be(initialPGroupCount);
@@ -87,11 +87,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             var donorInfo = new DonorInfoBuilder().Build();
             await importRepo.InsertBatchOfDonors(new List<DonorInfo> { donorInfo });
 
-            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion, false);
+            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion, 1);
 
             var initialPGroupCount = await GetPGroupCountAtLocusAPositionOne(donorInfo.DonorId);
 
-            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion, false);
+            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion, 1);
 
             var finalPGroupCount = await GetPGroupCountAtLocusAPositionOne(donorInfo.DonorId);
             finalPGroupCount.Should().Be(initialPGroupCount * 2);
@@ -102,11 +102,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donorInfo = new DonorInfoBuilder().Build();
             await importRepo.InsertBatchOfDonors(new List<DonorInfo> { donorInfo });
-            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion);
+            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion, 1);
 
             var newDonor = new DonorInfoBuilder().Build();
             await importRepo.InsertBatchOfDonors(new List<DonorInfo> { newDonor });
-            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion);
+            await processor.UpdateDonorHla(DefaultHlaNomenclatureVersion, 1);
 
             var pGroupCount = await GetPGroupCountAtLocusAPositionOne(newDonor.DonorId);
             pGroupCount.Should().NotBeNull();

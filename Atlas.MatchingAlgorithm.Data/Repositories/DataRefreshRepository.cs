@@ -69,8 +69,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
         private static string DetermineAppropriateOrderedSqlQuery(bool continueExistingImport, int? lastProcessedDonor)
         {
-            var nonFilteredSqlQuery = "SELECT * FROM Donors ORDER BY DonorId ASC";
-            if (!continueExistingImport || lastProcessedDonor.IsNull())
+            const string nonFilteredSqlQuery = "SELECT * FROM Donors ORDER BY DonorId ASC";
+            if (!continueExistingImport || lastProcessedDonor == null)
             {
                 return nonFilteredSqlQuery;
             }
