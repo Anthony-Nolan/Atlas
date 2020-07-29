@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Utils.Extensions;
 using Atlas.Common.Utils.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Models;
@@ -53,8 +54,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var patientLikelihoods = patientInfo.GenotypeLikelihoods;
             var donorLikelihoods = donorInfo.GenotypeLikelihoods;
 
-            var sumOfPatientLikelihoods = patientInfo.Genotypes.Select(p => patientLikelihoods[p]).Sum();
-            var sumOfDonorLikelihoods = donorInfo.Genotypes.Select(d => donorLikelihoods[d]).Sum();
+            var sumOfPatientLikelihoods = patientInfo.Genotypes.Select(p => patientLikelihoods[p]).SumDecimals();
+            var sumOfDonorLikelihoods = donorInfo.Genotypes.Select(d => donorLikelihoods[d]).SumDecimals();
 
             if (sumOfPatientLikelihoods == 0 || sumOfDonorLikelihoods == 0)
             {

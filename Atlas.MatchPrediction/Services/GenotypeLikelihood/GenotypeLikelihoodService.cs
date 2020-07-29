@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Models;
@@ -72,7 +73,7 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
                         .Where(kvp => kvp.Key.EqualsAtLoci(hla, allowedLoci))
                         .Select(kvp => kvp.Value.Frequency)
                         .DefaultIfEmpty(0m)
-                        .Sum();
+                        .SumDecimals();
 
                     haplotypesWithFrequencies.Add(hla, hf);
                 }
