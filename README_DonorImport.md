@@ -5,6 +5,15 @@ Donor JSON Files are uploaded to BlobStorage, where they are picked up for proce
 * If the Donor File denotes a *change* to a Donor, then a Donor Update Message is put in the ServiceBusQueue to be processed into the Matching Donor Database.
 * If the Donor File is marked as being part of a "full" upload, then no such Message is Enqueued, and it is expected that a full Donor Refresh will be manually triggered in the near future.
 
+## Limitations
+
+The donor import process does not yet fully guarantee ordering of the application of donor update files.
+This means that ATLAS does not officially support processing of two donor files containing *references to the same donor* within a *ten minute window*.
+
+Multiple updates for a single donor within this window will be applied, but we do not guarantee 100% that they will be applied in the correct order.
+
+TODO: ATLAS-390: ensure full resilience in donor import ordering process     
+
 ## File Transfer performance
 
 ### From Dev Machines to Azure Cloud
