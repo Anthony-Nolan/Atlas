@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.Common.Helpers;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights;
@@ -26,7 +27,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         ///  - Fetches p-groups for all donor's hla
         ///  - Stores the pre-processed p-groups for use in matching
         /// </summary>
-        /// ,
         Task UpdateDonorHla(string hlaNomenclatureVersion, int refreshRecordId, int? lastProcessedDonor = null, bool continueExistingImport = false);
     }
 
@@ -109,7 +109,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             using (var pGroupLinearWaitTimer = logger.RunLongOperationWithTimer($"Linear wait on HlaInsert during HlaProcessing", summaryReportOnly))
             using (var pGroupInsertTimer = logger.RunLongOperationWithTimer($"Parallel Write time on HlaInsert during HlaProcessing", summaryReportWithThreadingBreakdown))
             {
-                var completedDonors = new Queue<int>();
+                var completedDonors = new FixedSizedQueue<int>(NumberOfBatchesOverlapOnRestart);
 
                 foreach (var donorBatch in batchedDonors)
                 {
@@ -136,7 +136,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                     if (completedDonors.Count >= NumberOfBatchesOverlapOnRestart)
                     {
                         await dataRefreshHistoryRepository
-                            .UpdateLastSafelyProcessedDonor(refreshRecordId, completedDonors.ElementAt(completedDonors.Count - NumberOfBatchesOverlapOnRestart));
+                            .UpdateLastSafelyProcessedDonor(refreshRecordId, completedDonors.Peek());
                     }
                 }
             }
