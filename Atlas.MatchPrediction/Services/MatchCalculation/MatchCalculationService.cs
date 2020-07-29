@@ -74,7 +74,7 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
                 var patientHla = patientGenotype.GetLocus(locus);
                 var donorHla = donorGenotype.GetLocus(locus);
                 return allowedLoci.Contains(locus)
-                    ? stringBasedLocusMatchCalculator.MatchCount(patientHla, donorHla, UntypedLocusBehaviour.Throw)
+                    ? stringBasedLocusMatchCalculator.MatchCount(patientHla, donorHla)
                     : (int?) null;
             });
         }

@@ -263,5 +263,48 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             genotypes.Count.Should().Be(1);
             genotypes.Single().GetLocus(excludedLocus).Position1And2Null().Should().BeTrue();
         }
+
+        [Test]
+        public async Task ExpandCompressedPhenotype_WithEmptyLocus_ExpandsToAllMatchingDiplotypesAtThatLocus()
+        {
+            const Locus missingLocus = Locus.C;
+            const string otherGGroupAtMissingLocus = "01:01:01G";
+
+            var phenotype = new PhenotypeInfoBuilder<string>(UnambiguousAlleleDetails.Alleles())
+                .WithDataAt(missingLocus, (string) null)
+                .Build();
+
+            var phenotypeWithoutMissingLoci = new PhenotypeInfo<string>(UnambiguousAlleleDetails.Alleles());
+            
+            var haplotypes = new List<LociInfo<string>>
+            {
+                HaplotypeBuilder1.Build(),
+                HaplotypeBuilder2.Build(),
+                HaplotypeBuilder1.WithDataAt(missingLocus, otherGGroupAtMissingLocus).Build(),
+                HaplotypeBuilder2.WithDataAt(missingLocus, otherGGroupAtMissingLocus).Build(),
+            };
+
+            var genotypes = await expander.ExpandCompressedPhenotype(new ExpandCompressedPhenotypeInput
+            {
+                Phenotype = phenotype,
+                AllowedLoci = DefaultLoci,
+                HlaNomenclatureVersion = HlaNomenclatureVersion,
+                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>> {GGroup = haplotypes, PGroup = haplotypes}
+            });
+            
+            var genotypesWithoutMissingLoci = await expander.ExpandCompressedPhenotype(new ExpandCompressedPhenotypeInput
+            {
+                Phenotype = phenotypeWithoutMissingLoci,
+                AllowedLoci = DefaultLoci,
+                HlaNomenclatureVersion = HlaNomenclatureVersion,
+                AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>> {GGroup = haplotypes, PGroup = haplotypes}
+            });
+
+            genotypes.Count.Should().Be(4);
+            
+            // Strictly this assertion is not necessary, but it could be useful for people reading this test to understand what is being tested here,
+            // rather than blindly trusting the snapshot of 4 matching genotypes.
+            genotypesWithoutMissingLoci.Count().Should().BeLessThan(genotypes.Count);
+        }
     }
 }

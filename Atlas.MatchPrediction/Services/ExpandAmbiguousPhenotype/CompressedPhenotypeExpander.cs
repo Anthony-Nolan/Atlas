@@ -147,8 +147,10 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             var allowedHaplotypes = allHaplotypes.Map((category, haplotypes) =>
             {
                 return haplotypes.Where(haplotype => allowedLoci.All(locus =>
-                        groupsPerLocus.GetByCategory(category).GetLocus(locus).Contains(haplotype.GetLocus(locus))
-                    ))
+                    {
+                        var hlaGroups = groupsPerLocus.GetByCategory(category).GetLocus(locus);
+                        return hlaGroups == null || hlaGroups.Contains(haplotype.GetLocus(locus));
+                    }))
                     .Select(haplotype => haplotype.Map(hla => new HlaAtKnownTypingCategory(hla, category)))
                     .ToList();
             });
@@ -169,7 +171,8 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         {
             bool IsRepresentedInTargetPhenotype(HlaAtKnownTypingCategory hla, Locus locus, LocusPosition position)
             {
-                return groupsPerPosition.GetByCategory(hla.TypingCategory).GetPosition(locus, position).Contains(hla.Hla);
+                var groups = groupsPerPosition.GetByCategory(hla.TypingCategory).GetPosition(locus, position);
+                return groups == null || groups.Contains(hla.Hla);
             }
 
             // ReSharper disable once UseDeconstructionOnParameter

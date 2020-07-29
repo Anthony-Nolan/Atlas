@@ -11,7 +11,8 @@ namespace Atlas.MatchPrediction.Utils
     {
         /// <summary>
         /// Runs <see cref="IHlaMetadataDictionary.ConvertHla"/> for each HLA in a PhenotypeInfo, at selected loci.
-        /// Excluded loci will not be converted, and will be set to null. 
+        /// Excluded loci will not be converted, and will be set to null.
+        /// Provided nulls will be preserved.
         /// </summary>
         public static async Task<PhenotypeInfo<IReadOnlyCollection<string>>> ConvertAllHla(
             this IHlaMetadataDictionary hlaMetadataDictionary,
@@ -21,14 +22,15 @@ namespace Atlas.MatchPrediction.Utils
         )
         {
             return await hlaInfo.MapAsync(async (locus, _, hla) =>
-                allowedLoci.Contains(locus) ? await hlaMetadataDictionary.ConvertHla(locus, hla, targetHlaCategory) : null
+                allowedLoci.Contains(locus) && hla != null ? await hlaMetadataDictionary.ConvertHla(locus, hla, targetHlaCategory) : null
             );
         }
 
         /// <summary>
         /// Runs <see cref="IHlaMetadataDictionary.ConvertGGroupToPGroup"/> for each HLA in a PhenotypeInfo, at selected loci.
         /// Input hla *MUST* be typed to GGroup resolution.
-        /// Excluded loci will not be converted, and will be set to null. 
+        /// Excluded loci will not be converted, and will be set to null.
+        /// Provided nulls will be preserved.
         /// </summary>
         public static async Task<PhenotypeInfo<string>> ConvertGGroupsToPGroups(
             this IHlaMetadataDictionary hlaMetadataDictionary,
@@ -37,7 +39,7 @@ namespace Atlas.MatchPrediction.Utils
         )
         {
             return await hlaAsGGroups.MapAsync(async (locus, _, gGroup) =>
-                allowedLoci.Contains(locus) ? await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, gGroup) : null
+                allowedLoci.Contains(locus) && gGroup != null ? await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, gGroup) : null
             );
         }
 
@@ -45,6 +47,7 @@ namespace Atlas.MatchPrediction.Utils
         /// Runs <see cref="IHlaMetadataDictionary.ConvertGGroupToPGroup"/> for each HLA in a LociInfo, at selected loci.
         /// Input hla *MUST* be typed to GGroup resolution.
         /// Excluded loci will not be converted, and will be set to null. 
+        /// Provided nulls will be preserved.
         /// </summary>
         public static async Task<LociInfo<string>> ConvertGGroupsToPGroups(
             this IHlaMetadataDictionary hlaMetadataDictionary,
@@ -53,7 +56,7 @@ namespace Atlas.MatchPrediction.Utils
         )
         {
             return await hlaAsGGroups.MapAsync(async (locus, gGroup) =>
-                allowedLoci.Contains(locus) ? await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, gGroup) : null
+                allowedLoci.Contains(locus) && gGroup != null ? await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, gGroup) : null
             );
         }
     }
