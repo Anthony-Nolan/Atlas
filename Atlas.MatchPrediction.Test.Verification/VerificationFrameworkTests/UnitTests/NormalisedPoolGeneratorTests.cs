@@ -32,7 +32,11 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
             const int haplotypeCount = 12;
 
             reader.GetActiveGlobalHaplotypeFrequencies()
-                .ReturnsForAnyArgs(HaplotypeFrequencyBuilder.Default.Build(haplotypeCount).ToList());
+                .ReturnsForAnyArgs(new HaplotypeFrequenciesReaderResult
+                {
+                    HaplotypeFrequencySetId = 0,
+                    HaplotypeFrequencies = HaplotypeFrequencyBuilder.Default.Build(haplotypeCount).ToList()
+                });
 
             var results = await generator.GenerateNormalisedHaplotypeFrequencyPool();
 
@@ -54,10 +58,10 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 .With(x => x.Frequency, lowestFrequency.Frequency * highestFrequencyCopyNumber)
                 .Build();
 
-            reader.GetActiveGlobalHaplotypeFrequencies().ReturnsForAnyArgs(new[] {
-                lowestFrequency,
-                middleFrequency,
-                highestFrequency
+            reader.GetActiveGlobalHaplotypeFrequencies().ReturnsForAnyArgs(new HaplotypeFrequenciesReaderResult
+            {
+                HaplotypeFrequencySetId = 0,
+                HaplotypeFrequencies = new[] { lowestFrequency, middleFrequency, highestFrequency }
             });
 
             var results = await generator.GenerateNormalisedHaplotypeFrequencyPool();
@@ -87,11 +91,10 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 .With(x => x.Frequency, haplotype1.Frequency * haplotype4CopyNumber)
                 .Build();
 
-            reader.GetActiveGlobalHaplotypeFrequencies().ReturnsForAnyArgs(new[] {
-                haplotype1,
-                haplotype2,
-                haplotype3,
-                haplotype4
+            reader.GetActiveGlobalHaplotypeFrequencies().ReturnsForAnyArgs(new HaplotypeFrequenciesReaderResult
+            {
+                HaplotypeFrequencySetId = 0,
+                HaplotypeFrequencies = new[] { haplotype1, haplotype2, haplotype3, haplotype4 }
             });
 
             var results = await generator.GenerateNormalisedHaplotypeFrequencyPool();

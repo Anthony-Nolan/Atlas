@@ -11,7 +11,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {
     public interface INormalisedPoolRepository
     {
-        Task<int> AddNormalisedPool();
+        Task<int> AddNormalisedPool(int haplotypeFrequencySetId);
         Task TruncateNormalisedHaplotypeFrequencies();
         Task BulkInsertNormalisedHaplotypeFrequencies(IReadOnlyCollection<NormalisedHaplotypeFrequency> haplotypeFrequencies);
     }
@@ -25,15 +25,17 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             this.connectionString = connectionString;
         }
 
-        public async Task<int> AddNormalisedPool()
+        public async Task<int> AddNormalisedPool(int haplotypeFrequencySetId)
         {
             var sql = @$"
-                INSERT INTO {nameof(MatchPredictionVerificationContext.NormalisedPool)} DEFAULT VALUES;
+                INSERT INTO {nameof(MatchPredictionVerificationContext.NormalisedPool)}
+                    ({nameof(NormalisedPool.HaplotypeFrequencySetId)})
+                    VALUES(@{nameof(haplotypeFrequencySetId)});
                 SELECT CAST(SCOPE_IDENTITY() as int);";
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                return (await conn.QueryAsync<int>(sql)).Single();
+                return (await conn.QueryAsync<int>(sql, new { haplotypeFrequencySetId })).Single();
             }
         }
 
