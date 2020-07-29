@@ -19,6 +19,8 @@
     <Compile Remove="Migrations\20200727133357_CreateTestHarnessTables.Designer.cs" />
     <Compile Remove="Migrations\20200727150810_InitialiseDatabase.cs" />
     <Compile Remove="Migrations\20200727150810_InitialiseDatabase.Designer.cs" />
+    <Compile Remove="Migrations\20200729161716_AddColumn_SqlServerName.cs" />
+    <Compile Remove="Migrations\20200729161716_AddColumn_SqlServerName.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

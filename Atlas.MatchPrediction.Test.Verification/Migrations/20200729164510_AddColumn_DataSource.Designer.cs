@@ -4,14 +4,16 @@ using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Atlas.MatchPrediction.Test.Verification.Migrations
 {
     [DbContext(typeof(MatchPredictionVerificationContext))]
-    partial class MatchPredictionVerificationContextModelSnapshot : ModelSnapshot
+    [Migration("20200729164510_AddColumn_DataSource")]
+    partial class AddColumn_DataSource
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -167,7 +169,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TestHarness_Id", "TestIndividualCategory", "SimulatedHlaTypingCategory");
+                    b.HasIndex("TestHarness_Id");
+
+                    b.HasIndex("TestIndividualCategory", "SimulatedHlaTypingCategory");
 
                     b.ToTable("Simulants");
                 });

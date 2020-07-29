@@ -24,11 +24,16 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
     {
         private readonly IHaplotypeFrequenciesReader reader;
         private readonly INormalisedPoolRepository poolRepository;
+        private readonly string haplotypeFrequenciesDataSource;
 
-        public NormalisedPoolGenerator(IHaplotypeFrequenciesReader reader, INormalisedPoolRepository poolRepository)
+        public NormalisedPoolGenerator(
+            IHaplotypeFrequenciesReader reader, 
+            INormalisedPoolRepository poolRepository,
+            string haplotypeFrequenciesDataSource)
         {
             this.reader = reader;
             this.poolRepository = poolRepository;
+            this.haplotypeFrequenciesDataSource = haplotypeFrequenciesDataSource;
         }
 
         public async Task<NormalisedHaplotypePool> GenerateNormalisedHaplotypeFrequencyPool()
@@ -93,7 +98,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
                 throw new ArgumentNullException();
             }
 
-            var poolId = await poolRepository.AddNormalisedPool(sourceData.HaplotypeFrequencySetId.Value);
+            var poolId = await poolRepository.AddNormalisedPool(sourceData.HaplotypeFrequencySetId.Value, haplotypeFrequenciesDataSource);
 
             // presently for logging purposes only
             await OverwritePoolInDatabase(poolId, poolMembers);

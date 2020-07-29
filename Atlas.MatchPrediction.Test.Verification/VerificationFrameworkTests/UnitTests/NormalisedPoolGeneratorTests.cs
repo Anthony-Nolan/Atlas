@@ -23,7 +23,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
             reader = Substitute.For<IHaplotypeFrequenciesReader>();
             poolRepository = Substitute.For<INormalisedPoolRepository>();
 
-            generator = new NormalisedPoolGenerator(reader, poolRepository);
+            generator = new NormalisedPoolGenerator(reader, poolRepository, "sql-server");
         }
 
         [Test]

@@ -11,7 +11,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {
     public interface INormalisedPoolRepository
     {
-        Task<int> AddNormalisedPool(int haplotypeFrequencySetId);
+        Task<int> AddNormalisedPool(int haplotypeFrequencySetId, string dataSource);
         Task TruncateNormalisedHaplotypeFrequencies();
         Task BulkInsertNormalisedHaplotypeFrequencies(IReadOnlyCollection<NormalisedHaplotypeFrequency> haplotypeFrequencies);
     }
@@ -25,17 +25,17 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             this.connectionString = connectionString;
         }
 
-        public async Task<int> AddNormalisedPool(int haplotypeFrequencySetId)
+        public async Task<int> AddNormalisedPool(int haplotypeFrequencySetId, string dataSource)
         {
             var sql = @$"
                 INSERT INTO {nameof(MatchPredictionVerificationContext.NormalisedPool)}
-                    ({nameof(NormalisedPool.HaplotypeFrequencySetId)})
-                    VALUES(@{nameof(haplotypeFrequencySetId)});
+                    ({nameof(NormalisedPool.HaplotypeFrequencySetId)}, {nameof(NormalisedPool.HaplotypeFrequenciesDataSource)})
+                    VALUES(@{nameof(haplotypeFrequencySetId)}, @{nameof(dataSource)});
                 SELECT CAST(SCOPE_IDENTITY() as int);";
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                return (await conn.QueryAsync<int>(sql, new { haplotypeFrequencySetId })).Single();
+                return (await conn.QueryAsync<int>(sql, new { haplotypeFrequencySetId, dataSource })).Single();
             }
         }
 
