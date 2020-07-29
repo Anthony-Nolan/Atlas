@@ -4,6 +4,7 @@
     {
         Started = 1,
         Completed = 2,
-        Failed = 3
+        FailedPermanent = 3,
+        FailedUnexpectedly = 4
     }
 }
