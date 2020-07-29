@@ -26,7 +26,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         ///  - Fetches p-groups for all donor's hla
         ///  - Stores the pre-processed p-groups for use in matching
         /// </summary>
-        Task UpdateDonorHla(string hlaNomenclatureVersion, bool continueExistingImport = false);
+        Task UpdateDonorHla(string hlaNomenclatureVersion, int? lastProcessedDonor,  bool continueExistingImport = false);
     }
 
     public class HlaProcessor : IHlaProcessor
@@ -61,13 +61,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             pGroupRepository = repositoryFactory.GetPGroupRepository();
         }
 
-        public async Task UpdateDonorHla(string hlaNomenclatureVersion, bool continueExistingImport)
+        public async Task UpdateDonorHla(string hlaNomenclatureVersion, int? lastProcessedDonor, bool continueExistingImport)
         {
             await PerformUpfrontSetup(hlaNomenclatureVersion);
 
             try
             {
-                await PerformHlaUpdate(hlaNomenclatureVersion, continueExistingImport);
+                await PerformHlaUpdate(hlaNomenclatureVersion, lastProcessedDonor, continueExistingImport);
             }
             catch (Exception e)
             {
@@ -76,10 +76,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             }
         }
 
-        private async Task PerformHlaUpdate(string hlaNomenclatureVersion, bool continueExistingProcessing)
+        private async Task PerformHlaUpdate(string hlaNomenclatureVersion, int? lastProcessedDonor, bool continueExistingProcessing)
         {
             var totalDonorCount = await dataRefreshRepository.GetDonorCount();
-            var batchedDonors = await dataRefreshRepository.NewOrderedDonorBatchesToImport(BatchSize, continueExistingProcessing);
+            var batchedDonors = await dataRefreshRepository.NewOrderedDonorBatchesToImport(BatchSize, lastProcessedDonor, continueExistingProcessing);
             var (donorsPreviouslyProcessed, lastDonorIdSuspectedOfBeingReprocessed) = await DetermineProgressAndReprocessingBoundaries(batchedDonors, continueExistingProcessing);
             var failedDonors = new List<FailedDonorInfo>();
             var donorsToImport = totalDonorCount - donorsPreviouslyProcessed;
