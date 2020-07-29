@@ -10,6 +10,7 @@ using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Utils;
+using TaskExtensions = Atlas.Common.Utils.Tasks.TaskExtensions;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 {
@@ -104,24 +105,25 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         }
 
         private static async Task<IEnumerable<HaplotypeFrequency>> ConvertHaplotypesToPGroupResolutionAndConsolidate(
-            IEnumerable<HaplotypeFrequency> frequencyBatch,
+            IEnumerable<HaplotypeFrequency> frequencies,
             IHlaMetadataDictionary hlaMetadataDictionary)
         {
-            var convertedFrequencies = await Task.WhenAll(frequencyBatch.Select(async haplotypeFrequency =>
+            // TODO: ATLAS-590: Speed this up by consolidating as we go rather than converting at the end
+            var convertedFrequencies = await TaskExtensions.WhenEach(frequencies.Select(async frequency =>
             {
-                var pGroupTyped = await hlaMetadataDictionary.ConvertGGroupsToPGroups(haplotypeFrequency.Hla, LocusSettings.MatchPredictionLoci);
+                var pGroupTyped = await hlaMetadataDictionary.ConvertGGroupsToPGroups(frequency.Hla, LocusSettings.MatchPredictionLoci);
 
                 if (!pGroupTyped.AnyAtLoci(x => x == null, LocusSettings.MatchPredictionLoci))
                 {
-                    haplotypeFrequency.Hla = pGroupTyped;
-                    haplotypeFrequency.TypingCategory = HaplotypeTypingCategory.PGroup;
+                    frequency.Hla = pGroupTyped;
+                    frequency.TypingCategory = HaplotypeTypingCategory.PGroup;
                 }
                 else
                 {
-                    haplotypeFrequency.TypingCategory = HaplotypeTypingCategory.GGroup;
+                    frequency.TypingCategory = HaplotypeTypingCategory.GGroup;
                 }
 
-                return haplotypeFrequency;
+                return frequency;
             }));
 
             var combined = convertedFrequencies
