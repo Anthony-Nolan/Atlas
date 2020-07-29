@@ -23,6 +23,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         Task<DataRefreshRecord> GetRecord(int dataRefreshRecordId);
         Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion, DateTime? finishTimeUtc = null);
         Task UpdateSuccessFlag(int recordId, bool wasSuccess);
+        Task UpdateLastProcessedDonor(int recordId, int donorId);
         Task MarkStageAsComplete(DataRefreshRecord record, DataRefreshStage stage);
         Task MarkJobAsContinued(int recordId);
     }
@@ -81,6 +82,13 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         {
             var record = await GetRecord(recordId);
             record.WasSuccessful = wasSuccess;
+            await Context.SaveChangesAsync();
+        }
+
+        public async Task UpdateLastProcessedDonor(int recordId, int donorId)
+        {
+            var record = await GetRecord(recordId);
+            record.LastDonorWithProcessedHla = donorId;
             await Context.SaveChangesAsync();
         }
 
