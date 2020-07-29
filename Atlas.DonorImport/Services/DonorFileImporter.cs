@@ -21,17 +21,21 @@ namespace Atlas.DonorImport.Services
         private const int BatchSize = 10000;
         private readonly IDonorImportFileParser fileParser;
         private readonly IDonorRecordChangeApplier donorRecordChangeApplier;
+        private readonly IDonorImportFileHistoryService donorImportFileHistoryService;
         private readonly INotificationSender notificationSender;
         private readonly ILogger logger;
 
         public DonorFileImporter(
             IDonorImportFileParser fileParser,
             IDonorRecordChangeApplier donorRecordChangeApplier,
+            IDonorImportFileHistoryService donorImportFileHistoryService,
             INotificationSender notificationSender,
+            
             ILogger logger)
         {
             this.fileParser = fileParser;
             this.donorRecordChangeApplier = donorRecordChangeApplier;
+            this.donorImportFileHistoryService = donorImportFileHistoryService;
             this.notificationSender = notificationSender;
             this.logger = logger;
         }
@@ -39,6 +43,7 @@ namespace Atlas.DonorImport.Services
         public async Task ImportDonorFile(DonorImportFile file)
         {
             logger.SendTrace($"Beginning Donor Import for file '{file.FileLocation}'.");
+            await donorImportFileHistoryService.RegisterStartOfDonorImport(file);
 
             var importedDonorCount = 0;
             var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents);
@@ -52,6 +57,7 @@ namespace Atlas.DonorImport.Services
                     importedDonorCount += reifiedDonorBatch.Count;
                 }
 
+                await donorImportFileHistoryService.RegisterSuccessfulDonorImport(file);
                 logger.SendTrace($"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).");
                 await notificationSender.SendNotification($"Donor Import Successful: {file.FileLocation}",
                     $"Imported {importedDonorCount} donor(s) from file {file.FileLocation}",
@@ -60,13 +66,16 @@ namespace Atlas.DonorImport.Services
             }
             catch (EmptyDonorFileException e)
             {
+                await donorImportFileHistoryService.RegisterFailedDonorImportWithPermanentError(file);
+                
                 const string summary = "Donor file was present but it was empty.";
-
                 logger.SendTrace(summary, LogLevel.Warn);
+                
                 await notificationSender.SendAlert(summary, e.StackTrace, Priority.Medium, nameof(ImportDonorFile));
             }
             catch (MalformedDonorFileException e)
             {
+                await donorImportFileHistoryService.RegisterFailedDonorImportWithPermanentError(file);
                 logger.SendTrace(e.Message, LogLevel.Warn);
                 await notificationSender.SendAlert(e.Message, e.StackTrace, Priority.Medium, nameof(ImportDonorFile));
             }
@@ -77,6 +86,7 @@ namespace Atlas.DonorImport.Services
             }
             catch (Exception e)
             {
+                await donorImportFileHistoryService.RegisterUnexpectedDonorImportError(file);
                 var summary = $"Donor Import Failed: {file.FileLocation}";
                 var description = @$"Importing donors for file: {file.FileLocation} has failed. With exception {e.Message}.
 {importedDonorCount} Donors were successfully imported prior to this error and have already been stored in the Database. Any remaining donors in the file have not been stored.
