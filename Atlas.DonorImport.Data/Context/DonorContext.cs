@@ -13,6 +13,7 @@ namespace Atlas.DonorImport.Data.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Donor>().SetUpDonorModel();
+            modelBuilder.Entity<DonorImportHistory>().SetUpDonorImportHistory();
         }
 
         public DbSet<Donor> Donors { get; set; }
