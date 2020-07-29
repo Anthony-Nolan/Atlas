@@ -54,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
                     b.Property<DateTime?>("IndexRecreationCompleted")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("LastDonorWithProcessedHla")
+                    b.Property<int?>("LastSafelyProcessedDonor")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("MetadataDictionaryRefreshCompleted")
