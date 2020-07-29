@@ -5,25 +5,28 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchCalculation;
+using Atlas.MatchPrediction.Services.MatchProbability;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
-using TypedGenotype = Atlas.Common.GeneticData.PhenotypeInfo.PhenotypeInfo<Atlas.MatchPrediction.Models.HlaAtKnownTypingCategory>;
+using TypedGenotype = Atlas.Common.GeneticData.PhenotypeInfo.PhenotypeInfo<Atlas.MatchPrediction.ExternalInterface.Models.HlaAtKnownTypingCategory>;
 using StringGenotype = Atlas.Common.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
 
 // ReSharper disable ParameterTypeCanBeEnumerable.Local
 // ReSharper disable SuggestBaseTypeForParameter
 
-namespace Atlas.MatchPrediction.Services.MatchProbability
+namespace Atlas.MatchPrediction.ExternalInterface.Services.MatchProbability
 {
     public interface IMatchProbabilityService
     {
@@ -214,17 +217,23 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             using (logger.RunTimed($"{LoggingPrefix}Expand {subjectLogDescription} phenotype", LogLevel.Verbose))
             {
                 return await compressedPhenotypeExpander.ExpandCompressedPhenotype(
-                    phenotype,
-                    hlaNomenclatureVersion,
-                    allowedLoci,
-                    haplotypeFrequencies
-                        .Where(h => h.Value.TypingCategory == HaplotypeTypingCategory.GGroup)
-                        .Select(h => h.Value.Hla)
-                        .ToList(),
-                    haplotypeFrequencies
-                        .Where(h => h.Value.TypingCategory == HaplotypeTypingCategory.PGroup)
-                        .Select(h => h.Value.Hla)
-                        .ToList()
+                    new ExpandCompressedPhenotypeInput
+                    {
+                        Phenotype = phenotype,
+                        AllowedLoci = allowedLoci,
+                        HlaNomenclatureVersion = hlaNomenclatureVersion,
+                        AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
+                        {
+                            GGroup = haplotypeFrequencies
+                                .Where(h => h.Value.TypingCategory == HaplotypeTypingCategory.GGroup)
+                                .Select(h => h.Value.Hla)
+                                .ToList(),
+                            PGroup = haplotypeFrequencies
+                                .Where(h => h.Value.TypingCategory == HaplotypeTypingCategory.PGroup)
+                                .Select(h => h.Value.Hla)
+                                .ToList()
+                        }
+                    }
                 );
             }
         }

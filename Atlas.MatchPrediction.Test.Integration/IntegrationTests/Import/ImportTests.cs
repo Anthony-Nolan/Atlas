@@ -242,7 +242,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task Import_ForHaplotypeWithNullAllele_DoesNotConvertsToPGroups()
+        public async Task Import_ForHaplotypeWithNullAllele_DoesNotConvertToPGroups()
         {
             var hla = new LociInfo<string>
             {

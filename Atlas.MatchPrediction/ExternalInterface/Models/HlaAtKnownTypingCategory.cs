@@ -2,19 +2,22 @@ using System;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Data.Models;
 
-namespace Atlas.MatchPrediction.Models
+namespace Atlas.MatchPrediction.ExternalInterface.Models
 {
     public class HlaAtKnownTypingCategory
     {
-        internal HlaAtKnownTypingCategory(string hla, HaplotypeTypingCategory typingCategory)
+        // ReSharper disable once MemberCanBeInternal
+        public string Hla { get;  }
+
+        public HaplotypeTypingCategory TypingCategory { get;  }
+
+        // ReSharper disable once MemberCanBeInternal
+        public HlaAtKnownTypingCategory(string hla, HaplotypeTypingCategory typingCategory)
         {
             TypingCategory = typingCategory;
             Hla = hla;
         }
 
-        internal string Hla { get;  }
-        public HaplotypeTypingCategory TypingCategory { get;  }
-        
         #region Equality members
 
         private bool Equals(HlaAtKnownTypingCategory other)

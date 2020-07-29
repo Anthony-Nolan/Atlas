@@ -60,5 +60,12 @@ namespace Atlas.Common.Utils.Extensions
         {
             return enumerable.Except(new[] {singleItem});
         }
+
+        /// <summary>
+        /// When summing decimals, we should always sort in increasing size first, to avoid loss of data via loss of floating point precision
+        /// See https://stackoverflow.com/questions/6699066/in-which-order-should-floats-be-added-to-get-the-most-precise-result for an
+        /// explanation on why this is recommended
+        /// </summary>
+        public static decimal SumDecimals(this IEnumerable<decimal> decimals) => decimals.OrderBy(x => x).Sum();
     }
 }
