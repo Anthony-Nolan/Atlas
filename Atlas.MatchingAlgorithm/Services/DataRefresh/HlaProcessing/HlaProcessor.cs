@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -137,7 +136,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                     if (completedDonors.Count >= NumberOfBatchesOverlapOnRestart)
                     {
                         await dataRefreshHistoryRepository
-                            .UpdateLastProcessedDonor(refreshRecordId, completedDonors.ElementAt(completedDonors.Count - NumberOfBatchesOverlapOnRestart));
+                            .UpdateLastSafelyProcessedDonor(refreshRecordId, completedDonors.ElementAt(completedDonors.Count - NumberOfBatchesOverlapOnRestart));
                     }
                 }
             }
@@ -145,23 +144,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             if (failedDonors.Any())
             {
                 await failedDonorsNotificationSender.SendFailedDonorsAlert(failedDonors, HlaFailureEventName, Priority.Low);
-            }
-        }
-
-        public class FixedSizedQueue<T>
-        {
-            ConcurrentQueue<T> q = new ConcurrentQueue<T>();
-            private object lockObject = new object();
-
-            public int Limit { get; set; }
-            public void Enqueue(T obj)
-            {
-                q.Enqueue(obj);
-                lock (lockObject)
-                {
-                    T overflow;
-                    while (q.Count > Limit && q.TryDequeue(out overflow)) ;
-                }
             }
         }
 
