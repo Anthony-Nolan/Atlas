@@ -11,7 +11,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
     /// </summary>
     public interface IHaplotypeFrequenciesReader
     {
-        Task<IReadOnlyCollection<HaplotypeFrequency>> GetActiveGlobalHaplotypeFrequencies();
+        Task<HaplotypeFrequenciesReaderResult> GetActiveGlobalHaplotypeFrequencies();
     }
 
     internal class HaplotypeFrequenciesReader : IHaplotypeFrequenciesReader
@@ -23,11 +23,15 @@ namespace Atlas.MatchPrediction.ExternalInterface
             this.repository = repository;
         }
 
-        public async Task<IReadOnlyCollection<HaplotypeFrequency>> GetActiveGlobalHaplotypeFrequencies()
+        public async Task<HaplotypeFrequenciesReaderResult> GetActiveGlobalHaplotypeFrequencies()
         {
-            return (await repository.GetActiveHaplotypeFrequencies(null, null))
-                .Select(MapFromDataModelToExternalModel)
-                .ToList();
+            return new HaplotypeFrequenciesReaderResult
+            {
+                HaplotypeFrequencySetId = await repository.GetActiveHaplotypeSetId(null, null),
+                HaplotypeFrequencies = (await repository.GetActiveHaplotypeFrequencies(null, null))
+                    .Select(MapFromDataModelToExternalModel)
+                    .ToList()
+            };
         }
 
         private static HaplotypeFrequency MapFromDataModelToExternalModel(Data.Models.HaplotypeFrequency frequency)
@@ -42,5 +46,11 @@ namespace Atlas.MatchPrediction.ExternalInterface
                 Drb1 = frequency.DRB1
             };
         }
+    }
+
+    public class HaplotypeFrequenciesReaderResult
+    {
+        public int? HaplotypeFrequencySetId { get; set; }
+        public IReadOnlyCollection<HaplotypeFrequency> HaplotypeFrequencies { get; set; }
     }
 }

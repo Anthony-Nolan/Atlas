@@ -35,32 +35,26 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
         {
             var sourceData = await GetSourceData();
 
-            if (sourceData.IsNullOrEmpty())
+            if (sourceData.HaplotypeFrequencies.IsNullOrEmpty())
             {
                 throw new Exception("No haplotype frequencies found - cannot generate normalised pool.");
             }
 
-            var normalisedPool = await GenerateNormalisedPool(sourceData);
-
-            // presently for logging purposes only
-            await OverwritePoolInDatabase(normalisedPool);
-
-            return normalisedPool;
+            return await GenerateNormalisedPool(sourceData);
         }
 
-        private async Task<IReadOnlyCollection<HaplotypeFrequency>> GetSourceData()
+        private async Task<HaplotypeFrequenciesReaderResult> GetSourceData()
         {
             return await reader.GetActiveGlobalHaplotypeFrequencies();
         }
 
-        private async Task<NormalisedHaplotypePool> GenerateNormalisedPool(IReadOnlyCollection<HaplotypeFrequency> sourceData)
+        private async Task<NormalisedHaplotypePool> GenerateNormalisedPool(HaplotypeFrequenciesReaderResult sourceData)
         {
-            var lowestFrequency = sourceData.OrderBy(s => s.Frequency).First().Frequency;
-
+            var lowestFrequency = LowestFrequency(sourceData.HaplotypeFrequencies);
             var poolMembers = new List<NormalisedPoolMember>();
             var lastUpperBoundary = -1;
 
-            foreach (var haplotypeFrequency in sourceData)
+            foreach (var haplotypeFrequency in sourceData.HaplotypeFrequencies)
             {
                 var poolMember = new NormalisedPoolMember
                 {
@@ -73,9 +67,17 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
                 lastUpperBoundary = poolMember.PoolIndexUpperBoundary;
             }
 
-            var poolId = await poolRepository.AddNormalisedPool();
+            var poolId = await AddPoolToDatabase(sourceData, poolMembers);
 
             return new NormalisedHaplotypePool(poolId, poolMembers);
+        }
+
+        private static decimal LowestFrequency(IReadOnlyCollection<HaplotypeFrequency> haplotypeFrequencies)
+        {
+            return haplotypeFrequencies
+                .OrderBy(s => s.Frequency)
+                .First()
+                .Frequency;
         }
 
         private static int CalculateCopyNumber(HaplotypeFrequency next, decimal lowestFrequency)
@@ -83,10 +85,26 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
             return (int)decimal.Round(next.Frequency / lowestFrequency);
         }
 
-        private async Task OverwritePoolInDatabase(NormalisedHaplotypePool pool)
+        /// <returns>Normalised Pool database Id</returns>
+        private async Task<int> AddPoolToDatabase(HaplotypeFrequenciesReaderResult sourceData, IReadOnlyCollection<NormalisedPoolMember> poolMembers)
+        {
+            if (sourceData.HaplotypeFrequencySetId == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            var poolId = await poolRepository.AddNormalisedPool(sourceData.HaplotypeFrequencySetId.Value);
+
+            // presently for logging purposes only
+            await OverwritePoolInDatabase(poolId, poolMembers);
+
+            return poolId;
+        }
+
+        private async Task OverwritePoolInDatabase(int poolId, IReadOnlyCollection<NormalisedPoolMember> poolMembers)
         {
             await poolRepository.TruncateNormalisedHaplotypeFrequencies();
-            var haplotypeFrequencies = pool.PoolMembers.Select(p => MapToDatabaseModel(pool.Id, p)).ToList();
+            var haplotypeFrequencies = poolMembers.Select(p => MapToDatabaseModel(poolId, p)).ToList();
             await poolRepository.BulkInsertNormalisedHaplotypeFrequencies(haplotypeFrequencies);
         }
 
