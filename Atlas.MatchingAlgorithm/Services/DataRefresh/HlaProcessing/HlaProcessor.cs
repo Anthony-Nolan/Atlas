@@ -9,6 +9,7 @@ using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Models;
@@ -26,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         ///  - Fetches p-groups for all donor's hla
         ///  - Stores the pre-processed p-groups for use in matching
         /// </summary>
-        Task UpdateDonorHla(string hlaNomenclatureVersion, int? lastProcessedDonor,  bool continueExistingImport = false);
+        Task UpdateDonorHla(string hlaNomenclatureVersion, int refreshRecordId, int? lastProcessedDonor = null, bool continueExistingImport = false);
     }
 
     public class HlaProcessor : IHlaProcessor
@@ -38,6 +39,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         private readonly IDonorHlaExpanderFactory donorHlaExpanderFactory;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
+        private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private readonly DataRefreshSettings settings;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDataRefreshRepository dataRefreshRepository;
@@ -49,25 +51,27 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             IFailedDonorsNotificationSender failedDonorsNotificationSender,
             IDormantRepositoryFactory repositoryFactory,
+            IDataRefreshHistoryRepository dataRefreshHistoryRepository,
             DataRefreshSettings settings)
         {
             this.logger = logger;
             this.donorHlaExpanderFactory = donorHlaExpanderFactory;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
             this.failedDonorsNotificationSender = failedDonorsNotificationSender;
+            this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
             this.settings = settings;
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
             pGroupRepository = repositoryFactory.GetPGroupRepository();
         }
 
-        public async Task UpdateDonorHla(string hlaNomenclatureVersion, int? lastProcessedDonor, bool continueExistingImport)
+        public async Task UpdateDonorHla(string hlaNomenclatureVersion, int refreshRecordId, int? lastProcessedDonor, bool continueExistingImport)
         {
             await PerformUpfrontSetup(hlaNomenclatureVersion);
 
             try
             {
-                await PerformHlaUpdate(hlaNomenclatureVersion, lastProcessedDonor, continueExistingImport);
+                await PerformHlaUpdate(hlaNomenclatureVersion, refreshRecordId, lastProcessedDonor, continueExistingImport);
             }
             catch (Exception e)
             {
@@ -76,7 +80,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             }
         }
 
-        private async Task PerformHlaUpdate(string hlaNomenclatureVersion, int? lastProcessedDonor, bool continueExistingProcessing)
+        private async Task PerformHlaUpdate(string hlaNomenclatureVersion, int refreshRecordId, int? lastProcessedDonor, bool continueExistingProcessing)
         {
             var totalDonorCount = await dataRefreshRepository.GetDonorCount();
             var batchedDonors = await dataRefreshRepository.NewOrderedDonorBatchesToImport(BatchSize, lastProcessedDonor, continueExistingProcessing);
@@ -124,6 +128,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                             );
                         failedDonors.AddRange(failedDonorsFromBatch);
                     }
+
+                    await dataRefreshHistoryRepository.UpdateLastProcessedDonor(refreshRecordId, donorBatch.Last().DonorId);
                 }
             }
 
