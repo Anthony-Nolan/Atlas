@@ -54,7 +54,14 @@ namespace Atlas.DonorImport.Services
                             case nameof(DonorImportFileSchema.updateMode):
                                 // Read into property
                                 reader.Read();
-                                updateMode = serializer.Deserialize<UpdateMode>(reader);
+                                try
+                                {
+                                    updateMode = serializer.Deserialize<UpdateMode>(reader);
+                                }
+                                catch (JsonSerializationException e)
+                                {
+                                    throw new DonorFormatException(e);
+                                }
                                 break;
                             case nameof(DonorImportFileSchema.donors):
                                 reader.Read(); // Read into property
@@ -67,15 +74,24 @@ namespace Atlas.DonorImport.Services
                                         throw new MalformedDonorFileException("Update Mode must be provided before donor list in donor import JSON file.");
                                     }
 
-                                    var donorOperation = serializer.Deserialize<DonorUpdate>(reader);
+                                    DonorUpdate donorOperation = null;
+                                    try
+                                    {
+                                        donorOperation = serializer.Deserialize<DonorUpdate>(reader);
+                                    }
+                                    catch (JsonSerializationException e)
+                                    {
+                                        throw new DonorFormatException(e);
+                                    }
+                                    
                                     if (donorOperation == null)
                                     {
-                                        throw new FormatException("Donor in array of input file could not be parsed.");
+                                        throw new MalformedDonorFileException("Donor in array of input file could not be parsed.");
                                     }
 
                                     if (updateMode.Value == UpdateMode.Full && donorOperation.ChangeType != ImportDonorChangeType.Create)
                                     {
-                                        throw new InvalidOperationException($"File Update mode is '{UpdateMode.Full}, but a record in the file is of ChangeType '{donorOperation.ChangeType}'. Only 'New' records / Creations are permitted in a '{UpdateMode.Full}' file.");
+                                        throw new MalformedDonorFileException($"File Update mode is '{UpdateMode.Full}, but a record in the file is of ChangeType '{donorOperation.ChangeType}'. Only 'New' records / Creations are permitted in a '{UpdateMode.Full}' file.");
                                     }
 
                                     donorOperation.UpdateMode = updateMode.Value;
@@ -83,6 +99,14 @@ namespace Atlas.DonorImport.Services
                                     //Record the successful parsing for diagnostics if subsequent records fail, before returning it to the caller.
                                     ParsedDonorCount++;
                                     LastSuccessfullyParsedDonorCode = donorOperation.RecordId;
+                                    if (donorOperation.Hla == null)
+                                    {
+                                        throw new MalformedDonorFileException("Donor property HLA cannot be null.");
+                                    }
+                                    if (donorOperation.RecordId == null)
+                                    {
+                                        throw new MalformedDonorFileException("Donor property RecordId cannot be null.");
+                                    }
                                     yield return donorOperation;
                                 } while (reader.Read() && reader.TokenType != JsonToken.EndArray);
 
