@@ -1,22 +1,37 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
 {
     public static class DependencyInjection
     {
-        private static IServiceProvider _provider;
+        private static IServiceProvider backingProvider;
 
-        public static IServiceProvider Provider
+        private static IServiceScope scope;
+
+        internal static IServiceProvider BackingProvider
         {
             get
             {
-                if (_provider == null)
+                if (backingProvider == null)
                 {
                     throw new Exception("Provider has not been set up");
                 }
-                return _provider;
+                return backingProvider;
             }
-            set => _provider = value;
+            set
+            {
+                backingProvider = value;
+                NewScope();
+            }
         }
+
+        internal static void NewScope()
+        {
+            scope?.Dispose();
+            scope = BackingProvider.CreateScope();
+        }
+
+        internal static IServiceProvider Provider => scope.ServiceProvider;
     }
 }
