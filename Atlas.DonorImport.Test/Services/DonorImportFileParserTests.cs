@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
@@ -61,7 +62,7 @@ namespace Atlas.DonorImport.Test.Services
                 .Build().ToStream();
 
             var lazyParsedDonors = donorImportFileParser.PrepareToLazilyParseDonorUpdates(fileStream).ReadLazyDonorUpdates();
-            lazyParsedDonors.Invoking(lazyDonors => lazyDonors.ToList()).Should().Throw<InvalidOperationException>();
+            lazyParsedDonors.Invoking(lazyDonors => lazyDonors.ToList()).Should().Throw<MalformedDonorFileException>();
         }
 
         [Test]
