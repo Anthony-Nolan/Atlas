@@ -251,7 +251,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                             new Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>(patientHla, donorHla)))
                     .ToList();
 
-                logger.SendTrace($"Patient/donor pairs: {combinations.Count}", LogLevel.Info);
+                logger.SendTrace($"Patient/donor pairs: {combinations.Count:n0}", LogLevel.Info);
 
                 return combinations;
             }
