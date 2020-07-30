@@ -170,26 +170,40 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             {
                 // If no loci are excluded, there is nothing to calculate - the haplotype is just unrepresented.
                 // We do not want to add all unrepresented haplotypes to the cache - this drastically reduces algorithm speed, increases memory, and has no benefit
-                if (excludedLoci.Any())
+                if (!excludedLoci.Any())
+                {
+                    return 0;
+                }
+
+                var consolidatedFrequencies = GetConsolidatedFrequencies(setId);
+
+                return consolidatedFrequencies.GetOrAdd(hla, (hlaKey) =>
                 {
                     var allowedLoci = LocusSettings.MatchPredictionLoci.Except(excludedLoci).ToHashSet();
 
-                    var combinedFrequency = frequencies
-                        .Where(kvp => kvp.Key.EqualsAtLoci(hla, allowedLoci))
+                    return frequencies
+                        .Where(kvp => kvp.Key.EqualsAtLoci(hlaKey, allowedLoci))
                         .Select(kvp => kvp.Value.Frequency)
                         .DefaultIfEmpty(0m)
                         .SumDecimals();
-
-                    frequency = new HaplotypeFrequency
-                    {
-                        Hla = hla,
-                        Frequency = combinedFrequency
-                    };
-                    frequencies.TryAdd(hla, frequency);
-                }
+                });
             }
 
             return frequency?.Frequency ?? 0;
+        }
+
+        /// <summary>
+        /// "Consolidated frequencies" are haplotypes that do not have an associated record in the stored haplotype set,
+        /// but have been calculated by consolidating other frequencies.
+        ///
+        /// When certain loci are excluded from a lookup, all frequencies that match at non-excluded loci are summed, and stored in this collection 
+        /// </summary>
+        /// <param name="setId"></param>
+        /// <returns></returns>
+        private ConcurrentDictionary<HaplotypeHla, decimal> GetConsolidatedFrequencies(int setId)
+        {
+            var cacheKey = $"hf-set-consolidated-{setId}";
+            return cache.GetOrAdd(cacheKey, () => new ConcurrentDictionary<HaplotypeHla, decimal>());
         }
 
         private static HaplotypeFrequencySet MapDataModelToClientModel(Data.Models.HaplotypeFrequencySet set)
