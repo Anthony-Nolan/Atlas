@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Atlas.Common.GeneticData;
@@ -42,6 +41,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         public decimal OneMismatchProbability { get; set; } = 0;
         public decimal TwoMismatchProbability { get; set; } = 0;
         public LociInfo<decimal?> ZeroMismatchProbabilityPerLocus { get; set; } = new LociInfo<decimal?>(0);
+        public LociInfo<decimal?> OneMismatchProbabilityPerLocus { get; set; } = new LociInfo<decimal?>(0);
+        public LociInfo<decimal?> TwoMismatchProbabilityPerLocus { get; set; } = new LociInfo<decimal?>(0);
 
         public MatchProbabilityEquationNumerators Add(MatchProbabilityEquationNumerators other)
         {
@@ -50,6 +51,10 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             TwoMismatchProbability += other.TwoMismatchProbability;
             ZeroMismatchProbabilityPerLocus = ZeroMismatchProbabilityPerLocus
                 .Map((l, x) => x == null ? null : x + other.ZeroMismatchProbabilityPerLocus.GetLocus(l));
+            OneMismatchProbabilityPerLocus = OneMismatchProbabilityPerLocus
+                .Map((l, x) => x == null ? null : x + other.OneMismatchProbabilityPerLocus.GetLocus(l));
+            TwoMismatchProbabilityPerLocus = TwoMismatchProbabilityPerLocus
+                .Map((l, x) => x == null ? null : x + other.TwoMismatchProbabilityPerLocus.GetLocus(l));
             return this;
         }
     }
@@ -84,6 +89,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 OneMismatchProbability = new Probability(MatchProbability(matchProbabilityNumerators.OneMismatchProbability)),
                 TwoMismatchProbability = new Probability(MatchProbability(matchProbabilityNumerators.TwoMismatchProbability)),
                 ZeroMismatchProbabilityPerLocus = matchProbabilityNumerators.ZeroMismatchProbabilityPerLocus.Map((l, v) =>
+                    v.HasValue ? new Probability(MatchProbability(v.Value)) : null
+                ),
+                OneMismatchProbabilityPerLocus = matchProbabilityNumerators.OneMismatchProbabilityPerLocus.Map((l, v) =>
+                    v.HasValue ? new Probability(MatchProbability(v.Value)) : null
+                ),
+                TwoMismatchProbabilityPerLocus = matchProbabilityNumerators.TwoMismatchProbabilityPerLocus.Map((l, v) =>
                     v.HasValue ? new Probability(MatchProbability(v.Value)) : null
                 )
             };
@@ -127,20 +138,27 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     break;
             }
 
-            numerators.ZeroMismatchProbabilityPerLocus = numerators.ZeroMismatchProbabilityPerLocus.Map((locus, n) =>
+            LociInfo<decimal?> CalculateMismatchProbabilityPerLocus(LociInfo<decimal?> mismatchProbabilityPerLocus, int mismatchesPerLocus)
             {
-                if (!allowedLoci.Contains(locus))
+                return mismatchProbabilityPerLocus.Map((locus, n) =>
                 {
-                    return (decimal?) null;
-                }
+                    if (!allowedLoci.Contains(locus))
+                    {
+                        return (decimal?)null;
+                    }
 
-                if (pair.MatchCounts.GetLocus(locus) == 2)
-                {
-                    return n + pairLikelihood;
-                }
+                    if (pair.MatchCounts.GetLocus(locus) == 2 - mismatchesPerLocus)
+                    {
+                        return n + pairLikelihood;
+                    }
 
-                return n;
-            });
+                    return n;
+                });
+            }
+
+            numerators.ZeroMismatchProbabilityPerLocus = CalculateMismatchProbabilityPerLocus(numerators.ZeroMismatchProbabilityPerLocus, 0);
+            numerators.OneMismatchProbabilityPerLocus = CalculateMismatchProbabilityPerLocus(numerators.OneMismatchProbabilityPerLocus, 1);
+            numerators.TwoMismatchProbabilityPerLocus = CalculateMismatchProbabilityPerLocus(numerators.TwoMismatchProbabilityPerLocus, 2);
 
             return numerators;
         }
