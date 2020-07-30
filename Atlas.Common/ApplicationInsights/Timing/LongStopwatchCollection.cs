@@ -7,10 +7,10 @@ namespace LoggingStopwatch
     {
         private readonly Dictionary<string, ILongOperationLoggingStopwatch> watches = new Dictionary<string, ILongOperationLoggingStopwatch>();
 
-        private readonly Action<string> defaultLoggingAction;
+        private readonly Action<string, long?> defaultLoggingAction;
         private readonly LongLoggingSettings defaultLoggingSettings;
 
-        public LongStopwatchCollection(Action<string> defaultLoggingAction = null, LongLoggingSettings defaultLoggingSettings = null)
+        public LongStopwatchCollection(Action<string, long?> defaultLoggingAction = null, LongLoggingSettings defaultLoggingSettings = null)
         {
             this.defaultLoggingAction = defaultLoggingAction;
             this.defaultLoggingSettings = defaultLoggingSettings;
@@ -23,7 +23,7 @@ namespace LoggingStopwatch
             return fakeStopwatch;
         }
 
-        public IDisposable InitialiseStopwatch(string watchKey, string watchDescription = null, Action<string> loggingAction = null, LongLoggingSettings loggingSettings = null)
+        public IDisposable InitialiseStopwatch(string watchKey, string watchDescription = null, Action<string, long?> loggingAction = null, LongLoggingSettings loggingSettings = null)
         {
             var initialisedStopwatch = new LongOperationLoggingStopwatch(
                 watchDescription ?? watchKey,

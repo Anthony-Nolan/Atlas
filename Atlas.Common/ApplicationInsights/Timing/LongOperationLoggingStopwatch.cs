@@ -68,14 +68,14 @@ namespace LoggingStopwatch
         /// <param name="loggingSettings">
         /// Override the defaults for how the inner operations get logged.
         /// </param>
-        public LongOperationLoggingStopwatch(string identifier, Action<string> loggingAction, LongLoggingSettings loggingSettings = null) :
+        public LongOperationLoggingStopwatch(string identifier, Action<string, long?> loggingAction, LongLoggingSettings loggingSettings = null) :
             base(identifier, loggingAction)
         {
             settings?.Validate();
             settings = loggingSettings ?? new LongLoggingSettings();
             LogInitiationMessage();
             innerTimingHandler = new InnerOperationExecutionTimer(this);
-            base.timer.Start(); // Zero out the time taken in this ctor, since the end of the base ctor.
+            base.Timer.Start(); // Zero out the time taken in this ctor, since the end of the base ctor.
         }
 
         private void LogInitiationMessage()
@@ -118,7 +118,7 @@ namespace LoggingStopwatch
         private void ReportInnerExecutionComplete()
         {
             var newCompletedCount = Interlocked.Increment(ref iterationsCompleted);
-            LogPerExecutionMessageIfAppropriate(settings, newCompletedCount, base.timer, base.Log);
+            LogPerExecutionMessageIfAppropriate(settings, newCompletedCount, base.Timer, base.Log);
             Interlocked.Decrement(ref activeExecutions);
         }
 
@@ -130,7 +130,7 @@ namespace LoggingStopwatch
         // This is deliberately static, so that we're forced to explicitly pass in captured
         // values and can't use instance fields that might have been updated by other threads.
         // This is to ensure that it is fully threadsafe.
-        private static void LogPerExecutionMessageIfAppropriate(LongLoggingSettings settings, long newCompletedCount, Stopwatch outerStopwatch, Action<string> logAction)
+        private static void LogPerExecutionMessageIfAppropriate(LongLoggingSettings settings, long newCompletedCount, Stopwatch outerStopwatch, Action<string, long?> logAction)
         {
             if (newCompletedCount % settings.InnerOperationLoggingPeriod == 0)
             {
@@ -159,13 +159,13 @@ namespace LoggingStopwatch
                         }
                     }
 
-                    logAction(logMessage);
+                    logAction(logMessage, null);
                 }
                 catch (Exception e)
                 {
                     // We really don't expect exceptions above, but if anything goes
                     // wrong we don't want it to bring down the calling operation.
-                    logAction("Swallowing exception in LoggingStopwatch: " + e.ToString());
+                    logAction("Swallowing exception in LoggingStopwatch: " + e.ToString(), null);
                 }
             }
 
@@ -173,7 +173,7 @@ namespace LoggingStopwatch
 
         public void LogFinalTimingReport()
         {
-            var overallTime = base.timer.Elapsed;
+            var overallTime = base.Timer.Elapsed;
             //TODO: What about errors?
 
             if (activeExecutions > 0)
@@ -183,7 +183,7 @@ namespace LoggingStopwatch
 
             if (iterationsCompleted == 0)
             {
-                Log($"Completed in {overallTime}");
+                Log($"Completed in {overallTime}", Timer.ElapsedMilliseconds);
                 return;
             }
 
