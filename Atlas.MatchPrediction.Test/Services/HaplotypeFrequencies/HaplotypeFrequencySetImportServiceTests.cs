@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
@@ -35,6 +36,8 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             var hmdFactory = Substitute.For<IHlaMetadataDictionaryFactory>();
             hmdFactory.BuildDictionary(default).ReturnsForAnyArgs(hmd);
 
+            var logger = Substitute.For<ILogger>();
+
             metadataExtractor.GetMetadataFromFullPath(Arg.Any<string>()).Returns(new HaplotypeFrequencySetMetadata
             {
                 Name = "file"
@@ -49,7 +52,8 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
                 frequenciesStreamReader,
                 setRepository,
                 frequenciesRepository,
-                hmdFactory
+                hmdFactory,
+                logger
             );
         }
 
