@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
@@ -9,13 +10,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories
 {
-    internal interface ITestDataRefreshHistoryRepository: IDataRefreshHistoryRepository
+    internal interface ITestDataRefreshHistoryRepository : IDataRefreshHistoryRepository
     {
         public Task<Dictionary<DataRefreshStage, DateTime?>> GetStageCompletionTimes(int recordId);
+
         /// <summary>
         /// Used when we want a successful refresh to exist in the integration test database, but don't care much about the specifics of the record.
         /// </summary>
-        public int InsertDummySuccessfulRefreshRecord(string hlaNomenclatureVersion);
+        public int InsertDummySuccessfulRefreshRecord(string hlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion);
 
         public Task<int?> GetLastSuccessfullyInsertedDonor(int recordId);
 
