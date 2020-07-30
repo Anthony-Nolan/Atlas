@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Atlas.Common.GeneticData;
@@ -24,7 +25,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         MatchProbabilityResponse CalculateMatchProbability(
             SubjectCalculatorInputs patientInfo,
             SubjectCalculatorInputs donorInfo,
-            ISet<GenotypeMatchDetails> patientDonorMatchDetails,
+            IEnumerable<GenotypeMatchDetails> patientDonorMatchDetails,
             ISet<Locus> allowedLoci);
     }
 
@@ -41,6 +42,16 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         public decimal OneMismatchProbability { get; set; } = 0;
         public decimal TwoMismatchProbability { get; set; } = 0;
         public LociInfo<decimal?> ZeroMismatchProbabilityPerLocus { get; set; } = new LociInfo<decimal?>(0);
+
+        public MatchProbabilityEquationNumerators Add(MatchProbabilityEquationNumerators other)
+        {
+            ZeroMismatchProbability += other.ZeroMismatchProbability;
+            OneMismatchProbability += other.OneMismatchProbability;
+            TwoMismatchProbability += other.TwoMismatchProbability;
+            ZeroMismatchProbabilityPerLocus = ZeroMismatchProbabilityPerLocus
+                .Map((l, x) => x == null ? null : x + other.ZeroMismatchProbabilityPerLocus.GetLocus(l));
+            return this;
+        }
     }
 
     internal class MatchProbabilityCalculator : IMatchProbabilityCalculator
@@ -48,7 +59,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         public MatchProbabilityResponse CalculateMatchProbability(
             SubjectCalculatorInputs patientInfo,
             SubjectCalculatorInputs donorInfo,
-            ISet<GenotypeMatchDetails> patientDonorMatchDetails,
+            IEnumerable<GenotypeMatchDetails> patientDonorMatchDetails,
             ISet<Locus> allowedLoci)
         {
             var patientLikelihoods = patientInfo.GenotypeLikelihoods;
@@ -79,46 +90,59 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         }
 
         private static MatchProbabilityEquationNumerators CalculateEquationNumerators(
-            ISet<GenotypeMatchDetails> patientDonorMatchDetails,
+            IEnumerable<GenotypeMatchDetails> patientDonorMatchDetails,
             ISet<Locus> allowedLoci,
             IReadOnlyDictionary<PhenotypeInfo<string>, decimal> patientLikelihoods,
             IReadOnlyDictionary<PhenotypeInfo<string>, decimal> donorLikelihoods
         )
         {
-            return patientDonorMatchDetails.Aggregate(new MatchProbabilityEquationNumerators(), (numerators, pair) =>
-            {
-                var pairLikelihood = patientLikelihoods[pair.PatientGenotype] * donorLikelihoods[pair.DonorGenotype];
+            return patientDonorMatchDetails.AsParallel()
+                .Aggregate(
+                    () => new MatchProbabilityEquationNumerators(),
+                    (numerators, pair) => AggregateNumerators(allowedLoci, patientLikelihoods, donorLikelihoods, pair, numerators),
+                    (total, thisThread) => total.Add(thisThread),
+                    (finalTotal) => finalTotal
+                );
+        }
 
-                switch (pair.MismatchCount)
+        private static MatchProbabilityEquationNumerators AggregateNumerators(
+            ISet<Locus> allowedLoci,
+            IReadOnlyDictionary<PhenotypeInfo<string>, decimal> patientLikelihoods,
+            IReadOnlyDictionary<PhenotypeInfo<string>, decimal> donorLikelihoods,
+            GenotypeMatchDetails pair,
+            MatchProbabilityEquationNumerators numerators)
+        {
+            var pairLikelihood = patientLikelihoods[pair.PatientGenotype] * donorLikelihoods[pair.DonorGenotype];
+
+            switch (pair.MismatchCount)
+            {
+                case 0:
+                    numerators.ZeroMismatchProbability += pairLikelihood;
+                    break;
+                case 1:
+                    numerators.OneMismatchProbability += pairLikelihood;
+                    break;
+                case 2:
+                    numerators.TwoMismatchProbability += pairLikelihood;
+                    break;
+            }
+
+            numerators.ZeroMismatchProbabilityPerLocus = numerators.ZeroMismatchProbabilityPerLocus.Map((locus, n) =>
+            {
+                if (!allowedLoci.Contains(locus))
                 {
-                    case 0:
-                        numerators.ZeroMismatchProbability += pairLikelihood;
-                        break;
-                    case 1:
-                        numerators.OneMismatchProbability += pairLikelihood;
-                        break;
-                    case 2:
-                        numerators.TwoMismatchProbability += pairLikelihood;
-                        break;
+                    return (decimal?) null;
                 }
 
-                numerators.ZeroMismatchProbabilityPerLocus = numerators.ZeroMismatchProbabilityPerLocus.Map((locus, n) =>
+                if (pair.MatchCounts.GetLocus(locus) == 2)
                 {
-                    if (!allowedLoci.Contains(locus))
-                    {
-                        return (decimal?) null;
-                    }
+                    return n + pairLikelihood;
+                }
 
-                    if (pair.MatchCounts.GetLocus(locus) == 2)
-                    {
-                        return n + pairLikelihood;
-                    }
-
-                    return n;
-                });
-
-                return numerators;
+                return n;
             });
+
+            return numerators;
         }
     }
 }
