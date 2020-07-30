@@ -8,7 +8,7 @@ namespace Atlas.Common.Test.Helpers
     public class FixedSizedQueueTests
     {
         [Test]
-        public void FixedSizedQueue_DropsFirstItemInQueueUponNewInsertion()
+        public void FixedSizedQueue_WhenQueueFull_DropsFirstItemInQueueUponNewInsertion()
         {
             var fixedQueue = new FixedSizedQueue<int>(3);
             fixedQueue.Enqueue(1);
