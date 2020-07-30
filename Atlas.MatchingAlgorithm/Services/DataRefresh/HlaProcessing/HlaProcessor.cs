@@ -117,7 +117,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             var summaryReportOnly = new LongLoggingSettings { InnerOperationLoggingPeriod = int.MaxValue, ReportOuterTimerStart = false};
             var summaryReportWithThreadingCount = new LongLoggingSettings { InnerOperationLoggingPeriod = int.MaxValue, ReportOuterTimerStart = false, ReportThreadCount = true, ReportPerThreadTime = false };
 
-            var timerCollection = new LongStopwatchCollection(text => logger.SendTrace(text), summaryReportOnly);
+            var timerCollection = new LongStopwatchCollection((text, milliseconds) =>
+                logger.SendTrace(text, props: new Dictionary<string, string> {{"Milliseconds", milliseconds.ToString()}}), summaryReportOnly);
 
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.BatchProgress_TimerKey, "Hla Batch Overall Processing. Inner Operation is UpdateDonorBatch", null, progressReports)) 
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaExpansion_TimerKey, " * Hla Expansion, during HlaProcessing")) 
