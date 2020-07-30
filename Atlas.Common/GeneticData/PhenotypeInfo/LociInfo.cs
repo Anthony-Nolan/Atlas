@@ -108,7 +108,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             set => drb1 = value;
         }
 
-        public ISet<Locus> SupportedLoci => EnumExtensions.EnumerateValues<Locus>().ToHashSet();
+        private ISet<Locus> SupportedLoci => EnumExtensions.EnumerateValues<Locus>().ToHashSet();
 
         public LociInfo<R> Map<R>(Func<Locus, T, R> mapping)
         {

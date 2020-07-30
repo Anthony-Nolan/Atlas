@@ -10,8 +10,12 @@ using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using LazyCache;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
+using Atlas.Common.Utils.Extensions;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
 
@@ -35,10 +39,23 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         /// </param>
         /// <returns></returns>
         public Task ImportFrequencySet(FrequencySetFile file, bool convertToPGroups = true);
+
         public Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(FrequencySetMetadata donorInfo, FrequencySetMetadata patientInfo);
         public Task<HaplotypeFrequencySet> GetSingleHaplotypeFrequencySet(FrequencySetMetadata setMetaData);
 
-        Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId);
+        Task<ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId);
+
+        /// <param name="setId"></param>
+        /// <param name="hla"></param>
+        /// <param name="excludedLoci">
+        /// Any loci specified here will not be considered when fetching frequencies.
+        /// If multiple haplotypes match the provided hla at all other loci, such frequencies will be summed. 
+        /// </param>
+        /// <returns>
+        /// The haplotype frequency for the given haplotype hla, from the given set.
+        /// If the given hla is unrepresented in the set, will return 0. 
+        /// </returns>
+        Task<decimal> GetFrequencyForHla(int setId, HaplotypeHla hla, ISet<Locus> excludedLoci = null);
     }
 
     internal class HaplotypeFrequencyService : IHaplotypeFrequencyService
@@ -104,7 +121,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 patientSet = await GetSingleHaplotypeFrequencySet(patientInfo);
             }
 
-
             return new HaplotypeFrequencySetResponse
             {
                 DonorSet = donorSet,
@@ -134,10 +150,46 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         }
 
         /// <inheritdoc />
-        public async Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId)
+        public async Task<ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId)
         {
             var cacheKey = $"hf-set-{setId}";
-            return await cache.GetOrAddAsync(cacheKey, async () => await frequencyRepository.GetAllHaplotypeFrequencies(setId));
+            return await cache.GetOrAddAsync(cacheKey, async () =>
+            {
+                var allFrequencies = await frequencyRepository.GetAllHaplotypeFrequencies(setId);
+                return new ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>(allFrequencies);
+            });
+        }
+
+        /// <inheritdoc />
+        public async Task<decimal> GetFrequencyForHla(int setId, HaplotypeHla hla, ISet<Locus> excludedLoci = null)
+        {
+            excludedLoci ??= new HashSet<Locus>();
+            var frequencies = await GetAllHaplotypeFrequencies(setId);
+
+            if (!frequencies.TryGetValue(hla, out var frequency))
+            {
+                // If no loci are excluded, there is nothing to calculate - the haplotype is just unrepresented.
+                // We do not want to add all unrepresented haplotypes to the cache - this drastically reduces algorithm speed, increases memory, and has no benefit
+                if (excludedLoci.Any())
+                {
+                    var allowedLoci = LocusSettings.MatchPredictionLoci.Except(excludedLoci).ToHashSet();
+
+                    var combinedFrequency = frequencies
+                        .Where(kvp => kvp.Key.EqualsAtLoci(hla, allowedLoci))
+                        .Select(kvp => kvp.Value.Frequency)
+                        .DefaultIfEmpty(0m)
+                        .SumDecimals();
+
+                    frequency = new HaplotypeFrequency
+                    {
+                        Hla = hla,
+                        Frequency = combinedFrequency
+                    };
+                    frequencies.TryAdd(hla, frequency);
+                }
+            }
+
+            return frequency?.Frequency ?? 0;
         }
 
         private static HaplotypeFrequencySet MapDataModelToClientModel(Data.Models.HaplotypeFrequencySet set)
