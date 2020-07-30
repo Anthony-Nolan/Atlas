@@ -13,7 +13,6 @@ using NUnit.Framework;
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.MatchProbability
 {
     // The tests in this suite are snapshots of frequencies calculated from the test data - they were not calculated or confirmed by hand  
-    // TODO: ATLAS-598: These tests pass on their own, but fail when run as part of the full suite 
     public class MissingLociTests : MatchProbabilityTestsBase
     {
         private readonly Dictionary<Locus, string> otherGGroupsAtLoci = new Dictionary<Locus, string>
@@ -41,7 +40,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     .Build(),
             };
 
-            await ImportFrequencies(possibleHaplotypes, null, null);
+            await ImportFrequencies(possibleHaplotypes);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -69,7 +68,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     .Build(),
             };
 
-            await ImportFrequencies(possibleHaplotypes, null, null);
+            await ImportFrequencies(possibleHaplotypes);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -109,7 +108,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     .Build(),
             };
 
-            await ImportFrequencies(possibleHaplotypes, null, null);
+            await ImportFrequencies(possibleHaplotypes);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
