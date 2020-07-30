@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
@@ -59,7 +60,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         {
             var oldVersion = "olderHlaVersion";
             var newVersion = "latestHlaVersion";
-            var refreshRecordId = 0;
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
                 DataRefreshRecordBuilder.New
                     .WithStagesCompletedUpToAndIncluding(DataRefreshStage.MetadataDictionaryRefresh)
@@ -70,7 +70,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await hlaProcessor.Received().UpdateDonorHla(oldVersion, refreshRecordId);
+            await hlaProcessor.Received().UpdateDonorHla(oldVersion, Arg.Any<Func<int, Task>>());
         }
 
         [Test]
@@ -141,7 +141,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             await donorImporter.DidNotReceive().ImportDonors();
             await donorImportRepository.DidNotReceive().RemoveAllDonorInformation();
             await donorImportRepository.DidNotReceive().RemoveAllProcessedDonorHla();
-            await hlaProcessor.Received().UpdateDonorHla(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<int?>(), true);
+            await hlaProcessor.Received().UpdateDonorHla(Arg.Any<string>(), Arg.Any<Func<int, Task>>(), Arg.Any<int?>(), true);
         }
 
         [Test]
@@ -302,7 +302,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await hlaProcessor.Received().UpdateDonorHla(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<int?>(), true);
+            await hlaProcessor.Received().UpdateDonorHla(Arg.Any<string>(), Arg.Any<Func<int,Task>>(), Arg.Any<int?>(), true);
         }
 
         [Test]

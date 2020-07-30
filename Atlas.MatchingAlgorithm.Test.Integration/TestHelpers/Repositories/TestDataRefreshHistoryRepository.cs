@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories
 {
@@ -15,6 +16,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories
         /// Used when we want a successful refresh to exist in the integration test database, but don't care much about the specifics of the record.
         /// </summary>
         public int InsertDummySuccessfulRefreshRecord(string hlaNomenclatureVersion);
+
+        public Task<int?> GetLastSuccessfullyInsertedDonor(int recordId);
 
         public Task RemoveAllDataRefreshRecords();
     }
@@ -48,6 +51,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories
             Context.DataRefreshRecords.Add(dataRefreshRecord);
             Context.SaveChanges();
             return dataRefreshRecord.Id;
+        }
+
+        /// <inheritdoc />
+        public new async Task<int?> GetLastSuccessfullyInsertedDonor(int recordId)
+        {
+            return await base.GetLastSuccessfullyInsertedDonor(recordId);
         }
 
         /// <inheritdoc />
