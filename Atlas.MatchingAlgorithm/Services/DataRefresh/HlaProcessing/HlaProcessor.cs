@@ -28,7 +28,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         ///  - Fetches p-groups for all donor's hla
         ///  - Stores the pre-processed p-groups for use in matching
         /// </summary>
-        Task UpdateDonorHla(string hlaNomenclatureVersion, int refreshRecordId, int? lastProcessedDonor = null, bool continueExistingImport = false);
+        Task UpdateDonorHla(
+            string hlaNomenclatureVersion,
+            Func<int, Task> updateLastSafelyProcessedDonorId,
+            int? lastProcessedDonor = null,
+            bool continueExistingImport = false);
     }
 
     public class HlaProcessor : IHlaProcessor
@@ -68,13 +72,17 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             pGroupRepository = repositoryFactory.GetPGroupRepository();
         }
 
-        public async Task UpdateDonorHla(string hlaNomenclatureVersion, int refreshRecordId, int? lastProcessedDonor, bool continueExistingImport)
+        public async Task UpdateDonorHla(
+            string hlaNomenclatureVersion,
+            Func<int, Task> updateLastSafelyProcessedDonorId,
+            int? lastProcessedDonor, 
+            bool continueExistingImport)
         {
             await PerformUpfrontSetup(hlaNomenclatureVersion);
 
             try
             {
-                await PerformHlaUpdate(hlaNomenclatureVersion, refreshRecordId, lastProcessedDonor, continueExistingImport);
+                await PerformHlaUpdate(hlaNomenclatureVersion, updateLastSafelyProcessedDonorId, lastProcessedDonor, continueExistingImport);
             }
             catch (Exception e)
             {
@@ -83,7 +91,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             }
         }
 
-        private async Task PerformHlaUpdate(string hlaNomenclatureVersion, int refreshRecordId, int? lastProcessedDonor, bool continueExistingProcessing)
+        private async Task PerformHlaUpdate(string hlaNomenclatureVersion,
+            Func<int, Task> updateLastSafelyProcessedDonorId,
+            int? lastProcessedDonor,
+            bool continueExistingProcessing)
         {
             var totalDonorCount = await dataRefreshRepository.GetDonorCount();
             var batchedDonors = await dataRefreshRepository.NewOrderedDonorBatchesToImport(BatchSize, lastProcessedDonor, continueExistingProcessing);
@@ -150,8 +161,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 
                     if (completedDonors.Count >= NumberOfBatchesOverlapOnRestart)
                     {
-                        await dataRefreshHistoryRepository
-                            .UpdateLastSafelyProcessedDonor(refreshRecordId, completedDonors.Peek());
+                        await updateLastSafelyProcessedDonorId(completedDonors.Peek());
                     }
                 }
             }

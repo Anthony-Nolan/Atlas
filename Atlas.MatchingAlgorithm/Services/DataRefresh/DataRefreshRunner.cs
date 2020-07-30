@@ -276,7 +276,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     var isContinuation = (executionMode == DataRefreshStageExecutionMode.Continuation);
                     var verbPhrase = isContinuation ? "Continuing existing processing of" : "Beginning processing of";
                     logger.SendTrace($"{LoggingPrefix} {verbPhrase} Donors using HLA Nomenclature version: {refreshRecord.HlaNomenclatureVersion}");
-                    await hlaProcessor.UpdateDonorHla(refreshRecord.HlaNomenclatureVersion, refreshRecord.Id, refreshRecord.LastSafelyProcessedDonor, isContinuation);
+                    await hlaProcessor.UpdateDonorHla(
+                        refreshRecord.HlaNomenclatureVersion,
+                        donorId => dataRefreshHistoryRepository.UpdateLastSafelyProcessedDonor(refreshRecord.Id, donorId),
+                        refreshRecord.LastSafelyProcessedDonor,
+                        isContinuation);
                     break;
                 case DataRefreshStage.IndexRecreation:
                     await donorImportRepository.CreateHlaTableIndexes();
