@@ -253,7 +253,9 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             }
         }
 
-        private ISet<GenotypeMatchDetails> CalculatePairsMatchCounts(
+        // This needs to return an IEnumerable to enable lazy evaluation - the list of combinations will be very long, so we do not want to enumerate 
+        // it more than once, so we leave it as an IEnumerable until match probability aggregation.
+        private IEnumerable<GenotypeMatchDetails> CalculatePairsMatchCounts(
             IEnumerable<Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>> allPatientDonorCombinations,
             ISet<Locus> allowedLoci)
         {
@@ -275,8 +277,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                                 allowedLoci
                             )
                         };
-                    })
-                    .ToHashSet();
+                    });
             }
         }
 
