@@ -41,7 +41,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     .Build(),
             };
 
-            await ImportFrequencies(possibleHaplotypes, null, null);
+            await ImportFrequencies(possibleHaplotypes);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -69,7 +69,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     .Build(),
             };
 
-            await ImportFrequencies(possibleHaplotypes, null, null);
+            await ImportFrequencies(possibleHaplotypes);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -109,7 +109,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                     .Build(),
             };
 
-            await ImportFrequencies(possibleHaplotypes, null, null);
+            await ImportFrequencies(possibleHaplotypes);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
