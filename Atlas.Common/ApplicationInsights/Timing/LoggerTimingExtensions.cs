@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using LoggingStopwatch;
 
 namespace Atlas.Common.ApplicationInsights.Timing
@@ -28,6 +29,19 @@ namespace Atlas.Common.ApplicationInsights.Timing
             using (logger.RunTimed(completionMessage, logLevel, logAtStart))
             {
                 return action();
+            }
+        }
+        public static async Task<T> RunTimedAsync<T>(
+            this ILogger logger,
+            string completionMessage,
+            Func<Task<T>> action,
+            LogLevel logLevel = LogLevel.Info,
+            bool logAtStart = false
+        )
+        {
+            using (logger.RunTimed(completionMessage, logLevel, logAtStart))
+            {
+                return await action();
             }
         }
 

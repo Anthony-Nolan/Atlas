@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Config;
@@ -26,19 +28,22 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         private readonly IHaplotypeFrequencySetRepository setRepository;
         private readonly IHaplotypeFrequenciesRepository frequenciesRepository;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
+        private readonly ILogger logger;
 
         public FrequencySetImporter(
             IFrequencySetMetadataExtractor metadataExtractor,
             IFrequencyCsvReader frequencyCsvReader,
             IHaplotypeFrequencySetRepository setRepository,
             IHaplotypeFrequenciesRepository frequenciesRepository,
-            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory)
+            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
+            ILogger logger)
         {
             this.metadataExtractor = metadataExtractor;
             this.frequencyCsvReader = frequencyCsvReader;
             this.setRepository = setRepository;
             this.frequenciesRepository = frequenciesRepository;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
+            this.logger = logger;
         }
 
         public async Task Import(FrequencySetFile file, bool convertToPGroups)
@@ -104,38 +109,42 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             await frequenciesRepository.AddHaplotypeFrequencies(setId, convertedHaplotypes);
         }
 
-        private static async Task<IEnumerable<HaplotypeFrequency>> ConvertHaplotypesToPGroupResolutionAndConsolidate(
+        private async Task<IEnumerable<HaplotypeFrequency>> ConvertHaplotypesToPGroupResolutionAndConsolidate(
             IEnumerable<HaplotypeFrequency> frequencies,
             IHlaMetadataDictionary hlaMetadataDictionary)
         {
-            // TODO: ATLAS-590: Speed this up by consolidating as we go rather than converting at the end
-            var convertedFrequencies = await TaskExtensions.WhenEach(frequencies.Select(async frequency =>
+            var convertedFrequencies = await logger.RunTimedAsync("Convert frequencies", async () =>
             {
-                var pGroupTyped = await hlaMetadataDictionary.ConvertGGroupsToPGroups(frequency.Hla, LocusSettings.MatchPredictionLoci);
-
-                if (!pGroupTyped.AnyAtLoci(x => x == null, LocusSettings.MatchPredictionLoci))
+                return await TaskExtensions.WhenEach(frequencies.Select(async frequency =>
                 {
-                    frequency.Hla = pGroupTyped;
-                    frequency.TypingCategory = HaplotypeTypingCategory.PGroup;
-                }
-                else
-                {
-                    frequency.TypingCategory = HaplotypeTypingCategory.GGroup;
-                }
+                    var pGroupTyped = await hlaMetadataDictionary.ConvertGGroupsToPGroups(frequency.Hla, LocusSettings.MatchPredictionLoci);
 
-                return frequency;
-            }));
+                    if (!pGroupTyped.AnyAtLoci(x => x == null, LocusSettings.MatchPredictionLoci))
+                    {
+                        frequency.Hla = pGroupTyped;
+                        frequency.TypingCategory = HaplotypeTypingCategory.PGroup;
+                    }
+                    else
+                    {
+                        frequency.TypingCategory = HaplotypeTypingCategory.GGroup;
+                    }
 
-            var combined = convertedFrequencies
-                .GroupBy(f => f.Hla)
-                .Select(groupByHla =>
-                {
-                    // arbitrary haplotype frequency object, as everything but the frequency will be the same in all cases 
-                    var frequency = groupByHla.First();
-                    frequency.Frequency = groupByHla.Select(g => g.Frequency).SumDecimals();
                     return frequency;
-                });
-            return combined;
+                }));
+            });
+
+            using (logger.RunTimed("Combine frequencies"))
+            {
+                return convertedFrequencies
+                    .GroupBy(f => f.Hla)
+                    .Select(groupByHla =>
+                    {
+                        // arbitrary haplotype frequency object, as everything but the frequency will be the same in all cases 
+                        var frequency = groupByHla.First();
+                        frequency.Frequency = groupByHla.Select(g => g.Frequency).SumDecimals();
+                        return frequency;
+                    });
+            }
         }
     }
 }
