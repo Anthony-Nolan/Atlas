@@ -18,6 +18,7 @@ using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchCalculation;
+using LoggingStopwatch;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 using TypedGenotype = Atlas.Common.GeneticData.PhenotypeInfo.PhenotypeInfo<Atlas.MatchPrediction.ExternalInterface.Models.HlaAtKnownTypingCategory>;
 using StringGenotype = Atlas.Common.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
@@ -185,7 +186,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 await ConvertGenotypes(patientGenotypes, "patient"),
                 await ConvertGenotypes(donorGenotypes, "donor"));
 
-            var patientDonorMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, allowedLoci);
 
             var patientStringGenotypes = patientGenotypes.Select(g => g.ToHlaNames()).ToHashSet();
             var donorStringGenotypes = donorGenotypes.Select(g => g.ToHlaNames()).ToHashSet();
@@ -194,13 +194,17 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientStringGenotypes, frequencySets.PatientSet, allowedLoci);
             var donorGenotypeLikelihoods = await CalculateGenotypeLikelihoods(donorStringGenotypes, frequencySets.DonorSet, allowedLoci);
 
-            using (logger.RunTimed("Calculate match probability", LogLevel.Verbose))
+            using (var matchCountLogger = MatchCountLogger(allPatientDonorCombinations.Count))
             {
-                return matchProbabilityCalculator.CalculateMatchProbability(
-                    new SubjectCalculatorInputs {Genotypes = patientStringGenotypes, GenotypeLikelihoods = patientGenotypeLikelihoods},
-                    new SubjectCalculatorInputs {Genotypes = donorStringGenotypes, GenotypeLikelihoods = donorGenotypeLikelihoods},
-                    patientDonorMatchDetails,
-                    allowedLoci);
+                var patientDonorMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, allowedLoci, matchCountLogger);
+                using (logger.RunTimed("Calculate match probability", LogLevel.Verbose))
+                {
+                    return matchProbabilityCalculator.CalculateMatchProbability(
+                        new SubjectCalculatorInputs {Genotypes = patientStringGenotypes, GenotypeLikelihoods = patientGenotypeLikelihoods},
+                        new SubjectCalculatorInputs {Genotypes = donorStringGenotypes, GenotypeLikelihoods = donorGenotypeLikelihoods},
+                        patientDonorMatchDetails,
+                        allowedLoci);
+                }
             }
         }
 
@@ -247,23 +251,35 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                             new Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>(patientHla, donorHla)))
                     .ToList();
 
-                logger.SendTrace($"Patient/donor pairs: {combinations.Count}", LogLevel.Verbose);
+                logger.SendTrace($"Patient/donor pairs: {combinations.Count}", LogLevel.Info);
 
                 return combinations;
             }
         }
 
+        private ILongOperationLoggingStopwatch MatchCountLogger(int patientDonorPairCount) => logger.RunLongOperationWithTimer(
+            "Calculate match counts.",
+            new LongLoggingSettings
+            {
+                ExpectedNumberOfIterations = patientDonorPairCount,
+                // The higher this number, the slower the algorithm will be. Every 500,000 seems to be a good balance opf performance vs. Information.
+                InnerOperationLoggingPeriod = 500_000
+            },
+            LogLevel.Verbose
+        );
+
         // This needs to return an IEnumerable to enable lazy evaluation - the list of combinations will be very long, so we do not want to enumerate 
         // it more than once, so we leave it as an IEnumerable until match probability aggregation.
         private IEnumerable<GenotypeMatchDetails> CalculatePairsMatchCounts(
             IEnumerable<Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>> allPatientDonorCombinations,
-            ISet<Locus> allowedLoci)
+            ISet<Locus> allowedLoci,
+            ILongOperationLoggingStopwatch stopwatch)
         {
-            using (logger.RunTimed($"{LoggingPrefix}Calculate genotype matches", LogLevel.Verbose))
-            {
-                return allPatientDonorCombinations
-                    .AsParallel()
-                    .Select(pd =>
+            return allPatientDonorCombinations
+                .AsParallel()
+                .Select(pd =>
+                {
+                    using (stopwatch.TimeInnerOperation())
                     {
                         var (patient, donor) = pd;
                         return new GenotypeMatchDetails
@@ -277,8 +293,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                                 allowedLoci
                             )
                         };
-                    });
-            }
+                    }
+                });
         }
 
         private async Task<Dictionary<StringGenotype, decimal>> CalculateGenotypeLikelihoods(
