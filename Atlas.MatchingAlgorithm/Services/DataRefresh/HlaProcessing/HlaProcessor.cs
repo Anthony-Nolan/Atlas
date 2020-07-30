@@ -45,7 +45,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IPGroupRepository pGroupRepository;
 
-        public const int NumberOfBatchesOverlapOnRestart = 2;
+        public const int NumberOfBatchesOverlapOnRestart = 3;
 
         public HlaProcessor(
             ILogger logger,
@@ -109,7 +109,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             using (var pGroupLinearWaitTimer = logger.RunLongOperationWithTimer($"Linear wait on HlaInsert during HlaProcessing", summaryReportOnly))
             using (var pGroupInsertTimer = logger.RunLongOperationWithTimer($"Parallel Write time on HlaInsert during HlaProcessing", summaryReportWithThreadingBreakdown))
             {
-                var completedDonors = new FixedSizedQueue<int>(NumberOfBatchesOverlapOnRestart * BatchSize);
+                // We only store the last Id in each batch so we only need to keep one Id per batch.
+                var completedDonors = new FixedSizedQueue<int>(NumberOfBatchesOverlapOnRestart);
 
                 foreach (var donorBatch in batchedDonors)
                 {
