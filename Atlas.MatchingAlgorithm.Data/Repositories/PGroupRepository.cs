@@ -7,6 +7,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
+using Atlas.MatchingAlgorithm.Data.Helpers;
 using LoggingStopwatch;
 using MoreLinq.Extensions;
 
@@ -106,7 +107,7 @@ WHERE p.Name IN ({pGroupNames.Select(name => $"'{name}'").StringJoin(", ")})
         {
             EnsurePGroupDictionaryCacheIsPopulated();
 
-            var dictionaryCheckTimer = timerCollection?.TimeInnerOperation("newPGroupInsertion_FindNew");
+            var dictionaryCheckTimer = timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.NewPGroupInsertion_FindNew_TimerKey);
             // Note that it turns out that it's quicker to run this WITHOUT a .Distinct() in it.
             var newPGroups = allPGroups.Where(pGrp => !pGroupNameToIdDictionary.ContainsKey(pGrp)).ToList();
             dictionaryCheckTimer?.Dispose();

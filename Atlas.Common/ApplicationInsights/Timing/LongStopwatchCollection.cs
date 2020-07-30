@@ -44,5 +44,4 @@ namespace LoggingStopwatch
             return watches[watchKey];
         }
     }
-
 }

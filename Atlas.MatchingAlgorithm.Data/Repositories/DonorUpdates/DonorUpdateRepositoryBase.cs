@@ -87,7 +87,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 .Select(info => new DonorWithChangedMatchingLoci(info, LocusSettings.MatchingOnlyLoci))
                 .ToList();
 
-            using (timerCollection?.TimeInnerOperation("upsertTimer"))
+            using (timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_Overall_TimerKey))
             {
                 await UpsertMatchingPGroupsAtSpecifiedLoci(
                     donorsWithUpdatesAtEveryLocus,
@@ -127,7 +127,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
                     if (donorsWhichChangedAtThisLocus.Any())
                     {
-                        var insertSetupOperationTimer = timerCollection?.TimeInnerOperation("pGroupInsertSetupTimer");
+                        var insertSetupOperationTimer = timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_Overall_TimerKey);
                         var upsertTask = UpsertMatchingPGroupsAtLocus(
                             donorsWhichChangedAtThisLocus,
                             locus,
@@ -152,7 +152,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                         // https://stackoverflow.com/questions/62970038/performance-of-multiple-parallel-async-sqlbulkcopy-inserts-against-different
                         if (runAllHlaInsertionsInASingleTransactionScope)
                         {
-                            using (timerCollection?.TimeInnerOperation("pGroupLinearWaitTimer"))
+                            using (timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BlockingWait_TimerKey))
                             {
                                 await upsertTask;
                             }
@@ -163,7 +163,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 // Note that we may have already awaited these tasks to support TransactionScope.
                 // In that case this `WhenAll` is a no-op. But it makes the difference
                 // between the two cases easy to define.
-                using (timerCollection?.TimeInnerOperation("pGroupLinearWaitTimer"))
+                using (timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BlockingWait_TimerKey))
                 {
                     await Task.WhenAll(perLocusUpsertTasks);
                 }
@@ -178,7 +178,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         {
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
 
-            var buildDataTableTimer = timerCollection?.TimeInnerOperation("pGroupInsertSetup_BuildDataTableTimer");
+            var buildDataTableTimer = timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_Overall_TimerKey);
             var dataTable = BuildPerLocusPGroupDataTable(
                 donors,
                 locus,
@@ -187,7 +187,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
             using (var transactionScope = new AsyncTransactionScope())
             {
-                using (timerCollection?.TimeInnerOperation("pGroupInsertSetup_DeleteExistingRecordsTimer"))
+                using (timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_DeleteExistingRecords_TimerKey))
                 {
                     if (!isKnownToBeCreate)
                     {
@@ -207,7 +207,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     dataTable,
                     donorPGroupDataTableColumnNames,
                     timeout: 14400,
-                    timerCollection?.GetStopwatch("pGroupDbInsertTimer"));
+                    timerCollection?.GetStopwatch(DataRefreshTimingKeys.HlaUpsert_DtWriteExecution_TimerKey));
 
                 transactionScope.Complete();
             }
@@ -261,7 +261,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             Locus locus,
             LongStopwatchCollection timerCollection = null)
         {
-            var createDataTableObjectTimer = timerCollection?.TimeInnerOperation("pGroupInsertSetup_CreateDataTableObject");
+            var createDataTableObjectTimer = timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_CreateDtObject_TimerKey);
             var dataTable = new DataTable();
             foreach (var columnName in donorPGroupDataTableColumnNames)
             {
@@ -285,19 +285,19 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     // Data should be written as "TypePosition" so we can guarantee control over the backing int values for this enum
                     var positionId = (int) position.ToTypePosition();
 
-                    using (timerCollection?.TimeInnerOperation("pGroupInsertSetup_CreateDataTable_OutsideForeach"))
+                    using (timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_OutsideForeach_TimerKey))
                     {
                         foreach (var pGroup in hlaAtLocusPosition.MatchingPGroups)
                         {
-                            using (timerCollection?.TimeInnerOperation("pGroupInsertSetup_CreateDataTable_InsideForeach"))
+                            using (timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_InsideForeach_TimerKey))
                             {
                                 //During a 2M donor dataRefresh. This line (inside the tightest loop) is run ~1.01B times.
                                 //As noted above, this is the pinch point for DataRefresh performance.
-                                var fetchPGroupIdsTimer = timerCollection?.TimeInnerOperation("pGroupInsertSetup_FetchPGroupId");
+                                var fetchPGroupIdsTimer = timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_FetchPGroupId_TimerKey);
                                 var pGroupId = pGroupRepository.FindOrCreatePGroup(pGroup);
                                 fetchPGroupIdsTimer?.Dispose();
 
-                                using (timerCollection?.TimeInnerOperation("pGroupInsertSetup_AddRowsToDataTable"))
+                                using (timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_AddRowToDt_TimerKey))
                                 {
                                     dataTable.Rows.Add(
                                         0,

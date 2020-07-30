@@ -8,6 +8,7 @@ using Atlas.Common.Helpers;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights;
+using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories;
@@ -107,22 +108,22 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 
             var timerCollection = new LongStopwatchCollection(text => logger.SendTrace(text), summaryReportOnly);
 
-            using (timerCollection.InitialiseStopwatch("batchProgressTimer", "Hla Batch Overall Processing. Inner Operation is UpdateDonorBatch", null, progressReports)) 
-            using (timerCollection.InitialiseStopwatch("hlaExpansionTimer", " * Hla Expansion, during HlaProcessing")) 
-            using (timerCollection.InitialiseStopwatch("newPGroupInsertion", " * Ensuring all PGroups exist in the DB, during HlaProcessing (no actual DB writing, just processing)")) 
-            using (timerCollection.InitialiseStopwatch("newPGroupInsertion_Flattening", " * * Flatten the donors' PGroups, during EnsureAllPGroupsExist, during HlaProcessing")) 
-            using (timerCollection.InitialiseStopwatch("newPGroupInsertion_FindNew", " * * Check PGroups against known dictionary, during EnsureAllPGroupsExist, during HlaProcessing"))
-            using (timerCollection.InitialiseStopwatch("upsertTimer", " * UpsertMatchingPGroupsAtSpecifiedLoci, during HlaProcessing")) 
-            using (timerCollection.InitialiseStopwatch("pGroupInsertSetupTimer", " * * Time setting up Hla BulkInsert statements, during HlaProcessing")) 
-            using (timerCollection.InitialiseStopwatch("pGroupInsertSetup_BuildDataTableTimer", " * * * Data Table Build, in Hla BulkInsert SETUP, during HlaProcessing"))
-            using (timerCollection.InitialiseDisabledStopwatch("pGroupInsertSetup_CreateDataTableObject", " * * * * Creating blank DataTable object, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing"))
-            using (timerCollection.InitialiseDisabledStopwatch("pGroupInsertSetup_CreateDataTable_OutsideForeach", " * * * * Outside the innermost foreach of method, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing"))
-            using (timerCollection.InitialiseDisabledStopwatch("pGroupInsertSetup_CreateDataTable_InsideForeach", " * * * * Inside the innermost foreach of method, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing"))
-            using (timerCollection.InitialiseDisabledStopwatch("pGroupInsertSetup_FetchPGroupId", " * * * * Fetch PGroup Id, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing") )
-            using (timerCollection.InitialiseDisabledStopwatch("pGroupInsertSetup_AddRowsToDataTable", " * * * * Raw DataTable Row Add, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing") )
-            using (timerCollection.InitialiseStopwatch("pGroupInsertSetup_DeleteExistingRecordsTimer", " * * * Delete Existing records, in Hla BulkInsert SETUP, during HlaProcessing") )
-            using (timerCollection.InitialiseStopwatch("pGroupLinearWaitTimer", " * * Linear wait on HlaInsert operation, during HlaProcessing") )
-            using (timerCollection.InitialiseStopwatch("pGroupDbInsertTimer", " * * * Parallel Write time on HlaInsert operation, during HlaProcessing", null, summaryReportWithThreadingCount))
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.BatchProgress_TimerKey, "Hla Batch Overall Processing. Inner Operation is UpdateDonorBatch", null, progressReports)) 
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaExpansion_TimerKey, " * Hla Expansion, during HlaProcessing")) 
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_Overall_TimerKey, " * Ensuring all PGroups exist in the DB, during HlaProcessing (no actual DB writing, just processing)")) 
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_Flattening_TimerKey, " * * Flatten the donors' PGroups, during EnsureAllPGroupsExist, during HlaProcessing")) 
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_FindNew_TimerKey, " * * Check PGroups against known dictionary, during EnsureAllPGroupsExist, during HlaProcessing"))
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_Overall_TimerKey, " * UpsertMatchingPGroupsAtSpecifiedLoci, during HlaProcessing")) 
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_Overall_TimerKey, " * * Time setting up Hla BulkInsert statements, during HlaProcessing")) 
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_Overall_TimerKey, " * * * Data Table Build, in Hla BulkInsert SETUP, during HlaProcessing"))
+            using (timerCollection.InitialiseDisabledStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_CreateDtObject_TimerKey, " * * * * Creating blank DataTable object, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing"))
+            using (timerCollection.InitialiseDisabledStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_OutsideForeach_TimerKey, " * * * * Outside the innermost foreach of method, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing"))
+            using (timerCollection.InitialiseDisabledStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_InsideForeach_TimerKey, " * * * * Inside the innermost foreach of method, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing"))
+            using (timerCollection.InitialiseDisabledStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_FetchPGroupId_TimerKey, " * * * * Fetch PGroup Id, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing") )
+            using (timerCollection.InitialiseDisabledStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_AddRowToDt_TimerKey, " * * * * Raw DataTable Row Add, in DataTableBuild, in Hla BulkInsert SETUP, during HlaProcessing") )
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_DeleteExistingRecords_TimerKey, " * * * Delete Existing records, in Hla BulkInsert SETUP, during HlaProcessing") )
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BlockingWait_TimerKey, " * * Time spent in `Task.WhenAll`, JUST waiting on HlaInsert tasks to Complete, during HlaProcessing") )
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_DtWriteExecution_TimerKey, " * * * Total Time spent across all threads, writing BulkInserts during HlaInsert operation, during HlaProcessing", null, summaryReportWithThreadingCount))
             {
                 // We only store the last Id in each batch so we only need to keep one Id per batch.
                 var completedDonors = new FixedSizedQueue<int>(NumberOfBatchesOverlapOnRestart);
@@ -134,7 +135,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                     // We do not want to attempt to remove p-groups for all batches as it would be detrimental to performance, so we limit it to the first two batches
                     var shouldRemovePGroups = donorBatch.First().DonorId <= lastDonorIdSuspectedOfBeingReprocessed;
 
-                    using (timerCollection.TimeInnerOperation("batchProgressTimer"))
+                    using (timerCollection.TimeInnerOperation(DataRefreshTimingKeys.BatchProgress_TimerKey))
                     {
                         var failedDonorsFromBatch = await UpdateDonorBatch(
                             donorBatch,
@@ -207,11 +208,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             }
             var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersion);
 
-            var timedInnerOperation = timerCollection.TimeInnerOperation("hlaExpansionTimer");
+            var timedInnerOperation = timerCollection.TimeInnerOperation(DataRefreshTimingKeys.HlaExpansion_TimerKey);
             var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName);
             timedInnerOperation.Dispose();
 
-            using (timerCollection.TimeInnerOperation("newPGroupInsertion"))
+            using (timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewPGroupInsertion_Overall_TimerKey))
             {
                 EnsureAllPGroupsExist(hlaExpansionResults.ProcessingResults, timerCollection);
             }
@@ -238,14 +239,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             LongStopwatchCollection timerCollection
             )
         {
-            var block1 = timerCollection.TimeInnerOperation("newPGroupInsertion_Flattening");
+            var flatteningTimer = timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewPGroupInsertion_Flattening_TimerKey);
             var allPGroups = donorsWithHlas
                 .SelectMany(d =>
                     d.MatchingHla?.ToEnumerable().SelectMany(hla =>
                         hla?.MatchingPGroups ?? new string[0]
                     ) ?? new List<string>()
                 ).ToList();
-            block1?.Dispose();
+            flatteningTimer.Dispose();
 
             pGroupRepository.EnsureAllPGroupsExist(allPGroups, timerCollection);
         }
