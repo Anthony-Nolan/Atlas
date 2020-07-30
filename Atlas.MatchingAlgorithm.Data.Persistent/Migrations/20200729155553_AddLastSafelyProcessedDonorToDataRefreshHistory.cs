@@ -6,10 +6,6 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "LastDonorWithProcessedHla",
-                table: "DataRefreshHistory");
-
             migrationBuilder.AddColumn<int>(
                 name: "LastSafelyProcessedDonor",
                 table: "DataRefreshHistory",
@@ -21,12 +17,6 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
             migrationBuilder.DropColumn(
                 name: "LastSafelyProcessedDonor",
                 table: "DataRefreshHistory");
-
-            migrationBuilder.AddColumn<int>(
-                name: "LastDonorWithProcessedHla",
-                table: "DataRefreshHistory",
-                type: "int",
-                nullable: true);
         }
     }
 }
