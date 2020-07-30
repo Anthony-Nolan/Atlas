@@ -176,7 +176,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        [IgnoreExceptOnCiPerfTest("Runs in ~75s")]
+        // [IgnoreExceptOnCiPerfTest("Runs in ~75s")]
         public async Task
             MatchPrediction__WithDonor_TypedAtXXCodeResolution_AtRequiredLociOnly_AndPatient_UnambiguouslyTyped_AtRequiredLociOnly__CalculatesProbabilityCorrectly()
         {

@@ -1,11 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
-using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
-using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -30,6 +27,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             LocusSettings.MatchPredictionLoci.Should()
                 .OnlyContain(l => matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(l) != null, "only excluded loci should be null");
+            LocusSettings.MatchPredictionLoci.Should()
+                .OnlyContain(l => matchDetails.OneMismatchProbabilityPerLocus.GetLocus(l) != null, "only excluded loci should be null");
+            LocusSettings.MatchPredictionLoci.Should()
+                .OnlyContain(l => matchDetails.TwoMismatchProbabilityPerLocus.GetLocus(l) != null, "only excluded loci should be null");
         }
 
         [TestCase(new[] {Locus.Dqb1})]
@@ -53,6 +54,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             lociToExclude.Should()
                 .OnlyContain(l => matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(l) == null, "excluded loci should be null");
+            lociToExclude.Should()
+                .OnlyContain(l => matchDetails.OneMismatchProbabilityPerLocus.GetLocus(l) == null, "excluded loci should be null");
+            lociToExclude.Should()
+                .OnlyContain(l => matchDetails.TwoMismatchProbabilityPerLocus.GetLocus(l) == null, "excluded loci should be null");
         }
     }
 }

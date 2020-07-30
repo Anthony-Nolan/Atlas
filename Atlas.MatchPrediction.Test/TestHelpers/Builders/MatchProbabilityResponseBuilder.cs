@@ -16,7 +16,9 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
                 .With(r => r.ZeroMismatchProbability, new Probability(value))
                 .With(r => r.OneMismatchProbability, new Probability(value))
                 .With(r => r.TwoMismatchProbability, new Probability(value))
-                .With(r => r.ZeroMismatchProbabilityPerLocus, new LociInfo<Probability>(new Probability(value)));
+                .With(r => r.ZeroMismatchProbabilityPerLocus, new LociInfo<Probability>(new Probability(value)))
+                .With(r => r.OneMismatchProbabilityPerLocus, new LociInfo<Probability>(new Probability(value)))
+                .With(r => r.TwoMismatchProbabilityPerLocus, new LociInfo<Probability>(new Probability(value)));
         }
         
         public static Builder WithAllProbabilityValuesNull(this Builder builder)
@@ -25,7 +27,9 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
                 .With(r => r.ZeroMismatchProbability, (Probability) null)
                 .With(r => r.OneMismatchProbability, (Probability) null)
                 .With(r => r.TwoMismatchProbability, (Probability) null)
-                .With(r => r.ZeroMismatchProbabilityPerLocus, new LociInfo<Probability>(null));
+                .With(r => r.ZeroMismatchProbabilityPerLocus, new LociInfo<Probability>(null))
+                .With(r => r.OneMismatchProbabilityPerLocus, new LociInfo<Probability>(null))
+                .With(r => r.TwoMismatchProbabilityPerLocus, new LociInfo<Probability>(null));
         }
     }
 }
