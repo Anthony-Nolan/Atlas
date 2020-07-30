@@ -9,6 +9,8 @@ using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
 using LoggingStopwatch;
 using Microsoft.Data.SqlClient;
+using static Atlas.Common.GeneticData.Locus;
+using static Atlas.MatchingAlgorithm.Data.Helpers.MatchingTableNameHelper;
 
 // ReSharper disable InconsistentNaming
 
@@ -69,7 +71,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
         private const string MatchingHlaTable_IndexName_PGroupIdAndDonorId = "IX_PGroup_Id_DonorId__TypePosition";
         private const string MatchingHlaTable_IndexName_DonorId = "IX_DonorId__PGroup_Id_TypePosition";
-        private static readonly string[] HlaTables = {"MatchingHlaAtA", "MatchingHlaAtB", "MatchingHlaAtC", "MatchingHlaAtDrb1", "MatchingHlaAtDqb1"};
+        private static readonly string[] HlaTables = { MatchingTableName(A), MatchingTableName(B), MatchingTableName(C), MatchingTableName(Drb1), MatchingTableName(Dqb1)};
         
         private const string DropAllDonorsSql = @"TRUNCATE TABLE [Donors]";
         private string BuildDropAllPreProcessedDonorHlaSql() => HlaTables.Select(table => $"TRUNCATE TABLE [{table}];").StringJoinWithNewline();
