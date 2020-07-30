@@ -20,10 +20,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             {Locus.C, "12:03:01G"},
             {Locus.Dqb1, "05:03:01G"},
         };
-        
+
         [TestCase(Locus.Dqb1, 40)]
         [TestCase(Locus.C, 40)]
-        public async Task CalculateMatchProbability_WhenPatientHlaHasNullLoci_DoesNotIncludeLociInResult(Locus nullLocus, int expectedProbability)
+        public async Task CalculateMatchProbability_WhenPatientHlaHasNullLoci_CalculatesProbabilityCorrectly(Locus nullLocus, int expectedProbability)
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.PatientHla,
@@ -49,9 +49,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         [TestCase(Locus.Dqb1, 40)]
         [TestCase(Locus.C, 40)]
-        public async Task CalculateMatchProbability_WhenDonorHlaHasNullLoci_CalculatesLociProbabilitiesCorrectly(
-            Locus nullLocus,
-            int expectedProbability)
+        public async Task CalculateMatchProbability_WhenDonorHlaHasNullLoci_CalculatesProbabilityCorrectly(Locus nullLocus, int expectedProbability)
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.DonorHla,
