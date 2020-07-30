@@ -15,6 +15,7 @@ using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -113,12 +114,16 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [OneTimeTearDown]
         public void TearDown()
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(DatabaseManager.ClearDatabases);
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                DatabaseManager.ClearDatabases();
+            });
         }
 
         [SetUp]
         public void SetUpBeforeEachTest()
         {
+            DependencyInjection.DependencyInjection.NewScope();
             matchingService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchingService>();
         }
 

@@ -13,16 +13,16 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests
     public class IntegrationTestSetUp
     {
         [OneTimeSetUp]
-        public void Setup()
+        public void OneTimeSetUp()
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                DependencyInjection.DependencyInjection.Provider = ServiceConfiguration.CreateProvider();
+                DependencyInjection.DependencyInjection.BackingProvider = ServiceConfiguration.CreateProvider();
                 ResetDatabase();
                 RunInitialDataRefresh();
             });
         }
-
+        
         /// <summary>
         /// Sets up a data refresh record to ensure a hla nomenclature version is available, if running only non-data refresh tests.
         /// </summary>
