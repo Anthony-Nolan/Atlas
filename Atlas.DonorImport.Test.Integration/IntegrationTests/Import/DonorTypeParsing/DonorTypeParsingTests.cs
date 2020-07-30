@@ -77,9 +77,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.DonorTypePa
         }
 
         [Test]
-        public async Task ImportDonors_WhenUnrecognisedDonorTypeInFile_RejectsFile()
+        public async Task ImportDonors_WhenUnrecognisedDonorTypeInFile_DoesNotImportDonor()
         {
-            Assert.ThrowsAsync<JsonSerializationException>(() => ImportDonorFile("invalidDonorType.json"));
+            await ImportDonorFile("invalidDonorType.json");
 
             var adultDonor = await donorRepository.GetDonor(AdultDonorInInvalidFileId);
             adultDonor.Should().BeNull();
