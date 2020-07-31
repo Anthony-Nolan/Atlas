@@ -15,7 +15,7 @@ namespace Atlas.DonorImport.Data.Migrations
                     UploadTime = table.Column<DateTime>(nullable: false),
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    State = table.Column<int>(nullable: false),
+                    FileState = table.Column<string>(nullable: true),
                     LastUpdated = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>

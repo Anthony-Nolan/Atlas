@@ -5,7 +5,6 @@ using Atlas.DonorImport.ExternalInterface.Models;
 
 namespace Atlas.DonorImport.Services
 {
-
     internal interface IDonorImportFileHistoryService
     {
         public Task RegisterStartOfDonorImport(DonorImportFile donorFile);
@@ -26,25 +25,25 @@ namespace Atlas.DonorImport.Services
         public async Task RegisterStartOfDonorImport(DonorImportFile donorFile)
         {
             var filename = GetFileNameFromLocation(donorFile.FileLocation);
-            await repository.InsertNewDonorImport(filename, donorFile.UploadTime);
+            await repository.InsertNewDonorImportRecord(filename, donorFile.UploadTime);
         }
 
         public async Task RegisterSuccessfulDonorImport(DonorImportFile donorFile)
         {
-            await UpdateDonorImport(donorFile, DonorImportState.Completed);
+            await UpdateDonorImportRecord(donorFile, DonorImportState.Completed);
         }
 
         public async Task RegisterFailedDonorImportWithPermanentError(DonorImportFile donorFile)
         {
-            await UpdateDonorImport(donorFile, DonorImportState.FailedPermanent);
+            await UpdateDonorImportRecord(donorFile, DonorImportState.FailedPermanent);
         }
 
         public async Task RegisterUnexpectedDonorImportError(DonorImportFile donorFile)
         {
-            await UpdateDonorImport(donorFile, DonorImportState.FailedUnexpectedly);
+            await UpdateDonorImportRecord(donorFile, DonorImportState.FailedUnexpectedly);
         }
 
-        private async Task UpdateDonorImport(DonorImportFile donorFile, DonorImportState state)
+        private async Task UpdateDonorImportRecord(DonorImportFile donorFile, DonorImportState state)
         {
             var filename = GetFileNameFromLocation(donorFile.FileLocation);
             await repository.UpdateDonorImportState(filename, donorFile.UploadTime, state);
