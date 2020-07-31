@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.DonorImport.Data.Migrations
 {
     [DbContext(typeof(DonorContext))]
-    [Migration("20200729130010_AddDonorImportState")]
+    [Migration("20200731140236_AddDonorImportState")]
     partial class AddDonorImportState
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -100,13 +100,16 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.ToTable("Donors");
                 });
 
-            modelBuilder.Entity("Atlas.DonorImport.Data.Models.DonorImportHistory", b =>
+            modelBuilder.Entity("Atlas.DonorImport.Data.Models.DonorImportRecordHistory", b =>
                 {
                     b.Property<string>("Filename")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("UploadTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("FileState")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -116,9 +119,6 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.Property<DateTime>("LastUpdated")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("State")
-                        .HasColumnType("int");
 
                     b.HasKey("Filename", "UploadTime");
 

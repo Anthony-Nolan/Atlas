@@ -98,13 +98,16 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.ToTable("Donors");
                 });
 
-            modelBuilder.Entity("Atlas.DonorImport.Data.Models.DonorImportHistory", b =>
+            modelBuilder.Entity("Atlas.DonorImport.Data.Models.DonorImportRecordHistory", b =>
                 {
                     b.Property<string>("Filename")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("UploadTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("FileState")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -114,9 +117,6 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.Property<DateTime>("LastUpdated")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("State")
-                        .HasColumnType("int");
 
                     b.HasKey("Filename", "UploadTime");
 
