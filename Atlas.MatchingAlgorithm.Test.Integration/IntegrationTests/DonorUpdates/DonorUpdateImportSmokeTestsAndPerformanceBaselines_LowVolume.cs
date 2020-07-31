@@ -31,6 +31,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         public static DonorAvailabilityUpdate ToUnavailableUpdate(this DonorInfo donorInfo) => donorInfo.ToUpdateWithAvailability(false);
 
         private static int updateCounter = 0;
+
         private static DonorAvailabilityUpdate ToUpdateWithAvailability(this DonorInfo donorInfo, bool isAvailable)
         {
             donorInfo.IsAvailableForSearch = isAvailable;
@@ -112,37 +113,18 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             });
         }
 
-        #region Dependency Scoping.
-        private IServiceScope perTestDependencyScope;
         [SetUp]
         public void SetUp()
         {
-            // We need each test to be run with new objects, which means a new DependencyInjection scope
-            // for each test.
-            // If we use a `using` block on that scope, then we dispose everything we made in that block,
-            // at the end of that block (when the scope 'ends')
-            // In particular, we would dispose any dbContexts ... before we actually run the tests! :(
-            //
-            // Which means the contexts that we kept an (indirect) reference to will then error, when we
-            // use them in the actual tests :_(
-            // So we have to hold onto the Scope, and manually dispose it, in the TearDown method.
-            perTestDependencyScope = DependencyInjection.DependencyInjection.Provider.CreateScope();
-            
-                var activeDbConnectionStringProvider = perTestDependencyScope.ServiceProvider.GetService<ActiveTransientSqlConnectionStringProvider>();
-                donorInspectionRepository = new TestDonorInspectionRepository(activeDbConnectionStringProvider);
+            DependencyInjection.DependencyInjection.NewScope();
 
-                managementService = perTestDependencyScope.ServiceProvider.GetService<IDonorManagementService>();
+            var activeDbConnectionStringProvider = DependencyInjection.DependencyInjection.Provider.GetService<ActiveTransientSqlConnectionStringProvider>();
+            donorInspectionRepository = new TestDonorInspectionRepository(activeDbConnectionStringProvider);
 
-                DatabaseManager.ClearDatabases();
+            managementService = DependencyInjection.DependencyInjection.Provider.GetService<IDonorManagementService>();
+
+            DatabaseManager.ClearTransientDatabases();
         }
-
-        [TearDown]
-        public void DisposeDependencyScope()
-        {
-            //See notes in SetUp.
-            perTestDependencyScope.Dispose();
-        }
-        #endregion
 
         private async Task Import(params DonorAvailabilityUpdate[] updates)
         {
@@ -153,7 +135,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
                     updateBatch.ToList().AsReadOnly(),
                     activeDb,
                     fileBackedHmdHlaNomenclatureVersion,
-                    false//This makes a substantial difference to the runtime: 25-35% atm.
+                    false //This makes a substantial difference to the runtime: 25-35% atm.
                 );
             }
         }
@@ -179,7 +161,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         // When running this as a perf test, we don't want to spend time doing this check.
         // But when a developer is trying to figure out what broke, it'll be really useful!
         // Delete the " { } //" to "turn it on".
-        private void Debug_ExpectDonorsToBe(List<int> expectedDonorIds) { } // => ExpectDonorsToBe(expectedDonorIds);
+        private void Debug_ExpectDonorsToBe(List<int> expectedDonorIds)
+        {
+        } // => ExpectDonorsToBe(expectedDonorIds);
 
         [Test]
         public async Task ApplyDonorUpdatesToDatabase_ImportingAllDonorsFromExistingTestsAsSeparateBatches_ResultsInCorrectNumberOfDonorsAtEnd()
@@ -203,7 +187,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             await Import(donorInfo0B);
             //expectedDonorIds unchanged
             Debug_ExpectDonorsToBe(expectedDonorIds);
-                
+
             //New Donor with the same message delivered 3 times, separately.
             var donorInfo1 = new DonorInfoBuilder().Build();
             await Import(donorInfo1);
@@ -440,13 +424,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             var updatedDonor20 = new DonorInfoBuilder(donorInfo20.DonorId).Build().ToUpdate();
             //The updatedDonor19 supercedes donorInfo19, and thus isn't imported. (Which is good, because we don't really want the unavailable donors anyway.)
             expectedDonorIds.Add(donorInfo20.DonorId);
-            
+
             //Donor is created, marked as unavailable, then marked as available, within the same batch.
             var donorInfo21 = new DonorInfoBuilder().Build().ToUpdate();
             var updatedDonor21 = new DonorInfoBuilder(donorInfo21.DonorId).Build().ToUnavailableUpdate();
             var reUpdatedDonor21 = new DonorInfoBuilder(donorInfo21.DonorId).Build().ToUpdate();
             expectedDonorIds.Add(donorInfo21.DonorId);
-            
+
             //Donor is created as initially unavailable, marked as available, then marked as unavailable again. As 3 separate batches.
             var donorInfo21B = new DonorInfoBuilder().Build().ToUnavailableUpdate();
             var updatedDonor21B = new DonorInfoBuilder(donorInfo21B.DonorId).Build().ToUpdate();
@@ -522,15 +506,24 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         }
 
         #region FurtherSingleOperationBatchToEnsureAllPathsAreExercised substeps
+
         // Yes. This does match the structure of the code it's calling. But that's really only a convenience for creation.
         // There's no particular need to maintain that matching, if the called code mutates.
         private IEnumerable<DonorAvailabilityUpdate> Ensure_FilterUpdates_IsExercised(Queue<DonorWithLog> existingDonors)
         {
-            foreach (var update in Ensure_RetainLatestUpdateInBatchPerDonorId_IsExercised()) { yield return update; }
-            foreach (var update in Ensure_RetainUpdatesThatAreNewerThanAnyPreviouslyAppliedUpdate_IsExercised(existingDonors)) { yield return update; }
+            foreach (var update in Ensure_RetainLatestUpdateInBatchPerDonorId_IsExercised())
+            {
+                yield return update;
+            }
+
+            foreach (var update in Ensure_RetainUpdatesThatAreNewerThanAnyPreviouslyAppliedUpdate_IsExercised(existingDonors))
+            {
+                yield return update;
+            }
         }
 
         #region Ensure_FilterUpdates_IsExercised substeps
+
         private IEnumerable<DonorAvailabilityUpdate> Ensure_RetainLatestUpdateInBatchPerDonorId_IsExercised()
         {
             var superseded = new DonorInfoBuilder().Build().ToUpdate();
@@ -540,10 +533,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             yield return used;
         }
 
-        private IEnumerable<DonorAvailabilityUpdate> Ensure_RetainUpdatesThatAreNewerThanAnyPreviouslyAppliedUpdate_IsExercised(Queue<DonorWithLog> existingDonors)
+        private IEnumerable<DonorAvailabilityUpdate> Ensure_RetainUpdatesThatAreNewerThanAnyPreviouslyAppliedUpdate_IsExercised(
+            Queue<DonorWithLog> existingDonors)
         {
             var existing = existingDonors.Dequeue();
-            
+
             var earlier = new DonorInfoBuilder(existing.Donor.DonorId).Build().ToUpdate();
             earlier.UpdateDateTime = existing.Log.LastUpdateDateTime.AddDays(-1);
             yield return earlier;
@@ -552,25 +546,46 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             replay.UpdateDateTime = existing.Log.LastUpdateDateTime;
             yield return replay;
         }
+
         #endregion
 
         private IEnumerable<DonorAvailabilityUpdate> Ensure_ApplyDonorUpdates_IsExercised(Queue<DonorWithLog> existingDonors)
         {
             //Split by IsAvailableForSearch (implicitly covered by the details.)
-            foreach (var update in Ensure_AddOrUpdateDonors_IsExercised(existingDonors)) { yield return update; }
-            foreach (var update in Ensure_SetDonorsAsUnavailableForSearch_IsExercised(existingDonors)) { yield return update; }
-            foreach (var update in Ensure_CreateOrUpdateManagementLogBatch_IsExercised(existingDonors)) { yield return update; }
+            foreach (var update in Ensure_AddOrUpdateDonors_IsExercised(existingDonors))
+            {
+                yield return update;
+            }
+
+            foreach (var update in Ensure_SetDonorsAsUnavailableForSearch_IsExercised(existingDonors))
+            {
+                yield return update;
+            }
+
+            foreach (var update in Ensure_CreateOrUpdateManagementLogBatch_IsExercised(existingDonors))
+            {
+                yield return update;
+            }
         }
 
         # region Ensure_ApplyDonorUpdates_IsExercised substeps
+
         private IEnumerable<DonorAvailabilityUpdate> Ensure_AddOrUpdateDonors_IsExercised(Queue<DonorWithLog> existingDonors)
         {
             //vacuous Split by hasDonorInfo (ignored)
-            foreach (var update in Ensure_CreateOrUpdateDonorBatch_FindInvalidHla_IsExercised(existingDonors)) { yield return update; }
-            foreach (var update in Ensure_CreateOrUpdateDonorsWithHla_IsExercised(existingDonors)) { yield return update; }
+            foreach (var update in Ensure_CreateOrUpdateDonorBatch_FindInvalidHla_IsExercised(existingDonors))
+            {
+                yield return update;
+            }
+
+            foreach (var update in Ensure_CreateOrUpdateDonorsWithHla_IsExercised(existingDonors))
+            {
+                yield return update;
+            }
         }
 
         #region Ensure_AddOrUpdateDonors_IsExercised substeps
+
         private IEnumerable<DonorAvailabilityUpdate> Ensure_CreateOrUpdateDonorBatch_FindInvalidHla_IsExercised(Queue<DonorWithLog> existingDonors)
         {
             var invalidNewHlaDonor = new DonorInfoBuilder().WithHlaAtLocus(A, One, "invalid-hla-name").Build().ToUpdate();
@@ -584,11 +599,19 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         private IEnumerable<DonorAvailabilityUpdate> Ensure_CreateOrUpdateDonorsWithHla_IsExercised(Queue<DonorWithLog> existingDonors)
         {
             //Split by DonorExistsInDb.
-            foreach (var update in Ensure_CreateDonorBatch_IsExercised(existingDonors)) { yield return update; }
-            foreach (var update in Ensure_UpdateDonorBatch_IsExercised(existingDonors)) { yield return update; }
+            foreach (var update in Ensure_CreateDonorBatch_IsExercised(existingDonors))
+            {
+                yield return update;
+            }
+
+            foreach (var update in Ensure_UpdateDonorBatch_IsExercised(existingDonors))
+            {
+                yield return update;
+            }
         }
 
         #region Ensure_CreateOrUpdateDonorsWithHla_IsExercised substeps
+
         private IEnumerable<DonorAvailabilityUpdate> Ensure_CreateDonorBatch_IsExercised(Queue<DonorWithLog> existingDonors)
         {
             var newDonor = new DonorInfoBuilder().Build().ToUpdate();
@@ -614,16 +637,44 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
         private IEnumerable<DonorAvailabilityUpdate> Ensure_UpdateDonorBatch_IsExercised(Queue<DonorWithLog> existingDonors)
         {
             //vacuous filter on donor still exists in DB. Ignored.
-            foreach (var update in Ensure_UpdateDonorBatch_ChangeJustAvailability_IsExercised(existingDonors)) { yield return update; }
-            foreach (var update in Ensure_UpdateDonorBatch_ChangeJustType_IsExercised(existingDonors)) { yield return update; }
-            foreach (var update in Ensure_UpdateDonorBatch_ChangeJustHla_IsExercised(existingDonors)) { yield return update; }
-            foreach (var update in Ensure_UpdateDonorBatch_ChangeAvailabilityAndType_IsExercised(existingDonors)) { yield return update; }
-            foreach (var update in Ensure_UpdateDonorBatch_ChangeAvailabilityAndHla_IsExercised(existingDonors)) { yield return update; }
-            foreach (var update in Ensure_UpdateDonorBatch_ChangeTypeAndHla_IsExercised(existingDonors)) { yield return update; }
-            foreach (var update in Ensure_UpdateDonorBatch_ChangeAll_IsExercised(existingDonors)) { yield return update; }
+            foreach (var update in Ensure_UpdateDonorBatch_ChangeJustAvailability_IsExercised(existingDonors))
+            {
+                yield return update;
+            }
+
+            foreach (var update in Ensure_UpdateDonorBatch_ChangeJustType_IsExercised(existingDonors))
+            {
+                yield return update;
+            }
+
+            foreach (var update in Ensure_UpdateDonorBatch_ChangeJustHla_IsExercised(existingDonors))
+            {
+                yield return update;
+            }
+
+            foreach (var update in Ensure_UpdateDonorBatch_ChangeAvailabilityAndType_IsExercised(existingDonors))
+            {
+                yield return update;
+            }
+
+            foreach (var update in Ensure_UpdateDonorBatch_ChangeAvailabilityAndHla_IsExercised(existingDonors))
+            {
+                yield return update;
+            }
+
+            foreach (var update in Ensure_UpdateDonorBatch_ChangeTypeAndHla_IsExercised(existingDonors))
+            {
+                yield return update;
+            }
+
+            foreach (var update in Ensure_UpdateDonorBatch_ChangeAll_IsExercised(existingDonors))
+            {
+                yield return update;
+            }
         }
 
         #region Ensure_UpdateDonorBatch_IsExercised substeps
+
         private IEnumerable<DonorAvailabilityUpdate> Ensure_UpdateDonorBatch_ChangeJustAvailability_IsExercised(Queue<DonorWithLog> existingDonors)
         {
             var existingEnabled = existingDonors.UnorderedDequeueWhere(d => d.Donor.IsAvailableForSearch).Donor;
@@ -640,7 +691,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             var existingEnabled = existingDonors.UnorderedDequeueWhere(d => d.Donor.IsAvailableForSearch).Donor;
             var newType = existingEnabled.DonorType.Other();
             var updateToType = new DonorInfoBuilder(existingEnabled).WithDonorType(newType).Build().ToUpdate();
-            
+
             yield return updateToType;
         }
 
@@ -669,8 +720,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             var existingEnabled = existingDonors.UnorderedDequeueWhere(d => d.Donor.IsAvailableForSearch).Donor;
             var existingDisabled = existingDonors.UnorderedDequeueWhere(d => !d.Donor.IsAvailableForSearch).Donor;
 
-            var updateToDisabledAndNewType = new DonorInfoBuilder(existingEnabled).WithDonorType(existingEnabled.DonorType.Other()).Build().ToUnavailableUpdate();
-            var updateToEnabledAndNewType = new DonorInfoBuilder(existingDisabled).WithDonorType(existingDisabled.DonorType.Other()).Build().ToUpdate();
+            var updateToDisabledAndNewType = new DonorInfoBuilder(existingEnabled).WithDonorType(existingEnabled.DonorType.Other()).Build()
+                .ToUnavailableUpdate();
+            var updateToEnabledAndNewType =
+                new DonorInfoBuilder(existingDisabled).WithDonorType(existingDisabled.DonorType.Other()).Build().ToUpdate();
 
             yield return updateToDisabledAndNewType;
             yield return updateToEnabledAndNewType;
@@ -713,7 +766,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             yield return updateToDisabledAndNewHla;
             yield return updateToEnabledAndNewHla;
         }
-        
+
         private IEnumerable<DonorAvailabilityUpdate> Ensure_UpdateDonorBatch_ChangeTypeAndHla_IsExercised(Queue<DonorWithLog> existingDonors)
         {
             var existingEnabled = existingDonors.UnorderedDequeueWhere(d => d.Donor.IsAvailableForSearch).Donor;
@@ -774,8 +827,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             yield return updateToDisabledAndNewTypeAndNewHla;
             yield return updateToEnabledAndNewTypeAndNewHla;
         }
+
         #endregion
+
         #endregion
+
         #endregion
 
         private IEnumerable<DonorAvailabilityUpdate> Ensure_SetDonorsAsUnavailableForSearch_IsExercised(Queue<DonorWithLog> existingDonors)
@@ -809,7 +865,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
             };
             yield return nonEditToExistingDonor;
         }
+
         #endregion
+
         #endregion
     }
 }
