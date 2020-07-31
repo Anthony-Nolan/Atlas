@@ -40,17 +40,31 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
         /// </summary>
         public static void ClearDatabases()
         {
+            ClearTransientDatabases();
+            ClearPersistentDatabase();
+        }
+
+        /// <summary>
+        /// Clearing the persistent database will clear all refresh records, and there will no longer be an active HLA nomenclature version
+        /// Of you call this anywhere other than global setup, you must re-add a data refresh record to prevent search tests failing due to this.
+        /// </summary>
+        private static void ClearPersistentDatabase()
+        {
+            var persistentContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmPersistentContext>();
+            Task.WaitAll(ClearPersistentDatabase(persistentContext));
+        }
+        
+        public static void ClearTransientDatabases()
+        {
             var connStringFactory = DependencyInjection.DependencyInjection.Provider.GetService<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
             var connStringA = connStringFactory.GenerateConnectionStringProvider(TransientDatabase.DatabaseA).GetConnectionString();
             var connStringB = connStringFactory.GenerateConnectionStringProvider(TransientDatabase.DatabaseB).GetConnectionString();
 
             var transientContextA = new ContextFactory().Create(connStringA);
             var transientContextB = new ContextFactory().Create(connStringB);
-            var persistentContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmPersistentContext>();
             Task.WaitAll(
                 ClearTransientDatabase(transientContextA),
-                ClearTransientDatabase(transientContextB),
-                ClearPersistentDatabase(persistentContext)
+                ClearTransientDatabase(transientContextB)
             );
         }
 
