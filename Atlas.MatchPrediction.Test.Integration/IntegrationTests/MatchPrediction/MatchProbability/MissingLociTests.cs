@@ -122,9 +122,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Percentage.Should().Be(zeroMismatchProbability);
-            matchDetails.OneMismatchProbability.Percentage.Should().Be(oneMismatchProbability);
-            matchDetails.TwoMismatchProbability.Percentage.Should().Be(twoMismatchProbability);
+            matchDetails.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(zeroMismatchProbability);
+            matchDetails.MatchProbabilities.OneMismatchProbability.Percentage.Should().Be(oneMismatchProbability);
+            matchDetails.MatchProbabilities.TwoMismatchProbability.Percentage.Should().Be(twoMismatchProbability);
         }
     }
 }

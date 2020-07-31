@@ -56,7 +56,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             );
 
             var expectedMatchProbabilityPerLocus = new LociInfo<decimal?> {A = 0.5M, B = 0.5M, C = 0.5M, Dpb1 = null, Dqb1 = 0.25M, Drb1 = 0.25M};
-            actualProbability.ZeroMismatchProbability.Decimal.Should().Be(0.25m);
+            actualProbability.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(0.25m);
             actualProbability.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedMatchProbabilityPerLocus);
         }
 
@@ -87,7 +87,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             );
 
             var expectedMatchProbabilityPerLocus = new LociInfo<decimal?> {A = 0.5M, B = 0.5M, C = 0.5M, Dpb1 = null, Dqb1 = 0.5M, Drb1 = 0.25M};
-            actualProbability.OneMismatchProbability.Decimal.Should().Be(0.25m);
+            actualProbability.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0.25m);
             actualProbability.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedMatchProbabilityPerLocus);
         }
 
@@ -118,7 +118,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             );
 
             var expectedMatchProbabilityPerLocus = new LociInfo<decimal?> {A = 0.5M, B = 0.5M, C = 0.5M, Dpb1 = null, Dqb1 = 0.5M, Drb1 = 0.25M};
-            actualProbability.TwoMismatchProbability.Decimal.Should().Be(0.25m);
+            actualProbability.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0.25m);
             actualProbability.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedMatchProbabilityPerLocus);
         }
 
@@ -149,7 +149,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             );
 
             var expectedMatchProbabilityPerLocus = new LociInfo<decimal?> {A = 0.5M, B = 0.25M, C = 0.25M, Dpb1 = null, Dqb1 = 0.5M, Drb1 = 0.5M};
-            actualProbability.TwoMismatchProbability.Decimal.Should().Be(0.25m);
+            actualProbability.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0.25m);
             actualProbability.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedMatchProbabilityPerLocus);
         }
 
@@ -178,7 +178,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 AllowedLoci
             );
 
-            actualProbability.ZeroMismatchProbability.Decimal.Should().Be(0.1428571428571428571428571429m);
+            actualProbability.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(0.1428571428571428571428571429m);
         }
     }
 }

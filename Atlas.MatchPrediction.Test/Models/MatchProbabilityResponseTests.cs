@@ -19,9 +19,9 @@ namespace Atlas.MatchPrediction.Test.Models
 
             var roundedResponse = unRoundedResponse.Round(4);
 
-            roundedResponse.ZeroMismatchProbability.Decimal.Should().Be(rounded);
-            roundedResponse.OneMismatchProbability.Decimal.Should().Be(rounded);
-            roundedResponse.TwoMismatchProbability.Decimal.Should().Be(rounded);
+            roundedResponse.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(rounded);
+            roundedResponse.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(rounded);
+            roundedResponse.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(rounded);
             roundedResponse.ZeroMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(new Probability(rounded)));
             roundedResponse.OneMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(new Probability(rounded)));
             roundedResponse.TwoMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(new Probability(rounded)));
@@ -34,9 +34,9 @@ namespace Atlas.MatchPrediction.Test.Models
 
             var roundedResponse = unRoundedResponse.Round(4);
 
-            roundedResponse.ZeroMismatchProbability.Should().BeNull();
-            roundedResponse.OneMismatchProbability.Should().BeNull();
-            roundedResponse.TwoMismatchProbability.Should().BeNull();
+            roundedResponse.MatchProbabilities.ZeroMismatchProbability.Should().BeNull();
+            roundedResponse.MatchProbabilities.OneMismatchProbability.Should().BeNull();
+            roundedResponse.MatchProbabilities.TwoMismatchProbability.Should().BeNull();
             roundedResponse.ZeroMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(null));
             roundedResponse.OneMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(null));
             roundedResponse.TwoMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(null));

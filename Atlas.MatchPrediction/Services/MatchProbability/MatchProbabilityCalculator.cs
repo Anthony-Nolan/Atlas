@@ -85,18 +85,24 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             return new MatchProbabilityResponse
             {
-                ZeroMismatchProbability = new Probability(MatchProbability(matchProbabilityNumerators.ZeroMismatchProbability)),
-                OneMismatchProbability = new Probability(MatchProbability(matchProbabilityNumerators.OneMismatchProbability)),
-                TwoMismatchProbability = new Probability(MatchProbability(matchProbabilityNumerators.TwoMismatchProbability)),
-                ZeroMismatchProbabilityPerLocus = matchProbabilityNumerators.ZeroMismatchProbabilityPerLocus.Map((l, v) =>
-                    v.HasValue ? new Probability(MatchProbability(v.Value)) : null
-                ),
-                OneMismatchProbabilityPerLocus = matchProbabilityNumerators.OneMismatchProbabilityPerLocus.Map((l, v) =>
-                    v.HasValue ? new Probability(MatchProbability(v.Value)) : null
-                ),
-                TwoMismatchProbabilityPerLocus = matchProbabilityNumerators.TwoMismatchProbabilityPerLocus.Map((l, v) =>
-                    v.HasValue ? new Probability(MatchProbability(v.Value)) : null
-                )
+                MatchProbabilities = new MatchProbabilities
+                {
+                    ZeroMismatchProbability = new Probability(MatchProbability(matchProbabilityNumerators.ZeroMismatchProbability)),
+                    OneMismatchProbability = new Probability(MatchProbability(matchProbabilityNumerators.OneMismatchProbability)),
+                    TwoMismatchProbability = new Probability(MatchProbability(matchProbabilityNumerators.TwoMismatchProbability)),
+                },
+                MatchProbabilitiesPerLocus = new LociInfo<MatchProbabilities>().Map((locus, _) =>
+                {
+                    var zeroMismatch = matchProbabilityNumerators.ZeroMismatchProbabilityPerLocus.GetLocus(locus);
+                    var oneMismatch = matchProbabilityNumerators.OneMismatchProbabilityPerLocus.GetLocus(locus);
+                    var twoMismatch = matchProbabilityNumerators.TwoMismatchProbabilityPerLocus.GetLocus(locus);
+                    return new MatchProbabilities
+                    {
+                        ZeroMismatchProbability = zeroMismatch.HasValue ? new Probability(MatchProbability(zeroMismatch.Value)) : null,
+                        OneMismatchProbability = oneMismatch.HasValue ? new Probability(MatchProbability(oneMismatch.Value)) : null,
+                        TwoMismatchProbability = twoMismatch.HasValue ? new Probability(MatchProbability(twoMismatch.Value)) : null,
+                    };
+                })
             };
         }
 
@@ -144,7 +150,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 {
                     if (!allowedLoci.Contains(locus))
                     {
-                        return (decimal?)null;
+                        return (decimal?) null;
                     }
 
                     if (pair.MatchCounts.GetLocus(locus) == 2 - mismatchesPerLocus)
