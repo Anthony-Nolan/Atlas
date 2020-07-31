@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Reflection;
+using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Services;
@@ -7,6 +8,7 @@ using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualBasic.FileIO;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -102,6 +104,17 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
 
             await donorFileImporter.ImportDonorFile(file);
             await mockNotificationSender.Received().SendAlert("Error parsing Donor Format", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
+        }
+
+        [Test]
+        public async Task ImportDonors_WithInvalidJsonFile_SwallowsErrorAndCompletesSuccessfully()
+        {
+            var donorTestFilePath = $"{typeof(ExceptionHandlingTests).Namespace}.MalformedImport.json";
+            await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFilePath))
+            {
+                await donorFileImporter.ImportDonorFile(new DonorImportFile {Contents = stream, FileLocation = donorTestFilePath});
+            }
+            await mockNotificationSender.Received().SendAlert("Invalid JSON was encountered", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
         }
     }
 }
