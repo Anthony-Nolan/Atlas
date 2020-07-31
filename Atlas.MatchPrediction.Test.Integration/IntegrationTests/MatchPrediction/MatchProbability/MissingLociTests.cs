@@ -20,10 +20,14 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             {Locus.C, "12:03:01G"},
             {Locus.Dqb1, "05:03:01G"},
         };
-
-        [TestCase(Locus.Dqb1, 40)]
-        [TestCase(Locus.C, 40)]
-        public async Task CalculateMatchProbability_WhenPatientHlaHasNullLoci_CalculatesProbabilityCorrectly(Locus nullLocus, int expectedProbability)
+        
+        [TestCase(Locus.Dqb1, 40, 60, 0)]
+        [TestCase(Locus.C, 40, 60, 0)]
+        public async Task CalculateMatchProbability_WhenPatientHlaHasNullLoci_DoesNotIncludeLociInResult(
+            Locus nullLocus,
+            int zeroMismatchExpectedProbability,
+            int oneMismatchExpectedProbability, 
+            int twoMismatchExpectedProbability)
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.PatientHla,
@@ -44,12 +48,18 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(nullLocus).Percentage.Should().Be(expectedProbability);
+            matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(nullLocus).Percentage.Should().Be(zeroMismatchExpectedProbability);
+            matchDetails.OneMismatchProbabilityPerLocus.GetLocus(nullLocus).Percentage.Should().Be(oneMismatchExpectedProbability);
+            matchDetails.TwoMismatchProbabilityPerLocus.GetLocus(nullLocus).Percentage.Should().Be(twoMismatchExpectedProbability);
         }
 
-        [TestCase(Locus.Dqb1, 40)]
-        [TestCase(Locus.C, 40)]
-        public async Task CalculateMatchProbability_WhenDonorHlaHasNullLoci_CalculatesProbabilityCorrectly(Locus nullLocus, int expectedProbability)
+        [TestCase(Locus.Dqb1, 40, 60, 0)]
+        [TestCase(Locus.C, 40, 60, 0)]
+        public async Task CalculateMatchProbability_WhenDonorHlaHasNullLoci_CalculatesLociProbabilitiesCorrectly(
+            Locus nullLocus,
+            int zeroMismatchExpectedProbability,
+            int oneMismatchExpectedProbability,
+            int twoMismatchExpectedProbability)
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.DonorHla,
@@ -70,7 +80,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(nullLocus).Percentage.Should().Be(expectedProbability);
+            matchDetails.ZeroMismatchProbabilityPerLocus.GetLocus(nullLocus).Percentage.Should().Be(zeroMismatchExpectedProbability);
+            matchDetails.OneMismatchProbabilityPerLocus.GetLocus(nullLocus).Percentage.Should().Be(oneMismatchExpectedProbability);
+            matchDetails.TwoMismatchProbabilityPerLocus.GetLocus(nullLocus).Percentage.Should().Be(twoMismatchExpectedProbability);
         }
 
         [TestCase(new[] {Locus.Dqb1}, new[] {Locus.C}, 10, 45, 45)]

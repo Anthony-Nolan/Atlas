@@ -23,6 +23,8 @@ namespace Atlas.MatchPrediction.Test.Models
             roundedResponse.OneMismatchProbability.Decimal.Should().Be(rounded);
             roundedResponse.TwoMismatchProbability.Decimal.Should().Be(rounded);
             roundedResponse.ZeroMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(new Probability(rounded)));
+            roundedResponse.OneMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(new Probability(rounded)));
+            roundedResponse.TwoMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(new Probability(rounded)));
         }
 
         [Test]
@@ -36,6 +38,8 @@ namespace Atlas.MatchPrediction.Test.Models
             roundedResponse.OneMismatchProbability.Should().BeNull();
             roundedResponse.TwoMismatchProbability.Should().BeNull();
             roundedResponse.ZeroMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(null));
+            roundedResponse.OneMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(null));
+            roundedResponse.TwoMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(null));
         }
     }
 }
