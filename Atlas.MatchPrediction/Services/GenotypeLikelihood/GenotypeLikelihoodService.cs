@@ -6,7 +6,6 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
-using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
 
 namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {
