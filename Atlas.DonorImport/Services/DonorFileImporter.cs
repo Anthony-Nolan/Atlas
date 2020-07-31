@@ -53,6 +53,10 @@ namespace Atlas.DonorImport.Services
                 }
 
                 logger.SendTrace($"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).");
+                await notificationSender.SendNotification($"Donor Import Successful: {file.FileLocation}",
+                    $"Imported {importedDonorCount} donor(s) from file {file.FileLocation}",
+                    nameof(ImportDonorFile)
+                );
             }
             catch (EmptyDonorFileException e)
             {
