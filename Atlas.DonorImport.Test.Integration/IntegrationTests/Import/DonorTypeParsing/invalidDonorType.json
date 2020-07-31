@@ -5,7 +5,7 @@
       "RecordId": 6,
       "ChangeType": "N",
       "DonorType": "Not-recognised",
-      "UpdateMode": "Differential",
+      "UpdateMode": "diff",
       "Hla": {
         "A": {
           "Dna": {
