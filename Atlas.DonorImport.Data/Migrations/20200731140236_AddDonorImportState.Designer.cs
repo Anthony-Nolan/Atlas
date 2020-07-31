@@ -100,7 +100,7 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.ToTable("Donors");
                 });
 
-            modelBuilder.Entity("Atlas.DonorImport.Data.Models.DonorImportRecordHistory", b =>
+            modelBuilder.Entity("Atlas.DonorImport.Data.Models.DonorImportHistoryRecord", b =>
                 {
                     b.Property<string>("Filename")
                         .HasColumnType("nvarchar(450)");
