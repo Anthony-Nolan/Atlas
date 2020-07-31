@@ -58,7 +58,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
 
             await genotypeLikelihoodService.CalculateLikelihood(new PhenotypeInfo<string>(), new HaplotypeFrequencySet(), allLoci);
 
-            await frequencyService.ReceivedWithAnyArgs(2* numberOfDiplotypes).GetFrequencyForHla(default, default);
+            await frequencyService.ReceivedWithAnyArgs(2* numberOfDiplotypes).GetFrequencyForHla(default, default, default);
         }
 
         [Test]
