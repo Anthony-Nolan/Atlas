@@ -22,6 +22,7 @@ namespace Atlas.DonorImport.Models.FileSchema
         [JsonProperty(Required = Required.Always)]
         public ImportedHla Hla {get;set;}
         
+        [JsonProperty(Required = Required.Always)]
         public UpdateMode UpdateMode { get; set; }
     }
 }
