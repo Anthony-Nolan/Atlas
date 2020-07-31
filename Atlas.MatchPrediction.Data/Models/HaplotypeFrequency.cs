@@ -71,7 +71,7 @@ namespace Atlas.MatchPrediction.Data.Models
         [ForeignKey(nameof(Set))]
         [Column(SetIdColumnName)]
         public int SetId { get; set; }
-        
+
         public HaplotypeTypingCategory TypingCategory { get; set; }
     }
 
@@ -82,7 +82,11 @@ namespace Atlas.MatchPrediction.Data.Models
             modelBuilder
                 .HasIndex(f => new {f.A, f.B, f.C, f.DQB1, f.DRB1, f.SetId})
                 .IsUnique()
-                .IncludeProperties(f => f.Frequency);
+                .IncludeProperties(f => new
+                {
+                    f.Frequency,
+                    f.TypingCategory
+                });
         }
     }
 
