@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -86,7 +87,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
             var donorTestFilePath = $"{typeof(InitialDataLoadTests).Namespace}.{fileName}";
             await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFilePath))
             {
-                await donorFileImporter.ImportDonorFile(new DonorImportFile{ Contents = stream, FileLocation = fileName});
+                await donorFileImporter.ImportDonorFile(new DonorImportFile{ Contents = stream, FileLocation = fileName, UploadTime = DateTime.Now});
             }
         }
     }

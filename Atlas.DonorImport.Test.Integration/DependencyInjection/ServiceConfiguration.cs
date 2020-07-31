@@ -5,8 +5,10 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Context;
+using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
+using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Microsoft.Extensions.Configuration;
@@ -41,6 +43,8 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
             services.AddScoped(sp => new ContextFactory().Create(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
             services.AddScoped<IDonorInspectionRepository>(sp =>
                 new DonorInspectionRepository(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
+            services.AddScoped<IDonorImportHistoryRepository>(sp => new DonorImportHistoryRepository(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
+            services.AddScoped<IDonorImportFileHistoryService, DonorImportFileHistoryService>();
         }
 
         private static void SetUpConfiguration(IServiceCollection services)

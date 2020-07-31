@@ -1,3 +1,5 @@
+using System;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Test.TestHelpers.Models;
@@ -9,7 +11,8 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels
     internal static class DonorImportFileBuilder
     {
         public static Builder<DonorImportFile> NewWithoutContents => Builder<DonorImportFile>.New
-            .With(f => f.FileLocation, "file-location");
+            .WithFileLocation("file-location-")
+            .With(t => t.UploadTime, DateTime.Now);
 
         public static Builder<DonorImportFile> NewWithDefaultContents => NewWithoutContents
             .With(f => f.Contents, DonorImportFileContentsBuilder.New.Build().ToStream());
@@ -32,6 +35,11 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels
         {
             return builder
                 .With(f => f.Contents, DonorImportFileContentsBuilder.New.WithDonors(donors).Build().ToStream());
+        }
+        
+        private static Builder<DonorImportFile> WithFileLocation(this Builder<DonorImportFile> builder, string recordIdPrefix)
+        {
+            return builder.WithFactory(d => d.FileLocation, IncrementingIdGenerator.NextStringIdFactory(recordIdPrefix));
         }
     }
 }
