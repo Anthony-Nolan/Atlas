@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Services;
@@ -18,6 +19,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         private IDonorFileImporter donorFileImporter;
         private ILogger mockLogger;
         private INotificationSender mockNotificationSender;
+
+        private const string donorLocation = "blobStorage/test.json";
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -44,7 +47,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         public async Task ImportDonors_WithUnexpectedColumns_SwallowsErrorAndCompletesSuccessfully()
         {
             var malformedDonorFile = DonorImportFileWithUnexpectedFieldBuilder.New.Build();
-            var file = new DonorImportFile {Contents = malformedDonorFile.ToStream()};
+            var file = new DonorImportFile {Contents = malformedDonorFile.ToStream(), UploadTime = DateTime.Now, FileLocation = donorLocation};
 
             await donorFileImporter.ImportDonorFile(file);
 
@@ -55,7 +58,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         public async Task ImportDonors_WithoutUpdateColumn_SwallowsErrorAndCompletesSuccessfully()
         {
             var malformedFile = DonorImportFileWithNoUpdateBuilder.New.Build();
-            var file = new DonorImportFile {Contents = malformedFile.ToStream()};
+            var file = new DonorImportFile {Contents = malformedFile.ToStream(), UploadTime = DateTime.Now, FileLocation = donorLocation};
 
             await donorFileImporter.ImportDonorFile(file);
 
@@ -66,11 +69,11 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         public async Task ImportDonors_WithoutDonorsColumn_SwallowsErrorAndCompletesSuccessfully()
         {
             var malformedFile = DonorImportFileWithNoDonorsBuilder.New.Build();
-            var file = new DonorImportFile {Contents = malformedFile.ToStream()};
+            var file = new DonorImportFile {Contents = malformedFile.ToStream(), UploadTime = DateTime.Now, FileLocation = donorLocation};
 
             await donorFileImporter.ImportDonorFile(file);
             
-            mockLogger.Received().SendTrace("Donor Import for file '' complete. Imported 0 donor(s).");
+            mockLogger.Received().SendTrace($"Donor Import for file '{donorLocation}' complete. Imported 0 donor(s).");
         }
     }
 }

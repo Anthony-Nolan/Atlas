@@ -30,7 +30,6 @@ namespace Atlas.DonorImport.Services
             IDonorRecordChangeApplier donorRecordChangeApplier,
             IDonorImportFileHistoryService donorImportFileHistoryService,
             INotificationSender notificationSender,
-            
             ILogger logger)
         {
             this.fileParser = fileParser;
