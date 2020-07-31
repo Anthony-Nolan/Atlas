@@ -38,13 +38,14 @@ namespace Atlas.DonorImport.Services
             {
                 throw new EmptyDonorFileException();
             }
+            
             using (var streamReader = new StreamReader(underlyingDataStream))
             using (var reader = new JsonTextReader(streamReader))
             {
                 var serializer = new JsonSerializer();
                 UpdateMode? updateMode = null;
                 // Loops through top level JSON
-                while (reader.Read())
+                while (TryRead(reader))
                 {
                     if (reader.TokenType == JsonToken.PropertyName)
                     {
@@ -53,7 +54,7 @@ namespace Atlas.DonorImport.Services
                         {
                             case nameof(DonorImportFileSchema.updateMode):
                                 // Read into property
-                                reader.Read();
+                                TryRead(reader);
                                 try
                                 {
                                     updateMode = serializer.Deserialize<UpdateMode>(reader);
@@ -64,8 +65,8 @@ namespace Atlas.DonorImport.Services
                                 }
                                 break;
                             case nameof(DonorImportFileSchema.donors):
-                                reader.Read(); // Read into property
-                                reader.Read(); // Read into array. Do not deserialize to collection, as the collection can be very large and requires streaming.
+                                TryRead(reader); // Read into property
+                                TryRead(reader); // Read into array. Do not deserialize to collection, as the collection can be very large and requires streaming.
                                 // Loops through all donors in array
                                 do
                                 {
@@ -108,7 +109,7 @@ namespace Atlas.DonorImport.Services
                                         throw new MalformedDonorFileException("Donor property RecordId cannot be null.");
                                     }
                                     yield return donorOperation;
-                                } while (reader.Read() && reader.TokenType != JsonToken.EndArray);
+                                } while (TryRead(reader) && reader.TokenType != JsonToken.EndArray);
 
                                 break;
                             default:
@@ -116,6 +117,17 @@ namespace Atlas.DonorImport.Services
                         }
                     }
                 }
+            }
+        }
+        
+        private static bool TryRead(JsonReader reader){
+            try
+            {
+                return reader.Read();
+            }
+            catch (JsonException)
+            {
+                throw new MalformedDonorFileException("Invalid JSON was encountered");
             }
         }
     }
