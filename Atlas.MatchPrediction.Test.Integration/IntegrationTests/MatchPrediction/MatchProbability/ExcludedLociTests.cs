@@ -111,7 +111,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.ZeroMismatchProbability.Percentage.Should().Be(expectedZeroMismatchProbability);
+            matchDetails.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(expectedZeroMismatchProbability);
         }
     }
 }

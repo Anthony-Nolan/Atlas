@@ -2,17 +2,55 @@
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Models;
+using Newtonsoft.Json;
+
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable MemberCanBeInternal
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 {
-    public class MatchProbabilityResponse
+    public class MatchProbabilities
     {
         public Probability ZeroMismatchProbability { get; set; }
         public Probability OneMismatchProbability { get; set; }
         public Probability TwoMismatchProbability { get; set; }
-        public LociInfo<Probability> ZeroMismatchProbabilityPerLocus { get; set; }
-        public LociInfo<Probability> OneMismatchProbabilityPerLocus { get; set; }
-        public LociInfo<Probability> TwoMismatchProbabilityPerLocus { get; set; }
+
+        public MatchProbabilities()
+        {
+        }
+
+        public MatchProbabilities(Probability sharedProbability)
+        {
+            ZeroMismatchProbability = sharedProbability;
+            OneMismatchProbability = sharedProbability;
+            TwoMismatchProbability = sharedProbability;
+        }
+
+        public MatchProbabilities Round(int decimalPlaces)
+        {
+            return new MatchProbabilities
+            {
+                ZeroMismatchProbability = ZeroMismatchProbability?.Round(decimalPlaces),
+                OneMismatchProbability = OneMismatchProbability?.Round(decimalPlaces),
+                TwoMismatchProbability = TwoMismatchProbability?.Round(decimalPlaces)
+            };
+        }
+    }
+
+    public class MatchProbabilityResponse
+    {
+        public MatchProbabilities MatchProbabilities { get; set; }
+        public LociInfo<MatchProbabilities> MatchProbabilitiesPerLocus { get; set; }
+
+        [JsonIgnore]
+        public LociInfo<Probability> ZeroMismatchProbabilityPerLocus => MatchProbabilitiesPerLocus.Map(x => x?.ZeroMismatchProbability);
+
+        [JsonIgnore]
+        public LociInfo<Probability> OneMismatchProbabilityPerLocus => MatchProbabilitiesPerLocus.Map(x => x?.OneMismatchProbability);
+
+        [JsonIgnore]
+        public LociInfo<Probability> TwoMismatchProbabilityPerLocus => MatchProbabilitiesPerLocus.Map(x => x?.TwoMismatchProbability);
+
         public bool IsPatientPhenotypeUnrepresented { get; set; }
         public bool IsDonorPhenotypeUnrepresented { get; set; }
 
@@ -26,17 +64,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         /// </summary>
         public MatchProbabilityResponse(Probability sharedProbability, ISet<Locus> allowedLoci)
         {
-            ZeroMismatchProbability = sharedProbability;
-            OneMismatchProbability = sharedProbability;
-            TwoMismatchProbability = sharedProbability;
-            ZeroMismatchProbabilityPerLocus = new LociInfo<Probability>(sharedProbability).Map((l, v) =>
-                allowedLoci.Contains(l) ? v : null
-            );
-            OneMismatchProbabilityPerLocus = new LociInfo<Probability>(sharedProbability).Map((l, v) =>
-                allowedLoci.Contains(l) ? v : null
-            );
-            TwoMismatchProbabilityPerLocus = new LociInfo<Probability>(sharedProbability).Map((l, v) =>
-                allowedLoci.Contains(l) ? v : null
+            MatchProbabilities = new MatchProbabilities(sharedProbability);
+            MatchProbabilitiesPerLocus = new LociInfo<Probability>(sharedProbability).Map((l, v) =>
+                allowedLoci.Contains(l) ? new MatchProbabilities(sharedProbability) : null
             );
         }
 
@@ -44,12 +74,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         {
             return new MatchProbabilityResponse
             {
-                ZeroMismatchProbability = ZeroMismatchProbability?.Round(decimalPlaces),
-                OneMismatchProbability = OneMismatchProbability?.Round(decimalPlaces),
-                TwoMismatchProbability = TwoMismatchProbability?.Round(decimalPlaces), 
-                ZeroMismatchProbabilityPerLocus = ZeroMismatchProbabilityPerLocus.Map(p => p?.Round(decimalPlaces)),
-                OneMismatchProbabilityPerLocus = OneMismatchProbabilityPerLocus.Map(p => p?.Round(decimalPlaces)),
-                TwoMismatchProbabilityPerLocus = TwoMismatchProbabilityPerLocus.Map(p => p?.Round(decimalPlaces))
+                MatchProbabilities = MatchProbabilities.Round(decimalPlaces),
+                MatchProbabilitiesPerLocus = MatchProbabilitiesPerLocus.Map((_, p) => p?.Round(decimalPlaces))
             };
         }
     }
