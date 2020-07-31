@@ -5,7 +5,7 @@
       "RecordId": 4,
       "ChangeType": "N",
       "DonorType": "B",
-diff
+      "UpdateMode": "diff",
       "Hla": {
         "A": {
           "Dna": {
@@ -34,7 +34,7 @@ diff
       "RecordId": 3,
       "ChangeType": "N",
       "DonorType": "D",
-diff
+      "UpdateMode": "diff",
       "Hla": {
         "A": {
           "Dna": {
