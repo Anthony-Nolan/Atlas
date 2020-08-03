@@ -6,7 +6,6 @@ using Atlas.Common.Utils;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
-using Dynamitey;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
