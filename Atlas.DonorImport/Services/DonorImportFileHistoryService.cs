@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
@@ -17,7 +16,7 @@ namespace Atlas.DonorImport.Services
     
     internal class DonorImportFileHistoryService : IDonorImportFileHistoryService
     {
-        private IDonorImportHistoryRepository repository;
+        private readonly IDonorImportHistoryRepository repository;
 
         public DonorImportFileHistoryService(IDonorImportHistoryRepository repository)
         {
@@ -27,11 +26,12 @@ namespace Atlas.DonorImport.Services
         public async Task RegisterStartOfDonorImport(DonorImportFile donorFile)
         {
             var filename = GetFileNameFromLocation(donorFile.FileLocation);
-            var state = await repository.GetFileStateIfExists(filename, donorFile.UploadTime);
+            var state = await repository.GetFileStateIfExists(filename, donorFile.TruncatedUploadTime);
+            // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
             switch (state)
             {
                 case null:
-                    await repository.InsertNewDonorImportRecord(filename, donorFile.UploadTime);
+                    await repository.InsertNewDonorImportRecord(filename, donorFile.TruncatedUploadTime);
                     break;
                 case DonorImportState.FailedUnexpectedly:
                     await UpdateDonorImportRecord(donorFile, DonorImportState.Started);
@@ -59,7 +59,7 @@ namespace Atlas.DonorImport.Services
         private async Task UpdateDonorImportRecord(DonorImportFile donorFile, DonorImportState state)
         {
             var filename = GetFileNameFromLocation(donorFile.FileLocation);
-            await repository.UpdateDonorImportState(filename, donorFile.UploadTime, state);
+            await repository.UpdateDonorImportState(filename, donorFile.TruncatedUploadTime, state);
         }
         
         private static string GetFileNameFromLocation(string location)
