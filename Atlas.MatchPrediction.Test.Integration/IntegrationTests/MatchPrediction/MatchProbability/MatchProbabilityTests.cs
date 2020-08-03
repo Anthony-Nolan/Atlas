@@ -95,8 +95,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var patientHla = DefaultUnambiguousAllelesBuilder.WithDataAt(
                     Locus.A,
-                    UnambiguousAlleles.UnambiguousAlleleDetails.A.Position1.Allele,
-                    UnambiguousAlleles.UnambiguousAlleleDetails.A.Position2.Allele)
+                    Alleles.UnambiguousAlleleDetails.A.Position1.Allele,
+                    Alleles.UnambiguousAlleleDetails.A.Position2.Allele)
                 .Build();
 
             var donorHla = new PhenotypeInfoBuilder<string>()
@@ -162,12 +162,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var patientHla = DefaultUnambiguousAllelesBuilder
                 .WithDataAt(
                     Locus.A,
-                    $"{UnambiguousAlleles.UnambiguousAlleleDetails.A.Position1.Allele}/{alleleStringA}",
-                    $"{UnambiguousAlleles.UnambiguousAlleleDetails.A.Position2.Allele}/{anotherAlleleStringA}")
-                .WithDataAt(Locus.B, LocusPosition.One, $"{UnambiguousAlleles.UnambiguousAlleleDetails.B.Position1.Allele}/{alleleStringB}")
-                .WithDataAt(Locus.C, LocusPosition.One, $"{UnambiguousAlleles.UnambiguousAlleleDetails.C.Position1.Allele}/{alleleStringC}")
-                .WithDataAt(Locus.Dqb1, LocusPosition.One, $"{UnambiguousAlleles.UnambiguousAlleleDetails.Dqb1.Position1.Allele}/{alleleStringDqb1}")
-                .WithDataAt(Locus.Drb1, LocusPosition.One, $"{UnambiguousAlleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
+                    $"{Alleles.UnambiguousAlleleDetails.A.Position1.Allele}/{alleleStringA}",
+                    $"{Alleles.UnambiguousAlleleDetails.A.Position2.Allele}/{anotherAlleleStringA}")
+                .WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{alleleStringB}")
+                .WithDataAt(Locus.C, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.C.Position1.Allele}/{alleleStringC}")
+                .WithDataAt(Locus.Dqb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Dqb1.Position1.Allele}/{alleleStringDqb1}")
+                .WithDataAt(Locus.Drb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
                 .Build();
 
             var matchProbabilityInput = DefaultInputBuilder.With(i => i.PatientHla, patientHla).Build();
@@ -210,6 +210,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
             matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
             matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
+
+            var rreee = matchDetails.Round(4);
+
         }
 
         [Test]
@@ -243,12 +246,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var patientHla = DefaultUnambiguousAllelesBuilder
                 .WithDataAt(
                     Locus.A,
-                    $"{UnambiguousAlleles.UnambiguousAlleleDetails.A.Position1.Allele}/{alleleStringA}",
-                    $"{UnambiguousAlleles.UnambiguousAlleleDetails.A.Position2.Allele}/{anotherAlleleStringA}")
-                .WithDataAt(Locus.B, LocusPosition.One, $"{UnambiguousAlleles.UnambiguousAlleleDetails.B.Position1.Allele}/{alleleStringB}")
-                .WithDataAt(Locus.C, LocusPosition.One, $"{UnambiguousAlleles.UnambiguousAlleleDetails.C.Position1.Allele}/{alleleStringC}")
+                    $"{Alleles.UnambiguousAlleleDetails.A.Position1.Allele}/{alleleStringA}",
+                    $"{Alleles.UnambiguousAlleleDetails.A.Position2.Allele}/{anotherAlleleStringA}")
+                .WithDataAt(Locus.B, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.B.Position1.Allele}/{alleleStringB}")
+                .WithDataAt(Locus.C, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.C.Position1.Allele}/{alleleStringC}")
                 .WithDataAt(Locus.Dqb1, null as string)
-                .WithDataAt(Locus.Drb1, LocusPosition.One, $"{UnambiguousAlleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
+                .WithDataAt(Locus.Drb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
                 .Build();
 
             var matchProbabilityInput = new MatchProbabilityInput
@@ -331,7 +334,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             int expectedZeroMismatchPercentage
         )
         {
-            var sharedHaplotypeHla = UnambiguousAlleles.UnambiguousAlleleDetails.GGroups().Split().Item1;
+            var sharedHaplotypeHla = Alleles.UnambiguousAlleleDetails.GGroups().Split().Item1;
 
             // patientHla entirely homozygous
             var patientHla = new PhenotypeInfo<string>(sharedHaplotypeHla, sharedHaplotypeHla);
@@ -339,7 +342,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             const Locus ambiguousLocus = Locus.B;
             const LocusPosition ambiguousPosition = LocusPosition.Two;
 
-            var alleleDetailsAtAmbiguousLocus = UnambiguousAlleles.UnambiguousAlleleDetails.GetLocus(ambiguousLocus);
+            var alleleDetailsAtAmbiguousLocus = Alleles.UnambiguousAlleleDetails.GetLocus(ambiguousLocus);
             var donorHla = new PhenotypeInfoBuilder<string>(patientHla)
                 .WithDataAt(ambiguousLocus, ambiguousPosition,
                     $"{alleleDetailsAtAmbiguousLocus.Position1.Allele}/{alleleDetailsAtAmbiguousLocus.Position2.Allele}")
@@ -361,6 +364,49 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var matchProbability = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
             matchProbability.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(expectedZeroMismatchPercentage);
+        }
+
+        [Test]
+        public async Task CalculateMatchProbability_WhenAmbiguousHlaAndMissingLoci_THOOWW()
+        {
+            var possibleHaplotypes = new List<HaplotypeFrequency>
+            {
+                DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
+                DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build()
+            };
+
+            await ImportFrequencies(possibleHaplotypes);
+
+            var patientHla = DefaultUnambiguousAllelesBuilder
+                .WithDataAt(
+                    Locus.A,
+                    $"*01:01:01:01",
+                    $"*02:01:11")
+                .WithDataAt(Locus.B,
+                    $"*15:146",
+                    $"*08:182")
+                .WithDataAt(Locus.C,
+                    $"*04:82",
+                    $"*03:04:02")
+                .WithDataAt(Locus.Dqb1,
+                    $"*03:19:01",
+                    $"*03:03:02:01")
+                .WithDataAt(Locus.Drb1,
+                    $"*15:03:01:01",
+                    $"*13:01:01:01")
+                .Build();
+
+            var matchProbabilityInput = new MatchProbabilityInput
+            {
+                PatientHla = patientHla,
+                DonorHla = DefaultUnambiguousAllelesBuilder.Build(),
+                HlaNomenclatureVersion = HlaNomenclatureVersion,
+                DonorFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode },
+                PatientFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode }
+            };
+
+            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+
         }
     }
 }

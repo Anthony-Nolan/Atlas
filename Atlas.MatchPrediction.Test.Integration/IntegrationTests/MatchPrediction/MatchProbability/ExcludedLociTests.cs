@@ -69,8 +69,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             Locus[] lociToExclude,
             int expectedZeroMismatchProbability)
         {
-            var a1 = UnambiguousAlleles.UnambiguousAlleleDetails.A.Position1;
-            var a2 = UnambiguousAlleles.UnambiguousAlleleDetails.A.Position2;
+            var a1 = Alleles.UnambiguousAlleleDetails.A.Position1;
+            var a2 = Alleles.UnambiguousAlleleDetails.A.Position2;
             var nonMatchingA = new AlleleWithGGroup {Allele = "01:01", GGroup = "01:01:01G"};
             var patientHla = DefaultUnambiguousAllelesBuilder
                 .WithDataAt(Locus.A, LocusPosition.One, $"{a1.Allele}/{nonMatchingA.Allele}")

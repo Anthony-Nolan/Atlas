@@ -11,7 +11,7 @@ using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using static Atlas.MatchPrediction.Test.Integration.Resources.Alleles.UnambiguousAlleles;
+using static Atlas.MatchPrediction.Test.Integration.Resources.Alleles.Alleles;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.IndividualSteps.PhenotypeExpansion
 {
