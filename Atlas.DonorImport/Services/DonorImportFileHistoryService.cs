@@ -26,12 +26,12 @@ namespace Atlas.DonorImport.Services
         public async Task RegisterStartOfDonorImport(DonorImportFile donorFile)
         {
             var filename = GetFileNameFromLocation(donorFile.FileLocation);
-            var state = await repository.GetFileStateIfExists(filename, donorFile.TruncatedUploadTime);
+            var state = await repository.GetFileStateIfExists(filename, donorFile.UploadTime);
             // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
             switch (state)
             {
                 case null:
-                    await repository.InsertNewDonorImportRecord(filename, donorFile.TruncatedUploadTime);
+                    await repository.InsertNewDonorImportRecord(filename, donorFile.UploadTime);
                     break;
                 case DonorImportState.FailedUnexpectedly:
                     await UpdateDonorImportRecord(donorFile, DonorImportState.Started);
@@ -59,7 +59,7 @@ namespace Atlas.DonorImport.Services
         private async Task UpdateDonorImportRecord(DonorImportFile donorFile, DonorImportState state)
         {
             var filename = GetFileNameFromLocation(donorFile.FileLocation);
-            await repository.UpdateDonorImportState(filename, donorFile.TruncatedUploadTime, state);
+            await repository.UpdateDonorImportState(filename, donorFile.UploadTime, state);
         }
         
         private static string GetFileNameFromLocation(string location)

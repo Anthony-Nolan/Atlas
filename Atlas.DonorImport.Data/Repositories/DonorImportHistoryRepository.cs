@@ -21,6 +21,8 @@ namespace Atlas.DonorImport.Data.Repositories
         public DonorImportHistoryRepository(string connectionString)
         {
             this.connectionString = connectionString;
+            // Without setting up this type map 
+            SqlMapper.AddTypeMap(typeof(DateTime), System.Data.DbType.DateTime2);
         }
 
         public async Task InsertNewDonorImportRecord(string filename, DateTime uploadTime)

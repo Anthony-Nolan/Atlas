@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using Atlas.Common.Utils.Extensions;
 
 namespace Atlas.DonorImport.ExternalInterface.Models
 {
@@ -10,8 +9,6 @@ namespace Atlas.DonorImport.ExternalInterface.Models
         public Stream Contents { get; set; }
 
         public DateTime UploadTime { get; set; }
-
-        internal DateTime TruncatedUploadTime => UploadTime.TruncateToWholeMilliseconds();
         
         #region IDisposable
 

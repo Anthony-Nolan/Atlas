@@ -4,6 +4,7 @@ using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Notifications;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Clients;
+using Atlas.DonorImport.Data;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Models.Mapping;
@@ -22,6 +23,9 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, string> fetchSqlConnectionString
         )
         {
+            // Perform static Dapper set up that should be performed once before any SQL requests are made.
+            Initialise.InitaliseDapper();
+            
             services.RegisterSettings(fetchMessagingServiceBusSettings);
             services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
