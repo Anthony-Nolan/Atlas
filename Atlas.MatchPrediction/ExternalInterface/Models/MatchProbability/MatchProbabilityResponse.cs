@@ -75,7 +75,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
             return new MatchProbabilityResponse
             {
                 MatchProbabilities = MatchProbabilities.Round(decimalPlaces),
-                MatchProbabilitiesPerLocus = MatchProbabilitiesPerLocus.Map((_, p) => p?.Round(decimalPlaces))
+                MatchProbabilitiesPerLocus = MatchProbabilitiesPerLocus.Map((_, p) => p?.Round(decimalPlaces)),
+                IsPatientPhenotypeUnrepresented = IsPatientPhenotypeUnrepresented,
+                IsDonorPhenotypeUnrepresented = IsDonorPhenotypeUnrepresented
             };
         }
     }

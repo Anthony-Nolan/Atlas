@@ -3,7 +3,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchPrediction.Test.Integration.Resources.Alleles
 {
-    internal static class UnambiguousAlleles
+    internal static class Alleles
     {
         /// <summary>
         /// Alleles selected, such that each position has a single allele that corresponds to a single G-Group.
@@ -36,6 +36,35 @@ namespace Atlas.MatchPrediction.Test.Integration.Resources.Alleles
             {
                 Position1 = new AlleleWithGGroup {Allele = "03:124", GGroup = "03:01:01G"},
                 Position2 = new AlleleWithGGroup {Allele = "11:129", GGroup = "11:06:01G"}
+            }
+        };
+
+        public static PhenotypeInfo<AlleleWithGGroup> AmbiguousAlleleDetails => new PhenotypeInfo<AlleleWithGGroup>
+        {
+            A = new LocusInfo<AlleleWithGGroup>
+            {
+                Position1 = new AlleleWithGGroup { Allele = "01:01", GGroup = "01:01:01G" },
+                Position2 = new AlleleWithGGroup { Allele = "02:01", GGroup = "02:01:01G" }
+            },
+            B = new LocusInfo<AlleleWithGGroup>
+            {
+                Position1 = new AlleleWithGGroup { Allele = "15:146", GGroup = "15:01:01G" },
+                Position2 = new AlleleWithGGroup { Allele = "08:182", GGroup = "08:01:01G" }
+            },
+            C = new LocusInfo<AlleleWithGGroup>
+            {
+                Position1 = new AlleleWithGGroup { Allele = "04:82", GGroup = "04:01:01G" },
+                Position2 = new AlleleWithGGroup { Allele = "03:04", GGroup = "03:04:01G" }
+            },
+            Dqb1 = new LocusInfo<AlleleWithGGroup>
+            {
+                Position1 = new AlleleWithGGroup { Allele = "03:19", GGroup = "03:01:01G" },
+                Position2 = new AlleleWithGGroup { Allele = "03:03", GGroup = "03:03:01G" }
+            },
+            Drb1 = new LocusInfo<AlleleWithGGroup>
+            {
+                Position1 = new AlleleWithGGroup { Allele = "*15:03", GGroup = "15:03:01G" },
+                Position2 = new AlleleWithGGroup { Allele = "*13:01", GGroup = "13:01:01G" }
             }
         };
     }
