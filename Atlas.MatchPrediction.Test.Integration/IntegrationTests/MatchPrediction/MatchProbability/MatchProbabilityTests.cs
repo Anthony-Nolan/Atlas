@@ -210,9 +210,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
             matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
             matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
-
-            var rreee = matchDetails.Round(4);
-
         }
 
         [Test]
@@ -364,49 +361,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var matchProbability = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
             matchProbability.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(expectedZeroMismatchPercentage);
-        }
-
-        [Test]
-        public async Task CalculateMatchProbability_WhenAmbiguousHlaAndMissingLoci_THOOWW()
-        {
-            var possibleHaplotypes = new List<HaplotypeFrequency>
-            {
-                DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00002m).Build(),
-                DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build()
-            };
-
-            await ImportFrequencies(possibleHaplotypes);
-
-            var patientHla = DefaultUnambiguousAllelesBuilder
-                .WithDataAt(
-                    Locus.A,
-                    $"*01:01:01:01",
-                    $"*02:01:11")
-                .WithDataAt(Locus.B,
-                    $"*15:146",
-                    $"*08:182")
-                .WithDataAt(Locus.C,
-                    $"*04:82",
-                    $"*03:04:02")
-                .WithDataAt(Locus.Dqb1,
-                    $"*03:19:01",
-                    $"*03:03:02:01")
-                .WithDataAt(Locus.Drb1,
-                    $"*15:03:01:01",
-                    $"*13:01:01:01")
-                .Build();
-
-            var matchProbabilityInput = new MatchProbabilityInput
-            {
-                PatientHla = patientHla,
-                DonorHla = DefaultUnambiguousAllelesBuilder.Build(),
-                HlaNomenclatureVersion = HlaNomenclatureVersion,
-                DonorFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode },
-                PatientFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode }
-            };
-
-            var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
-
         }
     }
 }
