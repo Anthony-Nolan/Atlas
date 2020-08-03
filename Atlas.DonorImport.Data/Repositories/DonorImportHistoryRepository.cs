@@ -53,7 +53,7 @@ WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
             {
                 const string sql = "SELECT FileState FROM DonorImportHistory WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
                 connection.Open();
-                var results = connection.Query<DonorImportState>(sql, new {FileName = filename, UploadTime = uploadTime}).ToArray();
+                var results = connection.Query<DonorImportState?>(sql, new {FileName = filename, UploadTime = uploadTime}).ToArray();
                 return results.SingleOrDefault();
             }
         }
