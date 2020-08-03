@@ -2,6 +2,7 @@
 {
     public enum DonorImportState
     {
+        NotFound = 0,
         Started = 1,
         Completed = 2,
         FailedPermanent = 3,

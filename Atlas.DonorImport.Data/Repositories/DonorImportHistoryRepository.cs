@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.DonorImport.Data.Models;
 using Dapper;
@@ -9,7 +10,8 @@ namespace Atlas.DonorImport.Data.Repositories
     public interface IDonorImportHistoryRepository
     {
         public Task InsertNewDonorImportRecord(string filename, DateTime uploadTime);
-        public Task UpdateDonorImportState(string filename, DateTime uploadTime, DonorImportState state);
+        public Task UpdateDonorImportState(string filename, DateTime uploadTime, DonorImportState donorState);
+        public Task<DonorImportState> GetFileStateIfExists(string filename, DateTime uploadTime);
     }
     
     public class DonorImportHistoryRepository : IDonorImportHistoryRepository
@@ -27,12 +29,13 @@ namespace Atlas.DonorImport.Data.Repositories
             {
                 var sql = $@"INSERT INTO DonorImportHistory (Filename, UploadTime, FileState, LastUpdated) VALUES ((@FileName), (@UploadTime), (@DonorState), (@Time))";
                 connection.Open();
-                connection.Execute(sql, new {FileName = filename, UploadTime = uploadTime, DonorState = DonorImportState.Started, Time = DateTime.Now});
+                var state = DonorImportState.Started.ToString();
+                connection.Execute(sql, new {FileName = filename, UploadTime = uploadTime, DonorState = state, Time = DateTime.Now});
                 connection.Close();
             }
         }
 
-        public async Task UpdateDonorImportState(string filename, DateTime uploadTime, DonorImportState state)
+        public async Task UpdateDonorImportState(string filename, DateTime uploadTime, DonorImportState donorState)
         {
             await using (var connection = new SqlConnection(ConnectionString))
             {
@@ -40,10 +43,21 @@ namespace Atlas.DonorImport.Data.Repositories
 SET FileState = (@State), LastUpdated = (@Time)
 WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
                 connection.Open();
-                connection.Execute(sql, new {FileName = filename, UploadTime = uploadTime, State = state, Time = DateTime.Now});
+                var state = donorState.ToString();
+                await connection.ExecuteAsync(sql, new {FileName = filename, UploadTime = uploadTime, State = state, Time = DateTime.Now});
                 connection.Close();
             }
         }
-        
+
+        public async Task<DonorImportState> GetFileStateIfExists(string filename, DateTime uploadTime)
+        {
+            await using (var connection = new SqlConnection(ConnectionString))
+            {
+                const string sql = "SELECT FileState FROM DonorImportHistory WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
+                connection.Open();
+                var results = connection.Query<DonorImportState>(sql, new {FileName = filename, UploadTime = uploadTime}).ToArray();
+                return !results.Any() ? DonorImportState.NotFound : results.Single();
+            }
+        }
     }
 }
