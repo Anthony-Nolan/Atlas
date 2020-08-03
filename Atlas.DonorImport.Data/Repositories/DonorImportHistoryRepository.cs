@@ -13,7 +13,7 @@ namespace Atlas.DonorImport.Data.Repositories
         public Task UpdateDonorImportState(string filename, DateTime uploadTime, DonorImportState donorState);
         public Task<DonorImportState?> GetFileStateIfExists(string filename, DateTime uploadTime);
     }
-    
+
     public class DonorImportHistoryRepository : IDonorImportHistoryRepository
     {
         private readonly string connectionString;
@@ -27,10 +27,10 @@ namespace Atlas.DonorImport.Data.Repositories
         {
             await using (var connection = new SqlConnection(connectionString))
             {
-                var sql = $@"INSERT INTO DonorImportHistory (Filename, UploadTime, FileState, LastUpdated) VALUES ((@FileName), (@UploadTime), (@DonorState), (@Time))";
-                connection.Open();
-                connection.Execute(sql, new {FileName = filename, UploadTime = uploadTime, DonorState = DonorImportState.Started.ToString(), Time = DateTime.UtcNow});
-                connection.Close();
+                var sql =
+                    $@"INSERT INTO DonorImportHistory (Filename, UploadTime, FileState, LastUpdated) VALUES ((@FileName), (@UploadTime), (@DonorState), (@Time))";
+                await connection.ExecuteAsync(sql,
+                    new {FileName = filename, UploadTime = uploadTime, DonorState = DonorImportState.Started.ToString(), Time = DateTime.UtcNow});
             }
         }
 
@@ -41,9 +41,8 @@ namespace Atlas.DonorImport.Data.Repositories
                 var sql = $@"UPDATE DonorImportHistory
 SET FileState = (@State), LastUpdated = (@Time)
 WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
-                connection.Open();
-                await connection.ExecuteAsync(sql, new {FileName = filename, UploadTime = uploadTime, State = donorState.ToString(), Time = DateTime.UtcNow});
-                connection.Close();
+                await connection.ExecuteAsync(sql,
+                    new {FileName = filename, UploadTime = uploadTime, State = donorState.ToString(), Time = DateTime.UtcNow});
             }
         }
 
@@ -52,7 +51,6 @@ WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
             await using (var connection = new SqlConnection(connectionString))
             {
                 const string sql = "SELECT FileState FROM DonorImportHistory WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
-                connection.Open();
                 var results = connection.Query<DonorImportState?>(sql, new {FileName = filename, UploadTime = uploadTime}).ToArray();
                 return results.SingleOrDefault();
             }
