@@ -16,40 +16,40 @@ namespace Atlas.DonorImport.Data.Repositories
     
     public class DonorImportHistoryRepository : IDonorImportHistoryRepository
     {
-        private string ConnectionString;
+        private readonly string connectionString;
 
         public DonorImportHistoryRepository(string connectionString)
         {
-            ConnectionString = connectionString;
+            this.connectionString = connectionString;
         }
 
         public async Task InsertNewDonorImportRecord(string filename, DateTime uploadTime)
         {
-            await using (var connection = new SqlConnection(ConnectionString))
+            await using (var connection = new SqlConnection(connectionString))
             {
                 var sql = $@"INSERT INTO DonorImportHistory (Filename, UploadTime, FileState, LastUpdated) VALUES ((@FileName), (@UploadTime), (@DonorState), (@Time))";
                 connection.Open();
-                connection.Execute(sql, new {FileName = filename, UploadTime = uploadTime, DonorState = DonorImportState.Started.ToString(), Time = DateTime.Now});
+                connection.Execute(sql, new {FileName = filename, UploadTime = uploadTime, DonorState = DonorImportState.Started.ToString(), Time = DateTime.UtcNow});
                 connection.Close();
             }
         }
 
         public async Task UpdateDonorImportState(string filename, DateTime uploadTime, DonorImportState donorState)
         {
-            await using (var connection = new SqlConnection(ConnectionString))
+            await using (var connection = new SqlConnection(connectionString))
             {
                 var sql = $@"UPDATE DonorImportHistory
 SET FileState = (@State), LastUpdated = (@Time)
 WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
                 connection.Open();
-                await connection.ExecuteAsync(sql, new {FileName = filename, UploadTime = uploadTime, State = donorState.ToString(), Time = DateTime.Now});
+                await connection.ExecuteAsync(sql, new {FileName = filename, UploadTime = uploadTime, State = donorState.ToString(), Time = DateTime.UtcNow});
                 connection.Close();
             }
         }
 
         public async Task<DonorImportState?> GetFileStateIfExists(string filename, DateTime uploadTime)
         {
-            await using (var connection = new SqlConnection(ConnectionString))
+            await using (var connection = new SqlConnection(connectionString))
             {
                 const string sql = "SELECT FileState FROM DonorImportHistory WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
                 connection.Open();
