@@ -31,7 +31,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.PatientHla,
-                    new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullLocus).Build())
+                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullLocus).Build())
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
@@ -63,7 +63,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.DonorHla,
-                    new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullLocus).Build())
+                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullLocus).Build())
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
@@ -97,10 +97,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.DonorHla,
-                    new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullDonorLoci)
+                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullDonorLoci)
                         .Build())
                 .With(h => h.PatientHla,
-                    new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullPatientLoci)
+                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullPatientLoci)
                         .Build())
                 .Build();
 

@@ -26,16 +26,16 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         private IHaplotypeFrequencyService importService;
         private IGenotypeLikelihoodService likelihoodService;
 
-        private readonly string a1 = UnambiguousAlleles.UnambiguousAlleleDetails.GGroups().A.Position1;
-        private readonly string a2 = UnambiguousAlleles.UnambiguousAlleleDetails.GGroups().A.Position2;
-        private readonly string b1 = UnambiguousAlleles.UnambiguousAlleleDetails.GGroups().B.Position1;
-        private readonly string b2 = UnambiguousAlleles.UnambiguousAlleleDetails.GGroups().B.Position2;
-        private readonly string c1 = UnambiguousAlleles.UnambiguousAlleleDetails.GGroups().C.Position1;
-        private readonly string c2 = UnambiguousAlleles.UnambiguousAlleleDetails.GGroups().C.Position2;
-        private readonly string dqb11 = UnambiguousAlleles.UnambiguousAlleleDetails.GGroups().Dqb1.Position1;
-        private readonly string dqb12 = UnambiguousAlleles.UnambiguousAlleleDetails.GGroups().Dqb1.Position2;
-        private readonly string drb11 = UnambiguousAlleles.UnambiguousAlleleDetails.GGroups().Drb1.Position1;
-        private readonly string drb12 = UnambiguousAlleles.UnambiguousAlleleDetails.GGroups().Drb1.Position2;
+        private readonly string a1 = Alleles.UnambiguousAlleleDetails.GGroups().A.Position1;
+        private readonly string a2 = Alleles.UnambiguousAlleleDetails.GGroups().A.Position2;
+        private readonly string b1 = Alleles.UnambiguousAlleleDetails.GGroups().B.Position1;
+        private readonly string b2 = Alleles.UnambiguousAlleleDetails.GGroups().B.Position2;
+        private readonly string c1 = Alleles.UnambiguousAlleleDetails.GGroups().C.Position1;
+        private readonly string c2 = Alleles.UnambiguousAlleleDetails.GGroups().C.Position2;
+        private readonly string dqb11 = Alleles.UnambiguousAlleleDetails.GGroups().Dqb1.Position1;
+        private readonly string dqb12 = Alleles.UnambiguousAlleleDetails.GGroups().Dqb1.Position2;
+        private readonly string drb11 = Alleles.UnambiguousAlleleDetails.GGroups().Drb1.Position1;
+        private readonly string drb12 = Alleles.UnambiguousAlleleDetails.GGroups().Drb1.Position2;
 
         private const string DefaultEthnicityCode = "ethnicity-code";
         private const string DefaultRegistryCode = "registry-code";
@@ -106,7 +106,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         public async Task CalculateLikelihood_WhenLocusIsHomozygous_ReturnsExpectedLikelihood(Locus homozygousLocus, decimal expectedLikelihood)
         {
             var genotype = DefaultUnambiguousGGroupsBuilder
-                .WithDataAt(homozygousLocus, UnambiguousAlleles.UnambiguousAlleleDetails.GetPosition(homozygousLocus, LocusPosition.One).GGroup)
+                .WithDataAt(homozygousLocus, Alleles.UnambiguousAlleleDetails.GetPosition(homozygousLocus, LocusPosition.One).GGroup)
                 .Build();
 
             var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet, allLoci);
@@ -217,6 +217,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         private static PhenotypeInfoBuilder<string> DefaultUnambiguousGGroupsBuilder =>
-            new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.GGroups());
+            new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.GGroups());
     }
 }

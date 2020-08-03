@@ -158,6 +158,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         private static PhenotypeInfoBuilder<string> DefaultGGroupsBuilder =>
-            new PhenotypeInfoBuilder<string>(UnambiguousAlleles.UnambiguousAlleleDetails.GGroups());
+            new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.GGroups());
     }
 }
