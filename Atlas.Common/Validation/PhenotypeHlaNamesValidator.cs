@@ -2,7 +2,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using FluentValidation;
 
-namespace Atlas.MatchingAlgorithm.Validators.Hla
+namespace Atlas.Common.Validation
 {
     public class PhenotypeHlaNamesValidator : AbstractValidator<PhenotypeInfo<string>>
     {
