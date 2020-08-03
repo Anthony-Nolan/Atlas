@@ -6,6 +6,7 @@ using Atlas.Common.Utils;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
+using Dynamitey;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -16,16 +17,18 @@ namespace Atlas.Functions.Functions
     {
         private readonly IMacDictionary macDictionary;
         private readonly IMacImporter macImporter;
+        private string timerExpression;
 
-        public MacDictionaryFunctions(IMacDictionary macDictionary, IMacImporter macImporter)
+        public MacDictionaryFunctions(IMacDictionary macDictionary, IMacImporter macImporter, string timerExpression)
         {
             this.macDictionary = macDictionary;
             this.macImporter = macImporter;
+            this.timerExpression = timerExpression;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(ImportMacs))]
-        public async Task ImportMacs([TimerTrigger("0 0 2 * * *")] TimerInfo myTimer)
+        public async Task ImportMacs()
         {
             await macImporter.ImportLatestMacs();
         }
