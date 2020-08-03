@@ -71,8 +71,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
         private const string MatchingHlaTable_IndexName_PGroupIdAndDonorId = "IX_PGroup_Id_DonorId__TypePosition";
         private const string MatchingHlaTable_IndexName_DonorId = "IX_DonorId__PGroup_Id_TypePosition";
-        private static readonly string[] HlaTables = { MatchingTableName(A), MatchingTableName(B), MatchingTableName(C), MatchingTableName(Drb1), MatchingTableName(Dqb1)};
-        
+
+        private static readonly string[] HlaTables =
+            {MatchingTableName(A), MatchingTableName(B), MatchingTableName(C), MatchingTableName(Drb1), MatchingTableName(Dqb1)};
+
         private const string DropAllDonorsSql = @"TRUNCATE TABLE [Donors]";
         private string BuildDropAllPreProcessedDonorHlaSql() => HlaTables.Select(table => $"TRUNCATE TABLE [{table}];").StringJoinWithNewline();
 
@@ -81,8 +83,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             return BuildIndexCreationSqlFor(
                 MatchingHlaTable_IndexName_PGroupIdAndDonorId,
                 tableName,
-                new[] { "DonorId", "PGroup_Id" },
-                new[] { "TypePosition" }
+                new[] {"PGroup_Id", "DonorId"},
+                new[] {"TypePosition"}
             );
         }
 
@@ -132,7 +134,7 @@ END
                 ReportProjectedCompletionTime = false,
                 ReportPercentageCompletion = false,
             };
-            var text = "Creating HLA Table Indexes. Tables in order: A, B, C, Drb1, Dqb1. PGroup then DonorId, for each table.";
+            const string text = "Creating HLA Table Indexes. Tables in order: A, B, C, Drb1, Dqb1. PGroup then DonorId, for each table.";
             using (var timer = logger.RunLongOperationWithTimer(text, logSettings))
             {
                 await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
@@ -144,6 +146,7 @@ END
                             var pGroupIndexSql = BuildPGroupIndexSqlFor(table);
                             await conn.ExecuteAsync(pGroupIndexSql, commandTimeout: 7200);
                         }
+
                         using (timer.TimeInnerOperation())
                         {
                             var donorIdIndexSql = BuildDonorIdIndexSqlFor(table);
