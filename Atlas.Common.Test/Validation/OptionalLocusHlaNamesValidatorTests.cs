@@ -1,19 +1,19 @@
 ﻿using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.MatchingAlgorithm.Validators.Hla;
+using Atlas.Common.Validation;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Validators.Hla
+namespace Atlas.Common.Test.Validation
 {
     [TestFixture]
-    public class RequiredLocusHlaNamesValidatorTests
+    public class OptionalLocusHlaNamesValidatorTests
     {
-        private RequiredLocusHlaNamesValidator validator;
+        private OptionalLocusHlaNamesValidator validator;
 
         [SetUp]
         public void SetUp()
         {
-            validator = new RequiredLocusHlaNamesValidator();
+            validator = new OptionalLocusHlaNamesValidator();
         }
 
         [Test]
@@ -21,15 +21,15 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.Hla
         {
             var locusHlaNames = new LocusInfo<string>();
             var result = validator.Validate(locusHlaNames);
-            result.IsValid.Should().BeFalse();
+            result.IsValid.Should().BeTrue();
         }
 
         [Test]
-        public void Validator_WhenEmptyHlaStringsAreProvided_ShouldHaveValidationError()
+        public void Validator_WhenEmptyHlaStringsAreProvided_ShouldNotHaveValidationError()
         {
             var locusHlaNames = new LocusInfo<string>("");
             var result = validator.Validate(locusHlaNames);
-            result.IsValid.Should().BeFalse();
+            result.IsValid.Should().BeTrue();
         }
 
         [Test]
@@ -79,11 +79,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.Hla
         }
 
         [Test]
-        public void Validator_WhenBothHlaStringsNull_ShouldHaveValidationError()
+        public void Validator_WhenBothHlaStringsNull_ShouldNotHaveValidationError()
         {
             var locusHlaNames = new LocusInfo<string>(null as string);
             var result = validator.Validate(locusHlaNames);
-            result.IsValid.Should().BeFalse();
+            result.IsValid.Should().BeTrue();
         }
     }
 }
