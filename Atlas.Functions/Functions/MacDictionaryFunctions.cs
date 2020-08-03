@@ -16,13 +16,11 @@ namespace Atlas.Functions.Functions
     {
         private readonly IMacDictionary macDictionary;
         private readonly IMacImporter macImporter;
-        private string timerExpression;
 
-        public MacDictionaryFunctions(IMacDictionary macDictionary, IMacImporter macImporter, string timerExpression)
+        public MacDictionaryFunctions(IMacDictionary macDictionary, IMacImporter macImporter, )
         {
             this.macDictionary = macDictionary;
             this.macImporter = macImporter;
-            this.timerExpression = timerExpression;
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
