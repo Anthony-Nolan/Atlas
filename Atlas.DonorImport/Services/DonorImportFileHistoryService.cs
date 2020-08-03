@@ -30,7 +30,7 @@ namespace Atlas.DonorImport.Services
             var state = await repository.GetFileStateIfExists(filename, donorFile.UploadTime);
             switch (state)
             {
-                case DonorImportState.NotFound:
+                case null:
                     await repository.InsertNewDonorImportRecord(filename, donorFile.UploadTime);
                     break;
                 case DonorImportState.FailedUnexpectedly:
@@ -39,7 +39,6 @@ namespace Atlas.DonorImport.Services
                 default:
                     throw new DuplicateDonorImportException($"Duplicate Donor File Import Attempt. File: {donorFile.FileLocation} was started but already had an entry of state: {state}");
             }
-            
         }
 
         public async Task RegisterSuccessfulDonorImport(DonorImportFile donorFile)

@@ -11,7 +11,7 @@ namespace Atlas.DonorImport.Data.Repositories
     {
         public Task InsertNewDonorImportRecord(string filename, DateTime uploadTime);
         public Task UpdateDonorImportState(string filename, DateTime uploadTime, DonorImportState donorState);
-        public Task<DonorImportState> GetFileStateIfExists(string filename, DateTime uploadTime);
+        public Task<DonorImportState?> GetFileStateIfExists(string filename, DateTime uploadTime);
     }
     
     public class DonorImportHistoryRepository : IDonorImportHistoryRepository
@@ -47,14 +47,18 @@ WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
             }
         }
 
-        public async Task<DonorImportState> GetFileStateIfExists(string filename, DateTime uploadTime)
+        public async Task<DonorImportState?> GetFileStateIfExists(string filename, DateTime uploadTime)
         {
             await using (var connection = new SqlConnection(ConnectionString))
             {
                 const string sql = "SELECT FileState FROM DonorImportHistory WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
                 connection.Open();
                 var results = connection.Query<DonorImportState>(sql, new {FileName = filename, UploadTime = uploadTime}).ToArray();
-                return !results.Any() ? DonorImportState.NotFound : results.Single();
+                if (!results.Any())
+                {
+                    return null;
+                }
+                return results.Single();
             }
         }
     }
