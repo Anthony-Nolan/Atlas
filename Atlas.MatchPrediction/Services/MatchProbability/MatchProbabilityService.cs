@@ -18,6 +18,8 @@ using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchCalculation;
+using Atlas.MatchPrediction.Validators;
+using FluentValidation;
 using LoggingStopwatch;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 using TypedGenotype = Atlas.Common.GeneticData.PhenotypeInfo.PhenotypeInfo<Atlas.MatchPrediction.ExternalInterface.Models.HlaAtKnownTypingCategory>;
@@ -113,6 +115,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
         public async Task<MatchProbabilityResponse> CalculateMatchProbability(MatchProbabilityInput matchProbabilityInput)
         {
+            await new MatchProbabilityInputValidator().ValidateAndThrowAsync(matchProbabilityInput);
+            
             matchPredictionLoggingContext.Initialise(matchProbabilityInput);
 
             var allowedLoci = LocusSettings.MatchPredictionLoci.Except(matchProbabilityInput.ExcludedLoci).ToHashSet();

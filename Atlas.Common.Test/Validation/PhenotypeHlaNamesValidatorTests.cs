@@ -1,11 +1,11 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.MatchingAlgorithm.Validators.Hla;
+using Atlas.Common.Validation;
 using FluentAssertions;
 using FluentValidation;
 using NUnit.Framework;
 
-namespace Atlas.MatchingAlgorithm.Test.Validators.Hla
+namespace Atlas.Common.Test.Validation
 {
     [TestFixture]
     public class PhenotypeHlaNamesValidatorTests

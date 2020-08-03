@@ -1,5 +1,5 @@
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Validators.Hla;
+using Atlas.Common.Validation;
 using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
