@@ -26,13 +26,16 @@ namespace Atlas.DonorImport.Data.Models
         public DateTime UploadTime { get; set; }
         
         [NotMapped]
-        public DonorImportState State { get; set; }
+        public DonorImportState FileState { get; set; }
 
-        public string FileState
+        [Column("FileState")]
+        [Obsolete("Only for use by EF. Use FileState enum property directly.")]
+        // ReSharper disable once UnusedMember.Global - used by EF
+        public string FileStateString
         {
-            get => State.ToString();
+            get => FileState.ToString();
             // ReSharper disable once ValueParameterNotUsed - used by EF
-            set => State = Enum.Parse<DonorImportState>(FileState);
+            set => FileState = Enum.Parse<DonorImportState>(FileStateString);
         }
         
         public DateTime LastUpdated { get; set; }
