@@ -65,24 +65,16 @@ namespace Atlas.DonorImport.Services
             }
             catch (EmptyDonorFileException e)
             {
-                await donorImportFileHistoryService.RegisterFailedDonorImportWithPermanentError(file);
-
                 const string summary = "Donor file was present but it was empty.";
-                logger.SendTrace(summary, LogLevel.Warn);
-
-                await notificationSender.SendAlert(summary, e.StackTrace, Priority.Medium, nameof(ImportDonorFile));
+                await LogErrorAndSendAlert(file, summary, e.StackTrace);
             }
             catch (MalformedDonorFileException e)
             {
-                await donorImportFileHistoryService.RegisterFailedDonorImportWithPermanentError(file);
-                logger.SendTrace(e.Message, LogLevel.Warn);
-                await notificationSender.SendAlert(e.Message, e.StackTrace, Priority.Medium, nameof(ImportDonorFile));
+                await LogErrorAndSendAlert(file, e.Message, e.StackTrace);
             }
             catch (DonorFormatException e)
             {
-                await donorImportFileHistoryService.RegisterFailedDonorImportWithPermanentError(file);
-                logger.SendTrace(e.Message, LogLevel.Warn);
-                await notificationSender.SendAlert(e.Message, e.InnerException?.Message, Priority.Medium, nameof(ImportDonorFile));
+                await LogErrorAndSendAlert(file, e.Message, e.InnerException?.Message);
             }
             catch (DuplicateDonorImportException e)
             {
@@ -102,6 +94,13 @@ Manual investigation is recommended; see Application Insights for more informati
 
                 throw;
             }
+        }
+
+        private async Task LogErrorAndSendAlert(DonorImportFile file, string message, string description)
+        {
+            await donorImportFileHistoryService.RegisterFailedDonorImportWithPermanentError(file);
+            logger.SendTrace(message, LogLevel.Warn);
+            await notificationSender.SendAlert(message, description, Priority.Medium, nameof(ImportDonorFile));
         }
     }
 }
