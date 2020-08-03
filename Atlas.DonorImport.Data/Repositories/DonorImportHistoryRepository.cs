@@ -29,8 +29,7 @@ namespace Atlas.DonorImport.Data.Repositories
             {
                 var sql = $@"INSERT INTO DonorImportHistory (Filename, UploadTime, FileState, LastUpdated) VALUES ((@FileName), (@UploadTime), (@DonorState), (@Time))";
                 connection.Open();
-                var state = DonorImportState.Started.ToString();
-                connection.Execute(sql, new {FileName = filename, UploadTime = uploadTime, DonorState = state, Time = DateTime.Now});
+                connection.Execute(sql, new {FileName = filename, UploadTime = uploadTime, DonorState = DonorImportState.Started.ToString(), Time = DateTime.Now});
                 connection.Close();
             }
         }
@@ -43,8 +42,7 @@ namespace Atlas.DonorImport.Data.Repositories
 SET FileState = (@State), LastUpdated = (@Time)
 WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
                 connection.Open();
-                var state = donorState.ToString();
-                await connection.ExecuteAsync(sql, new {FileName = filename, UploadTime = uploadTime, State = state, Time = DateTime.Now});
+                await connection.ExecuteAsync(sql, new {FileName = filename, UploadTime = uploadTime, State = donorState.ToString(), Time = DateTime.Now});
                 connection.Close();
             }
         }
