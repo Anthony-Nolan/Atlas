@@ -9,6 +9,7 @@ using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OData.Edm;
 using Microsoft.VisualBasic.FileIO;
 using NSubstitute;
 using NUnit.Framework;
@@ -83,7 +84,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         {
             const int numberOfDonors = 5;
             var malformedFile = DonorImportFileWithMissingFieldBuilder.New.WithDonorCount(numberOfDonors).Build();
-            var file = new DonorImportFile {Contents = malformedFile.ToStream(), FileLocation = "file-location"};
+            var file = new DonorImportFile {Contents = malformedFile.ToStream(), FileLocation = "file-location", UploadTime = DateTime.Now};
 
             await donorFileImporter.ImportDonorFile(file);
             await mockNotificationSender.Received().SendAlert("Donor property RecordId cannot be null.", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
@@ -93,7 +94,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         public async Task ImportDonors_WithInvalidEnumAtUpdateInFile_SwallowsErrorAndCompletesSuccessfully()
         {
             var malformedFile = DonorImportFileWithInvalidEnumBuilder.New.Build();
-            var file = new DonorImportFile {Contents = malformedFile.ToStream()};
+            var file = new DonorImportFile {Contents = malformedFile.ToStream(), FileLocation = "file-location", UploadTime = DateTime.Now};
 
             await donorFileImporter.ImportDonorFile(file);
             await mockNotificationSender.Received().SendAlert("Error parsing Donor Format", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
@@ -103,7 +104,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         public async Task ImportDonors_WithInvalidEnumAtDonorUpdate_SwallowsErrorAndCompletesSuccessfully()
         {
             var malformedFile = DonorImportFileWithInvalidEnumBuilder.New.WithInvalidEnumDonor().Build();
-            var file = new DonorImportFile {Contents = malformedFile.ToStream()};
+            var file = new DonorImportFile {Contents = malformedFile.ToStream(), FileLocation = "file-location", UploadTime = DateTime.Now};
 
             await donorFileImporter.ImportDonorFile(file);
             await mockNotificationSender.Received().SendAlert("Error parsing Donor Format", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
@@ -115,7 +116,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
             var donorTestFilePath = $"{typeof(ExceptionHandlingTests).Namespace}.MalformedImport.json";
             await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFilePath))
             {
-                await donorFileImporter.ImportDonorFile(new DonorImportFile {Contents = stream, FileLocation = donorTestFilePath});
+                await donorFileImporter.ImportDonorFile(new DonorImportFile {Contents = stream, FileLocation = donorTestFilePath, UploadTime = DateTime.Now});
             }
             await mockNotificationSender.Received().SendAlert("Invalid JSON was encountered", Arg.Any<string>(), Arg.Any<Priority>(), Arg.Any<string>());
         }
