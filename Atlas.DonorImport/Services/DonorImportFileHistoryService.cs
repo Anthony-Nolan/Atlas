@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
+using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
 
 namespace Atlas.DonorImport.Services
@@ -25,7 +27,19 @@ namespace Atlas.DonorImport.Services
         public async Task RegisterStartOfDonorImport(DonorImportFile donorFile)
         {
             var filename = GetFileNameFromLocation(donorFile.FileLocation);
-            await repository.InsertNewDonorImportRecord(filename, donorFile.UploadTime);
+            var state = await repository.GetFileStateIfExists(filename, donorFile.UploadTime);
+            switch (state)
+            {
+                case DonorImportState.NotFound:
+                    await repository.InsertNewDonorImportRecord(filename, donorFile.UploadTime);
+                    break;
+                case DonorImportState.FailedUnexpectedly:
+                    await UpdateDonorImportRecord(donorFile, DonorImportState.Started);
+                    break;
+                default:
+                    throw new DuplicateDonorImportException($"Duplicate Donor File Import Attempt. File: {donorFile.FileLocation} was started but already had an entry of state: {state}");
+            }
+            
         }
 
         public async Task RegisterSuccessfulDonorImport(DonorImportFile donorFile)
