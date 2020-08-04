@@ -64,6 +64,10 @@ variable "FUNCTION_HOST_KEY" {
   type = string
 }
 
+variable "MAC_IMPORT_CRON_SCHEDULE" {
+  type = string
+}
+
 variable "MESSAGING_BUS_DONOR_BATCH_SIZE" {
   type = number
 }
