@@ -173,16 +173,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 );
             }
 
-            foreach (var patient in patientGenotypes)
-            {
-                patient.CopyExpressingAllelesToNullPositions();
-            }
-
-            foreach (var donor in donorGenotypes)
-            {
-                donor.CopyExpressingAllelesToNullPositions();
-            }
-
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
 
             async Task<List<GenotypeAtDesiredResolutions>> ConvertGenotypes(
@@ -201,9 +191,10 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 await ConvertGenotypes(patientGenotypes, "patient"),
                 await ConvertGenotypes(donorGenotypes, "donor"));
 
-
-            var patientStringGenotypes = patientGenotypes.Select(g => g.ToHlaNames()).ToHashSet();
-            var donorStringGenotypes = donorGenotypes.Select(g => g.ToHlaNames()).ToHashSet();
+            var patientStringGenotypes = patientGenotypes.Select(g => g.ToHlaNames())
+                .Select(r => r.CopyExpressingAllelesToNullPositions()).ToHashSet();
+            var donorStringGenotypes = donorGenotypes.Select(g => g.ToHlaNames())
+                .Select(r => r.CopyExpressingAllelesToNullPositions()).ToHashSet();
 
             // TODO: ATLAS-233: Re-introduce hardcoded 100% probability for guaranteed match but no represented genotypes
             var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientStringGenotypes, frequencySets.PatientSet, allowedLoci);
@@ -212,6 +203,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             using (var matchCountLogger = MatchCountLogger(allPatientDonorCombinations.Count))
             {
                 var patientDonorMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, allowedLoci, matchCountLogger);
+
                 using (logger.RunTimed("Calculate match probability", LogLevel.Verbose))
                 {
                     return matchProbabilityCalculator.CalculateMatchProbability(

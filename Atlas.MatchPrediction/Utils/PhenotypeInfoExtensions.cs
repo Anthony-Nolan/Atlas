@@ -1,7 +1,5 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.MatchPrediction.Data.Models;
-using Atlas.MatchPrediction.ExternalInterface.Models;
 
 namespace Atlas.MatchPrediction.Utils
 {
@@ -9,24 +7,26 @@ namespace Atlas.MatchPrediction.Utils
     {
         /// <summary>
         /// If one of two positions is null copies over expressing alleles to null positions.
-        /// This only works if the data represents P Groups.
+        /// Input hla *MUST* be typed to P Group resolution.
         /// </summary>
-        public static void CopyExpressingAllelesToNullPositions(this PhenotypeInfo<HlaAtKnownTypingCategory> typedGenotype)
+        public static PhenotypeInfo<string> CopyExpressingAllelesToNullPositions(this PhenotypeInfo<string> typedGenotype)
         {
             typedGenotype.EachLocus((locus, locusInfo) =>
             {
                 if (locusInfo.SinglePositionNull())
                 {
-                    if (locusInfo.Position1 == null && locusInfo.Position2.TypingCategory == HaplotypeTypingCategory.PGroup)
+                    if (locusInfo.Position1 == null)
                     {
                         typedGenotype.SetPosition(locus, LocusPosition.One, locusInfo.Position2);
                     }
-                    if (locusInfo.Position2 == null && locusInfo.Position1.TypingCategory == HaplotypeTypingCategory.PGroup)
+                    if (locusInfo.Position2 == null)
                     {
                         typedGenotype.SetPosition(locus, LocusPosition.Two, locusInfo.Position1);
                     }
                 }
             });
+
+            return typedGenotype;
         }
     }
 }
