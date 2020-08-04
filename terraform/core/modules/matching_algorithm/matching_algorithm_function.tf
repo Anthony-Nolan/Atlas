@@ -34,7 +34,7 @@ locals {
     "HlaMetadataDictionary:AzureStorageConnectionString"        = var.azure_storage.primary_connection_string,
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"            = var.WMDA_FILE_URL,
     "MacDictionary:AzureStorageConnectionString"                = var.azure_storage.primary_connection_string
-    "MacDictionary:ScheduleExpression"                          = var.MAC_IMPORT_SCHEDULE_EXPRESSION
+    "MacDictionary:CronSchedule"                                = var.MAC_IMPORT_CRON_SCHEDULE
     "MacDictionary:TableName"                                   = var.mac_import_table.name,
     "MessagingServiceBus:ConnectionString"                      = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
     "MessagingServiceBus:SearchRequestsQueue"                   = azurerm_servicebus_queue.matching-requests.name

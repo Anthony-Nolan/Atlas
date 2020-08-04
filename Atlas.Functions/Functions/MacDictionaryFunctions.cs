@@ -25,7 +25,7 @@ namespace Atlas.Functions.Functions
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(ImportMacs))]
-        public async Task ImportMacs([TimerTrigger("%MacDictionary:ScheduleExpression%")] TimerInfo timer)
+        public async Task ImportMacs([TimerTrigger("%MacDictionary:CronSchedule%")] TimerInfo timer)
         {
             await macImporter.ImportLatestMacs();
         }
