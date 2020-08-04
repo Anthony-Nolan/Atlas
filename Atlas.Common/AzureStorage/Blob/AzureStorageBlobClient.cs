@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.ApplicationInsights;
 using Microsoft.WindowsAzure.Storage;
@@ -33,6 +34,18 @@ namespace Atlas.Common.AzureStorage.Blob
 
             azureStorageEventModel.EndAzureStorageCommunication(UploadLogLabel);
             logger.SendEvent(azureStorageEventModel);
+        }
+
+        protected async Task<Stream> GetContentStream(string containerName, string fileName)
+        {
+            var blob = await GetCloudBlob(containerName, fileName);
+            return await blob.OpenReadAsync();
+        }
+
+        private async Task<CloudBlob> GetCloudBlob(string containerName, string fileName)
+        {
+            var container = await GetBlobContainer(containerName);
+            return container.GetBlobReference(fileName);
         }
 
         private async Task<CloudBlobContainer> GetBlobContainer(string containerName)

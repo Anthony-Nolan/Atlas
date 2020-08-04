@@ -58,10 +58,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
 
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, MatchingAzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, MatchingMessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
@@ -95,11 +95,11 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         public static void RegisterMatchingAlgorithmDonorManagementOnly(
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, MatchingAzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, MatchingMessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
@@ -225,7 +225,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static void RegisterDonorManagementServices(
             this IServiceCollection services,
             Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
+            Func<IServiceProvider, MatchingMessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
             services.AddScoped<IDonorManagementService, DonorManagementService>();
             services.AddScoped<ISearchableDonorUpdateConverter, SearchableDonorUpdateConverter>();
@@ -277,8 +277,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
         private static void RegisterSettingsForMatchingDonorManagement(
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider, MatchingAzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, MatchingMessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings
         )
         {

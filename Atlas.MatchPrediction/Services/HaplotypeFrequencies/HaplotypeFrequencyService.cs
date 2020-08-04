@@ -24,7 +24,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
     public interface IHaplotypeFrequencyService
     {
         /// <summary>
-        /// Imports all haplotype frequencies from a given frequency set file.
+        /// Imports all haplotype frequencies from a given frequency set file stream.
         /// </summary>
         /// <param name="file">Contains both the haplotype frequencies as file contents, as well as metadata about the file itself.</param>
         /// <param name="convertToPGroups">
@@ -38,7 +38,16 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         /// than of GGroup typed haplotypes *and* their corresponding P-Group typed ones.  
         /// </param>
         /// <returns></returns>
-        public Task ImportFrequencySet(FrequencySetFile file, bool convertToPGroups = true);
+        public Task ImportFrequencySetFromFileStream(FrequencySetFile file, bool convertToPGroups = true);
+
+        /// <summary>
+        /// Imports all haplotype frequencies from a named frequency set file.
+        /// This is identical in function to <see cref="ImportFrequencySetFromFileStream"/>;
+        /// the main difference being that a file stream is not provided.
+        /// No support messages or logs are written out as the intended use-case is for testing rather than production.
+        /// </summary>
+        public Task ImportFrequencySet(HaplotypeFrequencySetMetadata fileMetadata, bool convertToPGroups = true);
+
 
         public Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(FrequencySetMetadata donorInfo, FrequencySetMetadata patientInfo);
         public Task<HaplotypeFrequencySet> GetSingleHaplotypeFrequencySet(FrequencySetMetadata setMetaData);
@@ -88,11 +97,11 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             cache = persistentCacheProvider.Cache;
         }
 
-        public async Task ImportFrequencySet(FrequencySetFile file, bool convertToPGroups)
+        public async Task ImportFrequencySetFromFileStream(FrequencySetFile file, bool convertToPGroups)
         {
             try
             {
-                await frequencySetImporter.Import(file, convertToPGroups);
+                await frequencySetImporter.ImportFromStream(file, convertToPGroups);
                 file.ImportedDateTime = DateTimeOffset.UtcNow;
 
                 await SendSuccessNotification(file);
@@ -102,6 +111,11 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 await SendErrorAlert(file, ex);
                 throw;
             }
+        }
+
+        public async Task ImportFrequencySet(HaplotypeFrequencySetMetadata fileMetadata, bool convertToPGroups = true)
+        {
+            await frequencySetImporter.Import(fileMetadata, convertToPGroups);
         }
 
         public async Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySets(FrequencySetMetadata donorInfo, FrequencySetMetadata patientInfo)

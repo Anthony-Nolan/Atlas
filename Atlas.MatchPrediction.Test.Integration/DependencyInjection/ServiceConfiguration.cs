@@ -6,6 +6,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
+using Atlas.MatchPrediction.Settings;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjection;
@@ -25,20 +26,22 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             var services = new ServiceCollection();
 
             services.SetUpConfiguration();
+            services.RegisterSettings();
             services.RegisterMatchPredictionServices(
                 ApplicationInsightsSettingsReader,
                 _ => new HlaMetadataDictionarySettings(),
                 MacDictionarySettingsReader,
+                OptionsReaderFor<MatchPredictionAzureStorageSettings>(),
                 _ => new NotificationsServiceBusSettings(),
                 ConnectionStringReader(MatchPredictionSqlConnectionString)
             );
             services.RegisterIntegrationTestServices();
             services.SetUpMockServices();
-            
+
             // This call must be made after `RegisterMatchPredictionServices()`, as it overrides the non-mock dictionary set up in that method
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(ApplicationInsightsSettingsReader, _ => new MacDictionarySettings());
             services.SetUpMacDictionaryWithFileBackedRepository(
-                ApplicationInsightsSettingsReader, 
+                ApplicationInsightsSettingsReader,
                 MacDictionarySettingsReader);
 
             return services.BuildServiceProvider();
@@ -52,6 +55,11 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
                 .Build();
 
             services.AddSingleton<IConfiguration>(sp => configuration);
+        }
+
+        private static void RegisterSettings(this IServiceCollection services)
+        {
+            services.RegisterAsOptions<MatchPredictionAzureStorageSettings>("AzureStorage");
         }
 
         private static void RegisterIntegrationTestServices(this IServiceCollection services)
@@ -73,9 +81,9 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
         }
 
         private static Func<IServiceProvider, ApplicationInsightsSettings> ApplicationInsightsSettingsReader =>
-            _ => new ApplicationInsightsSettings {LogLevel = "Verbose"};
-        
-        private static Func<IServiceProvider, MacDictionarySettings> MacDictionarySettingsReader => 
+            _ => new ApplicationInsightsSettings { LogLevel = "Verbose" };
+
+        private static Func<IServiceProvider, MacDictionarySettings> MacDictionarySettingsReader =>
         _ => new MacDictionarySettings();
     }
 }

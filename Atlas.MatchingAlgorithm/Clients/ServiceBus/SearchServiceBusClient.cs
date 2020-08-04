@@ -20,11 +20,11 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
         private readonly string searchQueueName;
         private readonly string resultsNotificationTopicName;
 
-        public SearchServiceBusClient(MessagingServiceBusSettings messagingServiceBusSettings)
+        public SearchServiceBusClient(MatchingMessagingServiceBusSettings matchingMessagingServiceBusSettings)
         {
-            connectionString = messagingServiceBusSettings.ConnectionString;
-            searchQueueName = messagingServiceBusSettings.SearchRequestsQueue;
-            resultsNotificationTopicName = messagingServiceBusSettings.SearchResultsTopic;
+            connectionString = matchingMessagingServiceBusSettings.ConnectionString;
+            searchQueueName = matchingMessagingServiceBusSettings.SearchRequestsQueue;
+            resultsNotificationTopicName = matchingMessagingServiceBusSettings.SearchResultsTopic;
         }
 
         public async Task PublishToSearchQueue(IdentifiedSearchRequest searchRequest)

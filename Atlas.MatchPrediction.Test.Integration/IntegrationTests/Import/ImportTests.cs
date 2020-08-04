@@ -54,7 +54,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         {
             using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode).Build();
 
-            await service.ImportFrequencySet(file);
+            await service.ImportFrequencySetFromFileStream(file);
 
             var activeSet = await setRepository.GetActiveSet(registryCode, ethnicityCode);
 
@@ -67,10 +67,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         public async Task Import_DeactivatesPreviouslyActiveSet(string registryCode, string ethnicityCode)
         {
             using var oldFile = FrequencySetFileBuilder.New(registryCode, ethnicityCode).Build();
-            await service.ImportFrequencySet(oldFile);
+            await service.ImportFrequencySetFromFileStream(oldFile);
 
             using var newFile = FrequencySetFileBuilder.New(registryCode, ethnicityCode).Build();
-            await service.ImportFrequencySet(newFile);
+            await service.ImportFrequencySetFromFileStream(newFile);
 
             var activeSet = await setRepository.GetActiveSet(registryCode, ethnicityCode);
             var activeSetCount = await inspectionRepository.ActiveSetCount(registryCode, ethnicityCode);
@@ -87,7 +87,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
             const int frequencyCount = 10;
             using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode, 10).Build();
 
-            await service.ImportFrequencySet(file);
+            await service.ImportFrequencySetFromFileStream(file);
 
             var activeSet = await setRepository.GetActiveSet(registryCode, ethnicityCode);
             var count = await inspectionRepository.HaplotypeFrequencyCount(activeSet.Id);
@@ -102,7 +102,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         {
             using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode).Build();
 
-            await service.ImportFrequencySet(file);
+            await service.ImportFrequencySetFromFileStream(file);
 
             await notificationSender.ReceivedWithAnyArgs().SendNotification(default, default, default);
         }
@@ -116,7 +116,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
             const decimal frequency = 1E-16m;
             using var file = FrequencySetFileBuilder.New(null, null, frequencyValue: frequency).Build();
 
-            await service.ImportFrequencySet(file);
+            await service.ImportFrequencySetFromFileStream(file);
 
             var activeSet = await setRepository.GetActiveSet(null, null);
             var haplotypeFrequency = await inspectionRepository.GetFirstHaplotypeFrequency(activeSet.Id);
@@ -132,7 +132,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 .With(x => x.FullPath, invalidPath)
                 .Build();
 
-            service.Invoking(async importer => await service.ImportFrequencySet(file)).Should().Throw<Exception>();
+            service.Invoking(async importer => await service.ImportFrequencySetFromFileStream(file)).Should().Throw<Exception>();
         }
 
         [TestCase("//ethnicity-only/file")]
@@ -145,7 +145,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
 
             try
             {
-                await service.ImportFrequencySet(file);
+                await service.ImportFrequencySetFromFileStream(file);
             }
             catch (Exception)
             {
@@ -163,7 +163,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
 
             try
             {
-                await service.ImportFrequencySet(file);
+                await service.ImportFrequencySetFromFileStream(file);
             }
             catch (Exception)
             {
@@ -193,7 +193,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 })
                 .Build();
 
-            await service.ImportFrequencySet(file);
+            await service.ImportFrequencySetFromFileStream(file);
 
             var activeSet = await setRepository.GetActiveSet(null, null);
             var importedFrequency = await inspectionRepository.GetFirstHaplotypeFrequency(activeSet.Id);
@@ -232,7 +232,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 })
                 .Build();
 
-            await service.ImportFrequencySet(file, false);
+            await service.ImportFrequencySetFromFileStream(file, false);
 
             var activeSet = await setRepository.GetActiveSet(null, null);
             var importedFrequency = await inspectionRepository.GetFirstHaplotypeFrequency(activeSet.Id);
@@ -260,7 +260,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 })
                 .Build();
 
-            await service.ImportFrequencySet(file);
+            await service.ImportFrequencySetFromFileStream(file);
 
             var activeSet = await setRepository.GetActiveSet(null, null);
             var importedFrequency = await inspectionRepository.GetFirstHaplotypeFrequency(activeSet.Id);
@@ -311,7 +311,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 })
                 .Build();
 
-            await service.ImportFrequencySet(file);
+            await service.ImportFrequencySetFromFileStream(file);
 
             var activeSet = await setRepository.GetActiveSet(null, null);
             var importedFrequency = await inspectionRepository.GetFirstHaplotypeFrequency(activeSet.Id);

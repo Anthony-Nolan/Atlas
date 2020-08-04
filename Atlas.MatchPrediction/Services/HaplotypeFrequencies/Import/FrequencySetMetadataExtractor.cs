@@ -19,8 +19,8 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
             return new HaplotypeFrequencySetMetadata
             {
-                Registry = filePathSections.Length > 1 ? filePathSections.First() : null,
-                Ethnicity = filePathSections.Length == 3 ? filePathSections[1] : null,
+                RegistryCode = filePathSections.Length > 1 ? filePathSections.First() : null,
+                EthnicityCode = filePathSections.Length == 3 ? filePathSections[1] : null,
                 Name = filePathSections.Length > 0 ? filePathSections.Last() : null
             };
         }

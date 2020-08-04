@@ -2,28 +2,31 @@
   "IsEncrypted": false,
   "Values": {
     "ApplicationInsights:LogLevel": "Info",
-    
+
     "AtlasFunction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AtlasFunction:AzureStorage:SearchResultsBlobContainer": "atlas-search-results",
     "AtlasFunction:MessagingServiceBus:ConnectionString": "override-this",
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic": "search-results-ready",
-    
+
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    
+
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",
-    
+
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:Import:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
-    
+
     "Matching:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "Matching:AzureStorage:SearchResultsBlobContainer": "search-algorithm-results",
     "Matching:MessagingServiceBus:ConnectionString": "override-this",
     "Matching:MessagingServiceBus:SearchRequestsQueue": "matching-requests",
     "Matching:MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
-    
+
+    "MatchPrediction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
+    "MatchPrediction:AzureStorage:FrequencySetManualImportBlobContainer": "haplotype-frequency-set-manual-import",
+
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications"

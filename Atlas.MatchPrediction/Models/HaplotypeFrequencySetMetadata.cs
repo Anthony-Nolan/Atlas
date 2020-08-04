@@ -2,8 +2,8 @@
 {
     public class HaplotypeFrequencySetMetadata
     {
-        public string Registry { get; set; }
-        public string Ethnicity { get; set; }
+        public string RegistryCode { get; set; }
+        public string EthnicityCode { get; set; }
         public string Name { get; set; }
     }
 }
