@@ -37,7 +37,7 @@ namespace Atlas.DonorImport.Services
                     await UpdateDonorImportRecord(donorFile, DonorImportState.Started);
                     break;
                 default:
-                    throw new DuplicateDonorImportException($"Duplicate Donor File Import Attempt. File: {donorFile.FileLocation} was started but already had an entry of state: {state}");
+                    throw new DuplicateDonorImportException($"Duplicate Donor File Import Attempt. File: {donorFile.FileLocation} was started but already had an entry of state: {state.ToString()}");
             }
         }
 
