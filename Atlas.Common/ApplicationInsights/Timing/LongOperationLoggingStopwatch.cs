@@ -137,7 +137,7 @@ namespace LoggingStopwatch
                 try
                 {
                     var elapsedOuterTime_MS = outerStopwatch.ElapsedMilliseconds; //Dont pass in just the ElapsedMillis, since that's not completely trivial for it to calculate.
-                    var logMessage = $"Progress: ({newCompletedCount}) operations completed.";
+                    var logMessage = $"Progress: ({newCompletedCount}) operations completed. ";
 
                     if (settings.ExpectedNumberOfIterations.HasValue)
                     {
@@ -145,7 +145,7 @@ namespace LoggingStopwatch
 
                         if (settings.ReportPercentageCompletion)
                         {
-                            logMessage += $"|{completionPercentage:0.00%}";
+                            logMessage += $"|{completionPercentage:0.00%} ";
                         }
 
                         if (settings.ReportProjectedCompletionTime)
