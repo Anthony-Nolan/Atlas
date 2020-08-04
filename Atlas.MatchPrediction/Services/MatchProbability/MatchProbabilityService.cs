@@ -37,6 +37,25 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
     internal class GenotypeAtDesiredResolutions
     {
+        /// <summary>
+        /// HLA at the resolution at which they were stored.
+        /// i.e. G group, or P group if any null alleles are present in the haplotype.
+        /// </summary>
+        public StringGenotype HaplotypeResolution { get; }
+
+        /// <summary>
+        /// HLA at a resolution at which it is possible to calculate match counts using string comparison only, no expansion.
+        /// TODO: ATLAS-572: Ensure the null homozygous case is covered.
+        /// i.e. P group, or G group for null expressing alleles. 
+        /// </summary>
+        public StringGenotype StringMatchableResolution { get; }
+
+        private GenotypeAtDesiredResolutions(TypedGenotype haplotypeResolution, StringGenotype stringMatchableResolution)
+        {
+            HaplotypeResolution = haplotypeResolution.ToHlaNames();
+            StringMatchableResolution = stringMatchableResolution;
+        }
+
         public static async Task<GenotypeAtDesiredResolutions> FromHaplotypeResolutions(
             TypedGenotype haplotypeResolutions,
             IHlaMetadataDictionary hlaMetadataDictionary)
@@ -58,25 +77,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             return new GenotypeAtDesiredResolutions(haplotypeResolutions, stringMatchableResolutions);
         }
-
-        private GenotypeAtDesiredResolutions(TypedGenotype haplotypeResolution, StringGenotype stringMatchableResolution)
-        {
-            HaplotypeResolution = haplotypeResolution;
-            StringMatchableResolution = stringMatchableResolution;
-        }
-
-        /// <summary>
-        /// HLA at the resolution at which they were stored.
-        /// i.e. G group, or P group if any null alleles are present in the haplotype.
-        /// </summary>
-        public TypedGenotype HaplotypeResolution { get; }
-
-        /// <summary>
-        /// HLA at a resolution at which it is possible to calculate match counts using string comparison only, no expansion.
-        /// TODO: ATLAS-572: Ensure the null homozygous case is covered.
-        /// i.e. P group, or G group for null expressing alleles. 
-        /// </summary>
-        public StringGenotype StringMatchableResolution { get; }
     }
 
     internal class MatchProbabilityService : IMatchProbabilityService
@@ -162,8 +162,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 };
             }
 
-            // TODO: ATLAS-566: Currently for patient/donor pairs the threshold is about ten million before the request starts taking >2 minutes
-            if (donorGenotypes.Count * patientGenotypes.Count > 15_000_000)
+            // TODO: ATLAS-566: Currently for patient/donor pairs the threshold is about twenty million before the request starts taking >2 minutes
+            if (donorGenotypes.Count * patientGenotypes.Count > 20_000_000)
             {
                 throw new NotImplementedException(
                     "Calculating the MatchCounts of provided donor patient pairs would take upwards of 2 minutes." +
@@ -289,8 +289,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                         return new GenotypeMatchDetails
                         {
                             AvailableLoci = allowedLoci,
-                            DonorGenotype = donor.HaplotypeResolution.ToHlaNames(),
-                            PatientGenotype = patient.HaplotypeResolution.ToHlaNames(),
+                            DonorGenotype = donor.HaplotypeResolution,
+                            PatientGenotype = patient.HaplotypeResolution,
                             MatchCounts = matchCalculationService.CalculateMatchCounts_Fast(
                                 patient.StringMatchableResolution,
                                 donor.StringMatchableResolution,
