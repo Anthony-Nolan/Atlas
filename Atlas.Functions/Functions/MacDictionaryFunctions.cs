@@ -17,7 +17,7 @@ namespace Atlas.Functions.Functions
         private readonly IMacDictionary macDictionary;
         private readonly IMacImporter macImporter;
 
-        public MacDictionaryFunctions(IMacDictionary macDictionary, IMacImporter macImporter, )
+        public MacDictionaryFunctions(IMacDictionary macDictionary, IMacImporter macImporter)
         {
             this.macDictionary = macDictionary;
             this.macImporter = macImporter;
@@ -25,7 +25,7 @@ namespace Atlas.Functions.Functions
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(ImportMacs))]
-        public async Task ImportMacs()
+        public async Task ImportMacs([TimerTrigger("%MacDictionary:ScheduleExpression%")] TimerInfo timer)
         {
             await macImporter.ImportLatestMacs();
         }

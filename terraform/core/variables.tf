@@ -48,6 +48,12 @@ variable "LOCATION" {
   description = "GeoLocation of all Azure resources for this ATLAS installation."
 }
 
+variable "MAC_IMPORT_SCHEDULE_EXPRESSION" {
+  type        = string
+  default     = "0 0 2 * * *"
+  description = "Crontab used to determine when to run the ImportMacs Function."
+}
+
 variable "MAC_SOURCE" {
   type        = string
   default     = "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip"
