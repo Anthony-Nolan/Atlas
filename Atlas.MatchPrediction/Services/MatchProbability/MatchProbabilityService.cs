@@ -172,6 +172,16 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 );
             }
 
+            foreach (var patient in patientGenotypes)
+            {
+                patient.CopyExpressingAllelesToNullPositions();
+            }
+
+            foreach (var donor in donorGenotypes)
+            {
+                donor.CopyExpressingAllelesToNullPositions();
+            }
+
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
 
             async Task<List<GenotypeAtDesiredResolutions>> ConvertGenotypes(
@@ -211,6 +221,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 }
             }
         }
+
+
 
         private async Task<ISet<TypedGenotype>> ExpandToGenotypes(
             StringGenotype phenotype,
