@@ -16,6 +16,7 @@ namespace Atlas.Common.Test.Matching.Services
 
         // ReSharper disable once InconsistentNaming
         private const string PatientPGroup1_1 = "p-group1-1";
+
         // ReSharper disable once InconsistentNaming
         private const string PatientPGroup1_2 = "p-group1-2";
         private const string PatientPGroup2 = "p-group2";
@@ -25,24 +26,24 @@ namespace Atlas.Common.Test.Matching.Services
 
         // Use constant patient hla data to make tests shorter
 
-        private readonly LocusInfo<IEnumerable<string>> defaultHla = new LocusInfo<IEnumerable<string>>()
-        {
-            Position1 = new List<string> {PatientPGroup1_1, PatientPGroup1_2},
-            Position2 = new List<string> {PatientPGroup2},
-        };
+        private readonly LocusInfo<IEnumerable<string>> homozygousHla = new LocusInfo<IEnumerable<string>>
+        (
+            new List<string> {PatientPGroupHomozygous},
+            new List<string> {PatientPGroupHomozygous}
+        );
 
-        private readonly LocusInfo<IEnumerable<string>> homozygousHla = new LocusInfo<IEnumerable<string>>()
-        {
-            Position1 = new List<string> {PatientPGroupHomozygous},
-            Position2 = new List<string> {PatientPGroupHomozygous},
-        };
+        private readonly LocusInfo<IEnumerable<string>> defaultHla = new LocusInfo<IEnumerable<string>>
+        (
+            new List<string> {PatientPGroup1_1, PatientPGroup1_2},
+            new List<string> {PatientPGroup2}
+        );
 
         private readonly LocusInfo<IEnumerable<string>> hlaWithNoAllelesAtPositionOne =
-            new LocusInfo<IEnumerable<string>>()
-            {
-                Position1 = new List<string> { },
-                Position2 = new List<string> {PatientPGroup2},
-            };
+            new LocusInfo<IEnumerable<string>>
+            (
+                new List<string>(),
+                new List<string> {PatientPGroup2}
+            );
 
         [SetUp]
         public void SetUp()

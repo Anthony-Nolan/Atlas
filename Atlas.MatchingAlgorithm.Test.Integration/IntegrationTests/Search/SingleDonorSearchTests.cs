@@ -26,51 +26,19 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         // A selection of valid hla data for the single donor to have
         private readonly PhenotypeInfo<string> donorHlas = new PhenotypeInfo<string>
         {
-            A =
-            {
-                Position1 = "01:02",
-                Position2 = "01:02",
-            },
-            B =
-            {
-                Position1 = "14:53",
-                Position2 = "14:47",
-            },
-            Drb1 =
-            {
-                Position1 = "13:03:01",
-                Position2 = "13:02:01:03",
-            },
-            C =
-            {
-                Position1 = "02:02",
-                Position2 = "02:02",
-            }
+            A = new LocusInfo<string>("01:02", "01:02"),
+            B = new LocusInfo<string>("14:53", "14:47"),
+            Drb1 = new LocusInfo<string>("13:03:01", "13:02:01:03"),
+            C = new LocusInfo<string>("02:02", "02:02")
         };
 
         // A selection of valid hla strings that do not match the donor's
         private readonly PhenotypeInfo<string> nonMatchingHlas = new PhenotypeInfo<string>
         {
-            A =
-            {
-                Position1 = "02:01:01:01",
-                Position2 = "02:01:01:01",
-            },
-            B =
-            {
-                Position1 = "07:02:01:01",
-                Position2 = "07:02:13",
-            },
-            Drb1 =
-            {
-                Position1 = "14:190",
-                Position2 = "14:190",
-            },
-            C =
-            {
-                Position1 = "07:01",
-                Position2 = "07:01",
-            }
+            A = new LocusInfo<string>("02:01:01:01", "02:01:01:01"),
+            B = new LocusInfo<string>("07:02:01:01", "07:02:13"),
+            Drb1 = new LocusInfo<string>("14:190", "14:190"),
+            C = new LocusInfo<string>("07:01", "07:01")
         };
 
         [OneTimeSetUp]
@@ -78,8 +46,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                var donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForActiveHlaNomenclatureVersion();
-                var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = donorHlas }).Result.MatchingHla;
+                var donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>()
+                    .BuildForActiveHlaNomenclatureVersion();
+                var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo {HlaNames = donorHlas}).Result.MatchingHla;
                 var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
                 var donorRepository = repositoryFactory.GetDonorUpdateRepository();
 
@@ -90,7 +59,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                     HlaNames = donorHlas,
                     MatchingHla = matchingHlaPhenotype
                 };
-                donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }, false).Wait();
+                donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor}, false).Wait();
             });
         }
 
@@ -171,7 +140,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithLociToScore(new List<Locus> { Locus.C, Locus.Dqb1 })
+                .WithLociToScore(new List<Locus> {Locus.C, Locus.Dqb1})
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -186,7 +155,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithLociToScore(new List<Locus> { Locus.C, Locus.Dqb1 })
+                .WithLociToScore(new List<Locus> {Locus.C, Locus.Dqb1})
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -201,7 +170,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithLociToScore(new List<Locus> { Locus.C })
+                .WithLociToScore(new List<Locus> {Locus.C})
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -216,7 +185,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithLociToScore(new List<Locus> { Locus.A })
+                .WithLociToScore(new List<Locus> {Locus.A})
                 .Build();
 
             var results = await searchService.Search(searchRequest);
@@ -231,7 +200,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()
-                .WithLociToScore(new List<Locus> { Locus.Dqb1 })
+                .WithLociToScore(new List<Locus> {Locus.Dqb1})
                 .Build();
 
             var results = await searchService.Search(searchRequest);

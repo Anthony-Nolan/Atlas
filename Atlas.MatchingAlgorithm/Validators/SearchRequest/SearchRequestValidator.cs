@@ -1,4 +1,5 @@
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Validation;
 using FluentValidation;
 

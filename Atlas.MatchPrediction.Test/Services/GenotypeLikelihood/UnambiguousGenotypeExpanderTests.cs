@@ -278,39 +278,39 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         {
             var genotypeWithAllFields = new PhenotypeInfo<string>
             {
-                A = {Position1 = A1, Position2 = A2},
-                B = {Position1 = B1, Position2 = B2},
-                C = {Position1 = C1, Position2 = C2},
-                Dqb1 = {Position1 = Dqb11, Position2 = Dqb12},
-                Drb1 = {Position1 = Drb11, Position2 = Drb12}
+                A = new LocusInfo<string>(A1, A2),
+                B = new LocusInfo<string>(B1, B2),
+                C = new LocusInfo<string>(C1, C2),
+                Dqb1 = new LocusInfo<string>(Dqb11, Dqb12),
+                Drb1 = new LocusInfo<string>(Drb11, Drb12)
             };
             unambiguousGenotypeExpander.ExpandGenotype(genotypeWithAllFields, allLoci);
 
             var genotypeWithMissingField = new PhenotypeInfo<string>
             {
-                A = {Position1 = A1, Position2 = A2},
-                B = {Position1 = B1, Position2 = B2},
-                Dqb1 = {Position1 = Dqb11, Position2 = Dqb12},
-                Drb1 = {Position1 = Drb11, Position2 = Drb12}
+                A = new LocusInfo<string>(A1, A2),
+                B = new LocusInfo<string>(B1, B2),
+                Dqb1 = new LocusInfo<string>(Dqb11, Dqb12),
+                Drb1 = new LocusInfo<string>(Drb11, Drb12)
             };
             unambiguousGenotypeExpander.ExpandGenotype(genotypeWithMissingField, allLoci);
 
             var genotypeWithHomozygousType = new PhenotypeInfo<string>
             {
-                A = {Position1 = "homozygous", Position2 = "homozygous"},
-                B = {Position1 = B1, Position2 = B2},
-                C = {Position1 = C1, Position2 = C2},
-                Dqb1 = {Position1 = Dqb11, Position2 = Dqb12},
-                Drb1 = {Position1 = Drb11, Position2 = Drb12}
+                A = new LocusInfo<string>("homozygous", "homozygous"),
+                B = new LocusInfo<string>(B1, B2),
+                C = new LocusInfo<string>(C1, C2),
+                Dqb1 = new LocusInfo<string>(Dqb11, Dqb12),
+                Drb1 = new LocusInfo<string>(Drb11, Drb12)
             };
             unambiguousGenotypeExpander.ExpandGenotype(genotypeWithHomozygousType, allLoci);
 
             var genotypeWithHomozygousTypeAndMissingField = new PhenotypeInfo<string>
             {
-                A = {Position1 = "homozygous", Position2 = "homozygous"},
-                B = {Position1 = B1, Position2 = B2},
-                Dqb1 = {Position1 = Dqb11, Position2 = Dqb12},
-                Drb1 = {Position1 = Drb11, Position2 = Drb12}
+                A = new LocusInfo<string>("homozygous", "homozygous"),
+                B = new LocusInfo<string>(B1, B2),
+                Dqb1 = new LocusInfo<string>(Dqb11, Dqb12),
+                Drb1 = new LocusInfo<string>(Drb11, Drb12)
             };
             unambiguousGenotypeExpander.ExpandGenotype(genotypeWithHomozygousTypeAndMissingField, allLoci);
         }

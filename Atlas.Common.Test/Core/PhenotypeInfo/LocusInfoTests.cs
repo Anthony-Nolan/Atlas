@@ -24,10 +24,9 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
         {
             const string position1 = "[TEST] FIRST POSITION";
             const string position2 = "[TEST] SECOND POSITION";
-            var locusInfo = new LocusInfo<string>();
-
-            locusInfo.SetAtPosition(LocusPosition.One, position1);
-            locusInfo.SetAtPosition(LocusPosition.Two, position2);
+            var locusInfo = new LocusInfo<string>()
+                .SetAtPosition(LocusPosition.One, position1)
+                .SetAtPosition(LocusPosition.Two, position2);
 
             locusInfo.Position1.Should().Be(position1);
             locusInfo.Position2.Should().Be(position2);

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
@@ -23,9 +24,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         /// </summary>
         public IEnumerable<Locus> ExcludedLoci { get; set; } = new List<Locus>();
 
-        public PhenotypeInfo<string> DonorHla { get; set; }
+        public PhenotypeInfoTransfer<string> DonorHla { get; set; }
         public FrequencySetMetadata DonorFrequencySetMetadata { get; set; }
-        public PhenotypeInfo<string> PatientHla { get; set; }
+        public PhenotypeInfoTransfer<string> PatientHla { get; set; }
         public FrequencySetMetadata PatientFrequencySetMetadata { get; set; }
         public string HlaNomenclatureVersion { get; set; }
     }

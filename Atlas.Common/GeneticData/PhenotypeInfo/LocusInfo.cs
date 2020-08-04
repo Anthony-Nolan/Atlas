@@ -14,10 +14,11 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
     /// A <see cref="PhenotypeInfo{T}"/> is a special case of <see cref="LociInfo{T}"/>, where T = LocusInfo.
     /// </summary>
     [DebuggerDisplay("1: {Position1}, 2: {Position2}")]
+    // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
     public class LocusInfo<T> : IEquatable<LocusInfo<T>>
     {
-        public T Position1 { get; set; }
-        public T Position2 { get; set; }
+        public T Position1 { get; }
+        public T Position2 { get; }
 
         #region Constructors
 
@@ -54,19 +55,18 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
-        public void SetAtPosition(LocusPosition position, T value)
+        /// <summary>
+        /// Returns a new LocusInfo, with the given value set at the appropriate position.
+        /// Does not modify in place, as this class is immutable.
+        /// </summary>
+        public LocusInfo<T> SetAtPosition(LocusPosition position, T value)
         {
-            switch (position)
+            return position switch
             {
-                case LocusPosition.One:
-                    Position1 = value;
-                    break;
-                case LocusPosition.Two:
-                    Position2 = value;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(position), position, null);
-            }
+                LocusPosition.One => new LocusInfo<T>(value, Position2),
+                LocusPosition.Two => new LocusInfo<T>(Position1, value),
+                _ => throw new ArgumentOutOfRangeException(nameof(position), position, null)
+            };
         }
 
         public void EachPosition(Action<LocusPosition, T> action)
@@ -92,11 +92,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         public LocusInfo<T> Swap()
         {
             return new LocusInfo<T>(Position2, Position1);
-        }
-
-        public IEnumerable<T> ToEnumerable()
-        {
-            return new List<T> {Position1, Position2};
         }
 
         public bool Position1And2Null()
@@ -132,15 +127,25 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
 
         public virtual bool Equals(LocusInfo<T> other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            if (other.GetType() != this.GetType()) return false;
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (other.GetType() != GetType())
+            {
+                return false;
+            }
+
             return EqualityComparer<T>.Default.Equals(Position1, other.Position1) &&
                    EqualityComparer<T>.Default.Equals(Position2, other.Position2);
         }
 
-        // TODO: ATLAS-499. This HashCode references mutable properties, which is a BadThing(TM).
-        // Make the whole class fully immutable.
         public override int GetHashCode()
         {
             unchecked
