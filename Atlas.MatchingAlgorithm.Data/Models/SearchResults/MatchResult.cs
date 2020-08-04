@@ -14,15 +14,16 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
         private DonorInfo.DonorInfo donorInfo;
 
         #region Partial donor information used in matching
-        
+
         // Stored separately from the donors, as the lookup in the matches table only returns the id
         // We don't want to populate the full donor object until some filtering has been applied on those results
         public int DonorId { get; set; }
+
         // Stored separately from the Donor object as we don't want to populate all donor data until we're done filtering
         public PhenotypeInfo<IEnumerable<string>> DonorPGroups { get; set; }
 
         #endregion
-        
+
         public DonorInfo.DonorInfo DonorInfo
         {
             get
@@ -40,6 +41,7 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
                 {
                     throw new ReadOnlyException("Matching data cannot be changed after it has been marked as fully populated");
                 }
+
                 donorInfo = value;
             }
         }
@@ -53,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
         /// </summary>
         public IEnumerable<Locus> MatchedLoci => EnumerateValues<Locus>()
             .Where(l => MatchDetailsForLocus(l) != null);
-        
+
         private IEnumerable<LocusMatchDetails> LocusMatchDetails => new List<LocusMatchDetails>
         {
             MatchDetailsAtLocusA,
@@ -109,14 +111,14 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
 
             return matchDetails;
         }
-        
+
         public void SetMatchDetailsForLocus(Locus locus, LocusMatchDetails locusMatchDetails)
         {
             if (isMatchingDataFullyPopulated)
             {
                 throw new ReadOnlyException("Matching data cannot be changed after it has been marked as fully populated");
             }
-            
+
             switch (locus)
             {
                 case Locus.A:
@@ -146,5 +148,7 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
         {
             isMatchingDataFullyPopulated = true;
         }
+
+        public int TypedLociCount => DonorInfo.HlaNames.Reduce((_, hla, count) => hla.Position1And2NotNull() ? count + 1 : count, 0);
     }
 }

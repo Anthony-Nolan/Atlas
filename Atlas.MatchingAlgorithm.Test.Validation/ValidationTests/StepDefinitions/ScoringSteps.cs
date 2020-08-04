@@ -120,7 +120,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         public void ThenTheMatchConfidenceShouldBe(int typedLociCount)
         {
             var donorResult = GetSearchResultForSingleDonor();
-            donorResult.TypedLociCount.Should().Be(typedLociCount);
+            donorResult.TypedLociCountAtScoredLoci.Should().Be(typedLociCount);
         }
 
         private MatchingAlgorithmResult GetSearchResultForSingleDonor()

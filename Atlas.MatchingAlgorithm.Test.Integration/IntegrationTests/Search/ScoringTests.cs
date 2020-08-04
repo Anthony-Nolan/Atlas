@@ -71,10 +71,26 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
-            result.TypedLociCount.Should().BeNull();
+            result.TypedLociCountAtScoredLoci.Should().BeNull();
             result.GradeScore.Should().BeNull();
             result.ConfidenceScore.Should().BeNull();
             result.MatchCategory.Should().BeNull();
+        }
+        
+        [Test]
+        public async Task Search_ScoreNoLoci_ReturnsTypedLociCount()
+        {
+            var searchRequest = new SearchRequestFromHlasBuilder(
+                    defaultHlaSet.SixLocus_SingleExpressingAlleles,
+                    mismatchHlaSet.SixLocus_SingleExpressingAlleles)
+                .TenOutOfTen()
+                .WithLociToScore(new List<Locus>())
+                .Build();
+
+            var results = await searchService.Search(searchRequest);
+            var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
+
+            result?.TypedLociCount.Should().Be(6);
         }
 
         [Test]
@@ -90,7 +106,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
-            result.TypedLociCount.Should().Be(1);
+            result.TypedLociCountAtScoredLoci.Should().Be(1);
             result.GradeScore.Should().NotBeNull();
             result.ConfidenceScore.Should().NotBeNull();
             result.MatchCategory.Should().NotBeNull();
@@ -109,7 +125,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
-            result.TypedLociCount.Should().Be(6);
+            result.TypedLociCountAtScoredLoci.Should().Be(6);
             result.GradeScore.Should().NotBeNull();
             result.ConfidenceScore.Should().NotBeNull();
             result.MatchCategory.Should().NotBeNull();

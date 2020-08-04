@@ -126,15 +126,16 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 AtlasDonorId = result.MatchResult.DonorInfo.DonorId,
                 DonorType = result.MatchResult.DonorInfo.DonorType,
 
-                //matching results
+                // matching results
                 TotalMatchCount = result.MatchResult.TotalMatchCount,
                 DonorHla = result.MatchResult.DonorInfo.HlaNames,
+                TypedLociCount = result.MatchResult.TypedLociCount,
 
                 // scoring results
                 MatchCategory = result.ScoreResult?.AggregateScoreDetails.MatchCategory,
                 ConfidenceScore = result.ScoreResult?.AggregateScoreDetails.ConfidenceScore,
                 GradeScore = result.ScoreResult?.AggregateScoreDetails.GradeScore,
-                TypedLociCount = result.ScoreResult?.AggregateScoreDetails.TypedLociCount,
+                TypedLociCountAtScoredLoci = result.ScoreResult?.AggregateScoreDetails.TypedLociCount,
 
                 // combines both matching and scoring results
                 PotentialMatchCount = result.PotentialMatchCount,

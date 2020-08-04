@@ -51,6 +51,12 @@ namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults
         /// The number of loci which are typed for this donor.
         /// Loci excluded from scoring and aggregation will not be included, regardless of whether they are typed.
         /// </summary>
+        public int? TypedLociCountAtScoredLoci { get; set; }
+        
+        /// <summary>
+        /// The number of loci which are typed for this donor.
+        /// This will be calculated for all loci, regardless of whether they were excluded from scoring aggregation.
+        /// </summary>
         public int? TypedLociCount { get; set; }
 
         /// <summary>
