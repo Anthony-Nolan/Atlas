@@ -4,6 +4,7 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
 using LochNessBuilder;
 using System.Collections.Generic;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 {
@@ -12,7 +13,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
     {
         public static Builder<MatchResultsScoringRequest> New =>
             Builder<MatchResultsScoringRequest>.New
-                .With(x => x.PatientHla, new PhenotypeInfo<string>())
+                .With(x => x.PatientHla, new PhenotypeInfo<string>().ToPhenotypeInfoTransfer())
                 .With(x => x.MatchResults, new List<MatchResult>())
                 .With(x => x.ScoringCriteria, ScoringCriteriaBuilder.New.Build());
 

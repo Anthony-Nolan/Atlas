@@ -1,4 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
@@ -26,13 +31,41 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
 
         [HttpPut]
         [Route("batch")]
-        public async Task CreateOrUpdateDonorBatch([FromBody] DonorInfoBatch donorBatch)
+        public async Task CreateOrUpdateDonorBatch([FromBody] DonorInfoBatchTransfer donorBatch)
         {
             await donorService.CreateOrUpdateDonorBatch(
-                donorBatch.Donors,
+                donorBatch.Donors.Select(d => d.ToDonorInfo()),
                 activeDatabaseProvider.GetActiveDatabase(),
                 hlaVersionAccessor.GetActiveHlaNomenclatureVersion(),
                 true);
+        }
+    }
+
+    // Need to use a transfer model rather than exposing database model directly, as it contains a PhenotypeInfo, which is immutable and cannot be serialised.
+    public class DonorInfoBatchTransfer
+    {
+        public IEnumerable<DonorInfoTransfer> Donors { get; set; }
+    }
+
+    public class DonorInfoTransfer
+    {
+        public int DonorId { get; set; }
+        public DonorType DonorType { get; set; }
+        public PhenotypeInfoTransfer<string> HlaNames { get; set; }
+        public bool IsAvailableForSearch { get; set; } = true;
+    }
+
+    public static class DonorInfoTransferMapping
+    {
+        public static DonorInfo ToDonorInfo(this DonorInfoTransfer donorInfoTransfer)
+        {
+            return new DonorInfo
+            {
+                DonorId = donorInfoTransfer.DonorId,
+                DonorType = donorInfoTransfer.DonorType,
+                HlaNames = donorInfoTransfer.HlaNames.ToPhenotypeInfo(),
+                IsAvailableForSearch = donorInfoTransfer.IsAvailableForSearch
+            };
         }
     }
 }

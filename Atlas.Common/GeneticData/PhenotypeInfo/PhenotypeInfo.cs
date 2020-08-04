@@ -187,7 +187,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
 
         public void SetPosition(Locus locus, LocusPosition position, T value)
         {
-            GetLocus(locus).SetAtPosition(position, value);
+            SetLocus(locus, GetLocus(locus).SetAtPosition(position, value));
         }
 
         public void SetLocus(Locus locus, T value)
@@ -275,36 +275,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
 
             return new PhenotypeInfo<R>
             {
-                A =
-                {
-                    Position1 = taskA.Result.Position1,
-                    Position2 = taskA.Result.Position2,
-                },
-                B =
-                {
-                    Position1 = taskB.Result.Position1,
-                    Position2 = taskB.Result.Position2,
-                },
-                C =
-                {
-                    Position1 = taskC.Result.Position1,
-                    Position2 = taskC.Result.Position2,
-                },
-                Dpb1 =
-                {
-                    Position1 = taskDpb1.Result.Position1,
-                    Position2 = taskDpb1.Result.Position2,
-                },
-                Dqb1 =
-                {
-                    Position1 = taskDqb1.Result.Position1,
-                    Position2 = taskDqb1.Result.Position2,
-                },
-                Drb1 =
-                {
-                    Position1 = taskDrb1.Result.Position1,
-                    Position2 = taskDrb1.Result.Position2
-                }
+                A = new LocusInfo<R>(taskA.Result.Position1, taskA.Result.Position2),
+                B = new LocusInfo<R>(taskB.Result.Position1, taskB.Result.Position2),
+                C = new LocusInfo<R>(taskC.Result.Position1, taskC.Result.Position2),
+                Dpb1 = new LocusInfo<R>(taskDpb1.Result.Position1, taskDpb1.Result.Position2),
+                Dqb1 = new LocusInfo<R>(taskDqb1.Result.Position1, taskDqb1.Result.Position2),
+                Drb1 = new LocusInfo<R>(taskDrb1.Result.Position1, taskDrb1.Result.Position2),
             };
         }
 

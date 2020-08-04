@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.Common.Utils.Extensions;
 using Atlas.Common.Utils.Models;
@@ -107,8 +108,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDataAt(Locus.Drb1, gGroupDrb1).Build();
 
             var matchProbabilityInput = DefaultInputBuilder
-                .With(i => i.PatientHla, patientHla)
-                .With(i => i.DonorHla, donorHla)
+                .WithPatientHla(patientHla)
+                .WithDonorHla(donorHla)
                 .Build();
 
             var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0};
@@ -170,7 +171,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDataAt(Locus.Drb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
                 .Build();
 
-            var matchProbabilityInput = DefaultInputBuilder.With(i => i.PatientHla, patientHla).Build();
+            var matchProbabilityInput = DefaultInputBuilder.WithPatientHla(patientHla).Build();
 
             var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
             {
@@ -253,8 +254,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchProbabilityInput = new MatchProbabilityInput
             {
-                PatientHla = patientHla,
-                DonorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.C, null as string).Build(),
+                PatientHla = patientHla.ToPhenotypeInfoTransfer(),
+                DonorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.C, null as string).Build().ToPhenotypeInfoTransfer(),
                 HlaNomenclatureVersion = HlaNomenclatureVersion,
                 DonorFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode },
                 PatientFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode }
@@ -313,8 +314,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 DefaultHaplotypeFrequency2.WithFrequency(0.07m),
             });
             var matchProbabilityInput = DefaultInputBuilder
-                .With(i => i.PatientHla, patientHla)
-                .With(i => i.DonorHla, donorHla)
+                .WithPatientHla(patientHla)
+                .WithDonorHla(donorHla)
                 .Build();
 
             var matchProbability = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
@@ -346,8 +347,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .Build();
 
             var matchProbabilityInput = DefaultInputBuilder
-                .With(i => i.PatientHla, patientHla)
-                .With(i => i.DonorHla, donorHla)
+                .WithPatientHla(patientHla)
+                .WithDonorHla(donorHla)
                 .Build();
             await ImportFrequencies(new List<HaplotypeFrequency>
             {

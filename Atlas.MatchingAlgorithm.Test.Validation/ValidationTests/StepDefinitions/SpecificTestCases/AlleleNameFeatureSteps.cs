@@ -8,13 +8,13 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
     public class AlleleNameFeatureSteps
     {
         private readonly ScenarioContext scenarioContext;
-        
+
         public AlleleNameFeatureSteps(ScenarioContext scenarioContext)
         {
             this.scenarioContext = scenarioContext;
         }
 
-        
+
         [Given(@"the matching donor has a deleted allele")]
         public async Task GivenADonorWithADeletedAllele()
         {
@@ -23,15 +23,15 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
 
             var donorHla = new PhenotypeInfo<string>
             {
-                A = {Position1 = deletedAlleleAtA, Position2 = "*01:01"},
-                B = {Position1 = "*15:01", Position2 = "*15:01"},
-                Drb1 = {Position1 = "*15:03", Position2 = "*15:03"}
+                A = new LocusInfo<string>(deletedAlleleAtA, "*01:01"),
+                B = new LocusInfo<string>("*15:01", "*15:01"),
+                Drb1 = new LocusInfo<string>("*15:03", "*15:03")
             };
             var patientHla = new PhenotypeInfo<string>
             {
-                A = {Position1 = replacementAlleleAtA, Position2 = donorHla.A.Position2},
-                B = {Position1 = donorHla.B.Position1, Position2 = donorHla.B.Position2},
-                Drb1 = {Position1 = donorHla.Drb1.Position1, Position2 = donorHla.Drb1.Position2}
+                A = new LocusInfo<string>(replacementAlleleAtA, donorHla.A.Position2),
+                B = new LocusInfo<string>(donorHla.B.Position1, donorHla.B.Position2),
+                Drb1 = new LocusInfo<string>(donorHla.Drb1.Position1, donorHla.Drb1.Position2)
             };
 
             await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla, scenarioContext);
@@ -45,20 +45,20 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
 
             var donorHla = new PhenotypeInfo<string>
             {
-                A = {Position1 = replacementAlleleAtA, Position2 = "*01:01"},
-                B = {Position1 = "*15:01", Position2 = "*15:01"},
-                Drb1 = {Position1 = "*15:03", Position2 = "*15:03"}
+                A = new LocusInfo<string>(replacementAlleleAtA, "*01:01"),
+                B = new LocusInfo<string>("*15:01", "*15:01"),
+                Drb1 = new LocusInfo<string>("*15:03", "*15:03")
             };
             var patientHla = new PhenotypeInfo<string>
             {
-                A = {Position1 = deletedAlleleAtA, Position2 = donorHla.A.Position2},
-                B = {Position1 = donorHla.B.Position1, Position2 = donorHla.B.Position2},
-                Drb1 = {Position1 = donorHla.Drb1.Position1, Position2 = donorHla.Drb1.Position2}
+                A = new LocusInfo<string>(deletedAlleleAtA, donorHla.A.Position2),
+                B = new LocusInfo<string>(donorHla.B.Position1, donorHla.B.Position2),
+                Drb1 = new LocusInfo<string>(donorHla.Drb1.Position1, donorHla.Drb1.Position2),
             };
-            
+
             await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla, scenarioContext);
         }
-        
+
         [Given(@"the matching donor has an old version of a renamed allele")]
         public async Task GivenADonorWithAnOldVersionOfARenamedAllele()
         {
@@ -67,20 +67,20 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
 
             var donorHla = new PhenotypeInfo<string>
             {
-                A = {Position1 = oldNameAtA, Position2 = "*01:01"},
-                B = {Position1 = "*15:01", Position2 = "*15:01"},
-                Drb1 = {Position1 = "*15:03", Position2 = "*15:03"}
+                A = new LocusInfo<string>(oldNameAtA, "*01:01"),
+                B = new LocusInfo<string>("*15:01", "*15:01"),
+                Drb1 = new LocusInfo<string>("*15:03", "*15:03"),
             };
             var patientHla = new PhenotypeInfo<string>
             {
-                A = {Position1 = newNameAtA, Position2 = donorHla.A.Position2},
-                B = {Position1 = donorHla.B.Position1, Position2 = donorHla.B.Position2},
-                Drb1 = {Position1 = donorHla.Drb1.Position1, Position2 = donorHla.Drb1.Position2}
+                A = new LocusInfo<string>(newNameAtA, donorHla.A.Position2),
+                B = new LocusInfo<string>(donorHla.B.Position1, donorHla.B.Position2),
+                Drb1 = new LocusInfo<string>(donorHla.Drb1.Position1, donorHla.Drb1.Position2),
             };
-            
+
             await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla, scenarioContext);
         }
-        
+
         [Given(@"the patient has an old version of a renamed allele")]
         public async Task GivenAPatientWithAnOldVersionOfARenamedAllele()
         {
@@ -89,17 +89,17 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
 
             var donorHla = new PhenotypeInfo<string>
             {
-                A = {Position1 = newNameAtA, Position2 = "*01:01"},
-                B = {Position1 = "*15:01", Position2 = "*15:01"},
-                Drb1 = {Position1 = "*15:03", Position2 = "*15:03"}
+                A = new LocusInfo<string>(newNameAtA, "*01:01"),
+                B = new LocusInfo<string>("*15:01", "*15:01"),
+                Drb1 = new LocusInfo<string>("*15:03", "*15:03"),
             };
             var patientHla = new PhenotypeInfo<string>
             {
-                A = {Position1 = oldNameAtA, Position2 = donorHla.A.Position2},
-                B = {Position1 = donorHla.B.Position1, Position2 = donorHla.B.Position2},
-                Drb1 = {Position1 = donorHla.Drb1.Position1, Position2 = donorHla.Drb1.Position2}
+                A = new LocusInfo<string>(oldNameAtA, donorHla.A.Position2),
+                B = new LocusInfo<string>(donorHla.B.Position1, donorHla.B.Position2),
+                Drb1 = new LocusInfo<string>(donorHla.Drb1.Position1, donorHla.Drb1.Position2),
             };
-            
+
             await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla, scenarioContext);
         }
     }

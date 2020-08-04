@@ -1,9 +1,9 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Models;
 using Atlas.MatchPrediction.Data.Models;
+using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -15,8 +15,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         public async Task CalculateMatchProbability_WhenUnrepresentedPatientAndDonor_ReturnsNullProbabilityAndPatientAndDonorUnrepresentedFlagsTrue()
         {
             var matchProbabilityInput = DefaultInputBuilder
-                .With(i => i.DonorHla, DefaultAmbiguousAllelesBuilder.Build())
-                .With(i => i.PatientHla, DefaultAmbiguousAllelesBuilder.Build())
+                .WithDonorHla(DefaultAmbiguousAllelesBuilder.Build())
+                .WithPatientHla(DefaultAmbiguousAllelesBuilder.Build())
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
@@ -45,7 +45,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [Test]
         public async Task CalculateMatchProbability_WhenUnrepresentedPatient_ReturnsNullProbabilityAndPatientUnrepresentedFlagTrue()
         {
-            var matchProbabilityInput = DefaultInputBuilder.With(i => i.PatientHla, DefaultAmbiguousAllelesBuilder.Build()).Build();
+            var matchProbabilityInput = DefaultInputBuilder.WithPatientHla(DefaultAmbiguousAllelesBuilder.Build()).Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
             {
@@ -73,7 +73,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [Test]
         public async Task CalculateMatchProbability_WhenUnrepresentedDonor_ReturnsNullProbabilityAndDonorUnrepresentedFlagTrue()
         {
-            var matchProbabilityInput = DefaultInputBuilder.With(i => i.DonorHla, DefaultAmbiguousAllelesBuilder.Build()).Build();
+            var matchProbabilityInput = DefaultInputBuilder.WithDonorHla(DefaultAmbiguousAllelesBuilder.Build()).Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
             {

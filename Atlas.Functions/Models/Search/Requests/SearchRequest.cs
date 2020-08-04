@@ -1,4 +1,5 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 
 namespace Atlas.Functions.Models.Search.Requests
 {
@@ -48,7 +49,7 @@ namespace Atlas.Functions.Models.Search.Requests
                 SearchType = searchRequest.SearchType.ToMatchingAlgorithmDonorType(),
                 MatchCriteria = searchRequest.MatchCriteria?.ToMatchingAlgorithmMatchCriteria(),
                 ScoringCriteria = searchRequest.ScoringCriteria?.ToMatchingAlgorithmScoringCriteria(),
-                SearchHlaData = searchRequest.SearchHlaData?.ToPhenotypeInfo()
+                SearchHlaData = searchRequest.SearchHlaData?.ToPhenotypeInfo().ToPhenotypeInfoTransfer()
             };
         }
     }

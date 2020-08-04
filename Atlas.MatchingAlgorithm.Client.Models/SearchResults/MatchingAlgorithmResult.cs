@@ -1,4 +1,5 @@
 ﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 
@@ -110,6 +111,6 @@ namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults
         ///     - when further analysis is performed on results (e.g. match prediction), and we must ensure the same HLA is used as for matching
         ///     - when donor details are updated between running a search and viewing the results.  
         /// </summary>
-        public PhenotypeInfo<string> DonorHla { get; set; }
+        public PhenotypeInfoTransfer<string> DonorHla { get; set; }
     }
 }

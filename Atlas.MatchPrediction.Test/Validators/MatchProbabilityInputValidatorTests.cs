@@ -1,4 +1,5 @@
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using Atlas.MatchPrediction.Validators;
 using FluentAssertions;
@@ -22,7 +23,7 @@ namespace Atlas.MatchPrediction.Test.Validators
         [Test]
         public void Validator_WhenPatientHlaNotProvided_ValidationFails()
         {
-            var input = MatchProbabilityInputBuilder.New.With(i => i.PatientHla, null as PhenotypeInfo<string>).Build();
+            var input = MatchProbabilityInputBuilder.New.With(i => i.PatientHla, null as PhenotypeInfoTransfer<string>).Build();
 
             var result = new MatchProbabilityInputValidator().Validate(input);
 
@@ -32,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Validators
         [Test]
         public void Validator_WhenDonorHlaNotProvided_ValidationFails()
         {
-            var input = MatchProbabilityInputBuilder.New.With(i => i.DonorHla, null as PhenotypeInfo<string>).Build();
+            var input = MatchProbabilityInputBuilder.New.With(i => i.DonorHla, null as PhenotypeInfoTransfer<string>).Build();
 
             var result = new MatchProbabilityInputValidator().Validate(input);
 

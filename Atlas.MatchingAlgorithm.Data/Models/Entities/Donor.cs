@@ -47,12 +47,12 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
                 IsAvailableForSearch = IsAvailableForSearch,
                 HlaNames = new PhenotypeInfo<string>
                 {
-                    A = { Position1 = A_1, Position2 = A_2 },
-                    B = { Position1 = B_1, Position2 = B_2 },
-                    C = { Position1 = C_1, Position2 = C_2 },
-                    Dpb1 = { Position1 = DPB1_1, Position2 = DPB1_2 },
-                    Dqb1 = { Position1 = DQB1_1, Position2 = DQB1_2 },
-                    Drb1 = { Position1 = DRB1_1, Position2 = DRB1_2 },
+                    A = new LocusInfo<string>(A_1, A_2),
+                    B = new LocusInfo<string>(B_1, B_2),
+                    C = new LocusInfo<string>(C_1, C_2),
+                    Dpb1 = new LocusInfo<string>(DPB1_1, DPB1_2),
+                    Dqb1 = new LocusInfo<string>(DQB1_1, DQB1_2),
+                    Drb1 = new LocusInfo<string>(DRB1_1, DRB1_2),
                 }
             };
         }
