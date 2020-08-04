@@ -18,6 +18,7 @@ using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Services.GenotypeLikelihood;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchCalculation;
+using Atlas.MatchPrediction.Utils;
 using Atlas.MatchPrediction.Validators;
 using FluentValidation;
 using LoggingStopwatch;
@@ -221,8 +222,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 }
             }
         }
-
-
 
         private async Task<ISet<TypedGenotype>> ExpandToGenotypes(
             StringGenotype phenotype,
