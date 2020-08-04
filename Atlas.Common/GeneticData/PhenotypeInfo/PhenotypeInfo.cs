@@ -196,24 +196,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             SetPosition(locus, LocusPosition.Two, value);
         }
 
-        public void CopyExpressingAllelesToNullPositions()
-        {
-            EachLocus((locus, locusInfo) =>
-            {
-                if (locusInfo.SinglePositionNull())
-                {
-                    if (locusInfo.Position1 == null)
-                    {
-                        SetPosition(locus, LocusPosition.One, locusInfo.Position2);
-                    }
-                    if (locusInfo.Position2 == null)
-                    {
-                        SetPosition(locus, LocusPosition.Two, locusInfo.Position1);
-                    }
-                }
-            });
-        }
-
         #region Functional Methods
 
         public PhenotypeInfo<R> Map<R>(Func<Locus, LocusPosition, T, R> mapping)
