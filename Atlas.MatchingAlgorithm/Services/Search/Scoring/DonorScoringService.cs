@@ -17,6 +17,7 @@ using Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
 {
@@ -59,7 +60,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                 return request.MatchResults.Select(m => new MatchAndScoreResult { MatchResult = m });
             }
 
-            var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla, request.ScoringCriteria.LociToScore);
+            var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla.ToPhenotypeInfo(), request.ScoringCriteria.LociToScore);
 
             var matchAndScoreResults = new List<MatchAndScoreResult>();
             foreach (var matchResult in request.MatchResults)
@@ -81,8 +82,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring
                 return default;
             }
 
-            var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla, request.ScoringCriteria.LociToScore);
-            return await ScoreDonorHlaAgainstPatientMetadata(request.DonorHla, request, patientScoringMetadata);
+            var patientScoringMetadata = await GetHlaScoringMetadata(request.PatientHla.ToPhenotypeInfo(), request.ScoringCriteria.LociToScore);
+            return await ScoreDonorHlaAgainstPatientMetadata(request.DonorHla.ToPhenotypeInfo(), request, patientScoringMetadata);
         }
 
         private async Task<ScoreResult> ScoreDonorHlaAgainstPatientMetadata(

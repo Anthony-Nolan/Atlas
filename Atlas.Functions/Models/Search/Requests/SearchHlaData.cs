@@ -54,7 +54,7 @@ namespace Atlas.Functions.Models.Search.Requests
         public string SearchHla2 { get; set; }
     }
 
-    public static class SearchHlaMappings
+    internal static class SearchHlaMappings
     {
         public static PhenotypeInfo<string> ToPhenotypeInfo(this SearchHlaData hlaData)
         {
@@ -68,12 +68,7 @@ namespace Atlas.Functions.Models.Search.Requests
             };
         }
 
-        private static LocusInfo<string> ToLocusInfo(this LocusSearchHla locusSearchHla)
-        {
-            return new LocusInfo<string>{
-                Position1 = locusSearchHla?.SearchHla1,
-                Position2 = locusSearchHla?.SearchHla2
-            };
-        }
+        private static LocusInfo<string> ToLocusInfo(this LocusSearchHla locusSearchHla) =>
+            new LocusInfo<string>(locusSearchHla?.SearchHla1, locusSearchHla?.SearchHla2);
     }
 }

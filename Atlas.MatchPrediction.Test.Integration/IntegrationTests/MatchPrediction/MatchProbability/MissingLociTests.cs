@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
@@ -31,7 +32,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.PatientHla,
-                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullLocus).Build())
+                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullLocus).Build().ToPhenotypeInfoTransfer())
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
@@ -63,7 +64,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.DonorHla,
-                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullLocus).Build())
+                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullLocus).Build().ToPhenotypeInfoTransfer())
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
@@ -98,10 +99,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.DonorHla,
                     new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullDonorLoci)
-                        .Build())
+                        .Build().ToPhenotypeInfoTransfer())
                 .With(h => h.PatientHla,
                     new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullPatientLoci)
-                        .Build())
+                        .Build().ToPhenotypeInfoTransfer())
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>

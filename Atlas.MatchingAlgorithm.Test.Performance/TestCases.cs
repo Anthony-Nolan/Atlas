@@ -29,31 +29,11 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
             PatientId = "489252",
             Hla = new PhenotypeInfo<string>
             {
-                A =
-                {
-                    Position1 = "*24:02",
-                    Position2 = "*29:02",
-                },
-                B =
-                {
-                    Position1 = "*45:01",
-                    Position2 = "*15:01",
-                },
-                C =
-                {
-                    Position1 = "*03:03",
-                    Position2 = "*06:02",
-                },
-                Drb1 =
-                {
-                    Position1 = "*04:01",
-                    Position2 = "*11:01",
-                },
-                Dqb1 =
-                {
-                    Position1 = "*03:01",
-                    Position2 = "*03:02",
-                }
+                A = new LocusInfo<string>("*24:02", "*29:02"),
+                B = new LocusInfo<string>("*45:01", "*15:01"),
+                C = new LocusInfo<string>("*03:03", "*06:02"),
+                Drb1 = new LocusInfo<string>("*04:01", "*11:01"),
+                Dqb1 = new LocusInfo<string>("*03:01", "*03:02")
             },
         };
 
@@ -62,31 +42,31 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
             PatientId = "495317 (live)",
             Hla = new PhenotypeInfo<string>
             {
-                A =
-                {
-                    Position1 = "*03:01:01:01",
-                    Position2 = "*66:01:01:01",
-                },
-                B =
-                {
-                    Position1 = "*07:02:01:01",
-                    Position2 = "*35:01:01",
-                },
-                C =
-                {
-                    Position1 = "*04:01:01",
-                    Position2 = "*07:02:01:03",
-                },
-                Drb1 =
-                {
-                    Position1 = "*11:01:01",
-                    Position2 = "*10:01:01",
-                },
-                Dqb1 =
-                {
-                    Position1 = "*05:01",
-                    Position2 = "*05:02:01",
-                }
+                A = new LocusInfo<string>
+                (
+                    "*03:01:01:01",
+                    "*66:01:01:01"
+                ),
+                B = new LocusInfo<string>
+                (
+                    "*07:02:01:01",
+                    "*35:01:01"
+                ),
+                C = new LocusInfo<string>
+                (
+                    "*04:01:01",
+                    "*07:02:01:03"
+                ),
+                Drb1 = new LocusInfo<string>
+                (
+                    "*11:01:01",
+                    "*10:01:01"
+                ),
+                Dqb1 = new LocusInfo<string>
+                (
+                    "*05:01",
+                    "*05:02:01"
+                )
             },
         };
 
@@ -95,31 +75,31 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
             PatientId = "496738 (live)",
             Hla = new PhenotypeInfo<string>
             {
-                A =
-                {
-                    Position1 = "*01:01",
-                    Position2 = "*02:01",
-                },
-                B =
-                {
-                    Position1 = "*07:02",
-                    Position2 = "*08:01",
-                },
-                C =
-                {
-                    Position1 = "*07:01",
-                    Position2 = "*07:02",
-                },
-                Drb1 =
-                {
-                    Position1 = "*15:01",
-                    Position2 = "*03:01",
-                },
-                Dqb1 =
-                {
-                    Position1 = "*06:02",
-                    Position2 = "*02:01",
-                }
+                A = new LocusInfo<string>
+                (
+                    "*01:01",
+                    "*02:01"
+                ),
+                B = new LocusInfo<string>
+                (
+                    "*07:02",
+                    "*08:01"
+                ),
+                C = new LocusInfo<string>
+                (
+                    "*07:01",
+                    "*07:02"
+                ),
+                Drb1 = new LocusInfo<string>
+                (
+                    "*15:01",
+                    "*03:01"
+                ),
+                Dqb1 = new LocusInfo<string>
+                (
+                    "*06:02",
+                    "*02:01"
+                )
             },
         };
 
@@ -128,31 +108,31 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
             PatientId = "496272 (live)",
             Hla = new PhenotypeInfo<string>
             {
-                A =
-                {
-                    Position1 = "*03:01",
-                    Position2 = "*66:01",
-                },
-                B =
-                {
-                    Position1 = "*07:02",
-                    Position2 = "*07:06",
-                },
-                C =
-                {
-                    Position1 = "*07:02",
-                    Position2 = "*15:05",
-                },
-                Drb1 =
-                {
-                    Position1 = "*15:01",
-                    Position2 = "*13:01",
-                },
-                Dqb1 =
-                {
-                    Position1 = "*06:02",
-                    Position2 = "*06:03",
-                }
+                A = new LocusInfo<string>
+                (
+                    "*03:01",
+                    "*66:01"
+                ),
+                B = new LocusInfo<string>
+                (
+                    "*07:02",
+                    "*07:06"
+                ),
+                C = new LocusInfo<string>
+                (
+                    "*07:02",
+                    "*15:05"
+                ),
+                Drb1 = new LocusInfo<string>
+                (
+                    "*15:01",
+                    "*13:01"
+                ),
+                Dqb1 = new LocusInfo<string>
+                (
+                    "*06:02",
+                    "*06:03"
+                )
             },
         };
 
@@ -161,31 +141,31 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
             PatientId = "496345 (live)",
             Hla = new PhenotypeInfo<string>
             {
-                A =
-                {
-                    Position1 = "*24:02",
-                    Position2 = "*29:02",
-                },
-                B =
-                {
-                    Position1 = "*45:01",
-                    Position2 = "*15:01",
-                },
-                C =
-                {
-                    Position1 = "*03:03",
-                    Position2 = "*06:02",
-                },
-                Drb1 =
-                {
-                    Position1 = "*04:01",
-                    Position2 = "*11:01",
-                },
-                Dqb1 =
-                {
-                    Position1 = "*03:01",
-                    Position2 = "*03:02",
-                }
+                A = new LocusInfo<string>
+                (
+                    "*24:02",
+                    "*29:02"
+                ),
+                B = new LocusInfo<string>
+                (
+                    "*45:01",
+                    "*15:01"
+                ),
+                C = new LocusInfo<string>
+                (
+                    "*03:03",
+                    "*06:02"
+                ),
+                Drb1 = new LocusInfo<string>
+                (
+                    "*04:01",
+                    "*11:01"
+                ),
+                Dqb1 = new LocusInfo<string>
+                (
+                    "*03:01",
+                    "*03:02"
+                )
             },
         };
 

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 
 namespace Atlas.MatchPrediction.ApplicationInsights
@@ -12,8 +13,8 @@ namespace Atlas.MatchPrediction.ApplicationInsights
             SearchRequestId = matchProbabilityInput.SearchRequestId;
             HlaNomenclatureVersion = matchProbabilityInput.HlaNomenclatureVersion;
             DonorId = matchProbabilityInput.DonorId.ToString();
-            DonorHla = matchProbabilityInput.DonorHla;
-            PatientHla = matchProbabilityInput.PatientHla;
+            DonorHla = matchProbabilityInput.DonorHla?.ToPhenotypeInfo();
+            PatientHla = matchProbabilityInput.PatientHla?.ToPhenotypeInfo();
         }
 
         public string SearchRequestId { get; set; }

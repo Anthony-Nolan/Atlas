@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 
@@ -11,6 +12,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
     public class MatchingRequestBuilder
     {
         private readonly MatchingRequest matchingRequest;
+        private PhenotypeInfo<string> searchHla;
 
         public MatchingRequestBuilder()
         {
@@ -29,17 +31,18 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                         Dqb1 = null
                     }
                 },
-                SearchHlaData = new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>("default-hla-a"),
-                    B = new LocusInfo<string>("default-hla-b"),
-                    Drb1 = new LocusInfo<string>("default-hla-drb1")
-                },
                 ScoringCriteria = new ScoringCriteria()
                 {
                     LociToScore = new List<Locus>(),
                     LociToExcludeFromAggregateScore = new List<Locus>()
                 }
+            };
+
+            searchHla = new PhenotypeInfo<string>
+            {
+                A = new LocusInfo<string>("default-hla-a"),
+                B = new LocusInfo<string>("default-hla-b"),
+                Drb1 = new LocusInfo<string>("default-hla-drb1")
             };
         }
 
@@ -88,7 +91,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 
         private MatchingRequestBuilder WithNullLocusSearchHla(Locus locus, LocusPosition position)
         {
-            matchingRequest.SearchHlaData.SetPosition(locus, position, null);
+            searchHla.SetPosition(locus, position, null);
             return this;
         }
 
@@ -111,7 +114,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             }
 
             // If locus is specified, but currently null, initialise that locus. 
-            matchingRequest.SearchHlaData = new PhenotypeInfo<string>(matchingRequest.SearchHlaData.Map((l, hla) =>
+            searchHla = new PhenotypeInfo<string>(searchHla.Map((l, hla) =>
             {
                 if (l == locus)
                 {
@@ -121,13 +124,13 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 return hla;
             }));
 
-            matchingRequest.SearchHlaData.SetPosition(locus, position, hlaString);
+            searchHla.SetPosition(locus, position, hlaString);
             return this;
         }
 
-        public MatchingRequestBuilder WithSearchHla(PhenotypeInfo<string> searchHla)
+        public MatchingRequestBuilder WithSearchHla(PhenotypeInfo<string> newSearchHla)
         {
-            matchingRequest.SearchHlaData = searchHla;
+            searchHla = newSearchHla;
             return this;
         }
 
@@ -141,6 +144,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 
         public MatchingRequest Build()
         {
+            matchingRequest.SearchHlaData = searchHla.ToPhenotypeInfoTransfer();
             return matchingRequest;
         }
     }

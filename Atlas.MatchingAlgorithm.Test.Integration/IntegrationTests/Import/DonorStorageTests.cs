@@ -29,39 +29,27 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             DonorType = DonorType.Cord,
             HlaNames = new PhenotypeInfo<string>
             {
-                A =
-                {
-                    Position1 = "01:02",
-                    Position2 = "30:02"
-                },
-                B =
-                {
-                    Position1 = "07:02",
-                    Position2 = "08:01"
-                },
-                Drb1 =
-                {
-                    Position1 = "01:11",
-                    Position2 = "03:41"
-                }
+                A = new LocusInfo<string>("01:02", "30:02"),
+                B = new LocusInfo<string>("07:02", "08:01"),
+                Drb1 = new LocusInfo<string>("01:11", "03:41")
             },
             MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>
             {
-                A =
-                {
-                    Position1 = new TestHlaMetadata {LookupName = "01:02", MatchingPGroups = new List<string> {"01:01P", "01:02"}},
-                    Position2 = new TestHlaMetadata {LookupName = "30:02", MatchingPGroups = new List<string> {"01:01P", "30:02P"}},
-                },
-                B =
-                {
-                    Position1 = new TestHlaMetadata {LookupName = "07:02", MatchingPGroups = new List<string> {"07:02P"}},
-                    Position2 = new TestHlaMetadata {LookupName = "08:01", MatchingPGroups = new List<string> {"08:01P"}},
-                },
-                Drb1 =
-                {
-                    Position1 = new TestHlaMetadata {LookupName = "01:11", MatchingPGroups = new List<string> {"01:11P"}},
-                    Position2 = new TestHlaMetadata {LookupName = "03:41", MatchingPGroups = new List<string> {"03:41P"}},
-                }
+                A = new LocusInfo<IHlaMatchingMetadata>
+                (
+                    new TestHlaMetadata {LookupName = "01:02", MatchingPGroups = new List<string> {"01:01P", "01:02"}},
+                    new TestHlaMetadata {LookupName = "30:02", MatchingPGroups = new List<string> {"01:01P", "30:02P"}}
+                ),
+                B = new LocusInfo<IHlaMatchingMetadata>
+                (
+                    new TestHlaMetadata {LookupName = "07:02", MatchingPGroups = new List<string> {"07:02P"}},
+                    new TestHlaMetadata {LookupName = "08:01", MatchingPGroups = new List<string> {"08:01P"}}
+                ),
+                Drb1 = new LocusInfo<IHlaMatchingMetadata>
+                (
+                    new TestHlaMetadata {LookupName = "01:11", MatchingPGroups = new List<string> {"01:11P"}},
+                    new TestHlaMetadata {LookupName = "03:41", MatchingPGroups = new List<string> {"03:41P"}}
+                )
             }
         };
 
@@ -70,39 +58,27 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             DonorType = DonorType.Cord,
             HlaNames = new PhenotypeInfo<string>
             {
-                A =
-                {
-                    Position1 = "*01:XX",
-                    Position2 = "30:XX"
-                },
-                B =
-                {
-                    Position1 = "*07:XX",
-                    Position2 = "08:XX"
-                },
-                Drb1 =
-                {
-                    Position1 = "*01:XX",
-                    Position2 = "03:XX"
-                }
+                A = new LocusInfo<string>("*01:XX", "30:XX"),
+                B = new LocusInfo<string>("*07:XX", "08:XX"),
+                Drb1 = new LocusInfo<string>("*01:XX", "03:XX")
             },
             MatchingHla = new PhenotypeInfo<IHlaMatchingMetadata>
             {
-                A =
-                {
-                    Position1 = new TestHlaMetadata {LookupName = "*01:XX", MatchingPGroups = new List<string> {"01:01P", "01:02"}},
-                    Position2 = new TestHlaMetadata {LookupName = "30:XX", MatchingPGroups = new List<string> {"01:01P", "30:02P"}},
-                },
-                B =
-                {
-                    Position1 = new TestHlaMetadata {LookupName = "*07:XX", MatchingPGroups = new List<string> {"07:02P"}},
-                    Position2 = new TestHlaMetadata {LookupName = "08:XX", MatchingPGroups = new List<string> {"08:01P"}},
-                },
-                Drb1 =
-                {
-                    Position1 = new TestHlaMetadata {LookupName = "*01:XX", MatchingPGroups = new List<string> {"01:11P"}},
-                    Position2 = new TestHlaMetadata {LookupName = "03:XX", MatchingPGroups = new List<string> {"03:41P"}},
-                }
+                A = new LocusInfo<IHlaMatchingMetadata>
+                (
+                    new TestHlaMetadata {LookupName = "*01:XX", MatchingPGroups = new List<string> {"01:01P", "01:02"}},
+                    new TestHlaMetadata {LookupName = "30:XX", MatchingPGroups = new List<string> {"01:01P", "30:02P"}}
+                ),
+                B = new LocusInfo<IHlaMatchingMetadata>
+                (
+                    new TestHlaMetadata {LookupName = "*07:XX", MatchingPGroups = new List<string> {"07:02P"}},
+                    new TestHlaMetadata {LookupName = "08:XX", MatchingPGroups = new List<string> {"08:01P"}}
+                ),
+                Drb1 = new LocusInfo<IHlaMatchingMetadata>
+                (
+                    new TestHlaMetadata {LookupName = "*01:XX", MatchingPGroups = new List<string> {"01:11P"}},
+                    new TestHlaMetadata {LookupName = "03:XX", MatchingPGroups = new List<string> {"03:41P"}}
+                )
             }
         };
 
@@ -121,7 +97,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorInfoWithAllelesAtThreeLoci;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }, false);
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor}, false);
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -134,7 +110,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             var donor = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId()).Build();
 
             Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }, false));
+                await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor}, false));
         }
 
         [Test]
@@ -142,7 +118,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorInfoWithAllelesAtThreeLoci;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }, false);
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor}, false);
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -154,7 +130,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorInfoWithXxCodesAtThreeLoci;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }, false);
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor}, false);
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -166,7 +142,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorInfoWithAllelesAtThreeLoci;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> { donor });
+            await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> {donor});
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -178,7 +154,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorInfoWithXxCodesAtThreeLoci;
             donor.DonorId = DonorIdGenerator.NextId();
-            await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> { donor });
+            await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> {donor});
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -194,7 +170,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
                 .Build();
 
             Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> { donor }));
+                await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> {donor}));
         }
 
         [Test]
@@ -202,8 +178,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             var donor = donorInfoWithXxCodesAtThreeLoci;
             donor.DonorId = DonorIdGenerator.NextId();
-            donor.MatchingHla.C.Position1 = null;
-            await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> { donor });
+            donor.MatchingHla.C = donor.MatchingHla.C.SetAtPosition(LocusPosition.One, null);
+            await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> {donor});
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -217,7 +193,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             var donor = donorInfoWithAllelesAtThreeLoci;
             donor.DonorId = donorInfo.DonorId;
             await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> {donorInfo});
-            await donorUpdateRepository.UpdateDonorBatch(new List<DonorInfoWithExpandedHla> { donor }, false);
+            await donorUpdateRepository.UpdateDonorBatch(new List<DonorInfoWithExpandedHla> {donor}, false);
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -230,8 +206,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             var donorInfo = new DonorInfoBuilder().Build();
             var donor = donorInfoWithXxCodesAtThreeLoci;
             donor.DonorId = donorInfo.DonorId;
-            await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> { donorInfo });
-            await donorUpdateRepository.UpdateDonorBatch(new List<DonorInfoWithExpandedHla> { donor }, false);
+            await donorImportRepository.InsertBatchOfDonors(new List<DonorInfo> {donorInfo});
+            await donorUpdateRepository.UpdateDonorBatch(new List<DonorInfoWithExpandedHla> {donor}, false);
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 
@@ -242,30 +218,30 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         public async Task UpdateDonorBatch_WithUntypedRequiredLocus_ThrowsException()
         {
             // arbitrary hla at all loci, as the value of the hla does not matter for this test case
-            var expandedHla = new TestHlaMetadata { LookupName = "01:02", MatchingPGroups = new List<string> { "01:01P", "01:02" } };
+            var expandedHla = new TestHlaMetadata {LookupName = "01:02", MatchingPGroups = new List<string> {"01:01P", "01:02"}};
             var donor = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(new PhenotypeInfo<IHlaMatchingMetadata>(expandedHla))
                 .Build();
-            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }, false);
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor}, false);
 
-            donor.HlaNames.A.Position1 = null;
+            donor.HlaNames.A = donor.HlaNames.A.SetAtPosition(LocusPosition.One, null);
 
             Assert.ThrowsAsync<SqlException>(async () =>
-                await donorUpdateRepository.UpdateDonorBatch(new[] { donor }, false));
+                await donorUpdateRepository.UpdateDonorBatch(new[] {donor}, false));
         }
 
         [Test]
         public async Task UpdateDonorBatch_WithUntypedOptionalLocus_UpdatesUntypedLocusAsNull()
         {
             // arbitrary hla at all loci, as the value of the hla does not matter for this test case
-            var expandedHla = new TestHlaMetadata { LookupName = "01:02", MatchingPGroups = new List<string> { "01:01P", "01:02" } };
+            var expandedHla = new TestHlaMetadata {LookupName = "01:02", MatchingPGroups = new List<string> {"01:01P", "01:02"}};
             var donor = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(new PhenotypeInfo<IHlaMatchingMetadata>(expandedHla))
                 .Build();
-            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }, false);
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor}, false);
 
-            donor.HlaNames.Dqb1.Position1 = null;
-            await donorUpdateRepository.UpdateDonorBatch(new[] { donor }, false);
+            donor.HlaNames.Dqb1 = donor.HlaNames.Dqb1.SetAtPosition(LocusPosition.One, null);
+            await donorUpdateRepository.UpdateDonorBatch(new[] {donor}, false);
 
             var result = await inspectionRepo.GetDonor(donor.DonorId);
 

@@ -1,5 +1,6 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Validation;
 using FluentAssertions;
 using FluentValidation;
@@ -26,7 +27,7 @@ namespace Atlas.Common.Test.Validation
             var phenotypeInfo = new PhenotypeInfo<string>("hla");
             phenotypeInfo.SetLocus(locus, null);
             
-            validator.Invoking(v => v.ValidateAndThrow(phenotypeInfo)).Should().Throw<ValidationException>();
+            validator.Invoking(v => v.ValidateAndThrow(phenotypeInfo.ToPhenotypeInfoTransfer())).Should().Throw<ValidationException>();
         }
         
         [TestCase(Locus.C)]
@@ -37,7 +38,7 @@ namespace Atlas.Common.Test.Validation
             var phenotypeInfo = new PhenotypeInfo<string>("hla");
             phenotypeInfo.SetLocus(locus, null);
             
-            validator.Invoking(v => v.ValidateAndThrow(phenotypeInfo)).Should().NotThrow<ValidationException>();
+            validator.Invoking(v => v.ValidateAndThrow(phenotypeInfo.ToPhenotypeInfoTransfer())).Should().NotThrow<ValidationException>();
         }
     }
 }

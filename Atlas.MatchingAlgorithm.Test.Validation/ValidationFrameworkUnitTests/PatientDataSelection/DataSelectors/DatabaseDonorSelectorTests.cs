@@ -100,7 +100,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             {
                 MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>
                 {
-                    A = {Position1 = HlaTypingResolution.Serology}
+                    A = new LocusInfo<HlaTypingResolution>(HlaTypingResolution.Serology, default)
                 }
             };
 

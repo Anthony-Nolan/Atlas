@@ -220,36 +220,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         {
             return new PhenotypeInfo<R>
             {
-                A =
-                {
-                    Position1 = mapping(Locus.A, A),
-                    Position2 = mapping(Locus.A, A),
-                },
-                B =
-                {
-                    Position1 = mapping(Locus.B, B),
-                    Position2 = mapping(Locus.B, B),
-                },
-                C =
-                {
-                    Position1 = mapping(Locus.C, C),
-                    Position2 = mapping(Locus.C, C),
-                },
-                Dpb1 =
-                {
-                    Position1 = mapping(Locus.Dpb1, Dpb1),
-                    Position2 = mapping(Locus.Dpb1, Dpb1),
-                },
-                Dqb1 =
-                {
-                    Position1 = mapping(Locus.Dqb1, Dqb1),
-                    Position2 = mapping(Locus.Dqb1, Dqb1),
-                },
-                Drb1 =
-                {
-                    Position1 = mapping(Locus.Drb1, Drb1),
-                    Position2 = mapping(Locus.Drb1, Drb1),
-                }
+                A = new LocusInfo<R>(mapping(Locus.A, A)),
+                B = new LocusInfo<R>(mapping(Locus.B, B)),
+                C = new LocusInfo<R>(mapping(Locus.C, C)),
+                Dpb1 = new LocusInfo<R>(mapping(Locus.Dpb1, Dpb1)),
+                Dqb1 = new LocusInfo<R>(mapping(Locus.Dqb1, Dqb1)),
+                Drb1 = new LocusInfo<R>(mapping(Locus.Drb1, Drb1)),
             };
         }
 

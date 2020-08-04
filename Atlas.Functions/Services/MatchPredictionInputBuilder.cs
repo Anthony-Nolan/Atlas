@@ -8,6 +8,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using EnumStringValues;
 
 namespace Atlas.Functions.Services
@@ -87,7 +88,7 @@ namespace Atlas.Functions.Services
                     EthnicityCode = donorInfo.EthnicityCode,
                     RegistryCode = donorInfo.RegistryCode
                 },
-                PatientHla = searchRequest.SearchHlaData.ToPhenotypeInfo(),
+                PatientHla = searchRequest.SearchHlaData.ToPhenotypeInfo().ToPhenotypeInfoTransfer(),
                 PatientFrequencySetMetadata = new FrequencySetMetadata
                 {
                     EthnicityCode = searchRequest.PatientEthnicityCode,

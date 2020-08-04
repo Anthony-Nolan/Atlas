@@ -41,11 +41,11 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
                 from drb2 in allelesPerLocus.Drb1.Position2
                 select new PhenotypeInfo<string>
                 {
-                    A = new LocusInfo<string> {Position1 = a1, Position2 = a2},
-                    B = new LocusInfo<string> {Position1 = b1, Position2 = b2},
-                    C = new LocusInfo<string> {Position1 = c1, Position2 = c2},
-                    Dqb1 = new LocusInfo<string> {Position1 = dqb1, Position2 = dqb2},
-                    Drb1 = new LocusInfo<string> {Position1 = drb1, Position2 = drb2}
+                    A = new LocusInfo<string>(a1, a2),
+                    B = new LocusInfo<string>(b1, b2),
+                    C = new LocusInfo<string>(c1, c2),
+                    Dqb1 = new LocusInfo<string>(dqb1, dqb2),
+                    Drb1 = new LocusInfo<string>(drb1, drb2)
                 };
         }
     }
