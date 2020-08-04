@@ -7,7 +7,7 @@ namespace Atlas.Common.Test.SharedTestHelpers.Builders
     [Builder]
     internal class LocusInfoBuilder<T>
     {
-        private readonly LocusInfo<T> locusInfo;
+        private LocusInfo<T> locusInfo;
 
         public LocusInfoBuilder()
         {
@@ -26,7 +26,7 @@ namespace Atlas.Common.Test.SharedTestHelpers.Builders
 
         public LocusInfoBuilder<T> WithDataAt(LocusPosition position, T data)
         {
-            locusInfo.SetAtPosition(position, data);
+            locusInfo = locusInfo.SetAtPosition(position, data);
             return this;
         }
 

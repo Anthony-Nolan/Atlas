@@ -10,7 +10,7 @@ namespace Atlas.MatchingAlgorithm.Validators.DonorInfo
         public SearchableDonorInformationValidator()
         {
             RuleFor(x => x.DonorId).NotNull();
-            RuleFor(x => x.HlaAsPhenotype()).SetValidator(new PhenotypeHlaNamesValidator());
+            RuleFor(x => x.HlaAsPhenotypeInfoTransfer()).SetValidator(new PhenotypeHlaNamesValidator());
         }
     }
 }

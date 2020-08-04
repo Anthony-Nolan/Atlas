@@ -61,11 +61,8 @@ namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
             };
         }
 
-        private static LocusInfo<string> SwapLocus(LocusInfo<string> genotypeLocusInfo)
-        {
-            return new LocusInfo<string>
-                {Position1 = genotypeLocusInfo.Position2, Position2 = genotypeLocusInfo.Position1};
-        }
+        private static LocusInfo<string> SwapLocus(LocusInfo<string> genotypeLocusInfo) =>
+            new LocusInfo<string>(genotypeLocusInfo.Position2, genotypeLocusInfo.Position1);
 
         private static List<Locus> GetHeterozygousLoci(PhenotypeInfo<string> genotype, ISet<Locus> allowedLoci)
         {

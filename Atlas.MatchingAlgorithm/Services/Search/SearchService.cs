@@ -5,6 +5,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
@@ -75,12 +76,13 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         private async Task<AlleleLevelMatchCriteria> GetMatchCriteria(MatchingRequest matchingRequest)
         {
             var matchCriteria = matchingRequest.MatchCriteria;
+            var searchHla = matchingRequest.SearchHlaData.ToPhenotypeInfo();
             var criteriaMappings = await Task.WhenAll(
-                MapLocusInformationToMatchCriteria(Locus.A, matchCriteria.LocusMismatchCounts.A, matchingRequest.SearchHlaData.A),
-                MapLocusInformationToMatchCriteria(Locus.B, matchCriteria.LocusMismatchCounts.B, matchingRequest.SearchHlaData.B),
-                MapLocusInformationToMatchCriteria(Locus.C, matchCriteria.LocusMismatchCounts.C, matchingRequest.SearchHlaData.C),
-                MapLocusInformationToMatchCriteria(Locus.Drb1, matchCriteria.LocusMismatchCounts.Drb1, matchingRequest.SearchHlaData.Drb1),
-                MapLocusInformationToMatchCriteria(Locus.Dqb1, matchCriteria.LocusMismatchCounts.Dqb1, matchingRequest.SearchHlaData.Dqb1));
+                MapLocusInformationToMatchCriteria(Locus.A, matchCriteria.LocusMismatchCounts.A, searchHla.A),
+                MapLocusInformationToMatchCriteria(Locus.B, matchCriteria.LocusMismatchCounts.B, searchHla.B),
+                MapLocusInformationToMatchCriteria(Locus.C, matchCriteria.LocusMismatchCounts.C, searchHla.C),
+                MapLocusInformationToMatchCriteria(Locus.Drb1, matchCriteria.LocusMismatchCounts.Drb1, searchHla.Drb1),
+                MapLocusInformationToMatchCriteria(Locus.Dqb1, matchCriteria.LocusMismatchCounts.Dqb1, searchHla.Dqb1));
 
             return new AlleleLevelMatchCriteria
             {
@@ -128,7 +130,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 // matching results
                 TotalMatchCount = result.MatchResult.TotalMatchCount,
-                DonorHla = result.MatchResult.DonorInfo.HlaNames,
+                DonorHla = result.MatchResult.DonorInfo.HlaNames.ToPhenotypeInfoTransfer(),
                 TypedLociCount = result.MatchResult.TypedLociCount,
 
                 // scoring results

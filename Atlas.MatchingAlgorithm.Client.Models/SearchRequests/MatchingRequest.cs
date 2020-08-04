@@ -1,4 +1,5 @@
 ﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 
 namespace Atlas.MatchingAlgorithm.Client.Models.SearchRequests
@@ -27,6 +28,6 @@ namespace Atlas.MatchingAlgorithm.Client.Models.SearchRequests
         ///
         /// A, B, DRB1 required. Others optional - and should be provided as a null <see cref="LocusInfo{T}"/> if not present.
         /// </summary>
-        public PhenotypeInfo<string> SearchHlaData { get; set; }
+        public PhenotypeInfoTransfer<string> SearchHlaData { get; set; }
     }
 }

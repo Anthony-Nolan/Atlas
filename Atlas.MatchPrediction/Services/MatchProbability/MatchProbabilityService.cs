@@ -6,6 +6,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.ApplicationInsights;
@@ -129,7 +130,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             );
 
             var patientGenotypes = await ExpandToGenotypes(
-                matchProbabilityInput.PatientHla,
+                matchProbabilityInput.PatientHla.ToPhenotypeInfo(),
                 frequencySets.PatientSet.Id,
                 allowedLoci,
                 hlaNomenclatureVersion,
@@ -137,7 +138,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             );
 
             var donorGenotypes = await ExpandToGenotypes(
-                matchProbabilityInput.DonorHla,
+                matchProbabilityInput.DonorHla.ToPhenotypeInfo(),
                 frequencySets.DonorSet.Id,
                 allowedLoci,
                 hlaNomenclatureVersion,

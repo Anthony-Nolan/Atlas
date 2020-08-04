@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Data.Models;
@@ -57,10 +58,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected static PhenotypeInfoBuilder<string> DefaultAmbiguousAllelesBuilder =>
             new PhenotypeInfoBuilder<string>(Alleles.AmbiguousAlleleDetails.Alleles());
 
-        protected static Builder<MatchProbabilityInput> DefaultInputBuilder => Builder<MatchProbabilityInput>.New
+        protected static Builder<MatchProbabilityInput> DefaultInputBuilder => MatchProbabilityInputBuilder.New
             .With(i => i.HlaNomenclatureVersion, HlaNomenclatureVersion)
-            .With(i => i.PatientHla, DefaultUnambiguousAllelesBuilder.Build())
-            .With(i => i.DonorHla, DefaultUnambiguousAllelesBuilder.Build())
+            .With(i => i.PatientHla, DefaultUnambiguousAllelesBuilder.Build().ToPhenotypeInfoTransfer())
+            .With(i => i.DonorHla, DefaultUnambiguousAllelesBuilder.Build().ToPhenotypeInfoTransfer())
             .With(i => i.DonorFrequencySetMetadata, new FrequencySetMetadata
             {
                 EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode

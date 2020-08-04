@@ -9,12 +9,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
     public class Dpb1PermissiveMismatchFeatureSteps
     {
         private readonly ScenarioContext scenarioContext;
-        
+
         public Dpb1PermissiveMismatchFeatureSteps(ScenarioContext scenarioContext)
         {
             this.scenarioContext = scenarioContext;
         }
-        
+
         [Given(@"the patient and donor have mismatched DPB1 alleles with (.*) TCE group assignments")]
         public async Task GivenPatientAndDonorWithMismatchedDpb1Alleles(string tceGroupAssignments)
         {
@@ -47,17 +47,17 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
 
             var donorHla = new PhenotypeInfo<string>
             {
-                A = {Position1 = "*02:01:84", Position2 = "*01:01"},
-                B = {Position1 = "*15:01", Position2 = "*15:01"},
-                Dpb1 = { Position1 = donorDpb1, Position2 = donorDpb1 },
-                Drb1 = {Position1 = "*15:03", Position2 = "*15:03"}
+                A = new LocusInfo<string>("*02:01:84", "*01:01"),
+                B = new LocusInfo<string>("*15:01", "*15:01"),
+                Dpb1 = new LocusInfo<string>(donorDpb1, donorDpb1),
+                Drb1 = new LocusInfo<string>("*15:03", "*15:03")
             };
             var patientHla = new PhenotypeInfo<string>
             {
-                A = {Position1 = donorHla.A.Position1, Position2 = donorHla.A.Position2},
-                B = {Position1 = donorHla.B.Position1, Position2 = donorHla.B.Position2},
-                Dpb1 = { Position1 = patientDpb1, Position2 = patientDpb1 },
-                Drb1 = {Position1 = donorHla.Drb1.Position1, Position2 = donorHla.Drb1.Position2}
+                A = new LocusInfo<string>(donorHla.A.Position1, donorHla.A.Position2),
+                B = new LocusInfo<string>(donorHla.B.Position1, donorHla.B.Position2),
+                Dpb1 = new LocusInfo<string>(patientDpb1, patientDpb1),
+                Drb1 = new LocusInfo<string>(donorHla.Drb1.Position1, donorHla.Drb1.Position2)
             };
 
             await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla, scenarioContext);

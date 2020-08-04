@@ -9,26 +9,26 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
     public class FeatureDefinedTestDataSteps
     {
         private readonly ScenarioContext scenarioContext;
-        
+
         public FeatureDefinedTestDataSteps(ScenarioContext scenarioContext)
         {
             this.scenarioContext = scenarioContext;
         }
-        
+
         [Given(@"the matching donor has the following HLA:")]
         public async Task GivenTheMatchingDonorHasTheFollowingHla(Table donorHlaTable)
         {
             var hla = donorHlaTable.CreateInstance<Hla>().ToPhenotypeInfo();
             await SpecificTestDataSteps.GivenDonorHla(hla, scenarioContext);
         }
-        
+
         [Given(@"the patient has the following HLA:")]
         public void GivenThePatientHasTheFollowingHla(Table donorHlaTable)
         {
             var hla = donorHlaTable.CreateInstance<Hla>().ToPhenotypeInfo();
             SpecificTestDataSteps.GivenPatientHla(new PhenotypeInfo<string>(hla), scenarioContext);
         }
-        
+
         // Use a private class for serialisation from a SpecFlow DataTable - as individual positions are not settable in PhenotypeInfo 
         private class Hla
         {
@@ -49,12 +49,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             {
                 return new PhenotypeInfo<string>
                 {
-                    A = { Position1 = A1, Position2 = A2},
-                    B = { Position1 = B1, Position2 = B2},
-                    C = { Position1 = C1, Position2 = C2},
-                    Dpb1 = { Position1 = Dpb11, Position2 = Dpb12},
-                    Dqb1 = { Position1 = Dqb11, Position2 = Dqb12},
-                    Drb1 = { Position1 = Drb11, Position2 = Drb12},
+                    A = new LocusInfo<string>(A1, A2),
+                    B = new LocusInfo<string>(B1, B2),
+                    C = new LocusInfo<string>(C1, C2),
+                    Dpb1 = new LocusInfo<string>(Dpb11, Dpb12),
+                    Dqb1 = new LocusInfo<string>(Dqb11, Dqb12),
+                    Drb1 = new LocusInfo<string>(Drb11, Drb12),
                 };
             }
         }

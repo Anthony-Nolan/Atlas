@@ -77,7 +77,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .Build();
 
             var matchProbabilityInput = DefaultInputBuilder
-                .With(i => i.PatientHla, patientHla)
+                .WithPatientHla(patientHla)
                 .With(i => i.ExcludedLoci, lociToExclude)
                 .Build();
 
