@@ -18,7 +18,7 @@ namespace Atlas.Functions.Services
         private readonly string resultsContainer;
 
         /// <inheritdoc />
-        public ResultsUploader(IOptions<AzureStorageSettings> azureStorageSettings, ILogger logger)
+        public ResultsUploader(IOptions<AtlasAzureStorageSettings> azureStorageSettings, ILogger logger)
             : base(azureStorageSettings.Value.ConnectionString, logger)
         {
             resultsContainer = azureStorageSettings.Value.SearchResultsBlobContainer;

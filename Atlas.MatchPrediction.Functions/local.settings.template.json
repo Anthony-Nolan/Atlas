@@ -4,6 +4,7 @@
     "ApplicationInsights:InstrumentationKey": "dummy-key",
     "ApplicationInsights:LogLevel": "Info",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
+    "AzureStorage:FrequencySetManualImportBlobContainer": "haplotype-frequency-set-manual-import",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",

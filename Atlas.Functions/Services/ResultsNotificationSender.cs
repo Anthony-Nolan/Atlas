@@ -19,7 +19,7 @@ namespace Atlas.Functions.Services
         private readonly string connectionString;
         private readonly string resultsNotificationTopicName;
 
-        public SearchCompletionMessageSender(IOptions<MessagingServiceBusSettings> messagingServiceBusSettings)
+        public SearchCompletionMessageSender(IOptions<AtlasMessagingServiceBusSettings> messagingServiceBusSettings)
         {
             connectionString = messagingServiceBusSettings.Value.ConnectionString;
             resultsNotificationTopicName = messagingServiceBusSettings.Value.SearchResultsTopic;

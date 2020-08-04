@@ -15,7 +15,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
     {
         public static void RegisterMatchingAlgorithmOrchestration(
             this IServiceCollection services,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
+            Func<IServiceProvider, MatchingMessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
             services.RegisterSettings(fetchMessagingServiceBusSettings);
             services.RegisterServices();
@@ -23,7 +23,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
         private static void RegisterSettings(
             this IServiceCollection services,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
+            Func<IServiceProvider, MatchingMessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
         }

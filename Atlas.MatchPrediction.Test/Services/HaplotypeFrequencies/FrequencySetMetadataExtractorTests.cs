@@ -41,8 +41,8 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 
             var metaData = metadataExtractor.GetMetadataFromFullPath(fullPath);
 
-            metaData.Registry.Should().Be(registry);
-            metaData.Ethnicity.Should().Be(ethnicity);
+            metaData.RegistryCode.Should().Be(registry);
+            metaData.EthnicityCode.Should().Be(ethnicity);
             metaData.Name.Should().Be(fileName);
         }
 
@@ -55,9 +55,9 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 
             var metaData = metadataExtractor.GetMetadataFromFullPath(fullPath);
 
-            metaData.Registry.Should().Be(registry);
+            metaData.RegistryCode.Should().Be(registry);
             metaData.Name.Should().Be(fileName);
-            metaData.Ethnicity.Should().BeNull();
+            metaData.EthnicityCode.Should().BeNull();
         }
 
         [Test]
@@ -68,8 +68,8 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             var metaData = metadataExtractor.GetMetadataFromFullPath(fileName);
 
             metaData.Name.Should().Be(fileName);
-            metaData.Registry.Should().BeNull();
-            metaData.Ethnicity.Should().BeNull();
+            metaData.RegistryCode.Should().BeNull();
+            metaData.EthnicityCode.Should().BeNull();
         }
 
         [TestCase("/blobServices/default/containers/haplotype-frequency-set-import/blobs/fileName", "fileName", null, null)]
@@ -88,8 +88,8 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             var metadata = metadataExtractor.GetMetadataFromFullPath(fullPath);
 
             metadata.Name.Should().Be(expectedFileName);
-            metadata.Registry.Should().Be(expectedRegistry);
-            metadata.Ethnicity.Should().Be(expectedEthnicity);
+            metadata.RegistryCode.Should().Be(expectedRegistry);
+            metadata.EthnicityCode.Should().Be(expectedEthnicity);
         }
     }
 }

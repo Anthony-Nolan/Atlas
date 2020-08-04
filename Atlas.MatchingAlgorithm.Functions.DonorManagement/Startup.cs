@@ -22,11 +22,11 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
             RegisterSettings(builder.Services);
             builder.Services.RegisterMatchingAlgorithmDonorManagementOnly(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<MatchingAzureStorageSettings>(),
                 OptionsReaderFor<DonorManagementSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
-                OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<MatchingMessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 ConnectionStringReader("PersistentSql"),
                 ConnectionStringReader("SqlA"),
@@ -37,11 +37,11 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
         private static void RegisterSettings(IServiceCollection services)
         {
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
+            services.RegisterAsOptions<MatchingAzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DonorManagementSettings>("MessagingServiceBus:DonorManagement");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
-            services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
+            services.RegisterAsOptions<MatchingMessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
         }
     }

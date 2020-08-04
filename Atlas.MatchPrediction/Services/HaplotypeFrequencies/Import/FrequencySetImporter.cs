@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
+﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
@@ -12,18 +7,32 @@ using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Utils;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using TaskExtensions = Atlas.Common.Utils.Tasks.TaskExtensions;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 {
     public interface IFrequencySetImporter
     {
-        Task Import(FrequencySetFile file, bool convertToPGroups = true);
+        /// <summary>
+        /// Imports haplotype frequencies from provided stream and stores set using info extracted from blob metadata.
+        /// </summary>
+        Task ImportFromStream(FrequencySetFile file, bool convertToPGroups = true);
+
+        /// <summary>
+        /// Downloads set using provided file name, and then stores haplotype frequencies using the other provided metadata.
+        /// </summary>
+        Task Import(HaplotypeFrequencySetMetadata fileMetadata, bool convertToPGroups = true);
     }
 
     internal class FrequencySetImporter : IFrequencySetImporter
     {
         private readonly IFrequencySetMetadataExtractor metadataExtractor;
+        private readonly IFrequencySetStreamer setStreamer;
         private readonly IFrequencyCsvReader frequencyCsvReader;
         private readonly IHaplotypeFrequencySetRepository setRepository;
         private readonly IHaplotypeFrequenciesRepository frequenciesRepository;
@@ -32,6 +41,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
         public FrequencySetImporter(
             IFrequencySetMetadataExtractor metadataExtractor,
+            IFrequencySetStreamer setStreamer,
             IFrequencyCsvReader frequencyCsvReader,
             IHaplotypeFrequencySetRepository setRepository,
             IHaplotypeFrequenciesRepository frequenciesRepository,
@@ -39,6 +49,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             ILogger logger)
         {
             this.metadataExtractor = metadataExtractor;
+            this.setStreamer = setStreamer;
             this.frequencyCsvReader = frequencyCsvReader;
             this.setRepository = setRepository;
             this.frequenciesRepository = frequenciesRepository;
@@ -46,37 +57,52 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             this.logger = logger;
         }
 
-        public async Task Import(FrequencySetFile file, bool convertToPGroups)
+        public async Task ImportFromStream(FrequencySetFile file, bool convertToPGroups)
         {
             if (file.FullPath.IsNullOrEmpty() || file.Contents == null)
             {
                 throw new ArgumentNullException();
             }
 
-            var metadata = GetMetadata(file);
-            var set = await AddNewInactiveSet(metadata);
-            await StoreFrequencies(file.Contents, set.Id, convertToPGroups);
-            await setRepository.ActivateSet(set.Id);
+            var metadata = metadataExtractor.GetMetadataFromFullPath(file.FullPath);
+            await ImportSet(metadata, file.Contents, convertToPGroups);
         }
 
-        private HaplotypeFrequencySetMetadata GetMetadata(FrequencySetFile file)
+        public async Task Import(HaplotypeFrequencySetMetadata fileMetadata, bool convertToPGroups = true)
         {
-            var metadata = metadataExtractor.GetMetadataFromFullPath(file.FullPath);
-
-            if (!metadata.Ethnicity.IsNullOrEmpty() && metadata.Registry.IsNullOrEmpty())
+            if (fileMetadata == null || fileMetadata.Name.IsNullOrEmpty())
             {
-                throw new ArgumentException($"Cannot import set: Ethnicity ('{metadata.Ethnicity}') provided but no registry.");
+                throw new ArgumentNullException();
             }
 
-            return metadata;
+            var stream = await setStreamer.GetFileContents(fileMetadata.Name);
+
+            await ImportSet(fileMetadata, stream, convertToPGroups);
+        }
+
+        private async Task ImportSet(HaplotypeFrequencySetMetadata metadata, Stream fileContents, bool convertToPGroups)
+        {
+            var set = await AddNewInactiveSet(metadata);
+            await StoreFrequencies(fileContents, set.Id, convertToPGroups);
+            await setRepository.ActivateSet(set.Id);
         }
 
         private async Task<HaplotypeFrequencySet> AddNewInactiveSet(HaplotypeFrequencySetMetadata metadata)
         {
+            if (metadata == null)
+            {
+                throw new ArgumentException();
+            }
+
+            if (!metadata.EthnicityCode.IsNullOrEmpty() && metadata.RegistryCode.IsNullOrEmpty())
+            {
+                throw new ArgumentException($"Cannot import set: Ethnicity ('{metadata.EthnicityCode}') provided but no registry.");
+            }
+
             var newSet = new HaplotypeFrequencySet
             {
-                RegistryCode = metadata.Registry,
-                EthnicityCode = metadata.Ethnicity,
+                RegistryCode = metadata.RegistryCode,
+                EthnicityCode = metadata.EthnicityCode,
                 Active = false,
                 Name = metadata.Name,
                 DateTimeAdded = DateTimeOffset.Now

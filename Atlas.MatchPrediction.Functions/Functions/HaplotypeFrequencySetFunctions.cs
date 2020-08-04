@@ -1,4 +1,5 @@
-﻿using Atlas.MatchPrediction.ExternalInterface;
+﻿using Atlas.Common.Utils;
+using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -9,7 +10,9 @@ using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Newtonsoft.Json;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -47,7 +50,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
                 UploadedDateTime = blobCreatedEvent.EventTime
             })
             {
-                await haplotypeFrequencyService.ImportFrequencySet(file);
+                await haplotypeFrequencyService.ImportFrequencySetFromFileStream(file);
             }
         }
 
@@ -87,6 +90,25 @@ namespace Atlas.MatchPrediction.Functions.Functions
                     StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
+        }
+        
+        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
+        [FunctionName(nameof(ManuallyImportHaplotypeFrequencySet))]
+        public async Task ManuallyImportHaplotypeFrequencySet(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(FrequencySetImportRequest), nameof(FrequencySetImportRequest))]
+            HttpRequest httpRequest)
+        {
+            var request = JsonConvert.DeserializeObject<FrequencySetImportRequest>(await new StreamReader(httpRequest.Body).ReadToEndAsync());
+            
+            var metadata = new HaplotypeFrequencySetMetadata
+            {
+                Name = request.FileName,
+                RegistryCode = request.RegistryCode,
+                EthnicityCode = request.EthnicityCode
+            };
+
+            await haplotypeFrequencyService.ImportFrequencySet(metadata, request.ConvertToPGroups);
         }
     }
 }

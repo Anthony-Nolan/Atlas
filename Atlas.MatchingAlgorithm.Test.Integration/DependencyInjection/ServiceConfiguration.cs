@@ -50,10 +50,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 OptionsReaderFor<DataRefreshSettings>(),
                 OptionsReaderFor<DonorManagementSettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<MatchingAzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 _ => new MacDictionarySettings(),
-                OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<MatchingMessagingServiceBusSettings>(),
                 _ => new NotificationsServiceBusSettings(),
                 ConnectionStringReader(PersistentSqlConnectionStringKey),
                 ConnectionStringReader(TransientASqlConnectionStringKey), 
@@ -80,11 +80,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
         private static void RegisterSettings(this IServiceCollection services)
         {
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
-            services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
+            services.RegisterAsOptions<MatchingAzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<DataRefreshSettings>("DataRefresh");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<DonorManagementSettings>("DonorManagement");
-            services.RegisterAsOptions<MessagingServiceBusSettings>("DonorManagementMessagingServiceBus");
+            services.RegisterAsOptions<MatchingMessagingServiceBusSettings>("DonorManagementMessagingServiceBus");
         }
 
         private static void RegisterMockServices(IServiceCollection services)

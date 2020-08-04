@@ -1,6 +1,6 @@
 namespace Atlas.Functions.Settings
 {
-    internal class MessagingServiceBusSettings
+    internal class AtlasMessagingServiceBusSettings
     {
         public string ConnectionString { get; set; }
         public string SearchResultsTopic { get; set; }

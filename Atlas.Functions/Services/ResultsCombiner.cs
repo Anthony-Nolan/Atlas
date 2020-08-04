@@ -15,7 +15,7 @@ namespace Atlas.Functions.Services
     {
         private readonly string resultsContainer;
 
-        public ResultsCombiner(IOptions<AzureStorageSettings> azureStorageSettings)
+        public ResultsCombiner(IOptions<AtlasAzureStorageSettings> azureStorageSettings)
         {
             resultsContainer = azureStorageSettings.Value.SearchResultsBlobContainer;
         }

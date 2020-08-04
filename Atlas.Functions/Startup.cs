@@ -8,7 +8,7 @@ using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
+using Atlas.MatchPrediction.Settings;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
@@ -33,10 +33,10 @@ namespace Atlas.Functions
                 _ => new DataRefreshSettings(),
                 _ => new DonorManagementSettings(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<AzureStorageSettings>(),
+                OptionsReaderFor<MatchingAzureStorageSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
-                OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<MatchingMessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 ConnectionStringReader("Matching:Sql:Persistent"),
                 ConnectionStringReader("Matching:Sql:A"),
@@ -59,16 +59,16 @@ namespace Atlas.Functions
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
+                OptionsReaderFor<MatchPredictionAzureStorageSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
-                ConnectionStringReader("MatchPrediction:Sql")
-            );
+                ConnectionStringReader("MatchPrediction:Sql"));
         }
 
         private static void RegisterSettings(IServiceCollection services)
         {
             // Atlas Function settings
-            services.RegisterAsOptions<Settings.AzureStorageSettings>("AtlasFunction:AzureStorage");
-            services.RegisterAsOptions<Settings.MessagingServiceBusSettings>("AtlasFunction:MessagingServiceBus");
+            services.RegisterAsOptions<Settings.AtlasAzureStorageSettings>("AtlasFunction:AzureStorage");
+            services.RegisterAsOptions<Settings.AtlasMessagingServiceBusSettings>("AtlasFunction:MessagingServiceBus");
 
             // Shared settings
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
@@ -80,8 +80,11 @@ namespace Atlas.Functions
             services.RegisterAsOptions<MacImportSettings>("MacDictionary:Import");
 
             // Matching Algorithm
-            services.RegisterAsOptions<AzureStorageSettings>("Matching:AzureStorage");
-            services.RegisterAsOptions<MessagingServiceBusSettings>("Matching:MessagingServiceBus");
+            services.RegisterAsOptions<MatchingAzureStorageSettings>("Matching:AzureStorage");
+            services.RegisterAsOptions<MatchingMessagingServiceBusSettings>("Matching:MessagingServiceBus");
+
+            // Match Prediction
+            services.RegisterAsOptions<MatchPredictionAzureStorageSettings>("MatchPrediction:AzureStorage");
         }
 
         private static void RegisterTopLevelFunctionServices(IServiceCollection services)
