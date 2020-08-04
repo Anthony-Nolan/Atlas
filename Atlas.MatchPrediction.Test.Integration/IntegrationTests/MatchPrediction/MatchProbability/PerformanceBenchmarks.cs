@@ -76,7 +76,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        // Runs in ~1s. Quick enough to not ignore.
+        // Runs in ~0.1s. Quick enough to not ignore.
         public async Task MatchPrediction__WithDonorFullyTyped_AtTruncatedTwoFieldAlleleResolution__CalculatesProbabilityCorrectly()
         {
             var donorHla = new PhenotypeInfoBuilder<string>()

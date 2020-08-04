@@ -38,11 +38,11 @@ namespace Atlas.Common.Matching.Services
                     "Locus cannot be partially typed. Either both positions should have data, or both should be null - check the validity of the matching data.");
             }
 
-            // Untyped loci are considered to have a "potential" match count of 2 - as they are not guaranteed not to match.
             if (IsUntyped(patientHla) || IsUntyped(donorHla))
             {
                 return untypedLocusBehaviour switch
                 {
+                    // Untyped loci are considered to have a "potential" match count of 2 - as they are not guaranteed not to match.
                     UntypedLocusBehaviour.TreatAsMatch => 2,
                     UntypedLocusBehaviour.TreatAsMismatch => 0,
                     UntypedLocusBehaviour.Throw => throw new ArgumentException(
@@ -51,33 +51,24 @@ namespace Atlas.Common.Matching.Services
                 };
             }
 
-            if (TwoOutOfTwoStringMatch(patientHla, donorHla))
+            // ReSharper disable InconsistentNaming
+            var match_1_1 = ExpressingHlaMatch(patientHla.Position1, donorHla.Position1);
+            var match_1_2 = ExpressingHlaMatch(patientHla.Position1, donorHla.Position2);
+            var match_2_1 = ExpressingHlaMatch(patientHla.Position2, donorHla.Position1);
+            var match_2_2 = ExpressingHlaMatch(patientHla.Position2, donorHla.Position2);
+            // ReSharper restore InconsistentNaming
+
+            var directMatch = match_1_1 && match_2_2;
+            var crossMatch = match_1_2 && match_2_1;
+            var twoOutOfTwo = directMatch || crossMatch;
+
+            if (twoOutOfTwo)
             {
                 return 2;
             }
 
-            // relies on 2/2 being called first
-            return AtLeastOneStringMatch(patientHla, donorHla) ? 1 : 0;
-        }
-
-        private static bool TwoOutOfTwoStringMatch(LocusInfo<string> locus1, LocusInfo<string> locus2)
-        {
-            if (locus1 == null || locus2 == null)
-            {
-                return false;
-            }
-
-            var directMatch = ExpressingHlaMatch(locus1.Position1, locus2.Position1) && ExpressingHlaMatch(locus1.Position2, locus2.Position2);
-            var crossMatch = ExpressingHlaMatch(locus1.Position1, locus2.Position2) && ExpressingHlaMatch(locus1.Position2, locus2.Position1);
-            return directMatch || crossMatch;
-        }
-
-        private static bool AtLeastOneStringMatch(LocusInfo<string> locus1, LocusInfo<string> locus2)
-        {
-            return ExpressingHlaMatch(locus1.Position1, locus2.Position1) ||
-                   ExpressingHlaMatch(locus1.Position1, locus2.Position2) ||
-                   ExpressingHlaMatch(locus1.Position2, locus2.Position1) ||
-                   ExpressingHlaMatch(locus1.Position2, locus2.Position2);
+            // relies on 2/2 being calculated first
+            return match_1_1 || match_1_2 || match_2_1 || match_2_2 ? 1 : 0;
         }
 
         // nulls = non expressing alleles (aka "null alleles") for pGroups.
