@@ -5,10 +5,28 @@ using LochNessBuilder;
 namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 {
     [Builder]
-    internal static class DiplotypeBuilder
+    internal class DiplotypeBuilder
     {
-        internal static Builder<Diplotype> New => Builder<Diplotype>.New
-            .With(d => d.Item1, new Haplotype {Hla = new LociInfo<string>()})
-            .With(d => d.Item2, new Haplotype {Hla = new LociInfo<string>()});
+        private Diplotype diplotype;
+
+        public DiplotypeBuilder()
+        {
+            var defaultHaplotype = new Haplotype{ Hla = new LociInfo<string>()};
+            diplotype = new Diplotype(defaultHaplotype, defaultHaplotype);
+        }
+
+        public DiplotypeBuilder WithItem1(Haplotype haplotype)
+        {
+            diplotype = new Diplotype(haplotype, diplotype.Item2);
+            return this;
+        }
+        
+        public DiplotypeBuilder WithItem2(Haplotype haplotype)
+        {
+            diplotype = new Diplotype(diplotype.Item1, haplotype);
+            return this;
+        }
+        
+        public Diplotype Build() => diplotype;
     }
 }

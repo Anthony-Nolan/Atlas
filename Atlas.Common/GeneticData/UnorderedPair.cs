@@ -16,8 +16,8 @@ namespace Atlas.Common.GeneticData
     /// <typeparam name="T">The type of the information that is required at each item.</typeparam>
     public class UnorderedPair<T>
     {
-        public T Item1 { get; set; }
-        public T Item2 { get; set; }
+        public T Item1 { get; }
+        public T Item2 { get; }
 
         // TODO: ATLAS-527: Make this immutable.
         public UnorderedPair()

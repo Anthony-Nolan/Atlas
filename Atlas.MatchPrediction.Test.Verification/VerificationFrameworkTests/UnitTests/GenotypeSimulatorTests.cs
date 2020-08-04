@@ -32,10 +32,13 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
 
             var pool = new NormalisedHaplotypePool(
                 default,
-                new[] { NormalisedPoolMemberBuilder.New
-                    .With(x => x.CopyNumber, totalCopyNumber)
-                    .With(x => x.PoolIndexLowerBoundary, 0)
-                    .Build()});
+                new[]
+                {
+                    NormalisedPoolMemberBuilder.New
+                        .With(x => x.CopyNumber, totalCopyNumber)
+                        .With(x => x.PoolIndexLowerBoundary, 0)
+                        .Build()
+                });
 
             genotypeSimulator.SimulateGenotypes(requiredGenotypeCount, pool);
 
@@ -51,10 +54,13 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
 
             var pool = new NormalisedHaplotypePool(
                 default,
-                new[] { NormalisedPoolMemberBuilder.New
-                    .With(x => x.CopyNumber, totalCopyNumber)
-                    .With(x => x.PoolIndexLowerBoundary, indexBoundary)
-                    .Build() });
+                new[]
+                {
+                    NormalisedPoolMemberBuilder.New
+                        .With(x => x.CopyNumber, totalCopyNumber)
+                        .With(x => x.PoolIndexLowerBoundary, indexBoundary)
+                        .Build()
+                });
 
             randomNumberPairGenerator.GenerateRandomNumberPairs(default, default)
                 .ReturnsForAnyArgs(BuildPairsOfIdenticalNumbers(indexBoundary, requiredGenotypeCount));
@@ -88,7 +94,8 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
 
             var pool = new NormalisedHaplotypePool(
                 default,
-                new[] {
+                new[]
+                {
                     NormalisedPoolMemberBuilder.New
                         .With(x => x.HaplotypeFrequency, firstHaplotype)
                         .With(x => x.CopyNumber, 1)
@@ -102,7 +109,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 });
 
             randomNumberPairGenerator.GenerateRandomNumberPairs(default, default)
-                .ReturnsForAnyArgs(new[] { new UnorderedPair<int>(0, 1) });
+                .ReturnsForAnyArgs(new[] {new UnorderedPair<int>(0, 1)});
 
             var result = genotypeSimulator.SimulateGenotypes(1, pool).Single();
 
@@ -137,7 +144,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 .With(x => x.PoolIndexLowerBoundary, firstMember.PoolIndexUpperBoundary + 1)
                 .Build();
 
-            var pool = new NormalisedHaplotypePool(default, new[] { firstMember, secondMember });
+            var pool = new NormalisedHaplotypePool(default, new[] {firstMember, secondMember});
 
             // use implemented random number pair generator to generate return object
             randomNumberPairGenerator.GenerateRandomNumberPairs(default, default).ReturnsForAnyArgs(
@@ -150,13 +157,9 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
             results.Select(r => r.A_2).Distinct().Should().BeEquivalentTo(firstHlaA, secondHlaA);
         }
 
-        private IReadOnlyCollection<UnorderedPair<int>> BuildPairsOfIdenticalNumbers(int number, int count)
+        private static IReadOnlyCollection<UnorderedPair<int>> BuildPairsOfIdenticalNumbers(int number, int count)
         {
-            return Builder<UnorderedPair<int>>.New
-                .With(x => x.Item1, number)
-                .With(x => x.Item2, number)
-                .Build(count)
-                .ToList();
+            return Enumerable.Range(0, count).Select(i => new UnorderedPair<int>(number, number)).ToList();
         }
     }
 }

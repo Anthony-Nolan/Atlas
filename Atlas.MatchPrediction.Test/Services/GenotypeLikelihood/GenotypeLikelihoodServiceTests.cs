@@ -38,7 +38,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 .Returns(arg => arg[0]);
 
             unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<ISet<Locus>>())
-                .Returns(new ExpandedGenotype {Diplotypes = new List<Diplotype> {DiplotypeBuilder.New.Build()}});
+                .Returns(new ExpandedGenotype {Diplotypes = new List<Diplotype> {new DiplotypeBuilder().Build()}});
 
             frequencyService.GetAllHaplotypeFrequencies(Arg.Any<int>())
                 .Returns(new ConcurrentDictionary<LociInfo<string>, HaplotypeFrequency>(
@@ -53,12 +53,14 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         [Test]
         public async Task CalculateLikelihood_FrequencyRepositoryIsCalledTwicePerDiplotype([Values(16, 8, 4, 2, 1)] int numberOfDiplotypes)
         {
+            var diplotypes = Enumerable.Range(0, numberOfDiplotypes).Select(i => new DiplotypeBuilder().Build()).ToList();
+
             unambiguousGenotypeExpander.ExpandGenotype(Arg.Any<PhenotypeInfo<string>>(), Arg.Any<ISet<Locus>>())
-                .Returns(new ExpandedGenotype {Diplotypes = DiplotypeBuilder.New.Build(numberOfDiplotypes).ToList()});
+                .Returns(new ExpandedGenotype {Diplotypes = diplotypes});
 
             await genotypeLikelihoodService.CalculateLikelihood(new PhenotypeInfo<string>(), new HaplotypeFrequencySet(), allLoci);
 
-            await frequencyService.ReceivedWithAnyArgs(2* numberOfDiplotypes).GetFrequencyForHla(default, default, default);
+            await frequencyService.ReceivedWithAnyArgs(2 * numberOfDiplotypes).GetFrequencyForHla(default, default, default);
         }
 
         [Test]
