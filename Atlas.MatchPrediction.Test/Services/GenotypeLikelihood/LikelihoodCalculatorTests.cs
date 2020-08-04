@@ -43,13 +43,16 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
                 hlaInfo2.SetLocus(locus, "homozygous");
             }
 
+            var diplotypes = Enumerable.Range(0, numberOfDiplotypes).Select(i =>
+                new DiplotypeBuilder()
+                    .WithItem1(new Haplotype {Hla = hlaInfo1, Frequency = frequency1})
+                    .WithItem2(new Haplotype {Hla = hlaInfo2, Frequency = frequency2})
+                    .Build()
+            ).ToList();
 
             var homozygousExpandedGenotype = new ExpandedGenotype
             {
-                Diplotypes = DiplotypeBuilder.New
-                    .With(d => d.Item1, new Haplotype {Hla = hlaInfo1, Frequency = frequency1})
-                    .With(d => d.Item2, new Haplotype {Hla = hlaInfo2, Frequency = frequency2})
-                    .Build(numberOfDiplotypes),
+                Diplotypes = diplotypes,
                 IsHomozygousAtEveryLocus = false
             };
 
@@ -78,9 +81,9 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             {
                 Diplotypes = new List<Diplotype>
                 {
-                    DiplotypeBuilder.New
-                        .With(d => d.Item1, new Haplotype {Hla = homozygousHlaData, Frequency = frequency})
-                        .With(d => d.Item2, new Haplotype {Hla = homozygousHlaData, Frequency = frequency})
+                    new DiplotypeBuilder()
+                        .WithItem1(new Haplotype {Hla = homozygousHlaData, Frequency = frequency})
+                        .WithItem2(new Haplotype {Hla = homozygousHlaData, Frequency = frequency})
                         .Build()
                 },
                 IsHomozygousAtEveryLocus = true

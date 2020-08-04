@@ -9,18 +9,20 @@ namespace Atlas.MatchPrediction.Models
         /// <summary>
         /// Creates a new Diplotype with no inner values for each haplotype.
         /// </summary>
-        public Diplotype()
+        public Diplotype() : base(new Haplotype(), new Haplotype())
         {
-            Item1 = new Haplotype();
-            Item2 = new Haplotype();
+        }
+
+        public Diplotype(Haplotype haplotype1, Haplotype haplotype2) : base(haplotype1, haplotype2)
+        {
+            
         }
 
         /// <summary>
         /// Creates a new Diplotype using the provided LociInfo to set values for Item1 and Item2.
         /// </summary>
-        public Diplotype(LociInfo<LocusInfo<string>> source)
-        {
-            Item1 = new Haplotype
+        public Diplotype(LociInfo<LocusInfo<string>> source) : base(
+            new Haplotype
             {
                 Hla = new LociInfo<string>
                 {
@@ -30,8 +32,8 @@ namespace Atlas.MatchPrediction.Models
                     Dqb1 = source.Dqb1.Position1,
                     Drb1 = source.Drb1.Position1
                 }
-            };
-            Item2 = new Haplotype
+            },
+            new Haplotype
             {
                 Hla = new LociInfo<string>
                 {
@@ -41,7 +43,8 @@ namespace Atlas.MatchPrediction.Models
                     Dqb1 = source.Dqb1.Position2,
                     Drb1 = source.Drb1.Position2
                 }
-            };
+            })
+        {
         }
 
         public void SetAtLocus(Locus locus, LocusInfo<string> locusInfo)
