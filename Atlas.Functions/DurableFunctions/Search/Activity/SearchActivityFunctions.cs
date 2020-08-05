@@ -67,6 +67,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 return new TimedResultSet<MatchingAlgorithmResultSet>
                 {
                     ElapsedTime = stopwatch.Elapsed,
+                    FinishedTimeUtc = DateTime.UtcNow,
                     ResultSet = results
                 };
             }
@@ -81,12 +82,22 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [FunctionName(nameof(FetchDonorInformation))]
-        public async Task<IDictionary<int, Donor>> FetchDonorInformation([ActivityTrigger] Tuple<string, IEnumerable<int>> searchAndDonorIds)
+        public async Task<TimedResultSet<IDictionary<int, Donor>>> FetchDonorInformation([ActivityTrigger] Tuple<string, IEnumerable<int>> searchAndDonorIds)
         {
             var (searchId, donorIds) = searchAndDonorIds;
             try
             {
-                return await donorReader.GetDonors(donorIds);
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+                
+                var donorInfo = await donorReader.GetDonors(donorIds);
+                
+                return new TimedResultSet<IDictionary<int, Donor>>
+                {
+                    ElapsedTime = stopwatch.Elapsed,
+                    FinishedTimeUtc = DateTime.UtcNow,
+                    ResultSet = donorInfo,
+                };
             }
             catch (Exception e)
             {
@@ -163,7 +174,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             /// <summary>
             /// Keyed by ATLAS ID
             /// </summary>
-            public IDictionary<int, MatchProbabilityResponse> MatchPredictionResults { get; set; }
+            public TimedResultSet<Dictionary<int, MatchProbabilityResponse>> MatchPredictionResults { get; set; }
 
             /// <summary>
             /// Keyed by ATLAS ID

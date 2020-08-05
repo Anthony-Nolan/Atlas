@@ -35,14 +35,17 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             var timedSearchResults = await RunMatchingAlgorithm(context, searchRequest);
             var searchResults = timedSearchResults.ResultSet;
 
-            var donorInformation = await FetchDonorInformation(context, searchResults);
-            var matchPredictionResults = await RunMatchPredictionAlgorithm(context, searchRequest, searchResults, donorInformation);
+            var timedDonorInformation = await FetchDonorInformation(context, searchResults);
+            var donorInformation = timedDonorInformation.ResultSet;
+
+            var matchPredictionResults = await RunMatchPredictionAlgorithm(context, searchRequest, searchResults, timedDonorInformation);
             await PersistSearchResults(context, timedSearchResults, matchPredictionResults, donorInformation);
 
             // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
             return new SearchOrchestrationOutput
             {
                 MatchingAlgorithmTime = timedSearchResults.ElapsedTime,
+                MatchPredictionTime = matchPredictionResults.ElapsedTime,
                 MatchingDonorCount = searchResults.ResultCount,
                 MatchingResultFileName = searchResults.ResultsFileName,
                 MatchingResultBlobContainer = searchResults.BlobStorageContainerName,
@@ -66,24 +69,38 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             return results;
         }
 
-        private static async Task<Dictionary<int, MatchProbabilityResponse>> RunMatchPredictionAlgorithm(
+        private static async Task<TimedResultSet<Dictionary<int, MatchProbabilityResponse>>> RunMatchPredictionAlgorithm(
             IDurableOrchestrationContext context,
             SearchRequest searchRequest,
             MatchingAlgorithmResultSet searchResults,
-            Dictionary<int, Donor> donorInformation)
+            TimedResultSet<Dictionary<int, Donor>> donorInformation)
         {
-            var matchPredictionInputs = await BuildMatchPredictionInputs(context, searchRequest, searchResults, donorInformation);
+            var matchPredictionInputs = await BuildMatchPredictionInputs(context, searchRequest, searchResults, donorInformation.ResultSet);
             var matchPredictionTasks = matchPredictionInputs.Select(r => RunMatchPredictionForDonor(context, r)).ToList();
             var matchPredictionResults = (await Task.WhenAll(matchPredictionTasks)).ToDictionary();
-            
+
+            // We cannot use a stopwatch, as orchestration functions must be deterministic, and may be called multiple times.
+            // Results of activity functions are constant across multiple invocations, so we can trust that finished time of the previous stage will remain constant 
+            TimeSpan? totalElapsedTime = default;
+            if (donorInformation.FinishedTimeUtc.HasValue)
+            {
+                var now = DateTime.UtcNow;
+                totalElapsedTime = now.Subtract(donorInformation.FinishedTimeUtc.Value);
+            }
+
             context.SetCustomStatus(new OrchestrationStatus
             {
                 LastCompletedStage = nameof(RunMatchPredictionAlgorithm),
-                // TODO: ATLAS-575: Work out how to time across multiple activity functions
-                ElapsedTimeOfStage = null,
+                ElapsedTimeOfStage = totalElapsedTime,
             });
-            
-            return matchPredictionResults;
+
+            return new TimedResultSet<Dictionary<int, MatchProbabilityResponse>>
+            {
+                ResultSet = matchPredictionResults,
+                // If the previous stage did not successfully report a timespan, we do not want to report an error - so we allow it to be null.
+                // TimedResultSet promises a non-null timestamp, so return MaxValue to be clear that this timing was not successful
+                ElapsedTime = totalElapsedTime ?? TimeSpan.MaxValue
+            };
         }
 
         private static async Task<IEnumerable<MatchProbabilityInput>> BuildMatchPredictionInputs(
@@ -102,7 +119,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 });
         }
 
-        private static async Task<Dictionary<int, Donor>> FetchDonorInformation(
+        private static async Task<TimedResultSet<Dictionary<int, Donor>>> FetchDonorInformation(
             IDurableOrchestrationContext context,
             MatchingAlgorithmResultSet matchingAlgorithmResults)
         {
@@ -111,7 +128,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 matchingAlgorithmResults.MatchingAlgorithmResults.Select(r => r.AtlasDonorId)
             );
 
-            var donorInfo = await context.CallActivityAsync<Dictionary<int, Donor>>(
+            var donorInfo = await context.CallActivityAsync<TimedResultSet<Dictionary<int, Donor>>>(
                 nameof(SearchActivityFunctions.FetchDonorInformation),
                 activityInput
             );
@@ -141,7 +158,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         private static async Task PersistSearchResults(
             IDurableOrchestrationContext context,
             TimedResultSet<MatchingAlgorithmResultSet> searchResults,
-            IDictionary<int, MatchProbabilityResponse> matchPredictionResults,
+            TimedResultSet<Dictionary<int, MatchProbabilityResponse>> matchPredictionResults,
             Dictionary<int, Donor> donorInformation)
         {
             // Note that this serializes the match prediction results, using default settings - which rounds any decimals to 15dp.
@@ -154,7 +171,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     MatchingAlgorithmResultSet = searchResults
                 }
             );
-            
+
             context.SetCustomStatus(new OrchestrationStatus
             {
                 LastCompletedStage = nameof(PersistSearchResults),
