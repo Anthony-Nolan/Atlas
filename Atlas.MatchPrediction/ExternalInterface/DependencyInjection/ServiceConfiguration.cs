@@ -13,6 +13,7 @@ using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
+using Atlas.MatchPrediction.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -45,9 +46,10 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 
         public static void RegisterHaplotypeFrequenciesReader(
             this IServiceCollection services,
+            Func<IServiceProvider, MatchPredictionAzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, string> fetchMatchPredictionDatabaseConnectionString)
         {
-            services.RegisterHaplotypeFrequenciesReaderServices();
+            services.RegisterHaplotypeFrequenciesReaderServices(fetchAzureStorageSettings);
 
             services.AddScoped<IHaplotypeFrequenciesReadRepository>(sp =>
                 new HaplotypeFrequenciesReadRepository(fetchMatchPredictionDatabaseConnectionString(sp))
@@ -71,9 +73,15 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             );
         }
 
-        private static void RegisterHaplotypeFrequenciesReaderServices(this IServiceCollection services)
+        private static void RegisterHaplotypeFrequenciesReaderServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, MatchPredictionAzureStorageSettings> fetchAzureStorageSettings)
         {
             services.AddScoped<IHaplotypeFrequenciesReader, HaplotypeFrequenciesReader>();
+            services.AddScoped<IFrequencyCsvReader, FrequencyCsvReader>();
+
+            services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
+            services.AddScoped<IFrequencySetStreamer, FrequencySetStreamer>();
         }
 
         private static void RegisterClientServices(this IServiceCollection services)

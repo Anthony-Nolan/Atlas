@@ -1,37 +1,58 @@
-﻿using Atlas.MatchPrediction.Data.Repositories;
-using Atlas.MatchPrediction.ExternalInterface.Models;
+﻿using Atlas.MatchPrediction.Data.Models;
+using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HaplotypeFrequency = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequency;
 
 namespace Atlas.MatchPrediction.ExternalInterface
 {
-    /// <summary>
-    /// Reader to allow consumers read-only access to stored haplotype frequencies.
-    /// </summary>
     public interface IHaplotypeFrequenciesReader
     {
-        Task<HaplotypeFrequenciesReaderResult> GetActiveGlobalHaplotypeFrequencies();
+        /// <summary>
+        /// Haplotype frequencies are manipulated before being persisted to the db, in order to optimise MPA performance.
+        /// This method retrieves the original, unaltered haplotype frequencies, used to generate the currently active, global HF set.
+        /// </summary>
+        Task<HaplotypeFrequenciesReaderResult> GetUnalteredActiveGlobalHaplotypeFrequencies();
     }
 
     internal class HaplotypeFrequenciesReader : IHaplotypeFrequenciesReader
     {
-        private readonly IHaplotypeFrequenciesReadRepository repository;
+        private readonly IHaplotypeFrequenciesReadRepository readRepository;
+        private readonly IFrequencySetStreamer setStreamer;
+        private readonly IFrequencyCsvReader csvReader;
 
-        public HaplotypeFrequenciesReader(IHaplotypeFrequenciesReadRepository repository)
+        public HaplotypeFrequenciesReader(
+            IHaplotypeFrequenciesReadRepository readRepository,
+            IFrequencySetStreamer setStreamer,
+            IFrequencyCsvReader csvReader)
         {
-            this.repository = repository;
+            this.readRepository = readRepository;
+            this.setStreamer = setStreamer;
+            this.csvReader = csvReader;
         }
 
-        public async Task<HaplotypeFrequenciesReaderResult> GetActiveGlobalHaplotypeFrequencies()
+        public async Task<HaplotypeFrequenciesReaderResult> GetUnalteredActiveGlobalHaplotypeFrequencies()
         {
+            var set = await readRepository.GetActiveHaplotypeFrequencySet(null, null);
+            var frequencies = await ReadHaplotypeFrequenciesFromFile(set);
+
             return new HaplotypeFrequenciesReaderResult
             {
-                HaplotypeFrequencySetId = await repository.GetActiveHaplotypeSetId(null, null),
-                HaplotypeFrequencies = (await repository.GetActiveHaplotypeFrequencies(null, null))
-                    .Select(MapFromDataModelToExternalModel)
-                    .ToList()
+                HaplotypeFrequencySetId = set.Id,
+                HaplotypeFrequencies = frequencies
             };
+        }
+
+        private async Task<IReadOnlyCollection<HaplotypeFrequency>> ReadHaplotypeFrequenciesFromFile(HaplotypeFrequencySet set)
+        {
+            var fileStream = await setStreamer.GetFileContents(set.Name);
+
+            return csvReader
+                .GetFrequencies(fileStream)
+                .Select(MapFromDataModelToExternalModel)
+                .ToList();
         }
 
         private static HaplotypeFrequency MapFromDataModelToExternalModel(Data.Models.HaplotypeFrequency frequency)

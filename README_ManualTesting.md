@@ -30,7 +30,7 @@ This code is designed to be run locally; it is not production quality and cannot
   - Scroll to the `api-check` endpoint, fire it and confirm that you receive an `OK 200` response in under a second.
 - Configure remote connection settings:
   - The verification framework runs locally, but depends on some deployed resources to generate the test harness, namely:
-      - Match Prediction database for global haplotype frequencies,
+      - Match Prediction database and azure storage for global haplotype frequencies,
       - Search orchestrator function, to run search requests
   - Therefore, the remote environment should have been set up before running the framework.
   - User secrets are used to override the default local settings with the remote settings.
@@ -39,6 +39,9 @@ This code is designed to be run locally; it is not production quality and cannot
   - Add the following json with the appropriate values:
       ```json
       {
+          "AzureStorage": {
+            "ConnectionString": "value"
+          },
           "ConnectionStrings": {
             "MatchPrediction:Sql": "value"
           },
@@ -47,14 +50,30 @@ This code is designed to be run locally; it is not production quality and cannot
       ```
 
 ### Generating a Test Harness
-- This is achieved by running the API, as described above in the Start up guide, and calling the endpoint: `POST /test-harness`.
-- All generated data is stored in the database defined within the app setting: `MatchPredictionVerification:Sql` (default: local db, `AtlasMatchPredictionVerification`):
+
+#### Upload Haplotype Frequency Set File
+The first step is to upload the haplotype frequency (HF) set file that will be used by MPA for calculating match predictions,
+as this must also be referenced for test harness generation.
+
+- The file should be uploaded as the *global* set, to the remote environment where search requests will eventually be run, as described here:
+  - TODO: ATLAS-627 - link to HF file upload README
+- It is critical that the file be left in remote azure storage; *DO NOT* delete, modify, or overwrite the file once it has been uploaded.
+- If the active, global HF set needs to be changed, upload a new file (ideally, with a unique name), and regenerate the test harness prior to running verification.
+
+#### Generate Test Patients & Donors
+- After the file has been successfully imported, launch the API, as described above in the Start up guide, and call the endpoint: `POST /test-harness`.
+  - All data generated during this request will be stored in the database defined within the app setting: `MatchPredictionVerification:Sql`.
+  - Default: local db, `AtlasMatchPredictionVerification`.
+
 - Generation involves the following steps:
-  - Creating a new test harness entry - the ID of this is returned in the API result
-  - Downloading the *currently active, global* haplotype frequency set from the database defined in app setting: `MatchPrediction:Sql`
-    - Default is local, but should be overridden in user secrets, so as to point at the same database against which match prediction will be run.
-  - Simulating patient and donor genotypes from a normalised pool of these haplotypes, and storing the simulants in the verification db.
-  - Masking the simulated genotypes, and storing these new phenotypes in the db (each phenotype is linked back to its "parent", underlying genotype).
+  1. Create a new test harness entry - the ID of this is returned in the API result.
+  2. Retrieve the *currently active, global* HF set.
+    - This step requires info stored in the remote MPA database.
+      - The app setting, `MatchPrediction:Sql` must be overridden in user secrets to point at the remote MPA database.
+    - Haplotype frequencies are read from the file that was used to generate the active, global HF set.
+      - The app setting: `AzureStorage:ConnectionString`, must also be overridden in user secrets to point at the remote azure storage account.
+  3. Simulate patient and donor genotypes from a normalised pool of these haplotypes, and store the simulants in the verification db.
+  4. Mask the simulated genotypes, and store these new phenotypes in the verification db (each phenotype is linked back to its "parent", underlying genotype).
 
 ### Running Search Requests using Test Harness
 TODO: ATLAS-477

@@ -50,7 +50,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
 
         private async Task<HaplotypeFrequenciesReaderResult> GetSourceData()
         {
-            return await reader.GetActiveGlobalHaplotypeFrequencies();
+            return await reader.GetUnalteredActiveGlobalHaplotypeFrequencies();
         }
 
         private async Task<NormalisedHaplotypePool> GenerateNormalisedPool(HaplotypeFrequenciesReaderResult sourceData)

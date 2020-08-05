@@ -31,7 +31,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
         {
             const int haplotypeCount = 12;
 
-            reader.GetActiveGlobalHaplotypeFrequencies()
+            reader.GetUnalteredActiveGlobalHaplotypeFrequencies()
                 .ReturnsForAnyArgs(new HaplotypeFrequenciesReaderResult
                 {
                     HaplotypeFrequencySetId = 0,
@@ -58,7 +58,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 .With(x => x.Frequency, lowestFrequency.Frequency * highestFrequencyCopyNumber)
                 .Build();
 
-            reader.GetActiveGlobalHaplotypeFrequencies().ReturnsForAnyArgs(new HaplotypeFrequenciesReaderResult
+            reader.GetUnalteredActiveGlobalHaplotypeFrequencies().ReturnsForAnyArgs(new HaplotypeFrequenciesReaderResult
             {
                 HaplotypeFrequencySetId = 0,
                 HaplotypeFrequencies = new[] { lowestFrequency, middleFrequency, highestFrequency }
@@ -91,7 +91,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 .With(x => x.Frequency, haplotype1.Frequency * haplotype4CopyNumber)
                 .Build();
 
-            reader.GetActiveGlobalHaplotypeFrequencies().ReturnsForAnyArgs(new HaplotypeFrequenciesReaderResult
+            reader.GetUnalteredActiveGlobalHaplotypeFrequencies().ReturnsForAnyArgs(new HaplotypeFrequenciesReaderResult
             {
                 HaplotypeFrequencySetId = 0,
                 HaplotypeFrequencies = new[] { haplotype1, haplotype2, haplotype3, haplotype4 }

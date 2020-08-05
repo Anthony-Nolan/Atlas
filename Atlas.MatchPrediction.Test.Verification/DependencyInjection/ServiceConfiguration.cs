@@ -1,11 +1,14 @@
-﻿using Atlas.MatchPrediction.ExternalInterface;
+﻿using Atlas.Common.Utils.Extensions;
+using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
+using Atlas.MatchPrediction.Settings;
 using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 {
@@ -17,9 +20,17 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString
         )
         {
+            services.RegisterSettings();
             services.RegisterDatabaseServices(fetchMatchPredictionVerificationSqlConnectionString);
-            services.RegisterHaplotypeFrequenciesReader(fetchMatchPredictionSqlConnectionString);
             services.RegisterServices(fetchMatchPredictionSqlConnectionString);
+            services.RegisterHaplotypeFrequenciesReader(
+                OptionsReaderFor<MatchPredictionAzureStorageSettings>(),
+                fetchMatchPredictionSqlConnectionString);
+        }
+
+        private static void RegisterSettings(this IServiceCollection services)
+        {
+            services.RegisterAsOptions<MatchPredictionAzureStorageSettings>("AzureStorage");
         }
 
         private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)

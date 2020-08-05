@@ -13,7 +13,7 @@ namespace Atlas.Functions.Services
         Task UploadResults(SearchResultSet searchResultSet);
     }
 
-    internal class ResultsUploader : AzureStorageBlobClient, IResultsUploader
+    internal class ResultsUploader : BlobUploader, IResultsUploader
     {
         private readonly string resultsContainer;
 
