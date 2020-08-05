@@ -1,14 +1,12 @@
 ﻿using Atlas.Common.Utils.Extensions;
-using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
-using Atlas.MatchPrediction.Settings;
 using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Services;
+using Atlas.MatchPrediction.Test.Verification.Settings;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 {
@@ -23,9 +21,7 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             services.RegisterSettings();
             services.RegisterDatabaseServices(fetchMatchPredictionVerificationSqlConnectionString);
             services.RegisterServices(fetchMatchPredictionSqlConnectionString);
-            services.RegisterHaplotypeFrequenciesReader(
-                OptionsReaderFor<MatchPredictionAzureStorageSettings>(),
-                fetchMatchPredictionSqlConnectionString);
+            services.RegisterHaplotypeFrequenciesReader(fetchMatchPredictionSqlConnectionString);
         }
 
         private static void RegisterSettings(this IServiceCollection services)
@@ -48,6 +44,9 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             this IServiceCollection services, 
             Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString)
         {
+            services.AddScoped<IHaplotypeFrequenciesReader, HaplotypeFrequenciesReader>();
+            services.AddScoped<IFrequencySetStreamer, FrequencySetStreamer>();
+
             services.AddScoped<INormalisedPoolGenerator, NormalisedPoolGenerator>(sp =>
                 {
                     var reader = sp.GetService<IHaplotypeFrequenciesReader>();

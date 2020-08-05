@@ -1,5 +1,4 @@
-﻿using System;
-using Atlas.Common.ApplicationInsights;
+﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Matching.Services;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
@@ -13,9 +12,9 @@ using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using Atlas.MatchPrediction.Services.MatchCalculation;
 using Atlas.MatchPrediction.Services.MatchProbability;
-using Atlas.MatchPrediction.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
@@ -46,13 +45,12 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 
         public static void RegisterHaplotypeFrequenciesReader(
             this IServiceCollection services,
-            Func<IServiceProvider, MatchPredictionAzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, string> fetchMatchPredictionDatabaseConnectionString)
         {
-            services.RegisterHaplotypeFrequenciesReaderServices(fetchAzureStorageSettings);
+            services.RegisterHaplotypeFrequenciesReaderServices();
 
-            services.AddScoped<IHaplotypeFrequenciesReadRepository>(sp =>
-                new HaplotypeFrequenciesReadRepository(fetchMatchPredictionDatabaseConnectionString(sp))
+            services.AddScoped<IHaplotypeFrequencySetReadRepository>(sp =>
+                new HaplotypeFrequencySetReadRepository(fetchMatchPredictionDatabaseConnectionString(sp))
             );
         }
 
@@ -73,15 +71,10 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             );
         }
 
-        private static void RegisterHaplotypeFrequenciesReaderServices(
-            this IServiceCollection services,
-            Func<IServiceProvider, MatchPredictionAzureStorageSettings> fetchAzureStorageSettings)
+        private static void RegisterHaplotypeFrequenciesReaderServices(this IServiceCollection services)
         {
-            services.AddScoped<IHaplotypeFrequenciesReader, HaplotypeFrequenciesReader>();
+            services.AddScoped<IHaplotypeFrequencySetReader, HaplotypeFrequencySetReader>();
             services.AddScoped<IFrequencyCsvReader, FrequencyCsvReader>();
-
-            services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
-            services.AddScoped<IFrequencySetStreamer, FrequencySetStreamer>();
         }
 
         private static void RegisterClientServices(this IServiceCollection services)

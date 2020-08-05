@@ -1,12 +1,11 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Atlas.MatchPrediction.ExternalInterface;
-using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
+﻿using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Services;
 using Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.TestHelpers;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.UnitTests
 {
