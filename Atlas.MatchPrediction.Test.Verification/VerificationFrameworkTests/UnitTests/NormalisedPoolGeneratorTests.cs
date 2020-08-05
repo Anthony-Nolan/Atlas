@@ -7,6 +7,8 @@ using Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.TestHel
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using HaplotypeFrequenciesReaderResult = Atlas.MatchPrediction.Test.Verification.Services.HaplotypeFrequenciesReaderResult;
+using IHaplotypeFrequenciesReader = Atlas.MatchPrediction.Test.Verification.Services.IHaplotypeFrequenciesReader;
 
 namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.UnitTests
 {

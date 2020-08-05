@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Data.Repositories
 {
-    public interface IHaplotypeFrequenciesReadRepository
+    public interface IHaplotypeFrequencySetReadRepository
     {
         Task<HaplotypeFrequencySet> GetActiveHaplotypeFrequencySet(string registryCode, string ethnicityCode);
     }
 
-    public class HaplotypeFrequenciesReadRepository : IHaplotypeFrequenciesReadRepository
+    public class HaplotypeFrequencySetSetReadRepository : IHaplotypeFrequencySetReadRepository
     {
         private readonly string connectionString;
 
-        public HaplotypeFrequenciesReadRepository(string connectionString)
+        public HaplotypeFrequencySetSetReadRepository(string connectionString)
         {
             this.connectionString = connectionString;
         }

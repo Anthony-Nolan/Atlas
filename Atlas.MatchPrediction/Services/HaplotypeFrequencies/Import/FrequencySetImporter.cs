@@ -89,9 +89,9 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         {
             // Load all frequencies into memory, to perform aggregation by PGroup.
             // Largest known HF set is ~300,000 entries, which is reasonable to load into memory here.
-            var frequencies = frequencyCsvReader.GetFrequencies(stream).ToList();
+            var gGroupHaplotypes = ReadGGroupHaplotypeFrequencies(stream);
 
-            if (!frequencies.Any())
+            if (!gGroupHaplotypes.Any())
             {
                 throw new Exception("No haplotype frequencies provided");
             }
@@ -99,14 +99,24 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             // TODO: ATLAS-600: Read HLA nomenclature version from file data, rather than hard-coding
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary("3400");
 
-            var convertedHaplotypes = convertToPGroups
-                ? await ConvertHaplotypesToPGroupResolutionAndConsolidate(frequencies, hlaMetadataDictionary)
-                : frequencies.Select(f =>
-                {
-                    f.TypingCategory = HaplotypeTypingCategory.GGroup;
-                    return f;
-                });
-            await frequenciesRepository.AddHaplotypeFrequencies(setId, convertedHaplotypes);
+            var haplotypesToStore = convertToPGroups
+                ? await ConvertHaplotypesToPGroupResolutionAndConsolidate(gGroupHaplotypes, hlaMetadataDictionary)
+                : gGroupHaplotypes;
+            await frequenciesRepository.AddHaplotypeFrequencies(setId, haplotypesToStore);
+        }
+
+        private IReadOnlyCollection<HaplotypeFrequency> ReadGGroupHaplotypeFrequencies(Stream stream)
+        {
+            return frequencyCsvReader.GetFrequencies(stream).Select(f => new HaplotypeFrequency
+            {
+                A = f.A,
+                B = f.B,
+                C = f.C,
+                DQB1 = f.Dqb1,
+                DRB1 = f.Drb1,
+                Frequency = f.Frequency,
+                TypingCategory = HaplotypeTypingCategory.GGroup
+            }).ToList();
         }
 
         private async Task<IEnumerable<HaplotypeFrequency>> ConvertHaplotypesToPGroupResolutionAndConsolidate(

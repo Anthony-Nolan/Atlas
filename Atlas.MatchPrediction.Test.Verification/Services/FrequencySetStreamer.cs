@@ -1,10 +1,10 @@
-﻿using Atlas.Common.AzureStorage.Blob;
-using Atlas.MatchPrediction.Settings;
-using Microsoft.Extensions.Options;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
+using Atlas.Common.AzureStorage.Blob;
+using Atlas.MatchPrediction.Test.Verification.Settings;
+using Microsoft.Extensions.Options;
 
-namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
+namespace Atlas.MatchPrediction.Test.Verification.Services
 {
     internal interface IFrequencySetStreamer
     {

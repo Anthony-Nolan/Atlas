@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Atlas.MatchPrediction.Data.Models;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using CsvHelper;
 using CsvHelper.Configuration;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 {
-    internal interface IFrequencyCsvReader
+    public interface IFrequencyCsvReader
     {
         IEnumerable<HaplotypeFrequency> GetFrequencies(Stream stream);
     }
@@ -48,11 +48,9 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 Map(m => m.A);
                 Map(m => m.B);
                 Map(m => m.C);
-                Map(m => m.DQB1);
-                Map(m => m.DRB1);
+                Map(m => m.Dqb1);
+                Map(m => m.Drb1);
                 Map(m => m.Frequency).Name("freq");
-                Map(m => m.Id).Ignore();
-                Map(m => m.Set).Ignore();
             }
         }
     }
