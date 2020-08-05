@@ -33,8 +33,7 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
                 valueB: new LocusInfo<string>("*45:01", "*15:01"),
                 valueC: new LocusInfo<string>("*03:03", "*06:02"),
                 valueDrb1: new LocusInfo<string>("*04:01", "*11:01"),
-                valueDqb1: new LocusInfo<string>("*03:01", "*03:02")
-            ),
+                valueDqb1: new LocusInfo<string>("*03:01", "*03:02")),
         };
 
         private static readonly PatientInfo LivePatient495317 = new PatientInfo
@@ -42,31 +41,11 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
             PatientId = "495317 (live)",
             Hla = new PhenotypeInfo<string>
             (
-                valueA: new LocusInfo<string>
-                (
-                    "*03:01:01:01",
-                    "*66:01:01:01"
-                ),
-                valueB: new LocusInfo<string>
-                (
-                    "*07:02:01:01",
-                    "*35:01:01"
-                ),
-                valueC: new LocusInfo<string>
-                (
-                    "*04:01:01",
-                    "*07:02:01:03"
-                ),
-                valueDrb1: new LocusInfo<string>
-                (
-                    "*11:01:01",
-                    "*10:01:01"
-                ),
-                valueDqb1: new LocusInfo<string>
-                (
-                    "*05:01",
-                    "*05:02:01"
-                )
+                valueA: new LocusInfo<string>("*03:01:01:01", "*66:01:01:01"),
+                valueB: new LocusInfo<string>("*07:02:01:01", "*35:01:01"),
+                valueC: new LocusInfo<string>("*04:01:01", "*07:02:01:03"),
+                valueDrb1: new LocusInfo<string>("*11:01:01", "*10:01:01"),
+                valueDqb1: new LocusInfo<string>("*05:01", "*05:02:01")
             ),
         };
 
@@ -75,31 +54,11 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
             PatientId = "496738 (live)",
             Hla = new PhenotypeInfo<string>
             (
-                valueA: new LocusInfo<string>
-                (
-                    "*01:01",
-                    "*02:01"
-                ),
-                valueB: new LocusInfo<string>
-                (
-                    "*07:02",
-                    "*08:01"
-                ),
-                valueC: new LocusInfo<string>
-                (
-                    "*07:01",
-                    "*07:02"
-                ),
-                valueDrb1: new LocusInfo<string>
-                (
-                    "*15:01",
-                    "*03:01"
-                ),
-                valueDqb1: new LocusInfo<string>
-                (
-                    "*06:02",
-                    "*02:01"
-                )
+                valueA: new LocusInfo<string>("*01:01", "*02:01"),
+                valueB: new LocusInfo<string>("*07:02", "*08:01"),
+                valueC: new LocusInfo<string>("*07:01", "*07:02"),
+                valueDrb1: new LocusInfo<string>("*15:01", "*03:01"),
+                valueDqb1: new LocusInfo<string>("*06:02", "*02:01")
             ),
         };
 
@@ -108,31 +67,11 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
             PatientId = "496272 (live)",
             Hla = new PhenotypeInfo<string>
             (
-                valueA: new LocusInfo<string>
-                (
-                    "*03:01",
-                    "*66:01"
-                ),
-                valueB: new LocusInfo<string>
-                (
-                    "*07:02",
-                    "*07:06"
-                ),
-                valueC: new LocusInfo<string>
-                (
-                    "*07:02",
-                    "*15:05"
-                ),
-                valueDrb1: new LocusInfo<string>
-                (
-                    "*15:01",
-                    "*13:01"
-                ),
-                valueDqb1: new LocusInfo<string>
-                (
-                    "*06:02",
-                    "*06:03"
-                )
+                valueA: new LocusInfo<string>("*03:01", "*66:01"),
+                valueB: new LocusInfo<string>("*07:02", "*07:06"),
+                valueC: new LocusInfo<string>("*07:02", "*15:05"),
+                valueDrb1: new LocusInfo<string>("*15:01", "*13:01"),
+                valueDqb1: new LocusInfo<string>("*06:02", "*06:03")
             ),
         };
 
@@ -141,31 +80,11 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
             PatientId = "496345 (live)",
             Hla = new PhenotypeInfo<string>
             (
-                valueA: new LocusInfo<string>
-                (
-                    "*24:02",
-                    "*29:02"
-                ),
-                valueB: new LocusInfo<string>
-                (
-                    "*45:01",
-                    "*15:01"
-                ),
-                valueC: new LocusInfo<string>
-                (
-                    "*03:03",
-                    "*06:02"
-                ),
-                valueDrb1: new LocusInfo<string>
-                (
-                    "*04:01",
-                    "*11:01"
-                ),
-                valueDqb1: new LocusInfo<string>
-                (
-                    "*03:01",
-                    "*03:02"
-                )
+                valueA: new LocusInfo<string>("*24:02", "*29:02"),
+                valueB: new LocusInfo<string>("*45:01", "*15:01"),
+                valueC: new LocusInfo<string>("*03:03", "*06:02"),
+                valueDrb1: new LocusInfo<string>("*04:01", "*11:01"),
+                valueDqb1: new LocusInfo<string>("*03:01", "*03:02")
             ),
         };
 
