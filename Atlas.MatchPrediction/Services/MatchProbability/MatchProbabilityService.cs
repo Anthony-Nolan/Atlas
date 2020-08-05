@@ -61,7 +61,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             TypedGenotype haplotypeResolutions,
             IHlaMetadataDictionary hlaMetadataDictionary)
         {
-            var stringMatchableResolutions = await haplotypeResolutions.MapAsync(async (locus, _, hla) =>
+            var stringMatchableResolutions = (await haplotypeResolutions.MapAsync(async (locus, _, hla) =>
             {
                 if (hla?.Hla == null)
                 {
@@ -70,11 +70,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
                 return hla.TypingCategory switch
                 {
-                    HaplotypeTypingCategory.GGroup => await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, hla.Hla) ?? hla.Hla,
+                    HaplotypeTypingCategory.GGroup => await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, hla.Hla),
                     HaplotypeTypingCategory.PGroup => hla.Hla,
                     _ => throw new ArgumentOutOfRangeException(nameof(hla.TypingCategory))
                 };
-            });
+            })).CopyExpressingAllelesToNullPositions();
 
             return new GenotypeAtDesiredResolutions(haplotypeResolutions, stringMatchableResolutions);
         }
@@ -191,10 +191,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 await ConvertGenotypes(patientGenotypes, "patient"),
                 await ConvertGenotypes(donorGenotypes, "donor"));
 
-            var patientStringGenotypes = patientGenotypes.Select(g => g.ToHlaNames())
-                .Select(r => r.CopyExpressingAllelesToNullPositions()).ToHashSet();
-            var donorStringGenotypes = donorGenotypes.Select(g => g.ToHlaNames())
-                .Select(r => r.CopyExpressingAllelesToNullPositions()).ToHashSet();
+            var patientStringGenotypes = patientGenotypes.Select(g => g.ToHlaNames()).ToHashSet();
+            var donorStringGenotypes = donorGenotypes.Select(g => g.ToHlaNames()).ToHashSet();
 
             // TODO: ATLAS-233: Re-introduce hardcoded 100% probability for guaranteed match but no represented genotypes
             var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientStringGenotypes, frequencySets.PatientSet, allowedLoci);
