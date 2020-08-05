@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.Functions.Models;
 using Atlas.Functions.Services;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Common.Models;
@@ -54,11 +56,19 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [FunctionName(nameof(RunMatchingAlgorithm))]
-        public async Task<MatchingAlgorithmResultSet> RunMatchingAlgorithm([ActivityTrigger] IdentifiedSearchRequest searchRequest)
+        public async Task<TimedResultSet<MatchingAlgorithmResultSet>> RunMatchingAlgorithm([ActivityTrigger] IdentifiedSearchRequest searchRequest)
         {
             try
             {
-                return await searchRunner.RunSearch(searchRequest);
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+                var results = await searchRunner.RunSearch(searchRequest);
+                
+                return new TimedResultSet<MatchingAlgorithmResultSet>
+                {
+                    ElapsedTime = stopwatch.Elapsed,
+                    ResultSet = results
+                };
             }
             catch (Exception e)
             {

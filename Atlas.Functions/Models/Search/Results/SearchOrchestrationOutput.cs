@@ -1,3 +1,5 @@
+using System;
+
 namespace Atlas.Functions.Models.Search.Results
 {
     /// <summary>
@@ -6,6 +8,7 @@ namespace Atlas.Functions.Models.Search.Results
     /// </summary>
     public class SearchOrchestrationOutput
     {
+        public TimeSpan MatchingAlgorithmTime { get; set; }
         public int MatchingDonorCount { get; set; }
         public string MatchingResultBlobContainer { get; set; }
         public string MatchingResultFileName { get; set; }

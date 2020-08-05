@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.DurableFunctions.Search.Activity;
+using Atlas.Functions.Models;
 using Atlas.Functions.Models.Search.Requests;
 using Atlas.Functions.Models.Search.Results;
 using Atlas.Functions.Services;
@@ -31,7 +32,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         {
             var searchRequest = context.GetInput<SearchRequest>();
 
-            var searchResults = await RunMatchingAlgorithm(context, searchRequest);
+            var timedSearchResults = await RunMatchingAlgorithm(context, searchRequest);
+            var searchResults = timedSearchResults.ResultSet;
+            
             var donorInformation = await FetchDonorInformation(context, searchResults);
             var matchPredictionResults = await RunMatchPredictionAlgorithm(context, searchRequest, searchResults, donorInformation);
             await PersistSearchResults(context, searchResults, matchPredictionResults, donorInformation);
@@ -39,6 +42,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
             return new SearchOrchestrationOutput
             {
+                MatchingAlgorithmTime = timedSearchResults.ElapsedTime,
                 MatchingDonorCount = searchResults.ResultCount,
                 MatchingResultFileName = searchResults.ResultsFileName,
                 MatchingResultBlobContainer = searchResults.BlobStorageContainerName,
@@ -46,9 +50,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             };
         }
 
-        private static async Task<MatchingAlgorithmResultSet> RunMatchingAlgorithm(IDurableOrchestrationContext context, SearchRequest searchRequest)
+        private static async Task<TimedResultSet<MatchingAlgorithmResultSet>> RunMatchingAlgorithm(
+            IDurableOrchestrationContext context,
+            SearchRequest searchRequest)
         {
-            return await context.CallActivityAsync<MatchingAlgorithmResultSet>(
+            return await context.CallActivityAsync<TimedResultSet<MatchingAlgorithmResultSet>>(
                 nameof(SearchActivityFunctions.RunMatchingAlgorithm),
                 new IdentifiedSearchRequest {Id = context.InstanceId, MatchingRequest = searchRequest.ToMatchingRequest()}
             );
