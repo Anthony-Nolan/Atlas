@@ -34,10 +34,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
             var timedSearchResults = await RunMatchingAlgorithm(context, searchRequest);
             var searchResults = timedSearchResults.ResultSet;
-            
+
             var donorInformation = await FetchDonorInformation(context, searchResults);
             var matchPredictionResults = await RunMatchPredictionAlgorithm(context, searchRequest, searchResults, donorInformation);
-            await PersistSearchResults(context, searchResults, matchPredictionResults, donorInformation);
+            await PersistSearchResults(context, timedSearchResults, matchPredictionResults, donorInformation);
 
             // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
             return new SearchOrchestrationOutput
@@ -118,7 +118,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
         private static async Task PersistSearchResults(
             IDurableOrchestrationContext context,
-            MatchingAlgorithmResultSet searchResults,
+            TimedResultSet<MatchingAlgorithmResultSet> searchResults,
             IDictionary<int, MatchProbabilityResponse> matchPredictionResults,
             Dictionary<int, Donor> donorInformation)
         {

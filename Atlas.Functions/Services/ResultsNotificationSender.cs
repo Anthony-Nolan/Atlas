@@ -36,6 +36,7 @@ namespace Atlas.Functions.Services
                 ResultsFileName = searchResultSet.ResultsFileName,
                 SearchRequestId = searchResultSet.SearchRequestId,
                 BlobStorageContainerName = searchResultSet.BlobStorageContainerName,
+                MatchingAlgorithmTime = searchResultSet.MatchingAlgorithmTime
             };
 
             await SendNotificationMessage(searchResultsNotification);
