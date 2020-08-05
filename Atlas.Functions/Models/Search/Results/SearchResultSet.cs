@@ -14,5 +14,6 @@ namespace Atlas.Functions.Models.Search.Results
         public string ResultsFileName => $"{SearchRequestId}.json";
         
         public TimeSpan MatchingAlgorithmTime { get; set; }
+        public TimeSpan MatchPredictionTime { get; set; }
     }
 }

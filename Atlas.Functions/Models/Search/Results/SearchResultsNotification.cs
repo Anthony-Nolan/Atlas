@@ -20,5 +20,6 @@ namespace Atlas.Functions.Models.Search.Results
         public string FailureMessage { get; set; }
         
         public TimeSpan MatchingAlgorithmTime { get; set; }
+        public TimeSpan MatchPredictionTime { get; set; }
     }
 }

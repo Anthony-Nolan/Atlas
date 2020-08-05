@@ -9,6 +9,7 @@ namespace Atlas.Functions.Models.Search.Results
     public class SearchOrchestrationOutput
     {
         public TimeSpan MatchingAlgorithmTime { get; set; }
+        public TimeSpan MatchPredictionTime { get; set; }
         public int MatchingDonorCount { get; set; }
         public string MatchingResultBlobContainer { get; set; }
         public string MatchingResultFileName { get; set; }
