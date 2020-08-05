@@ -1,3 +1,5 @@
+using System;
+
 namespace Atlas.Functions.Models.Search.Results
 {
     public class SearchResultsNotification
@@ -16,5 +18,7 @@ namespace Atlas.Functions.Models.Search.Results
         /// If the search was not a success, this should be populated to indicate which stage of search failed. 
         /// </summary>
         public string FailureMessage { get; set; }
+        
+        public TimeSpan MatchingAlgorithmTime { get; set; }
     }
 }

@@ -146,7 +146,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             catch (Exception e)
             {
                 await searchCompletionMessageSender.PublishFailureMessage(
-                    parameters.MatchingAlgorithmResultSet.SearchRequestId,
+                    parameters.MatchingAlgorithmResultSet.ResultSet.SearchRequestId,
                     $"Failed to persist search results.\n Exception: {e.Message}"
                 );
                 throw;
@@ -158,7 +158,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         /// </summary>
         public class PersistSearchResultsParameters
         {
-            public MatchingAlgorithmResultSet MatchingAlgorithmResultSet { get; set; }
+            public TimedResultSet<MatchingAlgorithmResultSet> MatchingAlgorithmResultSet { get; set; }
 
             /// <summary>
             /// Keyed by ATLAS ID

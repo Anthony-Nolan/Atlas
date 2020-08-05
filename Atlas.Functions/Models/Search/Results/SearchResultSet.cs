@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Atlas.Functions.Models.Search.Results
@@ -10,6 +11,8 @@ namespace Atlas.Functions.Models.Search.Results
 
         public string HlaNomenclatureVersion { get; set; }
         public string BlobStorageContainerName { get; set; }
-        public string ResultsFileName => $"{SearchRequestId}.json"; 
+        public string ResultsFileName => $"{SearchRequestId}.json";
+        
+        public TimeSpan MatchingAlgorithmTime { get; set; }
     }
 }

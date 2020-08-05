@@ -24,7 +24,7 @@ namespace Atlas.Functions.Services
         public SearchResultSet CombineResults(
             SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters)
         {
-            var matchingResults = persistSearchResultsParameters.MatchingAlgorithmResultSet;
+            var matchingResults = persistSearchResultsParameters.MatchingAlgorithmResultSet.ResultSet;
             var matchPredictionResults = persistSearchResultsParameters.MatchPredictionResults;
             var donorInfo = persistSearchResultsParameters.DonorInformation;
             
@@ -40,6 +40,7 @@ namespace Atlas.Functions.Services
                 HlaNomenclatureVersion = matchingResults.HlaNomenclatureVersion,
                 SearchRequestId = matchingResults.SearchRequestId,
                 BlobStorageContainerName = resultsContainer,
+                MatchingAlgorithmTime = persistSearchResultsParameters.MatchingAlgorithmResultSet.ElapsedTime
             };
         }
     }
