@@ -14,11 +14,12 @@ namespace Atlas.Common.Test.Matching.Services
 
         // Used p-groups in the tests as that's the most common use case, the class is not restricted to p-groups
 
-        // ReSharper disable once InconsistentNaming
+        // ReSharper disable InconsistentNaming
         private const string PatientPGroup1_1 = "p-group1-1";
 
-        // ReSharper disable once InconsistentNaming
         private const string PatientPGroup1_2 = "p-group1-2";
+        // ReSharper restore InconsistentNaming
+
         private const string PatientPGroup2 = "p-group2";
         private const string PatientPGroupHomozygous = "p-group-shared";
         private const string ArbitraryPGroup = "arbitrary-p-group";
