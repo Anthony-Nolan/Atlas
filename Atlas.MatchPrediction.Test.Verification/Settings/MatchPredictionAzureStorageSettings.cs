@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchPrediction.Settings
+﻿namespace Atlas.MatchPrediction.Test.Verification.Settings
 {
     public class MatchPredictionAzureStorageSettings
     {

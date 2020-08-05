@@ -12,6 +12,7 @@ using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using HaplotypeFrequency = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequency;
 
 namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 {
@@ -153,7 +154,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             await importer.Import(file);
 
             await frequenciesRepository.Received(1)
-                .AddHaplotypeFrequencies(Arg.Any<int>(), Arg.Any<IEnumerable<HaplotypeFrequency>>());
+                .AddHaplotypeFrequencies(Arg.Any<int>(), Arg.Any<IEnumerable<Data.Models.HaplotypeFrequency>>());
         }
 
         [Test]

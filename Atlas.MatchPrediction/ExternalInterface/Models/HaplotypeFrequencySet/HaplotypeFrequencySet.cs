@@ -1,6 +1,4 @@
-﻿using Atlas.MatchPrediction.Models;
-
-namespace Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet
+﻿namespace Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet
 {
     public class HaplotypeFrequencySet
     {

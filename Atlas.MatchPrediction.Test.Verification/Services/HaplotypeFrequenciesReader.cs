@@ -1,14 +1,14 @@
-﻿using Atlas.MatchPrediction.Data.Models;
-using Atlas.MatchPrediction.Data.Repositories;
+﻿using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using HaplotypeFrequency = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequency;
 
-namespace Atlas.MatchPrediction.ExternalInterface
+namespace Atlas.MatchPrediction.Test.Verification.Services
 {
-    public interface IHaplotypeFrequenciesReader
+    internal interface IHaplotypeFrequenciesReader
     {
         /// <summary>
         /// Haplotype frequencies are manipulated before being persisted to the db, in order to optimise MPA performance.
@@ -19,23 +19,23 @@ namespace Atlas.MatchPrediction.ExternalInterface
 
     internal class HaplotypeFrequenciesReader : IHaplotypeFrequenciesReader
     {
-        private readonly IHaplotypeFrequenciesReadRepository readRepository;
+        private readonly IHaplotypeFrequencySetReader setReader;
         private readonly IFrequencySetStreamer setStreamer;
         private readonly IFrequencyCsvReader csvReader;
 
         public HaplotypeFrequenciesReader(
-            IHaplotypeFrequenciesReadRepository readRepository,
+            IHaplotypeFrequencySetReader setReader,
             IFrequencySetStreamer setStreamer,
             IFrequencyCsvReader csvReader)
         {
-            this.readRepository = readRepository;
+            this.setReader = setReader;
             this.setStreamer = setStreamer;
             this.csvReader = csvReader;
         }
 
         public async Task<HaplotypeFrequenciesReaderResult> GetUnalteredActiveGlobalHaplotypeFrequencies()
         {
-            var set = await readRepository.GetActiveHaplotypeFrequencySet(null, null);
+            var set = await setReader.GetActiveGlobalHaplotypeFrequencySet();
             var frequencies = await ReadHaplotypeFrequenciesFromFile(set);
 
             return new HaplotypeFrequenciesReaderResult
@@ -51,21 +51,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
 
             return csvReader
                 .GetFrequencies(fileStream)
-                .Select(MapFromDataModelToExternalModel)
                 .ToList();
-        }
-
-        private static HaplotypeFrequency MapFromDataModelToExternalModel(Data.Models.HaplotypeFrequency frequency)
-        {
-            return new HaplotypeFrequency
-            {
-                Frequency = frequency.Frequency,
-                A = frequency.A,
-                B = frequency.B,
-                C = frequency.C,
-                Dqb1 = frequency.DQB1,
-                Drb1 = frequency.DRB1
-            };
         }
     }
 
