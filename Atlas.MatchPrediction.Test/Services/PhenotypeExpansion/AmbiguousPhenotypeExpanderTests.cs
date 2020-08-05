@@ -33,24 +33,24 @@ namespace Atlas.MatchPrediction.Test.Services.PhenotypeExpansion
         public void ExpandPhenotype_WhenOnlyOneAllelePerPosition_ReturnsSingleGenotype()
         {
             var allelesPerLocus = new PhenotypeInfo<IReadOnlyCollection<string>>
-            {
-                A = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla1}, new List<string> {Hla2}),
-                B = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla3}, new List<string> {Hla4}),
-                C = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla5}, new List<string> {Hla6}),
-                Dqb1 = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla7}, new List<string> {Hla8}),
-                Drb1 = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla9}, new List<string> {Hla10}),
-            };
+            (
+                valueA: new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla1}, new List<string> {Hla2}),
+                valueB: new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla3}, new List<string> {Hla4}),
+                valueC: new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla5}, new List<string> {Hla6}),
+                valueDqb1: new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla7}, new List<string> {Hla8}),
+                valueDrb1: new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla9}, new List<string> {Hla10})
+            );
 
             var actualGenotypes = ambiguousPhenotypeExpander.ExpandPhenotype(allelesPerLocus).ToList();
 
             var expectedGenotype = new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>(Hla1, Hla2),
-                B = new LocusInfo<string>(Hla3, Hla4),
-                C = new LocusInfo<string>(Hla5, Hla6),
-                Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                Drb1 = new LocusInfo<string>(Hla9, Hla10)
-            };
+            (
+                valueA: new LocusInfo<string>(Hla1, Hla2),
+                valueB: new LocusInfo<string>(Hla3, Hla4),
+                valueC: new LocusInfo<string>(Hla5, Hla6),
+                valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+            );
 
             actualGenotypes.Single().Should().BeEquivalentTo(expectedGenotype);
         }
@@ -59,160 +59,160 @@ namespace Atlas.MatchPrediction.Test.Services.PhenotypeExpansion
         public void ExpandPhenotype_WhenMixOfMultipleAndSingleAllelesPerLocus_ReturnsExpectedGenotypes()
         {
             var allelesPerLocus = new PhenotypeInfo<IReadOnlyCollection<string>>
-            {
-                A = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla1, Hla2, Hla3}, new List<string> {Hla1, Hla2, Hla3}),
-                B = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla3, Hla4}, new List<string> {Hla4}),
-                C = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla5}, new List<string> {Hla6}),
-                Dqb1 = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla7}, new List<string> {Hla8}),
-                Drb1 = new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla9}, new List<string> {Hla10}),
-            };
+            (
+                valueA: new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla1, Hla2, Hla3}, new List<string> {Hla1, Hla2, Hla3}),
+                valueB: new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla3, Hla4}, new List<string> {Hla4}),
+                valueC: new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla5}, new List<string> {Hla6}),
+                valueDqb1: new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla7}, new List<string> {Hla8}),
+                valueDrb1: new LocusInfo<IReadOnlyCollection<string>>(new List<string> {Hla9}, new List<string> {Hla10})
+            );
 
             var expectedGenotype = new List<PhenotypeInfo<string>>
             {
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla1, Hla1),
-                    B = new LocusInfo<string>(Hla3, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla1, Hla1),
+                    valueB: new LocusInfo<string>(Hla3, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla1, Hla1),
-                    B = new LocusInfo<string>(Hla4, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla1, Hla1),
+                    valueB: new LocusInfo<string>(Hla4, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla1, Hla2),
-                    B = new LocusInfo<string>(Hla3, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla1, Hla2),
+                    valueB: new LocusInfo<string>(Hla3, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla1, Hla2),
-                    B = new LocusInfo<string>(Hla4, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla1, Hla2),
+                    valueB: new LocusInfo<string>(Hla4, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla1, Hla3),
-                    B = new LocusInfo<string>(Hla3, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla1, Hla3),
+                    valueB: new LocusInfo<string>(Hla3, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla1, Hla3),
-                    B = new LocusInfo<string>(Hla4, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla1, Hla3),
+                    valueB: new LocusInfo<string>(Hla4, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla2, Hla1),
-                    B = new LocusInfo<string>(Hla3, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla2, Hla1),
+                    valueB: new LocusInfo<string>(Hla3, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla2, Hla1),
-                    B = new LocusInfo<string>(Hla4, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla2, Hla1),
+                    valueB: new LocusInfo<string>(Hla4, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla2, Hla2),
-                    B = new LocusInfo<string>(Hla3, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla2, Hla2),
+                    valueB: new LocusInfo<string>(Hla3, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla2, Hla2),
-                    B = new LocusInfo<string>(Hla4, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla2, Hla2),
+                    valueB: new LocusInfo<string>(Hla4, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla2, Hla3),
-                    B = new LocusInfo<string>(Hla3, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla2, Hla3),
+                    valueB: new LocusInfo<string>(Hla3, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla2, Hla3),
-                    B = new LocusInfo<string>(Hla4, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla2, Hla3),
+                    valueB: new LocusInfo<string>(Hla4, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla3, Hla1),
-                    B = new LocusInfo<string>(Hla3, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla3, Hla1),
+                    valueB: new LocusInfo<string>(Hla3, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla3, Hla1),
-                    B = new LocusInfo<string>(Hla4, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla3, Hla1),
+                    valueB: new LocusInfo<string>(Hla4, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla3, Hla2),
-                    B = new LocusInfo<string>(Hla3, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla3, Hla2),
+                    valueB: new LocusInfo<string>(Hla3, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla3, Hla2),
-                    B = new LocusInfo<string>(Hla4, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla3, Hla2),
+                    valueB: new LocusInfo<string>(Hla4, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla3, Hla3),
-                    B = new LocusInfo<string>(Hla3, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                },
+                (
+                    valueA: new LocusInfo<string>(Hla3, Hla3),
+                    valueB: new LocusInfo<string>(Hla3, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                ),
                 new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(Hla3, Hla3),
-                    B = new LocusInfo<string>(Hla4, Hla4),
-                    C = new LocusInfo<string>(Hla5, Hla6),
-                    Dqb1 = new LocusInfo<string>(Hla7, Hla8),
-                    Drb1 = new LocusInfo<string>(Hla9, Hla10)
-                }
+                (
+                    valueA: new LocusInfo<string>(Hla3, Hla3),
+                    valueB: new LocusInfo<string>(Hla4, Hla4),
+                    valueC: new LocusInfo<string>(Hla5, Hla6),
+                    valueDqb1: new LocusInfo<string>(Hla7, Hla8),
+                    valueDrb1: new LocusInfo<string>(Hla9, Hla10)
+                )
             };
 
             var actualGenotypes = ambiguousPhenotypeExpander.ExpandPhenotype(allelesPerLocus).ToList();
@@ -223,7 +223,9 @@ namespace Atlas.MatchPrediction.Test.Services.PhenotypeExpansion
         [TestCase(1, 1)]
         [TestCase(2, 1024)]
         [TestCase(3, 59049)]
-        public void ExpandPhenotype_WithMultipleAllelePerLocus_ReturnsExpectedNumberOfGenotypes(int numberOfAllelesPerLocus, int expectedNumberOfGenotypes)
+        public void ExpandPhenotype_WithMultipleAllelePerLocus_ReturnsExpectedNumberOfGenotypes(
+            int numberOfAllelesPerLocus,
+            int expectedNumberOfGenotypes)
         {
             var alleles = new List<string>();
 
@@ -233,13 +235,13 @@ namespace Atlas.MatchPrediction.Test.Services.PhenotypeExpansion
             }
 
             var allelesPerLocus = new PhenotypeInfo<IReadOnlyCollection<string>>
-            {
-                A = new LocusInfo<IReadOnlyCollection<string>>(alleles, alleles),
-                B = new LocusInfo<IReadOnlyCollection<string>>(alleles, alleles),
-                C = new LocusInfo<IReadOnlyCollection<string>>(alleles, alleles),
-                Dqb1 = new LocusInfo<IReadOnlyCollection<string>>(alleles, alleles),
-                Drb1 = new LocusInfo<IReadOnlyCollection<string>>(alleles, alleles)
-            };
+            (
+                valueA: new LocusInfo<IReadOnlyCollection<string>>(alleles, alleles),
+                valueB: new LocusInfo<IReadOnlyCollection<string>>(alleles, alleles),
+                valueC: new LocusInfo<IReadOnlyCollection<string>>(alleles, alleles),
+                valueDqb1: new LocusInfo<IReadOnlyCollection<string>>(alleles, alleles),
+                valueDrb1: new LocusInfo<IReadOnlyCollection<string>>(alleles, alleles)
+            );
 
             var actualGenotypes = ambiguousPhenotypeExpander.ExpandPhenotype(allelesPerLocus).ToList();
 

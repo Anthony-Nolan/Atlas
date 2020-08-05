@@ -25,21 +25,21 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 
         // A selection of valid hla data for the single donor to have
         private readonly PhenotypeInfo<string> donorHlas = new PhenotypeInfo<string>
-        {
-            A = new LocusInfo<string>("01:02", "01:02"),
-            B = new LocusInfo<string>("14:53", "14:47"),
-            Drb1 = new LocusInfo<string>("13:03:01", "13:02:01:03"),
-            C = new LocusInfo<string>("02:02", "02:02")
-        };
+        (
+            valueA: new LocusInfo<string>("01:02", "01:02"),
+            valueB: new LocusInfo<string>("14:53", "14:47"),
+            valueDrb1: new LocusInfo<string>("13:03:01", "13:02:01:03"),
+            valueC: new LocusInfo<string>("02:02", "02:02")
+        );
 
         // A selection of valid hla strings that do not match the donor's
         private readonly PhenotypeInfo<string> nonMatchingHlas = new PhenotypeInfo<string>
-        {
-            A = new LocusInfo<string>("02:01:01:01", "02:01:01:01"),
-            B = new LocusInfo<string>("07:02:01:01", "07:02:13"),
-            Drb1 = new LocusInfo<string>("14:190", "14:190"),
-            C = new LocusInfo<string>("07:01", "07:01")
-        };
+        (
+            valueA: new LocusInfo<string>("02:01:01:01", "02:01:01:01"),
+            valueB: new LocusInfo<string>("07:02:01:01", "07:02:13"),
+            valueDrb1: new LocusInfo<string>("14:190", "14:190"),
+            valueC: new LocusInfo<string>("07:01", "07:01")
+        );
 
         [OneTimeSetUp]
         public void ImportTestDonor()

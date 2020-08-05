@@ -22,27 +22,27 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
 
         public PatientHlaSelectionCriteriaBuilder MatchingAtPosition(Locus locus, LocusPosition position)
         {
-            criteria.HlaSources.SetPosition(locus, position, PatientHlaSource.Match);
+            criteria.HlaSources = criteria.HlaSources.SetPosition(locus, position, PatientHlaSource.Match);
             return this;
         }
 
         public PatientHlaSelectionCriteriaBuilder MatchingAtBothPositions(Locus locus)
         {
-            criteria.HlaSources.SetPosition(locus, LocusPosition.One, PatientHlaSource.Match);
-            criteria.HlaSources.SetPosition(locus, LocusPosition.Two, PatientHlaSource.Match);
+            criteria.HlaSources = criteria.HlaSources.SetPosition(locus, LocusPosition.One, PatientHlaSource.Match);
+            criteria.HlaSources = criteria.HlaSources.SetPosition(locus, LocusPosition.Two, PatientHlaSource.Match);
             return this;
         }
 
         public PatientHlaSelectionCriteriaBuilder NotMatchingAtPosition(Locus locus, LocusPosition position)
         {
-            criteria.HlaSources.SetPosition(locus, position, PatientHlaSource.ExpressingAlleleMismatch);
+            criteria.HlaSources = criteria.HlaSources.SetPosition(locus, position, PatientHlaSource.ExpressingAlleleMismatch);
             return this;
         }
 
         public PatientHlaSelectionCriteriaBuilder NotMatchingAtEitherPosition(Locus locus)
         {
-            criteria.HlaSources.SetPosition(locus, LocusPosition.One, PatientHlaSource.ExpressingAlleleMismatch);
-            criteria.HlaSources.SetPosition(locus, LocusPosition.Two, PatientHlaSource.ExpressingAlleleMismatch);
+            criteria.HlaSources = criteria.HlaSources.SetPosition(locus, LocusPosition.One, PatientHlaSource.ExpressingAlleleMismatch);
+            criteria.HlaSources = criteria.HlaSources.SetPosition(locus, LocusPosition.Two, PatientHlaSource.ExpressingAlleleMismatch);
             return this;
         }
 
@@ -54,19 +54,19 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
 
         public PatientHlaSelectionCriteriaBuilder HomozygousAtLocus(Locus locus)
         {
-            criteria.IsHomozygous.SetLocus(locus, true);
+            criteria.IsHomozygous = criteria.IsHomozygous.SetLocus(locus, true);
             return this;
         }
 
         public PatientHlaSelectionCriteriaBuilder WithMatchOrientationAtLocus(Locus locus, MatchOrientation orientation)
         {
-            criteria.Orientations.SetLocus(locus, orientation);
+            criteria.Orientations = criteria.Orientations.SetLocus(locus, orientation);
             return this;
         }
 
         public PatientHlaSelectionCriteriaBuilder WithHlaSourceAtPosition(Locus locus, LocusPosition position, PatientHlaSource hlaSource)
         {
-            criteria.HlaSources.SetPosition(locus, position, hlaSource);
+            criteria.HlaSources = criteria.HlaSources.SetPosition(locus, position, hlaSource);
             return this;
         }
 

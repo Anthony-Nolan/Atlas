@@ -48,14 +48,14 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             public PhenotypeInfo<string> ToPhenotypeInfo()
             {
                 return new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(A1, A2),
-                    B = new LocusInfo<string>(B1, B2),
-                    C = new LocusInfo<string>(C1, C2),
-                    Dpb1 = new LocusInfo<string>(Dpb11, Dpb12),
-                    Dqb1 = new LocusInfo<string>(Dqb11, Dqb12),
-                    Drb1 = new LocusInfo<string>(Drb11, Drb12),
-                };
+                (
+                    valueA: new LocusInfo<string>(A1, A2),
+                    valueB: new LocusInfo<string>(B1, B2),
+                    valueC: new LocusInfo<string>(C1, C2),
+                    valueDpb1: new LocusInfo<string>(Dpb11, Dpb12),
+                    valueDqb1: new LocusInfo<string>(Dqb11, Dqb12),
+                    valueDrb1: new LocusInfo<string>(Drb11, Drb12)
+                );
             }
         }
     }

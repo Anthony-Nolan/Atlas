@@ -55,8 +55,8 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         {
             var genotype = TwoFieldGenotypeBuilder.Build();
 
-            genotype.SetPosition(locus, LocusPosition.One, $"{genotype.GetPosition(locus, LocusPosition.One)}:{fieldsToAdd}");
-            genotype.SetPosition(locus, LocusPosition.Two, $"{genotype.GetPosition(locus, LocusPosition.Two)}:{fieldsToAdd}");
+            genotype = genotype.SetPosition(locus, LocusPosition.One, $"{genotype.GetPosition(locus, LocusPosition.One)}:{fieldsToAdd}")
+                .SetPosition(locus, LocusPosition.Two, $"{genotype.GetPosition(locus, LocusPosition.Two)}:{fieldsToAdd}");
 
             var actualGenotype = alleleTruncater.TruncateGenotypeAlleles(genotype);
 

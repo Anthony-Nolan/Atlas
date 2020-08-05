@@ -19,7 +19,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
     public class SearchRequestValidationTests
     {
         private ISearchDispatcher searchDispatcher;
-        private MatchingRequest matchingRequest;
+        private MatchingRequestBuilder defaultMatchingRequestBuilder;
 
         [SetUp]
         public void SetUp()
@@ -28,30 +28,30 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 
             searchDispatcher = new SearchDispatcher(searchServiceBusClient);
 
-            matchingRequest = new MatchingRequestBuilder()
+            defaultMatchingRequestBuilder = new MatchingRequestBuilder()
                 .WithSearchType(DonorType.Adult)
                 .WithTotalMismatchCount(0)
-                .WithMismatchCountAtLoci(new List<Locus> { Locus.A, Locus.B, Locus.Drb1 }, 0)
+                .WithMismatchCountAtLoci(new List<Locus> {Locus.A, Locus.B, Locus.Drb1}, 0)
                 .WithSearchHla(new SampleTestHlas.HeterozygousSet1().SixLocus_SingleExpressingAlleles)
                 .WithLociToScore(new List<Locus>())
-                .WithLociExcludedFromScoringAggregates(new List<Locus>())
-                .Build();
+                .WithLociExcludedFromScoringAggregates(new List<Locus>());
         }
 
         [Test]
         public void DispatchSearch_AllMandatoryFieldsHaveValidValues_DoesNotThrowValidationError()
         {
-            Assert.DoesNotThrowAsync(async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.DoesNotThrowAsync(async () => await searchDispatcher.DispatchSearch(defaultMatchingRequestBuilder.Build()));
         }
 
         [Test]
         public void DispatchSearch_SearchTypeIsEmpty_ThrowsValidationError()
         {
+            var defaultRequest = defaultMatchingRequestBuilder.Build();
             var searchRequestWithoutSearchType = new MatchingRequest
             {
-                MatchCriteria = matchingRequest.MatchCriteria,
-                SearchHlaData = matchingRequest.SearchHlaData,
-                ScoringCriteria = matchingRequest.ScoringCriteria
+                MatchCriteria = defaultRequest.MatchCriteria,
+                SearchHlaData = defaultRequest.SearchHlaData,
+                ScoringCriteria = defaultRequest.ScoringCriteria
             };
 
             Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(searchRequestWithoutSearchType));
@@ -60,119 +60,83 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public void DispatchSearch_MatchCriteriaIsEmpty_ThrowsValidationError()
         {
-            matchingRequest.MatchCriteria = null;
+            var matchRequest = defaultMatchingRequestBuilder.Build();
+            matchRequest.MatchCriteria = null;
 
-            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchRequest));
         }
 
-        [Test]
-        public void DispatchSearch_MatchCriteriaIsEmptyAtLocusA_ThrowsValidationError()
+        [TestCase(Locus.A)]
+        [TestCase(Locus.B)]
+        [TestCase(Locus.Drb1)]
+        public void DispatchSearch_MatchCriteriaIsEmptyAtRequiredLocus_ThrowsValidationError(Locus locus)
         {
-            matchingRequest.MatchCriteria.LocusMismatchCounts.A = null;
+            var matchRequest = defaultMatchingRequestBuilder.WithLocusMismatchCount(locus, null).Build();
 
-            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchRequest));
         }
 
-        [TestCase(-1)]
-        [TestCase(3)]
-        public void DispatchSearch_MismatchCountInvalidAtLocusA_ThrowsValidationError(int mismatchCount)
+        [TestCase(-1, Locus.A)]
+        [TestCase(3, Locus.A)]
+        [TestCase(-1, Locus.B)]
+        [TestCase(3, Locus.B)]
+        [TestCase(-1, Locus.C)]
+        [TestCase(3, Locus.C)]
+        [TestCase(-1, Locus.Dqb1)]
+        [TestCase(3, Locus.Dqb1)]
+        [TestCase(-1, Locus.Drb1)]
+        [TestCase(3, Locus.Drb1)]
+        public void DispatchSearch_MismatchCountInvalidAtSingleLocus_ThrowsValidationError(int mismatchCount, Locus locus)
         {
-            matchingRequest.MatchCriteria.LocusMismatchCounts.A = mismatchCount;
+            var matchRequest = defaultMatchingRequestBuilder.WithLocusMismatchCount(locus, mismatchCount).Build();
 
-            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
-        }
-
-        [Test]
-        public void DispatchSearch_MatchCriteriaIsEmptyAtLocusB_ThrowsValidationError()
-        {
-            matchingRequest.MatchCriteria.LocusMismatchCounts.B = null;
-
-            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
-        }
-
-        [TestCase(-1)]
-        [TestCase(3)]
-        public void DispatchSearch_MismatchCountInvalidAtLocusB_ThrowsValidationError(int mismatchCount)
-        {
-            matchingRequest.MatchCriteria.LocusMismatchCounts.B = mismatchCount;
-
-            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
-        }
-
-        [Test]
-        public void DispatchSearch_MatchCriteriaIsEmptyAtLocusDrb1_ThrowsValidationError()
-        {
-            matchingRequest.MatchCriteria.LocusMismatchCounts.Drb1 = null;
-
-            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
-        }
-
-        [TestCase(-1)]
-        [TestCase(3)]
-        public void DispatchSearch_MismatchCountInvalidAtLocusDrb1_ThrowsValidationError(int mismatchCount)
-        {
-            matchingRequest.MatchCriteria.LocusMismatchCounts.Drb1 = mismatchCount;
-
-            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
-        }
-
-        [TestCase(-1)]
-        [TestCase(3)]
-        public void DispatchSearch_MismatchCountInvalidAtLocusC_ThrowsValidationError(int mismatchCount)
-        {
-            matchingRequest.MatchCriteria.LocusMismatchCounts.C = mismatchCount;
-
-            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
-        }
-
-        [TestCase(-1)]
-        [TestCase(3)]
-        public void DispatchSearch_MismatchCountInvalidAtLocusDqb1_ThrowsValidationError(int mismatchCount)
-        {
-            matchingRequest.MatchCriteria.LocusMismatchCounts.Dqb1 = mismatchCount;
-
-            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchRequest));
         }
 
         [TestCase(-1)]
         [TestCase(5)]
         public void DispatchSearch_DonorMismatchCountIsInvalid_ThrowsValidationError(int donorMismatchCount)
         {
-            matchingRequest.MatchCriteria.DonorMismatchCount = donorMismatchCount;
+            var matchRequest = defaultMatchingRequestBuilder.Build();
+            matchRequest.MatchCriteria.DonorMismatchCount = donorMismatchCount;
 
-            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchRequest));
         }
 
         [Test]
         public void DispatchSearch_LociToScoreIsNull_ThrowsValidationError()
         {
-            matchingRequest.ScoringCriteria.LociToScore = null;
+            var matchRequest = defaultMatchingRequestBuilder.Build();
+            matchRequest.ScoringCriteria.LociToScore = null;
 
-            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchRequest));
         }
 
         [Test]
         public void DispatchSearch_LociToScoreContainsAlgorithmLocus_DoesNotThrowValidationError()
         {
-            matchingRequest.ScoringCriteria.LociToScore = new List<Locus> { Locus.Dpb1 };
+            var matchRequest = defaultMatchingRequestBuilder.Build();
+            matchRequest.ScoringCriteria.LociToScore = new List<Locus> {Locus.Dpb1};
 
-            Assert.DoesNotThrowAsync(async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.DoesNotThrowAsync(async () => await searchDispatcher.DispatchSearch(matchRequest));
         }
 
         [Test]
         public void DispatchSearch_LociToExcludeFromAggregateScoreIsNull_ThrowsValidationError()
         {
-            matchingRequest.ScoringCriteria.LociToExcludeFromAggregateScore = null;
+            var matchRequest = defaultMatchingRequestBuilder.Build();
+            matchRequest.ScoringCriteria.LociToExcludeFromAggregateScore = null;
 
-            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchRequest));
         }
 
         [Test]
         public void DispatchSearch_LociToExcludeFromAggregateScoreContainsAlgorithmLocus_DoesNotThrowValidationError()
         {
-            matchingRequest.ScoringCriteria.LociToExcludeFromAggregateScore = new List<Locus> { Locus.Dpb1 };
+            var matchRequest = defaultMatchingRequestBuilder.Build();
+            matchRequest.ScoringCriteria.LociToExcludeFromAggregateScore = new List<Locus> {Locus.Dpb1};
 
-            Assert.DoesNotThrowAsync(async () => await searchDispatcher.DispatchSearch(matchingRequest));
+            Assert.DoesNotThrowAsync(async () => await searchDispatcher.DispatchSearch(matchRequest));
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Models;
@@ -32,15 +33,15 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             decimal frequency2,
             decimal expectedLikelihood)
         {
-            var hlaInfo1 = new LociInfo<string> {A = "A1:A1", B = "B1:B1", C = "C1:C1", Dqb1 = "Dqb11:Dqb11", Drb1 = "Drb11:Drb11"};
-            var hlaInfo2 = new LociInfo<string> {A = "A2:A2", B = "B2:B2", C = "C2:C2", Dqb1 = "Dqb12:Dqb12", Drb1 = "Drb12:Drb12"};
+            var hlaInfo1 = new LociInfo<string>("A1:A1", "B1:B1", "C1:C1", valueDqb1: "Dqb11:Dqb11", valueDrb1: "Drb11:Drb11");
+            var hlaInfo2 = new LociInfo<string>("A2:A2", "B2:B2", "C2:C2", valueDqb1: "Dqb12:Dqb12", valueDrb1: "Drb12:Drb12");
 
             var lociToMakeHomozygous = LocusSettings.MatchPredictionLoci.Take(numberOfHomozygousCases);
 
             foreach (var locus in lociToMakeHomozygous)
             {
-                hlaInfo1.SetLocus(locus, "homozygous");
-                hlaInfo2.SetLocus(locus, "homozygous");
+                hlaInfo1 = hlaInfo1.SetLocus(locus, "homozygous");
+                hlaInfo2 = hlaInfo2.SetLocus(locus, "homozygous");
             }
 
             var diplotypes = Enumerable.Range(0, numberOfDiplotypes).Select(i =>
@@ -68,14 +69,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             decimal frequency,
             decimal expectedLikelihood)
         {
-            var homozygousHlaData = new LociInfo<string>
-            {
-                A = "homozygous",
-                B = "homozygous",
-                C = "homozygous",
-                Dqb1 = "homozygous",
-                Drb1 = "homozygous"
-            };
+            var homozygousHlaData = new LociInfo<string>("homozygous").SetLocus(Locus.Dpb1, default);
 
             var homozygousExpandedGenotype = new ExpandedGenotype
             {

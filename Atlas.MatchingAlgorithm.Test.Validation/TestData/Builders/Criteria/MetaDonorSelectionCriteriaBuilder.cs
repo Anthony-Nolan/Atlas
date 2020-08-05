@@ -69,13 +69,13 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
 
         public MetaDonorSelectionCriteriaBuilder WithNonNullExpressionSuffixAt(Locus locus)
         {
-            criteria.HasNonNullExpressionSuffix.SetLocus(locus, true);
+            criteria.HasNonNullExpressionSuffix = criteria.HasNonNullExpressionSuffix.SetLocus(locus, true);
             return this;
         }
 
         public MetaDonorSelectionCriteriaBuilder WithNullAlleleAtPosition(Locus locus, LocusPosition position)
         {
-            criteria.IsNullExpressing.SetPosition(locus, position, true);
+            criteria.IsNullExpressing = criteria.IsNullExpressing.SetPosition(locus, position, true);
             return this;
         }
 

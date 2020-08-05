@@ -24,7 +24,7 @@ namespace Atlas.MatchPrediction.Data.Models
         public string A
         {
             get => Hla.A;
-            set => Hla.SetLocus(Locus.A, value);
+            set => Hla = Hla.SetLocus(Locus.A, value);
         }
 
         [Required]
@@ -32,7 +32,7 @@ namespace Atlas.MatchPrediction.Data.Models
         public string B
         {
             get => Hla.B;
-            set => Hla.SetLocus(Locus.B, value);
+            set => Hla = Hla.SetLocus(Locus.B, value);
         }
 
         [Required]
@@ -40,7 +40,7 @@ namespace Atlas.MatchPrediction.Data.Models
         public string C
         {
             get => Hla.C;
-            set => Hla.SetLocus(Locus.C, value);
+            set => Hla = Hla.SetLocus(Locus.C, value);
         }
 
         [Required]
@@ -48,7 +48,7 @@ namespace Atlas.MatchPrediction.Data.Models
         public string DQB1
         {
             get => Hla.Dqb1;
-            set => Hla.SetLocus(Locus.Dqb1, value);
+            set => Hla = Hla.SetLocus(Locus.Dqb1, value);
         }
 
         [Required]
@@ -56,7 +56,7 @@ namespace Atlas.MatchPrediction.Data.Models
         public string DRB1
         {
             get => Hla.Drb1;
-            set => Hla.SetLocus(Locus.Drb1, value);
+            set => Hla = Hla.SetLocus(Locus.Drb1, value);
         }
 
         public const string SetIdColumnName = "Set_Id";
@@ -95,14 +95,13 @@ namespace Atlas.MatchPrediction.Data.Models
         public static LociInfo<string> Haplotype(this HaplotypeFrequency haplotypeFrequency)
         {
             return new LociInfo<string>
-            {
-                A = haplotypeFrequency.A,
-                B = haplotypeFrequency.B,
-                C = haplotypeFrequency.C,
-                Dpb1 = default,
-                Dqb1 = haplotypeFrequency.DQB1,
-                Drb1 = haplotypeFrequency.DRB1,
-            };
+            (
+                valueA: haplotypeFrequency.A,
+                valueB: haplotypeFrequency.B,
+                valueC: haplotypeFrequency.C,
+                valueDqb1: haplotypeFrequency.DQB1,
+                valueDrb1: haplotypeFrequency.DRB1
+            );
         }
     }
 }

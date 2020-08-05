@@ -140,12 +140,13 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
         public void SetAsTenOutOfTenMatch()
         {
             patientHlaSelectionCriteria.HlaSources = new PhenotypeInfo<bool>().Map((locus, p, noop) =>
-                locus == Locus.Dpb1 ? PatientHlaSource.ExpressingAlleleMismatch: PatientHlaSource.Match);
+                locus == Locus.Dpb1 ? PatientHlaSource.ExpressingAlleleMismatch : PatientHlaSource.Match);
         }
 
         public void SetMismatchAtPosition(Locus locus, LocusPosition position)
         {
-            patientHlaSelectionCriteria.HlaSources.SetPosition(locus, position, PatientHlaSource.ExpressingAlleleMismatch);
+            patientHlaSelectionCriteria.HlaSources =
+                patientHlaSelectionCriteria.HlaSources.SetPosition(locus, position, PatientHlaSource.ExpressingAlleleMismatch);
         }
 
         public void SetPatientUntypedAtLocus(Locus locus)
@@ -155,17 +156,18 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
         public void SetPatientTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
         {
-            patientHlaSelectionCriteria.PatientTypingResolutions.SetLocus(locus, resolution);
+            patientHlaSelectionCriteria.PatientTypingResolutions = patientHlaSelectionCriteria.PatientTypingResolutions.SetLocus(locus, resolution);
         }
 
         public void SetMatchOrientationAtLocus(Locus locus, MatchOrientation orientation)
         {
-            patientHlaSelectionCriteria.Orientations.SetLocus(locus, orientation);
+            patientHlaSelectionCriteria.Orientations = patientHlaSelectionCriteria.Orientations.SetLocus(locus, orientation);
         }
 
         public void SetPatientNonMatchingNullAlleleAtPosition(Locus locus, LocusPosition position)
         {
-            patientHlaSelectionCriteria.HlaSources.SetPosition(locus, position, PatientHlaSource.NullAlleleMismatch);
+            patientHlaSelectionCriteria.HlaSources =
+                patientHlaSelectionCriteria.HlaSources.SetPosition(locus, position, PatientHlaSource.NullAlleleMismatch);
         }
 
         #endregion
@@ -190,22 +192,23 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
 
         public void SetAlleleStringShouldContainDifferentGroupsAtLocus(Locus locus)
         {
-            metaDonorSelectionCriteria.AlleleStringContainsDifferentAntigenGroups.SetLocus(locus, true);
+            metaDonorSelectionCriteria.AlleleStringContainsDifferentAntigenGroups =
+                metaDonorSelectionCriteria.AlleleStringContainsDifferentAntigenGroups.SetLocus(locus, true);
         }
 
         public void SetHasNonNullExpressionSuffixAtLocus(Locus locus)
         {
-            metaDonorSelectionCriteria.HasNonNullExpressionSuffix.SetLocus(locus, true);
+            metaDonorSelectionCriteria.HasNonNullExpressionSuffix = metaDonorSelectionCriteria.HasNonNullExpressionSuffix.SetLocus(locus, true);
         }
 
         public void SetHasNullAlleleAtPosition(Locus locus, LocusPosition position)
         {
-            metaDonorSelectionCriteria.IsNullExpressing.SetPosition(locus, position, true);
+            metaDonorSelectionCriteria.IsNullExpressing = metaDonorSelectionCriteria.IsNullExpressing.SetPosition(locus, position, true);
         }
 
         public void SetMatchingDonorHomozygousAtLocus(Locus locus)
         {
-            metaDonorSelectionCriteria.IsHomozygous.SetLocus(locus, true);
+            metaDonorSelectionCriteria.IsHomozygous = metaDonorSelectionCriteria.IsHomozygous.SetLocus(locus, true);
         }
 
         #endregion
@@ -228,7 +231,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
                 SetMatchingDonorHomozygousAtLocus(locus);
             }
 
-            patientHlaSelectionCriteria.IsHomozygous.SetLocus(locus, true);
+            patientHlaSelectionCriteria.IsHomozygous = patientHlaSelectionCriteria.IsHomozygous.SetLocus(locus, true);
 
             // For a homozygous locus, typing resolution must be single allele (TGS)
             SetPatientTypingResolutionAtLocus(locus, HlaTypingResolution.Tgs);
@@ -257,12 +260,13 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
         {
             foreach (var resolutionSet in metaDonorSelectionCriteria.DatabaseDonorDetailsSets)
             {
-                resolutionSet.MatchingTypingResolutions.SetLocus(locus, resolution);
+                resolutionSet.MatchingTypingResolutions = resolutionSet.MatchingTypingResolutions.SetLocus(locus, resolution);
             }
 
             foreach (var databaseDonorSelectionCriteria in databaseDonorSelectionCriteriaSet)
             {
-                databaseDonorSelectionCriteria.MatchingTypingResolutions.SetLocus(locus, resolution);
+                databaseDonorSelectionCriteria.MatchingTypingResolutions =
+                    databaseDonorSelectionCriteria.MatchingTypingResolutions.SetLocus(locus, resolution);
             }
         }
 
@@ -270,12 +274,13 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataS
         {
             foreach (var resolutionSet in metaDonorSelectionCriteria.DatabaseDonorDetailsSets)
             {
-                resolutionSet.ShouldMatchGenotype.SetPosition(locus, position, shouldMatchGenotype);
+                resolutionSet.ShouldMatchGenotype = resolutionSet.ShouldMatchGenotype.SetPosition(locus, position, shouldMatchGenotype);
             }
 
             foreach (var databaseDonorSelectionCriteria in databaseDonorSelectionCriteriaSet)
             {
-                databaseDonorSelectionCriteria.ShouldMatchGenotype.SetPosition(locus, position, shouldMatchGenotype);
+                databaseDonorSelectionCriteria.ShouldMatchGenotype =
+                    databaseDonorSelectionCriteria.ShouldMatchGenotype.SetPosition(locus, position, shouldMatchGenotype);
             }
         }
 

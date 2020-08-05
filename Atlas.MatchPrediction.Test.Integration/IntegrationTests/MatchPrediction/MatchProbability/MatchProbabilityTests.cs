@@ -53,9 +53,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes, null, null);
 
-            var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?> {A = 1, B = 1, C = 1, Dpb1 = null, Dqb1 = 1, Drb1 = 1};
-            var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0};
-            var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0};
+            var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>(1).SetLocus(Locus.Dpb1, null);
+            var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
+            var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -81,15 +81,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 DefaultHaplotypeFrequency1.With(h => h.Frequency, 0.00001m).Build(),
                 DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00002m).Build(),
                 HaplotypeFrequencyBuilder.New
-                    .WithHaplotype(new LociInfo<string>()
-                    {
-                        A = gGroupA,
-                        B = gGroupB,
-                        C = gGroupC,
-                        Dpb1 = null,
-                        Dqb1 = gGroupDqb1,
-                        Drb1 =  gGroupDrb1
-                    }).With(h => h.Frequency, 0.00003m).Build()
+                    .WithHaplotype(new LociInfo<string>(gGroupA, gGroupB, gGroupC, null, gGroupDqb1, gGroupDrb1))
+                    .With(h => h.Frequency, 0.00003m)
+                    .Build()
             };
 
             await ImportFrequencies(possibleHaplotypes);
@@ -112,9 +106,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDonorHla(donorHla)
                 .Build();
 
-            var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0};
-            var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?> {A = 0, B = 0, C = 0, Dpb1 = null, Dqb1 = 0, Drb1 = 0};
-            var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?> {A = 1, B = 1, C = 1, Dpb1 = null, Dqb1 = 1, Drb1 = 1};
+            var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
+            var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
+            var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>(1).SetLocus(Locus.Dpb1, null);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -174,34 +168,34 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var matchProbabilityInput = DefaultInputBuilder.WithPatientHla(patientHla).Build();
 
             var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
-            {
-                A = 0.0823045267489711934156378601m,
-                B = 0.7777777777777777777777777778m,
-                C = 0.8148148148148148148148148148m,
-                Dpb1 = null,
-                Dqb1 = 0.8518518518518518518518518519m,
-                Drb1 = 0.8888888888888888888888888889m
-            };
+            (
+                0.0823045267489711934156378601m,
+                0.7777777777777777777777777778m,
+                0.8148148148148148148148148148m,
+                null,
+                0.8518518518518518518518518519m,
+                0.8888888888888888888888888889m
+            );
 
             var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>
-            {
-                A = 0.6872427983539094650205761317m,
-                B = 0.2222222222222222222222222222m,
-                C = 0.1851851851851851851851851852m,
-                Dpb1 = null,
-                Dqb1 = 0.1481481481481481481481481481m,
-                Drb1 = 0.1111111111111111111111111111m
-            };
+            (
+                0.6872427983539094650205761317m,
+                0.2222222222222222222222222222m,
+                0.1851851851851851851851851852m,
+                null,
+                0.1481481481481481481481481481m,
+                0.1111111111111111111111111111m
+            );
 
             var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>
-            {
-                A = 0.2304526748971193415637860082m,
-                B = 0m,
-                C = 0m,
-                Dpb1 = null,
-                Dqb1 = 0m,
-                Drb1 = 0m
-            };
+            (
+                0.2304526748971193415637860082m,
+                0m,
+                0m,
+                null,
+                0m,
+                0m
+            );
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -257,39 +251,39 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 PatientHla = patientHla.ToPhenotypeInfoTransfer(),
                 DonorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.C, null as string).Build().ToPhenotypeInfoTransfer(),
                 HlaNomenclatureVersion = HlaNomenclatureVersion,
-                DonorFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode },
-                PatientFrequencySetMetadata = new FrequencySetMetadata { EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode }
+                DonorFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode},
+                PatientFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode}
             };
 
             var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>
-            {
-                A = 0.0679012345679012345679012346m,
-                B = 0.6666666666666666666666666667m,
-                C = 1m,
-                Dpb1 = null,
-                Dqb1 = 1m,
-                Drb1 = 0.8333333333333333333333333333m
-            };
+            (
+                0.0679012345679012345679012346m,
+                0.6666666666666666666666666667m,
+                1m,
+                null,
+                1m,
+                0.8333333333333333333333333333m
+            );
 
             var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>
-            {
-                A = 0.5864197530864197530864197531m,
-                B = 0.3333333333333333333333333333m,
-                C = 0m,
-                Dpb1 = null,
-                Dqb1 = 0m,
-                Drb1 = 0.1666666666666666666666666667m
-            };
+            (
+                0.5864197530864197530864197531m,
+                0.3333333333333333333333333333m,
+                0m,
+                null,
+                0m,
+                0.1666666666666666666666666667m
+            );
 
             var expectedTwoMismatchProbabilityPerLocus = new LociInfo<decimal?>
-            {
-                A = 0.3456790123456790123456790123m,
-                B = 0m,
-                C = 0m,
-                Dpb1 = null,
-                Dqb1 = 0m,
-                Drb1 = 0m
-            };
+            (
+                0.3456790123456790123456790123m,
+                0m,
+                0m,
+                null,
+                0m,
+                0m
+            );
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
