@@ -42,16 +42,22 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo.TransferModels
 
     public static class Converters
     {
-        public static PhenotypeInfo<T> ToPhenotypeInfo<T>(this PhenotypeInfoTransfer<T> phenotypeInfoTransfer) =>
-            new PhenotypeInfo<T>
+        public static PhenotypeInfo<T> ToPhenotypeInfo<T>(this PhenotypeInfoTransfer<T> phenotypeInfoTransfer)
+        {
+            var a = phenotypeInfoTransfer.A ?? new LocusInfoTransfer<T>();
+            var b = phenotypeInfoTransfer.B ?? new LocusInfoTransfer<T>();
+            var c = phenotypeInfoTransfer.C ?? new LocusInfoTransfer<T>();
+            var dpb1 = phenotypeInfoTransfer.Dpb1 ?? new LocusInfoTransfer<T>();
+            var dqb1 = phenotypeInfoTransfer.Dqb1 ?? new LocusInfoTransfer<T>();
+            var drb1 = phenotypeInfoTransfer.Drb1 ?? new LocusInfoTransfer<T>();
+            return new PhenotypeInfo<T>
             (
-                new LocusInfo<T>(phenotypeInfoTransfer.A.Position1, phenotypeInfoTransfer.A.Position2),
-                new LocusInfo<T>(phenotypeInfoTransfer.B.Position1, phenotypeInfoTransfer.B.Position2),
-                new LocusInfo<T>(phenotypeInfoTransfer.C.Position1, phenotypeInfoTransfer.C.Position2),
-                new LocusInfo<T>(phenotypeInfoTransfer.Dpb1.Position1, phenotypeInfoTransfer.Dpb1.Position2),
-                new LocusInfo<T>(phenotypeInfoTransfer.Dqb1.Position1, phenotypeInfoTransfer.Dqb1.Position2),
-                new LocusInfo<T>(phenotypeInfoTransfer.Drb1.Position1, phenotypeInfoTransfer.Drb1.Position2)
+                a.ToLocusInfo(), b.ToLocusInfo(), c.ToLocusInfo(), dpb1.ToLocusInfo(), dqb1.ToLocusInfo(), drb1.ToLocusInfo()
             );
+        }
+
+        public static LocusInfo<T> ToLocusInfo<T>(this LocusInfoTransfer<T> locusInfoTransfer) =>
+            new LocusInfo<T>(locusInfoTransfer.Position1, locusInfoTransfer.Position2);
 
         public static PhenotypeInfoTransfer<T> ToPhenotypeInfoTransfer<T>(this PhenotypeInfo<T> phenotypeInfo) =>
             new PhenotypeInfoTransfer<T>
