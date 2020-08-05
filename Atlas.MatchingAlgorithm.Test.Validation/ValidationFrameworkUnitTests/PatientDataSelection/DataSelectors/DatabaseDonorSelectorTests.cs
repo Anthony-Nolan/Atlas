@@ -99,9 +99,9 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationFrameworkUnitTests.P
             var criteria = new DatabaseDonorSpecification
             {
                 MatchingTypingResolutions = new PhenotypeInfo<HlaTypingResolution>
-                {
-                    A = new LocusInfo<HlaTypingResolution>(HlaTypingResolution.Serology, default)
-                }
+                (
+                    valueA: new LocusInfo<HlaTypingResolution>(HlaTypingResolution.Serology, default)
+                )
             };
 
             Assert.Throws<DonorNotFoundException>(() => donorSelector.GetExpectedMatchingDonorId(metaDonor, criteria));

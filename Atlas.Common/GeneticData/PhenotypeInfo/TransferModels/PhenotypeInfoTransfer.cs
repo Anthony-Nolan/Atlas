@@ -44,14 +44,14 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo.TransferModels
     {
         public static PhenotypeInfo<T> ToPhenotypeInfo<T>(this PhenotypeInfoTransfer<T> phenotypeInfoTransfer) =>
             new PhenotypeInfo<T>
-            {
-                A = new LocusInfo<T>(phenotypeInfoTransfer.A.Position1, phenotypeInfoTransfer.A.Position2),
-                B = new LocusInfo<T>(phenotypeInfoTransfer.B.Position1, phenotypeInfoTransfer.B.Position2),
-                C = new LocusInfo<T>(phenotypeInfoTransfer.C.Position1, phenotypeInfoTransfer.C.Position2),
-                Dpb1 = new LocusInfo<T>(phenotypeInfoTransfer.Dpb1.Position1, phenotypeInfoTransfer.Dpb1.Position2),
-                Dqb1 = new LocusInfo<T>(phenotypeInfoTransfer.Dqb1.Position1, phenotypeInfoTransfer.Dqb1.Position2),
-                Drb1 = new LocusInfo<T>(phenotypeInfoTransfer.Drb1.Position1, phenotypeInfoTransfer.Drb1.Position2),
-            };
+            (
+                new LocusInfo<T>(phenotypeInfoTransfer.A.Position1, phenotypeInfoTransfer.A.Position2),
+                new LocusInfo<T>(phenotypeInfoTransfer.B.Position1, phenotypeInfoTransfer.B.Position2),
+                new LocusInfo<T>(phenotypeInfoTransfer.C.Position1, phenotypeInfoTransfer.C.Position2),
+                new LocusInfo<T>(phenotypeInfoTransfer.Dpb1.Position1, phenotypeInfoTransfer.Dpb1.Position2),
+                new LocusInfo<T>(phenotypeInfoTransfer.Dqb1.Position1, phenotypeInfoTransfer.Dqb1.Position2),
+                new LocusInfo<T>(phenotypeInfoTransfer.Drb1.Position1, phenotypeInfoTransfer.Drb1.Position2)
+            );
 
         public static PhenotypeInfoTransfer<T> ToPhenotypeInfoTransfer<T>(this PhenotypeInfo<T> phenotypeInfo) =>
             new PhenotypeInfoTransfer<T>
@@ -81,6 +81,19 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo.TransferModels
                     Position1 = phenotypeInfo.Drb1.Position1, Position2 = phenotypeInfo.Drb1.Position2
                 },
             };
+
+        public static LociInfoTransfer<T> ToLociInfoTransfer<T>(this LociInfo<T> lociInfo)
+        {
+            return new LociInfoTransfer<T>
+            {
+                A = lociInfo.A,
+                B = lociInfo.B,
+                C = lociInfo.C,
+                Dpb1 = lociInfo.Dpb1,
+                Dqb1 = lociInfo.Dqb1,
+                Drb1 = lociInfo.Drb1
+            };
+        }
 
         public static LocusInfoTransfer<T> ToLocusInfoTransfer<T>(this LocusInfo<T> locusInfo) =>
             new LocusInfoTransfer<T>

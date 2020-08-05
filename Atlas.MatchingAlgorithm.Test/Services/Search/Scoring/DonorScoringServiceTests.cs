@@ -294,10 +294,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 
             confidenceService.CalculateMatchConfidences(null, null, null)
                 .ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>
-                {
-                    A = new LocusInfo<MatchConfidence>(expectedMatchConfidenceAtA1, default),
-                    B = new LocusInfo<MatchConfidence>(default, expectedMatchConfidenceAtB2),
-                });
+                (
+                    valueA: new LocusInfo<MatchConfidence>(expectedMatchConfidenceAtA1, default),
+                    valueB: new LocusInfo<MatchConfidence>(default, expectedMatchConfidenceAtB2)
+                ));
 
             var results = await donorScoringService.ScoreMatchesAgainstPatientHla(
                 MatchResultsScoringRequestBuilder.ScoreDefaultMatchAtAllLoci.Build());
@@ -316,10 +316,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring
 
             confidenceService.CalculateMatchConfidences(null, null, null)
                 .ReturnsForAnyArgs(new PhenotypeInfo<MatchConfidence>
-                {
-                    A = new LocusInfo<MatchConfidence>(matchConfidenceAtA1, default),
-                    B = new LocusInfo<MatchConfidence>(default, matchConfidenceAtB2),
-                });
+                (
+                    valueA: new LocusInfo<MatchConfidence>(matchConfidenceAtA1, default),
+                    valueB: new LocusInfo<MatchConfidence>(default, matchConfidenceAtB2)
+                ));
 
             const int expectedMatchConfidenceScoreAtA1 = 7;
             const int expectedMatchConfidenceScoreAtB2 = 340;

@@ -13,8 +13,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
     public static class GGroupMatchingAlleles
     {
         public static readonly PhenotypeInfo<List<AlleleTestData>> Alleles = new PhenotypeInfo<List<AlleleTestData>>
-        {
-            A = new LocusInfo<List<AlleleTestData>>
+        (
+            valueA: new LocusInfo<List<AlleleTestData>>
             (
                 new List<AlleleTestData>
                 {
@@ -29,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                     new AlleleTestData {AlleleName = "*01:246", GGroup = "01:01:01G"},
                 }
             ),
-            B = new LocusInfo<List<AlleleTestData>>
+            valueB: new LocusInfo<List<AlleleTestData>>
             (
                 new List<AlleleTestData>
                 {
@@ -44,7 +44,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                     new AlleleTestData {AlleleName = "*07:129", GGroup = "07:02:01G"},
                 }
             ),
-            C = new LocusInfo<List<AlleleTestData>>
+            valueC: new LocusInfo<List<AlleleTestData>>
             (
                 new List<AlleleTestData>
                 {
@@ -59,7 +59,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                     new AlleleTestData {AlleleName = "*01:135", GGroup = "01:02:01G"},
                 }
             ),
-            Dpb1 = new LocusInfo<List<AlleleTestData>>
+            valueDpb1: new LocusInfo<List<AlleleTestData>>
             (
                 new List<AlleleTestData>
                 {
@@ -74,7 +74,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                     new AlleleTestData {AlleleName = "*414:01:01:01", GGroup = "02:01:02G"},
                 }
             ),
-            Dqb1 = new LocusInfo<List<AlleleTestData>>
+            valueDqb1: new LocusInfo<List<AlleleTestData>>
             (
                 new List<AlleleTestData>
                 {
@@ -89,7 +89,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                     new AlleleTestData {AlleleName = "*02:105", GGroup = "02:01:01G"},
                 }
             ),
-            Drb1 = new LocusInfo<List<AlleleTestData>>
+            valueDrb1: new LocusInfo<List<AlleleTestData>>
             (
                 new List<AlleleTestData>
                 {
@@ -104,6 +104,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                     new AlleleTestData {AlleleName = "*03:132", GGroup = "03:01:01G"},
                 }
             )
-        };
+        );
     };
 }

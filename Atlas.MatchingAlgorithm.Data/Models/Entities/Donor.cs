@@ -46,14 +46,14 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
                 DonorType = DonorType,
                 IsAvailableForSearch = IsAvailableForSearch,
                 HlaNames = new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(A_1, A_2),
-                    B = new LocusInfo<string>(B_1, B_2),
-                    C = new LocusInfo<string>(C_1, C_2),
-                    Dpb1 = new LocusInfo<string>(DPB1_1, DPB1_2),
-                    Dqb1 = new LocusInfo<string>(DQB1_1, DQB1_2),
-                    Drb1 = new LocusInfo<string>(DRB1_1, DRB1_2),
-                }
+                (
+                    valueA: new LocusInfo<string>(A_1, A_2),
+                    valueB: new LocusInfo<string>(B_1, B_2),
+                    valueC: new LocusInfo<string>(C_1, C_2),
+                    valueDpb1: new LocusInfo<string>(DPB1_1, DPB1_2),
+                    valueDqb1: new LocusInfo<string>(DQB1_1, DQB1_2),
+                    valueDrb1: new LocusInfo<string>(DRB1_1, DRB1_2)
+                )
             };
         }
     }

@@ -32,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
 
         public MatchResultBuilder WithHlaAtLocus(Locus locus, string hla)
         {
-            matchResult.DonorInfo.HlaNames.SetLocus(locus, hla);
+            matchResult.DonorInfo.HlaNames = matchResult.DonorInfo.HlaNames.SetLocus(locus, hla);
             return this;
         }
 

@@ -77,7 +77,11 @@ ON m.DonorId = DonorIds.Id
                         foreach (var pGroupGroup in donorGroups.GroupBy(p => (TypePosition) p.TypePosition))
                         {
                             var donorResult = results.Single(r => r.DonorId == donorGroups.Key);
-                            donorResult.PGroupNames.SetPosition(locus, pGroupGroup.Key.ToLocusPosition(), pGroupGroup.Select(p => p.PGroupName));
+                            donorResult.PGroupNames = donorResult.PGroupNames.SetPosition(
+                                locus,
+                                pGroupGroup.Key.ToLocusPosition(),
+                                pGroupGroup.Select(p => p.PGroupName)
+                            );
                         }
                     }
                 }
@@ -97,7 +101,7 @@ ON m.DonorId = DonorIds.Id
             using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 var donorIdsString = donorIds.Select(id => id.ToString()).StringJoin(",");
-                
+
                 // Note that a previous iteration of this code used a JOIN on UNIONs of hard-coded Ids.
                 // A thorough perf test demonstrated that this 'IN' produces an identical QueryPlan, and compiles faster.
                 var sql = $@"SELECT * FROM Donors WHERE DonorId IN({donorIdsString})";

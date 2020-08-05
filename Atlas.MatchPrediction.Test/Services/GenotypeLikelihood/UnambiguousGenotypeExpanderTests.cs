@@ -67,83 +67,83 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             {
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = B1, C = C1, Dqb1 = Dqb11, Drb1 = Drb11}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = B2, C = C2, Dqb1 = Dqb12, Drb1 = Drb12}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, B1, C1, valueDqb1: Dqb11, valueDrb1: Drb11)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, B2, C2, valueDqb1: Dqb12, valueDrb1: Drb12)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = B1, C = C1, Dqb1 = Dqb11, Drb1 = Drb12}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = B2, C = C2, Dqb1 = Dqb12, Drb1 = Drb11}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, B1, C1, valueDqb1: Dqb11, valueDrb1: Drb12)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, B2, C2, valueDqb1: Dqb12, valueDrb1: Drb11)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = B1, C = C1, Dqb1 = Dqb12, Drb1 = Drb11}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = B2, C = C2, Dqb1 = Dqb11, Drb1 = Drb12}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, B1, C1, valueDqb1: Dqb12, valueDrb1: Drb11)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, B2, C2, valueDqb1: Dqb11, valueDrb1: Drb12)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = B1, C = C1, Dqb1 = Dqb12, Drb1 = Drb12}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = B2, C = C2, Dqb1 = Dqb11, Drb1 = Drb11}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, B1, C1, valueDqb1: Dqb12, valueDrb1: Drb12)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, B2, C2, valueDqb1: Dqb11, valueDrb1: Drb11)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = B1, C = C2, Dqb1 = Dqb11, Drb1 = Drb11}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = B2, C = C1, Dqb1 = Dqb12, Drb1 = Drb12}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, B1, C2, valueDqb1: Dqb11, valueDrb1: Drb11)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, B2, C1, valueDqb1: Dqb12, valueDrb1: Drb12)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = B1, C = C2, Dqb1 = Dqb11, Drb1 = Drb12}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = B2, C = C1, Dqb1 = Dqb12, Drb1 = Drb11}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, B1, C2, valueDqb1: Dqb11, valueDrb1: Drb12)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, B2, C1, valueDqb1: Dqb12, valueDrb1: Drb11)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = B1, C = C2, Dqb1 = Dqb12, Drb1 = Drb11}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = B2, C = C1, Dqb1 = Dqb11, Drb1 = Drb12}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, B1, C2, valueDqb1: Dqb12, valueDrb1: Drb11)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, B2, C1, valueDqb1: Dqb11, valueDrb1: Drb12)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = B1, C = C2, Dqb1 = Dqb12, Drb1 = Drb12}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = B2, C = C1, Dqb1 = Dqb11, Drb1 = Drb11}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, B1, C2, valueDqb1: Dqb12, valueDrb1: Drb12)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, B2, C1, valueDqb1: Dqb11, valueDrb1: Drb11)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = B2, C = C1, Dqb1 = Dqb11, Drb1 = Drb11}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = B1, C = C2, Dqb1 = Dqb12, Drb1 = Drb12}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, B2, C1, valueDqb1: Dqb11, valueDrb1: Drb11)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, B1, C2, valueDqb1: Dqb12, valueDrb1: Drb12)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = B2, C = C1, Dqb1 = Dqb11, Drb1 = Drb12}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = B1, C = C2, Dqb1 = Dqb12, Drb1 = Drb11}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, B2, C1, valueDqb1: Dqb11, valueDrb1: Drb12)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, B1, C2, valueDqb1: Dqb12, valueDrb1: Drb11)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = B2, C = C1, Dqb1 = Dqb12, Drb1 = Drb11}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = B1, C = C2, Dqb1 = Dqb11, Drb1 = Drb12}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, B2, C1, valueDqb1: Dqb12, valueDrb1: Drb11)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, B1, C2, valueDqb1: Dqb11, valueDrb1: Drb12)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = B2, C = C1, Dqb1 = Dqb12, Drb1 = Drb12}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = B1, C = C2, Dqb1 = Dqb11, Drb1 = Drb11}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, B2, C1, valueDqb1: Dqb12, valueDrb1: Drb12)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, B1, C2, valueDqb1: Dqb11, valueDrb1: Drb11)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = B2, C = C2, Dqb1 = Dqb11, Drb1 = Drb11}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = B1, C = C1, Dqb1 = Dqb12, Drb1 = Drb12}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, B2, C2, valueDqb1: Dqb11, valueDrb1: Drb11)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, B1, C1, valueDqb1: Dqb12, valueDrb1: Drb12)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = B2, C = C2, Dqb1 = Dqb11, Drb1 = Drb12}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = B1, C = C1, Dqb1 = Dqb12, Drb1 = Drb11}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, B2, C2, valueDqb1: Dqb11, valueDrb1: Drb12)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, B1, C1, valueDqb1: Dqb12, valueDrb1: Drb11)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = B2, C = C2, Dqb1 = Dqb12, Drb1 = Drb11}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = B1, C = C1, Dqb1 = Dqb11, Drb1 = Drb12}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, B2, C2, valueDqb1: Dqb12, valueDrb1: Drb11)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, B1, C1, valueDqb1: Dqb11, valueDrb1: Drb12)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = B2, C = C2, Dqb1 = Dqb12, Drb1 = Drb12}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = B1, C = C1, Dqb1 = Dqb11, Drb1 = Drb11}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, B2, C2, valueDqb1: Dqb12, valueDrb1: Drb12)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, B1, C1, valueDqb1: Dqb11, valueDrb1: Drb11)}
                 )
             }.Select(d => d.Map(h => h.Hla));
 
@@ -165,43 +165,43 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
             {
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = locusValue, C = C1, Dqb1 = Dqb11, Drb1 = Drb11}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = locusValue, C = C2, Dqb1 = Dqb12, Drb1 = Drb12}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, locusValue, C1, valueDqb1: Dqb11, valueDrb1: Drb11)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, locusValue, C2, valueDqb1: Dqb12, valueDrb1: Drb12)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = locusValue, C = C1, Dqb1 = Dqb11, Drb1 = Drb12}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = locusValue, C = C2, Dqb1 = Dqb12, Drb1 = Drb11}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, locusValue, C1, valueDqb1: Dqb11, valueDrb1: Drb12)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, locusValue, C2, valueDqb1: Dqb12, valueDrb1: Drb11)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = locusValue, C = C1, Dqb1 = Dqb12, Drb1 = Drb11}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = locusValue, C = C2, Dqb1 = Dqb11, Drb1 = Drb12}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, locusValue, C1, valueDqb1: Dqb12, valueDrb1: Drb11)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, locusValue, C2, valueDqb1: Dqb11, valueDrb1: Drb12)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = locusValue, C = C1, Dqb1 = Dqb12, Drb1 = Drb12}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = locusValue, C = C2, Dqb1 = Dqb11, Drb1 = Drb11}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, locusValue, C1, valueDqb1: Dqb12, valueDrb1: Drb12)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, locusValue, C2, valueDqb1: Dqb11, valueDrb1: Drb11)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = locusValue, C = C2, Dqb1 = Dqb11, Drb1 = Drb11}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = locusValue, C = C1, Dqb1 = Dqb12, Drb1 = Drb12}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, locusValue, C2, valueDqb1: Dqb11, valueDrb1: Drb11)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, locusValue, C1, valueDqb1: Dqb12, valueDrb1: Drb12)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = locusValue, C = C2, Dqb1 = Dqb11, Drb1 = Drb12}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = locusValue, C = C1, Dqb1 = Dqb12, Drb1 = Drb11}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, locusValue, C2, valueDqb1: Dqb11, valueDrb1: Drb12)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, locusValue, C1, valueDqb1: Dqb12, valueDrb1: Drb11)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = locusValue, C = C2, Dqb1 = Dqb12, Drb1 = Drb11}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = locusValue, C = C1, Dqb1 = Dqb11, Drb1 = Drb12}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, locusValue, C2, valueDqb1: Dqb12, valueDrb1: Drb11)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, locusValue, C1, valueDqb1: Dqb11, valueDrb1: Drb12)}
                 ),
                 new Diplotype
                 (
-                    new Haplotype {Hla = new LociInfo<string> {A = A2, B = locusValue, C = C2, Dqb1 = Dqb12, Drb1 = Drb12}},
-                    new Haplotype {Hla = new LociInfo<string> {A = A1, B = locusValue, C = C1, Dqb1 = Dqb11, Drb1 = Drb11}}
+                    new Haplotype {Hla = new LociInfo<string>(A2, locusValue, C2, valueDqb1: Dqb12, valueDrb1: Drb12)},
+                    new Haplotype {Hla = new LociInfo<string>(A1, locusValue, C1, valueDqb1: Dqb11, valueDrb1: Drb11)}
                 )
             }.Select(d => d.Map(h => h.Hla));
 
@@ -217,8 +217,10 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         [TestCase(Locus.Dqb1)]
         public void GetPossibleDiplotypes_WhenGenotypeHasEmptyLocus_Returns8Diplotypes(Locus emptyLocus)
         {
-            var genotype = FullyHeterozygousGenotypeBuilder.Build();
-            genotype.SetLocus(emptyLocus, new LocusInfo<string>(null));
+            var genotype = FullyHeterozygousGenotypeBuilder
+                .Build()
+                .SetLocus(emptyLocus, new LocusInfo<string>(null))
+                .ToPhenotypeInfo();
 
             var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype, allLoci);
             var actualDiplotypes = expandedGenotype.Diplotypes.ToList();
@@ -244,7 +246,7 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
 
             foreach (var locus in lociToMakeHomozygous)
             {
-                genotype.SetLocus(locus, new LocusInfo<string>("homozygous"));
+                genotype = genotype.SetLocus(locus, new LocusInfo<string>("homozygous")).ToPhenotypeInfo();
             }
 
             var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype, allLoci);
@@ -262,8 +264,9 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         [TestCase(Locus.Drb1)]
         public void GetPossibleDiplotypes_WhenGenotypeHasHomozygousCase_Returns8Diplotypes(Locus homozygousLocus)
         {
-            var genotype = FullyHeterozygousGenotypeBuilder.Build();
-            genotype.SetLocus(homozygousLocus, new LocusInfo<string>("homozygous"));
+            var genotype = FullyHeterozygousGenotypeBuilder.Build()
+                .SetLocus(homozygousLocus, new LocusInfo<string>("homozygous"))
+                .ToPhenotypeInfo();
 
             var expandedGenotype = unambiguousGenotypeExpander.ExpandGenotype(genotype, allLoci);
             var actualDiplotypes = expandedGenotype.Diplotypes.ToList();
@@ -277,51 +280,51 @@ namespace Atlas.MatchPrediction.Test.Services.GenotypeLikelihood
         public void PerformanceTest()
         {
             var genotypeWithAllFields = new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>(A1, A2),
-                B = new LocusInfo<string>(B1, B2),
-                C = new LocusInfo<string>(C1, C2),
-                Dqb1 = new LocusInfo<string>(Dqb11, Dqb12),
-                Drb1 = new LocusInfo<string>(Drb11, Drb12)
-            };
+            (
+                valueA: new LocusInfo<string>(A1, A2),
+                valueB: new LocusInfo<string>(B1, B2),
+                valueC: new LocusInfo<string>(C1, C2),
+                valueDqb1: new LocusInfo<string>(Dqb11, Dqb12),
+                valueDrb1: new LocusInfo<string>(Drb11, Drb12)
+            );
             unambiguousGenotypeExpander.ExpandGenotype(genotypeWithAllFields, allLoci);
 
             var genotypeWithMissingField = new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>(A1, A2),
-                B = new LocusInfo<string>(B1, B2),
-                Dqb1 = new LocusInfo<string>(Dqb11, Dqb12),
-                Drb1 = new LocusInfo<string>(Drb11, Drb12)
-            };
+            (
+                valueA: new LocusInfo<string>(A1, A2),
+                valueB: new LocusInfo<string>(B1, B2),
+                valueDqb1: new LocusInfo<string>(Dqb11, Dqb12),
+                valueDrb1: new LocusInfo<string>(Drb11, Drb12)
+            );
             unambiguousGenotypeExpander.ExpandGenotype(genotypeWithMissingField, allLoci);
 
             var genotypeWithHomozygousType = new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>("homozygous", "homozygous"),
-                B = new LocusInfo<string>(B1, B2),
-                C = new LocusInfo<string>(C1, C2),
-                Dqb1 = new LocusInfo<string>(Dqb11, Dqb12),
-                Drb1 = new LocusInfo<string>(Drb11, Drb12)
-            };
+            (
+                valueA: new LocusInfo<string>("homozygous"),
+                valueB: new LocusInfo<string>(B1, B2),
+                valueC: new LocusInfo<string>(C1, C2),
+                valueDqb1: new LocusInfo<string>(Dqb11, Dqb12),
+                valueDrb1: new LocusInfo<string>(Drb11, Drb12)
+            );
             unambiguousGenotypeExpander.ExpandGenotype(genotypeWithHomozygousType, allLoci);
 
             var genotypeWithHomozygousTypeAndMissingField = new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>("homozygous", "homozygous"),
-                B = new LocusInfo<string>(B1, B2),
-                Dqb1 = new LocusInfo<string>(Dqb11, Dqb12),
-                Drb1 = new LocusInfo<string>(Drb11, Drb12)
-            };
+            (
+                valueA: new LocusInfo<string>("homozygous"),
+                valueB: new LocusInfo<string>(B1, B2),
+                valueDqb1: new LocusInfo<string>(Dqb11, Dqb12),
+                valueDrb1: new LocusInfo<string>(Drb11, Drb12)
+            );
             unambiguousGenotypeExpander.ExpandGenotype(genotypeWithHomozygousTypeAndMissingField, allLoci);
         }
 
         private static PhenotypeInfoBuilder<string> FullyHeterozygousGenotypeBuilder => new PhenotypeInfoBuilder<string>(new PhenotypeInfo<string>
-        {
-            A = new LocusInfo<string>(A1, A2),
-            B = new LocusInfo<string>(B1, B2),
-            C = new LocusInfo<string>(C1, C2),
-            Dqb1 = new LocusInfo<string>(Dqb11, Dqb12),
-            Drb1 = new LocusInfo<string>(Drb11, Drb12)
-        });
-    }
+        (
+            valueA: new LocusInfo<string>(A1, A2),
+            valueB: new LocusInfo<string>(B1, B2),
+            valueC: new LocusInfo<string>(C1, C2),
+            valueDqb1: new LocusInfo<string>(Dqb11, Dqb12),
+            valueDrb1: new LocusInfo<string>(Drb11, Drb12)
+        ));
+    };
 }

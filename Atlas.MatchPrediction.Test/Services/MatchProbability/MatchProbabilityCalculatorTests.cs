@@ -21,7 +21,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         private readonly PhenotypeInfo<string> defaultPatientHla1 = new PhenotypeInfo<string>("patient-hla-1");
         private readonly PhenotypeInfo<string> defaultPatientHla2 = new PhenotypeInfo<string>("patient-hla-2");
 
-        private static readonly ISet<Locus> AllowedLoci = new HashSet<Locus> { Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1 };
+        private static readonly ISet<Locus> AllowedLoci = new HashSet<Locus> {Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1};
 
         [SetUp]
         public void Setup()
@@ -55,7 +55,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 AllowedLoci
             );
 
-            var expectedMatchProbabilityPerLocus = new LociInfo<decimal?> {A = 0.5M, B = 0.5M, C = 0.5M, Dpb1 = null, Dqb1 = 0.25M, Drb1 = 0.25M};
+            var expectedMatchProbabilityPerLocus = new LociInfo<decimal?>(0.5M, 0.5M, 0.5M, null, 0.25M, 0.25M);
             actualProbability.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(0.25m);
             actualProbability.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedMatchProbabilityPerLocus);
         }
@@ -86,7 +86,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 AllowedLoci
             );
 
-            var expectedMatchProbabilityPerLocus = new LociInfo<decimal?> {A = 0.5M, B = 0.5M, C = 0.5M, Dpb1 = null, Dqb1 = 0.5M, Drb1 = 0.25M};
+            var expectedMatchProbabilityPerLocus = new LociInfo<decimal?>(0.5M, 0.5M, 0.5M, null, 0.5M, 0.25M);
             actualProbability.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0.25m);
             actualProbability.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedMatchProbabilityPerLocus);
         }
@@ -117,7 +117,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 AllowedLoci
             );
 
-            var expectedMatchProbabilityPerLocus = new LociInfo<decimal?> {A = 0.5M, B = 0.5M, C = 0.5M, Dpb1 = null, Dqb1 = 0.5M, Drb1 = 0.25M};
+            var expectedMatchProbabilityPerLocus = new LociInfo<decimal?>(0.5M, 0.5M, 0.5M, null, 0.5M, 0.25M);
             actualProbability.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0.25m);
             actualProbability.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedMatchProbabilityPerLocus);
         }
@@ -148,7 +148,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
                 AllowedLoci
             );
 
-            var expectedMatchProbabilityPerLocus = new LociInfo<decimal?> {A = 0.5M, B = 0.25M, C = 0.25M, Dpb1 = null, Dqb1 = 0.5M, Drb1 = 0.5M};
+            var expectedMatchProbabilityPerLocus = new LociInfo<decimal?>(0.5M, 0.25M, 0.25M, null, 0.5M, 0.5M);
             actualProbability.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0.25m);
             actualProbability.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedMatchProbabilityPerLocus);
         }

@@ -135,8 +135,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         [Test]
         public async Task Search_NullAlleleAsTwoFieldNameNoSuffix_VsTwoCopiesOfExpressingAllele_ExpressingMatchGradeAndExactConfidenceAssigned()
         {
-            var donorPhenotype = expressingAlleleFromSameGGroupAsNullAllele.Phenotype;
-            donorPhenotype.SetPosition(LocusUnderTest, OtherPosition, expressingAlleleFromSameGGroupAsNullAllele.AlleleName);
+            var donorPhenotype = expressingAlleleFromSameGGroupAsNullAllele.Phenotype
+                .SetPosition(LocusUnderTest, OtherPosition, expressingAlleleFromSameGGroupAsNullAllele.AlleleName);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameNoSuffix.Phenotype, donorId);
@@ -252,8 +252,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         [Test]
         public async Task FourOutOfSix_NullAlleleAsTwoFieldNameWithSuffix_VsTwoCopiesOfExpressingAllele_MismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = expressingAlleleFromSameGGroupAsNullAllele.Phenotype;
-            donorPhenotype.SetPosition(LocusUnderTest, OtherPosition, expressingAlleleFromSameGGroupAsNullAllele.AlleleName);
+            var donorPhenotype = expressingAlleleFromSameGGroupAsNullAllele.Phenotype
+                .SetPosition(LocusUnderTest, OtherPosition, expressingAlleleFromSameGGroupAsNullAllele.AlleleName);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var result = await FourOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameWithSuffix.Phenotype, donorId);
@@ -370,8 +370,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         public async Task
             Search_NullAlleleAsThreeFieldNameNoSuffix_VsTwoCopiesOfExpressingAllele_ExpressingMatchGradeAndExactConfidenceAssigned()
         {
-            var donorPhenotype = expressingAlleleFromSameGGroupAsNullAllele.Phenotype;
-            donorPhenotype.SetPosition(LocusUnderTest, OtherPosition, expressingAlleleFromSameGGroupAsNullAllele.AlleleName);
+            var donorPhenotype = expressingAlleleFromSameGGroupAsNullAllele.Phenotype
+                .SetPosition(LocusUnderTest, OtherPosition, expressingAlleleFromSameGGroupAsNullAllele.AlleleName);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameNoSuffix.Phenotype, donorId);
@@ -488,8 +488,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         [Test]
         public async Task FourOutOfSix_NullAlleleAsThreeFieldNameWithSuffix_VsTwoCopiesOfExpressingAllele_MismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = expressingAlleleFromSameGGroupAsNullAllele.Phenotype;
-            donorPhenotype.SetPosition(LocusUnderTest, OtherPosition, expressingAlleleFromSameGGroupAsNullAllele.AlleleName);
+            var donorPhenotype = expressingAlleleFromSameGGroupAsNullAllele.Phenotype
+                .SetPosition(LocusUnderTest, OtherPosition, expressingAlleleFromSameGGroupAsNullAllele.AlleleName);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var result = await FourOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameWithSuffix.Phenotype, donorId);
@@ -609,8 +609,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         public async Task
             Search_NullAlleleAsStringWithExpressingAlleleOfSameGGroup_VsTwoCopiesOfExpressingAllele_ExpressingMatchGradeAndExactConfidenceAssigned()
         {
-            var donorPhenotype = expressingAlleleFromSameGGroupAsNullAllele.Phenotype;
-            donorPhenotype.SetPosition(LocusUnderTest, OtherPosition, expressingAlleleFromSameGGroupAsNullAllele.AlleleName);
+            var donorPhenotype = expressingAlleleFromSameGGroupAsNullAllele.Phenotype
+                .SetPosition(LocusUnderTest, OtherPosition, expressingAlleleFromSameGGroupAsNullAllele.AlleleName);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfSameGGroup.Phenotype, donorId);
@@ -735,8 +735,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         public async Task
             FourOutOfSix_NullAlleleAsStringWithExpressingAlleleOfDifferentGGroup_VsTwoCopiesOfExpressingAllele_MismatchGradeAndConfidenceAssigned()
         {
-            var donorPhenotype = expressingAlleleFromSameGGroupAsNullAllele.Phenotype;
-            donorPhenotype.SetPosition(LocusUnderTest, OtherPosition, expressingAlleleFromSameGGroupAsNullAllele.AlleleName);
+            var donorPhenotype = expressingAlleleFromSameGGroupAsNullAllele.Phenotype
+                .SetPosition(LocusUnderTest, OtherPosition, expressingAlleleFromSameGGroupAsNullAllele.AlleleName);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var result = await FourOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.Phenotype, donorId);
@@ -859,8 +859,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         [Test]
         public async Task Search_NullAlleleAsXxCode_VsTwoCopiesOfExpressingAllele_GGroupMatchGradeAndPotentialConfidenceAssigned()
         {
-            var donorPhenotype = expressingAlleleFromSameGGroupAsNullAllele.Phenotype;
-            donorPhenotype.SetPosition(LocusUnderTest, OtherPosition, expressingAlleleFromSameGGroupAsNullAllele.AlleleName);
+            var donorPhenotype = expressingAlleleFromSameGGroupAsNullAllele.Phenotype
+                .SetPosition(LocusUnderTest, OtherPosition, expressingAlleleFromSameGGroupAsNullAllele.AlleleName);
             var donorId = await AddDonorPhenotypeToDonorRepository(donorPhenotype);
 
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsXxCode.Phenotype, donorId);

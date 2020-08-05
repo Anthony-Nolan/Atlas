@@ -160,7 +160,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButPatientHasNoTceGroupAssignments_TwoMismatchConfidencesAtDpb1()
+        public async Task
+            Search_SixOutOfSix_PatientAndDonorHaveTwoMismatchedDpb1Typings_ButPatientHasNoTceGroupAssignments_TwoMismatchConfidencesAtDpb1()
         {
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
             var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
@@ -197,9 +198,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         private static PhenotypeInfo<string> GetDefaultPhenotype()
         {
             var defaultHlaSet = new SampleTestHlas.HeterozygousSet1();
-            var phenotype = defaultHlaSet.SixLocus_SingleExpressingAlleles;
-            phenotype.SetLocus(Locus.Dpb1, DefaultDpb1Hla);
-            return phenotype;
+            return defaultHlaSet.SixLocus_SingleExpressingAlleles.SetLocus(Locus.Dpb1, DefaultDpb1Hla);
         }
 
         private static int SetupTestDonor(PhenotypeInfo<string> testDonorPhenotype)
@@ -207,28 +206,24 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var testDonor = BuildTestDonor(testDonorPhenotype);
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var donorRepository = repositoryFactory.GetDonorUpdateRepository();
-            donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { testDonor }, false).Wait();
+            donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] {testDonor}, false).Wait();
             return testDonor.DonorId;
         }
 
         private static DonorInfoWithExpandedHla BuildTestDonor(PhenotypeInfo<string> testDonorPhenotype)
         {
-            var donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForActiveHlaNomenclatureVersion();
+            var donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>()
+                .BuildForActiveHlaNomenclatureVersion();
 
-            var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = testDonorPhenotype }).Result.MatchingHla;
+            var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo {HlaNames = testDonorPhenotype}).Result.MatchingHla;
 
             return new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(matchingHlaPhenotype)
                 .Build();
         }
 
-        private PhenotypeInfo<string> GetPhenotypeWithDpb1HlaOf(string dpb1Hla)
-        {
-            var modifiedPhenotype = new PhenotypeInfo<string>(defaultPhenotype);
-            modifiedPhenotype.SetLocus(Locus.Dpb1, dpb1Hla);
-
-            return modifiedPhenotype;
-        }
+        private PhenotypeInfo<string> GetPhenotypeWithDpb1HlaOf(string dpb1Hla) =>
+            new PhenotypeInfo<string>(defaultPhenotype).SetLocus(Locus.Dpb1, dpb1Hla);
 
         private async Task<MatchingAlgorithmResult> RunSixOutOfSixSearchWithAllLociScored(PhenotypeInfo<string> patientPhenotype)
         {

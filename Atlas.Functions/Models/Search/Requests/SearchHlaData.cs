@@ -59,13 +59,13 @@ namespace Atlas.Functions.Models.Search.Requests
         public static PhenotypeInfo<string> ToPhenotypeInfo(this SearchHlaData hlaData)
         {
             return new PhenotypeInfo<string>
-            {
-                A = hlaData?.LocusSearchHlaA?.ToLocusInfo() ?? new LocusInfo<string>(null),
-                B = hlaData?.LocusSearchHlaB?.ToLocusInfo() ?? new LocusInfo<string>(null),
-                C = hlaData?.LocusSearchHlaC?.ToLocusInfo() ?? new LocusInfo<string>(null),
-                Dqb1 = hlaData?.LocusSearchHlaDqb1?.ToLocusInfo() ?? new LocusInfo<string>(null),
-                Drb1 = hlaData?.LocusSearchHlaDrb1?.ToLocusInfo() ?? new LocusInfo<string>(null),
-            };
+            (
+                valueA: hlaData?.LocusSearchHlaA?.ToLocusInfo() ?? new LocusInfo<string>(null),
+                valueB: hlaData?.LocusSearchHlaB?.ToLocusInfo() ?? new LocusInfo<string>(null),
+                valueC: hlaData?.LocusSearchHlaC?.ToLocusInfo() ?? new LocusInfo<string>(null),
+                valueDqb1: hlaData?.LocusSearchHlaDqb1?.ToLocusInfo() ?? new LocusInfo<string>(null),
+                valueDrb1: hlaData?.LocusSearchHlaDrb1?.ToLocusInfo() ?? new LocusInfo<string>(null)
+            );
         }
 
         private static LocusInfo<string> ToLocusInfo(this LocusSearchHla locusSearchHla) =>

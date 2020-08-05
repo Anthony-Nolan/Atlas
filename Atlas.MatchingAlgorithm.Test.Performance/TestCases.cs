@@ -28,145 +28,145 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
         {
             PatientId = "489252",
             Hla = new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>("*24:02", "*29:02"),
-                B = new LocusInfo<string>("*45:01", "*15:01"),
-                C = new LocusInfo<string>("*03:03", "*06:02"),
-                Drb1 = new LocusInfo<string>("*04:01", "*11:01"),
-                Dqb1 = new LocusInfo<string>("*03:01", "*03:02")
-            },
+            (
+                valueA: new LocusInfo<string>("*24:02", "*29:02"),
+                valueB: new LocusInfo<string>("*45:01", "*15:01"),
+                valueC: new LocusInfo<string>("*03:03", "*06:02"),
+                valueDrb1: new LocusInfo<string>("*04:01", "*11:01"),
+                valueDqb1: new LocusInfo<string>("*03:01", "*03:02")
+            ),
         };
 
         private static readonly PatientInfo LivePatient495317 = new PatientInfo
         {
             PatientId = "495317 (live)",
             Hla = new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>
+            (
+                valueA: new LocusInfo<string>
                 (
                     "*03:01:01:01",
                     "*66:01:01:01"
                 ),
-                B = new LocusInfo<string>
+                valueB: new LocusInfo<string>
                 (
                     "*07:02:01:01",
                     "*35:01:01"
                 ),
-                C = new LocusInfo<string>
+                valueC: new LocusInfo<string>
                 (
                     "*04:01:01",
                     "*07:02:01:03"
                 ),
-                Drb1 = new LocusInfo<string>
+                valueDrb1: new LocusInfo<string>
                 (
                     "*11:01:01",
                     "*10:01:01"
                 ),
-                Dqb1 = new LocusInfo<string>
+                valueDqb1: new LocusInfo<string>
                 (
                     "*05:01",
                     "*05:02:01"
                 )
-            },
+            ),
         };
 
         private static readonly PatientInfo LivePatient496738 = new PatientInfo
         {
             PatientId = "496738 (live)",
             Hla = new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>
+            (
+                valueA: new LocusInfo<string>
                 (
                     "*01:01",
                     "*02:01"
                 ),
-                B = new LocusInfo<string>
+                valueB: new LocusInfo<string>
                 (
                     "*07:02",
                     "*08:01"
                 ),
-                C = new LocusInfo<string>
+                valueC: new LocusInfo<string>
                 (
                     "*07:01",
                     "*07:02"
                 ),
-                Drb1 = new LocusInfo<string>
+                valueDrb1: new LocusInfo<string>
                 (
                     "*15:01",
                     "*03:01"
                 ),
-                Dqb1 = new LocusInfo<string>
+                valueDqb1: new LocusInfo<string>
                 (
                     "*06:02",
                     "*02:01"
                 )
-            },
+            ),
         };
 
         private static readonly PatientInfo LivePatient496272 = new PatientInfo
         {
             PatientId = "496272 (live)",
             Hla = new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>
+            (
+                valueA: new LocusInfo<string>
                 (
                     "*03:01",
                     "*66:01"
                 ),
-                B = new LocusInfo<string>
+                valueB: new LocusInfo<string>
                 (
                     "*07:02",
                     "*07:06"
                 ),
-                C = new LocusInfo<string>
+                valueC: new LocusInfo<string>
                 (
                     "*07:02",
                     "*15:05"
                 ),
-                Drb1 = new LocusInfo<string>
+                valueDrb1: new LocusInfo<string>
                 (
                     "*15:01",
                     "*13:01"
                 ),
-                Dqb1 = new LocusInfo<string>
+                valueDqb1: new LocusInfo<string>
                 (
                     "*06:02",
                     "*06:03"
                 )
-            },
+            ),
         };
 
         private static readonly PatientInfo LivePatient496345 = new PatientInfo
         {
             PatientId = "496345 (live)",
             Hla = new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>
+            (
+                valueA: new LocusInfo<string>
                 (
                     "*24:02",
                     "*29:02"
                 ),
-                B = new LocusInfo<string>
+                valueB: new LocusInfo<string>
                 (
                     "*45:01",
                     "*15:01"
                 ),
-                C = new LocusInfo<string>
+                valueC: new LocusInfo<string>
                 (
                     "*03:03",
                     "*06:02"
                 ),
-                Drb1 = new LocusInfo<string>
+                valueDrb1: new LocusInfo<string>
                 (
                     "*04:01",
                     "*11:01"
                 ),
-                Dqb1 = new LocusInfo<string>
+                valueDqb1: new LocusInfo<string>
                 (
                     "*03:01",
                     "*03:02"
                 )
-            },
+            ),
         };
 
         public static readonly IEnumerable<TestInput> TestInputs = new List<TestInput>

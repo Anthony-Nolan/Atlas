@@ -1,6 +1,7 @@
 ﻿using System;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 
 namespace Atlas.Functions.Models.Search.Requests
 {
@@ -73,7 +74,7 @@ namespace Atlas.Functions.Models.Search.Requests
             return new MatchingAlgorithm.Client.Models.SearchRequests.MismatchCriteria
             {
                 DonorMismatchCount = mismatchCriteria.DonorMismatchCount,
-                LocusMismatchCounts = new LociInfo<int?>
+                LocusMismatchCounts = new LociInfoTransfer<int?>
                 {
                     A = mismatchCriteria.LocusMismatchA?.MismatchCount,
                     B = mismatchCriteria.LocusMismatchB?.MismatchCount,

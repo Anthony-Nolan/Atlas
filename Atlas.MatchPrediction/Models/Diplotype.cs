@@ -25,47 +25,42 @@ namespace Atlas.MatchPrediction.Models
             new Haplotype
             {
                 Hla = new LociInfo<string>
-                {
-                    A = source.A.Position1,
-                    B = source.B.Position1,
-                    C = source.C.Position1,
-                    Dqb1 = source.Dqb1.Position1,
-                    Drb1 = source.Drb1.Position1
-                }
+                (
+                    valueA: source.A.Position1,
+                    valueB: source.B.Position1,
+                    valueC: source.C.Position1,
+                    valueDqb1: source.Dqb1.Position1,
+                    valueDrb1: source.Drb1.Position1
+                )
             },
             new Haplotype
             {
                 Hla = new LociInfo<string>
-                {
-                    A = source.A.Position2,
-                    B = source.B.Position2,
-                    C = source.C.Position2,
-                    Dqb1 = source.Dqb1.Position2,
-                    Drb1 = source.Drb1.Position2
-                }
+                (
+                    valueA: source.A.Position2,
+                    valueB: source.B.Position2,
+                    valueC: source.C.Position2,
+                    valueDqb1: source.Dqb1.Position2,
+                    valueDrb1: source.Drb1.Position2
+                )
             })
         {
         }
 
         public void SetAtLocus(Locus locus, LocusInfo<string> locusInfo)
         {
-            Item1.Hla.SetLocus(locus, locusInfo.Position1);
-            Item2.Hla.SetLocus(locus, locusInfo.Position2);
+            Item1.Hla = Item1.Hla.SetLocus(locus, locusInfo.Position1);
+            Item2.Hla = Item2.Hla.SetLocus(locus, locusInfo.Position2);
         }
 
         public void SetAtPosition(Locus locus, LocusPosition position, string value)
         {
-            switch (position)
+            Item1.Hla = position switch
             {
-                case LocusPosition.One:
-                    Item1.Hla.SetLocus(locus, value);
-                    break;
-                case LocusPosition.Two:
-                    Item1.Hla.SetLocus(locus, value);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(position), position, null);
-            }
+                LocusPosition.One => Item1.Hla.SetLocus(locus, value),
+                LocusPosition.Two => Item1.Hla.SetLocus(locus, value),
+                _ => throw new ArgumentOutOfRangeException(nameof(position), position, null)
+            };
         }
     }
 }

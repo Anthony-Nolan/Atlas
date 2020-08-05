@@ -66,7 +66,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             {
                 originalHlaPhenotype = new SampleTestHlas.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
                 criteriaFromExpandedHla = new AlleleLevelMatchCriteriaFromExpandedHla(LocusUnderTest, MatchingDonorType);
-                donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForActiveHlaNomenclatureVersion();
+                donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>()
+                    .BuildForActiveHlaNomenclatureVersion();
 
                 var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
                 donorUpdateRepository = repositoryFactory.GetDonorUpdateRepository();
@@ -148,9 +149,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         [TestCase(DifferentNullAllele, DifferentExpressingAllele)]
         [TestCase(DifferentExpressingAllele, DifferentNullAllele)]
-        public async Task Search_WithTwoAllowedMismatches_PatientWithNullAlleleInString_MatchesDonorWithDifferentNullAlleleAndDifferentExpressingAllele(
-            string donorHla1,
-            string donorHla2)
+        public async Task
+            Search_WithTwoAllowedMismatches_PatientWithNullAlleleInString_MatchesDonorWithDifferentNullAlleleAndDifferentExpressingAllele(
+                string donorHla1,
+                string donorHla2)
         {
             var donorPhenotype = BuildExpandedHlaPhenotype(donorHla1, donorHla2);
             var expectedDonorId = await AddSingleDonorPhenotypeToDonorRepository(donorPhenotype);
@@ -179,9 +181,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         [TestCase(ExpressingAllele, NullAlleleInString1)]
         [TestCase(NullAlleleInString1, ExpressingAllele)]
-        public async Task Search_WithOneAllowedMismatch_PatientWithTwoCopiesOfExpressingAllele_MatchesDonorWithSameExpressingAlleleAndNullAlleleInString(
-            string donorHla1,
-            string donorHla2)
+        public async Task
+            Search_WithOneAllowedMismatch_PatientWithTwoCopiesOfExpressingAllele_MatchesDonorWithSameExpressingAlleleAndNullAlleleInString(
+                string donorHla1,
+                string donorHla2)
         {
             var donorPhenotype = BuildExpandedHlaPhenotype(donorHla1, donorHla2);
             var expectedDonorId = await AddSingleDonorPhenotypeToDonorRepository(donorPhenotype);
@@ -194,9 +197,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         [TestCase(DifferentExpressingAllele, NullAlleleInString1)]
         [TestCase(NullAlleleInString1, DifferentExpressingAllele)]
-        public async Task Search_WithTwoAllowedMismatches_PatientWithTwoCopiesOfExpressingAllele_MatchesDonorWithDifferentExpressingAlleleAndNullAlleleInString(
-            string donorHla1,
-            string donorHla2)
+        public async Task
+            Search_WithTwoAllowedMismatches_PatientWithTwoCopiesOfExpressingAllele_MatchesDonorWithDifferentExpressingAlleleAndNullAlleleInString(
+                string donorHla1,
+                string donorHla2)
         {
             var donorPhenotype = BuildExpandedHlaPhenotype(donorHla1, donorHla2);
             var expectedDonorId = await AddSingleDonorPhenotypeToDonorRepository(donorPhenotype);
@@ -224,9 +228,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         [TestCase(ExpressingAlleleInString2, DifferentNullAlleleInString)]
         [TestCase(DifferentNullAlleleInString, ExpressingAlleleInString2)]
-        public async Task Search_WithOneAllowedMismatch_PatientWithExpressingAlleleInStringAndNullAlleleInString_MatchesDonorWithSameExpressingAlleleInStringButDifferentNullAlleleInString(
-            string donorHla1,
-            string donorHla2)
+        public async Task
+            Search_WithOneAllowedMismatch_PatientWithExpressingAlleleInStringAndNullAlleleInString_MatchesDonorWithSameExpressingAlleleInStringButDifferentNullAlleleInString(
+                string donorHla1,
+                string donorHla2)
         {
             var donorPhenotype = BuildExpandedHlaPhenotype(donorHla1, donorHla2);
             var expectedDonorId = await AddSingleDonorPhenotypeToDonorRepository(donorPhenotype);
@@ -239,9 +244,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         [TestCase(ExpressingAlleleInString2, ExpressingAlleleInString3)]
         [TestCase(ExpressingAlleleInString3, ExpressingAlleleInString2)]
-        public async Task Search_WithOneAllowedMismatch_PatientWithExpressingAlleleInStringAndNullAlleleInString_MatchesDonorWithTwoCopiesOfSameExpressingAlleleInStrings(
-            string donorHla1,
-            string donorHla2)
+        public async Task
+            Search_WithOneAllowedMismatch_PatientWithExpressingAlleleInStringAndNullAlleleInString_MatchesDonorWithTwoCopiesOfSameExpressingAlleleInStrings(
+                string donorHla1,
+                string donorHla2)
         {
             var donorPhenotype = BuildExpandedHlaPhenotype(donorHla1, donorHla2);
             var expectedDonorId = await AddSingleDonorPhenotypeToDonorRepository(donorPhenotype);
@@ -254,9 +260,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         [TestCase(NullAlleleInString2, DifferentExpressingAlleleInString)]
         [TestCase(DifferentExpressingAlleleInString, NullAlleleInString2)]
-        public async Task Search_WithTwoAllowedMismatches_PatientWithExpressingAlleleInStringAndNullAlleleInString_MatchesDonorWithSameNullAlleleInStringButDifferentExpressingAlleleInString(
-            string donorHla1,
-            string donorHla2)
+        public async Task
+            Search_WithTwoAllowedMismatches_PatientWithExpressingAlleleInStringAndNullAlleleInString_MatchesDonorWithSameNullAlleleInStringButDifferentExpressingAlleleInString(
+                string donorHla1,
+                string donorHla2)
         {
             var donorPhenotype = BuildExpandedHlaPhenotype(donorHla1, donorHla2);
             var expectedDonorId = await AddSingleDonorPhenotypeToDonorRepository(donorPhenotype);
@@ -269,9 +276,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         [TestCase(DifferentNullAlleleInString, DifferentExpressingAlleleInString)]
         [TestCase(DifferentExpressingAlleleInString, DifferentNullAlleleInString)]
-        public async Task Search_WithTwoAllowedMismatches_PatientWithExpressingAlleleInStringAndNullAlleleInString_MatchesDonorWithDifferentNullAlleleAndDifferentExpressingAlleleInStrings(
-            string donorHla1,
-            string donorHla2)
+        public async Task
+            Search_WithTwoAllowedMismatches_PatientWithExpressingAlleleInStringAndNullAlleleInString_MatchesDonorWithDifferentNullAlleleAndDifferentExpressingAlleleInStrings(
+                string donorHla1,
+                string donorHla2)
         {
             var donorPhenotype = BuildExpandedHlaPhenotype(donorHla1, donorHla2);
             var expectedDonorId = await AddSingleDonorPhenotypeToDonorRepository(donorPhenotype);
@@ -283,7 +291,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_WithTwoAllowedMismatches_PatientWithExpressingAlleleInStringAndNullAlleleInString_MatchesDonorWithTwoCopiesOfDifferentExpressingAlleleInStrings()
+        public async Task
+            Search_WithTwoAllowedMismatches_PatientWithExpressingAlleleInStringAndNullAlleleInString_MatchesDonorWithTwoCopiesOfDifferentExpressingAlleleInStrings()
         {
             var donorPhenotype = BuildExpandedHlaPhenotype(DifferentExpressingAlleleInString, DifferentExpressingAlleleInString);
             var expectedDonorId = await AddSingleDonorPhenotypeToDonorRepository(donorPhenotype);
@@ -307,9 +316,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         [TestCase(ExpressingAlleleInString3, NullAlleleInString1)]
         [TestCase(NullAlleleInString1, ExpressingAlleleInString3)]
-        public async Task Search_WithOneAllowedMismatch_PatientWithTwoCopiesOfExpressingAlleleInStrings_MatchesDonorWithSameExpressingAlleleInStringAndNullAlleleInString(
-            string donorHla1,
-            string donorHla2)
+        public async Task
+            Search_WithOneAllowedMismatch_PatientWithTwoCopiesOfExpressingAlleleInStrings_MatchesDonorWithSameExpressingAlleleInStringAndNullAlleleInString(
+                string donorHla1,
+                string donorHla2)
         {
             var donorPhenotype = BuildExpandedHlaPhenotype(donorHla1, donorHla2);
             var expectedDonorId = await AddSingleDonorPhenotypeToDonorRepository(donorPhenotype);
@@ -322,9 +332,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         [TestCase(DifferentExpressingAlleleInString, NullAlleleInString1)]
         [TestCase(NullAlleleInString1, DifferentExpressingAlleleInString)]
-        public async Task Search_WithTwoAllowedMismatches_PatientWithTwoCopiesOfExpressingAlleleInStrings_MatchesDonorWithDifferentExpressingAlleleInStringAndNullAlleleInString(
-            string donorHla1,
-            string donorHla2)
+        public async Task
+            Search_WithTwoAllowedMismatches_PatientWithTwoCopiesOfExpressingAlleleInStrings_MatchesDonorWithDifferentExpressingAlleleInStringAndNullAlleleInString(
+                string donorHla1,
+                string donorHla2)
         {
             var donorPhenotype = BuildExpandedHlaPhenotype(donorHla1, donorHla2);
             var expectedDonorId = await AddSingleDonorPhenotypeToDonorRepository(donorPhenotype);
@@ -336,7 +347,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_WithTwoAllowedMismatches_PatientWithTwoCopiesOfExpressingAlleleInStrings_MatchesDonorWithTwoCopiesOfDifferentExpressingAlleleInStrings()
+        public async Task
+            Search_WithTwoAllowedMismatches_PatientWithTwoCopiesOfExpressingAlleleInStrings_MatchesDonorWithTwoCopiesOfDifferentExpressingAlleleInStrings()
         {
             var donorPhenotype = BuildExpandedHlaPhenotype(DifferentExpressingAlleleInString, DifferentExpressingAlleleInString);
             var expectedDonorId = await AddSingleDonorPhenotypeToDonorRepository(donorPhenotype);
@@ -360,9 +372,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         [TestCase(ExpressingAlleleInString1, DifferentNullAlleleInString)]
         [TestCase(DifferentNullAlleleInString, ExpressingAlleleInString1)]
-        public async Task Search_WithOneAllowedMismatch_PatientWithTwoNullAllelesInTwoStrings_MatchesDonorWithSameExpressingAlleleInStringButDifferentNullAlleleInString(
-            string donorHla1,
-            string donorHla2)
+        public async Task
+            Search_WithOneAllowedMismatch_PatientWithTwoNullAllelesInTwoStrings_MatchesDonorWithSameExpressingAlleleInStringButDifferentNullAlleleInString(
+                string donorHla1,
+                string donorHla2)
         {
             var donorPhenotype = BuildExpandedHlaPhenotype(donorHla1, donorHla2);
             var expectedDonorId = await AddSingleDonorPhenotypeToDonorRepository(donorPhenotype);
@@ -390,9 +403,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         [TestCase(NullAlleleInString2, DifferentExpressingAlleleInString)]
         [TestCase(DifferentExpressingAlleleInString, NullAlleleInString2)]
-        public async Task Search_WithTwoAllowedMismatches_PatientWithTwoNullAllelesInTwoStrings_MatchesDonorWithSameNullAlleleInStringButDifferentExpressingAlleleInString(
-            string donorHla1,
-            string donorHla2)
+        public async Task
+            Search_WithTwoAllowedMismatches_PatientWithTwoNullAllelesInTwoStrings_MatchesDonorWithSameNullAlleleInStringButDifferentExpressingAlleleInString(
+                string donorHla1,
+                string donorHla2)
         {
             var donorPhenotype = BuildExpandedHlaPhenotype(donorHla1, donorHla2);
             var expectedDonorId = await AddSingleDonorPhenotypeToDonorRepository(donorPhenotype);
@@ -405,9 +419,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         [TestCase(DifferentNullAlleleInString, DifferentExpressingAlleleInString)]
         [TestCase(DifferentExpressingAlleleInString, DifferentNullAlleleInString)]
-        public async Task Search_WithTwoAllowedMismatches_PatientWithTwoNullAllelesInTwoStrings_MatchesDonorWithDifferentNullAlleleInStringAndDifferentExpressingAlleleInString(
-            string donorHla1,
-            string donorHla2)
+        public async Task
+            Search_WithTwoAllowedMismatches_PatientWithTwoNullAllelesInTwoStrings_MatchesDonorWithDifferentNullAlleleInStringAndDifferentExpressingAlleleInString(
+                string donorHla1,
+                string donorHla2)
         {
             var donorPhenotype = BuildExpandedHlaPhenotype(donorHla1, donorHla2);
             var expectedDonorId = await AddSingleDonorPhenotypeToDonorRepository(donorPhenotype);
@@ -420,9 +435,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         [TestCase(NullAlleleInString2, NullRelatedToExpressingAlleleInString)]
         [TestCase(NullRelatedToExpressingAlleleInString, NullAlleleInString2)]
-        public async Task Search_WithTwoAllowedMismatches_PatientWithTwoNullAllelesInTwoStrings_MatchesDonorWithSameNullAllelesButDifferentExpressingAllelesInStrings(
-            string donorHla1,
-            string donorHla2)
+        public async Task
+            Search_WithTwoAllowedMismatches_PatientWithTwoNullAllelesInTwoStrings_MatchesDonorWithSameNullAllelesButDifferentExpressingAllelesInStrings(
+                string donorHla1,
+                string donorHla2)
         {
             var donorPhenotype = BuildExpandedHlaPhenotype(donorHla1, donorHla2);
             var expectedDonorId = await AddSingleDonorPhenotypeToDonorRepository(donorPhenotype);
@@ -434,7 +450,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task Search_WithTwoAllowedMismatches_PatientWithTwoNullAllelesInTwoStrings_MatchesDonorWithTwoCopiesOfDifferentExpressingAlleleInStrings()
+        public async Task
+            Search_WithTwoAllowedMismatches_PatientWithTwoNullAllelesInTwoStrings_MatchesDonorWithTwoCopiesOfDifferentExpressingAlleleInStrings()
         {
             var donorPhenotype = BuildExpandedHlaPhenotype(DifferentExpressingAlleleInString, DifferentExpressingAlleleInString);
             var expectedDonorId = await AddSingleDonorPhenotypeToDonorRepository(donorPhenotype);
@@ -467,11 +484,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private PhenotypeInfo<IHlaMatchingMetadata> BuildExpandedHlaPhenotype(string hla1, string hla2)
         {
-            var newPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla);
-            newPhenotype.SetPosition(LocusUnderTest, LocusPosition.One, hla1);
-            newPhenotype.SetPosition(LocusUnderTest, LocusPosition.Two, hla2);
+            var newPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla)
+                .SetPosition(LocusUnderTest, LocusPosition.One, hla1)
+                .SetPosition(LocusUnderTest, LocusPosition.Two, hla2);
 
-            var expandedDonor = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = newPhenotype }).Result;
+            var expandedDonor = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo {HlaNames = newPhenotype}).Result;
 
             return expandedDonor.MatchingHla;
         }
@@ -482,7 +499,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithHla(donorPhenotype)
                 .Build();
 
-            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] { donor }, false);
+            await donorUpdateRepository.InsertBatchOfDonorsWithExpandedHla(new[] {donor}, false);
 
             return donor.DonorId;
         }
