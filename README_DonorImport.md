@@ -81,3 +81,19 @@ Final command on multiple lines (for ease of reading):
 * `--dryrun`, which will list the files being moved
 * `--pattern`, which allows a wild-card mask on which files to copy. e.g. `--pattern *foo*.bar`
 * `--verbose`, which gives you an indication of what's happening in the 10-30 seconds whilst the command initiates the copies (otherwise it's just blank until all copies have been initiated.
+
+### Donor Import file behaviour if out of order.a
+
+The three operations - create, update and delete - will cause problems if the files are processed in an incorrect order. The following table explains the outcomes we expect.
+
+| File 1  | File 2 | Behaviour if in order | Behaviour if out of order     | Notes                                                                                                  |
+|---------|--------|-----------------------|-------------------------------|--------------------------------------------------------------------------------------------------------|
+| Create  | Create | Error                 | Error                         | The first create will work correctly, then throw an error on the second import, not changing the data  |
+| Create  | Update | Updated donor         | Error, then out of date donor | This will throw an error and update support, and the donor will be out of date.                        |
+| Create  | Delete | No change             | Error then Create             | The data here also ends up incorrect (it should have been deleted). Support will be notified           |
+| Update  | Create | update then Error     | Error then update             | This should be fine, the second create will be disregarded, support will be alerted                    |
+| Update  | Update | 2nd update stands     | 1st update stands             | We guard against this. Updates will not be applied if the upload time is before the most recent update |
+| Update  | Delete | No donor              | No donor + error              |                                                                                                        |
+| Delete  | Create | New donor             | Error, then delete            | This is ok, even though the data ends up incorrect, as support get alerted                             |
+| Delete  | Update | No donor, error       | No donor, no error            |                                                                                                        |
+| Delete  | Delete | No donor, error       | No donor, error               |                                                                                                        |
