@@ -54,10 +54,16 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             IDurableOrchestrationContext context,
             SearchRequest searchRequest)
         {
-            return await context.CallActivityAsync<TimedResultSet<MatchingAlgorithmResultSet>>(
+            var results = await context.CallActivityAsync<TimedResultSet<MatchingAlgorithmResultSet>>(
                 nameof(SearchActivityFunctions.RunMatchingAlgorithm),
                 new IdentifiedSearchRequest {Id = context.InstanceId, MatchingRequest = searchRequest.ToMatchingRequest()}
             );
+            context.SetCustomStatus(new OrchestrationStatus
+            {
+                LastCompletedStage = nameof(RunMatchingAlgorithm),
+                ElapsedTimeOfStage = results.ElapsedTime,
+            });
+            return results;
         }
 
         private static async Task<Dictionary<int, MatchProbabilityResponse>> RunMatchPredictionAlgorithm(
@@ -69,6 +75,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             var matchPredictionInputs = await BuildMatchPredictionInputs(context, searchRequest, searchResults, donorInformation);
             var matchPredictionTasks = matchPredictionInputs.Select(r => RunMatchPredictionForDonor(context, r)).ToList();
             var matchPredictionResults = (await Task.WhenAll(matchPredictionTasks)).ToDictionary();
+            
+            context.SetCustomStatus(new OrchestrationStatus
+            {
+                LastCompletedStage = nameof(RunMatchPredictionAlgorithm),
+                // TODO: ATLAS-575: Work out how to time across multiple activity functions
+                ElapsedTimeOfStage = null,
+            });
+            
             return matchPredictionResults;
         }
 
@@ -97,10 +111,18 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 matchingAlgorithmResults.MatchingAlgorithmResults.Select(r => r.AtlasDonorId)
             );
 
-            return await context.CallActivityAsync<Dictionary<int, Donor>>(
+            var donorInfo = await context.CallActivityAsync<Dictionary<int, Donor>>(
                 nameof(SearchActivityFunctions.FetchDonorInformation),
                 activityInput
             );
+
+            context.SetCustomStatus(new OrchestrationStatus
+            {
+                LastCompletedStage = nameof(FetchDonorInformation),
+                ElapsedTimeOfStage = null,
+            });
+
+            return donorInfo;
         }
 
         /// <returns>A Task returning a Key Value pair of Atlas Donor ID, and match prediction response.</returns>
@@ -132,6 +154,12 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     MatchingAlgorithmResultSet = searchResults
                 }
             );
+            
+            context.SetCustomStatus(new OrchestrationStatus
+            {
+                LastCompletedStage = nameof(PersistSearchResults),
+                ElapsedTimeOfStage = null,
+            });
         }
     }
 }
