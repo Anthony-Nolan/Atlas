@@ -28,6 +28,7 @@ resource "azurerm_function_app" "atlas_function" {
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"     = var.WMDA_FILE_URL
 
     "MacDictionary:AzureStorageConnectionString" = azurerm_storage_account.azure_storage.primary_connection_string
+    "MacDictionary:Import:CronSchedule"          = var.MAC_IMPORT_CRON_SCHEDULE
     "MacDictionary:Import:MacSourceUrl"          = var.MAC_SOURCE
     "MacDictionary:TableName"                    = module.multiple_allele_code_lookup.storage_table.name
 

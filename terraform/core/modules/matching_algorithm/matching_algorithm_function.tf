@@ -31,20 +31,19 @@ locals {
     "DataRefresh:DataRefreshDonorUpdatesShouldBeFullyTransactional"                         = var.DONOR_WRITE_TRANSACTIONALITY__DATA_REFRESH
     "DataRefresh:DonorManagement:OngoingDifferentialDonorUpdatesShouldBeFullyTransactional" = var.DONOR_WRITE_TRANSACTIONALITY__DONOR_UPDATES
 
-    "HlaMetadataDictionary:AzureStorageConnectionString"        = var.azure_storage.primary_connection_string,
-    "HlaMetadataDictionary:HlaNomenclatureSourceUrl"            = var.WMDA_FILE_URL,
-    "MacDictionary:AzureStorageConnectionString"                = var.azure_storage.primary_connection_string
-    "MacDictionary:CronSchedule"                                = var.MAC_IMPORT_CRON_SCHEDULE
-    "MacDictionary:TableName"                                   = var.mac_import_table.name,
-    "MessagingServiceBus:ConnectionString"                      = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
-    "MessagingServiceBus:SearchRequestsQueue"                   = azurerm_servicebus_queue.matching-requests.name
-    "MessagingServiceBus:SearchResultsTopic"                    = azurerm_servicebus_topic.matching-results-ready.name
-    "NotificationsServiceBus:ConnectionString"                  = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
-    "NotificationsServiceBus:AlertsTopic"                       = var.servicebus_topics.alerts.name
-    "NotificationsServiceBus:NotificationsTopic"                = var.servicebus_topics.notifications.name
-    "Wmda:WmdaFileUri"                                          = var.WMDA_FILE_URL
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"                 = "1"
-    "WEBSITE_RUN_FROM_PACKAGE"                                  = var.WEBSITE_RUN_FROM_PACKAGE
+    "HlaMetadataDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string,
+    "HlaMetadataDictionary:HlaNomenclatureSourceUrl"     = var.WMDA_FILE_URL,
+    "MacDictionary:AzureStorageConnectionString"         = var.azure_storage.primary_connection_string
+    "MacDictionary:TableName"                            = var.mac_import_table.name,
+    "MessagingServiceBus:ConnectionString"               = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
+    "MessagingServiceBus:SearchRequestsQueue"            = azurerm_servicebus_queue.matching-requests.name
+    "MessagingServiceBus:SearchResultsTopic"             = azurerm_servicebus_topic.matching-results-ready.name
+    "NotificationsServiceBus:ConnectionString"           = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:AlertsTopic"                = var.servicebus_topics.alerts.name
+    "NotificationsServiceBus:NotificationsTopic"         = var.servicebus_topics.notifications.name
+    "Wmda:WmdaFileUri"                                   = var.WMDA_FILE_URL
+    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT"          = "1"
+    "WEBSITE_RUN_FROM_PACKAGE"                           = var.WEBSITE_RUN_FROM_PACKAGE
   }
   matching_algorithm_function_app_name = "${var.general.environment}-ATLAS-MATCHING-ALGORITHM-FUNCTION"
 }
