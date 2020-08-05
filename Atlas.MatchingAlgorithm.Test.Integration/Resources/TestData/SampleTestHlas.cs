@@ -13,11 +13,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData
         public class HeterozygousSet1 : ITestHlaSet
         {
             public PhenotypeInfo<string> ThreeLocus_SingleExpressingAlleles => new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>("01:01:02", "02:01:01:02L"),
-                B = new LocusInfo<string>("07:68:01", "08:01:01:01"),
-                Drb1 = new LocusInfo<string>("01:01:01", "03:02:01")
-            };
+            (
+                valueA: new LocusInfo<string>("01:01:02", "02:01:01:02L"),
+                valueB: new LocusInfo<string>("07:68:01", "08:01:01:01"),
+                valueDrb1: new LocusInfo<string>("01:01:01", "03:02:01")
+            );
 
             public PhenotypeInfo<string> SixLocus_SingleExpressingAlleles => new PhenotypeInfoBuilder<string>(ThreeLocus_SingleExpressingAlleles)
                 .WithDataAt(Locus.C, LocusPosition.One, "01:02:01:01")
@@ -29,43 +29,43 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData
                 .Build();
 
             public PhenotypeInfo<string> SixLocus_ExpressingAlleles_WithTruncatedNames => new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>("01:01", "02:01"),
-                B = new LocusInfo<string>("07:68", "08:01"),
-                C = new LocusInfo<string>("01:02", "02:02"),
-                Dpb1 = new LocusInfo<string>("01:01", "09:01"),
-                Dqb1 = new LocusInfo<string>("02:01", "03:01"),
-                Drb1 = new LocusInfo<string>("01:01", "03:02")
-            };
+            (
+                valueA: new LocusInfo<string>("01:01", "02:01"),
+                valueB: new LocusInfo<string>("07:68", "08:01"),
+                valueC: new LocusInfo<string>("01:02", "02:02"),
+                valueDpb1: new LocusInfo<string>("01:01", "09:01"),
+                valueDqb1: new LocusInfo<string>("02:01", "03:01"),
+                valueDrb1: new LocusInfo<string>("01:01", "03:02")
+            );
 
             public PhenotypeInfo<string> SixLocus_XxCodes => new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>("01:XX", "02:XX"),
-                B = new LocusInfo<string>("07:XX", "08:XX"),
-                C = new LocusInfo<string>("01:XX", "02:XX"),
-                Dpb1 = new LocusInfo<string>("01:XX", "09:XX"),
-                Dqb1 = new LocusInfo<string>("02:XX", "03:XX"),
-                Drb1 = new LocusInfo<string>("01:XX", "03:XX")
-            };
+            (
+                valueA: new LocusInfo<string>("01:XX", "02:XX"),
+                valueB: new LocusInfo<string>("07:XX", "08:XX"),
+                valueC: new LocusInfo<string>("01:XX", "02:XX"),
+                valueDpb1: new LocusInfo<string>("01:XX", "09:XX"),
+                valueDqb1: new LocusInfo<string>("02:XX", "03:XX"),
+                valueDrb1: new LocusInfo<string>("01:XX", "03:XX")
+            );
 
             public PhenotypeInfo<string> FiveLocus_Serologies => new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>("1", "2"),
-                B = new LocusInfo<string>("7", "8"),
-                C = new LocusInfo<string>("1", "2"),
-                Dqb1 = new LocusInfo<string>("2", "3"),
-                Drb1 = new LocusInfo<string>("1", "3")
-            };
+            (
+                valueA: new LocusInfo<string>("1", "2"),
+                valueB: new LocusInfo<string>("7", "8"),
+                valueC: new LocusInfo<string>("1", "2"),
+                valueDqb1: new LocusInfo<string>("2", "3"),
+                valueDrb1: new LocusInfo<string>("1", "3")
+            );
         }
 
         public class HeterozygousSet2 : ITestHlaSet
         {
             public PhenotypeInfo<string> ThreeLocus_SingleExpressingAlleles => new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>("03:02:03", "11:01:01:01"),
-                B = new LocusInfo<string>("13:01:02", "14:06:01"),
-                Drb1 = new LocusInfo<string>("04:05:01:01", "08:02:04")
-            };
+            (
+                valueA: new LocusInfo<string>("03:02:03", "11:01:01:01"),
+                valueB: new LocusInfo<string>("13:01:02", "14:06:01"),
+                valueDrb1: new LocusInfo<string>("04:05:01:01", "08:02:04")
+            );
 
             public PhenotypeInfo<string> SixLocus_SingleExpressingAlleles => new PhenotypeInfoBuilder<string>(ThreeLocus_SingleExpressingAlleles)
                 .WithDataAt(Locus.C, LocusPosition.One, "03:02:01")
@@ -77,33 +77,33 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData
                 .Build();
 
             public PhenotypeInfo<string> SixLocus_ExpressingAlleles_WithTruncatedNames => new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>("03:02", "11:01"),
-                B = new LocusInfo<string>("13:01", "14:06"),
-                C = new LocusInfo<string>("03:02", "04:42"),
-                Dpb1 = new LocusInfo<string>("39:01", "124:01"),
-                Dqb1 = new LocusInfo<string>("04:02", "05:01"),
-                Drb1 = new LocusInfo<string>("04:05", "08:02")
-            };
+            (
+                valueA: new LocusInfo<string>("03:02", "11:01"),
+                valueB: new LocusInfo<string>("13:01", "14:06"),
+                valueC: new LocusInfo<string>("03:02", "04:42"),
+                valueDpb1: new LocusInfo<string>("39:01", "124:01"),
+                valueDqb1: new LocusInfo<string>("04:02", "05:01"),
+                valueDrb1: new LocusInfo<string>("04:05", "08:02")
+            );
 
             public PhenotypeInfo<string> SixLocus_XxCodes => new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>("03:XX", "11:XX"),
-                B = new LocusInfo<string>("13:XX", "14:XX"),
-                C = new LocusInfo<string>("03:XX", "04:XX"),
-                Dpb1 = new LocusInfo<string>("39:XX", "124:XX"),
-                Dqb1 = new LocusInfo<string>("04:XX", "05:XX"),
-                Drb1 = new LocusInfo<string>("04:XX", "08:XX")
-            };
+            (
+                valueA: new LocusInfo<string>("03:XX", "11:XX"),
+                valueB: new LocusInfo<string>("13:XX", "14:XX"),
+                valueC: new LocusInfo<string>("03:XX", "04:XX"),
+                valueDpb1: new LocusInfo<string>("39:XX", "124:XX"),
+                valueDqb1: new LocusInfo<string>("04:XX", "05:XX"),
+                valueDrb1: new LocusInfo<string>("04:XX", "08:XX")
+            );
 
             public PhenotypeInfo<string> FiveLocus_Serologies => new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>("3", "11"),
-                B = new LocusInfo<string>("13", "14"),
-                C = new LocusInfo<string>("3", "4"),
-                Dqb1 = new LocusInfo<string>("4", "5"),
-                Drb1 = new LocusInfo<string>("4", "8")
-            };
+            (
+                valueA: new LocusInfo<string>("3", "11"),
+                valueB: new LocusInfo<string>("13", "14"),
+                valueC: new LocusInfo<string>("3", "4"),
+                valueDqb1: new LocusInfo<string>("4", "5"),
+                valueDrb1: new LocusInfo<string>("4", "8")
+            );
         }
     }
 }

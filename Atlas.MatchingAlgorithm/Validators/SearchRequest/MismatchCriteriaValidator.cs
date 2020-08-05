@@ -1,4 +1,5 @@
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using FluentValidation;
 
@@ -22,7 +23,7 @@ namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
         }
     }
 
-    internal class LocusMismatchCriteriaValidator : AbstractValidator<LociInfo<int?>>
+    internal class LocusMismatchCriteriaValidator : AbstractValidator<LociInfoTransfer<int?>>
     {
         private const int MinimumMismatchCount = 0;
         private const int MaximumLocusMismatchCount = 2;

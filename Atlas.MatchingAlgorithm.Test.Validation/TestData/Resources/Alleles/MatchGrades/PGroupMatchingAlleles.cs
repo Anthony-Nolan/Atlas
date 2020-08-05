@@ -21,18 +21,18 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
     public static class PGroupMatchingAlleles
     {
         public static readonly LociInfo<AlleleTestData> PatientAlleles = new LociInfo<AlleleTestData>
-        {
-            A = new AlleleTestData {AlleleName = "*11:107", PGroup = "11:01P", GGroup = "11:107"},
-            B = new AlleleTestData {AlleleName = "*27:112", PGroup = "27:04P", GGroup = "27:112"},
-            C = new AlleleTestData {AlleleName = "*02:10:02", PGroup = "02:02P", GGroup = "02:10:02"},
-            Dpb1 = new AlleleTestData {AlleleName = "*677:01", PGroup = "04:01P", GGroup = "677:01"},
-            Dqb1 = new AlleleTestData {AlleleName = "*05:43:01", PGroup = "05:03P", GGroup = "05:43:01"},
-            Drb1 = new AlleleTestData {AlleleName = "*13:238", PGroup = "13:01P", GGroup = "13:238"}
-        };
+        (
+            valueA: new AlleleTestData {AlleleName = "*11:107", PGroup = "11:01P", GGroup = "11:107"},
+            valueB: new AlleleTestData {AlleleName = "*27:112", PGroup = "27:04P", GGroup = "27:112"},
+            valueC: new AlleleTestData {AlleleName = "*02:10:02", PGroup = "02:02P", GGroup = "02:10:02"},
+            valueDpb1: new AlleleTestData {AlleleName = "*677:01", PGroup = "04:01P", GGroup = "677:01"},
+            valueDqb1: new AlleleTestData {AlleleName = "*05:43:01", PGroup = "05:03P", GGroup = "05:43:01"},
+            valueDrb1: new AlleleTestData {AlleleName = "*13:238", PGroup = "13:01P", GGroup = "13:238"}
+        );
 
         public static readonly LociInfo<List<AlleleTestData>> DonorAlleles = new LociInfo<List<AlleleTestData>>
-        {
-            A = new List<AlleleTestData>
+        (
+            valueA: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*11:01:01:01", PGroup = "11:01P", GGroup = "11:01:01G"},
                 new AlleleTestData {AlleleName = "*11:01:01:02", PGroup = "11:01P", GGroup = "11:01:01G"},
@@ -150,7 +150,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                 new AlleleTestData {AlleleName = "*11:279", PGroup = "11:01P", GGroup = "11:01:01G"},
                 new AlleleTestData {AlleleName = "*11:280", PGroup = "11:01P", GGroup = "11:01:01G"}
             },
-            B = new List<AlleleTestData>
+            valueB: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*27:04:01", PGroup = "27:04P", GGroup = "27:04:01G"},
                 new AlleleTestData {AlleleName = "*27:04:02", PGroup = "27:04P", GGroup = "27:04:01G"},
@@ -161,7 +161,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                 new AlleleTestData {AlleleName = "*27:68", PGroup = "27:04P", GGroup = "27:04:01G"},
                 new AlleleTestData {AlleleName = "*27:69", PGroup = "27:04P", GGroup = "27:04:01G"},
             },
-            C = new List<AlleleTestData>
+            valueC: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*02:02:01", PGroup = "02:02P", GGroup = "02:02:02G"},
                 new AlleleTestData {AlleleName = "*02:02:02:01", PGroup = "02:02P", GGroup = "02:02:02G"},
@@ -222,7 +222,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                 new AlleleTestData {AlleleName = "*02:106", PGroup = "02:02P", GGroup = "02:02:02G"},
                 new AlleleTestData {AlleleName = "*02:138", PGroup = "02:02P", GGroup = "02:02:02G"},
             },
-            Dpb1 = new List<AlleleTestData>
+            valueDpb1: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*04:01:01:01", PGroup = "04:01P", GGroup = "04:02:01G"},
                 new AlleleTestData {AlleleName = "*04:01:01:02", PGroup = "04:01P", GGroup = "04:02:01G"},
@@ -301,7 +301,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                 new AlleleTestData {AlleleName = "*699:01", PGroup = "04:01P", GGroup = "04:02:01G"},
                 new AlleleTestData {AlleleName = "*702:01", PGroup = "04:01P", GGroup = "04:02:01G"},
             },
-            Dqb1 = new List<AlleleTestData>
+            valueDqb1: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*05:03:01:01", PGroup = "05:03P", GGroup = "05:03:01G"},
                 new AlleleTestData {AlleleName = "*05:03:01:02", PGroup = "05:03P", GGroup = "05:03:01G"},
@@ -332,7 +332,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                 new AlleleTestData {AlleleName = "*05:149", PGroup = "05:03P", GGroup = "05:03:01G"},
 //                new AlleleTestData {AlleleName = "*05:161", PGroup = "05:03P", GGroup = "05:03:01G"},
             },
-            Drb1 = new List<AlleleTestData>
+            valueDrb1: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*13:01:01:01", PGroup = "13:01P", GGroup = "13:01:01G"},
                 new AlleleTestData {AlleleName = "*13:01:01:02", PGroup = "13:01P", GGroup = "13:01:01G"},
@@ -364,7 +364,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                 new AlleleTestData {AlleleName = "*13:251", PGroup = "13:01P", GGroup = "13:01:01G"},
                 new AlleleTestData {AlleleName = "*13:256", PGroup = "13:01P", GGroup = "13:01:01G"},
 //                new AlleleTestData {AlleleName = "*13:261", PGroup = "13:01P", GGroup = "13:01:01G"},
-            },
-        };
+            }
+        );
     }
 }

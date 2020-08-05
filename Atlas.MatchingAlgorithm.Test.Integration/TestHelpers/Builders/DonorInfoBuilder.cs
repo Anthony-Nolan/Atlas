@@ -23,11 +23,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
                 DonorId = donorId ?? DonorIdGenerator.NextId(),
                 // Default hla chosen to be valid hla
                 HlaNames = new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>("*01:01", "*01:01"),
-                    B = new LocusInfo<string>("*18:01:01", "*18:01:01"),
-                    Drb1 = new LocusInfo<string>("*04:01", "*04:01")
-                }
+                (
+                    valueA: new LocusInfo<string>("*01:01", "*01:01"),
+                    valueB: new LocusInfo<string>("*18:01:01", "*18:01:01"),
+                    valueDrb1: new LocusInfo<string>("*04:01", "*04:01")
+                )
             };
         }
 
@@ -38,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 
         internal DonorInfoBuilder WithHlaAtLocus(Locus locus, LocusPosition position, string hla)
         {
-            donorInfo.HlaNames.SetPosition(locus, position, hla);
+            donorInfo.HlaNames = donorInfo.HlaNames.SetPosition(locus, position, hla);
             return this;
         }
 

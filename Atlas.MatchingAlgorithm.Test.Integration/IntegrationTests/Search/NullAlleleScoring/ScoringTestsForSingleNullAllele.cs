@@ -149,16 +149,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var originalHlaPhenotype = new SampleTestHlas.HeterozygousSet1().SixLocus_SingleExpressingAlleles;
 
-            originalNullAlleleAtOnePositionPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla);
-            originalNullAlleleAtOnePositionPhenotype
+            originalNullAlleleAtOnePositionPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla)
                 .SetPosition(LocusUnderTest, PositionUnderTest, OriginalNullAllele);
 
-            differentNullAlleleAtOnePositionPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla);
-            differentNullAlleleAtOnePositionPhenotype
+            differentNullAlleleAtOnePositionPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla)
                 .SetPosition(LocusUnderTest, PositionUnderTest, DifferentNullAllele);
 
-            homozygousByTypingAtOneLocusPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla);
-            homozygousByTypingAtOneLocusPhenotype
+            homozygousByTypingAtOneLocusPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla)
                 .SetLocus(LocusUnderTest, originalHlaPhenotype.GetPosition(LocusUnderTest, OtherPosition));
         }
 
@@ -170,8 +167,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
 
         private static int SetUpTestDonor(PhenotypeInfo<string> donorPhenotype)
         {
-            var donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>().BuildForActiveHlaNomenclatureVersion();
-            var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo { HlaNames = donorPhenotype }).Result.MatchingHla;
+            var donorHlaExpander = DependencyInjection.DependencyInjection.Provider.GetService<IDonorHlaExpanderFactory>()
+                .BuildForActiveHlaNomenclatureVersion();
+            var matchingHlaPhenotype = donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo {HlaNames = donorPhenotype}).Result.MatchingHla;
 
             var testDonor = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(matchingHlaPhenotype)
@@ -180,7 +178,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var repositoryFactory =
                 DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
             var donorRepository = repositoryFactory.GetDonorUpdateRepository();
-            donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] { testDonor }, false).Wait();
+            donorRepository.InsertBatchOfDonorsWithExpandedHla(new[] {testDonor}, false).Wait();
 
             return testDonor.DonorId;
         }

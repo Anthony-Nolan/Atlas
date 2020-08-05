@@ -18,8 +18,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.TGS
     public static class FourFieldAlleles
     {
         public static readonly PhenotypeInfo<List<AlleleTestData>> Alleles = new PhenotypeInfo<List<AlleleTestData>>
-        {
-            A = new LocusInfo<List<AlleleTestData>>
+        (
+            valueA: new LocusInfo<List<AlleleTestData>>
             (
                 new List<AlleleTestData>
                 {
@@ -248,7 +248,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.TGS
                         {AlleleName = "*80:01:01:02", PGroup = "80:01P", GGroup = "80:01:01G", NmdpCode = "*80:AB", Serology = "80"},
                 }
             ),
-            B = new LocusInfo<List<AlleleTestData>>
+            valueB: new LocusInfo<List<AlleleTestData>>
             (
                 new List<AlleleTestData>
                 {
@@ -523,7 +523,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.TGS
                         {AlleleName = "*59:01:01:02", PGroup = "59:01P", GGroup = "59:01:01G", NmdpCode = "*59:AE", Serology = "59"},
                 }
             ),
-            C = new LocusInfo<List<AlleleTestData>>
+            valueC: new LocusInfo<List<AlleleTestData>>
             (
                 new List<AlleleTestData>
                 {
@@ -658,7 +658,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.TGS
             ),
             // Note that none of the DPB1 TGS 4-field alleles have a serology association.
             // DPB1 cannot be tested at this resolution
-            Dpb1 = new LocusInfo<List<AlleleTestData>>
+            valueDpb1: new LocusInfo<List<AlleleTestData>>
             (
                 new List<AlleleTestData>
                 {
@@ -716,7 +716,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.TGS
                         {AlleleName = "*17:01:01:01", PGroup = "17:01P", GGroup = "17:01:01G", NmdpCode = "*17:ANZX"},
                 }
             ),
-            Dqb1 = new LocusInfo<List<AlleleTestData>>
+            valueDqb1: new LocusInfo<List<AlleleTestData>>
             (
                 new List<AlleleTestData>
                 {
@@ -773,7 +773,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.TGS
                         {AlleleName = "*06:02:01:01", PGroup = "06:02P", GGroup = "06:02:01G", NmdpCode = "*06:CWV", Serology = "6"},
                 }
             ),
-            Drb1 = new LocusInfo<List<AlleleTestData>>
+            valueDrb1: new LocusInfo<List<AlleleTestData>>
             (
                 new List<AlleleTestData>
                 {
@@ -818,6 +818,6 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.TGS
                     new AlleleTestData {AlleleName = "*15:03:01:02", PGroup = "15:03P", GGroup = "15:03:01G", NmdpCode = "*15:ADF", Serology = "15"},
                 }
             )
-        };
+        );
     }
 }

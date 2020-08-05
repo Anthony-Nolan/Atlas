@@ -1,4 +1,5 @@
 ﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 
 namespace Atlas.MatchingAlgorithm.Client.Models.SearchRequests
 {
@@ -15,6 +16,6 @@ namespace Atlas.MatchingAlgorithm.Client.Models.SearchRequests
         /// A, B, DRB1 required.
         /// Others optional. Null = any number of mismatches allowed  
         /// </summary>
-        public LociInfo<int?> LocusMismatchCounts { get; set; }
+        public LociInfoTransfer<int?> LocusMismatchCounts { get; set; }
     }
 }

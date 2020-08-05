@@ -46,19 +46,19 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             }
 
             var donorHla = new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>("*02:01:84", "*01:01"),
-                B = new LocusInfo<string>("*15:01", "*15:01"),
-                Dpb1 = new LocusInfo<string>(donorDpb1, donorDpb1),
-                Drb1 = new LocusInfo<string>("*15:03", "*15:03")
-            };
+            (
+                valueA: new LocusInfo<string>("*02:01:84", "*01:01"),
+                valueB: new LocusInfo<string>("*15:01", "*15:01"),
+                valueDpb1: new LocusInfo<string>(donorDpb1, donorDpb1),
+                valueDrb1: new LocusInfo<string>("*15:03", "*15:03")
+            );
             var patientHla = new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>(donorHla.A.Position1, donorHla.A.Position2),
-                B = new LocusInfo<string>(donorHla.B.Position1, donorHla.B.Position2),
-                Dpb1 = new LocusInfo<string>(patientDpb1, patientDpb1),
-                Drb1 = new LocusInfo<string>(donorHla.Drb1.Position1, donorHla.Drb1.Position2)
-            };
+            (
+                valueA: new LocusInfo<string>(donorHla.A.Position1, donorHla.A.Position2),
+                valueB: new LocusInfo<string>(donorHla.B.Position1, donorHla.B.Position2),
+                valueDpb1: new LocusInfo<string>(patientDpb1, patientDpb1),
+                valueDrb1: new LocusInfo<string>(donorHla.Drb1.Position1, donorHla.Drb1.Position2)
+            );
 
             await SpecificTestDataSteps.GivenDonorAndPatientHla(donorHla, patientHla, scenarioContext);
         }

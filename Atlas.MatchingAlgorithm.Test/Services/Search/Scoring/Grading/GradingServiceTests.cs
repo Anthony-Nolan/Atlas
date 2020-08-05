@@ -1272,15 +1272,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
                     .Build())
                 .Build();
 
-            var patientLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
-            patientLookupResults.SetLocus(Locus.A, singleAlleleAtA);
-            patientLookupResults.SetLocus(Locus.B, consolidatedMolecularAtB);
-            patientLookupResults.SetLocus(Locus.Drb1, serologyAtDrb1);
+            var patientLookupResults = new PhenotypeInfo<IHlaScoringMetadata>()
+                .SetLocus(Locus.A, singleAlleleAtA)
+                .SetLocus(Locus.B, consolidatedMolecularAtB)
+                .SetLocus(Locus.Drb1, serologyAtDrb1);
 
-            var donorLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
-            donorLookupResults.SetLocus(Locus.A, singleAlleleAtA);
-            donorLookupResults.SetLocus(Locus.B, consolidatedMolecularAtB);
-            donorLookupResults.SetLocus(Locus.Drb1, serologyAtDrb1);
+            var donorLookupResults = new PhenotypeInfo<IHlaScoringMetadata>()
+                .SetLocus(Locus.A, singleAlleleAtA)
+                .SetLocus(Locus.B, consolidatedMolecularAtB)
+                .SetLocus(Locus.Drb1, serologyAtDrb1);
 
             var actualGradingResults = gradingService.CalculateGrades(patientLookupResults, donorLookupResults);
 
@@ -1304,11 +1304,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
             IHlaScoringMetadata positionOneResult,
             IHlaScoringMetadata positionTwoResult)
         {
-            var donorLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
-            donorLookupResults.SetPosition(MatchedLocus, LocusPosition.One, positionOneResult);
-            donorLookupResults.SetPosition(MatchedLocus, LocusPosition.Two, positionTwoResult);
-
-            return donorLookupResults;
+            return new PhenotypeInfo<IHlaScoringMetadata>()
+                .SetPosition(MatchedLocus, LocusPosition.One, positionOneResult)
+                .SetPosition(MatchedLocus, LocusPosition.Two, positionTwoResult);
         }
     }
 }

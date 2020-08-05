@@ -181,13 +181,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                     new HaplotypeFrequency
                     {
                         Hla = new LociInfo<string>
-                        {
-                            A = "01:01:01G",
-                            B = "13:01:01G",
-                            C = "04:01:01G",
-                            Dqb1 = "06:02:01G",
-                            Drb1 = "03:07:01G",
-                        },
+                        (
+                            valueA: "01:01:01G",
+                            valueB: "13:01:01G",
+                            valueC: "04:01:01G",
+                            valueDqb1: "06:02:01G",
+                            valueDrb1: "03:07:01G"
+                        ),
                         Frequency = 0.5m
                     }
                 })
@@ -200,26 +200,26 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
 
             importedFrequency.TypingCategory.Should().Be(HaplotypeTypingCategory.PGroup);
             importedFrequency.Hla.Should().BeEquivalentTo(new LociInfo<string>
-            {
-                A = "01:01P",
-                B = "13:01P",
-                C = "04:01P",
-                Dqb1 = "06:02P",
-                Drb1 = "03:07P"
-            });
+            (
+                valueA: "01:01P",
+                valueB: "13:01P",
+                valueC: "04:01P",
+                valueDqb1: "06:02P",
+                valueDrb1: "03:07P"
+            ));
         }
 
         [Test]
         public async Task Import_ForHaplotypeWithoutNullAlleles_WhenPGroupConversionDisabled_DoesNotConvertToPGroups()
         {
             var hla = new LociInfo<string>
-            {
-                A = "01:01:01G",
-                B = "13:01:01G",
-                C = "04:01:01G",
-                Dqb1 = "06:02:01G",
-                Drb1 = "03:07:01G",
-            };
+            (
+                valueA: "01:01:01G",
+                valueB: "13:01:01G",
+                valueC: "04:01:01G",
+                valueDqb1: "06:02:01G",
+                valueDrb1: "03:07:01G"
+            );
             using var file = FrequencySetFileBuilder
                 .New(null, null)
                 .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
@@ -245,13 +245,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         public async Task Import_ForHaplotypeWithNullAllele_DoesNotConvertToPGroups()
         {
             var hla = new LociInfo<string>
-            {
-                A = "01:01:01G",
-                B = "13:63N",
-                C = "04:01:01G",
-                Dqb1 = "06:02:01G",
-                Drb1 = "03:07:01G",
-            };
+            (
+                valueA: "01:01:01G",
+                valueB: "13:63N",
+                valueC: "04:01:01G",
+                valueDqb1: "06:02:01G",
+                valueDrb1: "03:07:01G"
+            );
             using var file = FrequencySetFileBuilder
                 .New(null, null)
                 .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
@@ -318,13 +318,13 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
 
             importedFrequency.TypingCategory.Should().Be(HaplotypeTypingCategory.PGroup);
             importedFrequency.Hla.Should().BeEquivalentTo(new LociInfo<string>
-            {
-                A = "01:01P",
-                B = "13:01P",
-                C = "04:01P",
-                Dqb1 = "06:02P",
-                Drb1 = "03:02P"
-            });
+            (
+                valueA: "01:01P",
+                valueB: "13:01P",
+                valueC: "04:01P",
+                valueDqb1: "06:02P",
+                valueDrb1: "03:02P"
+            ));
             importedFrequency.Frequency.Should().Be(0.5432001m);
         }
     }

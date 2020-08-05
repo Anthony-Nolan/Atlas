@@ -7,7 +7,7 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 {
     public class MatchCountsBuilder
     {
-        private readonly LociInfo<int?> matchCounts;
+        private LociInfo<int?> matchCounts;
 
         public MatchCountsBuilder()
         {
@@ -20,7 +20,7 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 
             foreach (var locus in loci)
             {
-                matchCounts.SetLocus(locus, 2);
+                matchCounts = matchCounts.SetLocus(locus, 2);
             }
 
             return this;
@@ -30,7 +30,7 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
         {
             foreach (var locus in allowedLoci)
             {
-                matchCounts.SetLocus(locus, 2);
+                matchCounts = matchCounts.SetLocus(locus, 2);
             }
 
             return this;
@@ -42,7 +42,7 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 
             foreach (var locus in loci)
             {
-                matchCounts.SetLocus(locus, 0);
+                matchCounts = matchCounts.SetLocus(locus, 0);
             }
 
             return this;
@@ -50,7 +50,7 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 
         private MatchCountsBuilder WithMatchCountAt(Locus locus, int mismatchCount)
         {
-            matchCounts.SetLocus(locus, mismatchCount);
+            matchCounts = matchCounts.SetLocus(locus, mismatchCount);
             return this;
         }
 

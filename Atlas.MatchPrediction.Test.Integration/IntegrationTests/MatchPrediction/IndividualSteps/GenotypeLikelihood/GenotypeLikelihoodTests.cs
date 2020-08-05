@@ -126,8 +126,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             foreach (var homozygousLocus in homozygousLoci)
             {
-                genotype.SetPosition(homozygousLocus, LocusPosition.Two,
-                    genotype.GetPosition(homozygousLocus, LocusPosition.One));
+                genotype = genotype.SetPosition(homozygousLocus, LocusPosition.Two, genotype.GetPosition(homozygousLocus, LocusPosition.One));
             }
 
             var likelihoodResponse = await likelihoodService.CalculateLikelihood(genotype, haplotypeFrequencySet, allLoci);

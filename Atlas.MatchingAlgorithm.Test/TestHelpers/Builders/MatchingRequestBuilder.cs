@@ -13,6 +13,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
     {
         private readonly MatchingRequest matchingRequest;
         private PhenotypeInfo<string> searchHla;
+        private LociInfo<int?> locusMismatchCounts;
 
         public MatchingRequestBuilder()
         {
@@ -21,15 +22,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
                 SearchType = DonorType.Adult,
                 MatchCriteria = new MismatchCriteria
                 {
-                    DonorMismatchCount = 0,
-                    LocusMismatchCounts = new LociInfo<int?>
-                    {
-                        A = 0,
-                        B = 0,
-                        Drb1 = 0,
-                        C = null,
-                        Dqb1 = null
-                    }
+                    DonorMismatchCount = 0
                 },
                 ScoringCriteria = new ScoringCriteria()
                 {
@@ -39,11 +32,13 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             };
 
             searchHla = new PhenotypeInfo<string>
-            {
-                A = new LocusInfo<string>("default-hla-a"),
-                B = new LocusInfo<string>("default-hla-b"),
-                Drb1 = new LocusInfo<string>("default-hla-drb1")
-            };
+            (
+                valueA: new LocusInfo<string>("default-hla-a"),
+                valueB: new LocusInfo<string>("default-hla-b"),
+                valueDrb1: new LocusInfo<string>("default-hla-drb1")
+            );
+
+            locusMismatchCounts = new LociInfo<int?>(valueA: 0, valueB: 0, valueDrb1: 0, valueC: null, valueDqb1: null);
         }
 
         #region Match Criteria
@@ -54,13 +49,14 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             return this;
         }
 
-        public MatchingRequestBuilder WithLocusMismatchCount(Locus locus, int locusMismatchCount)
+        public MatchingRequestBuilder WithLocusMismatchCount(Locus locus, int? locusMismatchCount)
         {
             if (locus == Locus.Dpb1)
             {
                 throw new NotImplementedException();
             }
-            matchingRequest.MatchCriteria.LocusMismatchCounts.SetLocus(locus, locusMismatchCount);
+
+            locusMismatchCounts = locusMismatchCounts.SetLocus(locus, locusMismatchCount);
             return this;
         }
 
@@ -91,7 +87,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 
         private MatchingRequestBuilder WithNullLocusSearchHla(Locus locus, LocusPosition position)
         {
-            searchHla.SetPosition(locus, position, null);
+            searchHla = searchHla.SetPosition(locus, position, null);
             return this;
         }
 
@@ -115,16 +111,16 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 
             // If locus is specified, but currently null, initialise that locus. 
             searchHla = new PhenotypeInfo<string>(searchHla.Map((l, hla) =>
-            {
-                if (l == locus)
                 {
-                    return hla ?? new LocusInfo<string>();
-                }
+                    if (l == locus)
+                    {
+                        return hla ?? new LocusInfo<string>();
+                    }
 
-                return hla;
-            }));
+                    return hla;
+                }))
+                .SetPosition(locus, position, hlaString);
 
-            searchHla.SetPosition(locus, position, hlaString);
             return this;
         }
 
@@ -145,6 +141,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         public MatchingRequest Build()
         {
             matchingRequest.SearchHlaData = searchHla.ToPhenotypeInfoTransfer();
+            matchingRequest.MatchCriteria.LocusMismatchCounts = locusMismatchCounts.ToLociInfoTransfer();
             return matchingRequest;
         }
     }

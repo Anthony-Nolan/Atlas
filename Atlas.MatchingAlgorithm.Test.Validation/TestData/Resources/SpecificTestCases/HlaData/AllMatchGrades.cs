@@ -11,75 +11,75 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.SpecificTes
     public class AllMatchGrades
     {
         public static PhenotypeInfo<string> PatientHla { get; } = new LociInfo<string>
-        {
-            A = "*11:01:01:01",
-            B = "*35:01:01:01",
-            C = "*02:02:02:02",
-            Dpb1 = "*04:01:01:01",
-            Drb1 = "*13:01:01:01",
-        }.ToPhenotypeInfo((l, hla) => hla);
+        (
+            valueA: "*11:01:01:01",
+            valueB: "*35:01:01:01",
+            valueC: "*02:02:02:02",
+            valueDpb1: "*04:01:01:01",
+            valueDrb1: "*13:01:01:01"
+        ).ToPhenotypeInfo((l, hla) => hla);
         
         public static IEnumerable<PhenotypeInfo<string>> DonorHlaSets { get; } = new List<LociInfo<string>>
         {
             // gDNA match
             new LociInfo<string>
-            {
-                A = "*11:01:01:01",
-                B = "*35:01:01:01",
-                C = "*02:02:02:02",
-                Dpb1 = "*04:01:01:01",
-                Drb1 = "*13:01:01:01",
-            },
+            (
+                valueA: "*11:01:01:01",
+                valueB: "*35:01:01:01",
+                valueC: "*02:02:02:02",
+                valueDpb1: "*04:01:01:01",
+                valueDrb1: "*13:01:01:01"
+            ),
             
             // cDNA match
             new LociInfo<string>
-            {
-                A = "*11:01",
-                B = "*35:01:01:02",
-                C = "*02:02",
-                Dpb1 = "*04:01",
-                Drb1 = "*13:01",
-            },
+            (
+                valueA: "*11:01",
+                valueB: "*35:01:01:02",
+                valueC: "*02:02",
+                valueDpb1: "*04:01",
+                valueDrb1: "*13:01"
+            ),
             
             // protein match
             new LociInfo<string>
-            {
-                A = "*11:01:75",
-                B = "*35:01:02",
-                C = "*02:02:01",
-                Dpb1 = "*04:01:02",
-                Drb1 = "*13:01:22",
-            },
+            (
+                valueA: "*11:01:75",
+                valueB: "*35:01:02",
+                valueC: "*02:02:01",
+                valueDpb1: "*04:01:02",
+                valueDrb1: "*13:01:22"
+            ),
             
             // g-group match
             new LociInfo<string>
-            {
-                A = "*11:86",
-                B = "*35:336",
-                C = "*02:69",
-                Dpb1 = "*415:01",
-                Drb1 = "*13:215",
-            },
+            (
+                valueA: "*11:86",
+                valueB: "*35:336",
+                valueC: "*02:69",
+                valueDpb1: "*415:01",
+                valueDrb1: "*13:215"
+            ),
             
             // p-group match
             new LociInfo<string>
-            {
-                A = "*11:107",
-                B = "*35:330",
-                C = "*02:10:02",
-                Dpb1 = "*677:01",
-                Drb1 = "*13:238",
-            },
+            (
+                valueA: "*11:107",
+                valueB: "*35:330",
+                valueC: "*02:10:02",
+                valueDpb1: "*677:01",
+                valueDrb1: "*13:238"
+            ),
             
             // serology match
             new LociInfo<string>
-            {
-                A = "11",
-                B = "35",
-                C = "2",
-                Dpb1 = "4",
-                Drb1 = "13",
-            },
+            (
+                valueA: "11",
+                valueB: "35",
+                valueC: "2",
+                valueDpb1: "4",
+                valueDrb1: "13"
+            ),
         }.Select(lociInfo => lociInfo.ToPhenotypeInfo((l, hla) => hla));
     }
 }

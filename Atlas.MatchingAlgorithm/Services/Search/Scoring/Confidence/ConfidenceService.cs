@@ -50,8 +50,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence
                     .OrderByDescending(c => (int) c.Position1 + (int) c.Position2)
                     .First();
 
-                confidenceResults.SetPosition(locus, LocusPosition.One, selectedConfidences.Position1);
-                confidenceResults.SetPosition(locus, LocusPosition.Two, selectedConfidences.Position2);
+                confidenceResults = confidenceResults
+                    .SetPosition(locus, LocusPosition.One, selectedConfidences.Position1)
+                    .SetPosition(locus, LocusPosition.Two, selectedConfidences.Position2);
             });
 
             return confidenceResults;

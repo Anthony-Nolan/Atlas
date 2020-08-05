@@ -28,7 +28,7 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
             var initial = new LociInfo<string>();
             foreach (var locus in supportedLoci)
             {
-                initial.SetLocus(locus, $"TEST-{locus.ToString()}");
+                initial = initial.SetLocus(locus, $"TEST-{locus.ToString()}");
             }
 
             var mapped = initial.Map(Mapping);
@@ -52,7 +52,7 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
             var initial = new LociInfo<string>();
             foreach (var locus in supportedLoci)
             {
-                initial.SetLocus(locus, $"TEST-{locus.ToString()}");
+                initial = initial.SetLocus(locus, $"TEST-{locus.ToString()}");
             }
 
             var mapped = initial.Map(Mapping);
@@ -68,15 +68,7 @@ namespace Atlas.Common.Test.Core.PhenotypeInfo
         [Test]
         public void Reduce_ReducesAllLoci()
         {
-            var data = new LociInfo<int>
-            {
-                A = 1,
-                B = 2,
-                C = 3,
-                Dpb1 = 4,
-                Dqb1 = 5,
-                Drb1 = 6
-            };
+            var data = new LociInfo<int>(1, 2, 3, 4, 5, 6);
 
             var reducedData = data.Reduce((locus, value, accumulator) => accumulator + value, 0);
 

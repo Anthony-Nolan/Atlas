@@ -19,26 +19,26 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
         {
             foreach (var locus in EnumerateValues<Locus>())
             {
-                criteria.MatchingTypingResolutions.SetLocus(locus, resolution);
+                criteria.MatchingTypingResolutions = criteria.MatchingTypingResolutions.SetLocus(locus, resolution);
             }
             return this;
         }
 
         public DatabaseDonorSelectionCriteriaBuilder WithTypingResolutionAtLocus(Locus locus, HlaTypingResolution resolution)
         {
-            criteria.MatchingTypingResolutions.SetLocus(locus, resolution);
+            criteria.MatchingTypingResolutions = criteria.MatchingTypingResolutions.SetLocus(locus, resolution);
             return this;
         }
 
         public DatabaseDonorSelectionCriteriaBuilder WithNonGenotypeAlleleAtLocus(Locus locus)
         {
-            criteria.ShouldMatchGenotype.SetLocus(locus, false);
+            criteria.ShouldMatchGenotype = criteria.ShouldMatchGenotype.SetLocus(locus, false);
             return this;
         }
 
         public DatabaseDonorSelectionCriteriaBuilder WithNonGenotypeAlleleAtPosition(Locus locus, LocusPosition position)
         {
-            criteria.ShouldMatchGenotype.SetPosition(locus, position, false);
+            criteria.ShouldMatchGenotype = criteria.ShouldMatchGenotype.SetPosition(locus, position, false);
             return this;
         }
 
@@ -51,7 +51,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Builders.Criteria
         {
             foreach (var resolution in TestCaseTypingResolutions.DifferentLociResolutions)
             {
-                criteria.MatchingTypingResolutions.SetLocus(resolution.Key, resolution.Value);
+                criteria.MatchingTypingResolutions = criteria.MatchingTypingResolutions.SetLocus(resolution.Key, resolution.Value);
             }
 
             return this;

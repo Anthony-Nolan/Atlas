@@ -55,16 +55,17 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
 
             var patientLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
             var patientLookupResultAtLocus1 = new HlaScoringMetadataBuilder().Build();
-            patientLookupResults.SetPosition(locus1, Position, patientLookupResultAtLocus1);
-            patientLookupResults.SetPosition(locus2, Position, null);
+            patientLookupResults = patientLookupResults.SetPosition(locus1, Position, patientLookupResultAtLocus1);
+            patientLookupResults = patientLookupResults.SetPosition(locus2, Position, null);
 
             var donorLookupResults = new PhenotypeInfo<IHlaScoringMetadata>();
             var donorLookupResultAtLocus1 = new HlaScoringMetadataBuilder().Build();
-            donorLookupResults.SetPosition(locus1, Position, donorLookupResultAtLocus1);
-            donorLookupResults.SetPosition(locus2, Position, null);
+            donorLookupResults = donorLookupResults.SetPosition(locus1, Position, donorLookupResultAtLocus1);
+            donorLookupResults = donorLookupResults.SetPosition(locus2, Position, null);
 
             var gradingResults = defaultGradingResults;
-            gradingResults.SetPosition(Locus, Position, new MatchGradeResult {Orientations = new List<MatchOrientation> {MatchOrientation.Direct}});
+            gradingResults = gradingResults.SetPosition(Locus, Position,
+                new MatchGradeResult {Orientations = new List<MatchOrientation> {MatchOrientation.Direct}});
 
             var confidences = confidenceService.CalculateMatchConfidences(patientLookupResults, donorLookupResults, gradingResults);
 
@@ -94,13 +95,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
                 .Build();
 
 
-            patientLookupResults.SetPosition(Locus, LocusPosition.One, patientLookupResultSingleAllele1);
-            patientLookupResults.SetPosition(Locus, LocusPosition.Two, patientLookupResultSingleAllele2);
-            donorLookupResults.SetPosition(Locus, LocusPosition.One, donorLookupResultSerology);
-            donorLookupResults.SetPosition(Locus, LocusPosition.Two, donorLookupResultSingleAllele);
+            patientLookupResults = patientLookupResults.SetPosition(Locus, LocusPosition.One, patientLookupResultSingleAllele1);
+            patientLookupResults = patientLookupResults.SetPosition(Locus, LocusPosition.Two, patientLookupResultSingleAllele2);
+            donorLookupResults = donorLookupResults.SetPosition(Locus, LocusPosition.One, donorLookupResultSerology);
+            donorLookupResults = donorLookupResults.SetPosition(Locus, LocusPosition.Two, donorLookupResultSingleAllele);
 
             var gradingResults = defaultGradingResults;
-            gradingResults.SetPosition(Locus, Position, new MatchGradeResult {Orientations = new List<MatchOrientation> {MatchOrientation.Cross}});
+            gradingResults = gradingResults.SetPosition(Locus, Position,
+                new MatchGradeResult {Orientations = new List<MatchOrientation> {MatchOrientation.Cross}});
 
             var confidences = confidenceService.CalculateMatchConfidences(patientLookupResults, donorLookupResults, gradingResults);
 
@@ -132,13 +134,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
                 .Build();
 
 
-            patientLookupResults.SetPosition(Locus, LocusPosition.One, patientLookupResultSingleAllele1);
-            patientLookupResults.SetPosition(Locus, LocusPosition.Two, patientLookupResultSingleAllele2);
-            donorLookupResults.SetPosition(Locus, LocusPosition.One, donorLookupResultSerology);
-            donorLookupResults.SetPosition(Locus, LocusPosition.Two, donorLookupResultSingleAllele);
+            patientLookupResults = patientLookupResults.SetPosition(Locus, LocusPosition.One, patientLookupResultSingleAllele1);
+            patientLookupResults = patientLookupResults.SetPosition(Locus, LocusPosition.Two, patientLookupResultSingleAllele2);
+            donorLookupResults = donorLookupResults.SetPosition(Locus, LocusPosition.One, donorLookupResultSerology);
+            donorLookupResults = donorLookupResults.SetPosition(Locus, LocusPosition.Two, donorLookupResultSingleAllele);
 
             var gradingResults = defaultGradingResults;
-            gradingResults.SetPosition(Locus, Position, new MatchGradeResult {Orientations = new List<MatchOrientation> {MatchOrientation.Direct}});
+            gradingResults = gradingResults.SetPosition(Locus, Position,
+                new MatchGradeResult {Orientations = new List<MatchOrientation> {MatchOrientation.Direct}});
 
             var confidences = confidenceService.CalculateMatchConfidences(patientLookupResults, donorLookupResults, gradingResults);
 
@@ -171,13 +174,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
                 .Build();
 
 
-            patientLookupResults.SetPosition(Locus, LocusPosition.One, patientLookupResultSingleAllele1);
-            patientLookupResults.SetPosition(Locus, LocusPosition.Two, patientLookupResultSingleAllele2);
-            donorLookupResults.SetPosition(Locus, LocusPosition.One, donorLookupResultSerology);
-            donorLookupResults.SetPosition(Locus, LocusPosition.Two, donorLookupResultSingleAllele);
+            patientLookupResults = patientLookupResults.SetPosition(Locus, LocusPosition.One, patientLookupResultSingleAllele1);
+            patientLookupResults = patientLookupResults.SetPosition(Locus, LocusPosition.Two, patientLookupResultSingleAllele2);
+            donorLookupResults = donorLookupResults.SetPosition(Locus, LocusPosition.One, donorLookupResultSerology);
+            donorLookupResults = donorLookupResults.SetPosition(Locus, LocusPosition.Two, donorLookupResultSingleAllele);
 
             var gradingResults = defaultGradingResults;
-            gradingResults.SetPosition(Locus, Position,
+            gradingResults = gradingResults.SetPosition(Locus, Position,
                 new MatchGradeResult {Orientations = new List<MatchOrientation> {MatchOrientation.Direct, MatchOrientation.Cross}});
 
             var confidences = confidenceService.CalculateMatchConfidences(patientLookupResults, donorLookupResults, gradingResults);
@@ -217,13 +220,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Confidence
                 .WithHlaScoringInfo(new SingleAlleleScoringInfoBuilder().WithMatchingSerologies(matchingSerologies).Build())
                 .Build();
 
-            patientLookupResults.SetPosition(Locus, LocusPosition.One, patientLookupResultSingleAllele);
-            patientLookupResults.SetPosition(Locus, LocusPosition.Two, patientLookupResultSerology);
-            donorLookupResults.SetPosition(Locus, LocusPosition.One, donorLookupResultSerology);
-            donorLookupResults.SetPosition(Locus, LocusPosition.Two, donorLookupResultSingleAllele);
+            patientLookupResults = patientLookupResults.SetPosition(Locus, LocusPosition.One, patientLookupResultSingleAllele);
+            patientLookupResults = patientLookupResults.SetPosition(Locus, LocusPosition.Two, patientLookupResultSerology);
+            donorLookupResults = donorLookupResults.SetPosition(Locus, LocusPosition.One, donorLookupResultSerology);
+            donorLookupResults = donorLookupResults.SetPosition(Locus, LocusPosition.Two, donorLookupResultSingleAllele);
 
             var gradingResults = defaultGradingResults;
-            gradingResults.SetPosition(Locus, Position,
+            gradingResults = gradingResults.SetPosition(Locus, Position,
                 new MatchGradeResult {Orientations = new List<MatchOrientation> {MatchOrientation.Direct, MatchOrientation.Cross}});
 
             var confidences = confidenceService.CalculateMatchConfidences(patientLookupResults, donorLookupResults, gradingResults);

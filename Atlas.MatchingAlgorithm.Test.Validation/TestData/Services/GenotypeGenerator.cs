@@ -39,16 +39,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
             foreach (var locus in EnumerateValues<Locus>())
             {
                 var randomTgsAllele1 = RandomTgsAllele(locus, LocusPosition.One, criteria);
-                hla.SetPosition(locus, LocusPosition.One, randomTgsAllele1);
+                hla = hla.SetPosition(locus, LocusPosition.One, randomTgsAllele1);
 
                 if (criteria.IsHomozygous.GetLocus(locus))
                 {
-                    hla.SetPosition(locus, LocusPosition.Two, randomTgsAllele1);
+                    hla = hla.SetPosition(locus, LocusPosition.Two, randomTgsAllele1);
                 }
                 else
                 {
                     var randomTgsAllele2 = RandomTgsAllele(locus, LocusPosition.Two, criteria);
-                    hla.SetPosition(locus, LocusPosition.Two, randomTgsAllele2);
+                    hla = hla.SetPosition(locus, LocusPosition.Two, randomTgsAllele2);
                 }
             }
 
@@ -76,9 +76,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services
                 selectedAllele,
                 new AlleleStringOptions
                 {
-                    NameString = AlleleStringAlleleSelector.GetAllelesForAlleleStringOfNames(dataset, selectedAllele, alleles, shouldContainDifferentAlleleGroups),
+                    NameString = AlleleStringAlleleSelector.GetAllelesForAlleleStringOfNames(dataset, selectedAllele, alleles,
+                        shouldContainDifferentAlleleGroups),
                     SubtypeString = AlleleStringAlleleSelector.GetAllelesForAlleleStringOfSubtypes(dataset, selectedAllele, alleles),
-                    NameStringWithMultiplePGroups = AlleleStringAlleleSelector.GetAllelesForAlleleStringOfNamesWithMultiplePGroups(selectedAllele, alleles),
+                    NameStringWithMultiplePGroups =
+                        AlleleStringAlleleSelector.GetAllelesForAlleleStringOfNamesWithMultiplePGroups(selectedAllele, alleles),
                     NameStringWithSinglePGroup = AlleleStringAlleleSelector.GetAllelesForAlleleStringOfNamesWithSinglePGroup(selectedAllele, alleles),
                 });
         }

@@ -24,8 +24,7 @@ namespace Atlas.Common.Test.Validation
         [TestCase(Locus.Drb1)]
         public void Validator_WhenMissingRequiredLocus_ShouldHaveValidationError(Locus locus)
         {
-            var phenotypeInfo = new PhenotypeInfo<string>("hla");
-            phenotypeInfo.SetLocus(locus, null);
+            var phenotypeInfo = new PhenotypeInfo<string>("hla").SetLocus(locus, null);
             
             validator.Invoking(v => v.ValidateAndThrow(phenotypeInfo.ToPhenotypeInfoTransfer())).Should().Throw<ValidationException>();
         }
@@ -35,8 +34,7 @@ namespace Atlas.Common.Test.Validation
         [TestCase(Locus.Dqb1)]
         public void Validator_WhenMissingOptionalLocus_ShouldNotHaveValidationError(Locus locus)
         {
-            var phenotypeInfo = new PhenotypeInfo<string>("hla");
-            phenotypeInfo.SetLocus(locus, null);
+            var phenotypeInfo = new PhenotypeInfo<string>("hla").SetLocus(locus, null);
             
             validator.Invoking(v => v.ValidateAndThrow(phenotypeInfo.ToPhenotypeInfoTransfer())).Should().NotThrow<ValidationException>();
         }

@@ -40,13 +40,13 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
                 from drb1 in allelesPerLocus.Drb1.Position1
                 from drb2 in allelesPerLocus.Drb1.Position2
                 select new PhenotypeInfo<string>
-                {
-                    A = new LocusInfo<string>(a1, a2),
-                    B = new LocusInfo<string>(b1, b2),
-                    C = new LocusInfo<string>(c1, c2),
-                    Dqb1 = new LocusInfo<string>(dqb1, dqb2),
-                    Drb1 = new LocusInfo<string>(drb1, drb2)
-                };
+                (
+                    valueA: new LocusInfo<string>(a1, a2),
+                    valueB: new LocusInfo<string>(b1, b2),
+                    valueC: new LocusInfo<string>(c1, c2),
+                    valueDqb1: new LocusInfo<string>(dqb1, dqb2),
+                    valueDrb1: new LocusInfo<string>(drb1, drb2)
+                );
         }
     }
 }

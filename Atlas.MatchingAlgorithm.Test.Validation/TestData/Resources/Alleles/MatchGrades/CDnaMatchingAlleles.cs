@@ -14,8 +14,8 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
     public static class CDnaMatchingAlleles
     {
         public static readonly LociInfo<List<AlleleTestData>> Alleles = new LociInfo<List<AlleleTestData>>
-        {
-            A = new List<AlleleTestData>
+        (
+            valueA: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*01:25"},
                 new AlleleTestData {AlleleName = "*01:128"},
@@ -88,7 +88,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                 new AlleleTestData {AlleleName = "*68:164"},
                 new AlleleTestData {AlleleName = "*74:11"},
             },
-            B = new List<AlleleTestData>
+            valueB: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*07:02:55"},
                 new AlleleTestData {AlleleName = "*07:14"},
@@ -175,7 +175,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                 new AlleleTestData {AlleleName = "*57:01:13"},
                 new AlleleTestData {AlleleName = "*78:02:01"},
             },
-            C = new List<AlleleTestData>
+            valueC: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*01:02:15"},
                 new AlleleTestData {AlleleName = "*01:02:22"},
@@ -235,7 +235,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                 new AlleleTestData {AlleleName = "*17:05"},
                 new AlleleTestData {AlleleName = "*17:39"},
             },
-            Dpb1 = new List<AlleleTestData>
+            valueDpb1: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*02:01:19"},
                 new AlleleTestData {AlleleName = "*02:01:23"},
@@ -274,7 +274,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                 new AlleleTestData {AlleleName = "*719:01"},
                 new AlleleTestData {AlleleName = "*720:01"},
             },
-            Dqb1 = new List<AlleleTestData>
+            valueDqb1: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*02:01:08"},
                 new AlleleTestData {AlleleName = "*02:01:25"},
@@ -376,7 +376,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                 new AlleleTestData {AlleleName = "*06:273"},
                 new AlleleTestData {AlleleName = "*06:274"},
             },
-            Drb1 = new List<AlleleTestData>
+            valueDrb1: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*01:01:31"},
                 new AlleleTestData {AlleleName = "*01:13"},
@@ -549,7 +549,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles.Mat
                 new AlleleTestData {AlleleName = "*16:07"},
                 new AlleleTestData {AlleleName = "*16:10:02"},
                 new AlleleTestData {AlleleName = "*16:48"},
-            },
-        };
+            }
+        );
     }
 }

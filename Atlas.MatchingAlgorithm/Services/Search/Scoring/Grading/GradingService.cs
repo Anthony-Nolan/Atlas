@@ -78,8 +78,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading
 
                 var locusGradeResults = GetLocusGradeResults(patientMetadataAtLocus, donorMetadataAtLocus);
 
-                gradeResults.SetPosition(locus, LocusPosition.One, locusGradeResults.Result1);
-                gradeResults.SetPosition(locus, LocusPosition.Two, locusGradeResults.Result2);
+                gradeResults = gradeResults
+                    .SetPosition(locus, LocusPosition.One, locusGradeResults.Result1)
+                    .SetPosition(locus, LocusPosition.Two, locusGradeResults.Result2);
             });
 
             return gradeResults;

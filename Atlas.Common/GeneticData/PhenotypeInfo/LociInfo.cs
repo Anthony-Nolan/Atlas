@@ -19,19 +19,38 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
     /// A <see cref="PhenotypeInfo{T}"/> is a special case of <see cref="LociInfo{T}"/>, where T = LocusInfo.
     /// </summary>
     /// <typeparam name="T">The type of the information that is required for each locus.</typeparam>
-    [DebuggerDisplay("A: {a}, B: {b}, C: {c}, DPB1: {dpb1}, DQB1: {dqb1}, DRB1: {drb1}")]
+    [DebuggerDisplay("A: {A}, B: {B}, C: {C}, DPB1: {Dpb1}, DQB1: {Dqb1}, DRB1: {Drb1}")]
     public class LociInfo<T> : IEquatable<LociInfo<T>>
     {
-        // ReSharper disable InconsistentNaming - recommended name clashes with property!
+        /// <summary>
+        /// Locus A. Used in all search implementations.
+        /// </summary>
+        public T A { get; }
 
-        protected T a;
-        protected T b;
-        protected T c;
-        protected T dpb1;
-        protected T dqb1;
-        protected T drb1;
+        /// <summary>
+        /// Locus B. Used in all search implementations.
+        /// </summary>
+        public T B { get; }
 
-        // ReSharper restore InconsistentNaming
+        /// <summary>
+        /// Locus C. Used in newer search implementations.
+        /// </summary>
+        public T C { get; }
+
+        /// <summary>
+        /// Locus Dpb1. Used in newer search implementations.
+        /// </summary>
+        public T Dpb1 { get; }
+
+        /// <summary>
+        /// Locus Dqb1. Used in newer search implementations.
+        /// </summary>
+        public T Dqb1 { get; }
+
+        /// <summary>
+        /// Locus Drb1. Used in most search implementations.
+        /// </summary>
+        public T Drb1 { get; }
 
         /// <summary>
         /// Creates a new LociInfo with no inner values set.
@@ -46,81 +65,44 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         /// <param name="initialValue">The initial value all inner locus values should be given.</param>
         public LociInfo(T initialValue)
         {
-            a = initialValue;
-            b = initialValue;
-            c = initialValue;
-            dpb1 = initialValue;
-            dqb1 = initialValue;
-            drb1 = initialValue;
+            A = initialValue;
+            B = initialValue;
+            C = initialValue;
+            Dpb1 = initialValue;
+            Dqb1 = initialValue;
+            Drb1 = initialValue;
         }
 
-        /// <summary>
-        /// Locus A. Used in all search implementations.
-        /// </summary>
-        public virtual T A
+        public LociInfo(
+            T valueA = default,
+            T valueB = default,
+            T valueC = default,
+            T valueDpb1 = default,
+            T valueDqb1 = default,
+            T valueDrb1 = default
+        )
         {
-            get => a;
-            set => a = value;
+            A = valueA;
+            B = valueB;
+            C = valueC;
+            Dpb1 = valueDpb1;
+            Dqb1 = valueDqb1;
+            Drb1 = valueDrb1;
         }
 
-        /// <summary>
-        /// Locus B. Used in all search implementations.
-        /// </summary>
-        public virtual T B
-        {
-            get => b;
-            set => b = value;
-        }
-
-        /// <summary>
-        /// Locus C. Used in newer search implementations.
-        /// </summary>
-        public virtual T C
-        {
-            get => c;
-            set => c = value;
-        }
-
-        /// <summary>
-        /// Locus Dpb1. Used in newer search implementations.
-        /// </summary>
-        public virtual T Dpb1
-        {
-            get => dpb1;
-            set => dpb1 = value;
-        }
-
-        /// <summary>
-        /// Locus Dqb1. Used in newer search implementations.
-        /// </summary>
-        public virtual T Dqb1
-        {
-            get => dqb1;
-            set => dqb1 = value;
-        }
-
-        /// <summary>
-        /// Locus Drb1. Used in most search implementations.
-        /// </summary>
-        public virtual T Drb1
-        {
-            get => drb1;
-            set => drb1 = value;
-        }
-
-        private ISet<Locus> SupportedLoci => EnumExtensions.EnumerateValues<Locus>().ToHashSet();
+        private static ISet<Locus> SupportedLoci => EnumExtensions.EnumerateValues<Locus>().ToHashSet();
 
         public LociInfo<R> Map<R>(Func<Locus, T, R> mapping)
         {
             return new LociInfo<R>
-            {
-                A = mapping(Locus.A, A),
-                B = mapping(Locus.B, B),
-                C = mapping(Locus.C, C),
-                Dpb1 = mapping(Locus.Dpb1, Dpb1),
-                Dqb1 = mapping(Locus.Dqb1, Dqb1),
-                Drb1 = mapping(Locus.Drb1, Drb1),
-            };
+            (
+                mapping(Locus.A, A),
+                mapping(Locus.B, B),
+                mapping(Locus.C, C),
+                mapping(Locus.Dpb1, Dpb1),
+                mapping(Locus.Dqb1, Dqb1),
+                mapping(Locus.Drb1, Drb1)
+            );
         }
 
         public LociInfo<R> Map<R>(Func<T, R> mapping)
@@ -139,15 +121,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
 
             await Task.WhenAll(a, b, c, dpb1, dqb1, drb1);
 
-            return new LociInfo<R>
-            {
-                A = a.Result,
-                B = b.Result,
-                C = c.Result,
-                Dpb1 = dpb1.Result,
-                Dqb1 = dqb1.Result,
-                Drb1 = drb1.Result,
-            };
+            return new LociInfo<R>(a.Result, b.Result, c.Result, dpb1.Result, dqb1.Result, drb1.Result);
         }
 
         public R Reduce<R>(Func<Locus, T, R, R> reducer, R initialValue = default)
@@ -176,57 +150,36 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
-        public void SetLocus(Locus locus, T value)
+        public LociInfo<T> SetLocus(Locus locus, T value)
         {
-            switch (locus)
+            return locus switch
             {
-                case Locus.A:
-                    A = value;
-                    break;
-                case Locus.B:
-                    B = value;
-                    break;
-                case Locus.C:
-                    C = value;
-                    break;
-                case Locus.Dpb1:
-                    Dpb1 = value;
-                    break;
-                case Locus.Dqb1:
-                    Dqb1 = value;
-                    break;
-                case Locus.Drb1:
-                    Drb1 = value;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(locus), locus, null);
-            }
+                Locus.A => new LociInfo<T>(value, B, C, Dpb1, Dqb1, Drb1),
+                Locus.B => new LociInfo<T>(A, value, C, Dpb1, Dqb1, Drb1),
+                Locus.C => new LociInfo<T>(A, B, value, Dpb1, Dqb1, Drb1),
+                Locus.Dpb1 => new LociInfo<T>(A, B, C, value, Dqb1, Drb1),
+                Locus.Dqb1 => new LociInfo<T>(A, B, C, Dpb1, value, Drb1),
+                Locus.Drb1 => new LociInfo<T>(A, B, C, Dpb1, Dqb1, value),
+                _ => throw new ArgumentOutOfRangeException(nameof(locus), locus, null)
+            };
         }
 
         public IEnumerable<T> ToEnumerable()
         {
-            return new List<T>
-            {
-                A,
-                B,
-                C,
-                Dpb1,
-                Dqb1,
-                Drb1,
-            };
+            return new List<T> {A, B, C, Dpb1, Dqb1, Drb1};
         }
 
         public PhenotypeInfo<R> ToPhenotypeInfo<R>(Func<Locus, T, R> mapping)
         {
             return new PhenotypeInfo<R>
-            {
-                A = new LocusInfo<R>(mapping(Locus.A, A)),
-                B = new LocusInfo<R>(mapping(Locus.B, B)),
-                C = new LocusInfo<R>(mapping(Locus.C, C)),
-                Dpb1 = new LocusInfo<R>(mapping(Locus.Dpb1, Dpb1)),
-                Dqb1 = new LocusInfo<R>(mapping(Locus.Dqb1, Dqb1)),
-                Drb1 = new LocusInfo<R>(mapping(Locus.Drb1, Drb1)),
-            };
+            (
+                new LocusInfo<R>(mapping(Locus.A, A)),
+                new LocusInfo<R>(mapping(Locus.B, B)),
+                new LocusInfo<R>(mapping(Locus.C, C)),
+                new LocusInfo<R>(mapping(Locus.Dpb1, Dpb1)),
+                new LocusInfo<R>(mapping(Locus.Dqb1, Dqb1)),
+                new LocusInfo<R>(mapping(Locus.Drb1, Drb1))
+            );
         }
 
         public bool EqualsAtLoci(LociInfo<T> other, ISet<Locus> lociToMatchAt)
@@ -359,4 +312,12 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
 
         #endregion
     }
+
+    public static class Conversion
+    {
+        public static PhenotypeInfo<T> ToPhenotypeInfo<T>(this LociInfo<LocusInfo<T>> lociInfo)
+        {
+            return new PhenotypeInfo<T>(lociInfo);
+        }
+    } 
 }

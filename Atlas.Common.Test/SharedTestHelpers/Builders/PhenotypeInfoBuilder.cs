@@ -7,19 +7,11 @@ namespace Atlas.Common.Test.SharedTestHelpers.Builders
     [Builder]
     public class PhenotypeInfoBuilder<T>
     {
-        private readonly PhenotypeInfo<T> phenotypeInfo;
+        private PhenotypeInfo<T> phenotypeInfo;
 
         public PhenotypeInfoBuilder()
         {
-            phenotypeInfo = new PhenotypeInfo<T>
-            {
-                A = new LocusInfo<T>(default),
-                B = new LocusInfo<T>(default),
-                C = new LocusInfo<T>(default),
-                Dpb1 = new LocusInfo<T>(default),
-                Dqb1 = new LocusInfo<T>(default),
-                Drb1 = new LocusInfo<T>(default),
-            };
+            phenotypeInfo = new PhenotypeInfo<T>(new LocusInfo<T>(default));
         }
 
         public PhenotypeInfoBuilder(T initialValue)
@@ -34,13 +26,13 @@ namespace Atlas.Common.Test.SharedTestHelpers.Builders
 
         public PhenotypeInfoBuilder<T> WithDataAt(Locus locus, LocusPosition position, T value)
         {
-            phenotypeInfo.SetPosition(locus, position, value);
+            phenotypeInfo = phenotypeInfo.SetPosition(locus, position, value);
             return this;
         }
 
         public PhenotypeInfoBuilder<T> WithDataAt(Locus locus, T value)
         {
-            phenotypeInfo.SetLocus(locus, value);
+            phenotypeInfo = phenotypeInfo.SetLocus(locus, value);
             return this;
         }
 
@@ -49,7 +41,7 @@ namespace Atlas.Common.Test.SharedTestHelpers.Builders
         {
             foreach (var locus in loci)
             {
-                phenotypeInfo.SetLocus(locus, value);
+                phenotypeInfo = phenotypeInfo.SetLocus(locus, value);
             }
 
             return this;
@@ -57,14 +49,15 @@ namespace Atlas.Common.Test.SharedTestHelpers.Builders
 
         public PhenotypeInfoBuilder<T> WithDataAt(Locus locus, T value1, T value2)
         {
-            phenotypeInfo.SetPosition(locus, LocusPosition.One, value1);
-            phenotypeInfo.SetPosition(locus, LocusPosition.Two, value2);
+            phenotypeInfo = phenotypeInfo
+                .SetPosition(locus, LocusPosition.One, value1)
+                .SetPosition(locus, LocusPosition.Two, value2);
             return this;
         }
 
         public PhenotypeInfoBuilder<T> WithDataAt(Locus locus, LocusInfo<T> value)
         {
-            phenotypeInfo.SetLocus(locus, value);
+            phenotypeInfo = phenotypeInfo.SetLocus(locus, value).ToPhenotypeInfo();
             return this;
         }
 

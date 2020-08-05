@@ -17,15 +17,15 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
     public static class AllelesWithNonNullExpressionSuffix
     {
         public static readonly LociInfo<List<AlleleTestData>> Alleles = new LociInfo<List<AlleleTestData>>
-        {
-            A = new List<AlleleTestData>
+        (
+            valueA: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*32:11Q"},
                 new AlleleTestData {AlleleName = "*11:170Q"},
                 new AlleleTestData {AlleleName = "*24:02:01:02L"},
                 new AlleleTestData {AlleleName = "*30:14L"},
             },
-            B = new List<AlleleTestData>
+            valueB: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*39:01L"},
                 new AlleleTestData {AlleleName = "*44:02:01:02S"},
@@ -33,18 +33,18 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
                 new AlleleTestData {AlleleName = "*40:133Q"},
                 new AlleleTestData {AlleleName = "*27:05:02:04Q"},
             },
-            C = new List<AlleleTestData>
+            valueC: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*03:22Q"},
                 new AlleleTestData {AlleleName = "*07:150Q"},
                 new AlleleTestData {AlleleName = "*03:244Q"},
                 new AlleleTestData {AlleleName = "*15:105Q"},
             },
-            Dpb1 = new List<AlleleTestData>
+            valueDpb1: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*697:01Q"},
             },
-            Dqb1 = new List<AlleleTestData>
+            valueDqb1: new List<AlleleTestData>
             {
                 new AlleleTestData {AlleleName = "*03:91Q"},
                 new AlleleTestData {AlleleName = "*03:99Q"},
@@ -52,9 +52,9 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles
                 new AlleleTestData {AlleleName = "*02:53Q"},
             },
             // No alleles with any expression suffix exist in DR_ANTIGENS for Locus DRB1
-            Drb1 = new List<AlleleTestData>
+            valueDrb1: new List<AlleleTestData>
             {
-            },
-        };
+            }
+        );
     }
 }
