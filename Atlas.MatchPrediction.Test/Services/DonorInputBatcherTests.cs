@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
@@ -47,8 +48,12 @@ namespace Atlas.MatchPrediction.Test.Services
         public void BatchDonors_WhenMultipleDonorsShareHlaAndMetadata_CombinesDonorInputs()
         {
             var sharedDonorInputBuilder = DonorInputBuilder.New
-                .WithHla(new PhenotypeInfo<string>("donor-hla-shared"))
-                .WithMetadata(FrequencySetMetadataBuilder.New.ForRegistry("shared-reg").ForEthnicity("shared-eth").Build());
+                // Need to use factories here to ensure we have objects that differ by reference, but not by value.
+                .WithFactory(i => i.DonorHla, () => new PhenotypeInfo<string>("donor-hla-shared").ToPhenotypeInfoTransfer())
+                .WithFactory(
+                    i => i.DonorFrequencySetMetadata,
+                    () => FrequencySetMetadataBuilder.New.ForRegistry("shared-reg").ForEthnicity("shared-eth").Build()
+                );
 
             var sharedDonorInputs = sharedDonorInputBuilder.Build(3).ToList();
             var donorInputWithDifferentHla = sharedDonorInputBuilder.WithHla(new PhenotypeInfo<string>("donor-hla-new")).Build();
