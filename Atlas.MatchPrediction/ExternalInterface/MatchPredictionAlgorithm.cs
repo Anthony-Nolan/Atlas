@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchPrediction.ApplicationInsights;
@@ -6,12 +7,17 @@ using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
+using LoggingStopwatch;
 
 namespace Atlas.MatchPrediction.ExternalInterface
 {
     public interface IMatchPredictionAlgorithm
     {
         public Task<MatchProbabilityResponse> RunMatchPredictionAlgorithm(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput);
+
+        /// <returns>A dictionary of DonorId to Match Prediction Result</returns>
+        public Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> RunMatchPredictionAlgorithmBatch(
+            MultipleDonorMatchProbabilityInput multipleDonorMatchProbabilityInput);
 
         public Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet(HaplotypeFrequencySetInput haplotypeFrequencySetInput);
     }
@@ -40,6 +46,26 @@ namespace Atlas.MatchPrediction.ExternalInterface
             {
                 var result = await matchProbabilityService.CalculateMatchProbability(singleDonorMatchProbabilityInput);
                 return result.Round(4);
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> RunMatchPredictionAlgorithmBatch(
+            MultipleDonorMatchProbabilityInput multipleDonorMatchProbabilityInput)
+        {
+            using (logger.RunLongOperationWithTimer("Run Match Prediction Algorithm Batch", new LongLoggingSettings()))
+            {
+                var results = new Dictionary<int, MatchProbabilityResponse>();
+                foreach (var matchProbabilityInput in multipleDonorMatchProbabilityInput.SingleDonorMatchProbabilityInputs)
+                {
+                    using (logger.RunTimed("Run Match Prediction Algorithm per donor"))
+                    {
+                        var result = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+                        results[matchProbabilityInput.Donor.DonorId] = result;
+                    }
+                }
+
+                return results;
             }
         }
 

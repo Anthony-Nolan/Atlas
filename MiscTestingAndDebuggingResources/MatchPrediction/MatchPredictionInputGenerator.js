@@ -1,12 +1,16 @@
 var fs = require('fs');
 
 const config = {
-    fileName: "imputation-input",
+    fileName: "mpa-input",
+    // Recommend using this to uniquely identify a test case, to differentiate logs
+    searchRequestId: "Generated from JS helper.",
     donorRegistry: null,
     donorEthnicity: null,
     patientRegistry: null,
     patientEthnicity: null,
 }
+
+let donorId = 0;
 
 // USAGE INSTRUCTIONS
 // This method is designed for hla copied directly from the donor database. 
@@ -15,29 +19,53 @@ const config = {
 // You can also copy data directly from the HF Set database - it will treat a 5-value input as homozygous at all loci
 // The output is the JSON to POST to the match prediction endpoints
 const fileContent = generateInputFromHlaData(
-    "*02:01:01:05\t*33:01:01:01\t*40:06:01:02\t*35:08:01:01\t*02:10:01:02\t*03:05\t*03:01:04\t*02:02:01:01\t*04:01:01:01\t*15:01:01:01",
-    "*02:01:01:05\t*33:01:01:01\t*40:06:01:02\t*35:08:01:01\t*02:10:01:02\t*03:05\t*03:01:04\t*02:02:01:01\t*04:01:01:01\t*15:01:01:01"
+    "*01:XX\t*29:XX\t*07:XX\t*08:XX\t*07:XX\t*07:XX\t*03:XX\t*03:XX\t*04:XX\t*07:XX",
+    [
+        "*01:XX	*29:XX	*07:XX	*08:XX	*07:XX	*07:XX	*03:XX	*03:XX	*04:XX	*07:XX",
+        "*01:XX	*29:XX	*07:XX	*08:XX	*07:XX	*07:XX	*03:XX	*03:XX	*04:XX	*07:XX",
+        "*01:XX	*29:XX	*07:XX	*08:XX	*07:XX	*07:XX	*03:XX	*03:XX	*04:XX	*07:XX",
+        "*01:XX	*29:XX	*07:XX	*08:XX	*07:XX	*07:XX	*03:XX	*03:XX	*04:XX	*07:XX",
+        "*01:XX	*29:XX	*07:XX	*08:XX	*07:XX	*07:XX	*03:XX	*03:XX	*04:XX	*07:XX",
+        "*01:XX	*29:XX	*07:XX	*08:XX	*07:XX	*07:XX	*03:XX	*03:XX	*04:XX	*07:XX",
+        "*01:XX	*29:XX	*07:XX	*08:XX	*07:XX	*07:XX	*03:XX	*03:XX	*04:XX	*07:XX",
+        "*01:XX	*29:XX	*07:XX	*08:XX	*07:XX	*07:XX	*03:XX	*03:XX	*04:XX	*07:XX",
+        "*01:XX	*01:XX	*07:XX	*07:XX	*07:XX	*07:XX	*03:XX	*03:XX	*07:XX	*07:XX",
+    ]
 );
 
-fs.writeFile(`${config.fileName}.json`, fileContent, () => {})
+fs.writeFile(`${config.fileName}.json`, fileContent, () => {
+})
 
-function generateInputFromHlaData(donorRawData, patientRawData) {
-    const initialDonorHlaValues = donorRawData.split(/\s/);
+function generateInputFromHlaData(patientRawData, donorsRawData) {
+    const initialDonorHlaValues = donorsRawData.map(d => d.split(/\s/));
     const initialPatientHlaValues = patientRawData.split(/\s/);
 
-
-    const donorHlaValues = initialDonorHlaValues.length === 10 ? initialDonorHlaValues : duplicateAllValues(initialDonorHlaValues);
+    const donorHlaList = initialDonorHlaValues.map(d => d.length === 10 ? d : duplicateAllValues(d));
     const patientHlaValues = initialPatientHlaValues.length === 10 ? initialPatientHlaValues : duplicateAllValues(initialPatientHlaValues);
 
     const hlaNomenclatureVersion = "3400";
 
     return `{
+    "SearchRequestId": "${config.searchRequestId}",
+    ${buildDonorSection(donorHlaList)},
     "HlaNomenclatureVersion": "${hlaNomenclatureVersion}",
-    "DonorHla": ${buildPhenotypeInfo(donorHlaValues)},
     "PatientHla": ${buildPhenotypeInfo(patientHlaValues)},
-    "DonorFrequencySetMetadata": ${buildFrequencySetSelectionCriteria(config.donorEthnicity, config.donorRegistry)},
-    "PatientFrequencySetMetadata": ${buildFrequencySetSelectionCriteria(config.patientEthnicity, config.patientRegistry)},
+    "PatientFrequencySetMetadata": ${buildFrequencySetSelectionCriteria(config.patientEthnicity, config.patientRegistry)}
 }`
+}
+
+function buildDonorSection(donorHlaList) {
+    return donorHlaList.length === 1
+        ? `"Donor": ${buildIndividualDonorInput(donorHlaList[0])}`
+        : `"Donors": [${donorHlaList.map(d => buildIndividualDonorInput(d)).join(",")}]`;
+}
+
+function buildIndividualDonorInput(donorHla) {
+    return `{
+        "DonorId": ${donorId++},
+        "DonorHla": ${buildPhenotypeInfo(donorHla)},
+        "DonorFrequencySetMetadata": ${buildFrequencySetSelectionCriteria(config.donorEthnicity, config.donorRegistry)}
+    }`
 }
 
 function buildPhenotypeInfo(hlaValues) {
@@ -68,7 +96,7 @@ function buildPhenotypeInfo(hlaValues) {
 function buildFrequencySetSelectionCriteria(ethnicityCode, registryCode) {
     const ethnicityString = ethnicityCode ? `"EthnicityCode": "${ethnicityCode}"` : null
     const registryString = registryCode ? `"RegistryCode": "${registryCode}"` : null
-    
+
     return `{
         ${[ethnicityString, registryString].filter(x => x).join(", ")}
     }`
