@@ -21,7 +21,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         public Probability ZeroMismatchProbability { get; set; }
         public Probability OneMismatchProbability { get; set; }
         public Probability TwoMismatchProbability { get; set; }
-        public MatchType MatchType => ZeroMismatchProbability.Decimal switch
+
+        public MatchType? MatchingType => ZeroMismatchProbability.Decimal switch
         {
             1m => MatchType.Exact,
             0m => MatchType.Mismatch,
@@ -50,19 +51,58 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         }
     }
 
+    public class MatchProbabilityLocusInfo
+    {
+        public MatchProbabilities LocusMatchProbabilities { get; set; }
+
+        public LocusInfo<MatchType> LocusMatchingTypes => LocusMatchProbabilities.MatchingType switch
+        {
+            MatchType.Exact => new LocusInfo<MatchType>(MatchType.Exact),
+            MatchType.Mismatch => new LocusInfo<MatchType>(MatchType.Mismatch),
+            _ => new LocusInfo<MatchType>(MatchType.Potential,
+                LocusMatchProbabilities.ZeroMismatchProbability.Decimal == 0 ? MatchType.Mismatch :
+                LocusMatchProbabilities.TwoMismatchProbability.Decimal == 0 ? MatchType.Exact : MatchType.Potential)
+        };
+
+        public MatchProbabilityLocusInfo()
+        {
+        }
+
+        public MatchProbabilityLocusInfo(Probability sharedProbability)
+        {
+            LocusMatchProbabilities = new MatchProbabilities(sharedProbability);
+        }
+
+        public MatchProbabilityLocusInfo(MatchProbabilities sharedMatchProbabilities)
+        {
+            LocusMatchProbabilities = sharedMatchProbabilities;
+        }
+
+        public MatchProbabilityLocusInfo Round(int decimalPlaces)
+        {
+            return new MatchProbabilityLocusInfo
+            {
+                LocusMatchProbabilities = LocusMatchProbabilities?.Round(decimalPlaces)
+            };
+        }
+    }
+
     public class MatchProbabilityResponse
     {
         public MatchProbabilities MatchProbabilities { get; set; }
-        public LociInfo<MatchProbabilities> MatchProbabilitiesPerLocus { get; set; }
+        public LociInfo<MatchProbabilityLocusInfo> MatchProbabilitiesPerLocus { get; set; }
 
         [JsonIgnore]
-        public LociInfo<Probability> ZeroMismatchProbabilityPerLocus => MatchProbabilitiesPerLocus.Map(x => x?.ZeroMismatchProbability);
+        public LociInfo<Probability> ZeroMismatchProbabilityPerLocus =>
+            MatchProbabilitiesPerLocus.Map(x => x?.LocusMatchProbabilities.ZeroMismatchProbability);
 
         [JsonIgnore]
-        public LociInfo<Probability> OneMismatchProbabilityPerLocus => MatchProbabilitiesPerLocus.Map(x => x?.OneMismatchProbability);
+        public LociInfo<Probability> OneMismatchProbabilityPerLocus =>
+            MatchProbabilitiesPerLocus.Map(x => x?.LocusMatchProbabilities.OneMismatchProbability);
 
         [JsonIgnore]
-        public LociInfo<Probability> TwoMismatchProbabilityPerLocus => MatchProbabilitiesPerLocus.Map(x => x?.TwoMismatchProbability);
+        public LociInfo<Probability> TwoMismatchProbabilityPerLocus =>
+            MatchProbabilitiesPerLocus.Map(x => x?.LocusMatchProbabilities.TwoMismatchProbability);
 
         public bool IsPatientPhenotypeUnrepresented { get; set; }
         public bool IsDonorPhenotypeUnrepresented { get; set; }
@@ -79,7 +119,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         {
             MatchProbabilities = new MatchProbabilities(sharedProbability);
             MatchProbabilitiesPerLocus = new LociInfo<Probability>(sharedProbability).Map((l, v) =>
-                allowedLoci.Contains(l) ? new MatchProbabilities(sharedProbability) : null
+                allowedLoci.Contains(l) ? new MatchProbabilityLocusInfo(sharedProbability) : null
             );
         }
 

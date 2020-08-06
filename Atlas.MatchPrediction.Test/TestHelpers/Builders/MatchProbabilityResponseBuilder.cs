@@ -27,7 +27,7 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 
             return builder
                 .With(r => r.MatchProbabilities, matchProbabilities)
-                .With(r => r.MatchProbabilitiesPerLocus, new LociInfo<MatchProbabilities>(matchProbabilities));
+                .With(r => r.MatchProbabilitiesPerLocus, new LociInfo<MatchProbabilityLocusInfo>(new MatchProbabilityLocusInfo(matchProbabilities)));
         }
     }
 }
