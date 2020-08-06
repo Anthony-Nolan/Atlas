@@ -34,7 +34,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 {
     public interface IMatchProbabilityService
     {
-        public Task<MatchProbabilityResponse> CalculateMatchProbability(MatchProbabilityInput matchProbabilityInput);
+        public Task<MatchProbabilityResponse> CalculateMatchProbability(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput);
     }
 
     internal class GenotypeAtDesiredResolutions
@@ -114,22 +114,22 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
         }
 
-        public async Task<MatchProbabilityResponse> CalculateMatchProbability(MatchProbabilityInput matchProbabilityInput)
+        public async Task<MatchProbabilityResponse> CalculateMatchProbability(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput)
         {
-            await new MatchProbabilityInputValidator().ValidateAndThrowAsync(matchProbabilityInput);
+            await new MatchProbabilityInputValidator().ValidateAndThrowAsync(singleDonorMatchProbabilityInput);
             
-            matchPredictionLoggingContext.Initialise(matchProbabilityInput);
+            matchPredictionLoggingContext.Initialise(singleDonorMatchProbabilityInput);
 
-            var allowedLoci = LocusSettings.MatchPredictionLoci.Except(matchProbabilityInput.ExcludedLoci).ToHashSet();
-            var hlaNomenclatureVersion = matchProbabilityInput.HlaNomenclatureVersion;
+            var allowedLoci = LocusSettings.MatchPredictionLoci.Except(singleDonorMatchProbabilityInput.ExcludedLoci).ToHashSet();
+            var hlaNomenclatureVersion = singleDonorMatchProbabilityInput.HlaNomenclatureVersion;
 
             var frequencySets = await haplotypeFrequencyService.GetHaplotypeFrequencySets(
-                matchProbabilityInput.DonorFrequencySetMetadata,
-                matchProbabilityInput.PatientFrequencySetMetadata
+                singleDonorMatchProbabilityInput.Donor.DonorFrequencySetMetadata,
+                singleDonorMatchProbabilityInput.PatientFrequencySetMetadata
             );
 
             var patientGenotypes = await ExpandToGenotypes(
-                matchProbabilityInput.PatientHla.ToPhenotypeInfo(),
+                singleDonorMatchProbabilityInput.PatientHla.ToPhenotypeInfo(),
                 frequencySets.PatientSet.Id,
                 allowedLoci,
                 hlaNomenclatureVersion,
@@ -137,7 +137,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             );
 
             var donorGenotypes = await ExpandToGenotypes(
-                matchProbabilityInput.DonorHla.ToPhenotypeInfo(),
+                singleDonorMatchProbabilityInput.Donor.DonorHla.ToPhenotypeInfo(),
                 frequencySets.DonorSet.Id,
                 allowedLoci,
                 hlaNomenclatureVersion,

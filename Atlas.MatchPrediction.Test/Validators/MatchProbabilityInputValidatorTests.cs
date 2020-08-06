@@ -23,7 +23,7 @@ namespace Atlas.MatchPrediction.Test.Validators
         [Test]
         public void Validator_WhenPatientHlaNotProvided_ValidationFails()
         {
-            var input = MatchProbabilityInputBuilder.New.With(i => i.PatientHla, null as PhenotypeInfoTransfer<string>).Build();
+            var input = MatchProbabilityInputBuilder.New.WithPatientHla(null).Build();
 
             var result = new MatchProbabilityInputValidator().Validate(input);
 
@@ -33,7 +33,7 @@ namespace Atlas.MatchPrediction.Test.Validators
         [Test]
         public void Validator_WhenDonorHlaNotProvided_ValidationFails()
         {
-            var input = MatchProbabilityInputBuilder.New.With(i => i.DonorHla, null as PhenotypeInfoTransfer<string>).Build();
+            var input = MatchProbabilityInputBuilder.New.WithDonorHla(null).Build();
 
             var result = new MatchProbabilityInputValidator().Validate(input);
 
@@ -43,7 +43,7 @@ namespace Atlas.MatchPrediction.Test.Validators
         [Test]
         public void Validator_WhenHlaNomenclatureNotProvided_ValidationFails()
         {
-            var input = MatchProbabilityInputBuilder.New.With(i => i.HlaNomenclatureVersion, null as string).Build();
+            var input = MatchProbabilityInputBuilder.New.WithHlaNomenclature(null).Build();
 
             var result = new MatchProbabilityInputValidator().Validate(input);
 

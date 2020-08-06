@@ -11,7 +11,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
 {
     public interface IMatchPredictionAlgorithm
     {
-        public Task<MatchProbabilityResponse> RunMatchPredictionAlgorithm(MatchProbabilityInput matchProbabilityInput);
+        public Task<MatchProbabilityResponse> RunMatchPredictionAlgorithm(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput);
 
         public Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet(HaplotypeFrequencySetInput haplotypeFrequencySetInput);
     }
@@ -34,11 +34,11 @@ namespace Atlas.MatchPrediction.ExternalInterface
         }
 
         /// <inheritdoc />
-        public async Task<MatchProbabilityResponse> RunMatchPredictionAlgorithm(MatchProbabilityInput matchProbabilityInput)
+        public async Task<MatchProbabilityResponse> RunMatchPredictionAlgorithm(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput)
         {
             using (logger.RunTimed("Run Match Prediction Algorithm"))
             {
-                var result = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
+                var result = await matchProbabilityService.CalculateMatchProbability(singleDonorMatchProbabilityInput);
                 return result.Round(4);
             }
         }
