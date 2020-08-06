@@ -16,7 +16,10 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         {
         }
 
-        public DonorInput Donor { get; set; }
+        /// <summary>
+        /// Can actually represent multiple donors, provided they all share phenotypes and metadata 
+        /// </summary>
+        public DonorInput DonorInput { get; set; }
     }
 
     public class MultipleDonorMatchProbabilityInput : MatchProbabilityRequestInput
@@ -29,18 +32,25 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         internal IEnumerable<SingleDonorMatchProbabilityInput> SingleDonorMatchProbabilityInputs =>
             Donors.Select(d => new SingleDonorMatchProbabilityInput(this)
             {
-                Donor = d
+                DonorInput = d
             }).ToList();
     }
 
     public class DonorInput
     {
         /// <summary>
-        /// Donor ID is used to identify results when running the Match Prediction Algorithm in batches
+        /// DonorInput ID is used to identify results when running the Match Prediction Algorithm in batches
         /// It is also useful for logging purposes.
+        ///
+        /// Multiple donor ids are possible, as donors with the same phenotype + metadata will give the same MPA results, and should therefore be run together 
         /// </summary>
-        public int DonorId { get; set; }
+        public List<int> DonorIds { get; set; }
 
+        public int DonorId
+        {
+            set => DonorIds = new List<int> {value};
+        }
+        
         public PhenotypeInfoTransfer<string> DonorHla { get; set; }
         public FrequencySetMetadata DonorFrequencySetMetadata { get; set; }
     }
