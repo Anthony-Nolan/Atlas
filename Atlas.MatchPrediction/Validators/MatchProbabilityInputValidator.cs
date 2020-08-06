@@ -8,7 +8,7 @@ namespace Atlas.MatchPrediction.Validators
     {
         public MatchProbabilityInputValidator()
         {
-            RuleFor(i => i.Donor).NotNull().SetValidator(new MatchProbabilityDonorInputValidator());
+            RuleFor(i => i.DonorInput).NotNull().SetValidator(new MatchProbabilityDonorInputValidator());
             RuleFor(i => i.PatientHla).NotNull().SetValidator(new PhenotypeHlaNamesValidator());
             RuleFor(i => i.HlaNomenclatureVersion).NotEmpty();
         }

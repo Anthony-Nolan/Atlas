@@ -80,7 +80,7 @@ namespace Atlas.Functions.Services
             return new SingleDonorMatchProbabilityInput
             {
                 SearchRequestId = searchRequestId,
-                Donor = new DonorInput
+                DonorInput = new DonorInput
                 {
                     DonorId = matchingAlgorithmResult.AtlasDonorId,
                     DonorHla = matchingAlgorithmResult.DonorHla,

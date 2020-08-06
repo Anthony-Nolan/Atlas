@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 
 namespace Atlas.MatchPrediction.ApplicationInsights
@@ -12,14 +14,14 @@ namespace Atlas.MatchPrediction.ApplicationInsights
         {
             SearchRequestId = singleDonorMatchProbabilityInput.SearchRequestId;
             HlaNomenclatureVersion = singleDonorMatchProbabilityInput.HlaNomenclatureVersion;
-            DonorId = singleDonorMatchProbabilityInput.Donor.DonorId.ToString();
-            DonorHla = singleDonorMatchProbabilityInput.Donor.DonorHla?.ToPhenotypeInfo();
+            DonorIds = singleDonorMatchProbabilityInput.DonorInput.DonorIds.Select(id => id.ToString()).StringJoin(",");
+            DonorHla = singleDonorMatchProbabilityInput.DonorInput.DonorHla?.ToPhenotypeInfo();
             PatientHla = singleDonorMatchProbabilityInput.PatientHla?.ToPhenotypeInfo();
         }
 
         public string SearchRequestId { get; set; }
         public string HlaNomenclatureVersion { get; set; }
-        public string DonorId { get; set; }
+        public string DonorIds { get; set; }
         public PhenotypeInfo<string> DonorHla { get; set; }
         public PhenotypeInfo<string> PatientHla { get; set; }
 
@@ -30,7 +32,7 @@ namespace Atlas.MatchPrediction.ApplicationInsights
             {
                 {nameof(SearchRequestId), SearchRequestId},
                 {nameof(HlaNomenclatureVersion), HlaNomenclatureVersion},
-                {nameof(DonorId), DonorId},
+                {nameof(DonorIds), DonorIds},
                 {nameof(DonorHla), DonorHla?.PrettyPrint()},
                 {nameof(PatientHla), PatientHla?.PrettyPrint()}
             };
