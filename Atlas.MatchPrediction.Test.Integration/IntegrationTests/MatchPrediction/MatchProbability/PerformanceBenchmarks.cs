@@ -9,6 +9,7 @@ using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
+using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using FluentAssertions;
 using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
