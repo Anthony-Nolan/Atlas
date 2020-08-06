@@ -1,5 +1,5 @@
 ﻿using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
-using Atlas.MatchPrediction.Test.Verification.Services;
+using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
 using Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.TestHelpers;
 using FluentAssertions;
 using NSubstitute;

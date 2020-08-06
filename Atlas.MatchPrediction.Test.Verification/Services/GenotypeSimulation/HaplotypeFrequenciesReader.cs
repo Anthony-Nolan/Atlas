@@ -1,12 +1,12 @@
-﻿using Atlas.MatchPrediction.ExternalInterface;
-using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using HaplotypeFrequency = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequency;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services
+namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
 {
     internal interface IHaplotypeFrequenciesReader
     {

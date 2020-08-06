@@ -1,4 +1,4 @@
-using Atlas.MatchPrediction.Test.Verification.Services;
+using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 

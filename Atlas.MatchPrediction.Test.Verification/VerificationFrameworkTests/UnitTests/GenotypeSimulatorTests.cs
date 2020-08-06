@@ -1,9 +1,9 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services;
+using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
 using Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.TestHelpers;
 using FluentAssertions;
-using LochNessBuilder;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;

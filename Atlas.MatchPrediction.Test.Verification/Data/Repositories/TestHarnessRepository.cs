@@ -1,5 +1,6 @@
 ﻿using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using Atlas.MatchPrediction.Test.Verification.Data.Models;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
@@ -7,6 +8,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
     public interface ITestHarnessRepository
     {
         Task<int> AddTestHarness(int poolId);
+        Task AddMaskingRecords(IEnumerable<MaskingRecord> records);
     }
 
     internal class TestHarnessRepository : ITestHarnessRepository
@@ -29,6 +31,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             await context.SaveChangesAsync();
 
             return harness.Id;
+        }
+
+        public async Task AddMaskingRecords(IEnumerable<MaskingRecord> records)
+        {
+            await context.MaskingRecords.AddRangeAsync(records);
+            await context.SaveChangesAsync();
         }
     }
 }

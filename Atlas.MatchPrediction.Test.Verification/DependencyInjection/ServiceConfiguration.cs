@@ -3,6 +3,7 @@ using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Services;
+using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
 using Atlas.MatchPrediction.Test.Verification.Settings;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,6 +57,7 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
                 });
             services.AddScoped<IGenotypeSimulator, GenotypeSimulator>();
             services.AddScoped<IRandomNumberPairGenerator, RandomNumberPairGenerator>();
+            services.AddScoped<ISimulantsGenerator, SimulantsGenerator>();
             services.AddScoped<ITestHarnessGenerator, TestHarnessGenerator>();
         }
     }

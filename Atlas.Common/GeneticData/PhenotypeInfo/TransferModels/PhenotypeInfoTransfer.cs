@@ -58,6 +58,11 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo.TransferModels
 
         public static LociInfo<T> ToLociInfo<T>(this LociInfoTransfer<T> lociInfoTransfer)
         {
+            if (lociInfoTransfer == null)
+            {
+                return null;
+            }
+
             var a = lociInfoTransfer.A ?? default;
             var b = lociInfoTransfer.B ?? default;
             var c = lociInfoTransfer.C ?? default;
