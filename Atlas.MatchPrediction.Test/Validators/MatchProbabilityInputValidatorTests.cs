@@ -1,6 +1,7 @@
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
+using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using Atlas.MatchPrediction.Validators;
 using FluentAssertions;
 using NUnit.Framework;
@@ -13,7 +14,7 @@ namespace Atlas.MatchPrediction.Test.Validators
         [Test]
         public void Validator_ForValidInput_ValidationPasses()
         {
-            var input = MatchProbabilityInputBuilder.New.Build();
+            var input = SingleDonorMatchProbabilityInputBuilder.New.Build();
 
             var result = new MatchProbabilityInputValidator().Validate(input);
 
@@ -23,7 +24,7 @@ namespace Atlas.MatchPrediction.Test.Validators
         [Test]
         public void Validator_WhenPatientHlaNotProvided_ValidationFails()
         {
-            var input = MatchProbabilityInputBuilder.New.WithPatientHla(null).Build();
+            var input = SingleDonorMatchProbabilityInputBuilder.New.WithPatientHla(null).Build();
 
             var result = new MatchProbabilityInputValidator().Validate(input);
 
@@ -33,7 +34,7 @@ namespace Atlas.MatchPrediction.Test.Validators
         [Test]
         public void Validator_WhenDonorHlaNotProvided_ValidationFails()
         {
-            var input = MatchProbabilityInputBuilder.New.WithDonorHla(null).Build();
+            var input = SingleDonorMatchProbabilityInputBuilder.New.WithDonorHla(null).Build();
 
             var result = new MatchProbabilityInputValidator().Validate(input);
 
@@ -43,7 +44,7 @@ namespace Atlas.MatchPrediction.Test.Validators
         [Test]
         public void Validator_WhenHlaNomenclatureNotProvided_ValidationFails()
         {
-            var input = MatchProbabilityInputBuilder.New.WithHlaNomenclature(null).Build();
+            var input = SingleDonorMatchProbabilityInputBuilder.New.WithHlaNomenclature(null).Build();
 
             var result = new MatchProbabilityInputValidator().Validate(input);
 
