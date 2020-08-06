@@ -27,10 +27,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes);
 
-            var matchProbabilityInput = DefaultInputBuilder
-                .With(i => i.PatientHla, patientHla.ToPhenotypeInfoTransfer())
-                .With(i => i.DonorHla, donorHla.ToPhenotypeInfoTransfer())
-                .Build();
+            var matchProbabilityInput = DefaultInputBuilder.WithPatientHla(patientHla).WithDonorHla(donorHla).Build();
 
             var matchProbability = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -53,10 +50,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes);
 
-            var matchProbabilityInput = DefaultInputBuilder
-                .With(i => i.PatientHla, patientHla.ToPhenotypeInfoTransfer())
-                .With(i => i.DonorHla, donorHla.ToPhenotypeInfoTransfer())
-                .Build();
+            var matchProbabilityInput = DefaultInputBuilder.WithPatientHla(patientHla).WithDonorHla(donorHla).Build();
 
             var matchProbability = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -79,10 +73,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes);
 
-            var matchProbabilityInput = DefaultInputBuilder
-                .With(i => i.PatientHla, patientHla.ToPhenotypeInfoTransfer())
-                .With(i => i.DonorHla, donorHla.ToPhenotypeInfoTransfer())
-                .Build();
+            var matchProbabilityInput = DefaultInputBuilder.WithPatientHla(patientHla).WithDonorHla(donorHla).Build();
 
             var matchProbability = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -106,12 +97,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             };
 
             await ImportFrequencies(possibleHaplotypes);
-
-            var matchProbabilityInput = DefaultInputBuilder
-                .With(i => i.PatientHla, patientHla.ToPhenotypeInfoTransfer())
-                .With(i => i.DonorHla, donorHla.ToPhenotypeInfoTransfer())
-                .Build();
-
+            var matchProbabilityInput = DefaultInputBuilder.WithPatientHla(patientHla).WithDonorHla(donorHla).Build();
+            
             var matchProbability = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
             matchProbability.MatchProbabilities.TwoMismatchProbability.Percentage.Should().Be(100);
@@ -135,10 +122,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes);
 
-            var matchProbabilityInput = DefaultInputBuilder
-                .With(i => i.PatientHla, patientHla.ToPhenotypeInfoTransfer())
-                .With(i => i.DonorHla, donorHla.ToPhenotypeInfoTransfer())
-                .Build();
+            var matchProbabilityInput = DefaultInputBuilder.WithPatientHla(patientHla).WithDonorHla(donorHla).Build();
 
             var matchProbability = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -163,10 +147,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes);
 
-            var matchProbabilityInput = DefaultInputBuilder
-                .With(i => i.PatientHla, patientHla.ToPhenotypeInfoTransfer())
-                .With(i => i.DonorHla, donorHla.ToPhenotypeInfoTransfer())
-                .Build();
+            var matchProbabilityInput = DefaultInputBuilder.WithPatientHla(patientHla).WithDonorHla(donorHla).Build();
 
             var matchProbability = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 

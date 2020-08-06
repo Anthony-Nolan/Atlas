@@ -245,12 +245,15 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDataAt(Locus.Drb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
                 .Build();
 
-            var matchProbabilityInput = new MatchProbabilityInput
+            var matchProbabilityInput = new SingleDonorMatchProbabilityInput
             {
                 PatientHla = patientHla.ToPhenotypeInfoTransfer(),
-                DonorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.C, null as string).Build().ToPhenotypeInfoTransfer(),
+                Donor = new DonorInput
+                {
+                    DonorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.C, null as string).Build().ToPhenotypeInfoTransfer(),
+                    DonorFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode},
+                },
                 HlaNomenclatureVersion = HlaNomenclatureVersion,
-                DonorFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode},
                 PatientFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode}
             };
 

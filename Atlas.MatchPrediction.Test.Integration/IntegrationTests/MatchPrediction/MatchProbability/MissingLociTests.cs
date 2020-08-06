@@ -19,18 +19,19 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             {Locus.C, "12:03:01G"},
             {Locus.Dqb1, "05:03:01G"},
         };
-        
+
         [TestCase(Locus.Dqb1, 40, 60, 0)]
         [TestCase(Locus.C, 40, 60, 0)]
         public async Task CalculateMatchProbability_WhenPatientHlaHasNullLoci_DoesNotIncludeLociInResult(
             Locus nullLocus,
             int zeroMismatchExpectedProbability,
-            int oneMismatchExpectedProbability, 
+            int oneMismatchExpectedProbability,
             int twoMismatchExpectedProbability)
         {
             var matchProbabilityInput = DefaultInputBuilder
                 .With(h => h.PatientHla,
-                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullLocus).Build().ToPhenotypeInfoTransfer())
+                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullLocus).Build()
+                        .ToPhenotypeInfoTransfer())
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
@@ -61,8 +62,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             int twoMismatchExpectedProbability)
         {
             var matchProbabilityInput = DefaultInputBuilder
-                .With(h => h.DonorHla,
-                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullLocus).Build().ToPhenotypeInfoTransfer())
+                .WithDonorHla(new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullLocus).Build())
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
@@ -95,12 +95,12 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             int twoMismatchProbability)
         {
             var matchProbabilityInput = DefaultInputBuilder
-                .With(h => h.DonorHla,
-                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullDonorLoci)
-                        .Build().ToPhenotypeInfoTransfer())
-                .With(h => h.PatientHla,
-                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullPatientLoci)
-                        .Build().ToPhenotypeInfoTransfer())
+                .WithDonorHla(
+                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullDonorLoci).Build()
+                )
+                .WithPatientHla(
+                    new PhenotypeInfoBuilder<string>(Alleles.UnambiguousAlleleDetails.Alleles()).WithDataAtLoci(null, nullPatientLoci).Build()
+                )
                 .Build();
 
             var possibleHaplotypes = new List<HaplotypeFrequency>
