@@ -28,7 +28,6 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
         /// 
         /// Patient genotype and donor genotype *MUST* be provided at a resolution for which match counts can be calculated by string comparison.
         /// i.e. PGroups, or G-Groups when a null allele is present.
-        /// TODO: ATLAS-572: Properly tackle null alleles - the current approach will cover matching null alleles, but not the homozygous case. 
         /// </returns>
         public LociInfo<int?> CalculateMatchCounts_Fast(
             PhenotypeInfo<string> patientGenotype,

@@ -47,7 +47,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
         /// <summary>
         /// HLA at a resolution at which it is possible to calculate match counts using string comparison only, no expansion.
-        /// TODO: ATLAS-572: Ensure the null homozygous case is covered.
         /// i.e. P group, or G group for null expressing alleles. 
         /// </summary>
         public StringGenotype StringMatchableResolution { get; }
