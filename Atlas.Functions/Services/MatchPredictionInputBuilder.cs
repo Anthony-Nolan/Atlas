@@ -9,8 +9,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.Functions.Settings;
 using Atlas.MatchPrediction.ExternalInterface;
 using EnumStringValues;
+using Microsoft.Extensions.Options;
 
 namespace Atlas.Functions.Services
 {
@@ -34,11 +36,16 @@ namespace Atlas.Functions.Services
     {
         private readonly ILogger logger;
         private readonly IDonorInputBatcher donorInputBatcher;
+        private readonly int matchPredictionBatchSize;
 
-        public MatchPredictionInputBuilder(ILogger logger, IDonorInputBatcher donorInputBatcher)
+        public MatchPredictionInputBuilder(
+            ILogger logger,
+            IDonorInputBatcher donorInputBatcher,
+            IOptions<OrchestrationSettings> orchestrationSettings)
         {
             this.logger = logger;
             this.donorInputBatcher = donorInputBatcher;
+            matchPredictionBatchSize = int.Parse(orchestrationSettings.Value.MatchPredictionBatchSize);
         }
 
         /// <inheritdoc />
@@ -61,8 +68,7 @@ namespace Atlas.Functions.Services
                 ))
                 .Where(r => r != null);
 
-            // TODO: ATLAS-280: Configurable batch size
-            return donorInputBatcher.BatchDonorInputs(nonDonorInput, donorInputs, 100);
+            return donorInputBatcher.BatchDonorInputs(nonDonorInput, donorInputs, matchPredictionBatchSize);
         }
 
         /// <summary>

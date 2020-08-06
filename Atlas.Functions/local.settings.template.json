@@ -7,6 +7,7 @@
     "AtlasFunction:AzureStorage:SearchResultsBlobContainer": "atlas-search-results",
     "AtlasFunction:MessagingServiceBus:ConnectionString": "override-this",
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic": "search-results-ready",
+    "AtlasFunction:Orchestration:MatchPredictionBatchSize": "100",
     
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
