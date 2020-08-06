@@ -24,6 +24,16 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 
     public class MultipleDonorMatchProbabilityInput : MatchProbabilityRequestInput
     {
+        public MultipleDonorMatchProbabilityInput()
+        {
+            
+        }
+
+        public MultipleDonorMatchProbabilityInput(MatchProbabilityRequestInput requestInput) : base(requestInput)
+        {
+            
+        }
+        
         // ReSharper disable once MemberCanBePrivate.Global
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
         // ReSharper disable once CollectionNeverUpdated.Global

@@ -12,6 +12,7 @@ using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
+using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -58,7 +59,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected static PhenotypeInfoBuilder<string> DefaultAmbiguousAllelesBuilder =>
             new PhenotypeInfoBuilder<string>(Alleles.AmbiguousAlleleDetails.Alleles());
 
-        protected static Builder<SingleDonorMatchProbabilityInput> DefaultInputBuilder => MatchProbabilityInputBuilder.New
+        protected static Builder<SingleDonorMatchProbabilityInput> DefaultInputBuilder => SingleDonorMatchProbabilityInputBuilder.New
             .WithHlaNomenclature(HlaNomenclatureVersion)
             .WithPatientHla(DefaultUnambiguousAllelesBuilder.Build())
             .WithDonorHla(DefaultUnambiguousAllelesBuilder.Build())

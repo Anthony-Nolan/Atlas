@@ -1,0 +1,89 @@
+using System.Collections.Generic;
+using System.Linq;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.MatchPrediction.ExternalInterface;
+using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
+using Atlas.MatchPrediction.Test.TestHelpers.Builders;
+using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
+using FluentAssertions;
+using NUnit.Framework;
+
+namespace Atlas.MatchPrediction.Test.Services
+{
+    [TestFixture]
+    internal class DonorInputBatcherTests
+    {
+        private DonorInputBatcher donorInputBatcher;
+
+        [SetUp]
+        public void SetUp()
+        {
+            donorInputBatcher = new DonorInputBatcher();
+        }
+
+        [Test]
+        public void BatchDonors_RetainsAllNonDonorRequestInfo()
+        {
+            var requestInput = MatchProbabilityRequestInputBuilder.New
+                .WithPatientHla(new PhenotypeInfo<string>("hla"))
+                .WithPatientMetadata(FrequencySetMetadataBuilder.New.ForEthnicity("eth").ForRegistry("reg").Build())
+                .WithExcludedLoci(Locus.A)
+                .WithHlaNomenclature("hla-nomenclature-version")
+                .WithSearchRequestId("request-id")
+                .Build();
+
+            var batchedInput = donorInputBatcher.BatchDonorInputs(requestInput, new List<DonorInput> {DonorInputBuilder.New.Build()}).Single();
+
+            batchedInput.ExcludedLoci.Should().BeEquivalentTo(requestInput.ExcludedLoci);
+            batchedInput.PatientHla.Should().BeEquivalentTo(requestInput.PatientHla);
+            batchedInput.PatientFrequencySetMetadata.Should().BeEquivalentTo(requestInput.PatientFrequencySetMetadata);
+            batchedInput.HlaNomenclatureVersion.Should().BeEquivalentTo(requestInput.HlaNomenclatureVersion);
+            batchedInput.SearchRequestId.Should().BeEquivalentTo(requestInput.SearchRequestId);
+        }
+
+        [Test]
+        public void BatchDonors_WhenMultipleDonorsShareHlaAndMetadata_CombinesDonorInputs()
+        {
+            var sharedDonorInputBuilder = DonorInputBuilder.New
+                .WithHla(new PhenotypeInfo<string>("donor-hla-shared"))
+                .WithMetadata(FrequencySetMetadataBuilder.New.ForRegistry("shared-reg").ForEthnicity("shared-eth").Build());
+
+            var sharedDonorInputs = sharedDonorInputBuilder.Build(3).ToList();
+            var donorInputWithDifferentHla = sharedDonorInputBuilder.WithHla(new PhenotypeInfo<string>("donor-hla-new")).Build();
+            var donorInputWithDifferentMetadata = sharedDonorInputBuilder
+                .WithMetadata(FrequencySetMetadataBuilder.New.ForRegistry("diff-reg"))
+                .Build();
+
+            var batch = donorInputBatcher.BatchDonorInputs(
+                    MatchProbabilityRequestInputBuilder.New.Build(),
+                    sharedDonorInputs.Concat(new[] {donorInputWithDifferentHla}).Concat(new[] {donorInputWithDifferentMetadata}))
+                .Single();
+
+            // 5 donors, but only 3 unique hla/metadata sets
+            batch.Donors.Count.Should().Be(3);
+            batch.Donors.Should().Contain(d => sharedDonorInputs.SelectMany(i => i.DonorIds).All(d.DonorIds.Contains));
+        }
+
+        [TestCase(100, 2, 50)]
+        [TestCase(5, 2, 3)]
+        [TestCase(1, 2, 1)]
+        public void BatchDonors_BatchesInGivenSize(int numberOfDonors, int batchSize, int expectedNumberOfBatches)
+        {
+            var donorInputBuilder = DonorInputBuilder.New
+                .WithHla(new PhenotypeInfo<string>("donor-hla-shared"))
+                .WithFactory(i => i.DonorFrequencySetMetadata,
+                    () => FrequencySetMetadataBuilder.New.ForRegistry(IncrementingIdGenerator.NextStringId("registry-")).Build()
+                );
+
+            var batches = donorInputBatcher.BatchDonorInputs(
+                MatchProbabilityRequestInputBuilder.New.Build(),
+                donorInputBuilder.Build(numberOfDonors),
+                batchSize
+            );
+
+            batches.Count().Should().Be(expectedNumberOfBatches);
+        }
+    }
+}
