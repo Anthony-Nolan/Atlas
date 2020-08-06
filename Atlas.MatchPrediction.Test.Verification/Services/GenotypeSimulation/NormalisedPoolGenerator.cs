@@ -1,14 +1,14 @@
-﻿using Atlas.Common.Utils.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services
+namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
 {
     public interface INormalisedPoolGenerator
     {

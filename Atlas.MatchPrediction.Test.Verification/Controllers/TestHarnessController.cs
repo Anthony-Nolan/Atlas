@@ -1,3 +1,4 @@
+using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -15,9 +16,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Controllers
         
         [HttpPost]
         [Route("test-harness")]
-        public async Task<int> GenerateTestHarness()
+        public async Task<int> GenerateTestHarness([FromBody] GenerateTestHarnessRequest request)
         {
-            return await testHarnessGenerator.GenerateTestHarness();
+            return await testHarnessGenerator.GenerateTestHarness(request);
         }
     }
 }

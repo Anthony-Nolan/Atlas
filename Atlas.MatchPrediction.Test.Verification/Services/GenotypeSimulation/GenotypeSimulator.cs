@@ -1,9 +1,9 @@
-﻿using Atlas.Common.GeneticData;
-using Atlas.MatchPrediction.Test.Verification.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.GeneticData;
+using Atlas.MatchPrediction.Test.Verification.Models;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services
+namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
 {
     public interface IGenotypeSimulator
     {

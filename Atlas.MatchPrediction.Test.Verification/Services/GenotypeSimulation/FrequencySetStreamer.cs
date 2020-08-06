@@ -4,7 +4,7 @@ using Atlas.Common.AzureStorage.Blob;
 using Atlas.MatchPrediction.Test.Verification.Settings;
 using Microsoft.Extensions.Options;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services
+namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
 {
     internal interface IFrequencySetStreamer
     {
