@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Models;
@@ -9,11 +9,24 @@ using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 {
+    public enum MatchType
+    {
+        Exact,
+        Potential,
+        Mismatch
+    }
+
     public class MatchProbabilities
     {
         public Probability ZeroMismatchProbability { get; set; }
         public Probability OneMismatchProbability { get; set; }
         public Probability TwoMismatchProbability { get; set; }
+        public MatchType MatchType => ZeroMismatchProbability.Decimal switch
+        {
+            1m => MatchType.Exact,
+            0m => MatchType.Mismatch,
+            _ => MatchType.Potential
+        };
 
         public MatchProbabilities()
         {
