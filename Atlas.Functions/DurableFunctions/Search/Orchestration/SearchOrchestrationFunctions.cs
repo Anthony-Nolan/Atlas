@@ -103,13 +103,13 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             };
         }
 
-        private static async Task<IEnumerable<MatchProbabilityInput>> BuildMatchPredictionInputs(
+        private static async Task<IEnumerable<SingleDonorMatchProbabilityInput>> BuildMatchPredictionInputs(
             IDurableOrchestrationContext context,
             SearchRequest searchRequest,
             MatchingAlgorithmResultSet searchResults,
             Dictionary<int, Donor> donorInformation)
         {
-            return await context.CallActivityAsync<IEnumerable<MatchProbabilityInput>>(
+            return await context.CallActivityAsync<IEnumerable<SingleDonorMatchProbabilityInput>>(
                 nameof(SearchActivityFunctions.BuildMatchPredictionInputs),
                 new MatchPredictionInputParameters
                 {
@@ -145,14 +145,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         /// <returns>A Task returning a Key Value pair of Atlas Donor ID, and match prediction response.</returns>
         private static async Task<KeyValuePair<int, MatchProbabilityResponse>> RunMatchPredictionForDonor(
             IDurableOrchestrationContext context,
-            MatchProbabilityInput matchProbabilityInput
+            SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput
         )
         {
             var matchPredictionResult = await context.CallActivityAsync<MatchProbabilityResponse>(
                 nameof(SearchActivityFunctions.RunMatchPrediction),
-                matchProbabilityInput
+                singleDonorMatchProbabilityInput
             );
-            return new KeyValuePair<int, MatchProbabilityResponse>(matchProbabilityInput.DonorId, matchPredictionResult);
+            return new KeyValuePair<int, MatchProbabilityResponse>(singleDonorMatchProbabilityInput.Donor.DonorId, matchPredictionResult);
         }
 
         private static async Task PersistSearchResults(

@@ -26,7 +26,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
         protected static readonly PhenotypeInfo<string> DefaultGGroups = Alleles.UnambiguousAlleleDetails.GGroups();
-        
+
         protected const string DefaultRegistryCode = "default-registry-code";
         protected const string DefaultEthnicityCode = "default-ethnicity-code";
 
@@ -58,17 +58,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected static PhenotypeInfoBuilder<string> DefaultAmbiguousAllelesBuilder =>
             new PhenotypeInfoBuilder<string>(Alleles.AmbiguousAlleleDetails.Alleles());
 
-        protected static Builder<MatchProbabilityInput> DefaultInputBuilder => MatchProbabilityInputBuilder.New
-            .With(i => i.HlaNomenclatureVersion, HlaNomenclatureVersion)
-            .With(i => i.PatientHla, DefaultUnambiguousAllelesBuilder.Build().ToPhenotypeInfoTransfer())
-            .With(i => i.DonorHla, DefaultUnambiguousAllelesBuilder.Build().ToPhenotypeInfoTransfer())
-            .With(i => i.DonorFrequencySetMetadata, new FrequencySetMetadata
-            {
-                EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode
-            })
-            .With(i => i.PatientFrequencySetMetadata, new FrequencySetMetadata
-            {
-                EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode
-            });
+        protected static Builder<SingleDonorMatchProbabilityInput> DefaultInputBuilder => MatchProbabilityInputBuilder.New
+            .WithHlaNomenclature(HlaNomenclatureVersion)
+            .WithPatientHla(DefaultUnambiguousAllelesBuilder.Build())
+            .WithDonorHla(DefaultUnambiguousAllelesBuilder.Build())
+            .WithDonorMetadata(new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode})
+            .WithPatientMetadata(new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode});
     }
 }

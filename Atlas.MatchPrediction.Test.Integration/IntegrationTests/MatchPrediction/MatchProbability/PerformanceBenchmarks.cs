@@ -26,9 +26,15 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         private const string EthnicityCode = "performance-benchmark-ethnicity";
         private const string RegistryCode = "performance-benchmark-registry";
 
-        private Builder<MatchProbabilityInput> InputBuilder => DefaultInputBuilder
-            .With(i => i.DonorFrequencySetMetadata, new FrequencySetMetadata {EthnicityCode = EthnicityCode, RegistryCode = RegistryCode})
-            .With(i => i.PatientFrequencySetMetadata, new FrequencySetMetadata {EthnicityCode = EthnicityCode, RegistryCode = RegistryCode});
+        private readonly FrequencySetMetadata frequencySetMetadata = new FrequencySetMetadata
+        {
+            EthnicityCode = EthnicityCode, 
+            RegistryCode = RegistryCode
+        };
+
+        private Builder<SingleDonorMatchProbabilityInput> InputBuilder => DefaultInputBuilder
+            .WithDonorMetadata(frequencySetMetadata)
+            .WithPatientMetadata(frequencySetMetadata);
 
         // Selected to match common frequency in large haplotype frequency set. 
         private static PhenotypeInfoBuilder<string> UnambiguousPhenotypeBuilder => new PhenotypeInfoBuilder<string>()
@@ -64,10 +70,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var patientHla = UnambiguousPhenotypeBuilder.Build();
 
-            var matchProbabilityInput = InputBuilder
-                .WithDonorHla(donorHla)
-                .WithPatientHla(patientHla)
-                .Build();
+            var matchProbabilityInput = InputBuilder.WithDonorHla(donorHla).WithPatientHla(patientHla).Build();
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -90,10 +93,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var patientHla = UnambiguousPhenotypeBuilder.Build();
 
-            var matchProbabilityInput = InputBuilder
-                .WithDonorHla(donorHla)
-                .WithPatientHla(patientHla)
-                .Build();
+            var matchProbabilityInput = InputBuilder.WithDonorHla(donorHla).WithPatientHla(patientHla).Build();
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -116,10 +116,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var patientHla = UnambiguousPhenotypeBuilder.Build();
 
-            var matchProbabilityInput = InputBuilder
-                .WithDonorHla(donorHla)
-                .WithPatientHla(patientHla)
-                .Build();
+            var matchProbabilityInput = InputBuilder.WithDonorHla(donorHla).WithPatientHla(patientHla).Build();
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
@@ -164,10 +161,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var patientHla = UnambiguousPhenotypeBuilder.Build();
 
-            var matchProbabilityInput = InputBuilder
-                .WithDonorHla(donorHla)
-                .WithPatientHla(patientHla)
-                .Build();
+            var matchProbabilityInput = InputBuilder.WithDonorHla(donorHla).WithPatientHla(patientHla).Build();
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 

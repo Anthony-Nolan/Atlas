@@ -24,12 +24,12 @@ namespace Atlas.MatchPrediction.Functions.Functions
         [FunctionName(nameof(CalculateMatchProbability))]
         public async Task<IActionResult> CalculateMatchProbability(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
-            [RequestBodyType(typeof(MatchProbabilityInput), nameof(MatchProbabilityInput))]
+            [RequestBodyType(typeof(SingleDonorMatchProbabilityInput), nameof(SingleDonorMatchProbabilityInput))]
             HttpRequest request)
         {
             try
             {
-                var matchProbabilityInput = JsonConvert.DeserializeObject<MatchProbabilityInput>(await new StreamReader(request.Body).ReadToEndAsync());
+                var matchProbabilityInput = JsonConvert.DeserializeObject<SingleDonorMatchProbabilityInput>(await new StreamReader(request.Body).ReadToEndAsync());
 
                 var matchProbabilityResponse = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
                 return new JsonResult(matchProbabilityResponse);

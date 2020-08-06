@@ -8,13 +8,13 @@ namespace Atlas.MatchPrediction.ApplicationInsights
 {
     internal class MatchPredictionLoggingContext : LoggingContext
     {
-        public void Initialise(MatchProbabilityInput matchProbabilityInput)
+        public void Initialise(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput)
         {
-            SearchRequestId = matchProbabilityInput.SearchRequestId;
-            HlaNomenclatureVersion = matchProbabilityInput.HlaNomenclatureVersion;
-            DonorId = matchProbabilityInput.DonorId.ToString();
-            DonorHla = matchProbabilityInput.DonorHla?.ToPhenotypeInfo();
-            PatientHla = matchProbabilityInput.PatientHla?.ToPhenotypeInfo();
+            SearchRequestId = singleDonorMatchProbabilityInput.SearchRequestId;
+            HlaNomenclatureVersion = singleDonorMatchProbabilityInput.HlaNomenclatureVersion;
+            DonorId = singleDonorMatchProbabilityInput.Donor.DonorId.ToString();
+            DonorHla = singleDonorMatchProbabilityInput.Donor.DonorHla?.ToPhenotypeInfo();
+            PatientHla = singleDonorMatchProbabilityInput.PatientHla?.ToPhenotypeInfo();
         }
 
         public string SearchRequestId { get; set; }
