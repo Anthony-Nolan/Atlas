@@ -1,59 +1,46 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-    <PropertyGroup>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
-        <UserSecretsId>5befb4eb-d313-4dad-b54f-2833b386c8d0</UserSecretsId>
-        <GenerateProgramFile>false</GenerateProgramFile>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>5befb4eb-d313-4dad-b54f-2833b386c8d0</UserSecretsId>
+    <GenerateProgramFile>false</GenerateProgramFile>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <Compile Remove="Migrations\20200724123724_CreateTable_NormalisedHaplotypeFrequencyPool.cs" />
-        <Compile Remove="Migrations\20200724123724_CreateTable_NormalisedHaplotypeFrequencyPool.Designer.cs" />
-        <Compile Remove="Migrations\20200726162747_CreateTable_Simulants.cs" />
-        <Compile Remove="Migrations\20200726162747_CreateTable_Simulants.Designer.cs" />
-        <Compile Remove="Migrations\20200726162910_CreateTable_Simulants.cs" />
-        <Compile Remove="Migrations\20200726162910_CreateTable_Simulants.Designer.cs" />
-        <Compile Remove="Migrations\20200727132408_CreateTestHarnessTables.cs" />
-        <Compile Remove="Migrations\20200727132408_CreateTestHarnessTables.Designer.cs" />
-        <Compile Remove="Migrations\20200727133357_CreateTestHarnessTables.cs" />
-        <Compile Remove="Migrations\20200727133357_CreateTestHarnessTables.Designer.cs" />
-        <Compile Remove="Migrations\20200727150810_InitialiseDatabase.cs" />
-        <Compile Remove="Migrations\20200727150810_InitialiseDatabase.Designer.cs" />
-        <Compile Remove="Migrations\20200729161716_AddColumn_SqlServerName.cs" />
-        <Compile Remove="Migrations\20200729161716_AddColumn_SqlServerName.Designer.cs" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="5.10.3" />
+    <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="LochNessBuilder" Version="1.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.Design" Version="1.1.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
+    <PackageReference Include="NSubstitute" Version="4.2.1" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.16.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.4.1" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="FluentAssertions" Version="5.10.3" />
-        <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4" />
-        <PackageReference Include="LochNessBuilder" Version="1.0.1" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.4" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.4">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.4" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.Design" Version="1.1.6" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.4">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
-        <PackageReference Include="NSubstitute" Version="4.2.1" />
-        <PackageReference Include="NUnit" Version="3.12.0" />
-        <PackageReference Include="NUnit3TestAdapter" Version="3.16.1">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="5.4.1" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
+    <ProjectReference Include="..\Atlas.MatchPrediction\Atlas.MatchPrediction.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
-        <ProjectReference Include="..\Atlas.MatchPrediction\Atlas.MatchPrediction.csproj" />
-    </ItemGroup>
-    
-    <ItemGroup>
-        <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
-    </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
 </Project>

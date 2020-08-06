@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services
 {
-    public interface IRandomNumberPairGenerator
+    internal interface IRandomNumberPairGenerator
     {
         /// <returns>Pairs of numbers randomly selected between range of 0 to <see cref="maxPermittedValue"/></returns>
         IReadOnlyCollection<UnorderedPair<int>> GenerateRandomNumberPairs(int numberOfPairs, int maxPermittedValue);
