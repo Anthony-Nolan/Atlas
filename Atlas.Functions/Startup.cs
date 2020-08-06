@@ -71,6 +71,7 @@ namespace Atlas.Functions
             // Atlas Function settings
             services.RegisterAsOptions<Settings.AzureStorageSettings>("AtlasFunction:AzureStorage");
             services.RegisterAsOptions<Settings.MessagingServiceBusSettings>("AtlasFunction:MessagingServiceBus");
+            services.RegisterAsOptions<Settings.OrchestrationSettings>("AtlasFunction:Orchestration");
 
             // Shared settings
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
