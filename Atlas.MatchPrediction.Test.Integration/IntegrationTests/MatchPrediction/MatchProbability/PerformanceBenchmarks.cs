@@ -199,7 +199,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
             matchDetails.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(93);
-            matchDetails.MatchProbabilities.OneMismatchProbability.Percentage.Should().Be(7);
+            matchDetails.MatchProbabilities.OneMismatchProbability.Percentage.Should().Be(6);
             matchDetails.MatchProbabilities.TwoMismatchProbability.Percentage.Should().Be(0);
         }
 
