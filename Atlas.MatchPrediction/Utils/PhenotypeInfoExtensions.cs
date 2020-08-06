@@ -11,22 +11,22 @@ namespace Atlas.MatchPrediction.Utils
         /// </summary>
         public static PhenotypeInfo<string> CopyExpressingAllelesToNullPositions(this PhenotypeInfo<string> typedGenotype)
         {
-            typedGenotype.EachLocus((locus, locusInfo) =>
+            return typedGenotype.MapByLocus((locus, locusInfo) =>
             {
                 if (locusInfo.SinglePositionNull())
                 {
                     if (locusInfo.Position1 == null)
                     {
-                        typedGenotype.SetPosition(locus, LocusPosition.One, locusInfo.Position2);
+                        locusInfo = locusInfo.SetAtPosition(LocusPosition.One, locusInfo.Position2);
                     }
                     if (locusInfo.Position2 == null)
                     {
-                        typedGenotype.SetPosition(locus, LocusPosition.Two, locusInfo.Position1);
+                        locusInfo = locusInfo.SetAtPosition(LocusPosition.Two, locusInfo.Position1);
                     }
                 }
-            });
 
-            return typedGenotype;
+                return locusInfo;
+            });
         }
     }
 }
