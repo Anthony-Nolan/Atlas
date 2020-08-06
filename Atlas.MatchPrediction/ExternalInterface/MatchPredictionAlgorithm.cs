@@ -15,7 +15,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
     {
         public Task<MatchProbabilityResponse> RunMatchPredictionAlgorithm(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput);
 
-        /// <returns>A dictionary of DonorId to Match Prediction Result</returns>
+        /// <returns>A dictionary of DonorIds to Match Prediction Result</returns>
         public Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> RunMatchPredictionAlgorithmBatch(
             MultipleDonorMatchProbabilityInput multipleDonorMatchProbabilityInput);
 
@@ -61,7 +61,10 @@ namespace Atlas.MatchPrediction.ExternalInterface
                     using (logger.RunTimed("Run Match Prediction Algorithm per donor"))
                     {
                         var result = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
-                        results[matchProbabilityInput.Donor.DonorId] = result;
+                        foreach (var donorId in matchProbabilityInput.DonorInput.DonorIds)
+                        {
+                            results[donorId] = result;
+                        }
                     }
                 }
 

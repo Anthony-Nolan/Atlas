@@ -248,7 +248,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var matchProbabilityInput = new SingleDonorMatchProbabilityInput
             {
                 PatientHla = patientHla.ToPhenotypeInfoTransfer(),
-                Donor = new DonorInput
+                DonorInput = new DonorInput
                 {
                     DonorHla = DefaultUnambiguousAllelesBuilder.WithDataAt(Locus.C, null as string).Build().ToPhenotypeInfoTransfer(),
                     DonorFrequencySetMetadata = new FrequencySetMetadata {EthnicityCode = DefaultEthnicityCode, RegistryCode = DefaultRegistryCode},

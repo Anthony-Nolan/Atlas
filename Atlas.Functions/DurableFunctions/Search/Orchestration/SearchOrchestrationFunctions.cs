@@ -152,7 +152,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 nameof(SearchActivityFunctions.RunMatchPrediction),
                 singleDonorMatchProbabilityInput
             );
-            return new KeyValuePair<int, MatchProbabilityResponse>(singleDonorMatchProbabilityInput.Donor.DonorId, matchPredictionResult);
+            // TODO: ATLAS-280: Batching
+            return new KeyValuePair<int, MatchProbabilityResponse>(
+                singleDonorMatchProbabilityInput.DonorInput.DonorIds.SingleOrDefault(),
+                matchPredictionResult
+            );
         }
 
         private static async Task PersistSearchResults(
