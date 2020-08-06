@@ -110,7 +110,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [FunctionName(nameof(BuildMatchPredictionInputs))]
-        public async Task<IEnumerable<SingleDonorMatchProbabilityInput>> BuildMatchPredictionInputs(
+        public async Task<IEnumerable<MultipleDonorMatchProbabilityInput>> BuildMatchPredictionInputs(
             [ActivityTrigger] MatchPredictionInputParameters matchPredictionInputParameters
         )
         {
@@ -129,16 +129,16 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [FunctionName(nameof(RunMatchPrediction))]
-        public async Task<MatchProbabilityResponse> RunMatchPrediction([ActivityTrigger] SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput)
+        public async Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> RunMatchPrediction([ActivityTrigger] MultipleDonorMatchProbabilityInput matchProbabilityInput)
         {
             try
             {
-                return await matchPredictionAlgorithm.RunMatchPredictionAlgorithm(singleDonorMatchProbabilityInput);
+                return await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(matchProbabilityInput);
             }
             catch (Exception e)
             {
                 await searchCompletionMessageSender.PublishFailureMessage(
-                    singleDonorMatchProbabilityInput.SearchRequestId,
+                    matchProbabilityInput.SearchRequestId,
                     $"Failed to run match prediction algorithm.\n Exception: {e.Message}"
                 );
                 throw;

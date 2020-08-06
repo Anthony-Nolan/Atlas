@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.MatchPrediction.ExternalInterface;
 using EnumStringValues;
 
 namespace Atlas.Functions.Services
@@ -26,48 +27,84 @@ namespace Atlas.Functions.Services
 
     public interface IMatchPredictionInputBuilder
     {
-        IEnumerable<SingleDonorMatchProbabilityInput> BuildMatchPredictionInputs(MatchPredictionInputParameters matchPredictionInputParameters);
+        IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(MatchPredictionInputParameters matchPredictionInputParameters);
     }
 
     internal class MatchPredictionInputBuilder : IMatchPredictionInputBuilder
     {
         private readonly ILogger logger;
+        private readonly IDonorInputBatcher donorInputBatcher;
 
-        public MatchPredictionInputBuilder(ILogger logger)
+        public MatchPredictionInputBuilder(ILogger logger, IDonorInputBatcher donorInputBatcher)
         {
             this.logger = logger;
+            this.donorInputBatcher = donorInputBatcher;
         }
 
         /// <inheritdoc />
-        public IEnumerable<SingleDonorMatchProbabilityInput> BuildMatchPredictionInputs(MatchPredictionInputParameters matchPredictionInputParameters)
+        public IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(
+            MatchPredictionInputParameters matchPredictionInputParameters)
         {
             var matchingAlgorithmResultSet = matchPredictionInputParameters.MatchingAlgorithmResults;
             var searchRequest = matchPredictionInputParameters.SearchRequest;
             var donorDictionary = matchPredictionInputParameters.DonorDictionary;
 
-            return matchingAlgorithmResultSet.MatchingAlgorithmResults.Select(matchingResult => BuildMatchPredictionInput(
+            var nonDonorInput = BuildNonDonorMatchPredictionInput(
+                matchingAlgorithmResultSet.SearchRequestId,
+                searchRequest,
+                matchingAlgorithmResultSet.HlaNomenclatureVersion
+            );
+
+            var donorInputs = matchingAlgorithmResultSet.MatchingAlgorithmResults.Select(matchingResult => BuildPerDonorMatchPredictionInput(
                     matchingResult,
-                    searchRequest,
-                    donorDictionary,
-                    matchingAlgorithmResultSet.HlaNomenclatureVersion,
-                    matchingAlgorithmResultSet.SearchRequestId
+                    donorDictionary
                 ))
                 .Where(r => r != null);
+
+            // TODO: ATLAS-280: Configurable batch size
+            return donorInputBatcher.BatchDonorInputs(nonDonorInput, donorInputs, 100);
         }
 
         /// <summary>
-        /// Pieces together various pieces of information into a match prediction input
+        /// Builds all non-donor information required to run the match prediction algorithm.
+        /// e.g. patient info, hla nomenclature, matching preferences
+        /// 
+        /// This will remain constant for all donors in the request, so only needs to be calculated once.
+        /// </summary>
+        /// <param name="searchRequestId"></param>
+        /// <param name="searchRequest"></param>
+        /// <param name="hlaNomenclatureVersion"></param>
+        /// <returns></returns>
+        private MatchProbabilityRequestInput BuildNonDonorMatchPredictionInput(
+            string searchRequestId,
+            SearchRequest searchRequest,
+            string hlaNomenclatureVersion
+        )
+        {
+            return new MatchProbabilityRequestInput
+            {
+                SearchRequestId = searchRequestId,
+                ExcludedLoci = ExcludedLoci(searchRequest.MatchCriteria),
+                PatientHla = searchRequest.SearchHlaData.ToPhenotypeInfo().ToPhenotypeInfoTransfer(),
+                PatientFrequencySetMetadata = new FrequencySetMetadata
+                {
+                    EthnicityCode = searchRequest.PatientEthnicityCode,
+                    RegistryCode = searchRequest.PatientRegistryCode
+                },
+                HlaNomenclatureVersion = hlaNomenclatureVersion
+            };
+        }
+
+        /// <summary>
+        /// Pieces together various pieces of information into a match prediction input per donor.
         /// </summary>
         /// <returns>
         /// Match prediction input for the given search result.
         /// Null, if the donor's information could not be found in the donor store 
         /// </returns>
-        private SingleDonorMatchProbabilityInput BuildMatchPredictionInput(
+        private DonorInput BuildPerDonorMatchPredictionInput(
             MatchingAlgorithmResult matchingAlgorithmResult,
-            SearchRequest searchRequest,
-            IReadOnlyDictionary<int, Donor> donorDictionary,
-            string hlaNomenclatureVersion,
-            string searchRequestId)
+            IReadOnlyDictionary<int, Donor> donorDictionary)
         {
             if (!donorDictionary.TryGetValue(matchingAlgorithmResult.AtlasDonorId, out var donorInfo))
             {
@@ -77,27 +114,15 @@ namespace Atlas.Functions.Services
                 return null;
             }
 
-            return new SingleDonorMatchProbabilityInput
+            return new DonorInput
             {
-                SearchRequestId = searchRequestId,
-                DonorInput = new DonorInput
+                DonorId = matchingAlgorithmResult.AtlasDonorId,
+                DonorHla = matchingAlgorithmResult.DonorHla,
+                DonorFrequencySetMetadata = new FrequencySetMetadata
                 {
-                    DonorId = matchingAlgorithmResult.AtlasDonorId,
-                    DonorHla = matchingAlgorithmResult.DonorHla,
-                    DonorFrequencySetMetadata = new FrequencySetMetadata
-                    {
-                        EthnicityCode = donorInfo.EthnicityCode,
-                        RegistryCode = donorInfo.RegistryCode
-                    },
+                    EthnicityCode = donorInfo.EthnicityCode,
+                    RegistryCode = donorInfo.RegistryCode
                 },
-                ExcludedLoci = ExcludedLoci(searchRequest.MatchCriteria),
-                PatientHla = searchRequest.SearchHlaData.ToPhenotypeInfo().ToPhenotypeInfoTransfer(),
-                PatientFrequencySetMetadata = new FrequencySetMetadata
-                {
-                    EthnicityCode = searchRequest.PatientEthnicityCode,
-                    RegistryCode = searchRequest.PatientRegistryCode
-                },
-                HlaNomenclatureVersion = hlaNomenclatureVersion
             };
         }
 

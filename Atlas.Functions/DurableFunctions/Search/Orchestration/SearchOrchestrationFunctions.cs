@@ -76,8 +76,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             TimedResultSet<Dictionary<int, Donor>> donorInformation)
         {
             var matchPredictionInputs = await BuildMatchPredictionInputs(context, searchRequest, searchResults, donorInformation.ResultSet);
-            var matchPredictionTasks = matchPredictionInputs.Select(r => RunMatchPredictionForDonor(context, r)).ToList();
-            var matchPredictionResults = (await Task.WhenAll(matchPredictionTasks)).ToDictionary();
+            var matchPredictionTasks = matchPredictionInputs.Select(r => RunMatchPredictionForDonorBatch(context, r)).ToList();
+            var matchPredictionResults = (await Task.WhenAll(matchPredictionTasks)).SelectMany(x => x).ToDictionary();
 
             // We cannot use a stopwatch, as orchestration functions must be deterministic, and may be called multiple times.
             // Results of activity functions are constant across multiple invocations, so we can trust that finished time of the previous stage will remain constant 
@@ -103,13 +103,13 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             };
         }
 
-        private static async Task<IEnumerable<SingleDonorMatchProbabilityInput>> BuildMatchPredictionInputs(
+        private static async Task<IEnumerable<MultipleDonorMatchProbabilityInput>> BuildMatchPredictionInputs(
             IDurableOrchestrationContext context,
             SearchRequest searchRequest,
             MatchingAlgorithmResultSet searchResults,
             Dictionary<int, Donor> donorInformation)
         {
-            return await context.CallActivityAsync<IEnumerable<SingleDonorMatchProbabilityInput>>(
+            return await context.CallActivityAsync<IEnumerable<MultipleDonorMatchProbabilityInput>>(
                 nameof(SearchActivityFunctions.BuildMatchPredictionInputs),
                 new MatchPredictionInputParameters
                 {
@@ -143,19 +143,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         }
 
         /// <returns>A Task returning a Key Value pair of Atlas Donor ID, and match prediction response.</returns>
-        private static async Task<KeyValuePair<int, MatchProbabilityResponse>> RunMatchPredictionForDonor(
+        private static async Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> RunMatchPredictionForDonorBatch(
             IDurableOrchestrationContext context,
-            SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput
+            MultipleDonorMatchProbabilityInput matchProbabilityInput
         )
         {
-            var matchPredictionResult = await context.CallActivityAsync<MatchProbabilityResponse>(
+            return await context.CallActivityAsync<IReadOnlyDictionary<int, MatchProbabilityResponse>>(
                 nameof(SearchActivityFunctions.RunMatchPrediction),
-                singleDonorMatchProbabilityInput
-            );
-            // TODO: ATLAS-280: Batching
-            return new KeyValuePair<int, MatchProbabilityResponse>(
-                singleDonorMatchProbabilityInput.DonorInput.DonorIds.SingleOrDefault(),
-                matchPredictionResult
+                matchProbabilityInput
             );
         }
 
