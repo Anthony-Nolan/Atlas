@@ -14,8 +14,8 @@ namespace Atlas.MatchPrediction.ApplicationInsights
         {
             SearchRequestId = singleDonorMatchProbabilityInput.SearchRequestId;
             HlaNomenclatureVersion = singleDonorMatchProbabilityInput.HlaNomenclatureVersion;
-            DonorIds = singleDonorMatchProbabilityInput.DonorInput.DonorIds.Select(id => id.ToString()).StringJoin(",");
-            DonorHla = singleDonorMatchProbabilityInput.DonorInput.DonorHla?.ToPhenotypeInfo();
+            DonorIds = singleDonorMatchProbabilityInput.DonorInput?.DonorIds?.Select(id => id.ToString()).StringJoin(",");
+            DonorHla = singleDonorMatchProbabilityInput.DonorInput?.DonorHla?.ToPhenotypeInfo();
             PatientHla = singleDonorMatchProbabilityInput.PatientHla?.ToPhenotypeInfo();
         }
 
