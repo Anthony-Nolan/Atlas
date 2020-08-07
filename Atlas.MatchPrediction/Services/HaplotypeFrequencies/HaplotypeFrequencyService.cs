@@ -122,6 +122,9 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 patientSet = await GetSingleHaplotypeFrequencySet(patientInfo);
             }
 
+            logger.SendTrace($"Frequency Set Selection: Donor {donorSet.RegistryCode}/{donorSet.EthnicityCode}/{donorSet.Id}");
+            logger.SendTrace($"Frequency Set Selection: Patient {patientSet.RegistryCode}/{patientSet.EthnicityCode}/{patientSet.Id}");
+            
             return new HaplotypeFrequencySetResponse
             {
                 DonorSet = donorSet,
