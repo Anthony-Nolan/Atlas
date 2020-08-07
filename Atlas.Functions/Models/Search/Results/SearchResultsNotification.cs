@@ -19,7 +19,28 @@ namespace Atlas.Functions.Models.Search.Results
         /// </summary>
         public string FailureMessage { get; set; }
         
+        /// <summary>
+        /// Time taken to run the matching algorithm - currently includes matching, and scoring.
+        /// </summary>
         public TimeSpan MatchingAlgorithmTime { get; set; }
+        
+        /// <summary>
+        /// Total time taken to run the match prediction algorithm for all results.
+        ///
+        /// Note that this can run in parallel - the logged time is the time between starting running MPA requests, and getting the last results.
+        /// The sum of all MPA processing time may exceed this, if donors were calculated in parallel.
+        /// </summary>
         public TimeSpan MatchPredictionTime { get; set; }
+        
+        /// <summary>
+        /// Total time between search initiation and results notification.
+        /// 
+        /// Will exceed the sum of matching algorithm and match prediction, as this time also includes:
+        ///     - Fetching donor metadata to use in the match prediction algorithm
+        ///     - Conversion of search results
+        ///     - Persisting results to Azure storage
+        ///     - Any other plumbing / orchestration time.
+        /// </summary>
+        public TimeSpan OverallSearchTime { get; set; }
     }
 }

@@ -152,7 +152,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             {
                 var resultSet = resultsCombiner.CombineResults(parameters);
                 await searchResultsBlobUploader.UploadResults(resultSet);
-                await searchCompletionMessageSender.PublishResultsMessage(resultSet);
+                await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated);
             }
             catch (Exception e)
             {
@@ -180,6 +180,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             /// Keyed by ATLAS ID
             /// </summary>
             public IDictionary<int, Donor> DonorInformation { get; set; }
+            
+            /// <summary>
+            /// The time the search request was initiated. Used to calculate an overall search time for Atlas search requests.
+            /// </summary>
+            public DateTime SearchInitiated { get; set; }
         }
     }
 }
