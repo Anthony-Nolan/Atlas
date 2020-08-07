@@ -19,7 +19,6 @@ namespace Atlas.Common.GeneticData
         public T Item1 { get; }
         public T Item2 { get; }
 
-        // TODO: ATLAS-527: Make this immutable.
         public UnorderedPair()
         {
         }
@@ -74,7 +73,6 @@ namespace Atlas.Common.GeneticData
 
         public override int GetHashCode()
         {
-            // TODO: ATLAS-527: Make this immutable.
             return Item1.GetHashCode() ^ Item2.GetHashCode();
         }
 
