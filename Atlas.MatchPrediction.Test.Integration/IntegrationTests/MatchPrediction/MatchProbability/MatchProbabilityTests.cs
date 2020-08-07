@@ -64,7 +64,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
             matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
             matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
-            matchDetails.MatchProbabilities.MatchingType.Should().Be(MatchType.Exact);
         }
 
         [Test]
@@ -118,7 +117,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
             matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
             matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
-            matchDetails.MatchProbabilities.MatchingType.Should().Be(MatchType.Mismatch);
         }
 
         [Test]
@@ -206,7 +204,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
             matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
             matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
-            matchDetails.MatchProbabilities.MatchingType.Should().Be(MatchType.Potential);
         }
 
         [Test]
@@ -295,7 +292,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
             matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
             matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
-            matchDetails.MatchProbabilities.MatchingType.Should().Be(MatchType.Potential);
         }
 
         [Test]
