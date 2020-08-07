@@ -97,7 +97,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             }
 
             // TODO: ATLAS-600: Read HLA nomenclature version from file data, rather than hard-coding
-            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary("3400");
+            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary("3410");
 
             var haplotypesToStore = convertToPGroups
                 ? await ConvertHaplotypesToPGroupResolutionAndConsolidate(gGroupHaplotypes, hlaMetadataDictionary)
