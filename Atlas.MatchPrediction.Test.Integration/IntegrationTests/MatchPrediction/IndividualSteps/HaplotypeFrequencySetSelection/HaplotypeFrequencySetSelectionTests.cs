@@ -49,8 +49,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            result.DonorSet.Should().BeEquivalentTo(donorInfo);
-            result.PatientSet.Should().BeEquivalentTo(patientInfo);
+            result.DonorSet.ShouldHaveEquivalentMetadata(donorInfo);
+            result.PatientSet.ShouldHaveEquivalentMetadata(patientInfo);
         }
 
         [Test]
@@ -64,8 +64,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            result.DonorSet.Should().BeEquivalentTo(donorInfo);
-            result.PatientSet.Should().BeEquivalentTo(patientInfo);
+            result.DonorSet.ShouldHaveEquivalentMetadata(donorInfo);
+            result.PatientSet.ShouldHaveEquivalentMetadata(patientInfo);
         }
 
         [Test]
@@ -87,7 +87,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            result.PatientSet.RegistryCode.Should().BeEquivalentTo(donorInfo.RegistryCode);
+            result.PatientSet.RegistryCode.Should().Be(donorInfo.RegistryCode);
         }
 
         [Test]
@@ -101,7 +101,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            result.PatientSet.RegistryCode.Should().BeEquivalentTo(patientInfo.RegistryCode);
+            result.PatientSet.RegistryCode.Should().Be(patientInfo.RegistryCode);
         }
 
         [Test]
@@ -112,8 +112,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            result.DonorSet.Should().BeEquivalentTo(DefaultRegistryOnlyPopulation);
-            result.PatientSet.Should().BeEquivalentTo(DefaultRegistryOnlyPopulation);
+            result.DonorSet.ShouldHaveEquivalentMetadata(DefaultRegistryOnlyPopulation);
+            result.PatientSet.ShouldHaveEquivalentMetadata(DefaultRegistryOnlyPopulation);
         }
 
         [Test]
@@ -124,8 +124,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            result.DonorSet.Should().BeEquivalentTo(DefaultRegistryOnlyPopulation);
-            result.PatientSet.Should().BeEquivalentTo(DefaultRegistryOnlyPopulation);
+            result.DonorSet.ShouldHaveEquivalentMetadata(DefaultRegistryOnlyPopulation);
+            result.PatientSet.ShouldHaveEquivalentMetadata(DefaultRegistryOnlyPopulation);
         }
 
         [Test]
@@ -136,8 +136,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            result.DonorSet.Should().BeEquivalentTo(GlobalPopulation);
-            result.PatientSet.Should().BeEquivalentTo(GlobalPopulation);
+            result.DonorSet.ShouldHaveEquivalentMetadata(GlobalPopulation);
+            result.PatientSet.ShouldHaveEquivalentMetadata(GlobalPopulation);
         }
 
         [Test]
@@ -154,8 +154,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            result.DonorSet.Should().BeEquivalentTo(GlobalPopulation);
-            result.PatientSet.Should().BeEquivalentTo(GlobalPopulation);
+            result.DonorSet.ShouldHaveEquivalentMetadata(GlobalPopulation);
+            result.PatientSet.ShouldHaveEquivalentMetadata(GlobalPopulation);
         }
 
         [Test]
@@ -166,8 +166,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            result.DonorSet.Should().BeEquivalentTo(GlobalPopulation);
-            result.PatientSet.Should().BeEquivalentTo(GlobalPopulation);
+            result.DonorSet.ShouldHaveEquivalentMetadata(GlobalPopulation);
+            result.PatientSet.ShouldHaveEquivalentMetadata(GlobalPopulation);
         }
         
         [Test]
@@ -177,7 +177,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var result = await service.GetSingleHaplotypeFrequencySet(setInfo);
 
-            result.Should().BeEquivalentTo(DefaultSpecificPopulation);
+            result.ShouldHaveEquivalentMetadata(DefaultSpecificPopulation);
         }
 
         [Test]
@@ -187,7 +187,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var result = await service.GetSingleHaplotypeFrequencySet(setInfo);
             
-            result.Should().BeEquivalentTo(DefaultRegistryOnlyPopulation);
+            result.ShouldHaveEquivalentMetadata(DefaultRegistryOnlyPopulation);
         }
         
         [Test]
@@ -197,7 +197,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var result = await service.GetSingleHaplotypeFrequencySet(setInfo);
             
-            result.Should().BeEquivalentTo(GlobalPopulation);
+            result.ShouldHaveEquivalentMetadata(GlobalPopulation);
         }
 
         private async Task ImportHaplotypeSet(FrequencySetMetadata populationData)
@@ -209,6 +209,15 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         {
             using var file = FrequencySetFileBuilder.New(registry, ethnicity).Build();
             await service.ImportFrequencySet(file);
+        }
+    }
+
+    public static class AssertionExtensions
+    {
+        public static void ShouldHaveEquivalentMetadata(this HaplotypeFrequencySet haplotypeFrequencySet, FrequencySetMetadata metadata)
+        {
+            haplotypeFrequencySet.EthnicityCode.Should().Be(metadata.EthnicityCode);
+            haplotypeFrequencySet.RegistryCode.Should().Be(metadata.RegistryCode);
         }
     }
 }
