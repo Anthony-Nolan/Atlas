@@ -84,7 +84,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             TimeSpan? totalElapsedTime = default;
             if (donorInformation.FinishedTimeUtc.HasValue)
             {
-                var now = DateTime.UtcNow;
+                var now = context.CurrentUtcDateTime;
                 totalElapsedTime = now.Subtract(donorInformation.FinishedTimeUtc.Value);
             }
 
