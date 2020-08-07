@@ -63,5 +63,21 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Reading
 
             donors.Count.Should().Be(atlasIdsOfInterest.Count);
         }
+
+        [Test]
+        public async Task GetDonorsByIds_WithMoreDonorsThanSqlParameterisationLimit_ReturnsAllDonors()
+        {
+            // SQL parameterisation limit is 2100
+            const int donorCount = 2200;
+            var donorUpdates = DonorUpdateBuilder.New.Build(donorCount).ToArray();
+            var donorFile = DonorImportFileBuilder.NewWithoutContents.WithDonors(donorUpdates).Build();
+            await donorFileImporter.ImportDonorFile(donorFile);
+
+            var allDonorIds = donorRepository.StreamAllDonors().Select(d => d.AtlasId).ToList();
+            
+            var donors = await donorRepository.GetDonorsByIds(allDonorIds);
+
+            donors.Count.Should().Be(donorCount);
+        }
     }
 }

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Models;
 using Dapper;
@@ -17,6 +18,8 @@ namespace Atlas.DonorImport.Data.Repositories
 
     public class DonorReadRepository : DonorRepositoryBase, IDonorReadRepository
     {
+        private const int DonorReadBatchSize = 1500;
+
         /// <inheritdoc />
         public DonorReadRepository(string connectionString) : base(connectionString)
         {
@@ -49,9 +52,13 @@ namespace Atlas.DonorImport.Data.Repositories
 SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM Donors
 WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
 ";
+
             await using (var connection = NewConnection())
             {
-                var donors = await connection.QueryAsync<Donor>(sql, new { codes = externalDonorCodes });
+                var donors = await externalDonorCodes.ProcessInBatchesAsync(
+                    DonorReadBatchSize,
+                    async codes => await connection.QueryAsync<Donor>(sql, new {codes})
+                );
                 return donors.ToDictionary(d => d.ExternalDonorCode, d => d);
             }
         }
@@ -63,9 +70,13 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
 SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM Donors
 WHERE {nameof(Donor.AtlasId)} IN @ids
 ";
+
             await using (var connection = NewConnection())
             {
-                var donors = await connection.QueryAsync<Donor>(sql, new { ids = donorIds });
+                var donors = await donorIds.ProcessInBatchesAsync(
+                    DonorReadBatchSize,
+                    async ids => await connection.QueryAsync<Donor>(sql, new {ids})
+                );
                 return donors.ToDictionary(d => d.AtlasId, d => d);
             }
         }
@@ -78,7 +89,10 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
 ";
             await using (var connection = NewConnection())
             {
-                var donors = await connection.QueryAsync<(int,string)>(sql, new { codes = externalDonorCodes });
+                var donors = await externalDonorCodes.ProcessInBatchesAsync(
+                    DonorReadBatchSize,
+                    async codes => await connection.QueryAsync<(int, string)>(sql, new {codes})
+                );
                 return donors.ToDictionary(d => d.Item2, d => d.Item1);
             }
         }
