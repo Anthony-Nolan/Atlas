@@ -30,6 +30,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             [OrchestrationTrigger] IDurableOrchestrationContext context
         )
         {
+            var searchInitiated = context.CurrentUtcDateTime;
+            
             var searchRequest = context.GetInput<SearchRequest>();
 
             var timedSearchResults = await RunMatchingAlgorithm(context, searchRequest);
@@ -39,13 +41,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             var donorInformation = timedDonorInformation.ResultSet;
 
             var matchPredictionResults = await RunMatchPredictionAlgorithm(context, searchRequest, searchResults, timedDonorInformation);
-            await PersistSearchResults(context, timedSearchResults, matchPredictionResults, donorInformation);
+            await PersistSearchResults(context, timedSearchResults, matchPredictionResults, donorInformation, searchInitiated);
 
             // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
             return new SearchOrchestrationOutput
             {
                 MatchingAlgorithmTime = timedSearchResults.ElapsedTime,
                 MatchPredictionTime = matchPredictionResults.ElapsedTime,
+                TotalSearchTime = context.CurrentUtcDateTime.Subtract(searchInitiated),
                 MatchingDonorCount = searchResults.ResultCount,
                 MatchingResultFileName = searchResults.ResultsFileName,
                 MatchingResultBlobContainer = searchResults.BlobStorageContainerName,
@@ -158,7 +161,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             IDurableOrchestrationContext context,
             TimedResultSet<MatchingAlgorithmResultSet> searchResults,
             TimedResultSet<Dictionary<int, MatchProbabilityResponse>> matchPredictionResults,
-            Dictionary<int, Donor> donorInformation)
+            Dictionary<int, Donor> donorInformation,
+            DateTime searchInitiated)
         {
             // Note that this serializes the match prediction results, using default settings - which rounds any decimals to 15dp.
             await context.CallActivityAsync(
@@ -167,7 +171,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 {
                     DonorInformation = donorInformation,
                     MatchPredictionResults = matchPredictionResults,
-                    MatchingAlgorithmResultSet = searchResults
+                    MatchingAlgorithmResultSet = searchResults,
+                    SearchInitiated = searchInitiated
                 }
             );
 
