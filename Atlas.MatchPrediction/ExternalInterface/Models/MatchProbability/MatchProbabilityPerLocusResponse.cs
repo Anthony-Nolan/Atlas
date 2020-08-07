@@ -15,7 +15,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
                 MatchProbabilities.TwoMismatchProbability.Decimal == 0 ? PredictiveMatchCategory.Exact :
                 MatchProbabilities.OneMismatchProbability.Decimal == 0 ? PredictiveMatchCategory.Mismatch : PredictiveMatchCategory.Potential),
             PredictiveMatchCategory.Potential => new LocusInfo<PredictiveMatchCategory>(PredictiveMatchCategory.Potential,
-                MatchProbabilities.TwoMismatchProbability.Decimal == 0 ? PredictiveMatchCategory.Potential : PredictiveMatchCategory.Exact),
+                MatchProbabilities.TwoMismatchProbability.Decimal == 0 ? PredictiveMatchCategory.Exact : PredictiveMatchCategory.Potential),
             _ => throw new ArgumentOutOfRangeException()
         };
 
