@@ -91,12 +91,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     OneMismatchProbability = new Probability(MatchProbability(matchProbabilityNumerators.OneMismatchProbability)),
                     TwoMismatchProbability = new Probability(MatchProbability(matchProbabilityNumerators.TwoMismatchProbability)),
                 },
-                MatchProbabilitiesPerLocus = new LociInfo<MatchProbabilityLocusInfo>().Map((locus, _) =>
+                MatchProbabilitiesPerLocus = new LociInfo<MatchProbabilityPerLocusResponse>().Map((locus, _) =>
                 {
                     var zeroMismatch = matchProbabilityNumerators.ZeroMismatchProbabilityPerLocus.GetLocus(locus);
                     var oneMismatch = matchProbabilityNumerators.OneMismatchProbabilityPerLocus.GetLocus(locus);
                     var twoMismatch = matchProbabilityNumerators.TwoMismatchProbabilityPerLocus.GetLocus(locus);
-                    return new MatchProbabilityLocusInfo(new MatchProbabilities
+                    return new MatchProbabilityPerLocusResponse(new MatchProbabilities
                     {
                         ZeroMismatchProbability = zeroMismatch.HasValue ? new Probability(MatchProbability(zeroMismatch.Value)) : null,
                         OneMismatchProbability = oneMismatch.HasValue ? new Probability(MatchProbability(oneMismatch.Value)) : null,
