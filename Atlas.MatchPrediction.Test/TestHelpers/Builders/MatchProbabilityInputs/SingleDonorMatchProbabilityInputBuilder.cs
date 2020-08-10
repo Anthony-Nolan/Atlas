@@ -10,7 +10,7 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs
     [Builder]
     public static class SingleDonorMatchProbabilityInputBuilder
     {
-        public static Builder New => Builder.New
+        public static Builder Default => Builder.New
             .With(i => i.DonorInput, new DonorInput())
             .WithPatientHla(new PhenotypeInfo<string>("hla"))
             .WithDonorHla(new PhenotypeInfo<string>("hla"))

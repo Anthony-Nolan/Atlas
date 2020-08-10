@@ -25,9 +25,9 @@ namespace Atlas.MatchPrediction.Test.Services
         }
 
         [Test]
-        public void BatchDonors_RetainsAllNonDonorRequestInfo()
+        public void BatchDonors_RetainsAllNonDonorSearchRequestInfo()
         {
-            var requestInput = MatchProbabilityRequestInputBuilder.New
+            var requestInput = MatchProbabilityRequestInputBuilder.Default
                 .WithPatientHla(new PhenotypeInfo<string>("hla"))
                 .WithPatientMetadata(FrequencySetMetadataBuilder.New.ForEthnicity("eth").ForRegistry("reg").Build())
                 .WithExcludedLoci(Locus.A)
@@ -35,7 +35,7 @@ namespace Atlas.MatchPrediction.Test.Services
                 .WithSearchRequestId("request-id")
                 .Build();
 
-            var batchedInput = donorInputBatcher.BatchDonorInputs(requestInput, new List<DonorInput> {DonorInputBuilder.New.Build()}).Single();
+            var batchedInput = donorInputBatcher.BatchDonorInputs(requestInput, new List<DonorInput> {DonorInputBuilder.Default.Build()}).Single();
 
             batchedInput.ExcludedLoci.Should().BeEquivalentTo(requestInput.ExcludedLoci);
             batchedInput.PatientHla.Should().BeEquivalentTo(requestInput.PatientHla);
@@ -47,7 +47,7 @@ namespace Atlas.MatchPrediction.Test.Services
         [Test]
         public void BatchDonors_WhenMultipleDonorsShareHlaAndMetadata_CombinesDonorInputs()
         {
-            var sharedDonorInputBuilder = DonorInputBuilder.New
+            var sharedDonorInputBuilder = DonorInputBuilder.Default
                 // Need to use factories here to ensure we have objects that differ by reference, but not by value.
                 .WithFactory(i => i.DonorHla, () => new PhenotypeInfo<string>("donor-hla-shared").ToPhenotypeInfoTransfer())
                 .WithFactory(
@@ -62,7 +62,7 @@ namespace Atlas.MatchPrediction.Test.Services
                 .Build();
 
             var batch = donorInputBatcher.BatchDonorInputs(
-                    MatchProbabilityRequestInputBuilder.New.Build(),
+                    MatchProbabilityRequestInputBuilder.Default.Build(),
                     sharedDonorInputs.Concat(new[] {donorInputWithDifferentHla}).Concat(new[] {donorInputWithDifferentMetadata}))
                 .Single();
 
@@ -76,14 +76,14 @@ namespace Atlas.MatchPrediction.Test.Services
         [TestCase(1, 2, 1)]
         public void BatchDonors_BatchesInGivenSize(int numberOfDonors, int batchSize, int expectedNumberOfBatches)
         {
-            var donorInputBuilder = DonorInputBuilder.New
+            var donorInputBuilder = DonorInputBuilder.Default
                 .WithHla(new PhenotypeInfo<string>("donor-hla-shared"))
                 .WithFactory(i => i.DonorFrequencySetMetadata,
                     () => FrequencySetMetadataBuilder.New.ForRegistry(IncrementingIdGenerator.NextStringId("registry-")).Build()
                 );
 
             var batches = donorInputBatcher.BatchDonorInputs(
-                MatchProbabilityRequestInputBuilder.New.Build(),
+                MatchProbabilityRequestInputBuilder.Default.Build(),
                 donorInputBuilder.Build(numberOfDonors),
                 batchSize
             );

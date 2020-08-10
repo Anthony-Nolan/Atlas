@@ -14,7 +14,7 @@ namespace Atlas.MatchPrediction.Test.Validators
         [Test]
         public void Validator_ForValidInput_ValidationPasses()
         {
-            var input = SingleDonorMatchProbabilityInputBuilder.New.Build();
+            var input = SingleDonorMatchProbabilityInputBuilder.Default.Build();
 
             var result = new MatchProbabilityInputValidator().Validate(input);
 
@@ -24,7 +24,7 @@ namespace Atlas.MatchPrediction.Test.Validators
         [Test]
         public void Validator_WhenPatientHlaNotProvided_ValidationFails()
         {
-            var input = SingleDonorMatchProbabilityInputBuilder.New.WithPatientHla(null).Build();
+            var input = SingleDonorMatchProbabilityInputBuilder.Default.WithPatientHla(null).Build();
 
             var result = new MatchProbabilityInputValidator().Validate(input);
 
@@ -34,7 +34,7 @@ namespace Atlas.MatchPrediction.Test.Validators
         [Test]
         public void Validator_WhenDonorHlaNotProvided_ValidationFails()
         {
-            var input = SingleDonorMatchProbabilityInputBuilder.New.WithDonorHla(null).Build();
+            var input = SingleDonorMatchProbabilityInputBuilder.Default.WithDonorHla(null).Build();
 
             var result = new MatchProbabilityInputValidator().Validate(input);
 
@@ -44,7 +44,7 @@ namespace Atlas.MatchPrediction.Test.Validators
         [Test]
         public void Validator_WhenHlaNomenclatureNotProvided_ValidationFails()
         {
-            var input = SingleDonorMatchProbabilityInputBuilder.New.WithHlaNomenclature(null).Build();
+            var input = SingleDonorMatchProbabilityInputBuilder.Default.WithHlaNomenclature(null).Build();
 
             var result = new MatchProbabilityInputValidator().Validate(input);
 

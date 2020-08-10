@@ -45,7 +45,7 @@ namespace Atlas.Functions.Services
         {
             this.logger = logger;
             this.donorInputBatcher = donorInputBatcher;
-            matchPredictionBatchSize = int.Parse(orchestrationSettings.Value.MatchPredictionBatchSize);
+            matchPredictionBatchSize = orchestrationSettings.Value.MatchPredictionBatchSize;
         }
 
         /// <inheritdoc />
@@ -56,7 +56,7 @@ namespace Atlas.Functions.Services
             var searchRequest = matchPredictionInputParameters.SearchRequest;
             var donorDictionary = matchPredictionInputParameters.DonorDictionary;
 
-            var nonDonorInput = BuildNonDonorMatchPredictionInput(
+            var nonDonorInput = BuildSearchRequestMatchPredictionInput(
                 matchingAlgorithmResultSet.SearchRequestId,
                 searchRequest,
                 matchingAlgorithmResultSet.HlaNomenclatureVersion
@@ -72,7 +72,7 @@ namespace Atlas.Functions.Services
         }
 
         /// <summary>
-        /// Builds all non-donor information required to run the match prediction algorithm.
+        /// Builds all non-donor information required to run the match prediction algorithm for a search request.
         /// e.g. patient info, hla nomenclature, matching preferences
         /// 
         /// This will remain constant for all donors in the request, so only needs to be calculated once.
@@ -81,7 +81,7 @@ namespace Atlas.Functions.Services
         /// <param name="searchRequest"></param>
         /// <param name="hlaNomenclatureVersion"></param>
         /// <returns></returns>
-        private MatchProbabilityRequestInput BuildNonDonorMatchPredictionInput(
+        private static MatchProbabilityRequestInput BuildSearchRequestMatchPredictionInput(
             string searchRequestId,
             SearchRequest searchRequest,
             string hlaNomenclatureVersion

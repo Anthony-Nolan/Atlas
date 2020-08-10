@@ -8,9 +8,9 @@ using Builder = LochNessBuilder.Builder<Atlas.MatchPrediction.ExternalInterface.
 namespace Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs
 {
     [Builder]
-    public static class MatchProbabilityRequestInputBuilder
+    internal static class MatchProbabilityRequestInputBuilder
     {
-        public static Builder New => Builder.New
+        public static Builder Default => Builder.New
             .WithPatientHla(new PhenotypeInfo<string>("hla"))
             .WithPatientMetadata(FrequencySetMetadataBuilder.New.Build())
             .WithHlaNomenclature("nomenclature-version");
