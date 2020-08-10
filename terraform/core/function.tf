@@ -1,5 +1,5 @@
 locals {
-  atlas_function_app_name = "${local.environment}-ATLAS-FUNCTION"
+  atlas_function_app_name = "${local.environment}-ATLAS-FUNCTIONS"
 }
 
 resource "azurerm_function_app" "atlas_function" {
