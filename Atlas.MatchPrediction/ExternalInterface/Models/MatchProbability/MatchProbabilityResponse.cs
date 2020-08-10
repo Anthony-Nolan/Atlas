@@ -11,9 +11,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         public MatchProbabilities MatchProbabilities { get; set; }
         public LociInfo<MatchProbabilityPerLocusResponse> MatchProbabilitiesPerLocus { get; set; }
 
-        public int OverallMatchCount => ExactMatchCount * 2 + PotentialMatchCount;
+        public int OverallMatchCount => ExactMatchCount + PotentialMatchCount;
         public int ExactMatchCount => MatchProbabilitiesPerLocus.Reduce((locus, value, accumulator) =>
-            value.MatchProbabilities.MatchCategory == PredictiveMatchCategory.Exact ? accumulator + 1 : accumulator, 0);
+            value.MatchProbabilities.MatchCategory == PredictiveMatchCategory.Exact ? accumulator + 2 : accumulator, 0);
         public int PotentialMatchCount => MatchProbabilitiesPerLocus.Reduce((locus, value, accumulator) =>  
             value.MatchProbabilities.MatchCategory == PredictiveMatchCategory.Potential ? accumulator + 1 : accumulator , 0);
 
