@@ -27,7 +27,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
             value?.MatchProbabilities?.MatchCategory == PredictiveMatchCategory.Exact ? accumulator + 2 : accumulator, 0);
 
         public int PotentialMatchCount => MatchProbabilitiesPerLocus.Reduce((locus, value, accumulator) =>
-            value?.MatchProbabilities?.MatchCategory == PredictiveMatchCategory.Potential ? accumulator + 1 : accumulator, 0);
+            value?.MatchProbabilities?.MatchCategory == PredictiveMatchCategory.Potential ? accumulator + 2 : accumulator, 0);
 
         [JsonIgnore]
         public LociInfo<Probability> ZeroMismatchProbabilityPerLocus =>
