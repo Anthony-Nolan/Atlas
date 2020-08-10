@@ -4,6 +4,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
@@ -30,15 +31,16 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
                 _ => new HlaMetadataDictionarySettings(),
                 MacDictionarySettingsReader,
                 _ => new NotificationsServiceBusSettings(),
+                _ => new MatchPredictionImportSettings {HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion},
                 ConnectionStringReader(MatchPredictionSqlConnectionString)
             );
             services.RegisterIntegrationTestServices();
             services.SetUpMockServices();
-            
+
             // This call must be made after `RegisterMatchPredictionServices()`, as it overrides the non-mock dictionary set up in that method
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(ApplicationInsightsSettingsReader, _ => new MacDictionarySettings());
             services.SetUpMacDictionaryWithFileBackedRepository(
-                ApplicationInsightsSettingsReader, 
+                ApplicationInsightsSettingsReader,
                 MacDictionarySettingsReader);
 
             return services.BuildServiceProvider();
@@ -74,8 +76,8 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
 
         private static Func<IServiceProvider, ApplicationInsightsSettings> ApplicationInsightsSettingsReader =>
             _ => new ApplicationInsightsSettings {LogLevel = "Verbose"};
-        
-        private static Func<IServiceProvider, MacDictionarySettings> MacDictionarySettingsReader => 
-        _ => new MacDictionarySettings();
+
+        private static Func<IServiceProvider, MacDictionarySettings> MacDictionarySettingsReader =>
+            _ => new MacDictionarySettings();
     }
 }

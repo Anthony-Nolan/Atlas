@@ -60,6 +60,8 @@ namespace Atlas.Functions
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
+                // TODO: ATLAS-600: Read HLA nomenclature version from file data, rather than hard coding
+                _ => new MatchPredictionImportSettings{ HlaNomenclatureVersion = "3410"},
                 ConnectionStringReader("MatchPrediction:Sql")
             );
         }

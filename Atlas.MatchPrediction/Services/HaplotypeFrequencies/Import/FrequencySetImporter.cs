@@ -10,6 +10,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
+using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Utils;
 using TaskExtensions = Atlas.Common.Utils.Tasks.TaskExtensions;
@@ -29,6 +30,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         private readonly IHaplotypeFrequenciesRepository frequenciesRepository;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly ILogger logger;
+        private readonly MatchPredictionImportSettings matchPredictionImportSettings;
 
         public FrequencySetImporter(
             IFrequencySetMetadataExtractor metadataExtractor,
@@ -36,7 +38,8 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             IHaplotypeFrequencySetRepository setRepository,
             IHaplotypeFrequenciesRepository frequenciesRepository,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
-            ILogger logger)
+            ILogger logger,
+            MatchPredictionImportSettings matchPredictionImportSettings)
         {
             this.metadataExtractor = metadataExtractor;
             this.frequencyCsvReader = frequencyCsvReader;
@@ -44,6 +47,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             this.frequenciesRepository = frequenciesRepository;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
             this.logger = logger;
+            this.matchPredictionImportSettings = matchPredictionImportSettings;
         }
 
         public async Task Import(FrequencySetFile file, bool convertToPGroups)
@@ -96,8 +100,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 throw new Exception("No haplotype frequencies provided");
             }
 
-            // TODO: ATLAS-600: Read HLA nomenclature version from file data, rather than hard-coding
-            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary("3410");
+            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(matchPredictionImportSettings.HlaNomenclatureVersion);
 
             var haplotypesToStore = convertToPGroups
                 ? await ConvertHaplotypesToPGroupResolutionAndConsolidate(gGroupHaplotypes, hlaMetadataDictionary)
