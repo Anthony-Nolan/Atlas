@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Models;
 using Newtonsoft.Json;
 
@@ -9,13 +10,24 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
     public class MatchProbabilityResponse
     {
         public MatchProbabilities MatchProbabilities { get; set; }
+
+        [JsonIgnore]
         public LociInfo<MatchProbabilityPerLocusResponse> MatchProbabilitiesPerLocus { get; set; }
 
+        [JsonProperty(nameof(MatchProbabilitiesPerLocus))]
+        public LociInfoTransfer<MatchProbabilityPerLocusResponse> MatchProbabilitiesPerLocusTransfer
+        {
+            get => MatchProbabilitiesPerLocus.ToLociInfoTransfer();
+            set => MatchProbabilitiesPerLocus = value.ToLociInfo();
+        }
+
         public int OverallMatchCount => ExactMatchCount + PotentialMatchCount;
+
         public int ExactMatchCount => MatchProbabilitiesPerLocus.Reduce((locus, value, accumulator) =>
             value?.MatchProbabilities?.MatchCategory == PredictiveMatchCategory.Exact ? accumulator + 2 : accumulator, 0);
-        public int PotentialMatchCount => MatchProbabilitiesPerLocus.Reduce((locus, value, accumulator) =>  
-            value?.MatchProbabilities?.MatchCategory == PredictiveMatchCategory.Potential ? accumulator + 1 : accumulator , 0);
+
+        public int PotentialMatchCount => MatchProbabilitiesPerLocus.Reduce((locus, value, accumulator) =>
+            value?.MatchProbabilities?.MatchCategory == PredictiveMatchCategory.Potential ? accumulator + 1 : accumulator, 0);
 
         [JsonIgnore]
         public LociInfo<Probability> ZeroMismatchProbabilityPerLocus =>
