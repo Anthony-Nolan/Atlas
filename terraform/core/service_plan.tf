@@ -20,3 +20,15 @@ resource "azurerm_app_service_plan" "atlas-consumption-plan" {
     size = "Y1"
   }
 }
+
+resource "azurerm_app_service_plan" "atlas-elastic-plan" {
+  name                = "${local.environment}-ATLAS-ELASTIC-PLAN"
+  location            = local.location
+  resource_group_name = azurerm_resource_group.atlas_resource_group.name
+  kind                = "elastic"
+
+  sku {
+    tier = "PremiumV2"
+    size = "P1v2"
+  }
+}
