@@ -1,11 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.DonorImport.Clients;
-using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
@@ -14,6 +15,7 @@ using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
+using Donor = Atlas.DonorImport.Data.Models.Donor;
 
 namespace Atlas.DonorImport.Test.Services
 {
@@ -27,6 +29,8 @@ namespace Atlas.DonorImport.Test.Services
 
         private IDonorRecordChangeApplier donorOperationApplier;
         private IImportedLocusInterpreter naiveDnaLocusInterpreter;
+
+        private readonly DonorImportFile defaultFile = new DonorImportFile {FileLocation = "file", UploadTime = DateTime.Now};
 
         [SetUp]
         public void SetUp()
@@ -60,7 +64,7 @@ namespace Atlas.DonorImport.Test.Services
                 {donorUpdates[1].RecordId, 2},
             });
 
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, "file");
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile);
 
             await donorImportRepository.Received().InsertDonorBatch(Arg.Is<IEnumerable<Donor>>(storedDonors =>
                 storedDonors.Count() == donorUpdates.Count)
@@ -78,7 +82,7 @@ namespace Atlas.DonorImport.Test.Services
             donorInspectionRepository.GetDonorIdsByExternalDonorCodes(null)
                 .ReturnsForAnyArgs(donorUpdates.ToDictionary(d => d.RecordId, d => 0));
 
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, "file");
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile);
 
             await messagingServiceBusClient.Received(donorUpdates.Count).PublishDonorUpdateMessage(Arg.Any<SearchableDonorUpdate>());
         }
@@ -113,7 +117,7 @@ namespace Atlas.DonorImport.Test.Services
             
 
             //ACT
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, "file");
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile);
             
 
             //ASSERT
@@ -140,7 +144,7 @@ namespace Atlas.DonorImport.Test.Services
                 donorUpdates.ToDictionary(d => d.RecordId, d => atlasId)
             );
 
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, "file");
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile);
 
             await messagingServiceBusClient.Received(donorUpdates.Count).PublishDonorUpdateMessage(Arg.Is<SearchableDonorUpdate>(u =>
                 u.DonorId == atlasId
@@ -155,7 +159,7 @@ namespace Atlas.DonorImport.Test.Services
                 DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Full).Build(),
             };
 
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, "file");
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile);
 
             await donorInspectionRepository.DidNotReceiveWithAnyArgs().GetDonorsByExternalDonorCodes(null);
         }
@@ -174,7 +178,7 @@ namespace Atlas.DonorImport.Test.Services
                 {donorUpdates[1].RecordId, new Donor {AtlasId = 2, ExternalDonorCode = donorUpdates[1].RegistryCode}},
             });
 
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, "file");
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile);
 
             await messagingServiceBusClient.DidNotReceive().PublishDonorUpdateMessage(Arg.Any<SearchableDonorUpdate>());
         }
