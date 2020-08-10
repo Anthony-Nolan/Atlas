@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
@@ -76,7 +77,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
                 // recordId "9" hasn't been created yet.
             };
 
-            var createFile = fileBuilder.WithDonors(create).With(f => f.FileLocation, "file1").Build();
+            var createFile = fileBuilder.WithDonors(create)
+                .With(f => f.FileLocation, "file1")
+                .With(f => f.UploadTime, DateTime.Now.AddDays(-5))
+                .Build();
             await donorFileImporter.ImportDonorFile(createFile);
 
 
@@ -94,7 +98,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
                 // recordId "9" hasn't been created yet.
             };
 
-            var editFile = fileBuilder.WithDonors(edit).With(f => f.FileLocation, "file2").Build();
+            var editFile = fileBuilder.WithDonors(edit).With(f => f.FileLocation, "file2")
+                .With(f => f.UploadTime, DateTime.Now.AddDays(-4))
+                .Build();
             await donorFileImporter.ImportDonorFile(editFile);
 
 
@@ -111,7 +117,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
                 // recordId "9" hasn't been created yet.
             };
 
-            var deleteFile = fileBuilder.WithDonors(delete).With(f => f.FileLocation, "file3").Build();
+            var deleteFile = fileBuilder.WithDonors(delete)
+                .With(f => f.FileLocation, "file3")
+                .With(f => f.UploadTime, DateTime.Now.AddDays(-3))
+                .Build();
             await donorFileImporter.ImportDonorFile(deleteFile);
 
             var moreEdit = new[]
@@ -127,7 +136,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
                 // recordId "9" hasn't been created yet.
             };
 
-            var moreEditFile = fileBuilder.WithDonors(moreEdit).With(f => f.FileLocation, "file4").Build();
+            var moreEditFile = fileBuilder.WithDonors(moreEdit)
+                .With(f => f.FileLocation, "file4")
+                .With(f => f.UploadTime, DateTime.Now.AddDays(-2))
+                .Build();
             await donorFileImporter.ImportDonorFile(moreEditFile);
 
             var moreCreate = new[]
@@ -143,7 +155,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
                 createUpdateBuilder.With(d => d.RecordId, "9").WithHomozygousHlaAt(Locus.C, "*01:10").Build(),
             };
 
-            var moreCreateFile = fileBuilder.WithDonors(moreCreate).With(f => f.FileLocation, "file5").Build();
+            var moreCreateFile = fileBuilder.WithDonors(moreCreate)
+                .With(f => f.FileLocation, "file5")
+                .With(f => f.UploadTime, DateTime.Now.AddDays(-1))
+                .Build();
             await donorFileImporter.ImportDonorFile(moreCreateFile);
 
 

@@ -50,28 +50,30 @@ namespace Atlas.DonorImport.Services
 
             var importedDonorCount = 0;
             var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents);
-            var transaction = new AsyncTransactionScope();
             
             try
             {
-                var donorUpdates = lazyFile.ReadLazyDonorUpdates();
-                var donorUpdatesToApply = await donorLogService.FilterDonorUpdatesBasedOnUpdateTime(donorUpdates, file.UploadTime);
-                foreach (var donorUpdateBatch in donorUpdatesToApply.Batch(BatchSize))
+                using (var transaction = new AsyncTransactionScope())
                 {
-                    var reifiedDonorBatch = donorUpdateBatch.ToList();
-                    await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file);
-                    importedDonorCount += reifiedDonorBatch.Count;
-                }
+                    var donorUpdates = lazyFile.ReadLazyDonorUpdates();
+                    var donorUpdatesToApply = await donorLogService.FilterDonorUpdatesBasedOnUpdateTime(donorUpdates, file.UploadTime);
+                    foreach (var donorUpdateBatch in donorUpdatesToApply.Batch(BatchSize))
+                    {
+                        var reifiedDonorBatch = donorUpdateBatch.ToList();
+                        await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file);
+                        importedDonorCount += reifiedDonorBatch.Count;
+                    }
 
-                await donorImportFileHistoryService.RegisterSuccessfulDonorImport(file);
-                
-                transaction.Complete();
-                
-                logger.SendTrace($"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).");
-                await notificationSender.SendNotification($"Donor Import Successful: {file.FileLocation}",
-                    $"Imported {importedDonorCount} donor(s) from file {file.FileLocation}",
-                    nameof(ImportDonorFile)
-                );
+                    await donorImportFileHistoryService.RegisterSuccessfulDonorImport(file);
+
+                    transaction.Complete();
+
+                    logger.SendTrace($"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).");
+                    await notificationSender.SendNotification($"Donor Import Successful: {file.FileLocation}",
+                        $"Imported {importedDonorCount} donor(s) from file {file.FileLocation}",
+                        nameof(ImportDonorFile)
+                    );
+                }
             }
             catch (EmptyDonorFileException e)
             {

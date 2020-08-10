@@ -100,8 +100,8 @@ namespace Atlas.DonorImport.Data.Repositories
             const string donorExistsSql = "SELECT COUNT(*) FROM DonorLogs WHERE ExternalDonorId = (@DonorId)";
                 var result = connection.QuerySingle<int>(donorExistsSql, new {DonorId = donorId});
                 var querySql = result == 0
-                    ? "INSERT INTO DonorLogs (ExternalDonorId, LastUpdateTime), VALUES ((@DonorId), (@LastUpdateTime))"
-                    : "UPDATE DonorLogs SET LastUpdateTime = (@LastUpdateTime) WHERE ExternalDonorId = (@DonorId)";
+                    ? "INSERT INTO DonorLogs (ExternalDonorId, LastUpdateDateTime) VALUES ((@DonorId), (@LastUpdateTime))"
+                    : "UPDATE DonorLogs SET LastUpdateDateTime = (@LastUpdateTime) WHERE ExternalDonorId = (@DonorId)";
 
                 await connection.ExecuteAsync(querySql, new {DonorId = donorId, LastUpdateTime = lastUpdateTime});
         }

@@ -30,6 +30,7 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
             var context = DependencyInjection.DependencyInjection.Provider.GetService<DonorContext>();
             context?.Database.ExecuteSqlRaw("TRUNCATE TABLE [Donors]");
             context?.Database.ExecuteSqlRaw("TRUNCATE TABLE [DonorImportHistory]");
+            context?.Database.ExecuteSqlRaw("TRUNCATE TABLE [DonorLogs]");
         }
     }
 }
