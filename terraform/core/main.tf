@@ -18,7 +18,7 @@ locals {
 }
 
 provider "azurerm" {
-  version         = "1.28.0"
+  version         = "2.22.0"
   subscription_id = local.subscription_id
 
   // According to the docs, the default behaviour is to attempt to register every possible resource provider
@@ -28,6 +28,7 @@ provider "azurerm" {
   // initial registrations will need to be organised as a one-off.
   // Currently, the only resource provider needed is this AzureRM provider.
   skip_provider_registration = false
+  features {}
 }
 
 module "matching_algorithm" {
