@@ -14,6 +14,7 @@ namespace Atlas.DonorImport.Data.Context
         {
             modelBuilder.Entity<Donor>().SetUpDonorModel();
             modelBuilder.Entity<DonorImportHistoryRecord>().SetUpDonorImportHistory();
+            modelBuilder.Entity<DonorLog>().SetUpDonorLogModel();
         }
 
         public DbSet<Donor> Donors { get; set; }

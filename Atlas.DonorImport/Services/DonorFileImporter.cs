@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
+using Atlas.Common.Utils;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using MoreLinq.Extensions;
@@ -23,6 +24,7 @@ namespace Atlas.DonorImport.Services
         private readonly IDonorRecordChangeApplier donorRecordChangeApplier;
         private readonly IDonorImportFileHistoryService donorImportFileHistoryService;
         private readonly INotificationSender notificationSender;
+        private readonly IDonorImportLogService donorLogService;
         private readonly ILogger logger;
 
         public DonorFileImporter(
@@ -30,12 +32,14 @@ namespace Atlas.DonorImport.Services
             IDonorRecordChangeApplier donorRecordChangeApplier,
             IDonorImportFileHistoryService donorImportFileHistoryService,
             INotificationSender notificationSender,
+            IDonorImportLogService donorLogService,
             ILogger logger)
         {
             this.fileParser = fileParser;
             this.donorRecordChangeApplier = donorRecordChangeApplier;
             this.donorImportFileHistoryService = donorImportFileHistoryService;
             this.notificationSender = notificationSender;
+            this.donorLogService = donorLogService;
             this.logger = logger;
         }
 
@@ -46,17 +50,23 @@ namespace Atlas.DonorImport.Services
 
             var importedDonorCount = 0;
             var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents);
+            var transaction = new AsyncTransactionScope();
+            
             try
             {
                 var donorUpdates = lazyFile.ReadLazyDonorUpdates();
-                foreach (var donorUpdateBatch in donorUpdates.Batch(BatchSize))
+                var donorUpdatesToApply = await donorLogService.FilterDonorUpdatesBasedOnUpdateTime(donorUpdates, file.UploadTime);
+                foreach (var donorUpdateBatch in donorUpdatesToApply.Batch(BatchSize))
                 {
                     var reifiedDonorBatch = donorUpdateBatch.ToList();
-                    await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file.FileLocation);
+                    await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file);
                     importedDonorCount += reifiedDonorBatch.Count;
                 }
 
                 await donorImportFileHistoryService.RegisterSuccessfulDonorImport(file);
+                
+                transaction.Complete();
+                
                 logger.SendTrace($"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).");
                 await notificationSender.SendNotification($"Donor Import Successful: {file.FileLocation}",
                     $"Imported {importedDonorCount} donor(s) from file {file.FileLocation}",

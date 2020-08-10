@@ -5,18 +5,19 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.DonorImport.Clients;
-using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
+using Donor = Atlas.DonorImport.Data.Models.Donor;
 
 namespace Atlas.DonorImport.Services
 {
     internal interface IDonorRecordChangeApplier
     {
         // ReSharper disable once ParameterTypeCanBeEnumerable.Global
-        Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, string fileLocation);
+        Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, DonorImportFile file);
     }
 
     internal class DonorRecordChangeApplier : IDonorRecordChangeApplier
@@ -41,7 +42,7 @@ namespace Atlas.DonorImport.Services
             this.logger = logger;
         }
 
-        public async Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, string fileLocation)
+        public async Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, DonorImportFile file)
         {
             var updateMode = DetermineUpdateMode(donorUpdates);
 
@@ -52,11 +53,11 @@ namespace Atlas.DonorImport.Services
                 switch (updatesOfSameOperationType.Key)
                 {
                     case ImportDonorChangeType.Create:
-                        await ProcessDonorCreations(updatesOfSameOperationType.ToList(), externalCodes, fileLocation, updateMode);
+                        await ProcessDonorCreations(updatesOfSameOperationType.ToList(), externalCodes, file.FileLocation, updateMode);
                         break;
 
                     case ImportDonorChangeType.Edit:
-                        await ProcessDonorEdits(updatesOfSameOperationType.ToList(), externalCodes, fileLocation);
+                        await ProcessDonorEdits(updatesOfSameOperationType.ToList(), externalCodes, file);
                         break;
 
                     case ImportDonorChangeType.Delete:
@@ -98,7 +99,7 @@ namespace Atlas.DonorImport.Services
         private async Task ProcessDonorEdits(
             List<DonorUpdate> editUpdates,
             List<string> externalCodes,
-            string fileLocation)
+            DonorImportFile file)
 
         {
             var existingAtlasDonors = await donorInspectionRepository.GetDonorsByExternalDonorCodes(externalCodes);
@@ -107,14 +108,14 @@ namespace Atlas.DonorImport.Services
 
             var editedDonors = editUpdates.Select(edit =>
             {
-                var dbDonor = MapToDatabaseDonor(edit, fileLocation);
+                var dbDonor = MapToDatabaseDonor(edit, file.FileLocation);
                 dbDonor.AtlasId = GetAtlasIdFromCode(edit.RecordId, existingAtlasDonorIds);
                 return dbDonor;
             }).Where(d => !existingAtlasDonorHashes.Contains(d.Hash)).ToList(); ;
 
             if (editedDonors.Count > 0)
             {
-                await donorImportRepository.UpdateDonorBatch(editedDonors);
+                await donorImportRepository.UpdateDonorBatch(editedDonors, file.UploadTime);
 
                 var donorEditMessages = editedDonors.Select(MapToMatchingUpdateMessage).ToList();
                 await messagingServiceBusClient.PublishDonorUpdateMessages(donorEditMessages);

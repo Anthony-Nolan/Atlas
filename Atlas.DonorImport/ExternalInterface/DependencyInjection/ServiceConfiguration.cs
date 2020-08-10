@@ -59,6 +59,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.RegisterCommonGeneticServices();
             services.AddScoped<IImportedLocusInterpreter, ImportedLocusInterpreter>();
             services.AddScoped<IDonorImportFileHistoryService, DonorImportFileHistoryService>();
+            services.AddScoped<IDonorImportLogService, DonorImportLogService>();
         }
 
         private static void RegisterDonorReaderServices(this IServiceCollection services)
@@ -82,6 +83,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.AddScoped<IDonorImportRepository>(sp => new DonorImportRepository(fetchDonorImportDatabaseConnectionString(sp)));
             services.AddScoped<IDonorReadRepository>(sp => new DonorReadRepository(fetchDonorImportDatabaseConnectionString(sp)));
             services.AddScoped<IDonorImportHistoryRepository>(sp => new DonorImportHistoryRepository(fetchDonorImportDatabaseConnectionString(sp)));
+            services.AddScoped<IDonorImportLogRepository>(sp => new DonorImportLogRepository(fetchDonorImportDatabaseConnectionString(sp)));
         }
     }
 }
