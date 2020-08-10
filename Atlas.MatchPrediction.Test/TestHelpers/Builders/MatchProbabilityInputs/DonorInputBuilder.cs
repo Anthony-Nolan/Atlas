@@ -10,7 +10,7 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs
 {
     internal static class DonorInputBuilder
     {
-        public static Builder New => Builder.New
+        public static Builder Default => Builder.New
             .WithHla(new PhenotypeInfo<string>("default-hla"))
             .WithMetadata(FrequencySetMetadataBuilder.New.Build())
             .WithFactory(d => d.DonorIds, () => new List<int> {IncrementingIdGenerator.NextIntId()});

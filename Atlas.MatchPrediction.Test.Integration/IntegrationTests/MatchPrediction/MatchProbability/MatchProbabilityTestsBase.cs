@@ -59,7 +59,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected static PhenotypeInfoBuilder<string> DefaultAmbiguousAllelesBuilder =>
             new PhenotypeInfoBuilder<string>(Alleles.AmbiguousAlleleDetails.Alleles());
 
-        protected static Builder<SingleDonorMatchProbabilityInput> DefaultInputBuilder => SingleDonorMatchProbabilityInputBuilder.New
+        protected static Builder<SingleDonorMatchProbabilityInput> DefaultInputBuilder => SingleDonorMatchProbabilityInputBuilder.Default
             .WithHlaNomenclature(HlaNomenclatureVersion)
             .WithPatientHla(DefaultUnambiguousAllelesBuilder.Build())
             .WithDonorHla(DefaultUnambiguousAllelesBuilder.Build())

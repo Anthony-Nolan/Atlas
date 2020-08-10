@@ -2,7 +2,7 @@ var fs = require('fs');
 
 let currentDonorId = 0;
 const config = {
-    donorIdPrefix: "donor-prefix-280-test-",
+    donorIdPrefix: "donor-prefix-",
     // diff or full
     updateMode: "diff",
     // N = new, D = delete, U = update
@@ -20,46 +20,6 @@ const config = {
 // The output is the JSON upload to the donor import component.
 
 const donorsHla = [
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
-    "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
     "*03:01\t*11:01\t*07:02\t*35:03\t*04:01\t*07:02\tnull\tnull\tnull\tnull\t*04:03\t*04:03",
     "*02:01:01:05\t*33:01:01:01\t*40:06:01:02\t*35:08:01:01\t*02:10:01:02\t*03:05\t*02:01:04\t*01:01:01\t*03:01:04\t*02:02:01:01\t*04:01:01:01\t*15:01:01:02"
 ];

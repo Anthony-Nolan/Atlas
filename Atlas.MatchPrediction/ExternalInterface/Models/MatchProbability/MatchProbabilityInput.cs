@@ -49,8 +49,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
     public class DonorInput
     {
         /// <summary>
-        /// DonorInput ID is used to identify results when running the Match Prediction Algorithm in batches
-        /// It is also useful for logging purposes.
+        /// Used to identify results when running the Match Prediction Algorithm in batches.
+        /// Also useful for logging purposes.
         ///
         /// Multiple donor ids are possible, as donors with the same phenotype + metadata will give the same MPA results, and should therefore be run together 
         /// </summary>
