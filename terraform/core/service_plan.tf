@@ -22,10 +22,11 @@ resource "azurerm_app_service_plan" "atlas-consumption-plan" {
 }
 
 resource "azurerm_app_service_plan" "atlas-elastic-plan" {
-  name                = "${local.environment}-ATLAS-ELASTIC-PLAN"
-  location            = local.location
-  resource_group_name = azurerm_resource_group.atlas_resource_group.name
-  kind                = "elastic"
+  name                         = "${local.environment}-ATLAS-ELASTIC-PLAN"
+  location                     = local.location
+  resource_group_name          = azurerm_resource_group.atlas_resource_group.name
+  kind                         = "elastic"
+  maximum_elastic_worker_count = 50
 
   sku {
     tier = "ElasticPremium"
