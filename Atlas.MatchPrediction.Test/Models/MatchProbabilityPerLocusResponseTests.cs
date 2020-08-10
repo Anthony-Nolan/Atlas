@@ -19,16 +19,15 @@ namespace Atlas.MatchPrediction.Test.Models
             decimal zeroMismatchValue,
             decimal oneMismatchValue,
             decimal twoMismatchValue,
-            PredictiveMatchCategory matchCategory1,
-            PredictiveMatchCategory matchCategory2)
+            PredictiveMatchCategory? matchCategory1,
+            PredictiveMatchCategory? matchCategory2)
         {
             var matchProbability = MatchProbabilitiesBuilder.New
                 .WithProbabilityValuesSetTo(zeroMismatchValue, oneMismatchValue, twoMismatchValue).Build();
 
             var matchProbabilityPerLocusResponse = new MatchProbabilityPerLocusResponse(matchProbability);
 
-            var expectedPositionalMatchCategories = 
-                new LocusInfo<PredictiveMatchCategory>(matchCategory1, matchCategory2);
+            var expectedPositionalMatchCategories = new LocusInfo<PredictiveMatchCategory?>(matchCategory1, matchCategory2);
 
             matchProbabilityPerLocusResponse.PositionalMatchCategories.Should().BeEquivalentTo(expectedPositionalMatchCategories);
         }

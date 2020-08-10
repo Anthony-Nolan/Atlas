@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Models;
@@ -13,9 +13,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 
         public int OverallMatchCount => ExactMatchCount + PotentialMatchCount;
         public int ExactMatchCount => MatchProbabilitiesPerLocus.Reduce((locus, value, accumulator) =>
-            value.MatchProbabilities.MatchCategory == PredictiveMatchCategory.Exact ? accumulator + 2 : accumulator, 0);
+            value?.MatchProbabilities?.MatchCategory == PredictiveMatchCategory.Exact ? accumulator + 2 : accumulator, 0);
         public int PotentialMatchCount => MatchProbabilitiesPerLocus.Reduce((locus, value, accumulator) =>  
-            value.MatchProbabilities.MatchCategory == PredictiveMatchCategory.Potential ? accumulator + 1 : accumulator , 0);
+            value?.MatchProbabilities?.MatchCategory == PredictiveMatchCategory.Potential ? accumulator + 1 : accumulator , 0);
 
         [JsonIgnore]
         public LociInfo<Probability> ZeroMismatchProbabilityPerLocus =>
