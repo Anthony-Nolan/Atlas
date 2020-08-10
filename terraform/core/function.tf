@@ -14,7 +14,6 @@ resource "azurerm_function_app" "atlas_function" {
   tags = local.common_tags
 
   site_config {
-    always_on                 = true
     pre_warmed_instance_count = 2
   }
 
