@@ -1,6 +1,8 @@
 ﻿using System;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Models;
+using LocusMatchCategories =
+    Atlas.Common.GeneticData.PhenotypeInfo.LocusInfo<Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability.PredictiveMatchCategory?>;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 {
@@ -11,11 +13,14 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         /// <summary>
         /// Match grades are being assigned arbitrarily to pos1 and pos2.
         /// </summary>
-        public LocusInfo<PredictiveMatchCategory> PositionalMatchCategories => MatchProbabilities.MatchCategory switch
+        public LocusMatchCategories PositionalMatchCategories => MatchProbabilities.MatchCategory switch
         {
-            PredictiveMatchCategory.Exact => new LocusInfo<PredictiveMatchCategory>(PredictiveMatchCategory.Exact),
-            PredictiveMatchCategory.Mismatch => new LocusInfo<PredictiveMatchCategory>(PredictiveMatchCategory.Mismatch, GetMismatchSecondMatchCategory()),
-            PredictiveMatchCategory.Potential => new LocusInfo<PredictiveMatchCategory>(PredictiveMatchCategory.Potential, GetPotentialSecondMatchCategory()),
+            PredictiveMatchCategory.Exact => new LocusMatchCategories(PredictiveMatchCategory.Exact),
+            PredictiveMatchCategory.Mismatch => new LocusMatchCategories(PredictiveMatchCategory.Mismatch,
+                GetMismatchSecondMatchCategory()),
+            PredictiveMatchCategory.Potential => new LocusMatchCategories(PredictiveMatchCategory.Potential,
+                GetPotentialSecondMatchCategory()),
+            null => null,
             _ => throw new ArgumentOutOfRangeException()
         };
 
@@ -46,7 +51,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         /// If zero percent chance of one mismatch, can't be either exact or potential so must be mismatch.
         /// All other cases the match category will be potential.
         /// </summary>
-        private PredictiveMatchCategory GetMismatchSecondMatchCategory()
+        private PredictiveMatchCategory? GetMismatchSecondMatchCategory()
         {
             if (MatchProbabilities.TwoMismatchProbability.Decimal == 0)
             {
@@ -65,7 +70,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         /// If zero percent chance of two mismatches, other match category must be exact.
         /// If There is a chance of two mismatches then neither of them can be exact so match category is potential.
         /// </summary>
-        private PredictiveMatchCategory GetPotentialSecondMatchCategory()
+        private PredictiveMatchCategory? GetPotentialSecondMatchCategory()
         {
             return MatchProbabilities.TwoMismatchProbability.Decimal == 0 ? PredictiveMatchCategory.Exact : PredictiveMatchCategory.Potential;
         }

@@ -8,10 +8,11 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         public Probability OneMismatchProbability { get; set; }
         public Probability TwoMismatchProbability { get; set; }
 
-        public PredictiveMatchCategory? MatchCategory => ZeroMismatchProbability.Decimal switch
+        public PredictiveMatchCategory? MatchCategory => ZeroMismatchProbability?.Decimal switch
         {
             1m => PredictiveMatchCategory.Exact,
             0m => PredictiveMatchCategory.Mismatch,
+            null => null,
             _ => PredictiveMatchCategory.Potential
         };
 
