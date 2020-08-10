@@ -3,7 +3,7 @@
     /// <summary>
     /// Values used to categorise the overall match probability.
     /// 
-    /// Distinct from MatchCategory and MatchConfidence as they are calculated in the matching  matching algorithm,
+    /// Distinct from MatchCategory and MatchConfidence as they are calculated in the matching algorithm,
     /// whereas this is caclulated from Match Prediction data.
     /// </summary>
     public enum PredictiveMatchCategory
@@ -14,12 +14,12 @@
         Exact,
 
         /// <summary>
-        /// Potential match at all loci.
+        /// Potential match.
         /// </summary>
         Potential,
 
         /// <summary>
-        /// At least one known (non-permissive) mismatch at any locus.
+        /// At least one known (non-permissive) mismatch.
         /// </summary>
         Mismatch
     }
