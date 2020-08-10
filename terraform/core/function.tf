@@ -42,8 +42,7 @@ resource "azurerm_function_app" "atlas_function" {
     "NotificationsServiceBus:ConnectionString"   = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
     "NotificationsServiceBus:NotificationsTopic" = module.support.general.notifications_servicebus_topic.name
 
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "1"
-    "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
+    "WEBSITE_RUN_FROM_PACKAGE" = var.WEBSITE_RUN_FROM_PACKAGE
   }
 
   connection_string {
