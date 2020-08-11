@@ -30,11 +30,8 @@ resource "azurerm_function_app" "atlas_donor_import_function" {
     dynamic "ip_restriction" {
       for_each = var.IP_RESTRICTION_SETTINGS
       content {
-        ip_address                = ip_restriction.value.ip_address
-        virtual_network_subnet_id = ip_restriction.value.virtual_network_subnet_id
-        name                      = ip_restriction.value.name
-        priority                  = ip_restriction.value.priority
-        action                    = ip_restriction.value.action
+        ip_address = ip_restriction.value.ip_address
+        subnet_id  = ip_restriction.value.subnet_id
       }
     }
   }

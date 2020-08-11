@@ -44,12 +44,9 @@ variable "ENVIRONMENT" {
 
 variable "IP_RESTRICTION_SETTINGS" {
   type = list(object({
-    ip_address                = string
-    virtual_network_subnet_id = string
-    name                      = string
-    priority                  = number
-    action                    = string
-  }))
+        ip_address = string
+        subnet_id  = string
+      }))
   description = "List of IP addresses that are whitelisted for functions app access. If none are provided the resources will only be available to other azure services."
 }
 
