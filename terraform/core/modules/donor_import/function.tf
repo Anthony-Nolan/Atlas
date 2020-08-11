@@ -26,6 +26,14 @@ resource "azurerm_function_app" "atlas_donor_import_function" {
     "WEBSITE_RUN_FROM_PACKAGE"                     = "1"
   }
 
+  dynamic "ip_restriction" {
+    for_each = var.ip_restriction_settings
+    content {
+      ip_address  = ip_restriction.value.ip_address
+      subnet_mask = ip_restriction.value.subnet_mask
+    }
+  }
+
   connection_string {
     name  = "DonorStoreSql"
     type  = "SQLAzure"
