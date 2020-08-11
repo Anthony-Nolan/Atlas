@@ -15,13 +15,7 @@ resource "azurerm_function_app" "atlas_function" {
 
   site_config {
     pre_warmed_instance_count = 2
-    dynamic "ip_restriction" {
-      for_each = var.IP_RESTRICTION_SETTINGS
-      content {
-        ip_address = ip_restriction.value.ip_address
-        subnet_id  = ip_restriction.value.subnet_id
-      }
-    }
+    ip_restriction = var.IP_RESTRICTION_SETTINGS
   }
 
   app_settings = {

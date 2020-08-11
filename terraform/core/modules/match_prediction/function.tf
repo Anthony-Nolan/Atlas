@@ -30,13 +30,7 @@ resource "azurerm_function_app" "atlas_match_prediction_function" {
   }
 
   site_config {
-    dynamic "ip_restriction" {
-      for_each = var.IP_RESTRICTION_SETTINGS
-      content {
-        ip_address = ip_restriction.value.ip_address
-        subnet_id  = ip_restriction.value.subnet_id
-      }
-    }
+    ip_restriction = var.IP_RESTRICTION_SETTINGS
   }
 
   dynamic "ip_restriction" {

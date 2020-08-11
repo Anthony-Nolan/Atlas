@@ -37,13 +37,7 @@ resource "azurerm_function_app" "atlas_matching_algorithm_donor_management_funct
 
   site_config {
     always_on = true
-    dynamic "ip_restriction" {
-      for_each = var.IP_RESTRICTION_SETTINGS
-      content {
-        ip_address = ip_restriction.value.ip_address
-        subnet_id  = ip_restriction.value.subnet_id
-      }
-    }
+    ip_restriction = var.IP_RESTRICTION_SETTINGS
   }
 
   tags = var.general.common_tags
