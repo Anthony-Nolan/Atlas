@@ -7,6 +7,7 @@ namespace Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging
     public class MatchingAlgorithmSearchLoggingContext : LoggingContext
     {
         private string searchRequestId;
+        private string hlaNomenclatureVersion;
 
         public string SearchRequestId
         {
@@ -23,11 +24,27 @@ namespace Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging
             }
         }
 
+        public string HlaNomenclatureVersion
+        {
+            get => hlaNomenclatureVersion;
+            set
+            {
+                if (!string.IsNullOrEmpty(hlaNomenclatureVersion))
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot set {nameof(hlaNomenclatureVersion)} to '{value}' as it is already set to '{hlaNomenclatureVersion}'.");
+                }
+
+                hlaNomenclatureVersion = value;
+            }
+        }
+
         /// <inheritdoc />
         public override Dictionary<string, string> PropertiesToLog() =>
             new Dictionary<string, string>
             {
-                {nameof(SearchRequestId), SearchRequestId}
+                {nameof(SearchRequestId), SearchRequestId},
+                {nameof(HlaNomenclatureVersion), HlaNomenclatureVersion},
             };
     }
 }

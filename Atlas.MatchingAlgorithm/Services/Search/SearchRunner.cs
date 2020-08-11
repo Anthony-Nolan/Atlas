@@ -54,6 +54,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             searchLoggingContext.SearchRequestId = searchRequestId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
+            searchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
 
             try
             {
