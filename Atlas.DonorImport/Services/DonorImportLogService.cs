@@ -36,10 +36,6 @@ namespace Atlas.DonorImport.Services
         private async Task<bool> ShouldUpdateDonor(DonorUpdate donorUpdate, DateTime uploadTime)
         {
             var date = await repository.GetLastUpdateForDonorWithId(donorUpdate.RecordId);
-            if (date == new DateTime())
-            {
-                return true;
-            }
             return uploadTime > date;
         }
     }
