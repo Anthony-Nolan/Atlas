@@ -15,6 +15,13 @@ resource "azurerm_function_app" "atlas_function" {
 
   site_config {
     pre_warmed_instance_count = 2
+    dynamic "ip_restriction" {
+      for_each = var.IP_RESTRICTION_SETTINGS
+      content {
+        ip_address  = ip_restriction.value.ip_address
+        subnet_mask = ip_restriction.value.subnet_mask
+      }
+    }
   }
 
   app_settings = {
@@ -48,14 +55,6 @@ resource "azurerm_function_app" "atlas_function" {
     "NotificationsServiceBus:NotificationsTopic" = module.support.general.notifications_servicebus_topic.name
 
     "WEBSITE_RUN_FROM_PACKAGE" = var.WEBSITE_RUN_FROM_PACKAGE
-  }
-
-  dynamic "ip_restriction" {
-    for_each = var.IP_RESTRICTION_SETTINGS
-    content {
-      ip_address  = ip_restriction.value.ip_address
-      subnet_mask = ip_restriction.value.subnet_mask
-    }
   }
   
   connection_string {
