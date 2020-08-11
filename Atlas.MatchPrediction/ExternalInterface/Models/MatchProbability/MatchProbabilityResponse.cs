@@ -78,12 +78,12 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 
             return MatchProbabilitiesPerLocus.Reduce((locus, value, accumulator) =>
             {
-                if (value?.PositionalMatchCategories.Position1 == matchCategory)
+                if (value?.PositionalMatchCategories?.Position1 == matchCategory)
                 {
                     accumulator++;
                 }
 
-                if (value?.PositionalMatchCategories.Position2 == matchCategory)
+                if (value?.PositionalMatchCategories?.Position2 == matchCategory)
                 {
                     accumulator++;
                 }

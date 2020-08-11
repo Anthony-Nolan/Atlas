@@ -14,6 +14,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Utils.Extensions;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
@@ -124,7 +125,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
             logger.SendTrace($"Frequency Set Selection: Donor {donorSet.RegistryCode}/{donorSet.EthnicityCode}/{donorSet.Id}");
             logger.SendTrace($"Frequency Set Selection: Patient {patientSet.RegistryCode}/{patientSet.EthnicityCode}/{patientSet.Id}");
-            
+
             return new HaplotypeFrequencySetResponse
             {
                 DonorSet = donorSet,
@@ -178,35 +179,71 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                     return 0;
                 }
 
-                var consolidatedFrequencies = GetConsolidatedFrequencies(setId);
-
-                return consolidatedFrequencies.GetOrAdd(hla, (hlaKey) =>
-                {
-                    var allowedLoci = LocusSettings.MatchPredictionLoci.Except(excludedLoci).ToHashSet();
-
-                    return frequencies
-                        .Where(kvp => kvp.Key.EqualsAtLoci(hlaKey, allowedLoci))
-                        .Select(kvp => kvp.Value.Frequency)
-                        .DefaultIfEmpty(0m)
-                        .SumDecimals();
-                });
+                return await GetConsolidatedFrequency(setId, hla, excludedLoci);
             }
 
             return frequency?.Frequency ?? 0;
         }
 
+
+        // TODO: ATLAS-651: Update documentation
+        // TODO: ATLAS-651: Unit tests for both cases - cache population and single item!
         /// <summary>
         /// "Consolidated frequencies" are haplotypes that do not have an associated record in the stored haplotype set,
         /// but have been calculated by consolidating other frequencies.
-        ///
+        /// 
         /// When certain loci are excluded from a lookup, all frequencies that match at non-excluded loci are summed, and stored in this collection 
         /// </summary>
         /// <param name="setId"></param>
+        /// <param name="hla"></param>
+        /// <param name="excludedLoci"></param>
         /// <returns></returns>
-        private ConcurrentDictionary<HaplotypeHla, decimal> GetConsolidatedFrequencies(int setId)
+        private async Task<decimal> GetConsolidatedFrequency(int setId, HaplotypeHla hla, ISet<Locus> excludedLoci)
         {
             var cacheKey = $"hf-set-consolidated-{setId}";
-            return cache.GetOrAdd(cacheKey, () => new ConcurrentDictionary<HaplotypeHla, decimal>());
+            return await cache.GetSingleItemAndScheduleWholeCollectionCacheWarm(
+                cacheKey,
+                async () =>
+                {
+                    using (logger.RunTimed($"Calculating consolidated frequencies with missing loci for set: {setId}"))
+                    {
+                        var frequencies = (await GetAllHaplotypeFrequencies(setId)).ToList();
+
+                        IEnumerable<KeyValuePair<HaplotypeHla, decimal>> FrequenciesExcluding(params Locus[] loci)
+                        {
+                            return frequencies
+                                .GroupBy(hf => hf.Key.SetLoci(null, loci))
+                                .Select(group => new KeyValuePair<HaplotypeHla, decimal>(
+                                    group.Key,
+                                    group.Select(f => f.Value.Frequency).SumDecimals()
+                                ));
+                        }
+
+                        var consolidated = FrequenciesExcluding(Locus.C)
+                            .Concat(FrequenciesExcluding(Locus.Dqb1))
+                            .Concat(FrequenciesExcluding(Locus.Dqb1, Locus.C))
+                            .ToDictionary();
+                        return new ConcurrentDictionary<HaplotypeHla, decimal>(consolidated);
+                    }
+                },
+                d =>
+                {
+                    var hlaAtLoci = hla.SetLoci(null, excludedLoci.ToArray());
+                    d.TryGetValue(hlaAtLoci, out var result);
+                    return result;
+                },
+                async () =>
+                {
+                    var frequencies = (await GetAllHaplotypeFrequencies(setId)).ToList();
+                    var allowedLoci = LocusSettings.MatchPredictionLoci.Except(excludedLoci).ToHashSet();
+
+                    return frequencies
+                        .Where(kvp => kvp.Key.EqualsAtLoci(hla, allowedLoci))
+                        .Select(kvp => kvp.Value.Frequency)
+                        .DefaultIfEmpty(0m)
+                        .SumDecimals();
+                }
+            );
         }
 
         private static HaplotypeFrequencySet MapDataModelToClientModel(Data.Models.HaplotypeFrequencySet set)
