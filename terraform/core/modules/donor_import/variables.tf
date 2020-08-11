@@ -15,10 +15,3 @@ variable "default_servicebus_settings" {
     default-message-retries        = number
   })
 }
-
-variable "ip_restriction_settings" {
-  type = list(object({
-    ip_address = string
-    subnet_mask = string
-  }))
-}
