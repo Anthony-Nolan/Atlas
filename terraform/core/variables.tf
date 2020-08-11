@@ -42,6 +42,14 @@ variable "ENVIRONMENT" {
   description = "Prepended to all ATLAS resources, to indicate which environment of the installation they represent. Some alphanumeric characters must be present, as non-alphanumeric characters will be stripped from the storage account name. Max 8 alphanumeric characters. e.g. DEV/UAT/LIVE"
 }
 
+variable "IP_RESTRICTION_SETTINGS" {
+  type = list(object({
+    ip_address = string
+    subnet_mask = string
+  }))
+  description = "List of IP addresses that are whitelisted for functions app access. If none are provided the resources will only be available to other azure services."
+}
+
 variable "LOCATION" {
   type        = string
   default     = "uksouth"
@@ -161,14 +169,6 @@ variable "SERVICE_PLAN_SKU" {
     tier = "Standard"
     size = "S1"
   }
-}
-
-variable "ip_restriction_settings" {
-  type = list(object({
-    ip_address = string
-    subnet_mask = string
-  }))
-  description = "List of IP addresses that are whitelisted for functions app access. If none are provided the resources will only be available to other azure services."
 }
 
 variable "TERRAFORM_RESOURCE_GROUP_NAME" {
