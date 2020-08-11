@@ -14,7 +14,10 @@ variable "DATABASE_USERNAME" {
 
 variable "IP_RESTRICTION_SETTINGS" {
   type = list(object({
-    ip_address = string
-    subnet_mask = string
+    ip_address                = string
+    virtual_network_subnet_id = string
+    name                      = string
+    priority                  = number
+    action                    = string
   }))
 }
