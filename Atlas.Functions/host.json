@@ -11,5 +11,5 @@
     "durableTask": {
     }
   },
-  "functionTimeout": "00:10:00"
+  "functionTimeout": "23:00:00"
 }
