@@ -1,5 +1,4 @@
 ﻿using System;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Models;
 using LocusMatchCategories =
     Atlas.Common.GeneticData.PhenotypeInfo.LocusInfo<Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability.PredictiveMatchCategory?>;
@@ -9,6 +8,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
     public class MatchProbabilityPerLocusResponse
     {
         public MatchProbabilities MatchProbabilities { get; set; }
+
+        public PredictiveMatchCategory? MatchCategory => MatchProbabilities.MatchCategory;
 
         /// <summary>
         /// Match grades are being assigned arbitrarily to pos1 and pos2.
