@@ -79,7 +79,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             var createFile = fileBuilder.WithDonors(create)
                 .With(f => f.FileLocation, "file1")
-                .With(f => f.UploadTime, DateTime.Now.AddDays(-5))
+                .With(f => f.UploadTime, DateTime.UtcNow.AddDays((-5)))
                 .Build();
             await donorFileImporter.ImportDonorFile(createFile);
 

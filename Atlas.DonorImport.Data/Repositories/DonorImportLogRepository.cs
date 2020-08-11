@@ -41,8 +41,6 @@ namespace Atlas.DonorImport.Data.Repositories
                     : "UPDATE DonorLogs SET LastUpdateTime = (@LastUpdateTime) WHERE ExternalDonorId = (@DonorId)";
 
                 await connection.ExecuteAsync(querySql, new {DonorId = donorId, LastUpdateTime = lastUpdateTime});
-
-
             }
         }
         

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Models.FileSchema;
 
@@ -24,16 +25,7 @@ namespace Atlas.DonorImport.Services
         
         public async Task<IEnumerable<DonorUpdate>> FilterDonorUpdatesBasedOnUpdateTime(IEnumerable<DonorUpdate> donorUpdates, DateTime uploadTime)
         {
-            var donorsToUpdate = new List<DonorUpdate>();
-            foreach (var donorUpdate in donorUpdates)
-            {
-                if (await ShouldUpdateDonor(donorUpdate, uploadTime))
-                {
-                    donorsToUpdate.Add(donorUpdate);
-                }
-            }
-
-            return donorsToUpdate;
+            return await donorUpdates.WhereAsync(async du => await ShouldUpdateDonor(du, uploadTime));
         }
 
         public async Task SetLastUpdated(DonorUpdate donorUpdate, DateTime lastUpdated)

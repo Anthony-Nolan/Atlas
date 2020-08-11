@@ -53,7 +53,7 @@ namespace Atlas.DonorImport.Services
             
             try
             {
-                using (var transaction = new AsyncTransactionScope())
+                using (var transactionScope = new AsyncTransactionScope())
                 {
                     var donorUpdates = lazyFile.ReadLazyDonorUpdates();
                     var donorUpdatesToApply = await donorLogService.FilterDonorUpdatesBasedOnUpdateTime(donorUpdates, file.UploadTime);
@@ -66,7 +66,7 @@ namespace Atlas.DonorImport.Services
 
                     await donorImportFileHistoryService.RegisterSuccessfulDonorImport(file);
 
-                    transaction.Complete();
+                    transactionScope.Complete();
 
                     logger.SendTrace($"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).");
                     await notificationSender.SendNotification($"Donor Import Successful: {file.FileLocation}",
