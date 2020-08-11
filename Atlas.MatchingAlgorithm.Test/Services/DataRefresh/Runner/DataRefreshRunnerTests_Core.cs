@@ -162,7 +162,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
                 donorUpdateProcessor,
                 logger,
                 dataRefreshNotificationSender,
-                dataRefreshHistoryRepository
+                dataRefreshHistoryRepository,
+                new MatchingAlgorithmImportLoggingContext()
             );
         }
     }

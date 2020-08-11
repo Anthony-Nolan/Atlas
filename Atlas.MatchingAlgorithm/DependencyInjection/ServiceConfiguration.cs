@@ -260,6 +260,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 var updateConverter = sp.GetService<ISearchableDonorUpdateConverter>();
                 var hlaVersionAccessor = sp.GetService<IActiveHlaNomenclatureVersionAccessor>();
                 var logger = sp.GetService<IMatchingAlgorithmImportLogger>();
+                var loggingContext = sp.GetService<MatchingAlgorithmImportLoggingContext>();
                 var settings = fetchDonorManagementSettings(sp);
 
                 return new DonorUpdateProcessor(
@@ -270,7 +271,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                     updateConverter,
                     hlaVersionAccessor,
                     settings,
-                    logger);
+                    logger, 
+                    loggingContext);
             });
         }
 

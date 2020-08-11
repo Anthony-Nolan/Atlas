@@ -45,6 +45,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IHlaMetadataDictionary activeVersionHlaMetadataDictionary;
         private readonly IDataRefreshNotificationSender dataRefreshNotificationSender;
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
+        private readonly MatchingAlgorithmImportLoggingContext loggingContext;
 
         private readonly IDonorImportRepository donorImportRepository;
 
@@ -84,7 +85,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             // The respective processing times make it pretty unlikely that an interruption would occur after Index recreation completes.
             // But if it *were* to occur then we definitely don't want to have to *re*-re-create them just to do the final 2 steps.
             {DataRefreshStage.IndexRecreation, true},
-            
+
             // Failing to scale down the Database has a cost impact, and it is possible for someone to manually scale the DB back up between interruption and retry.
             // Re-performing this stage if the database is already at the required level is very quick.
             {DataRefreshStage.DatabaseScalingTearDown, false},
@@ -106,7 +107,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IDonorUpdateProcessor differentialDonorUpdateProcessor,
             IMatchingAlgorithmImportLogger logger,
             IDataRefreshNotificationSender dataRefreshNotificationSender,
-            IDataRefreshHistoryRepository dataRefreshHistoryRepository)
+            IDataRefreshHistoryRepository dataRefreshHistoryRepository,
+            MatchingAlgorithmImportLoggingContext loggingContext)
         {
             this.activeDatabaseProvider = activeDatabaseProvider;
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
@@ -118,10 +120,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.logger = logger;
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
             this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
+            this.loggingContext = loggingContext;
             this.dataRefreshSettings = dataRefreshSettings;
 
             // TODO: ATLAS-355: Remove the need for a hardcoded default value
-            var hlaVersionOrDefault =  hlaNomenclatureVersionAccessor.DoesActiveHlaNomenclatureVersionExist()
+            var hlaVersionOrDefault = hlaNomenclatureVersionAccessor.DoesActiveHlaNomenclatureVersionExist()
                 ? hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion()
                 : HlaMetadataDictionaryConstants.NoActiveVersionValue;
 
@@ -179,7 +182,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                         ? DataRefreshStageExecutionMode.Skip
                         : DataRefreshStageExecutionMode.FromScratch;
                 }
-                else if(previousStageWasCompletedInInterruptedRun)
+                else if (previousStageWasCompletedInInterruptedRun)
                 {
                     modes[stage] = DataRefreshStageExecutionMode.Continuation;
                 }
@@ -187,11 +190,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 {
                     modes[stage] = DataRefreshStageExecutionMode.FromScratch;
                 }
+
                 previousStageWasCompletedInInterruptedRun = currentStageWasCompletedInPreviousRun;
             }
 
             AvoidScalingDbUpAndImmediatelyBackDown(modes);
-            
+
             return modes;
         }
 
@@ -204,7 +208,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// </summary>
         private void AvoidScalingDbUpAndImmediatelyBackDown(Dictionary<DataRefreshStage, DataRefreshStageExecutionMode> modes)
         {
-            var stagesBetweenDbScaling = orderedRefreshStages.Where(stage => stage > DataRefreshStage.DatabaseScalingSetup && stage < DataRefreshStage.DatabaseScalingTearDown);
+            var stagesBetweenDbScaling = orderedRefreshStages.Where(stage =>
+                stage > DataRefreshStage.DatabaseScalingSetup && stage < DataRefreshStage.DatabaseScalingTearDown);
             var areWeSkippingEveryStageBetweenDbScaling = stagesBetweenDbScaling.All(stage => modes[stage] == DataRefreshStageExecutionMode.Skip);
             if (areWeSkippingEveryStageBetweenDbScaling)
             {
@@ -219,6 +224,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             {
                 var newHlaNomenclatureVersion = await activeVersionHlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Latest);
                 refreshRecord.HlaNomenclatureVersion = newHlaNomenclatureVersion; //Later steps will make use of this value.
+                loggingContext.HlaNomenclatureVersion = newHlaNomenclatureVersion;
                 await dataRefreshHistoryRepository.UpdateExecutionDetails(refreshRecord.Id, newHlaNomenclatureVersion);
                 await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecord, DataRefreshStage.MetadataDictionaryRefresh);
             }
@@ -236,7 +242,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             {
                 //Note the distinction between `break`s and `return`s here!
                 case DataRefreshStageExecutionMode.NotApplicable:
-                    logger.SendTrace($"{LoggingPrefix} Stage {dataRefreshStage} is not Applicable to the 'All Stages' execution loop.", LogLevel.Verbose);
+                    logger.SendTrace($"{LoggingPrefix} Stage {dataRefreshStage} is not Applicable to the 'All Stages' execution loop.",
+                        LogLevel.Verbose);
                     return;
                 case DataRefreshStageExecutionMode.Skip:
                     logger.SendTrace($"{LoggingPrefix} Stage {dataRefreshStage} is already complete and can be skipped. Skipping.");
@@ -271,6 +278,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                         // HLA data throughout the whole donor dataset. Instead we will restart the whole stage.
                         await donorImportRepository.RemoveAllDonorInformation();
                     }
+
                     await donorImporter.ImportDonors();
                     break;
                 case DataRefreshStage.DonorHlaProcessing:
@@ -292,7 +300,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     break;
                 case DataRefreshStage.QueuedDonorUpdateProcessing:
                     var dbBeingRefreshed = refreshRecord.Database.ParseToEnum<TransientDatabase>();
-                    await differentialDonorUpdateProcessor.ApplyDifferentialDonorUpdatesDuringRefresh(dbBeingRefreshed, refreshRecord.HlaNomenclatureVersion);
+                    await differentialDonorUpdateProcessor.ApplyDifferentialDonorUpdatesDuringRefresh(dbBeingRefreshed,
+                        refreshRecord.HlaNomenclatureVersion);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dataRefreshStage), dataRefreshStage, null);
