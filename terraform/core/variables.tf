@@ -163,6 +163,12 @@ variable "SERVICE_PLAN_SKU" {
   }
 }
 
+variable "ip_restriction_settings" {
+  type = list(object({
+    ip_address = string
+    subnet_mask = string
+  }))
+}
 
 variable "TERRAFORM_RESOURCE_GROUP_NAME" {
   type        = string
