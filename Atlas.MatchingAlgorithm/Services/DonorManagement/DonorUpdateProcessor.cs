@@ -57,6 +57,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         private readonly DonorManagementSettings settings;
         private readonly int batchSize;
         private readonly IMatchingAlgorithmImportLogger logger;
+        private readonly MatchingAlgorithmImportLoggingContext loggingContext;
 
         public DonorUpdateProcessor(
             IMessageProcessorForDbADonorUpdates dbAMessageProcessorService,
@@ -66,7 +67,8 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             ISearchableDonorUpdateConverter searchableDonorUpdateConverter,
             IActiveHlaNomenclatureVersionAccessor activeHlaNomenclatureVersionAccessor,
             DonorManagementSettings settings,
-            IMatchingAlgorithmImportLogger logger)
+            IMatchingAlgorithmImportLogger logger,
+            MatchingAlgorithmImportLoggingContext loggingContext)
         {
             this.dbAMessageProcessorService = dbAMessageProcessorService;
             this.dbBMessageProcessorService = dbBMessageProcessorService;
@@ -77,6 +79,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             this.settings = settings;
             this.batchSize = settings.BatchSize;
             this.logger = logger;
+            this.loggingContext = loggingContext;
         }
 
         /// <remarks>
@@ -192,8 +195,6 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             return DatabaseStateWithRespectToDonorUpdates.Refreshing;
         }
 
-
-
         public IMessageProcessor<SearchableDonorUpdate> ChooseMessagesToProcess(TransientDatabase targetDatabase)
         {
             return targetDatabase switch
@@ -209,7 +210,8 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             var converterResults = await searchableDonorUpdateConverter.ConvertSearchableDonorUpdatesAsync(messageBatch);
 
             logger.SendTrace($"{TraceMessagePrefix}: {converterResults.ProcessingResults.Count()} messages retrieved for processing.");
-
+            loggingContext.HlaNomenclatureVersion = targetHlaNomenclatureVersion;
+            
             if (converterResults.ProcessingResults.Any())
             {
                 await donorManagementService.ApplyDonorUpdatesToDatabase(
