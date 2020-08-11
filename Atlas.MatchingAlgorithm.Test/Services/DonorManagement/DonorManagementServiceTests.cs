@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -26,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         private IDonorManagementLogRepository logRepository;
         private IDonorService donorService;
         private IDonorManagementService donorManagementService;
-        private ILogger logger;
+        private IMatchingAlgorithmImportLogger logger;
 
         [SetUp]
         public void SetUp()
@@ -38,7 +39,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
             repositoryFactory.GetDonorManagementLogRepositoryForDatabase(default).ReturnsForAnyArgs(logRepository);
 
             donorService = Substitute.For<IDonorService>();
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             
             donorManagementService = new DonorManagementService(repositoryFactory, donorService, logger);
         }

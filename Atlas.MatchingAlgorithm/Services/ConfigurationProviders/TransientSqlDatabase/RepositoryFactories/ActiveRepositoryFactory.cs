@@ -1,4 +1,5 @@
 using Atlas.Common.ApplicationInsights;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
@@ -15,7 +16,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
     public class ActiveRepositoryFactory : TransientRepositoryFactoryBase, IActiveRepositoryFactory
     {
         // ReSharper disable once SuggestBaseTypeForParameter
-        public ActiveRepositoryFactory(ActiveTransientSqlConnectionStringProvider activeConnectionStringProvider, ILogger logger)
+        public ActiveRepositoryFactory(ActiveTransientSqlConnectionStringProvider activeConnectionStringProvider, IMatchingAlgorithmImportLogger logger)
             : base(activeConnectionStringProvider, logger)
         {
         }

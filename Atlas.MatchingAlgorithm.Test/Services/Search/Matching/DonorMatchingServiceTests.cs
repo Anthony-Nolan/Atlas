@@ -17,7 +17,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 
 // ReSharper disable InconsistentNaming
 
@@ -68,7 +68,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
                 repositoryFactory,
                 matchFilteringService,
                 databaseFilteringAnalyser,
-                Substitute.For<IMatchingAlgorithmLogger>()
+                Substitute.For<IMatchingAlgorithmSearchLogger>()
             );
 
             donorSearchRepository.GetDonorMatchesAtLocus(Locus.A, Arg.Any<LocusSearchCriteria>(), Arg.Any<MatchingFilteringOptions>())

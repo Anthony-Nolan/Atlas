@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
@@ -31,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
     public class DataRefreshCleanupService : IDataRefreshCleanupService
     {
-        private readonly ILogger logger;
+        private readonly IMatchingAlgorithmImportLogger logger;
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IAzureDatabaseManager azureDatabaseManager;
@@ -40,7 +41,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IDataRefreshNotificationSender notificationSender;
 
         public DataRefreshCleanupService(
-            ILogger logger,
+            IMatchingAlgorithmImportLogger logger,
             IAzureDatabaseNameProvider azureDatabaseNameProvider,
             IActiveDatabaseProvider activeDatabaseProvider,
             IAzureDatabaseManager azureDatabaseManager,

@@ -15,6 +15,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 {
@@ -23,7 +24,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
     {
         private IDonorHlaExpander donorHlaExpander;
         private IHlaMetadataDictionary hlaMetadataDictionary;
-        private ILogger logger;
+        private IMatchingAlgorithmImportLogger logger;
 
         [SetUp]
         public void SetUp()
@@ -31,11 +32,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             hlaMetadataDictionary = Substitute.For<IHlaMetadataDictionary>();
             hlaMetadataDictionary.GetLocusHlaMatchingMetadata(default, default).ReturnsForAnyArgs(call =>
             {
-                var input = call.Arg<LocusInfo<string>>();
+                call.Arg<LocusInfo<string>>();
                 return Task.FromResult(new LocusInfo<IHlaMatchingMetadata>(default, default));
             });
 
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             donorHlaExpander = new DonorHlaExpander(hlaMetadataDictionary, logger);
         }
 
@@ -60,7 +61,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         {
             var dictionaryBuilder = new HlaMetadataDictionaryBuilder().Returning(hlaMetadataDictionary);
 
-            var constructedDonorExpander = new DonorHlaExpanderFactory(dictionaryBuilder, Substitute.For<IActiveHlaNomenclatureVersionAccessor>(), Substitute.For<ILogger>()).BuildForSpecifiedHlaNomenclatureVersion(null);
+            var constructedDonorExpander = new DonorHlaExpanderFactory(dictionaryBuilder, Substitute.For<IActiveHlaNomenclatureVersionAccessor>(), Substitute.For<IMatchingAlgorithmImportLogger>()).BuildForSpecifiedHlaNomenclatureVersion(null);
             
             await constructedDonorExpander.ExpandDonorHlaBatchAsync(new List<DonorInfo>
                 {

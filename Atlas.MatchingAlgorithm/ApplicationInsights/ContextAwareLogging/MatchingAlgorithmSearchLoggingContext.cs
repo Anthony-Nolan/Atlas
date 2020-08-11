@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using Atlas.Common.ApplicationInsights;
 
-namespace Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests
+namespace Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging
 {
-    public class MatchingAlgorithmLoggingContext : LoggingContext
+    public class MatchingAlgorithmSearchLoggingContext : LoggingContext
     {
         private string searchRequestId;
 
@@ -24,12 +24,10 @@ namespace Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests
         }
 
         /// <inheritdoc />
-        public override Dictionary<string, string> PropertiesToLog()
-        {
-            return new Dictionary<string, string>
+        public override Dictionary<string, string> PropertiesToLog() =>
+            new Dictionary<string, string>
             {
                 {nameof(SearchRequestId), SearchRequestId}
             };
-        }
     }
 }

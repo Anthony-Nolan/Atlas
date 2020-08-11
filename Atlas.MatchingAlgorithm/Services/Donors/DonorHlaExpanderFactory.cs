@@ -1,5 +1,6 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
 namespace Atlas.MatchingAlgorithm.Services.Donors
@@ -14,12 +15,12 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
     {
         private readonly IHlaMetadataDictionaryFactory dictionaryFactory;
         private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
-        private readonly ILogger logger;
+        private readonly IMatchingAlgorithmImportLogger logger;
 
         public DonorHlaExpanderFactory(
             IHlaMetadataDictionaryFactory dictionaryFactory,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,
-            ILogger logger)
+            IMatchingAlgorithmImportLogger logger)
         {
             this.dictionaryFactory = dictionaryFactory;
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;

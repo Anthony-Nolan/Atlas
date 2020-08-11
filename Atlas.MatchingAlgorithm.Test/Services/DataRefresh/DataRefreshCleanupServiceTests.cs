@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
@@ -17,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
     [TestFixture]
     public class DataRefreshCleanupServiceTests
     {
-        private ILogger logger;
+        private IMatchingAlgorithmImportLogger logger;
         private IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private IActiveDatabaseProvider activeDatabaseProvider;
         private IAzureDatabaseManager azureDatabaseManager;
@@ -29,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [SetUp]
         public void SetUp()
         {
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             azureDatabaseNameProvider = Substitute.For<IAzureDatabaseNameProvider>();
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();

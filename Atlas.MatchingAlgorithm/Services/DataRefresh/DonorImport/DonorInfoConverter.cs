@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Extensions;
@@ -22,8 +23,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         DonorBatchProcessor<SearchableDonorInformation, DonorInfo>,
         IDonorInfoConverter
     {
-        public DonorInfoConverter(ILogger logger)
-            : base(logger)
+        public DonorInfoConverter(IMatchingAlgorithmImportLogger logger) : base(logger)
         {
         }
 

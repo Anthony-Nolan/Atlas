@@ -6,6 +6,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.ExternalInterface;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Exceptions;
@@ -37,14 +38,14 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
         private readonly IDonorImportRepository matchingDonorImportRepository;
         private readonly IDonorInfoConverter donorInfoConverter;
         private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
-        private readonly ILogger logger;
+        private readonly IMatchingAlgorithmImportLogger logger;
         private readonly IDonorReader donorReader;
 
         public DonorImporter(
             IDormantRepositoryFactory repositoryFactory,
             IDonorInfoConverter donorInfoConverter,
             IFailedDonorsNotificationSender failedDonorsNotificationSender,
-            ILogger logger,
+            IMatchingAlgorithmImportLogger logger,
             IDonorReader donorReader)
         {
             matchingDonorImportRepository = repositoryFactory.GetDonorImportRepository();

@@ -8,6 +8,7 @@ using Atlas.Common.Helpers;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
@@ -40,7 +41,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         private const int BatchSize = 2000; // At 1k this definitely works fine. At 4k it's been seen throwing OOM Exceptions
         private const string HlaFailureEventName = "Imported Donor Hla Processing Failure(s) in the Matching Algorithm's DataRefresh";
 
-        private readonly ILogger logger;
+        private readonly IMatchingAlgorithmImportLogger logger;
         private readonly IDonorHlaExpanderFactory donorHlaExpanderFactory;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
@@ -53,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         public const int NumberOfBatchesOverlapOnRestart = 3;
 
         public HlaProcessor(
-            ILogger logger,
+            IMatchingAlgorithmImportLogger logger,
             IDonorHlaExpanderFactory donorHlaExpanderFactory,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             IFailedDonorsNotificationSender failedDonorsNotificationSender,

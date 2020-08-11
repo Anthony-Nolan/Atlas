@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus.Models;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Extensions;
 using Atlas.MatchingAlgorithm.Models;
@@ -23,7 +24,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
     {
         private const string UpdateFailureEventName = "Searchable Donor Update parsing Failure(s) in the Matching Algorithm's Continuous Donor Update sytem";
 
-        public SearchableDonorUpdateConverter(ILogger logger) : base(logger)
+        public SearchableDonorUpdateConverter(IMatchingAlgorithmImportLogger logger) : base(logger)
         {
         }
 

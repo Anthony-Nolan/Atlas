@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
@@ -36,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         private readonly IDonorSearchRepository donorSearchRepository;
         private readonly IMatchFilteringService matchFilteringService;
         private readonly IDatabaseFilteringAnalyser databaseFilteringAnalyser;
-        private readonly ILogger logger;
+        private readonly ILogger searchLogger;
         private readonly IPGroupRepository pGroupRepository;
 
         public DonorMatchingService(
@@ -44,14 +44,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             IMatchFilteringService matchFilteringService,
             IDatabaseFilteringAnalyser databaseFilteringAnalyser,
             // ReSharper disable once SuggestBaseTypeForParameter
-            IMatchingAlgorithmLogger logger
+            IMatchingAlgorithmSearchLogger searchLogger
         )
         {
             donorSearchRepository = repositoryFactory.GetDonorSearchRepository();
             pGroupRepository = repositoryFactory.GetPGroupRepository();
             this.matchFilteringService = matchFilteringService;
             this.databaseFilteringAnalyser = databaseFilteringAnalyser;
-            this.logger = logger;
+            this.searchLogger = searchLogger;
         }
 
         public async Task<IDictionary<int, MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, ICollection<Locus> loci)
@@ -70,7 +70,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             var matchFindingTasks = loci.Select(l => FindMatchesAtLocus(criteria.SearchType, l, criteria.MatchCriteriaForLocus(l))).ToList();
             var results = await Task.WhenAll(matchFindingTasks);
 
-            logger.SendTrace($"MATCHING PHASE1: all donors from Db. {results.Sum(x => x.Count)} results in {stopwatch.ElapsedMilliseconds} ms");
+            searchLogger.SendTrace($"MATCHING PHASE1: all donors from Db. {results.Sum(x => x.Count)} results in {stopwatch.ElapsedMilliseconds} ms");
             stopwatch.Restart();
 
             var matches = results
@@ -100,7 +100,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m, criteria))
                 .ToList();
 
-            logger.SendTrace($"MATCHING PHASE1: Manipulate + filter: {stopwatch.ElapsedMilliseconds}");
+            searchLogger.SendTrace($"MATCHING PHASE1: Manipulate + filter: {stopwatch.ElapsedMilliseconds}");
             stopwatch.Restart();
 
             return matches.ToDictionary(m => m.DonorId, m => m);
@@ -129,14 +129,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             stopwatch.Start();
             
             var matchesAtLocus = await donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions);
-            logger.SendTrace($"MATCHING PHASE1: SQL Requests, {stopwatch.ElapsedMilliseconds}");
+            searchLogger.SendTrace($"MATCHING PHASE1: SQL Requests, {stopwatch.ElapsedMilliseconds}");
             stopwatch.Restart();
             
             var matches = matchesAtLocus
                 .GroupBy(m => m.DonorId)
                 .ToDictionary(g => g.Key, g => DonorAndMatchFromGroup(g, locus));
 
-            logger.SendTrace($"MATCHING PHASE1: Direct/Cross analysis, {stopwatch.ElapsedMilliseconds}");
+            searchLogger.SendTrace($"MATCHING PHASE1: Direct/Cross analysis, {stopwatch.ElapsedMilliseconds}");
             
             return matches;
         }

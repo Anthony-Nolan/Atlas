@@ -7,6 +7,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.ApplicationInsights;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
@@ -46,12 +47,12 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 
         private readonly IStaticallyChosenDatabaseRepositoryFactory repositoryFactory;
         private readonly IDonorService donorService;
-        private readonly ILogger logger;
+        private readonly IMatchingAlgorithmImportLogger logger;
 
         public DonorManagementService(
             IStaticallyChosenDatabaseRepositoryFactory repositoryFactory,
             IDonorService donorService,
-            ILogger logger)
+            IMatchingAlgorithmImportLogger logger)
         {
             this.repositoryFactory = repositoryFactory;
             this.donorService = donorService;

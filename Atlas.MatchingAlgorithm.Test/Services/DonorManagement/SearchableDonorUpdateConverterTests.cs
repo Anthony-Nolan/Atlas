@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus.Models;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using FluentAssertions;
@@ -14,12 +15,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
     public class SearchableDonorUpdateConverterTests
     {
         private ISearchableDonorUpdateConverter converter;
-        private ILogger logger;
+        private IMatchingAlgorithmImportLogger logger;
 
         [SetUp]
         public void SetUp()
         {
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             converter = new SearchableDonorUpdateConverter(logger);
         }
 

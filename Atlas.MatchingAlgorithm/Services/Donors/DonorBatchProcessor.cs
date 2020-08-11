@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.ApplicationInsights.DonorProcessing;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Models;
@@ -29,9 +30,9 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
 
     public abstract class DonorBatchProcessor<TDonor, TResult> : IDonorBatchProcessor<TDonor, TResult>
     {
-        private readonly ILogger logger;
+        private readonly IMatchingAlgorithmImportLogger logger;
 
-        protected DonorBatchProcessor(ILogger logger)
+        protected DonorBatchProcessor(IMatchingAlgorithmImportLogger logger)
         {
             this.logger = logger;
         }

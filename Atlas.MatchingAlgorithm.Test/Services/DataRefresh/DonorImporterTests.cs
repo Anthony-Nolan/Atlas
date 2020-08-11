@@ -6,6 +6,7 @@ using Atlas.Common.Notifications;
 using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Repositories;
@@ -29,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IDormantRepositoryFactory repositoryFactory;
         private IDonorInfoConverter donorInfoConverter;
         private IFailedDonorsNotificationSender failedDonorsNotificationSender;
-        private ILogger logger;
+        private IMatchingAlgorithmImportLogger logger;
         private IDonorReader donorReader;
 
         [SetUp]
@@ -46,7 +47,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .Returns(new DonorBatchProcessingResult<DonorInfo>());
 
             failedDonorsNotificationSender = Substitute.For<IFailedDonorsNotificationSender>();
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             donorReader = Substitute.For<IDonorReader>();
 
             donorImporter = new DonorImporter(repositoryFactory, donorInfoConverter, failedDonorsNotificationSender, logger, donorReader);

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.ServiceBus.Models;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
@@ -49,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
             var hlaVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
             ConfigureMocksToPassThroughToDonorService();
 
-            var logger = Substitute.For<ILogger>();
+            var logger = Substitute.For<IMatchingAlgorithmImportLogger>();
 
             donorUpdateProcessor = new DonorUpdateProcessor(
                 messageProcessorServiceForA,

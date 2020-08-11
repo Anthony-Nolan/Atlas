@@ -2,7 +2,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils.Http;
-using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
@@ -37,14 +37,14 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
             searchService = Substitute.For<ISearchService>();
             resultsBlobStorageClient = Substitute.For<IResultsBlobStorageClient>();
             hlaNomenclatureVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
-            var logger = Substitute.For<IMatchingAlgorithmLogger>();
+            var logger = Substitute.For<IMatchingAlgorithmSearchLogger>();
 
             searchRunner = new SearchRunner(
                 searchServiceBusClient,
                 searchService,
                 resultsBlobStorageClient,
                 logger,
-                new MatchingAlgorithmLoggingContext(),
+                new MatchingAlgorithmSearchLoggingContext(),
                 hlaNomenclatureVersionAccessor);
         }
 

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
@@ -50,7 +51,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IDonorImporter donorImporter;
         private readonly IHlaProcessor hlaProcessor;
         private readonly IDonorUpdateProcessor differentialDonorUpdateProcessor;
-        private readonly ILogger logger;
+        private readonly IMatchingAlgorithmImportLogger logger;
 
         private const string LoggingPrefix = "DATA REFRESH:";
 
@@ -103,7 +104,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IDonorImporter donorImporter,
             IHlaProcessor hlaProcessor,
             IDonorUpdateProcessor differentialDonorUpdateProcessor,
-            ILogger logger,
+            IMatchingAlgorithmImportLogger logger,
             IDataRefreshNotificationSender dataRefreshNotificationSender,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository)
         {

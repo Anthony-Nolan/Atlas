@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus.Models;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.ApplicationInsights.DonorProcessing;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Models;
@@ -48,12 +49,12 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
         // Arbitrary implementation selected to test base functionality.
         private IDonorBatchProcessor<ServiceBusMessage<SearchableDonorUpdate>, DonorAvailabilityUpdate> donorBatchProcessor;
 
-        private ILogger logger;
+        private IMatchingAlgorithmImportLogger logger;
 
         [SetUp]
         public void SetUp()
         {
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             donorBatchProcessor = new SearchableDonorUpdateConverter(logger);
         }
 
