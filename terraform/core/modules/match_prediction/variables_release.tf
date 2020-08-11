@@ -18,3 +18,10 @@ variable "MAC_SOURCE" {
 variable "WEBSITE_RUN_FROM_PACKAGE" {
   type = string
 }
+
+variable "IP_RESTRICTION_SETTINGS" {
+  type = list(object({
+    ip_address = string
+    subnet_mask = string
+  }))
+}

@@ -163,7 +163,7 @@ variable "SERVICE_PLAN_SKU" {
   }
 }
 
-variable "ip_restriction_settings" {
+variable "IP_RESTRICTION_SETTINGS" {
   type = list(object({
     ip_address = string
     subnet_mask = string

@@ -83,6 +83,7 @@ module "matching_algorithm" {
   MESSAGING_BUS_DONOR_CRON_SCHEDULE                = var.MATCHING_MESSAGING_BUS_DONOR_CRON_SCHEDULE
   WEBSITE_RUN_FROM_PACKAGE                         = var.WEBSITE_RUN_FROM_PACKAGE
   WMDA_FILE_URL                                    = var.WMDA_FILE_URL
+  IP_RESTRICTION_SETTINGS                          = var.IP_RESTRICTION_SETTINGS
 }
 
 module "match_prediction" {
@@ -118,6 +119,7 @@ module "match_prediction" {
   DATABASE_USERNAME              = var.MATCH_PREDICTION_DATABASE_USERNAME
   MAC_SOURCE                     = var.MAC_SOURCE
   WEBSITE_RUN_FROM_PACKAGE       = var.WEBSITE_RUN_FROM_PACKAGE
+  IP_RESTRICTION_SETTINGS        = var.IP_RESTRICTION_SETTINGS
 }
 
 module "donor_import" {
@@ -150,6 +152,7 @@ module "donor_import" {
   APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
   DATABASE_PASSWORD              = var.DONOR_DATABASE_PASSWORD
   DATABASE_USERNAME              = var.DONOR_DATABASE_USERNAME
+  IP_RESTRICTION_SETTINGS        = var.IP_RESTRICTION_SETTINGS
 }
 
 module "support" {
