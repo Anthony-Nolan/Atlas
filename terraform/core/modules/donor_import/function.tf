@@ -26,11 +26,13 @@ resource "azurerm_function_app" "atlas_donor_import_function" {
     "WEBSITE_RUN_FROM_PACKAGE"                     = "1"
   }
 
-  dynamic "ip_restriction" {
-    for_each = var.IP_RESTRICTION_SETTINGS
-    content {
-      ip_address  = ip_restriction.value.ip_address
-      subnet_mask = ip_restriction.value.subnet_mask
+  site_config {
+    dynamic "ip_restriction" {
+      for_each = var.IP_RESTRICTION_SETTINGS
+      content {
+        ip_address  = ip_restriction.value.ip_address
+        subnet_mask = ip_restriction.value.subnet_mask
+      }
     }
   }
 
