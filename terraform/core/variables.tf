@@ -47,6 +47,7 @@ variable "IP_RESTRICTION_SETTINGS" {
         ip_address = string
         subnet_id  = string
       }))
+  default = []
   description = "List of IP addresses that are whitelisted for functions app access. If none are provided the resources will only be available to other azure services."
 }
 
