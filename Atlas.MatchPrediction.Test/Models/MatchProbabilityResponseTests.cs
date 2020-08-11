@@ -41,5 +41,17 @@ namespace Atlas.MatchPrediction.Test.Models
             roundedResponse.OneMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(null));
             roundedResponse.TwoMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(null));
         }
+
+        [Test]
+        public void MatchCount_WhenUnrepresentedPhenotype_ReturnsNullMatchCounts()
+        {
+            var response = MatchProbabilityResponseBuilder.New
+                .WithAllProbabilityValuesNull()
+                .With(r => r.IsDonorPhenotypeUnrepresented, true).Build();
+
+            response.OverallMatchCount.Should().Be(null);
+            response.ExactMatchCount.Should().Be(null);
+            response.PotentialMatchCount.Should().Be(null);
+        }
     }
 }

@@ -21,13 +21,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
             set => MatchProbabilitiesPerLocus = value.ToLociInfo();
         }
 
-        public int OverallMatchCount => ExactMatchCount + PotentialMatchCount;
-
-        public int ExactMatchCount => MatchProbabilitiesPerLocus.Reduce((locus, value, accumulator) =>
-            value?.MatchProbabilities?.MatchCategory == PredictiveMatchCategory.Exact ? accumulator + 2 : accumulator, 0);
-
-        public int PotentialMatchCount => MatchProbabilitiesPerLocus.Reduce((locus, value, accumulator) =>
-            value?.MatchProbabilities?.MatchCategory == PredictiveMatchCategory.Potential ? accumulator + 2 : accumulator, 0);
+        public int? OverallMatchCount => ExactMatchCount + PotentialMatchCount;
+        public int? ExactMatchCount => GetMatchCount(PredictiveMatchCategory.Exact);
+        public int? PotentialMatchCount => GetMatchCount(PredictiveMatchCategory.Potential);
 
         [JsonIgnore]
         public LociInfo<Probability> ZeroMismatchProbabilityPerLocus =>
@@ -69,6 +65,17 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
                 IsPatientPhenotypeUnrepresented = IsPatientPhenotypeUnrepresented,
                 IsDonorPhenotypeUnrepresented = IsDonorPhenotypeUnrepresented
             };
+        }
+
+        private int? GetMatchCount(PredictiveMatchCategory matchCategory)
+        {
+            if (IsDonorPhenotypeUnrepresented || IsPatientPhenotypeUnrepresented)
+            {
+                return null;
+            }
+
+            return MatchProbabilitiesPerLocus.Reduce((locus, value, accumulator) =>
+                value?.MatchProbabilities?.MatchCategory == matchCategory ? accumulator + 2 : accumulator, 0);
         }
     }
 }
