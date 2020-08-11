@@ -150,6 +150,11 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             };
         }
 
+        public LociInfo<T> SetLoci(T value, params Locus[] loci)
+        {
+            return loci.Aggregate(this, (result, locus) => result.SetLocus(locus, value));
+        }
+
         public LociInfo<T> SetLocus(Locus locus, T value)
         {
             return locus switch
@@ -317,5 +322,5 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         {
             return new PhenotypeInfo<T>(lociInfo);
         }
-    } 
+    }
 }

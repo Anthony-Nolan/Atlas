@@ -66,6 +66,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [TestCase(new[] {Locus.Dqb1}, 39)]
         [TestCase(new[] {Locus.C}, 33)]
         [TestCase(new[] {Locus.Dqb1, Locus.C}, 38)]
+        // Repeat one test case to ensure we test both the cached and cache-bypass methods of calculating consolidated HF sets 
+        [Repeat(20)]
         public async Task CalculateMatchProbability_WithExcludedLoci_AndMultipleHaplotypesMatchAtOtherLoci_CalculatesOverallProbabilityCorrectly(
             Locus[] lociToExclude,
             int expectedZeroMismatchProbability)
