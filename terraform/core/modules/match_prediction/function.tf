@@ -33,14 +33,6 @@ resource "azurerm_function_app" "atlas_match_prediction_function" {
     ip_restriction = var.IP_RESTRICTION_SETTINGS
   }
 
-  dynamic "ip_restriction" {
-    for_each = var.IP_RESTRICTION_SETTINGS
-    content {
-      ip_address  = ip_restriction.value.ip_address
-      subnet_mask = ip_restriction.value.subnet_mask
-    }
-  }
-
   connection_string {
     name  = "MatchPredictionSql"
     type  = "SQLAzure"
