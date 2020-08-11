@@ -1,4 +1,5 @@
 ﻿using Atlas.Common.Utils.Models;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
 {
@@ -8,6 +9,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         public Probability OneMismatchProbability { get; set; }
         public Probability TwoMismatchProbability { get; set; }
 
+        [JsonIgnore]
         public PredictiveMatchCategory? MatchCategory => ZeroMismatchProbability?.Decimal switch
         {
             1m => PredictiveMatchCategory.Exact,

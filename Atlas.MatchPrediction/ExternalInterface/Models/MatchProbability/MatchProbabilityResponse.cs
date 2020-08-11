@@ -25,6 +25,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         public int? ExactMatchCount => GetMatchCount(PredictiveMatchCategory.Exact);
         public int? PotentialMatchCount => GetMatchCount(PredictiveMatchCategory.Potential);
 
+        public LociInfo<PredictiveMatchCategory?> MatchCategories => 
+            MatchProbabilitiesPerLocus.Map(x => x?.MatchProbabilities.MatchCategory);
+
         [JsonIgnore]
         public LociInfo<Probability> ZeroMismatchProbabilityPerLocus =>
             MatchProbabilitiesPerLocus.Map(x => x?.MatchProbabilities.ZeroMismatchProbability);
