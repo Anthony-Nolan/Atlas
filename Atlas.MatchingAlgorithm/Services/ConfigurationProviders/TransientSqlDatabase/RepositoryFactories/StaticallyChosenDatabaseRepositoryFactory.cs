@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.ApplicationInsights;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
@@ -22,11 +23,11 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
     public class StaticallyChosenDatabaseRepositoryFactory : IStaticallyChosenDatabaseRepositoryFactory
     {
         private readonly StaticallyChosenTransientSqlConnectionStringProviderFactory connectionStringProviderFactory;
-        private readonly ILogger logger;
+        private readonly IMatchingAlgorithmImportLogger logger;
 
         public StaticallyChosenDatabaseRepositoryFactory(
             StaticallyChosenTransientSqlConnectionStringProviderFactory connectionStringProviderFactory,
-            ILogger logger
+            IMatchingAlgorithmImportLogger logger
             )
         {
             this.connectionStringProviderFactory = connectionStringProviderFactory;

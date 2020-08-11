@@ -4,6 +4,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
@@ -39,7 +40,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
 
         private IDataRefreshRunner dataRefreshRunner;
-        private ILogger logger;
+        private IMatchingAlgorithmImportLogger logger;
         private IDormantRepositoryFactory transientRepositoryFactory;
 
         [SetUp]
@@ -53,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             donorImporter = Substitute.For<IDonorImporter>();
             hlaProcessor = Substitute.For<IHlaProcessor>();
             donorUpdateProcessor = Substitute.For<IDonorUpdateProcessor>();
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             dataRefreshNotificationSender = Substitute.For<IDataRefreshNotificationSender>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
 

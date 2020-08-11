@@ -5,6 +5,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils.Http;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
@@ -24,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
     [TestFixture]
     public class DataRefreshOrchestratorTests
     {
-        private ILogger logger;
+        private IMatchingAlgorithmImportLogger logger;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private IActiveDatabaseProvider activeDatabaseProvider;
         private IDataRefreshRunner dataRefreshRunner;
@@ -42,8 +43,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
 
-
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             dataRefreshRunner = Substitute.For<IDataRefreshRunner>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();

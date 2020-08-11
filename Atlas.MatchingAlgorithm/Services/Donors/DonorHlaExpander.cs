@@ -6,6 +6,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Models;
 
@@ -28,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
         /// <param name="logger">an Atlas ILogger</param>
         public DonorHlaExpander(
             IHlaMetadataDictionary hlaMetadataDictionary,
-            ILogger logger)
+            IMatchingAlgorithmImportLogger logger)
             : base(logger)
         {
             this.hlaMetadataDictionary = hlaMetadataDictionary;

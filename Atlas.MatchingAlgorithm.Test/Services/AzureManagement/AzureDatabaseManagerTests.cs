@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
 using Atlas.MatchingAlgorithm.Exceptions.Azure;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
@@ -19,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
     {
         private IAzureDatabaseManagementClient azureManagementClient;
         private IThreadSleeper threadSleeper;
-        private ILogger logger;
+        private IMatchingAlgorithmImportLogger logger;
 
         private IAzureDatabaseManager azureDatabaseManager;
 
@@ -28,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
         {
             azureManagementClient = Substitute.For<IAzureDatabaseManagementClient>();
             threadSleeper = Substitute.For<IThreadSleeper>();
-            logger = Substitute.For<ILogger>();
+            logger = Substitute.For<IMatchingAlgorithmImportLogger>();
 
             var defaultOperationTime = DateTime.UtcNow;
             azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>()).Returns(defaultOperationTime);

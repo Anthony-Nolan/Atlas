@@ -8,7 +8,7 @@ using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
-using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
@@ -49,14 +49,13 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
     {
         public static void RegisterMatchingAlgorithm(
             this IServiceCollection services,
-            
+
             // Data refresh only 
             // TODO: ATLAS-472: Split registration of data refresh/matching usages
             Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings,
             Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
             Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
             Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
-
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
@@ -144,9 +143,11 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
             services.AddScoped<IThreadSleeper, ThreadSleeper>();
 
-            services.AddScoped<MatchingAlgorithmLoggingContext>();
+            services.AddScoped<MatchingAlgorithmSearchLoggingContext>();
+            services.AddScoped<MatchingAlgorithmImportLoggingContext>();
             services.AddApplicationInsightsTelemetryWorkerService();
-            services.AddScoped<IMatchingAlgorithmLogger, MatchingAlgorithmLogger>();
+            services.AddScoped<IMatchingAlgorithmSearchLogger, MatchingAlgorithmSearchLogger>();
+            services.AddScoped<IMatchingAlgorithmImportLogger, MatchingAlgorithmImportLogger>();
 
             services.RegisterLifeTimeScopedCacheTypes();
 
@@ -258,7 +259,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 var managementService = sp.GetService<IDonorManagementService>();
                 var updateConverter = sp.GetService<ISearchableDonorUpdateConverter>();
                 var hlaVersionAccessor = sp.GetService<IActiveHlaNomenclatureVersionAccessor>();
-                var logger = sp.GetService<ILogger>();
+                var logger = sp.GetService<IMatchingAlgorithmImportLogger>();
                 var settings = fetchDonorManagementSettings(sp);
 
                 return new DonorUpdateProcessor(
@@ -269,8 +270,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                     updateConverter,
                     hlaVersionAccessor,
                     settings,
-                    logger
-                    );
+                    logger);
             });
         }
 

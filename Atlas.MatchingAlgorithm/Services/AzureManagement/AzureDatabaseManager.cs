@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Clients.AzureManagement;
 using Atlas.MatchingAlgorithm.Exceptions.Azure;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
@@ -24,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Services.AzureManagement
 
         private readonly IAzureDatabaseManagementClient databaseManagementClient;
         private readonly IThreadSleeper threadSleeper;
-        private readonly ILogger logger;
+        private readonly IMatchingAlgorithmImportLogger logger;
         private readonly bool isLocal;
         private readonly long pollingRetryIntervalMilliseconds;
 
@@ -32,7 +33,7 @@ namespace Atlas.MatchingAlgorithm.Services.AzureManagement
             IAzureDatabaseManagementClient databaseManagementClient,
             IThreadSleeper threadSleeper,
             AzureDatabaseManagementSettings settings,
-            ILogger logger)
+            IMatchingAlgorithmImportLogger logger)
         {
             this.databaseManagementClient = databaseManagementClient;
             this.threadSleeper = threadSleeper;

@@ -1,4 +1,5 @@
 using Atlas.Common.ApplicationInsights;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
@@ -16,9 +17,9 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
     public abstract class TransientRepositoryFactoryBase : ITransientRepositoryFactory
     {
         protected readonly IConnectionStringProvider ConnectionStringProvider;
-        protected readonly ILogger logger;
+        protected readonly IMatchingAlgorithmImportLogger logger;
 
-        protected TransientRepositoryFactoryBase(IConnectionStringProvider connectionStringProvider, ILogger logger)
+        protected TransientRepositoryFactoryBase(IConnectionStringProvider connectionStringProvider, IMatchingAlgorithmImportLogger logger)
         {
             this.ConnectionStringProvider = connectionStringProvider;
             this.logger = logger;

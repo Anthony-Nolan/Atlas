@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils.Http;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Models.AzureManagement;
@@ -37,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
     public class DataRefreshOrchestrator : IDataRefreshOrchestrator
     {
-        private readonly ILogger logger;
+        private readonly IMatchingAlgorithmImportLogger logger;
         private readonly DataRefreshSettings dataRefreshSettings;
         private readonly IHlaMetadataDictionary activeVersionHlaMetadataDictionary;
         private readonly IDataRefreshRunner dataRefreshRunner;
@@ -48,7 +49,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IDataRefreshNotificationSender dataRefreshNotificationSender;
 
         public DataRefreshOrchestrator(
-            ILogger logger,
+            IMatchingAlgorithmImportLogger logger,
             DataRefreshSettings dataRefreshSettings,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor,

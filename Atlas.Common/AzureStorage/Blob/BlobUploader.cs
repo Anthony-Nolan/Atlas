@@ -7,11 +7,11 @@ namespace Atlas.Common.AzureStorage.Blob
     public abstract class BlobUploader : AzureStorageBlobClient
     {
         private const string UploadLogLabel = "Upload";
-        private readonly ILogger logger;
+        private readonly ILogger searchLogger;
 
-        protected BlobUploader(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString)
+        protected BlobUploader(string azureStorageConnectionString, ILogger searchLogger) : base(azureStorageConnectionString)
         {
-            this.logger = logger;
+            this.searchLogger = searchLogger;
         }
 
         protected async Task Upload(string container, string filename, string messageBody)
@@ -25,7 +25,7 @@ namespace Atlas.Common.AzureStorage.Blob
             await blockBlob.UploadTextAsync(messageBody);
 
             azureStorageEventModel.EndAzureStorageCommunication(UploadLogLabel);
-            logger.SendEvent(azureStorageEventModel);
+            searchLogger.SendEvent(azureStorageEventModel);
         }
     }
 }

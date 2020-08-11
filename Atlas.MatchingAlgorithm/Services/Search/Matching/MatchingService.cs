@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
-using Atlas.MatchingAlgorithm.ApplicationInsights.SearchRequests;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IMatchFilteringService matchFilteringService;
         private readonly IMatchCriteriaAnalyser matchCriteriaAnalyser;
-        private readonly ILogger logger;
+        private readonly ILogger searchLogger;
 
         public MatchingService(
             IDonorMatchingService donorMatchingService,
@@ -35,14 +35,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             IMatchFilteringService matchFilteringService,
             IMatchCriteriaAnalyser matchCriteriaAnalyser,
             // ReSharper disable once SuggestBaseTypeForParameter
-            IMatchingAlgorithmLogger logger)
+            IMatchingAlgorithmSearchLogger searchLogger)
         {
             this.donorMatchingService = donorMatchingService;
             this.preFilteredDonorMatchingService = preFilteredDonorMatchingService;
             donorInspectionRepository = transientRepositoryFactory.GetDonorInspectionRepository();
             this.matchFilteringService = matchFilteringService;
             this.matchCriteriaAnalyser = matchCriteriaAnalyser;
-            this.logger = logger;
+            this.searchLogger = searchLogger;
         }
 
         public async Task<IEnumerable<MatchResult>> GetMatches(AlleleLevelMatchCriteria criteria)
@@ -66,7 +66,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
             var matches = await donorMatchingService.FindMatchesForLoci(criteria, loci);
 
-            logger.SendTrace("Matching timing: Phase 1 complete", LogLevel.Info, new Dictionary<string, string>
+            searchLogger.SendTrace("Matching timing: Phase 1 complete", LogLevel.Info, new Dictionary<string, string>
             {
                 {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
                 {"Donors", matches.Count.ToString()},
@@ -90,7 +90,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
             var matchesAtAllLoci = await preFilteredDonorMatchingService.FindMatchesForLociFromDonorSelection(criteria, loci, initialMatches);
 
-            logger.SendTrace("Matching timing: Phase 2 complete", LogLevel.Info, new Dictionary<string, string>
+            searchLogger.SendTrace("Matching timing: Phase 2 complete", LogLevel.Info, new Dictionary<string, string>
             {
                 {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
                 {"Donors", matchesAtAllLoci.Count.ToString()},
@@ -126,7 +126,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             // Once finished populating match data, mark data as populated (so that null locus match data can be accessed for mapping to the api model)
             filteredMatchesByDonorInformation.ForEach(m => m.Value.MarkMatchingDataFullyPopulated());
 
-            logger.SendTrace("Matching timing: Phase 3 complete", LogLevel.Info, new Dictionary<string, string>
+            searchLogger.SendTrace("Matching timing: Phase 3 complete", LogLevel.Info, new Dictionary<string, string>
             {
                 {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
                 {"Donors", filteredMatchesByDonorInformation.Count.ToString()},

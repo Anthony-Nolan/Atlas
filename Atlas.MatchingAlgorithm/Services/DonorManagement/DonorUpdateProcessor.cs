@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ServiceBus.BatchReceiving;
 using Atlas.Common.ServiceBus.Models;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
@@ -55,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         private readonly IActiveHlaNomenclatureVersionAccessor activeHlaNomenclatureVersionAccessor;
         private readonly DonorManagementSettings settings;
         private readonly int batchSize;
-        private readonly ILogger logger;
+        private readonly IMatchingAlgorithmImportLogger logger;
 
         public DonorUpdateProcessor(
             IMessageProcessorForDbADonorUpdates dbAMessageProcessorService,
@@ -65,7 +66,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             ISearchableDonorUpdateConverter searchableDonorUpdateConverter,
             IActiveHlaNomenclatureVersionAccessor activeHlaNomenclatureVersionAccessor,
             DonorManagementSettings settings,
-            ILogger logger)
+            IMatchingAlgorithmImportLogger logger)
         {
             this.dbAMessageProcessorService = dbAMessageProcessorService;
             this.dbBMessageProcessorService = dbBMessageProcessorService;
