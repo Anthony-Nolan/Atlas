@@ -20,8 +20,13 @@ namespace Atlas.DonorImport.Data.Repositories
 
     public class DonorImportRepository : DonorRepositoryBase, IDonorImportRepository
     {
+        private IDonorImportLogRepository donorImportLogRepository;
+
         /// <inheritdoc />
-        public DonorImportRepository(string connectionString) : base(connectionString) {}
+        public DonorImportRepository(string connectionString, IDonorImportLogRepository donorImportLogRepository) : base(connectionString)
+        {
+            this.donorImportLogRepository = donorImportLogRepository;
+        }
 
         public async Task InsertDonorBatch(IEnumerable<Donor> donors)
         {
@@ -61,7 +66,7 @@ namespace Atlas.DonorImport.Data.Repositories
                 foreach (var donorEdit in editedDonorsWithAtlasIds)
                 {
                     await conn.ExecuteAsync(sql, donorEdit, commandTimeout: 600);
-                    await SetLastUpdated(donorEdit.ExternalDonorCode, updateTime, conn);
+                    await donorImportLogRepository.SetLastUpdated(donorEdit.ExternalDonorCode, updateTime, conn);
                 }
                 transaction.Complete();
                 conn.Close();
@@ -95,17 +100,6 @@ namespace Atlas.DonorImport.Data.Repositories
             return sqlBulk;
         }
         
-        private async Task SetLastUpdated(string donorId, DateTime lastUpdateTime, SqlConnection connection)
-        {
-            const string donorExistsSql = "SELECT COUNT(*) FROM DonorLogs WHERE ExternalDonorId = (@DonorId)";
-                var result = connection.QuerySingle<int>(donorExistsSql, new {DonorId = donorId});
-                var querySql = result == 0
-                    ? "INSERT INTO DonorLogs (ExternalDonorId, LastUpdateDateTime) VALUES ((@DonorId), (@LastUpdateTime))"
-                    : "UPDATE DonorLogs SET LastUpdateDateTime = (@LastUpdateTime) WHERE ExternalDonorId = (@DonorId)";
-
-                await connection.ExecuteAsync(querySql, new {DonorId = donorId, LastUpdateTime = lastUpdateTime});
-        }
-
         private DataTable BuildDonorInsertDataTable(IEnumerable<Donor> donors)
         {
             var dataTable = new DataTable();
