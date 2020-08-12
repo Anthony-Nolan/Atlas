@@ -15,7 +15,9 @@ resource "azurerm_function_app" "atlas_function" {
 
   site_config {
     pre_warmed_instance_count = 2
-    ip_restriction = var.IP_RESTRICTION_SETTINGS
+    ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
+      ip_address = ip.ip_address
+    }]
   }
 
   app_settings = {
@@ -50,7 +52,7 @@ resource "azurerm_function_app" "atlas_function" {
 
     "WEBSITE_RUN_FROM_PACKAGE" = var.WEBSITE_RUN_FROM_PACKAGE
   }
-  
+
   connection_string {
     name  = "DonorImport:Sql"
     type  = "SQLAzure"
