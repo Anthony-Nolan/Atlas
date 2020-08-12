@@ -126,15 +126,15 @@ namespace Atlas.DonorImport.Data.Migrations
 
             modelBuilder.Entity("Atlas.DonorImport.Data.Models.DonorLog", b =>
                 {
-                    b.Property<string>("ExternalDonorId")
+                    b.Property<string>("ExternalDonorCode")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("LastUpdateDateTime")
+                    b.Property<DateTime>("LastUpdateFileUploadTime")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("ExternalDonorId");
+                    b.HasKey("ExternalDonorCode");
 
-                    b.HasIndex("ExternalDonorId")
+                    b.HasIndex("ExternalDonorCode")
                         .IsUnique();
 
                     b.ToTable("DonorLogs");

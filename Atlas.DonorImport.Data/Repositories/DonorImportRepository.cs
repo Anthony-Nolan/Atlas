@@ -20,12 +20,9 @@ namespace Atlas.DonorImport.Data.Repositories
 
     public class DonorImportRepository : DonorRepositoryBase, IDonorImportRepository
     {
-        private IDonorImportLogRepository donorImportLogRepository;
-
         /// <inheritdoc />
-        public DonorImportRepository(string connectionString, IDonorImportLogRepository donorImportLogRepository) : base(connectionString)
+        public DonorImportRepository(string connectionString) : base(connectionString)
         {
-            this.donorImportLogRepository = donorImportLogRepository;
         }
 
         public async Task InsertDonorBatch(IEnumerable<Donor> donors)
@@ -66,7 +63,6 @@ namespace Atlas.DonorImport.Data.Repositories
                 foreach (var donorEdit in editedDonorsWithAtlasIds)
                 {
                     await conn.ExecuteAsync(sql, donorEdit, commandTimeout: 600);
-                    await donorImportLogRepository.SetLastUpdated(donorEdit.ExternalDonorCode, updateTime, conn);
                 }
                 transaction.Complete();
                 conn.Close();

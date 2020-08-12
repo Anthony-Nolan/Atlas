@@ -26,6 +26,7 @@ namespace Atlas.DonorImport.Test.Services
         private IMessagingServiceBusClient messagingServiceBusClient;
         private IDonorImportRepository donorImportRepository;
         private IDonorReadRepository donorInspectionRepository;
+        private IDonorImportLogRepository donorImportLogRepository;
 
         private IDonorRecordChangeApplier donorOperationApplier;
         private IImportedLocusInterpreter naiveDnaLocusInterpreter;
@@ -38,6 +39,7 @@ namespace Atlas.DonorImport.Test.Services
             messagingServiceBusClient = Substitute.For<IMessagingServiceBusClient>();
             donorImportRepository = Substitute.For<IDonorImportRepository>();
             donorInspectionRepository = Substitute.For<IDonorReadRepository>();
+            donorImportLogRepository = Substitute.For<IDonorImportLogRepository>();
             naiveDnaLocusInterpreter = Substitute.For<IImportedLocusInterpreter>();
             naiveDnaLocusInterpreter.Interpret(default, default).ReturnsForAnyArgs((call) =>
             {
@@ -47,7 +49,7 @@ namespace Atlas.DonorImport.Test.Services
 
             donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>());
 
-            donorOperationApplier = new DonorRecordChangeApplier(messagingServiceBusClient, donorImportRepository, donorInspectionRepository, naiveDnaLocusInterpreter, Substitute.For<ILogger>());
+            donorOperationApplier = new DonorRecordChangeApplier(messagingServiceBusClient, donorImportRepository, donorInspectionRepository, naiveDnaLocusInterpreter, donorImportLogRepository, Substitute.For<ILogger>());
         }
 
         [Test]

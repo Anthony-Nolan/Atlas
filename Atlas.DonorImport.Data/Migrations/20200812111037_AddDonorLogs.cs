@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Atlas.DonorImport.Data.Migrations
 {
-    public partial class DonorImportLog : Migration
+    public partial class AddDonorLogs : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -11,18 +11,18 @@ namespace Atlas.DonorImport.Data.Migrations
                 name: "DonorLogs",
                 columns: table => new
                 {
-                    ExternalDonorId = table.Column<string>(nullable: false),
-                    LastUpdateDateTime = table.Column<DateTime>(nullable: false)
+                    ExternalDonorCode = table.Column<string>(nullable: false),
+                    LastUpdateFileUploadTime = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DonorLogs", x => x.ExternalDonorId);
+                    table.PrimaryKey("PK_DonorLogs", x => x.ExternalDonorCode);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_DonorLogs_ExternalDonorId",
+                name: "IX_DonorLogs_ExternalDonorCode",
                 table: "DonorLogs",
-                column: "ExternalDonorId",
+                column: "ExternalDonorCode",
                 unique: true);
         }
 
