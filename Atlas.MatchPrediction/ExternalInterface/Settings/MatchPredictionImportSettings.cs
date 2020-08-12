@@ -1,4 +1,4 @@
-namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
+namespace Atlas.MatchPrediction.ExternalInterface.Settings
 {
     public class MatchPredictionImportSettings
     {

@@ -47,26 +47,6 @@ namespace Atlas.Common.Caching
         // Each instance is allocated 128 SNAT ports. We should stay well below this limit here to allow for other connection types. 
         private const int MaxConcurrentSingleItemFetches = 16;
 
-        // TODO: ATLAS-651: Decide what to do about this - makes integration tests awkward, and isn't necessarily a good feature...
-        /// <summary>
-        /// Each cached collection is allowed <see cref="MaxConcurrentSingleItemFetches"/> concurrent threads.
-        /// The absolute maximum number of open connections in Azure is 128.
-        /// Therefore we would ideally be restricting the number of tracked collections to 128/[threads-per-collection] -
-        /// representing the worst case scenario where all collections are using all threads.
-        ///
-        /// In practice we have increased this number to allow for more usages of this helper:
-        ///     - two HLA Metadata Dictionary caches in integration tests as well
-        ///     - caches of consolidated haplotype frequency values when excluding loci - one per HF set
-        /// This means that our Azure thread limit could theoretically be broken - but in practice this is unlikely.
-        /// 
-        /// If more collections are needed, either:
-        ///     - Increase this limit and decrease the per-collection thread count.
-        ///     - Increase this limit without decreasing the per-collection thread count, acknowledging that in the worst case this could
-        ///       cause port saturation in an Azure environment.
-        ///     - Make further changes such that the thread count is either dynamic, or configurable per-collection use-case. 
-        /// </summary>
-        private const int MaxCollectionCaches = 1028;
-
         // Fetching a single item will, in most use cases, open a connection (e.g. fetching data from azure storage)
         // Azure services have a limitation on the number of concurrent open connections, and saturating this allowance causes socket exceptions
         //
@@ -209,12 +189,6 @@ namespace Atlas.Common.Caching
         {
             if (!SingleItemFetchingSemaphores.TryGetValue(collectionCacheKey, out var semaphore))
             {
-                if (SingleItemFetchingSemaphores.Count >= MaxCollectionCaches)
-                {
-                    throw new NotImplementedException(
-                        $"Attempted to cache collection {collectionCacheKey}, which would exceed the current limit for cached collections: {MaxCollectionCaches}. See code comments in {nameof(CollectionCacheExtensions)} for instructions on how to extend this.");
-                }
-
                 semaphore = new SemaphoreSlim(MaxConcurrentSingleItemFetches, MaxConcurrentSingleItemFetches);
                 SingleItemFetchingSemaphores[collectionCacheKey] = semaphore;
             }
