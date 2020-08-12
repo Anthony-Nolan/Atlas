@@ -45,11 +45,9 @@ variable "ENVIRONMENT" {
 // Note that there is another optional parameter, "subnet_id", allowed in function app ip_restriction blocks.
 // However, terraform does not yet allow optional parameters in an object variable, so we have removed it - see https://github.com/hashicorp/terraform/issues/19898
 variable "IP_RESTRICTION_SETTINGS" {
-  type = list(object({
-    ip_address = string
-  }))
+  type        = list(string)
   default     = []
-  description = "List of IP addresses that are whitelisted for functions app access. If none are provided the resources will only be available to other azure services."
+  description = "List of IP addresses that are whitelisted for functions app access. If none are provided the resources will publically available."
 }
 
 variable "LOCATION" {

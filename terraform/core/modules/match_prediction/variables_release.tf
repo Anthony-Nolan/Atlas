@@ -12,9 +12,7 @@ variable "DATABASE_USERNAME" {
 }
 
 variable "IP_RESTRICTION_SETTINGS" {
-  type = list(object({
-    ip_address = string
-  }))
+  type    = list(string)
   default = []
 }
 

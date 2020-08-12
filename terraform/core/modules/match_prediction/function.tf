@@ -31,7 +31,8 @@ resource "azurerm_function_app" "atlas_match_prediction_function" {
 
   site_config {
     ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
-      ip_address = ip.ip_address
+      ip_address = ip
+      subnet_id  = null
     }]
   }
 
