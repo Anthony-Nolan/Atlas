@@ -4,10 +4,11 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
-using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
@@ -24,6 +25,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         private IFrequencyCsvReader frequenciesStreamReader;
         private IHaplotypeFrequencySetRepository setRepository;
         private IHaplotypeFrequenciesRepository frequenciesRepository;
+        private IHlaCategorisationService hlaCategorisationService;
 
         private IFrequencySetImporter importer;
 
@@ -34,6 +36,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             frequenciesStreamReader = Substitute.For<IFrequencyCsvReader>();
             setRepository = Substitute.For<IHaplotypeFrequencySetRepository>();
             frequenciesRepository = Substitute.For<IHaplotypeFrequenciesRepository>();
+            hlaCategorisationService = Substitute.For<IHlaCategorisationService>();
 
             var hmd = Substitute.For<IHlaMetadataDictionary>();
             var hmdFactory = Substitute.For<IHlaMetadataDictionaryFactory>();
@@ -48,6 +51,8 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 
             frequenciesStreamReader.GetFrequencies(Arg.Any<Stream>()).Returns(new List<HaplotypeFrequency> {new HaplotypeFrequency()});
 
+            hlaCategorisationService.ConformsToSpecificHlaFormat(Arg.Any<string>(), Arg.Any<HlaTypingCategory>()).Returns(true);
+
             setRepository.AddSet(Arg.Any<HaplotypeFrequencySet>()).Returns(new HaplotypeFrequencySet {Id = 1});
 
             importer = new FrequencySetImporter(
@@ -56,6 +61,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
                 setRepository,
                 frequenciesRepository,
                 hmdFactory,
+                hlaCategorisationService,
                 logger,
                 new MatchPredictionImportSettings()
             );

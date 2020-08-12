@@ -5,12 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
-using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
@@ -31,6 +32,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         private readonly IHaplotypeFrequencySetRepository setRepository;
         private readonly IHaplotypeFrequenciesRepository frequenciesRepository;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
+        private readonly IHlaCategorisationService hlaCategorisationService;
         private readonly ILogger logger;
         private readonly MatchPredictionImportSettings matchPredictionImportSettings;
 
@@ -40,6 +42,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             IHaplotypeFrequencySetRepository setRepository,
             IHaplotypeFrequenciesRepository frequenciesRepository,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
+            IHlaCategorisationService hlaCategorisationService,
             ILogger logger,
             MatchPredictionImportSettings matchPredictionImportSettings)
         {
@@ -48,6 +51,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             this.setRepository = setRepository;
             this.frequenciesRepository = frequenciesRepository;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
+            this.hlaCategorisationService = hlaCategorisationService;
             this.logger = logger;
             this.matchPredictionImportSettings = matchPredictionImportSettings;
         }
@@ -97,6 +101,24 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             // Largest known HF set is ~300,000 entries, which is reasonable to load into memory here.
             var gGroupHaplotypes = ReadGGroupHaplotypeFrequencies(stream);
 
+            var haplotypes = gGroupHaplotypes.Select(r => r.Hla).ToList();
+
+            if (haplotypes.Count != haplotypes.Distinct().Count())
+            {
+                throw new DuplicateHaplotypeImportException();
+            }
+
+            var allHlaGGroup = haplotypes
+                .Select(l => 
+                    l.AllAtLoci(h => 
+                        hlaCategorisationService.ConformsToSpecificHlaFormat(h, HlaTypingCategory.GGroup), LocusSettings.MatchPredictionLoci))
+                .All(x => x);
+
+            if (!allHlaGGroup)
+            {
+                throw new MalformedHaplotypeFileException("Haplotype Hla must be of type GGroup.");
+            }
+
             if (!gGroupHaplotypes.Any())
             {
                 throw new EmptyHaplotypeFileException();
@@ -132,7 +154,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             var convertedFrequencies = await logger.RunTimedAsync("Convert frequencies", async () =>
             {
                 return await TaskExtensions.WhenEach(frequencies.Select(async frequency =>
-                {
+                { 
                     var pGroupTyped = await hlaMetadataDictionary.ConvertGGroupsToPGroups(frequency.Hla, LocusSettings.MatchPredictionLoci);
 
                     if (!pGroupTyped.AnyAtLoci(x => x == null, LocusSettings.MatchPredictionLoci))
