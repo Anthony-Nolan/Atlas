@@ -47,7 +47,7 @@ variable "ENVIRONMENT" {
 variable "IP_RESTRICTION_SETTINGS" {
   type        = list(string)
   default     = []
-  description = "List of IP addresses that are whitelisted for functions app access. If none are provided the resources will publically available."
+  description = "List of IP addresses that are whitelisted for functions app access. If none are provided the resources will publicly available. Note that if using this feature, Azure Devops build agents will need to be whitelisted for setting up webhooks - follow the Azure documentation on how to find said IP ranges. Warning that they change weekly - as such a lot of maintenance would be necessary to use whitelisted function apps, and as such using this feature is not recommended."
 }
 
 variable "LOCATION" {
