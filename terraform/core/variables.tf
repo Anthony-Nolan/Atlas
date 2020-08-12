@@ -42,12 +42,13 @@ variable "ENVIRONMENT" {
   description = "Prepended to all ATLAS resources, to indicate which environment of the installation they represent. Some alphanumeric characters must be present, as non-alphanumeric characters will be stripped from the storage account name. Max 8 alphanumeric characters. e.g. DEV/UAT/LIVE"
 }
 
+// Note that there is another optional parameter, "subnet_id", allowed in function app ip_restriction blocks.
+// However, terraform does not yet allow optional parameters in an object variable, so we have removed it - see https://github.com/hashicorp/terraform/issues/19898
 variable "IP_RESTRICTION_SETTINGS" {
   type = list(object({
-        ip_address = string
-        subnet_id  = string
-      }))
-  default = []
+    ip_address = string
+  }))
+  default     = []
   description = "List of IP addresses that are whitelisted for functions app access. If none are provided the resources will only be available to other azure services."
 }
 

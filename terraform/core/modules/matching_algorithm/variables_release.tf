@@ -67,7 +67,6 @@ variable "FUNCTION_HOST_KEY" {
 variable "IP_RESTRICTION_SETTINGS" {
   type = list(object({
     ip_address = string
-    subnet_id  = string
   }))
   default = []
 }
