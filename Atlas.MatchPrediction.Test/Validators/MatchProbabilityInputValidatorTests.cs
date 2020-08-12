@@ -1,6 +1,4 @@
-using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
-using Atlas.MatchPrediction.Test.TestHelpers.Builders;
+using Atlas.Common.GeneticData;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using Atlas.MatchPrediction.Validators;
 using FluentAssertions;
@@ -46,6 +44,21 @@ namespace Atlas.MatchPrediction.Test.Validators
         {
             var input = SingleDonorMatchProbabilityInputBuilder.Default.WithHlaNomenclature(null).Build();
 
+            var result = new MatchProbabilityInputValidator().Validate(input);
+
+            result.IsValid.Should().BeFalse();
+        }
+
+        [TestCase(new []{ Locus.A})]
+        [TestCase(new []{ Locus.B})]
+        [TestCase(new []{ Locus.Drb1})]
+        [TestCase(new []{ Locus.A, Locus.B})]
+        [TestCase(new []{ Locus.A, Locus.B, Locus.Drb1})]
+        [TestCase(new []{ Locus.A, Locus.C})]
+        public void Validator_WhenRequiredLociExcluded_ValidationFails(Locus[] excludedLoci)
+        {
+            var input = SingleDonorMatchProbabilityInputBuilder.Default.WithExcludedLoci(excludedLoci).Build();
+            
             var result = new MatchProbabilityInputValidator().Validate(input);
 
             result.IsValid.Should().BeFalse();

@@ -30,6 +30,12 @@ namespace Atlas.Common.Test.SharedTestHelpers.Builders
             return this;
         }
 
+        public LociInfoBuilder<T> WithDataAt(T value, params Locus[] loci)
+        {
+            lociInfo = lociInfo.SetLoci(value, loci);
+            return this;
+        }
+
         public LociInfo<T> Build()
         {
             return lociInfo;

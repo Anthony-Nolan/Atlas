@@ -1,3 +1,4 @@
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
@@ -38,5 +39,7 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs
 
         public static Builder WithHlaNomenclature(this Builder builder, string nomenclatureVersion) =>
             builder.With(i => i.HlaNomenclatureVersion, nomenclatureVersion);
+
+        public static Builder WithExcludedLoci(this Builder builder, params Locus[] loci) => builder.With(i => i.ExcludedLoci, loci);
     }
 }

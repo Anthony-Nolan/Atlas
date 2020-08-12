@@ -67,6 +67,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         private readonly IFrequencySetImporter frequencySetImporter;
         private readonly INotificationSender notificationSender;
         private readonly ILogger logger;
+        private readonly IFrequencyConsolidator frequencyConsolidator;
         private readonly IHaplotypeFrequencySetRepository frequencySetRepository;
         private readonly IHaplotypeFrequenciesRepository frequencyRepository;
         private readonly IAppCache cache;
@@ -79,11 +80,14 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchPredictionLogger logger,
             // ReSharper disable once SuggestBaseTypeForParameter
-            IPersistentCacheProvider persistentCacheProvider)
+            IPersistentCacheProvider persistentCacheProvider,
+            IFrequencyConsolidator frequencyConsolidator
+        )
         {
             this.frequencySetImporter = frequencySetImporter;
             this.notificationSender = notificationSender;
             this.logger = logger;
+            this.frequencyConsolidator = frequencyConsolidator;
             this.frequencySetRepository = frequencySetRepository;
             this.frequencyRepository = frequencyRepository;
             cache = persistentCacheProvider.Cache;
@@ -185,45 +189,22 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             return frequency?.Frequency ?? 0;
         }
 
-
-        // TODO: ATLAS-651: Update documentation
-        // TODO: ATLAS-651: Unit tests for both cases - cache population and single item!
         /// <summary>
         /// "Consolidated frequencies" are haplotypes that do not have an associated record in the stored haplotype set,
         /// but have been calculated by consolidating other frequencies.
-        /// 
-        /// When certain loci are excluded from a lookup, all frequencies that match at non-excluded loci are summed, and stored in this collection 
         /// </summary>
-        /// <param name="setId"></param>
-        /// <param name="hla"></param>
-        /// <param name="excludedLoci"></param>
-        /// <returns></returns>
         private async Task<decimal> GetConsolidatedFrequency(int setId, HaplotypeHla hla, ISet<Locus> excludedLoci)
         {
             var cacheKey = $"hf-set-consolidated-{setId}";
+            // It is significantly faster to calculate all consolidated values up front than to calculate on the fly, even when caching individual values. 
+            // Many consolidated haplotypes may be inferable from the input data, but not actually represented in the haplotype frequency dataset  
             return await cache.GetSingleItemAndScheduleWholeCollectionCacheWarm(
                 cacheKey,
                 async () =>
                 {
                     using (logger.RunTimed($"Calculating consolidated frequencies with missing loci for set: {setId}"))
                     {
-                        var frequencies = (await GetAllHaplotypeFrequencies(setId)).ToList();
-
-                        IEnumerable<KeyValuePair<HaplotypeHla, decimal>> FrequenciesExcluding(params Locus[] loci)
-                        {
-                            return frequencies
-                                .GroupBy(hf => hf.Key.SetLoci(null, loci))
-                                .Select(group => new KeyValuePair<HaplotypeHla, decimal>(
-                                    group.Key,
-                                    group.Select(f => f.Value.Frequency).SumDecimals()
-                                ));
-                        }
-
-                        var consolidated = FrequenciesExcluding(Locus.C)
-                            .Concat(FrequenciesExcluding(Locus.Dqb1))
-                            .Concat(FrequenciesExcluding(Locus.Dqb1, Locus.C))
-                            .ToDictionary();
-                        return new ConcurrentDictionary<HaplotypeHla, decimal>(consolidated);
+                        return frequencyConsolidator.PreConsolidateFrequencies(await GetAllHaplotypeFrequencies(setId));
                     }
                 },
                 d =>
@@ -234,14 +215,8 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 },
                 async () =>
                 {
-                    var frequencies = (await GetAllHaplotypeFrequencies(setId)).ToList();
-                    var allowedLoci = LocusSettings.MatchPredictionLoci.Except(excludedLoci).ToHashSet();
-
-                    return frequencies
-                        .Where(kvp => kvp.Key.EqualsAtLoci(hla, allowedLoci))
-                        .Select(kvp => kvp.Value.Frequency)
-                        .DefaultIfEmpty(0m)
-                        .SumDecimals();
+                    var frequencies = (await GetAllHaplotypeFrequencies(setId));
+                    return frequencyConsolidator.ConsolidateFrequenciesForHaplotype(frequencies, hla, excludedLoci);
                 }
             );
         }
