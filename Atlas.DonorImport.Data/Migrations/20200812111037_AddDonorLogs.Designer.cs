@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.DonorImport.Data.Migrations
 {
     [DbContext(typeof(DonorContext))]
-    [Migration("20200807124803_DonorImportLog")]
-    partial class DonorImportLog
+    [Migration("20200812111037_AddDonorLogs")]
+    partial class AddDonorLogs
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -128,15 +128,15 @@ namespace Atlas.DonorImport.Data.Migrations
 
             modelBuilder.Entity("Atlas.DonorImport.Data.Models.DonorLog", b =>
                 {
-                    b.Property<string>("ExternalDonorId")
+                    b.Property<string>("ExternalDonorCode")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("LastUpdateDateTime")
+                    b.Property<DateTime>("LastUpdateFileUploadTime")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("ExternalDonorId");
+                    b.HasKey("ExternalDonorCode");
 
-                    b.HasIndex("ExternalDonorId")
+                    b.HasIndex("ExternalDonorCode")
                         .IsUnique();
 
                     b.ToTable("DonorLogs");

@@ -26,6 +26,7 @@ namespace Atlas.DonorImport.Services
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDonorReadRepository donorInspectionRepository;
         private readonly IImportedLocusInterpreter locusInterpreter;
+        private readonly IDonorImportLogRepository donorImportLogRepository;
         private readonly ILogger logger;
 
         public DonorRecordChangeApplier(
@@ -33,12 +34,14 @@ namespace Atlas.DonorImport.Services
             IDonorImportRepository donorImportRepository,
             IDonorReadRepository donorInspectionRepository,
             IImportedLocusInterpreter locusInterpreter,
+            IDonorImportLogRepository donorImportLogRepository,
             ILogger logger)
         {
             this.donorImportRepository = donorImportRepository;
             this.messagingServiceBusClient = messagingServiceBusClient;
             this.donorInspectionRepository = donorInspectionRepository;
             this.locusInterpreter = locusInterpreter;
+            this.donorImportLogRepository = donorImportLogRepository;
             this.logger = logger;
         }
 
@@ -116,7 +119,11 @@ namespace Atlas.DonorImport.Services
             if (editedDonors.Count > 0)
             {
                 await donorImportRepository.UpdateDonorBatch(editedDonors, file.UploadTime);
-
+                foreach (var donorEdit in editedDonors)
+                {
+                    await donorImportLogRepository.SetLastUpdated(donorEdit.ExternalDonorCode, file.UploadTime);
+                }
+                
                 var donorEditMessages = editedDonors.Select(MapToMatchingUpdateMessage).ToList();
                 await messagingServiceBusClient.PublishDonorUpdateMessages(donorEditMessages);
             }

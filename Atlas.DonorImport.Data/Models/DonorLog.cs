@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.DonorImport.Data.Models
 {
+    [Table("DonorLogs")]
     public class DonorLog
     {
         [Required]
