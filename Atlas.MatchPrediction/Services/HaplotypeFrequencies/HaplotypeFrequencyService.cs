@@ -16,7 +16,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
-using Atlas.Common.Utils.Extensions;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
@@ -103,22 +103,30 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
                 await SendSuccessNotification(file);
             }
-            catch (EmptyHaplotypeFileException e)
+            catch (EmptyHaplotypeFileException ex)
             {
                 const string summary = "Haplotype file was present but it was empty.";
-                await LogErrorAndSendAlert(file, summary, e.StackTrace);
+                await LogErrorAndSendAlert(file, summary, ex.StackTrace);
             }
-            catch (InvalidFilePathException e)
+            catch (InvalidFilePathException ex)
             {
-                await LogErrorAndSendAlert(file, e.Message, e.StackTrace);
+                await LogErrorAndSendAlert(file, ex.Message, ex.StackTrace);
             }
-            catch (MalformedHaplotypeFileException e)
+            catch (MalformedHaplotypeFileException ex)
             {
-                await LogErrorAndSendAlert(file, e.Message, e.StackTrace);
+                await LogErrorAndSendAlert(file, ex.Message, ex.StackTrace);
             }
-            catch (HaplotypeFormatException e)
+            catch (HaplotypeFormatException ex)
             {
-                await LogErrorAndSendAlert(file, e.Message, e.InnerException?.Message);
+                await LogErrorAndSendAlert(file, ex.Message, ex.InnerException?.Message);
+            }
+            catch (DuplicateHaplotypeImportException ex)
+            {
+                await LogErrorAndSendAlert(file, ex.Message, ex.StackTrace);
+            }
+            catch (HlaMetadataDictionaryException ex)
+            {
+                await LogErrorAndSendAlert(file, ex.Message, ex.InnerException?.Message);
             }
             catch (Exception ex)
             {
