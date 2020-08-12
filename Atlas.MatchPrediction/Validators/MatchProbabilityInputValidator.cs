@@ -26,4 +26,15 @@ namespace Atlas.MatchPrediction.Validators
             RuleFor(i => i.DonorHla).NotNull().SetValidator(new PhenotypeHlaNamesValidator());
         }
     }
+
+    public class MatchProbabilityNonDonorValidator : AbstractValidator<MatchProbabilityRequestInput>
+    {
+        private readonly List<Locus> requiredLoci = new List<Locus> {Locus.A, Locus.B, Locus.Drb1};
+        public MatchProbabilityNonDonorValidator()
+        {
+            RuleFor(i => i.PatientHla).NotNull().SetValidator(new PhenotypeHlaNamesValidator());
+            RuleForEach(i => i.ExcludedLoci).Must(l => !requiredLoci.Contains(l));
+        }
+        
+    }
 }

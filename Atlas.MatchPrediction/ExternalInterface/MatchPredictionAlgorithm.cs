@@ -7,6 +7,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
+using Atlas.MatchPrediction.Validators;
 using LoggingStopwatch;
 
 namespace Atlas.MatchPrediction.ExternalInterface
@@ -14,6 +15,8 @@ namespace Atlas.MatchPrediction.ExternalInterface
     public interface IMatchPredictionAlgorithm
     {
         public Task<MatchProbabilityResponse> RunMatchPredictionAlgorithm(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput);
+
+        public bool ValidateMatchPredictionAlgorithmInput(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput);
 
         /// <returns>A dictionary of DonorIds to Match Prediction Result</returns>
         public Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> RunMatchPredictionAlgorithmBatch(
@@ -77,6 +80,11 @@ namespace Atlas.MatchPrediction.ExternalInterface
             return await haplotypeFrequencyService.GetHaplotypeFrequencySets(
                 haplotypeFrequencySetInput.DonorInfo,
                 haplotypeFrequencySetInput.PatientInfo);
+        }
+
+        public bool ValidateMatchPredictionAlgorithmInput(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput)
+        {
+            return new MatchProbabilityNonDonorValidator().Validate(singleDonorMatchProbabilityInput).IsValid;
         }
     }
 }

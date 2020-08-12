@@ -1,5 +1,6 @@
 ﻿using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
+using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 
 namespace Atlas.Functions.Models.Search.Requests
 {
@@ -50,6 +51,15 @@ namespace Atlas.Functions.Models.Search.Requests
                 MatchCriteria = searchRequest.MatchCriteria?.ToMatchingAlgorithmMatchCriteria(),
                 ScoringCriteria = searchRequest.ScoringCriteria?.ToMatchingAlgorithmScoringCriteria(),
                 SearchHlaData = searchRequest.SearchHlaData?.ToPhenotypeInfo().ToPhenotypeInfoTransfer()
+            };
+        }
+
+        public static SingleDonorMatchProbabilityInput ToNonDonorMatchProbabilityInput(this SearchRequest searchRequest)
+        {
+            return new SingleDonorMatchProbabilityInput()
+            {
+                PatientHla = searchRequest.SearchHlaData?.ToPhenotypeInfo().ToPhenotypeInfoTransfer(),
+                ExcludedLoci = searchRequest.ScoringCriteria?.LociToExcludeFromAggregateScore
             };
         }
     }
