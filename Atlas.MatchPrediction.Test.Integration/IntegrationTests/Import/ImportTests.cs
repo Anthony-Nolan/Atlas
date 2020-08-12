@@ -9,6 +9,7 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 using FluentAssertions;
@@ -124,17 +125,39 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
             haplotypeFrequency.Frequency.Should().Be(frequency);
         }
 
-        [TestCase("//ethnicity-only/file")]
-        [TestCase("/too/many/subfolders/file")]
-        public void Import_InvalidFilePath_ThrowsException(string invalidPath)
+        [Test]
+        public async Task Import_FileWithInvalidCsvFormat_SendsAlert()
         {
-            using var file = FrequencySetFileBuilder.New(null, null)
-                .With(x => x.FullPath, invalidPath)
-                .Build();
+            using var file = FrequencySetFileBuilder.WithInvalidCsvFormat(null, null).Build();
 
-            service.Invoking(async importer => await service.ImportFrequencySet(file)).Should().Throw<Exception>();
+            try
+            {
+                await service.ImportFrequencySet(file);
+            }
+            catch (Exception e)
+            {
+                e.Should().BeOfType<HaplotypeFormatException>();
+                await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            }
         }
 
+        [Test]
+        public async Task Import_FileWithoutContents_SendsAlert()
+        {
+            using var file = FrequencySetFileBuilder.FileWithoutContents(null, null).Build();
+
+            try
+            {
+                await service.ImportFrequencySet(file);
+            }
+            catch (Exception e)
+            {
+                e.Should().BeOfType<EmptyHaplotypeFileException>();
+                await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            }
+        }
+
+        [TestCase("")]
         [TestCase("//ethnicity-only/file")]
         [TestCase("/too/many/subfolders/file")]
         public async Task Import_InvalidFilePath_SendsAlert(string invalidPath)
@@ -147,29 +170,43 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
             {
                 await service.ImportFrequencySet(file);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                e.Should().BeOfType<InvalidFilePathException>();
                 await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             }
         }
 
-        [TestCase("//ethnicity-only/file")]
-        [TestCase("/too/many/subfolders/file")]
-        public async Task Import_InvalidFilePath_DoesNotSendNotification(string invalidPath)
+        [Test]
+        public async Task Import_WithZeroFrequency_SendsAlert()
         {
-            using var file = FrequencySetFileBuilder.New(null, null)
-                .With(x => x.FullPath, invalidPath)
+            var hla = new LociInfo<string>
+            (
+                valueA: "04:01:01G",
+                valueB: "04:01:01G",
+                valueC: "04:01:01G",
+                valueDqb1: "06:02:01G",
+                valueDrb1: "03:07:01G"
+            );
+            using var file = FrequencySetFileBuilder
+                .New(null, null)
+                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                {
+                    new HaplotypeFrequency {Hla = hla, Frequency = 0m}
+                })
                 .Build();
 
             try
             {
                 await service.ImportFrequencySet(file);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                await notificationSender.DidNotReceiveWithAnyArgs().SendNotification(default, default, default);
+                e.Should().BeOfType<MalformedHaplotypeFileException>();
+                await notificationSender.ReceivedWithAnyArgs().SendAlert("Haplotype property frequency cannot be 0.", default, default, default);
             }
         }
+
 
         [Test]
         public async Task Import_ForHaplotypeWithoutNullAlleles_ConvertsToPGroups()

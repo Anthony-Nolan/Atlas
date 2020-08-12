@@ -13,6 +13,7 @@ using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using Atlas.MatchPrediction.Utils;
 using TaskExtensions = Atlas.Common.Utils.Tasks.TaskExtensions;
 
@@ -53,9 +54,9 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
         public async Task Import(FrequencySetFile file, bool convertToPGroups)
         {
-            if (file.FullPath.IsNullOrEmpty() || file.Contents == null)
+            if (file.Contents == null)
             {
-                throw new ArgumentNullException();
+                throw new EmptyHaplotypeFileException();
             }
 
             var metadata = GetMetadata(file);
@@ -70,7 +71,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
             if (!metadata.Ethnicity.IsNullOrEmpty() && metadata.Registry.IsNullOrEmpty())
             {
-                throw new ArgumentException($"Cannot import set: Ethnicity ('{metadata.Ethnicity}') provided but no registry.");
+                throw new InvalidFilePathException($"Cannot import set: Ethnicity ('{metadata.Ethnicity}') provided but no registry.");
             }
 
             return metadata;
@@ -98,7 +99,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
             if (!gGroupHaplotypes.Any())
             {
-                throw new Exception("No haplotype frequencies provided");
+                throw new EmptyHaplotypeFileException();
             }
 
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(matchPredictionImportSettings.HlaNomenclatureVersion);
@@ -106,6 +107,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             var haplotypesToStore = convertToPGroups
                 ? await ConvertHaplotypesToPGroupResolutionAndConsolidate(gGroupHaplotypes, hlaMetadataDictionary)
                 : gGroupHaplotypes;
+
             await frequenciesRepository.AddHaplotypeFrequencies(setId, haplotypesToStore);
         }
 

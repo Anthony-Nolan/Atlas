@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using Atlas.MatchPrediction.ExternalInterface.Models;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using CsvHelper;
 using CsvHelper.Configuration;
 
@@ -18,17 +18,37 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         {
             if (stream == null)
             {
-                throw new ArgumentNullException();
+                throw new EmptyHaplotypeFileException();
             }
             
             using (var reader = new StreamReader(stream))
             using (var csv = new CsvReader(reader))
             {
                 ConfigureCsvReader(csv);
-                while (csv.Read())
+                while (TryRead(csv))
                 {
-                    var frequency = csv.GetRecord<HaplotypeFrequency>();
-                    yield return frequency;
+                    HaplotypeFrequency haplotypeFrequency = null;
+
+                    try
+                    {
+                        haplotypeFrequency = csv.GetRecord<HaplotypeFrequency>();
+                    }
+                    catch (CsvHelperException e)
+                    {
+                        throw new HaplotypeFormatException(e);
+                    }
+
+                    if (haplotypeFrequency == null)
+                    {
+                        throw new MalformedHaplotypeFileException("Haplotype in input file could not be parsed.");
+                    }
+
+                    if (haplotypeFrequency.Frequency == 0m)
+                    {
+                        throw new MalformedHaplotypeFileException($"Haplotype property frequency cannot be 0.");
+                    }
+
+                    yield return haplotypeFrequency;
                 }
             }
         }
@@ -51,6 +71,18 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 Map(m => m.Dqb1);
                 Map(m => m.Drb1);
                 Map(m => m.Frequency).Name("freq");
+            }
+        }
+
+        private static bool TryRead(CsvReader reader)
+        {
+            try
+            {
+                return reader.Read();
+            }
+            catch (BadDataException)
+            {
+                throw new MalformedHaplotypeFileException("Invalid CSV was encountered");
             }
         }
     }
