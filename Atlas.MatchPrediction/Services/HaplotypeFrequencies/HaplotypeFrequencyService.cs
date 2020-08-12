@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Utils.Extensions;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
 
@@ -101,6 +102,23 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 file.ImportedDateTime = DateTimeOffset.UtcNow;
 
                 await SendSuccessNotification(file);
+            }
+            catch (EmptyHaplotypeFileException e)
+            {
+                const string summary = "Haplotype file was present but it was empty.";
+                await LogErrorAndSendAlert(file, summary, e.StackTrace);
+            }
+            catch (InvalidFilePathException e)
+            {
+                await LogErrorAndSendAlert(file, e.Message, e.StackTrace);
+            }
+            catch (MalformedHaplotypeFileException e)
+            {
+                await LogErrorAndSendAlert(file, e.Message, e.StackTrace);
+            }
+            catch (HaplotypeFormatException e)
+            {
+                await LogErrorAndSendAlert(file, e.Message, e.InnerException?.Message);
             }
             catch (Exception ex)
             {
@@ -242,6 +260,12 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 successName,
                 $"Import of file, '{file.FullPath}', has completed successfully.",
                 NotificationConstants.OriginatorName);
+        }
+
+        private async Task LogErrorAndSendAlert(FrequencySetFile file, string message, string description)
+        {
+            logger.SendTrace(message, LogLevel.Warn);
+            await notificationSender.SendAlert(message, description, Priority.Medium, NotificationConstants.OriginatorName);
         }
 
         private async Task SendErrorAlert(FrequencySetFile file, Exception ex)

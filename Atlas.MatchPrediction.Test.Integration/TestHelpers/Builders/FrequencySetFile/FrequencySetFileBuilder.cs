@@ -54,6 +54,14 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
             return builder.With(f => f.Contents, stream);
         }
 
+        internal static Builder WithInvalidCsvFormat(string registryCode, string ethnicityCode, int haplotypeCount = 1, decimal frequencyValue = 0.00001m)
+        {
+            var csvString = BuildCsvFile(haplotypeCount, frequencyValue);
+
+            return FileWithoutContents(registryCode, ethnicityCode)
+                .With(x => x.Contents, GetStream(csvString.Substring(csvString.Length - 10)));
+        }
+
         /// <param name="registryCode">Path will only contain file name if this is null.</param>
         /// <param name="ethnicityCode">Path will only contain registry code and file name if this is null.</param>
         private static string BuildFilePath(string fileName, string registryCode, string ethnicityCode)

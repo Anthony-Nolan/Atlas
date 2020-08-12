@@ -2,6 +2,7 @@
 using System.Linq;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 {
@@ -37,14 +38,14 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         {
             if (fullPath.IsNullOrEmpty())
             {
-                throw new ArgumentException($"{nameof(fullPath)} cannot be null or empty.");
+                throw new InvalidFilePathException($"{nameof(fullPath)} cannot be null or empty.");
             }
 
             var filePathSections = fullPath.Split('/');
 
             if (filePathSections.Length < 1 || filePathSections.Length > 3)
             {
-                throw new ArgumentException($"'{fullPath}' is not a valid {nameof(fullPath)}.");
+                throw new InvalidFilePathException($"'{fullPath}' is not a valid {nameof(fullPath)}.");
             }
 
             return filePathSections;
