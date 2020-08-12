@@ -5,6 +5,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Functions.DurableFunctions.Search.Orchestration;
 using Atlas.Functions.Models.Search.Requests;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
+using Atlas.MatchPrediction.Validators;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using FluentValidation;
 using Microsoft.Azure.WebJobs;
@@ -45,6 +46,13 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             if (!validationResult.IsValid)
             {
                 return new HttpResponseMessage( HttpStatusCode.BadRequest ) {Content =  new StringContent(JsonConvert.SerializeObject(validationResult.Errors), System.Text.Encoding.UTF8, "application/json" ) };
+            }
+
+            var probabilityRequestToValidate = searchRequest.ToNonDonorMatchProbabilityInput();
+            var probabilityValidationResult = new MatchProbabilityNonDonorValidator().Validate(probabilityRequestToValidate);
+            if (!probabilityValidationResult.IsValid)
+            {
+                return new HttpResponseMessage( HttpStatusCode.BadRequest ) {Content =  new StringContent(JsonConvert.SerializeObject(probabilityValidationResult.Errors), System.Text.Encoding.UTF8, "application/json" ) };
             }
             
             // Function input comes from the request content.
