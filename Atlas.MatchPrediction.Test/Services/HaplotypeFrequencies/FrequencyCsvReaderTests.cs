@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using CsvHelper;
 using FluentAssertions;
 using NUnit.Framework;
@@ -37,7 +38,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
                 {
                     return service.GetFrequencies(stream).ToList();
                 }
-            }).Should().Throw<CsvHelperException>();
+            }).Should().Throw<HaplotypeFormatException>();
         }
 
         [Test]

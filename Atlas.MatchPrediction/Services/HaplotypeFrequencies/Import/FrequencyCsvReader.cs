@@ -48,6 +48,15 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                         throw new MalformedHaplotypeFileException($"Haplotype property frequency cannot be 0.");
                     }
 
+                    if (haplotypeFrequency.A == null ||
+                        haplotypeFrequency.B == null ||
+                        haplotypeFrequency.C == null ||
+                        haplotypeFrequency.Dqb1 == null ||
+                        haplotypeFrequency.Drb1 == null)
+                    {
+                        throw new MalformedHaplotypeFileException($"Haplotype loci cannot be null.");
+                    }
+
                     yield return haplotypeFrequency;
                 }
             }
