@@ -4,13 +4,16 @@ using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Atlas.MatchPrediction.Test.Verification.Migrations
 {
     [DbContext(typeof(MatchPredictionVerificationContext))]
-    partial class MatchPredictionVerificationContextModelSnapshot : ModelSnapshot
+    [Migration("20200807123225_CreateTable_MaskingRecords")]
+    partial class CreateTable_MaskingRecords
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,7 +32,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<string>("MaskingRequests")
+                    b.Property<int>("ProportionDeleted")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProportionsMasked")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -150,18 +156,22 @@ namespace Atlas.MatchPrediction.Test.Verification.Migrations
                         .HasMaxLength(64);
 
                     b.Property<string>("C_1")
+                        .IsRequired()
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
                     b.Property<string>("C_2")
+                        .IsRequired()
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
                     b.Property<string>("DQB1_1")
+                        .IsRequired()
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
                     b.Property<string>("DQB1_2")
+                        .IsRequired()
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 

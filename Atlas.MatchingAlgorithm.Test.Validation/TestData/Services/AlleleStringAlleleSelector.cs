@@ -4,7 +4,6 @@ using System.Linq;
 using Atlas.Common.Helpers;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
-using Atlas.MatchingAlgorithm.Test.Validation.TestData.Helpers;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models.Hla;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services

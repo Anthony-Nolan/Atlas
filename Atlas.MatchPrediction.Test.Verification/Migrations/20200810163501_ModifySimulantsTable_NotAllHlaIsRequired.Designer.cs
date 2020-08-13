@@ -4,13 +4,16 @@ using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Atlas.MatchPrediction.Test.Verification.Migrations
 {
     [DbContext(typeof(MatchPredictionVerificationContext))]
-    partial class MatchPredictionVerificationContextModelSnapshot : ModelSnapshot
+    [Migration("20200810163501_ModifySimulantsTable_NotAllHlaIsRequired")]
+    partial class ModifySimulantsTable_NotAllHlaIsRequired
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,7 +32,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<string>("MaskingRequests")
+                    b.Property<int>("ProportionDeleted")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProportionsMasked")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

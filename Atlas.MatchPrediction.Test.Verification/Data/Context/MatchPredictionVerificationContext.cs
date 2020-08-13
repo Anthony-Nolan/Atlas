@@ -16,6 +16,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Context
             modelBuilder.Entity<NormalisedHaplotypeFrequency>().SetUpModel();
             modelBuilder.Entity<TestHarness>().SetUpModel();
             modelBuilder.Entity<Simulant>().SetUpModel();
+            modelBuilder.Entity<MaskingRecord>().SetUpModel();
             base.OnModelCreating(modelBuilder);
         }
 
@@ -23,5 +24,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Context
         public DbSet<NormalisedHaplotypeFrequency> NormalisedHaplotypeFrequencies { get; set; }
         public DbSet<TestHarness> TestHarnesses { get; set; }
         public DbSet<Simulant> Simulants { get; set; }
+        public DbSet<MaskingRecord> MaskingRecords { get; set; }
     }
 }

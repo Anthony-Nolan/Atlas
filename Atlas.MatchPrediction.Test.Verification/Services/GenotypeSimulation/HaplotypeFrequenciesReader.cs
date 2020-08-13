@@ -41,6 +41,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
             return new HaplotypeFrequenciesReaderResult
             {
                 HaplotypeFrequencySetId = set.Id,
+
+                // TODO ATLAS-600 - Set version from value saved with HF set row in db
+                HlaNomenclatureVersion = "3400",
+
                 HaplotypeFrequencies = frequencies
             };
         }
@@ -58,6 +62,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
     public class HaplotypeFrequenciesReaderResult
     {
         public int? HaplotypeFrequencySetId { get; set; }
+        public string HlaNomenclatureVersion { get; set; }
         public IReadOnlyCollection<HaplotypeFrequency> HaplotypeFrequencies { get; set; }
     }
 }

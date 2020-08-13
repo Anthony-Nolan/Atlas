@@ -8,12 +8,14 @@ namespace Atlas.MatchPrediction.Test.Verification.Models
     public class NormalisedHaplotypePool
     {
         public int Id { get; }
+        public string HlaNomenclatureVersion { get; }
         public IReadOnlyCollection<NormalisedPoolMember> PoolMembers { get; }
         public int TotalCopyNumber { get; }
 
-        public NormalisedHaplotypePool(int poolId, IReadOnlyCollection<NormalisedPoolMember> poolMembers)
+        public NormalisedHaplotypePool(int poolId, string hlaNomenclatureVersion, IReadOnlyCollection<NormalisedPoolMember> poolMembers)
         {
             Id = poolId;
+            HlaNomenclatureVersion = hlaNomenclatureVersion;
             PoolMembers = poolMembers;
             TotalCopyNumber = poolMembers.Sum(h => h.CopyNumber);
         }
