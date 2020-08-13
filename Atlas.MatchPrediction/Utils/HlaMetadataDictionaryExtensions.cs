@@ -64,7 +64,7 @@ namespace Atlas.MatchPrediction.Utils
         /// <summary>
         /// Runs <see cref="IHlaMetadataDictionary.ValidateHla"/> for each HLA in a LociInfo, at selected loci.
         /// Excluded loci will be considered valid HLA. 
-        /// Provided nulls will throw.
+        /// Nulls at allowed loci will throw.
         /// </summary>
         public static async Task<bool> ValidateHla(
             this IHlaMetadataDictionary hlaMetadataDictionary,

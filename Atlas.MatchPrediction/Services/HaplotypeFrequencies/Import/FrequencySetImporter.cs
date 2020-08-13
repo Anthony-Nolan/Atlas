@@ -117,9 +117,9 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
             if (!convertToPGroups)
             {
-                var gGroupValidity = await ValidateHaplotypes(gGroupHaplotypes, hlaMetadataDictionary);
+                var areAllGGroupsValid = await ValidateHaplotypes(gGroupHaplotypes, hlaMetadataDictionary);
 
-                if (!gGroupValidity)
+                if (!areAllGGroupsValid)
                 {
                     throw new MalformedHaplotypeFileException("Invalid Hla.");
                 }

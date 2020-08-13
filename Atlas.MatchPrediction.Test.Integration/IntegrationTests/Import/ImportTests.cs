@@ -8,7 +8,6 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
-using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
 using FluentAssertions;
@@ -375,7 +374,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
 
         [TestCase(null)]
         [TestCase("01:XX")]
+        // A single allele can be a valid G-Group, if it doesn't share a G group with any other alleles.
+        // In this case we are using one that does so it should be an invalid G group.
         [TestCase("01:01")]
+        // Is a valid G group at locus B but not at locus A.
+        [TestCase("13:01:01G")]
         public async Task Import_WhenHlaIsNotOfTypeGGroup_SendsAlert(string invalidHla)
         {
             var hla = new LociInfo<string>

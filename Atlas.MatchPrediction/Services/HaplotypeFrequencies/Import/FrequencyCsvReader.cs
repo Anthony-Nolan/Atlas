@@ -89,9 +89,9 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             {
                 return reader.Read();
             }
-            catch (BadDataException)
+            catch (BadDataException e)
             {
-                throw new MalformedHaplotypeFileException("Invalid CSV was encountered");
+                throw new MalformedHaplotypeFileException($"Invalid CSV was encountered: {e.Message}");
             }
         }
     }
