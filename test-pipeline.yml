@@ -10,10 +10,73 @@ schedules:
 pr: none
 
 variables:
-  RUN_CI_PERF_TESTS: 'This will get defined as an Environment Variable, which will enable various Perf-Test-only tests. See IgnoreExceptOnCiPerfTestAttribute.cs'
+  - group: Terraform
+  - group: TestTerraform
+  - name: RUN_CI_PERF_TESTS
+    value: 'This will get defined as an Environment Variable, which will enable various Perf-Test-only tests. See IgnoreExceptOnCiPerfTestAttribute.cs'
   
 jobs: 
+- job: Terraform
+  pool:
+    name: Hosted Ubuntu 1604
+  steps:
+    - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
+      displayName: 'Use Terraform 0.12.24'
+      inputs:
+        terraformVersion: '0.12.24'
+    - script: 'terraform init -reconfigure -backend-config="storage_account_name=$(BACKEND_STORAGE_ACCOUNT_NAME)" -backend-config="container_name=$(BACKEND_STORAGE_CONTAINER_NAME)" -backend-config="resource_group_name=$(BACKEND_RESOURCE_GROUP_NAME)"'
+      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
+      displayName: 'terraform init'
+      env:
+        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+    - script: |
+        echo Validating the syntax
+
+        terraform validate
+      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
+      displayName: 'terraform validate'
+      env:
+        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+    - bash: |
+        echo Select terraform workspace and create if not exists
+        terraform workspace select $(TerraformWorkspace) || terraform workspace new $(TerraformWorkspace)
+      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
+      displayName: 'terraform workspace'
+      env:
+        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+    - script: 'terraform apply -auto-approve -input=false'
+      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
+      displayName: 'terraform apply'
+      env:
+        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+    - task: Powershell@2
+      name: OutputTFVars
+      env:
+        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+      inputs:
+        targetType: 'inline'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
+        script: |
+          $output = terraform output -json
+
+          $json = $output | ConvertFrom-Json
+
+          Write-Host $json
+
+          foreach($prop in $json.psobject.properties) {
+
+          Write-Host("##vso[task.setvariable variable=$($prop.Name);isOutput=true;]$($prop.Value.value)")
+          Write-Host(“Setting {0} to {1}” –f $prop.name, $prop.Value.value)
+          }      
+    
 - job: Matching_Algorithm_Integration_Tests
+  dependsOn: Terraform
+  variables:
+    matching_algorithm_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.matching_algorithm_db_connection_string'] ]
   pool:
     name: Hosted Ubuntu 1604
   steps:
@@ -27,22 +90,21 @@ jobs:
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/appsettings.json'
       keyname: SqlA
-      connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+      connectionstringvalue: '$(matching_algorithm_db_connection_string)'
 
   - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
     displayName: 'Update connection string ''SqlB'''
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/appsettings.json'
       keyname: SqlB
-      connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+      connectionstringvalue: '$(matching_algorithm_db_connection_string)'
 
   - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
     displayName: 'Update connection string ''PersistentSql'' '
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Integration/appsettings.json'
       keyname: PersistentSql
-      connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
-
+      connectionstringvalue: '$(matching_algorithm_db_connection_string)'
   - task: DotNetCoreCLI@2
     displayName: 'Matching Integration Tests'
     inputs:
@@ -51,6 +113,9 @@ jobs:
       arguments: '--no-restore -v d'
       
 - job: Matching_Algorithm_Validation_Tests
+  dependsOn: Terraform
+  variables:
+    matching_algorithm_validation_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.matching_algorithm_validation_db_connection_string'] ]
   pool:
     name: Hosted Ubuntu 1604
   #Your build pipeline references an undefined variable named ‘Parameters.packagesDirectory’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
@@ -71,21 +136,21 @@ jobs:
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
       keyname: SqlA
-      connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm-validation;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+      connectionstringvalue: '$(matching_algorithm_validation_db_connection_string)'
 
   - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
     displayName: 'Update connection string ''SqlB'''
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
       keyname: SqlB
-      connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm-validation;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+      connectionstringvalue: '$(matching_algorithm_validation_db_connection_string)'
 
   - task: bendayconsulting.build-task.setjsonconfigconnectionstring.setjsonconfigconnectionstring@1
     displayName: 'Update connection string ''PersistentSql'' '
     inputs:
       filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchingAlgorithm.Test.Validation/appsettings.json'
       keyname: PersistentSql
-      connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-matching-algorithm-validation;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+      connectionstringvalue: '$(matching_algorithm_validation_db_connection_string)'
 
   - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
     displayName: 'Set Azure Storage ConnectionString'
@@ -132,6 +197,9 @@ jobs:
       arguments: '--no-restore -v d'
       
 - job: Donor_Import_Integration_Tests
+  dependsOn: Terraform
+  variables:
+    donor_import_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.donor_import_db_connection_string'] ]
   pool:
     name: Hosted Ubuntu 1604
   steps:
@@ -145,7 +213,7 @@ jobs:
       inputs:
         filename: '$(System.DefaultWorkingDirectory)/Atlas.DonorImport.Test.Integration/appsettings.json'
         keyname: DonorStoreSql
-        connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-donor-import;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+        connectionstringvalue: '$(donor_import_db_connection_string)'
 
     - task: DotNetCoreCLI@2
       displayName: 'Donor Import Integration Tests'
@@ -154,6 +222,9 @@ jobs:
         projects: '$(System.DefaultWorkingDirectory)/Atlas.DonorImport.Test.Integration/Atlas.DonorImport.Test.Integration.csproj'
         arguments: '--no-restore -v d'
 - job: Match_Prediction_Integration_Tests
+  dependsOn: Terraform
+  variables:
+    match_prediction_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.match_prediction_db_connection_string'] ]
   pool:
     name: Hosted Ubuntu 1604
   steps:
@@ -167,7 +238,7 @@ jobs:
       inputs:
         filename: '$(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Test.Integration/appsettings.json'
         keyname: MatchPredictionSql
-        connectionstringvalue: 'Server=tcp:atlas-system-tests.database.windows.net,1433;Initial Catalog=atlas-test-match-prediction;Persist Security Info=False;User ID=$(SQL_DATABASE_USERNAME);Password=$(SQL_DATABASE_PASSWORD);MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+        connectionstringvalue: '$(match_prediction_db_connection_string)'
     - task: DotNetCoreCLI@2
       displayName: 'MPA Integration Tests'
       inputs:
@@ -175,6 +246,7 @@ jobs:
         projects: '$(System.DefaultWorkingDirectory)/Atlas.MatchPrediction.Test.Integration/Atlas.MatchPrediction.Test.Integration.csproj'
         arguments: '--no-restore -v d'
 - job: Multiple_Allele_Code_Dictionary_Integration_Tests
+  dependsOn: Terraform
   pool:
     name: Hosted Ubuntu 1604
   steps:
