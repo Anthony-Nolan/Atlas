@@ -53,6 +53,7 @@ jobs:
         ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
         ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
     - task: Powershell@2
+      name: OutputTFVars
       env:
         ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
         ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
@@ -74,6 +75,8 @@ jobs:
     
 - job: Matching_Algorithm_Integration_Tests
   dependsOn: Terraform
+  variables:
+    matching_algorithm_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.matching_algorithm_db_connection_string'] ]
   pool:
     name: Hosted Ubuntu 1604
   steps:
@@ -111,6 +114,8 @@ jobs:
       
 - job: Matching_Algorithm_Validation_Tests
   dependsOn: Terraform
+  variables:
+    matching_algorithm_validation_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.matching_algorithm_validation_db_connection_string'] ]
   pool:
     name: Hosted Ubuntu 1604
   #Your build pipeline references an undefined variable named ‘Parameters.packagesDirectory’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
@@ -193,6 +198,8 @@ jobs:
       
 - job: Donor_Import_Integration_Tests
   dependsOn: Terraform
+  variables:
+    donor_import_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.donor_import_db_connection_string'] ]
   pool:
     name: Hosted Ubuntu 1604
   steps:
@@ -216,6 +223,8 @@ jobs:
         arguments: '--no-restore -v d'
 - job: Match_Prediction_Integration_Tests
   dependsOn: Terraform
+  variables:
+    match_prediction_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.match_prediction_db_connection_string'] ]
   pool:
     name: Hosted Ubuntu 1604
   steps:
