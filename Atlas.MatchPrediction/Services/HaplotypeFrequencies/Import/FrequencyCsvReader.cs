@@ -16,11 +16,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
     {
         public IEnumerable<HaplotypeFrequency> GetFrequencies(Stream stream)
         {
-            if (stream == null)
-            {
-                throw new EmptyHaplotypeFileException();
-            }
-            
             using (var reader = new StreamReader(stream))
             using (var csv = new CsvReader(reader))
             {
@@ -89,9 +84,9 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             {
                 return reader.Read();
             }
-            catch (BadDataException)
+            catch (BadDataException e)
             {
-                throw new MalformedHaplotypeFileException("Invalid CSV was encountered");
+                throw new MalformedHaplotypeFileException($"Invalid CSV was encountered: {e.Message}");
             }
         }
     }
