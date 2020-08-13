@@ -60,21 +60,5 @@ namespace Atlas.MatchPrediction.Utils
                 allowedLoci.Contains(locus) && gGroup != null ? await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, gGroup) : null
             );
         }
-
-        /// <summary>
-        /// Runs <see cref="IHlaMetadataDictionary.ValidateHla"/> for each HLA in a LociInfo, at selected loci.
-        /// Excluded loci will be considered valid HLA. 
-        /// Nulls at allowed loci will throw.
-        /// </summary>
-        public static async Task<bool> ValidateHla(
-            this IHlaMetadataDictionary hlaMetadataDictionary,
-            LociInfo<string> hla,
-            ISet<Locus> allowedLoci,
-            TargetHlaCategory hlaCategory
-        )
-        {
-            return (await hla.MapAsync(async (locus, hlaAtLocus) => 
-                    !allowedLoci.Contains(locus) || await hlaMetadataDictionary.ValidateHla(locus, hlaAtLocus, hlaCategory))).AllAtLoci(x => x);
-        }
     }
 }

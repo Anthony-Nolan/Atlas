@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
@@ -149,7 +151,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             var convertedFrequencies = await logger.RunTimedAsync("Convert frequencies", async () =>
             {
                 return await TaskExtensions.WhenEach(frequencies.Select(async frequency =>
-                { 
+                {
                     var pGroupTyped = await hlaMetadataDictionary.ConvertGGroupsToPGroups(frequency.Hla, LocusSettings.MatchPredictionLoci);
 
                     if (!pGroupTyped.AnyAtLoci(x => x == null, LocusSettings.MatchPredictionLoci))
@@ -182,9 +184,22 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
         private static async Task<bool> ValidateHaplotypes(IEnumerable<HaplotypeFrequency> frequencies, IHlaMetadataDictionary hlaMetadataDictionary)
         {
-            return (await TaskExtensions.WhenEach(frequencies.Select(async frequency =>
-                await hlaMetadataDictionary.ValidateHla(frequency.Hla, LocusSettings.MatchPredictionLoci, TargetHlaCategory.GGroup))
-            )).All(x => x);
+            var haplotypes = frequencies.Select(hf => hf.Hla).ToList();
+
+            var gGroupsPerLocus = new LociInfo<int>().Map((locus, _) => haplotypes.Select(h => h.GetLocus(locus)).ToHashSet());
+
+            var validationResults = await gGroupsPerLocus.MapAsync(async (locus, gGroups) =>
+            {
+                return await Task.WhenAll(gGroups.Select(gGroup => ValidateGGroup(locus, gGroup, hlaMetadataDictionary)));
+            });
+
+            return validationResults.AllAtLoci(results => results.All(x => x));
+        }
+
+        private static async Task<bool> ValidateGGroup(Locus locus, string gGroup, IHlaMetadataDictionary hlaMetadataDictionary)
+        {
+            return !LocusSettings.MatchPredictionLoci.Contains(locus)
+                   || await hlaMetadataDictionary.ValidateHla(locus, gGroup, TargetHlaCategory.GGroup);
         }
     }
 }

@@ -42,8 +42,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         private readonly ISet<Locus> allLoci = LocusSettings.MatchPredictionLoci;
         private HaplotypeFrequencySet haplotypeFrequencySet;
 
-        [SetUp]
-        public async Task SetUp()
+        [OneTimeSetUp]
+        public async Task OneTimeSetUp()
         {
             importService = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
             likelihoodService = DependencyInjection.DependencyInjection.Provider.GetService<IGenotypeLikelihoodService>();
