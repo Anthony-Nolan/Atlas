@@ -5,7 +5,7 @@ using Atlas.MatchPrediction.Test.Verification.Models;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
 {
-    public interface IGenotypeSimulator
+    internal interface IGenotypeSimulator
     {
         /// <param name="requiredGenotypeCount">Number of genotypes to be built.</param>
         /// <param name="pool">Data source for genotype simulation.</param>
@@ -14,16 +14,22 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
 
     internal class GenotypeSimulator : IGenotypeSimulator
     {
-        private readonly IRandomNumberPairGenerator randomNumberPairGenerator;
+        private readonly IRandomNumberGenerator randomNumberGenerator;
 
-        public GenotypeSimulator(IRandomNumberPairGenerator randomNumberPairGenerator)
+        public GenotypeSimulator(IRandomNumberGenerator randomNumberGenerator)
         {
-            this.randomNumberPairGenerator = randomNumberPairGenerator;
+            this.randomNumberGenerator = randomNumberGenerator;
         }
         
         public IReadOnlyCollection<SimulatedHlaTyping> SimulateGenotypes(int requiredGenotypeCount, NormalisedHaplotypePool pool)
         {
-            var pairs = randomNumberPairGenerator.GenerateRandomNumberPairs(requiredGenotypeCount, pool.TotalCopyNumber-1);
+            var request = new GenerateRandomNumberRequest
+            {
+                Count = requiredGenotypeCount,
+                MinPermittedValue = 0,
+                MaxPermittedValue = pool.TotalCopyNumber - 1
+            };
+            var pairs = randomNumberGenerator.GenerateRandomNumberPairs(request);
 
             return pairs.AsParallel().Select(p => BuildSimulatedHlaTyping(pool, p)).ToList();
         }

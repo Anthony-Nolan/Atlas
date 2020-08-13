@@ -1,10 +1,16 @@
-﻿using Atlas.Common.Utils.Extensions;
+﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Utils.Extensions;
+using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Services;
 using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
+using Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers;
+using Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration;
 using Atlas.MatchPrediction.Test.Verification.Settings;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -16,13 +22,21 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
         public static void RegisterVerificationServices(
             this IServiceCollection services,
             Func<IServiceProvider, string> fetchMatchPredictionVerificationSqlConnectionString,
-            Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString
+            Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString,
+            Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings
         )
         {
             services.RegisterSettings();
             services.RegisterDatabaseServices(fetchMatchPredictionVerificationSqlConnectionString);
             services.RegisterServices(fetchMatchPredictionSqlConnectionString);
             services.RegisterHaplotypeFrequenciesReader(fetchMatchPredictionSqlConnectionString);
+            services.RegisterHlaMetadataDictionary(
+                fetchHlaMetadataDictionarySettings,
+                fetchApplicationInsightsSettings,
+                fetchMacDictionarySettings
+            );
         }
 
         private static void RegisterSettings(this IServiceCollection services)
@@ -45,6 +59,8 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             this IServiceCollection services, 
             Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString)
         {
+            services.AddScoped<ITestHarnessGenerator, TestHarnessGenerator>();
+
             services.AddScoped<IHaplotypeFrequenciesReader, HaplotypeFrequenciesReader>();
             services.AddScoped<IFrequencySetStreamer, FrequencySetStreamer>();
 
@@ -56,9 +72,15 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
                     return new NormalisedPoolGenerator(reader, repo, dataSource);
                 });
             services.AddScoped<IGenotypeSimulator, GenotypeSimulator>();
-            services.AddScoped<IRandomNumberPairGenerator, RandomNumberPairGenerator>();
-            services.AddScoped<ISimulantsGenerator, SimulantsGenerator>();
-            services.AddScoped<ITestHarnessGenerator, TestHarnessGenerator>();
+            services.AddScoped<IRandomNumberGenerator, RandomNumberGenerator>();
+            services.AddScoped<IGenotypeSimulantsGenerator, GenotypeSimulantsGenerator>();
+
+            services.AddScoped<IMaskedSimulantsGenerator, MaskedSimulantsGenerator>();
+            services.AddScoped<ILocusHlaMasker, LocusHlaMasker>();
+            services.AddScoped<IHlaDeleter, HlaDeleter>();
+            services.AddScoped<IHlaConverter, HlaConverter>();
+            services.AddScoped<IMacBuilder, MacBuilder>();
+            services.AddScoped<IXxCodeBuilder, XxCodeBuilder>();
         }
     }
 }

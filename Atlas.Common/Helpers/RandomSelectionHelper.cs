@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Helpers
+namespace Atlas.Common.Helpers
 {
     public static class RandomSelectionHelper
     {
@@ -22,7 +22,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Helpers
 
         // Fisher-Yates shuffle 
         // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
-        private static IList<T> Shuffle<T>(this IList<T> list)
+        public static IList<T> Shuffle<T>(this IList<T> list)
         {
             var n = list.Count;
             while (n > 1)

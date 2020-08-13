@@ -1,5 +1,6 @@
 ﻿using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using Atlas.MatchPrediction.Test.Verification.Data.Models;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 using System.Data;
@@ -11,6 +12,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
     public interface ISimulantsRepository
     {
         Task BulkInsertSimulants(IReadOnlyCollection<Simulant> simulants);
+        Task<IEnumerable<Simulant>> GetGenotypeSimulants(int testHarnessId, string testIndividualCategory);
     }
 
     internal class SimulantsRepository : ISimulantsRepository
@@ -34,6 +36,19 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             using (var sqlBulk = BuildSqlBulkCopy())
             {
                 await sqlBulk.WriteToServerAsync(dataTable);
+            }
+        }
+
+        public async Task<IEnumerable<Simulant>> GetGenotypeSimulants(int testHarnessId, string testIndividualCategory)
+        {
+            var sql = @$"SELECT s.* FROM Simulants s WHERE 
+                    s.TestHarness_Id = @{nameof(testHarnessId)} AND
+                    s.TestIndividualCategory = @{nameof(testIndividualCategory)} AND
+                    s.SimulatedHlaTypingCategory = 'Genotype'";
+
+            using (var conn = new SqlConnection(connectionString))
+            {
+                return await conn.QueryAsync<Simulant>(sql, new { testHarnessId, testIndividualCategory });
             }
         }
 

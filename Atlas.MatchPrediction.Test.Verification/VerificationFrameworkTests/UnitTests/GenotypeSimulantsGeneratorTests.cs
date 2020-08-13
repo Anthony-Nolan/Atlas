@@ -1,8 +1,8 @@
 ﻿using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
-using Atlas.MatchPrediction.Test.Verification.Services;
 using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
+using Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
@@ -12,11 +12,12 @@ using System.Threading.Tasks;
 namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.UnitTests
 {
     [TestFixture]
-    public class SimulantsGeneratorTests
+    public class GenotypeSimulantsGeneratorTests
     {
         private IGenotypeSimulator genotypeSimulator;
         private ISimulantsRepository simulantsRepository;
-        private ISimulantsGenerator simulantsGenerator;
+
+        private IGenotypeSimulantsGenerator simulantsGenerator;
 
         [SetUp]
         public void SetUp()
@@ -24,7 +25,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
             genotypeSimulator = Substitute.For<IGenotypeSimulator>();
             simulantsRepository = Substitute.For<ISimulantsRepository>();
 
-            simulantsGenerator = new SimulantsGenerator(genotypeSimulator, simulantsRepository);
+            simulantsGenerator = new GenotypeSimulantsGenerator(genotypeSimulator, simulantsRepository);
         }
 
         [Test]
@@ -32,10 +33,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
         {
             const int genotypeCount = 10;
 
-            await simulantsGenerator.GenerateSimulants(new GenerateSimulantsRequest
-            {
-                SimulantCount = genotypeCount
-            });
+            await simulantsGenerator.GenerateSimulants(new GenerateSimulantsRequest { SimulantCount = genotypeCount }, default);
 
             genotypeSimulator.Received().SimulateGenotypes(genotypeCount, Arg.Any<NormalisedHaplotypePool>());
         }
@@ -47,11 +45,13 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
             const int testHarnessId = 123;
             genotypeSimulator.SimulateGenotypes(default, default).ReturnsForAnyArgs(new[] { new SimulatedHlaTyping() });
 
-            await simulantsGenerator.GenerateSimulants(new GenerateSimulantsRequest
-            {
-                TestHarnessId = testHarnessId,
-                TestIndividualCategory = testIndividualCategory
-            });
+            await simulantsGenerator.GenerateSimulants(
+                new GenerateSimulantsRequest
+                {
+                    TestHarnessId = testHarnessId,
+                    TestIndividualCategory = testIndividualCategory
+                },
+                default);
 
             await simulantsRepository.Received().BulkInsertSimulants(Arg.Is<IReadOnlyCollection<Simulant>>(x =>
                 x.First().TestHarness_Id == testHarnessId &&
@@ -81,7 +81,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 }
             });
 
-            await simulantsGenerator.GenerateSimulants(new GenerateSimulantsRequest());
+            await simulantsGenerator.GenerateSimulants(new GenerateSimulantsRequest(), default);
 
             await simulantsRepository.Received().BulkInsertSimulants(Arg.Is<IReadOnlyCollection<Simulant>>(x =>
                 x.First().A_1.Equals("a-1") &&
@@ -95,7 +95,5 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 x.First().DRB1_1.Equals("drb1-1") &&
                 x.First().DRB1_2.Equals("drb1-2")));
         }
-
-        // TODO ATLAS-478 - Mask genotypes tests
     }
 }

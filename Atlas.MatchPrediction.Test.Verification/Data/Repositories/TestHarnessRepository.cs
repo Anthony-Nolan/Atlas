@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {
-    public interface ITestHarnessRepository
+    internal interface ITestHarnessRepository
     {
         Task<int> AddTestHarness(int poolId);
         Task AddMaskingRecords(IEnumerable<MaskingRecord> records);

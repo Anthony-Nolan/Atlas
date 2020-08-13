@@ -3,6 +3,7 @@ using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services;
 using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
+using Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration;
 using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
@@ -16,19 +17,22 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
         private INormalisedPoolGenerator poolGenerator;
         private ITestHarnessRepository testHarnessRepository;
         private ITestHarnessGenerator testHarnessGenerator;
-        private ISimulantsGenerator simulantsGenerator;
-        
+        private IGenotypeSimulantsGenerator genotypesGenerator;
+        private IMaskedSimulantsGenerator maskedGenerator;
+
         [SetUp]
         public void SetUp()
         {
             poolGenerator = Substitute.For<INormalisedPoolGenerator>();
             testHarnessRepository = Substitute.For<ITestHarnessRepository>();
-            simulantsGenerator = Substitute.For<ISimulantsGenerator>();
+            genotypesGenerator = Substitute.For<IGenotypeSimulantsGenerator>();
+            maskedGenerator = Substitute.For<IMaskedSimulantsGenerator>();
 
-            testHarnessGenerator = new TestHarnessGenerator(poolGenerator, testHarnessRepository, simulantsGenerator);
+            testHarnessGenerator = new TestHarnessGenerator(
+                poolGenerator, testHarnessRepository, genotypesGenerator, maskedGenerator);
 
             poolGenerator.GenerateNormalisedHaplotypeFrequencyPool().ReturnsForAnyArgs(
-                new NormalisedHaplotypePool(default, new List<NormalisedPoolMember>()));
+                new NormalisedHaplotypePool(default, default, new List<NormalisedPoolMember>()));
         }
 
         [Test]
@@ -45,7 +49,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
             const int poolId = 1;
 
             poolGenerator.GenerateNormalisedHaplotypeFrequencyPool().ReturnsForAnyArgs(
-                new NormalisedHaplotypePool(poolId, new List<NormalisedPoolMember>()));
+                new NormalisedHaplotypePool(poolId, default, new List<NormalisedPoolMember>()));
 
             await testHarnessGenerator.GenerateTestHarness(new GenerateTestHarnessRequest());
 
@@ -53,23 +57,87 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
         }
 
         [Test]
-        public async Task GenerateTestHarness_Simulates1000Patients()
+        public async Task GenerateTestHarness_Simulates1000PatientGenotypes()
         {
             await testHarnessGenerator.GenerateTestHarness(new GenerateTestHarnessRequest());
 
-            await simulantsGenerator.Received().GenerateSimulants(Arg.Is<GenerateSimulantsRequest>(x =>
-                x.SimulantCount == 1000 &&
-                x.TestIndividualCategory == TestIndividualCategory.Patient));
+            await genotypesGenerator.Received().GenerateSimulants(
+                Arg.Is<GenerateSimulantsRequest>(x =>
+                    x.SimulantCount == 1000 &&
+                    x.TestIndividualCategory == TestIndividualCategory.Patient),
+                Arg.Any<NormalisedHaplotypePool>());
         }
 
         [Test]
-        public async Task GenerateTestHarness_Simulates10000Donors()
+        public async Task GenerateTestHarness_Simulates1000PatientPhenotypes()
         {
             await testHarnessGenerator.GenerateTestHarness(new GenerateTestHarnessRequest());
 
-            await simulantsGenerator.Received().GenerateSimulants(Arg.Is<GenerateSimulantsRequest>(x =>
-                x.SimulantCount == 10000 &&
-                x.TestIndividualCategory == TestIndividualCategory.Donor));
+            await maskedGenerator.Received().GenerateSimulants(
+                Arg.Is<GenerateSimulantsRequest>(x =>
+                    x.SimulantCount == 1000 &&
+                    x.TestIndividualCategory == TestIndividualCategory.Patient),
+                Arg.Any<MaskingRequests>(),
+                Arg.Any<string>());
+        }
+
+        [Test]
+        public async Task GenerateTestHarness_FirstSimulatesPatientGenotypesThenPhenotypes()
+        {
+            await testHarnessGenerator.GenerateTestHarness(new GenerateTestHarnessRequest());
+
+            Received.InOrder(async () =>
+            {
+                await genotypesGenerator.GenerateSimulants(
+                    Arg.Is<GenerateSimulantsRequest>(x => x.TestIndividualCategory == TestIndividualCategory.Patient),
+                    Arg.Any<NormalisedHaplotypePool>());
+                await maskedGenerator.GenerateSimulants(
+                    Arg.Is<GenerateSimulantsRequest>(x => x.TestIndividualCategory == TestIndividualCategory.Patient),
+                    Arg.Any<MaskingRequests>(),
+                    Arg.Any<string>());
+            });
+        }
+
+        [Test]
+        public async Task GenerateTestHarness_Simulates10000DonorGenotypes()
+        {
+            await testHarnessGenerator.GenerateTestHarness(new GenerateTestHarnessRequest());
+
+            await genotypesGenerator.Received().GenerateSimulants(
+                Arg.Is<GenerateSimulantsRequest>(x =>
+                    x.SimulantCount == 10000 &&
+                    x.TestIndividualCategory == TestIndividualCategory.Donor),
+                Arg.Any<NormalisedHaplotypePool>());
+        }
+
+        [Test]
+        public async Task GenerateTestHarness_Simulates10000DonorPhenotypes()
+        {
+            await testHarnessGenerator.GenerateTestHarness(new GenerateTestHarnessRequest());
+
+            await maskedGenerator.Received().GenerateSimulants(
+                Arg.Is<GenerateSimulantsRequest>(x =>
+                    x.SimulantCount == 10000 &&
+                    x.TestIndividualCategory == TestIndividualCategory.Donor),
+                Arg.Any<MaskingRequests>(),
+                Arg.Any<string>());
+        }
+
+        [Test]
+        public async Task GenerateTestHarness_FirstSimulatesDonorGenotypesThenPhenotypes()
+        {
+            await testHarnessGenerator.GenerateTestHarness(new GenerateTestHarnessRequest());
+
+            Received.InOrder(async () =>
+            {
+                await genotypesGenerator.GenerateSimulants(
+                    Arg.Is<GenerateSimulantsRequest>(x => x.TestIndividualCategory == TestIndividualCategory.Donor),
+                    Arg.Any<NormalisedHaplotypePool>());
+                await maskedGenerator.GenerateSimulants(
+                    Arg.Is<GenerateSimulantsRequest>(x => x.TestIndividualCategory == TestIndividualCategory.Donor),
+                    Arg.Any<MaskingRequests>(),
+                    Arg.Any<string>());
+            });
         }
     }
 }

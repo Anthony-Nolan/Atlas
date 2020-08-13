@@ -1,9 +1,8 @@
-﻿using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
-using Atlas.MatchPrediction.Test.Verification.Data.Models;
+﻿using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
+using Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -14,20 +13,23 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
         Task<int> GenerateTestHarness(GenerateTestHarnessRequest request);
     }
 
-    public class TestHarnessGenerator : ITestHarnessGenerator
+    internal class TestHarnessGenerator : ITestHarnessGenerator
     {
         private readonly INormalisedPoolGenerator poolGenerator;
         private readonly ITestHarnessRepository testHarnessRepository;
-        private readonly ISimulantsGenerator simulantsGenerator;
+        private readonly IGenotypeSimulantsGenerator genotypesGenerator;
+        private readonly IMaskedSimulantsGenerator maskedGenerator;
 
         public TestHarnessGenerator(
             INormalisedPoolGenerator poolGenerator,
             ITestHarnessRepository testHarnessRepository,
-            ISimulantsGenerator simulantsGenerator)
+            IGenotypeSimulantsGenerator genotypesGenerator,
+            IMaskedSimulantsGenerator maskedGenerator)
         {
             this.poolGenerator = poolGenerator;
             this.testHarnessRepository = testHarnessRepository;
-            this.simulantsGenerator = simulantsGenerator;
+            this.genotypesGenerator = genotypesGenerator;
+            this.maskedGenerator = maskedGenerator;
         }
 
         public async Task<int> GenerateTestHarness(GenerateTestHarnessRequest request)
@@ -37,39 +39,48 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
 
             var testHarnessId = await testHarnessRepository.AddTestHarness(pool.Id);
             
-            await CreatePatients(pool, testHarnessId, request.PatientMaskingCriteria.ToLociInfo());
-            await CreateDonors(pool, testHarnessId, request.DonorMaskingCriteria.ToLociInfo());
+            await CreatePatients(pool, testHarnessId, request.PatientMaskingRequests.ToMaskingRequests());
+            await CreateDonors(pool, testHarnessId, request.DonorMaskingRequests.ToMaskingRequests());
 
             Debug.WriteLine("Done.");
             return testHarnessId;
         }
 
-        private async Task CreatePatients(NormalisedHaplotypePool pool, int testHarnessId, LociInfo<MaskingCriterion> maskingCriteria)
+        private async Task CreatePatients(NormalisedHaplotypePool pool, int testHarnessId, MaskingRequests maskingRequests)
         {
             const int patientCount = 1000;
 
-            await simulantsGenerator.GenerateSimulants(new GenerateSimulantsRequest
+            var request = new GenerateSimulantsRequest
             {
                 TestHarnessId = testHarnessId,
-                NormalisedHaplotypePool = pool,
                 TestIndividualCategory = TestIndividualCategory.Patient,
-                SimulantCount = patientCount,
-                MaskingCriteria = maskingCriteria
-            });
+                SimulantCount = patientCount
+            };
+
+            await GenerateSimulants(request, pool, maskingRequests);
         }
 
-        private async Task CreateDonors(NormalisedHaplotypePool pool, int testHarnessId, LociInfo<MaskingCriterion> maskingCriteria)
+        private async Task CreateDonors(NormalisedHaplotypePool pool, int testHarnessId, MaskingRequests maskingRequests)
         {
             const int donorCount = 10000;
 
-            await simulantsGenerator.GenerateSimulants(new GenerateSimulantsRequest
+            var request = new GenerateSimulantsRequest
             {
                 TestHarnessId = testHarnessId,
-                NormalisedHaplotypePool = pool,
                 TestIndividualCategory = TestIndividualCategory.Donor,
-                SimulantCount = donorCount,
-                MaskingCriteria = maskingCriteria
-            });
+                SimulantCount = donorCount
+            };
+
+            await GenerateSimulants(request, pool, maskingRequests);
+        }
+
+        private async Task GenerateSimulants(
+            GenerateSimulantsRequest request,
+            NormalisedHaplotypePool pool,
+            MaskingRequests maskingRequests)
+        {
+            await genotypesGenerator.GenerateSimulants(request, pool);
+            await maskedGenerator.GenerateSimulants(request, maskingRequests, pool.HlaNomenclatureVersion);
         }
     }
 }

@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -38,19 +39,15 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models
         [MaxLength(64)]
         public string B_2 { get; set; }
 
-        [Required]
         [MaxLength(64)]
         public string C_1 { get; set; }
 
-        [Required]
         [MaxLength(64)]
         public string C_2 { get; set; }
 
-        [Required]
         [MaxLength(64)]
         public string DQB1_1 { get; set; }
 
-        [Required]
         [MaxLength(64)]
         public string DQB1_2 { get; set; }
 
@@ -94,6 +91,19 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models
             modelBuilder
                 .Property(e => e.SimulatedHlaTypingCategory)
                 .HasConversion<string>();
+        }
+    }
+
+    internal static class SimulantExtensions
+    {
+        public static PhenotypeInfo<string> ToPhenotypeInfo(this Simulant simulant)
+        {
+            return new PhenotypeInfo<string>(
+                valueA: new LocusInfo<string>(simulant.A_1, simulant.A_2),
+                valueB: new LocusInfo<string>(simulant.B_1, simulant.B_2),
+                valueC: new LocusInfo<string>(simulant.C_1, simulant.C_2),
+                valueDqb1: new LocusInfo<string>(simulant.DQB1_1, simulant.DQB1_2),
+                valueDrb1: new LocusInfo<string>(simulant.DRB1_1, simulant.DRB1_2));
         }
     }
 }

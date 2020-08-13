@@ -1,35 +1,49 @@
-﻿using System.Collections.Generic;
-using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System.Collections.Generic;
 
 namespace Atlas.MatchPrediction.Test.Verification.Models
 {
     public class GenerateTestHarnessRequest
     {
-        public LociInfoTransfer<MaskingCriterion> PatientMaskingCriteria { get; set; }
-        public LociInfoTransfer<MaskingCriterion> DonorMaskingCriteria { get; set; }
+        public MaskingRequestsTransfer PatientMaskingRequests { get; set; }
+        public MaskingRequestsTransfer DonorMaskingRequests { get; set; }
     }
 
-    public class MaskingCriterion
+    /// <summary>
+    /// Multiple masking requests may be submitted per locus.
+    /// The final sum of typings proportions per locus must be between 0 to 100%, inclusive.
+    /// </summary>
+    public class MaskingRequestsTransfer : LociInfoTransfer<IEnumerable<MaskingRequest>>
     {
-        /// <summary>
-        /// Percentage (to nearest whole integer) of locus typings to delete.
-        /// </summary>
-        public int ProportionToDelete { get; set; }
-
-        /// <summary>
-        /// Instructions for which typing categories the locus typings should be converted to, and to what proportions.
-        ///  </summary>
-        public IEnumerable<MaskingRequest> MaskingRequests { get; set; }
     }
 
     public class MaskingRequest
     {
-        public HlaTypingCategory MaskHlaTypingCategory { get; set; }
+        public MaskingCategory MaskingCategory { get; set; }
 
         /// <summary>
-        /// Percentage (to nearest whole integer) of locus typings to mask to typing category of <see cref="MaskHlaTypingCategory"/>.
+        /// Percentage (to nearest whole integer) of locus typings to mask to category of <see cref="MaskingCategory"/>.
         /// </summary>
         public int ProportionToMask { get; set; }
+    }
+
+    /// <summary>
+    /// Currently available options for the masking of genotype HLA.
+    /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum MaskingCategory
+    {
+        PGroup,
+
+        // a.k.a. "NMDP code"
+        MultipleAlleleCode,
+
+        XxCode,
+        Serology,
+
+        // Request to delete locus typings - not permitted at "required" matching loci.
+        Delete
     }
 }

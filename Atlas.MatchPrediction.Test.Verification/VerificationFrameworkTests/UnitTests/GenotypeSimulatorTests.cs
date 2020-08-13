@@ -1,6 +1,5 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.MatchPrediction.Test.Verification.Models;
-using Atlas.MatchPrediction.Test.Verification.Services;
 using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
 using Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.TestHelpers;
 using FluentAssertions;
@@ -15,13 +14,13 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
     public class GenotypeSimulatorTests
     {
         private IGenotypeSimulator genotypeSimulator;
-        private IRandomNumberPairGenerator randomNumberPairGenerator;
+        private IRandomNumberGenerator randomNumberGenerator;
 
         [SetUp]
         public void SetUp()
         {
-            randomNumberPairGenerator = Substitute.For<IRandomNumberPairGenerator>();
-            genotypeSimulator = new GenotypeSimulator(randomNumberPairGenerator);
+            randomNumberGenerator = Substitute.For<IRandomNumberGenerator>();
+            genotypeSimulator = new GenotypeSimulator(randomNumberGenerator);
         }
 
         [Test]
@@ -31,6 +30,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
             const int totalCopyNumber = 50;
 
             var pool = new NormalisedHaplotypePool(
+                default,
                 default,
                 new[]
                 {
@@ -42,7 +42,11 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
 
             genotypeSimulator.SimulateGenotypes(requiredGenotypeCount, pool);
 
-            randomNumberPairGenerator.Received().GenerateRandomNumberPairs(requiredGenotypeCount, totalCopyNumber - 1);
+            randomNumberGenerator.Received().GenerateRandomNumberPairs(Arg.Is<GenerateRandomNumberRequest>(x => 
+                x.Count == requiredGenotypeCount &&
+                x.MinPermittedValue == 0 &&
+                x.MaxPermittedValue == totalCopyNumber - 1
+                ));
         }
 
         [Test]
@@ -54,6 +58,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
 
             var pool = new NormalisedHaplotypePool(
                 default,
+                default,
                 new[]
                 {
                     NormalisedPoolMemberBuilder.New
@@ -62,7 +67,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                         .Build()
                 });
 
-            randomNumberPairGenerator.GenerateRandomNumberPairs(default, default)
+            randomNumberGenerator.GenerateRandomNumberPairs(default)
                 .ReturnsForAnyArgs(BuildPairsOfIdenticalNumbers(indexBoundary, requiredGenotypeCount));
 
             var results = genotypeSimulator.SimulateGenotypes(requiredGenotypeCount, pool);
@@ -94,6 +99,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
 
             var pool = new NormalisedHaplotypePool(
                 default,
+                default,
                 new[]
                 {
                     NormalisedPoolMemberBuilder.New
@@ -108,7 +114,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                         .Build()
                 });
 
-            randomNumberPairGenerator.GenerateRandomNumberPairs(default, default)
+            randomNumberGenerator.GenerateRandomNumberPairs(default)
                 .ReturnsForAnyArgs(new[] {new UnorderedPair<int>(0, 1)});
 
             var result = genotypeSimulator.SimulateGenotypes(1, pool).Single();
@@ -144,12 +150,17 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 .With(x => x.PoolIndexLowerBoundary, firstMember.PoolIndexUpperBoundary + 1)
                 .Build();
 
-            var pool = new NormalisedHaplotypePool(default, new[] {firstMember, secondMember});
+            var pool = new NormalisedHaplotypePool(default, default, new[] {firstMember, secondMember});
 
             // use implemented random number pair generator to generate return object
-            randomNumberPairGenerator.GenerateRandomNumberPairs(default, default).ReturnsForAnyArgs(
-                new RandomNumberPairGenerator().GenerateRandomNumberPairs(
-                    requiredGenotypeCount, secondMember.PoolIndexUpperBoundary));
+            var request = new GenerateRandomNumberRequest
+            {
+                Count = requiredGenotypeCount,
+                MinPermittedValue = 0,
+                MaxPermittedValue = secondMember.PoolIndexUpperBoundary
+            };
+            randomNumberGenerator.GenerateRandomNumberPairs(default).ReturnsForAnyArgs(
+                new RandomNumberGenerator().GenerateRandomNumberPairs(request));
 
             var results = genotypeSimulator.SimulateGenotypes(requiredGenotypeCount, pool).ToList();
 

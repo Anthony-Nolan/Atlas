@@ -22,7 +22,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 .With(x => x.CopyNumber, secondCopyNumber)
                 .Build();
 
-            var pool = new NormalisedHaplotypePool(default, new[] { firstMember, secondMember });
+            var pool = new NormalisedHaplotypePool(default, default, new[] { firstMember, secondMember });
 
             pool.TotalCopyNumber.Should().Be(firstCopyNumber + secondCopyNumber);
         }
@@ -53,7 +53,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 .With(x => x.PoolIndexLowerBoundary, secondMember.PoolIndexUpperBoundary + 1)
                 .Build();
 
-            var pool = new NormalisedHaplotypePool(default, new [] { firstMember, secondMember, thirdMember });
+            var pool = new NormalisedHaplotypePool(default, default, new [] { firstMember, secondMember, thirdMember });
 
             var result = pool.GetHaplotypeFrequencyByPoolIndex(poolIndex);
 
