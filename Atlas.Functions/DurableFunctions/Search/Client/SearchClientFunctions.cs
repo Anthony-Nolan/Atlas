@@ -5,9 +5,8 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Functions.DurableFunctions.Search.Orchestration;
 using Atlas.Functions.Models.Search.Requests;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
-using Atlas.MatchPrediction.Validators;
+using Atlas.MatchPrediction.ExternalInterface;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
-using FluentValidation;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -25,9 +24,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
     public class SearchClientFunctions
     {
         private readonly ILogger logger;
+        private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
 
-        public SearchClientFunctions(ILogger logger)
+        public SearchClientFunctions(IMatchPredictionAlgorithm matchPredictionAlgorithm, ILogger logger)
         {
+            this.matchPredictionAlgorithm = matchPredictionAlgorithm;
             this.logger = logger;
         }
         
@@ -48,8 +49,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
                 return new HttpResponseMessage( HttpStatusCode.BadRequest ) {Content =  new StringContent(JsonConvert.SerializeObject(validationResult.Errors), System.Text.Encoding.UTF8, "application/json" ) };
             }
 
-            var probabilityRequestToValidate = searchRequest.ToNonDonorMatchProbabilityInput();
-            var probabilityValidationResult = new MatchProbabilityNonDonorValidator().Validate(probabilityRequestToValidate);
+            var probabilityRequestToValidate = searchRequest.ToPartialMatchProbabilitySearchRequest();
+            var probabilityValidationResult = matchPredictionAlgorithm.ValidateMatchPredictionAlgorithmInput(probabilityRequestToValidate);
             if (!probabilityValidationResult.IsValid)
             {
                 return new HttpResponseMessage( HttpStatusCode.BadRequest ) {Content =  new StringContent(JsonConvert.SerializeObject(probabilityValidationResult.Errors), System.Text.Encoding.UTF8, "application/json" ) };
