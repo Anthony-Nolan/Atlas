@@ -18,6 +18,13 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
     {
         Task<string> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour);
         Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory);
+        /// <summary>
+        /// Validate whether HLA is a type of the the target HLA category.
+        /// </summary>
+        /// <param name="locus">Locus hla is present at.</param>
+        /// <param name="hlaName">The hla you want to validate the type of.</param>
+        /// <param name="targetHlaCategory">The hla category you want to see if the hla is a part of.</param>
+        /// <returns></returns>
         Task<bool> ValidateHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory);
 
         /// <summary>
