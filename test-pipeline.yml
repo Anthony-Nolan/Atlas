@@ -53,12 +53,12 @@ jobs:
         ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
         ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
     - task: Powershell@2
+      env:
+        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
       inputs:
         targetType: 'inline'
         workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
-        env:
-          ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
-          ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
         script: |
           $output = terraform output -json
 
