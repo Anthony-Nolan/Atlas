@@ -68,10 +68,9 @@ jobs:
 
           foreach($prop in $json.psobject.properties) {
 
-          Write-Host("##vso[task.setvariable variable=$($prop.Name);isOutput=true;]$($prop.Value.value)")
+          Write-Host("##vso[task.setvariable variable=$($prop.Name);]$($prop.Value.value)")
           Write-Host(“Setting {0} to {1}” –f $prop.name, $prop.Value.value)
-          }
-      
+          }      
     
 - job: Matching_Algorithm_Integration_Tests
   dependsOn: Terraform
