@@ -7,12 +7,15 @@ Donor JSON Files are uploaded to BlobStorage, where they are picked up for proce
 
 ## Limitations
 
-The donor import process does not yet fully guarantee ordering of the application of donor update files.
+The donor import process does not fully guarantee ordering of the application of donor update files.
 This means that ATLAS does not officially support processing of two donor files containing *references to the same donor* within a *ten minute window*.
 
-Multiple updates for a single donor within this window will be applied, but we do not guarantee 100% that they will be applied in the correct order.
+Atlas *does* guarantee that **updates** will be applied in order of upload - so even if processed out of order, only the most recent update will be applied.
 
-TODO: ATLAS-390: ensure full resilience in donor import ordering process     
+There are some cases where this is not enough - e.g. if a donor is created and then immediately updated - so we still recommend a lead time of ~10 minutes 
+between uploading files containing the same donor.
+
+A full description of all possible combinations of update files can be found later in this readme.
 
 ## File Transfer performance
 
