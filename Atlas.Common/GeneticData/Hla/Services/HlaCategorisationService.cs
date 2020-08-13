@@ -18,7 +18,6 @@ namespace Atlas.Common.GeneticData.Hla.Services
         /// </summary>
         bool ConformsToValidHlaFormat(string hlaDescriptor);
         HlaTypingCategory GetHlaTypingCategory(string hlaDescriptor);
-        bool ConformsToSpecificHlaFormat(string hlaDescriptor, HlaTypingCategory category);
         bool TryGetHlaTypingCategory(string hlaDescriptor, [NotNullWhen(true)]out HlaTypingCategory? category);
     }
 
@@ -83,13 +82,6 @@ namespace Atlas.Common.GeneticData.Hla.Services
 
             category = null;
             return false;
-        }
-
-        public bool ConformsToSpecificHlaFormat(string hlaDescriptor, HlaTypingCategory specificCategory)
-        {
-            TryGetHlaTypingCategory(hlaDescriptor, out var category);
-            
-            return category == specificCategory;
         }
 
         public HlaTypingCategory GetHlaTypingCategory(string hlaDescriptor)

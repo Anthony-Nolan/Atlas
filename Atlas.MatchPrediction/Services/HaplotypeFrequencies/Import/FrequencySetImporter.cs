@@ -5,10 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
-using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
@@ -32,7 +31,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         private readonly IHaplotypeFrequencySetRepository setRepository;
         private readonly IHaplotypeFrequenciesRepository frequenciesRepository;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
-        private readonly IHlaCategorisationService hlaCategorisationService;
         private readonly ILogger logger;
         private readonly MatchPredictionImportSettings matchPredictionImportSettings;
 
@@ -42,7 +40,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             IHaplotypeFrequencySetRepository setRepository,
             IHaplotypeFrequenciesRepository frequenciesRepository,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
-            IHlaCategorisationService hlaCategorisationService,
             ILogger logger,
             MatchPredictionImportSettings matchPredictionImportSettings)
         {
@@ -51,7 +48,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             this.setRepository = setRepository;
             this.frequenciesRepository = frequenciesRepository;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
-            this.hlaCategorisationService = hlaCategorisationService;
             this.logger = logger;
             this.matchPredictionImportSettings = matchPredictionImportSettings;
         }
@@ -108,17 +104,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 throw new DuplicateHaplotypeImportException();
             }
 
-            var allHlaGGroup = haplotypes
-                .Select(l => 
-                    l.AllAtLoci(h => 
-                        hlaCategorisationService.ConformsToSpecificHlaFormat(h, HlaTypingCategory.GGroup), LocusSettings.MatchPredictionLoci))
-                .All(x => x);
-
-            if (!allHlaGGroup)
-            {
-                throw new MalformedHaplotypeFileException("Haplotype Hla must be of type GGroup.");
-            }
-
             if (!gGroupHaplotypes.Any())
             {
                 throw new EmptyHaplotypeFileException();
@@ -129,6 +114,16 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             var haplotypesToStore = convertToPGroups
                 ? await ConvertHaplotypesToPGroupResolutionAndConsolidate(gGroupHaplotypes, hlaMetadataDictionary)
                 : gGroupHaplotypes;
+
+            if (!convertToPGroups)
+            {
+                var gGroupValidity = await ValidateHaplotypes(gGroupHaplotypes, hlaMetadataDictionary);
+
+                if (!gGroupValidity)
+                {
+                    throw new MalformedHaplotypeFileException("Invalid Hla.");
+                }
+            }
 
             await frequenciesRepository.AddHaplotypeFrequencies(setId, haplotypesToStore);
         }
@@ -183,6 +178,13 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                         return frequency;
                     });
             }
+        }
+
+        private static async Task<bool> ValidateHaplotypes(IEnumerable<HaplotypeFrequency> frequencies, IHlaMetadataDictionary hlaMetadataDictionary)
+        {
+            return (await TaskExtensions.WhenEach(frequencies.Select(async frequency =>
+                await hlaMetadataDictionary.ValidateHla(frequency.Hla, LocusSettings.MatchPredictionLoci, TargetHlaCategory.GGroup))
+            )).All(x => x);
         }
     }
 }

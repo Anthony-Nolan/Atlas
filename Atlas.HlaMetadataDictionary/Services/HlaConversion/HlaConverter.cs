@@ -12,6 +12,7 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
 {
     internal interface IHlaConverter
     {
+        Task<bool> ValidateHla(Locus locus, string hlaName, HlaConversionBehaviour conversionBehaviour);
         Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, HlaConversionBehaviour conversionBehaviour);
 
         /// <summary>
@@ -72,6 +73,32 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(conversionBehaviour), conversionBehaviour, null);
+            }
+        }
+
+        public async Task<bool> ValidateHla(Locus locus, string hlaName, HlaConversionBehaviour validationBehaviour)
+        {
+            if (hlaName == null || validationBehaviour == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            // ReSharper disable once ConvertSwitchStatementToSwitchExpression
+            switch (validationBehaviour.TargetHlaCategory)
+            {
+                case TargetHlaCategory.TwoFieldAlleleIncludingExpressionSuffix:
+                    throw new NotImplementedException();
+                case TargetHlaCategory.TwoFieldAlleleExcludingExpressionSuffix:
+                    throw new NotImplementedException();
+                case TargetHlaCategory.GGroup:
+                    return (await scoringMetadataService.GetAllGGroups(validationBehaviour.HlaNomenclatureVersion))[locus].Contains(hlaName);
+                case TargetHlaCategory.PGroup:
+                    throw new NotImplementedException();
+                case TargetHlaCategory.Serology:
+                    throw new NotImplementedException();
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(validationBehaviour), validationBehaviour, null);
             }
         }
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
@@ -123,158 +122,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
             var haplotypeFrequency = await inspectionRepository.GetFirstHaplotypeFrequency(activeSet.Id);
 
             haplotypeFrequency.Frequency.Should().Be(frequency);
-        }
-
-        [Test]
-        public async Task Import_FileWithInvalidCsvFormat_SendsAlert()
-        {
-            using var file = FrequencySetFileBuilder.WithInvalidCsvFormat(null, null).Build();
-
-            try
-            {
-                await service.ImportFrequencySet(file);
-            }
-            catch (Exception e)
-            {
-                e.Should().BeOfType<HaplotypeFormatException>();
-                await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
-            }
-        }
-
-        [Test]
-        public async Task Import_FileWithoutContents_SendsAlert()
-        {
-            using var file = FrequencySetFileBuilder.FileWithoutContents(null, null).Build();
-
-            try
-            {
-                await service.ImportFrequencySet(file);
-            }
-            catch (Exception e)
-            {
-                e.Should().BeOfType<EmptyHaplotypeFileException>();
-                await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
-            }
-        }
-
-        [TestCase("")]
-        [TestCase("//ethnicity-only/file")]
-        [TestCase("/too/many/subfolders/file")]
-        public async Task Import_InvalidFilePath_SendsAlert(string invalidPath)
-        {
-            using var file = FrequencySetFileBuilder.New(null, null)
-                .With(x => x.FullPath, invalidPath)
-                .Build();
-
-            try
-            {
-                await service.ImportFrequencySet(file);
-            }
-            catch (Exception e)
-            {
-                e.Should().BeOfType<InvalidFilePathException>();
-                await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
-            }
-        }
-
-        [Test]
-        public async Task Import_WithZeroFrequency_SendsAlert()
-        {
-            var hla = new LociInfo<string>
-            (
-                valueA: "04:01:01G",
-                valueB: "04:01:01G",
-                valueC: "04:01:01G",
-                valueDqb1: "06:02:01G",
-                valueDrb1: "03:07:01G"
-            );
-            using var file = FrequencySetFileBuilder
-                .New(null, null)
-                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
-                {
-                    new HaplotypeFrequency {Hla = hla, Frequency = 0m}
-                })
-                .Build();
-
-            try
-            {
-                await service.ImportFrequencySet(file);
-            }
-            catch (Exception e)
-            {
-                e.Should().BeOfType<MalformedHaplotypeFileException>();
-                await notificationSender.ReceivedWithAnyArgs().SendAlert("Haplotype property frequency cannot be 0.", default, default, default);
-            }
-        }
-
-        [Test]
-        public async Task Import_WhenDuplicateHaplotypes_SendsAlert()
-        {
-            var gGroupsBuilder = new LociInfoBuilder<string>()
-                .WithDataAt(Locus.A, "01:01:01G")
-                .WithDataAt(Locus.B, "13:01:01G")
-                .WithDataAt(Locus.C, "04:01:01G")
-                .WithDataAt(Locus.Dqb1, "06:02:01G")
-                .WithDataAt(Locus.Drb1, "03:02:01G");
-
-            using var file = FrequencySetFileBuilder
-                .New(null, null)
-                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
-                {
-                    new HaplotypeFrequency
-                    {
-                        Hla = gGroupsBuilder.Build(),
-                        Frequency = 0.5m
-                    },
-                    new HaplotypeFrequency
-                    {
-                        Hla = gGroupsBuilder.Build(),
-                        Frequency = 0.04m
-                    }
-                })
-                .Build();
-
-            try
-            {
-                await service.ImportFrequencySet(file);
-            }
-            catch (Exception e)
-            {
-                e.Should().BeOfType<DuplicateHaplotypeImportException>();
-                await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
-            }
-        }
-
-        [TestCase(null)]
-        [TestCase("01:XX")]
-        [TestCase("01:01")]
-        public async Task Import_WhenHlaIsNotOfTypeGGroup_SendsAlert(string invalidHla)
-        {
-            var hla = new LociInfo<string>
-            (
-                valueA: invalidHla,
-                valueB: invalidHla,
-                valueC: "04:01:01G",
-                valueDqb1: "06:02:01G",
-                valueDrb1: "03:07:01G"
-            );
-            using var file = FrequencySetFileBuilder
-                .New(null, null)
-                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
-                {
-                    new HaplotypeFrequency {Hla = hla, Frequency = 0.1m}
-                })
-                .Build();
-
-            try
-            {
-                await service.ImportFrequencySet(file);
-            }
-            catch (Exception e)
-            {
-                e.Should().BeOfType<MalformedHaplotypeFileException>();
-                await notificationSender.ReceivedWithAnyArgs().SendAlert("Haplotype Hla must be of type GGroup.", default, default, default);
-            }
         }
 
         [Test]
@@ -432,6 +279,150 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 valueDrb1: "03:02P"
             ));
             importedFrequency.Frequency.Should().Be(0.5432001m);
+        }
+
+        [Test]
+        public async Task Import_FileWithInvalidCsvFormat_SendsAlert()
+        {
+            using var file = FrequencySetFileBuilder.WithInvalidCsvFormat(null, null).Build();
+
+            await service.ImportFrequencySet(file);
+
+            await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
+        }
+
+        [Test]
+        public async Task Import_FileWithoutContents_SendsAlert()
+        {
+            using var file = FrequencySetFileBuilder.FileWithoutContents(null, null).Build();
+
+            await service.ImportFrequencySet(file);
+
+            await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
+        }
+
+        [TestCase("")]
+        [TestCase("//ethnicity-only/file")]
+        [TestCase("/too/many/subfolders/file")]
+        public async Task Import_InvalidFilePath_SendsAlert(string invalidPath)
+        {
+            using var file = FrequencySetFileBuilder.New(null, null)
+                .With(x => x.FullPath, invalidPath)
+                .Build();
+
+            await service.ImportFrequencySet(file);
+
+            await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
+        }
+
+        [Test]
+        public async Task Import_WithZeroFrequency_SendsAlert()
+        {
+            var hla = new LociInfo<string>
+            (
+                valueA: "04:01:01G",
+                valueB: "04:01:01G",
+                valueC: "04:01:01G",
+                valueDqb1: "06:02:01G",
+                valueDrb1: "03:07:01G"
+            );
+            using var file = FrequencySetFileBuilder
+                .New(null, null)
+                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                {
+                    new HaplotypeFrequency {Hla = hla, Frequency = 0m}
+                })
+                .Build();
+
+            await service.ImportFrequencySet(file);
+          
+            await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
+            
+        }
+
+        [Test]
+        public async Task Import_WhenDuplicateHaplotypes_SendsAlert()
+        {
+            var gGroupsBuilder = new LociInfoBuilder<string>()
+                .WithDataAt(Locus.A, "01:01:01G")
+                .WithDataAt(Locus.B, "13:01:01G")
+                .WithDataAt(Locus.C, "04:01:01G")
+                .WithDataAt(Locus.Dqb1, "06:02:01G")
+                .WithDataAt(Locus.Drb1, "03:02:01G");
+
+            using var file = FrequencySetFileBuilder
+                .New(null, null)
+                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                {
+                    new HaplotypeFrequency
+                    {
+                        Hla = gGroupsBuilder.Build(),
+                        Frequency = 0.5m
+                    },
+                    new HaplotypeFrequency
+                    {
+                        Hla = gGroupsBuilder.Build(),
+                        Frequency = 0.04m
+                    }
+                })
+                .Build();
+
+                await service.ImportFrequencySet(file);
+          
+                await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
+            
+        }
+
+        [TestCase(null)]
+        [TestCase("01:XX")]
+        [TestCase("01:01")]
+        public async Task Import_WhenHlaIsNotOfTypeGGroup_SendsAlert(string invalidHla)
+        {
+            var hla = new LociInfo<string>
+            (
+                valueA: invalidHla,
+                valueB: invalidHla,
+                valueC: "04:01:01G",
+                valueDqb1: "06:02:01G",
+                valueDrb1: "03:07:01G"
+            );
+            using var file = FrequencySetFileBuilder
+                .New(null, null)
+                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                {
+                    new HaplotypeFrequency {Hla = hla, Frequency = 0.1m}
+                })
+                .Build();
+
+            await service.ImportFrequencySet(file);
+
+            await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
+        }
+
+        [TestCase(null)]
+        [TestCase("01:XX")]
+        [TestCase("01:01")]
+        public async Task Import_WhenHlaIsNotOfTypeGGroupAndDoesNotConvertToPGroup_SendsAlert(string invalidHla)
+        {
+            var hla = new LociInfo<string>
+            (
+                valueA: invalidHla,
+                valueB: invalidHla,
+                valueC: "04:01:01G",
+                valueDqb1: "06:02:01G",
+                valueDrb1: "03:07:01G"
+            );
+            using var file = FrequencySetFileBuilder
+                .New(null, null)
+                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                {
+                    new HaplotypeFrequency {Hla = hla, Frequency = 0.1m}
+                })
+                .Build();
+
+            await service.ImportFrequencySet(file, false);
+
+            await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
         }
     }
 }

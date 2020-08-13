@@ -18,6 +18,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
     {
         Task<string> RecreateHlaMetadataDictionary(CreationBehaviour recreationBehaviour);
         Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory);
+        Task<bool> ValidateHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory);
 
         /// <summary>
         /// Functionally the same as calling ConvertHla on GGroup typed hla, with a target type of PGroup.
@@ -115,6 +116,16 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             }
 
             return version;
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> ValidateHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory)
+        {
+            return await hlaConverter.ValidateHla(locus, hlaName, new HlaConversionBehaviour
+            {
+                HlaNomenclatureVersion = ActiveHlaNomenclatureVersion,
+                TargetHlaCategory = targetHlaCategory
+            });
         }
 
         /// <inheritdoc />
