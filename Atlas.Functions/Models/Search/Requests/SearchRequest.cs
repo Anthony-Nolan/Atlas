@@ -54,7 +54,11 @@ namespace Atlas.Functions.Models.Search.Requests
             };
         }
 
-        public static SingleDonorMatchProbabilityInput ToNonDonorMatchProbabilityInput(this SearchRequest searchRequest)
+        /// <summary>
+        /// This method generates a partial match probability search request, to be used to validate the input for the match prediction before the matching algorithm has been run
+        /// This shouldn't be used to run real requests!
+        /// </summary>
+        public static SingleDonorMatchProbabilityInput ToPartialMatchProbabilitySearchRequest(this SearchRequest searchRequest)
         {
             return new SingleDonorMatchProbabilityInput()
             {

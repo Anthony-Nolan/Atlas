@@ -6,16 +6,12 @@ using FluentValidation;
 
 namespace Atlas.MatchPrediction.Validators
 {
-    internal class MatchProbabilityInputValidator : AbstractValidator<SingleDonorMatchProbabilityInput>
+    internal class MatchProbabilityInputValidator : MatchProbabilityNonDonorValidator
     {
-        private readonly List<Locus> requiredLoci = new List<Locus> {Locus.A, Locus.B, Locus.Drb1};
-        
         public MatchProbabilityInputValidator()
         {
             RuleFor(i => i.DonorInput).NotNull().SetValidator(new MatchProbabilityDonorInputValidator());
-            RuleFor(i => i.PatientHla).NotNull().SetValidator(new PhenotypeHlaNamesValidator());
             RuleFor(i => i.HlaNomenclatureVersion).NotEmpty();
-            RuleForEach(i => i.ExcludedLoci).Must(l => !requiredLoci.Contains(l));
         }
     }
 
@@ -27,7 +23,10 @@ namespace Atlas.MatchPrediction.Validators
         }
     }
 
-    public class MatchProbabilityNonDonorValidator : AbstractValidator<MatchProbabilityRequestInput>
+    /// <summary>
+    /// This validator is used to validate a search request for the MPA before the matching algorithm has been run
+    /// </summary>
+    public class MatchProbabilityNonDonorValidator : AbstractValidator<SingleDonorMatchProbabilityInput>
     {
         private readonly List<Locus> requiredLoci = new List<Locus> {Locus.A, Locus.B, Locus.Drb1};
         public MatchProbabilityNonDonorValidator()
