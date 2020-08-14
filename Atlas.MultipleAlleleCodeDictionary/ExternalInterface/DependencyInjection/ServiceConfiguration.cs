@@ -5,7 +5,6 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.Services;
 using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices;
-using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices.SourceData;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,13 +28,25 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjecti
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
-            Func<IServiceProvider, MacImportSettings> fetchMacImportSettings
+            Func<IServiceProvider, MacDownloadSettings> fetchMacDownloadSettings
         )
         {
-            services.RegisterMacImportSettings(fetchApplicationInsightsSettings, fetchMacDictionarySettings, fetchMacImportSettings);
+            services.RegisterMacImportSettings(fetchApplicationInsightsSettings, fetchMacDictionarySettings, fetchMacDownloadSettings);
             services.RegisterMacImportServices();
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterLifeTimeScopedCacheTypes();
+        }
+
+        public static void RegisterMacStreamer(
+            this IServiceCollection services,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, MacDownloadSettings> fetchMacDownloadSettings
+        )
+        {
+            services.RegisterMacDownloadSettings(fetchApplicationInsightsSettings, fetchMacDownloadSettings);
+            services.RegisterMacDownloadServices();
+            services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
+            services.AddScoped<IMacStreamer, MacStreamer>();
         }
 
         private static void RegisterMacDictionarySettings(
@@ -51,11 +62,19 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjecti
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
-            Func<IServiceProvider, MacImportSettings> fetchMacImportSettings)
+            Func<IServiceProvider, MacDownloadSettings> fetchMacDownloadSettings)
+        {
+            services.RegisterMacDownloadSettings(fetchApplicationInsightsSettings, fetchMacDownloadSettings);
+            services.MakeSettingsAvailableForUse(fetchMacDictionarySettings);
+        }
+
+        private static void RegisterMacDownloadSettings(
+            this IServiceCollection services,
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, MacDownloadSettings> fetchMacDownloadSettings)
         {
             services.MakeSettingsAvailableForUse(fetchApplicationInsightsSettings);
-            services.MakeSettingsAvailableForUse(fetchMacDictionarySettings);
-            services.MakeSettingsAvailableForUse(fetchMacImportSettings);
+            services.MakeSettingsAvailableForUse(fetchMacDownloadSettings);
         }
 
         private static void RegisterMacDictionaryServices(this IServiceCollection services)
@@ -71,11 +90,16 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjecti
         {
             services.RegisterSharedServices();
 
-            services.AddScoped<IMacParser, MacLineParser>();
+            services.RegisterMacDownloadServices();
             services.AddScoped<IMacImporter, MacImporter>();
+        }
+
+        private static void RegisterMacDownloadServices(this IServiceCollection services)
+        {
+            services.AddScoped<IMacParser, MacLineParser>();
             services.AddScoped<IMacCodeDownloader, MacCodeDownloader>();
         }
-     
+
         private static void RegisterSharedServices(this IServiceCollection services)
         {
             services.AddScoped<IMacRepository, MacRepository>();

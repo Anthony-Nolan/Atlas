@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Models
 {
-    public class NormalisedHaplotypeFrequency
+    public class NormalisedHaplotypeFrequency : IModel
     {
         public int Id { get; set; }
 
@@ -40,13 +40,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models
 
         [Required]
         public int CopyNumber { get; set; }
-
-        public static IReadOnlyCollection<string> GetColumnNamesForBulkInsert()
-        {
-            var columns = typeof(NormalisedHaplotypeFrequency).GetProperties().Select(p => p.Name).ToList();
-            columns.Remove(nameof(Id));
-            return columns;
-        }
     }
 
     internal static class NormalisedHaplotypeFrequencyModelBuilder

@@ -18,8 +18,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services
     
     internal class MacExpander : IMacExpander
     {
-        private const char AlleleDelimiter = '/';
-
         /// <inheritdoc />
         public IEnumerable<string> ExpandMac(Mac mac, string firstField)
         {
@@ -31,7 +29,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services
         /// </summary>
         private static IEnumerable<string> ExpandGenericMac(Mac mac, string firstField = null)
         {
-            var secondFields = mac.Hla.Split(AlleleDelimiter);
+            var secondFields = mac.SplitHla;
             return secondFields.Select(secondField => new MolecularAlleleDetails(firstField, secondField).AlleleNameWithoutPrefix).ToList();
         }
 
@@ -41,7 +39,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services
         /// </remarks>
         private static IEnumerable<string> ExpandSpecificMac(Mac mac)
         {
-            return mac.Hla.Split(AlleleDelimiter);
+            return mac.SplitHla;
         }
     }
 }

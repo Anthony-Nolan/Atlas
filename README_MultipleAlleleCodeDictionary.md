@@ -15,7 +15,7 @@ The Multiple Allele Code Dictionary class collects up to date HLA information fr
  
  ### Config Parameters
  
- * `fetchMacImportSettings` (`MacImportSettings`)
+ * `fetchMacDownloadSettings` (`MacDownloadSettings`)
    * `ConnectionString`: (`string`) The connection string to the azure table storage account where you wish to store MACs
    * `TableName`: (`string`) The name of the table in the above account to store this data
    * `MacSourceUrl`: (`string`) The URL for which to download multiple allele codes. This is expected to be a zip file containing exactly one file which contains the MACs in a plain text format.

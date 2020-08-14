@@ -17,7 +17,7 @@
     
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:Import:CronSchedule": "0 0 2 * * *",
-    "MacDictionary:Import:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
+    "MacDictionary:Download:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
     
     "Matching:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",

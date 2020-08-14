@@ -3,7 +3,7 @@
     /// <summary>
     /// Settings only needed for import, but not reading, of the MAC Dictionary.
     /// </summary>
-    public class MacImportSettings
+    public class MacDownloadSettings
     {
         public string MacSourceUrl { get; set; }
     }
