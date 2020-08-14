@@ -126,7 +126,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             }
             catch (HlaMetadataDictionaryException ex)
             {
-                await LogErrorAndSendAlert(file, ex.Message, ex.InnerException?.Message);
+                await LogErrorAndSendAlert(file, $"{ex.Message} Locus: {ex.Locus}, GGroup: { ex.HlaName}", ex.StackTrace);
             }
             catch (Exception ex)
             {
