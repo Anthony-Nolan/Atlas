@@ -12,11 +12,28 @@ namespace Atlas.MatchPrediction.Test.Verification.Controllers
 {
     public class TestHarnessController : ControllerBase
     {
+        private readonly IMacExpander macExpander;
         private readonly ITestHarnessGenerator testHarnessGenerator;
 
-        public TestHarnessController(ITestHarnessGenerator testHarnessGenerator)
+        public TestHarnessController(ITestHarnessGenerator testHarnessGenerator, IMacExpander macExpander)
         {
             this.testHarnessGenerator = testHarnessGenerator;
+            this.macExpander = macExpander;
+        }
+
+        [HttpPost]
+        [Route("expanded-macs")]
+        public async Task ExpandGenericMacs()
+        {
+            try
+            {
+                await macExpander.ExpandLatestGenericMacs();
+
+            }
+            catch (Exception ex)
+            {
+                throw new AtlasHttpException(HttpStatusCode.InternalServerError, "Failed to complete latest MAC expansion.", ex);
+            }
         }
 
         [HttpPost]

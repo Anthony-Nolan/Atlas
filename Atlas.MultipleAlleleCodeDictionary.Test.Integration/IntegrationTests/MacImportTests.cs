@@ -1,15 +1,14 @@
-using System.Linq;
-using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
-using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices.SourceData;
-using Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories;
+using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices;
 using Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NUnit.Framework;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.IntegrationTests
 {

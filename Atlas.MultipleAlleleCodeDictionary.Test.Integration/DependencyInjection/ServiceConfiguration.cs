@@ -6,7 +6,7 @@ using Atlas.Common.Notifications;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
-using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices.SourceData;
+using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories;
 using Microsoft.Extensions.Configuration;
@@ -30,7 +30,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjectio
             services.RegisterMacImport(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
-                OptionsReaderFor<MacImportSettings>()
+                OptionsReaderFor<MacDownloadSettings>()
             );
             services.SetUpIntegrationTestServices();
             services.SetUpMockServices();
@@ -41,7 +41,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjectio
         {
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
-            services.RegisterAsOptions<MacImportSettings>("MacDictionary:Import");
+            services.RegisterAsOptions<MacDownloadSettings>("MacDictionary:Download");
         }
 
         private static void SetUpConfiguration(this IServiceCollection services)

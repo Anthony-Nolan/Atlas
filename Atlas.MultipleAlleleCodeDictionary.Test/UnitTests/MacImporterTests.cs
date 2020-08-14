@@ -7,7 +7,6 @@ using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices;
-using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices.SourceData;
 using Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders;
 using NSubstitute;
 using NUnit.Framework;

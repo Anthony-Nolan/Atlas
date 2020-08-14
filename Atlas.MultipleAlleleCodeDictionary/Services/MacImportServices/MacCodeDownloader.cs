@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 
-namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices.SourceData
+namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices
 {
     internal interface IMacCodeDownloader
     {
@@ -23,10 +23,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices.SourceDa
         private readonly WebClient webClient = new WebClient();
         private readonly string url;
 
-        public MacCodeDownloader(MacImportSettings macImportSettings, ILogger logger)
+        public MacCodeDownloader(MacDownloadSettings macDownloadSettings, ILogger logger)
         {
             this.logger = logger;
-            url = macImportSettings.MacSourceUrl;
+            url = macDownloadSettings.MacSourceUrl;
         }
         
         /// <inheritdoc />

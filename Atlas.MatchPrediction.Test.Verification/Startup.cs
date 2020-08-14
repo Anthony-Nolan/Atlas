@@ -34,7 +34,8 @@ namespace Atlas.MatchPrediction.Test.Verification
                 ConnectionStringReader("MatchPrediction:Sql"),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<MacDictionarySettings>());
+                OptionsReaderFor<MacDictionarySettings>(),
+                OptionsReaderFor<MacDownloadSettings>());
 
             services.ConfigureSwaggerService();
 
@@ -59,6 +60,7 @@ namespace Atlas.MatchPrediction.Test.Verification
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
+            services.RegisterAsOptions<MacDownloadSettings>("MacDictionary:Download");
         }
     }
 }

@@ -53,7 +53,7 @@ namespace Atlas.Functions
             builder.Services.RegisterMacImport(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
-                OptionsReaderFor<MacImportSettings>()
+                OptionsReaderFor<MacDownloadSettings>()
             );
 
             builder.Services.RegisterMatchPredictionServices(
@@ -81,7 +81,7 @@ namespace Atlas.Functions
             // Dictionary components
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
-            services.RegisterAsOptions<MacImportSettings>("MacDictionary:Import");
+            services.RegisterAsOptions<MacDownloadSettings>("MacDictionary:Download");
 
             // Matching Algorithm
             services.RegisterAsOptions<AzureStorageSettings>("Matching:AzureStorage");

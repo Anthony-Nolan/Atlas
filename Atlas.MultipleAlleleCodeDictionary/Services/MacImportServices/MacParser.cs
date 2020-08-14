@@ -1,15 +1,16 @@
-﻿using System;
+﻿using Atlas.Common.ApplicationInsights;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 
 namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices
 {
     internal interface IMacParser
     {
+        public IAsyncEnumerable<Mac> GetMacsAsync(Stream file, string lastMacEntry);
         public Task<List<Mac>> GetMacsSince(Stream file, string lastMacEntry);
     }
 
@@ -20,6 +21,27 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices
         public MacLineParser(ILogger logger)
         {
             this.logger = logger;
+        }
+
+        public async IAsyncEnumerable<Mac> GetMacsAsync(Stream file, string lastMacEntry)
+        {
+            logger.SendTrace($"Parsing MACs since: {lastMacEntry}");
+
+            using (var reader = new StreamReader(file))
+            {
+                ReadToEntry(reader, lastMacEntry);
+                while (!reader.EndOfStream)
+                {
+                    var macLine = (await reader.ReadLineAsync())?.TrimEnd();
+
+                    if (string.IsNullOrWhiteSpace(macLine))
+                    {
+                        continue;
+                    }
+
+                    yield return ParseMac(macLine);
+                }
+            }
         }
 
         /// <inheritdoc />
@@ -54,7 +76,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices
             return new Mac(substrings[1], substrings[2], isGeneric);
         }
 
-        private static void ReadToEntry(StreamReader reader, string entryToReadTo)
+        private static void ReadToEntry(StreamReader reader, string entryToReadTo = null)
         {
             // The first two lines of the NMDP source file contain descriptions, so are discarded
             reader.ReadLine();

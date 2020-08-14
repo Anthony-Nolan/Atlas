@@ -56,18 +56,21 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
                 return;
             }
 
-            var dataTable = BuildDataTable(haplotypeFrequencies);
+            var columnNames = haplotypeFrequencies.GetColumnNamesForBulkInsert();
+            var dataTable = BuildDataTable(haplotypeFrequencies, columnNames);
 
-            using (var sqlBulk = BuildSqlBulkCopy())
+            using (var sqlBulk = BuildSqlBulkCopy(columnNames))
             {
                 await sqlBulk.WriteToServerAsync(dataTable);
             }
         }
 
-        private static DataTable BuildDataTable(IReadOnlyCollection<NormalisedHaplotypeFrequency> haplotypeFrequencies)
+        private static DataTable BuildDataTable(
+            IReadOnlyCollection<NormalisedHaplotypeFrequency> haplotypeFrequencies,
+            IEnumerable<string> columnNames)
         {
             var dataTable = new DataTable();
-            foreach (var columnName in NormalisedHaplotypeFrequency.GetColumnNamesForBulkInsert())
+            foreach (var columnName in columnNames)
             {
                 dataTable.Columns.Add(columnName);
             }
@@ -88,7 +91,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             return dataTable;
         }
 
-        private SqlBulkCopy BuildSqlBulkCopy()
+        private SqlBulkCopy BuildSqlBulkCopy(IEnumerable<string> columnNames)
         {
             var sqlBulk = new SqlBulkCopy(connectionString)
             {
@@ -97,7 +100,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
                 DestinationTableName = nameof(MatchPredictionVerificationContext.NormalisedHaplotypeFrequencies)
             };
 
-            foreach (var columnName in NormalisedHaplotypeFrequency.GetColumnNamesForBulkInsert())
+            foreach (var columnName in columnNames)
             {
                 // Relies on setting up the data table with column names matching the database columns.
                 sqlBulk.ColumnMappings.Add(columnName, columnName);

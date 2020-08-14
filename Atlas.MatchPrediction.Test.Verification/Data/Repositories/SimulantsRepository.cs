@@ -31,9 +31,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
                 return;
             }
 
-            var dataTable = BuildDataTable(simulants);
+            var columnNames = simulants.GetColumnNamesForBulkInsert();
+            var dataTable = BuildDataTable(simulants, columnNames);
 
-            using (var sqlBulk = BuildSqlBulkCopy())
+            using (var sqlBulk = BuildSqlBulkCopy(columnNames))
             {
                 await sqlBulk.WriteToServerAsync(dataTable);
             }
@@ -52,10 +53,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             }
         }
 
-        private static DataTable BuildDataTable(IReadOnlyCollection<Simulant> simulants)
+        private static DataTable BuildDataTable(IReadOnlyCollection<Simulant> simulants, IEnumerable<string> columnNames)
         {
             var dataTable = new DataTable();
-            foreach (var columnName in Simulant.GetColumnNamesForBulkInsert())
+            foreach (var columnName in columnNames)
             {
                 dataTable.Columns.Add(columnName);
             }
@@ -82,7 +83,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             return dataTable;
         }
 
-        private SqlBulkCopy BuildSqlBulkCopy()
+        private SqlBulkCopy BuildSqlBulkCopy(IEnumerable<string> columnNames)
         {
             var sqlBulk = new SqlBulkCopy(connectionString)
             {
@@ -91,7 +92,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
                 DestinationTableName = nameof(MatchPredictionVerificationContext.Simulants)
             };
 
-            foreach (var columnName in Simulant.GetColumnNamesForBulkInsert())
+            foreach (var columnName in columnNames)
             {
                 // Relies on setting up the data table with column names matching the database columns.
                 sqlBulk.ColumnMappings.Add(columnName, columnName);

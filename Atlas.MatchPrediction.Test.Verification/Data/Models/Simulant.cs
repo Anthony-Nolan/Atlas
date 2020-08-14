@@ -9,7 +9,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models
 {
     // ReSharper disable InconsistentNaming
 
-    public class Simulant
+    public class Simulant : IModel
     {
         public int Id { get; set; }
 
@@ -63,13 +63,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models
         /// Only relevant to Masked simulants: Id of simulant whose genotype was masked to generate this phenotype.
         /// </summary>
         public int? SourceSimulantId { get; set; }
-
-        public static IReadOnlyCollection<string> GetColumnNamesForBulkInsert()
-        {
-            var columns = typeof(Simulant).GetProperties().Select(p => p.Name).ToList();
-            columns.Remove(nameof(Id));
-            return columns;
-        }
     }
 
     internal static class SimulantModelBuilder

@@ -10,6 +10,7 @@ using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
 using Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers;
 using Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration;
 using Atlas.MatchPrediction.Test.Verification.Settings;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +26,8 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings
+            Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
+            Func<IServiceProvider, MacDownloadSettings> fetchMacDownloadSettings
         )
         {
             services.RegisterSettings();
@@ -37,6 +39,9 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
                 fetchApplicationInsightsSettings,
                 fetchMacDictionarySettings
             );
+            services.RegisterMacStreamer(
+                fetchApplicationInsightsSettings,
+                fetchMacDownloadSettings);
         }
 
         private static void RegisterSettings(this IServiceCollection services)
@@ -46,6 +51,8 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 
         private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)
         {
+            services.AddScoped<IExpandedMacsRepository, ExpandedMacsRepository>(sp =>
+                new ExpandedMacsRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<INormalisedPoolRepository, NormalisedPoolRepository>(sp =>
                 new NormalisedPoolRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<ISimulantsRepository, SimulantsRepository>(sp =>
@@ -59,6 +66,7 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             this IServiceCollection services, 
             Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString)
         {
+            services.AddScoped<IMacExpander, MacExpander>();
             services.AddScoped<ITestHarnessGenerator, TestHarnessGenerator>();
 
             services.AddScoped<IHaplotypeFrequenciesReader, HaplotypeFrequenciesReader>();
