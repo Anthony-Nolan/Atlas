@@ -18,7 +18,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
     /* ===============================================================
      * ===============================================================
      * ====                README                                 ====
-     * ====     This tests are a small snapshot test.             ====
+     * ====     This test is a small snapshot test.               ====
      * ====     It applies a miscellany of changes to some        ====
      * ====     DB records, and checks that they end up looking   ====
      * ====     the way we expect them to look.                   ====
