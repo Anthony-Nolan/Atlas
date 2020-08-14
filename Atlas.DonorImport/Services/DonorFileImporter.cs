@@ -6,6 +6,8 @@ using Atlas.Common.Notifications;
 using Atlas.Common.Utils;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.Models.FileSchema;
+using Atlas.DonorImport.Validators;
 using MoreLinq.Extensions;
 
 // ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
@@ -56,7 +58,8 @@ namespace Atlas.DonorImport.Services
                 using (var transactionScope = new AsyncTransactionScope())
                 {
                     var donorUpdates = lazyFile.ReadLazyDonorUpdates();
-                    var donorUpdatesToApply = await donorLogService.FilterDonorUpdatesBasedOnUpdateTime(donorUpdates, file.UploadTime);
+                    var searchableDonors = donorUpdates.Where(ValidateDonorIsSearchable);
+                    var donorUpdatesToApply = await donorLogService.FilterDonorUpdatesBasedOnUpdateTime(searchableDonors, file.UploadTime);
                     foreach (var donorUpdateBatch in donorUpdatesToApply.Batch(BatchSize))
                     {
                         var reifiedDonorBatch = donorUpdateBatch.ToList();
@@ -113,6 +116,16 @@ Manual investigation is recommended; see Application Insights for more informati
             await donorImportFileHistoryService.RegisterFailedDonorImportWithPermanentError(file);
             logger.SendTrace(message, LogLevel.Warn);
             await notificationSender.SendAlert(message, description, Priority.Medium, nameof(ImportDonorFile));
+        }
+
+        private bool ValidateDonorIsSearchable(DonorUpdate donorUpdate)
+        {
+            var validationResult = new SearchableDonorValidator().Validate(donorUpdate);
+            if (validationResult.IsValid) return validationResult.IsValid;
+            var message = $"Insufficiently typed donor was not imported - ${donorUpdate.RecordId}";
+            logger.SendTrace(message);
+
+            return validationResult.IsValid;
         }
     }
 }

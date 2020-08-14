@@ -168,5 +168,21 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             await serviceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
             await serviceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessage(default);
         }
+
+        [Test]
+        public async Task ImportDonors_IfMissingMandatoryHlaTypings_DoesNotAddToDatabase()
+        {
+            const string donorCodePrefix = "test-7";
+            var updateBuilder = donorCreationBuilder.WithRecordIdPrefix(donorCodePrefix);
+
+            var donorUpdate = updateBuilder.Build();
+            donorUpdate.Hla.A = null;
+            var file = fileBuilder.WithDonors(donorUpdate).Build();
+
+            await donorFileImporter.ImportDonorFile(file);
+
+            var result = await donorRepository.GetDonor(donorUpdate.RegistryCode);
+            result.Should().BeNull();
+        }
     }
 }
