@@ -69,25 +69,25 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        public async Task GetHaplotypeSet_WhenPatientHasUnrepresentedRegistry_ReturnsDonorsRegistry()
+        public async Task GetHaplotypeSet_WhenPatientHasUnrepresentedRegistry_ReturnsGlobalRegistry()
         {
             var donorInfo = DefaultSpecificPopulation;
             var patientInfo = FrequencySetMetadataBuilder.New.ForRegistry("not-recognised").ForEthnicity(DefaultEthnicityCode).Build();
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            result.PatientSet.RegistryCode.Should().Be(donorInfo.RegistryCode);
+            result.PatientSet.ShouldHaveEquivalentMetadata(GlobalPopulation);
         }
 
         [Test]
-        public async Task GetHaplotypeSet_WhenPatientHasNoRegistryData_ReturnsDonorsRegistry()
+        public async Task GetHaplotypeSet_WhenPatientHasNoRegistryData_ReturnsGlobalRegistry()
         {
             var donorInfo = DefaultSpecificPopulation;
             var patientInfo = FrequencySetMetadataBuilder.New.ForRegistry(null).ForEthnicity(DefaultEthnicityCode).Build();
 
             var result = await service.GetHaplotypeFrequencySets(donorInfo, patientInfo);
 
-            result.PatientSet.RegistryCode.Should().Be(donorInfo.RegistryCode);
+            result.PatientSet.ShouldHaveEquivalentMetadata(GlobalPopulation);
         }
 
         [Test]

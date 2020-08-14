@@ -139,20 +139,10 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         {
             donorInfo ??= new FrequencySetMetadata();
             patientInfo ??= new FrequencySetMetadata();
-
-            // Patients should use the donors registry.
-            patientInfo.RegistryCode ??= donorInfo.RegistryCode;
+            
             var donorSet = await GetSingleHaplotypeFrequencySet(donorInfo);
             var patientSet = await GetSingleHaplotypeFrequencySet(patientInfo);
-
-            // If the patient's registry code was provided but not recognised, patientSet will end up using the global haplotype frequency set.
-            // Instead, use the haplotype frequency set with the donor's registry code, if one was found.
-            if (patientSet.RegistryCode == null && donorSet.RegistryCode != null)
-            {
-                patientInfo.RegistryCode = donorInfo.RegistryCode;
-                patientSet = await GetSingleHaplotypeFrequencySet(patientInfo);
-            }
-
+            
             logger.SendTrace($"Frequency Set Selection: Donor {donorSet.RegistryCode}/{donorSet.EthnicityCode}/{donorSet.Id}");
             logger.SendTrace($"Frequency Set Selection: Patient {patientSet.RegistryCode}/{patientSet.EthnicityCode}/{patientSet.Id}");
 
