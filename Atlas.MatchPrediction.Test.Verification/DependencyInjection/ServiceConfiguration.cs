@@ -15,6 +15,7 @@ using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Atlas.Common.Caching;
 
 namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 {
@@ -33,6 +34,7 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             services.RegisterSettings();
             services.RegisterDatabaseServices(fetchMatchPredictionVerificationSqlConnectionString);
             services.RegisterServices(fetchMatchPredictionSqlConnectionString);
+            services.RegisterLifeTimeScopedCacheTypes();
             services.RegisterHaplotypeFrequenciesReader(fetchMatchPredictionSqlConnectionString);
             services.RegisterHlaMetadataDictionary(
                 fetchHlaMetadataDictionarySettings,
@@ -88,6 +90,7 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             services.AddScoped<IHlaDeleter, HlaDeleter>();
             services.AddScoped<IHlaConverter, HlaConverter>();
             services.AddScoped<IMacBuilder, MacBuilder>();
+            services.AddScoped<IExpandedMacCache, ExpandedMacCache>();
             services.AddScoped<IXxCodeBuilder, XxCodeBuilder>();
         }
     }

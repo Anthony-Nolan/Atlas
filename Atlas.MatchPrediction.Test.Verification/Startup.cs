@@ -2,6 +2,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Test.Verification.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -45,6 +46,9 @@ namespace Atlas.MatchPrediction.Test.Verification
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // Stops the Visual Studio debug window from being flooded with not-very-helpful AI telemetry messages!
+            TelemetryDebugWriter.IsTracingDisabled = true;
+
             app.ConfigureSwagger();
 
             if (env.IsDevelopment())

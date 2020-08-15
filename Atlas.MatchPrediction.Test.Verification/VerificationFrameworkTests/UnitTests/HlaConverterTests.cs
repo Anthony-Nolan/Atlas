@@ -28,11 +28,10 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
             converter = new HlaConverter(hmdFactory);
         }
 
-        [TestCase(TargetHlaCategory.PGroup, 0)]
-        [TestCase(TargetHlaCategory.PGroup, 55)]
-        [TestCase(TargetHlaCategory.Serology, 0)]
-        [TestCase(TargetHlaCategory.Serology, 99)]
-        public async Task ConvertRandomLocusHla_ConvertsCorrectProportionsOfHla(TargetHlaCategory target, int proportion)
+        [Test]
+        public async Task ConvertRandomLocusHla_ConvertsCorrectProportionsOfHla(
+            [Values(TargetHlaCategory.PGroup, TargetHlaCategory.Serology)] TargetHlaCategory target,
+            [Values(0, 50, 100)] int proportion)
         {
             const Locus locus = Locus.A;
             const int simulantCount = 100;

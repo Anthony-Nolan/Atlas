@@ -79,6 +79,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
                     HlaTyping = s.ToPhenotypeInfo().GetLocus(l)
                 }).ToList();
 
+                Debug.WriteLine($"Masking locus: {l}.");
                 return await locusHlaMasker.MaskHla(locusRequest, typings);
             }));
 

@@ -46,7 +46,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 RemainingTypings = new List<SimulantLocusHla>()
             });
 
-            macBuilder.ConvertRandomLocusHlaToMacs(default).ReturnsForAnyArgs(new TransformationResult()
+            macBuilder.ConvertRandomLocusHlaToMacs(default, default).ReturnsForAnyArgs(new TransformationResult()
             {
                 SelectedTypings = new List<SimulantLocusHla>(),
                 RemainingTypings = new List<SimulantLocusHla>()
@@ -257,9 +257,10 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
 
             await locusHlaMasker.MaskHla(requests, typings);
 
-            await macBuilder.Received().ConvertRandomLocusHlaToMacs(Arg.Is<TransformationRequest>(x =>
-                x.ProportionToTransform == maskingProportion &&
-                x.TotalSimulantCount == simulantCount));
+            await macBuilder.Received().ConvertRandomLocusHlaToMacs(
+                Arg.Is<TransformationRequest>(x =>
+                x.ProportionToTransform == maskingProportion && x.TotalSimulantCount == simulantCount),
+                Arg.Any<string>());
         }
 
         [Test]
@@ -337,13 +338,14 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
 
             await hlaDeleter.DidNotReceive().DeleteRandomLocusHla(Arg.Any<TransformationRequest>());
 
-            await xxCodeBuilder.Received(1).ConvertRandomLocusHlaToXxCodes(Arg.Is<TransformationRequest>(x =>
-                x.ProportionToTransform == maskingProportion &&
-                x.TotalSimulantCount == simulantCount));
+            await xxCodeBuilder.Received(1).ConvertRandomLocusHlaToXxCodes(
+                Arg.Is<TransformationRequest>(x =>
+                x.ProportionToTransform == maskingProportion && x.TotalSimulantCount == simulantCount));
 
-            await macBuilder.Received(1).ConvertRandomLocusHlaToMacs(Arg.Is<TransformationRequest>(x =>
-                x.ProportionToTransform == maskingProportion &&
-                x.TotalSimulantCount == simulantCount));
+            await macBuilder.Received(1).ConvertRandomLocusHlaToMacs(
+                Arg.Is<TransformationRequest>(x =>
+                x.ProportionToTransform == maskingProportion && x.TotalSimulantCount == simulantCount), 
+                Arg.Any<string>());
         }
     }
 }

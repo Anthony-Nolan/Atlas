@@ -6,16 +6,22 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
     internal interface IXxCodeBuilder
     {
         Task<TransformationResult> ConvertRandomLocusHlaToXxCodes(TransformationRequest request);
+        string ConvertHlaToXxCode(string hla);
     }
 
     internal class XxCodeBuilder : HlaTransformerBase, IXxCodeBuilder
     {
         public async Task<TransformationResult> ConvertRandomLocusHlaToXxCodes(TransformationRequest request)
         {
-            const string xxCodeSuffix = ":XX";
             return await TransformRandomlySelectedTypings(
                 request, 
-                hlaName => Task.FromResult($"{AlleleSplitter.FirstField(hlaName)}{xxCodeSuffix}"));
+                hlaName => Task.FromResult(ConvertHlaToXxCode(hlaName)));
+        }
+
+        public string ConvertHlaToXxCode(string hlaName)
+        {
+            const string xxCodeSuffix = ":XX";
+            return $"{AlleleSplitter.FirstField(hlaName)}{xxCodeSuffix}";
         }
     }
 }
