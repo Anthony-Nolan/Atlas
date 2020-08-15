@@ -60,7 +60,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
         {
             var allTransformationResults = new List<TransformationResult>();
             var remainingTypings = typings.ToList();
-            var locus = remainingTypings.First().Locus;
 
             foreach (var maskingRequest in request.MaskingRequests.Where(r => r.ProportionToMask > 0))
             {
@@ -92,7 +91,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
                 MaskingCategory.Delete => hlaDeleter.DeleteRandomLocusHla(request),
                 MaskingCategory.PGroup => hlaConverter.ConvertRandomLocusHla(request, hlaNomenclatureVersion, TargetHlaCategory.PGroup),
                 MaskingCategory.Serology => hlaConverter.ConvertRandomLocusHla(request, hlaNomenclatureVersion, TargetHlaCategory.Serology),
-                MaskingCategory.MultipleAlleleCode => macBuilder.ConvertRandomLocusHlaToMacs(request),
+                MaskingCategory.MultipleAlleleCode => macBuilder.ConvertRandomLocusHlaToMacs(request, hlaNomenclatureVersion),
                 MaskingCategory.XxCode => xxCodeBuilder.ConvertRandomLocusHlaToXxCodes(request),
                 _ => throw new ArgumentOutOfRangeException()
             };

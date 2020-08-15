@@ -58,9 +58,11 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
             switch (conversionBehaviour.TargetHlaCategory)
             {
                 case TargetHlaCategory.TwoFieldAlleleIncludingExpressionSuffix:
-                    return await hlaNameToTwoFieldAlleleConverter.ConvertHla(locus, hlaName, ExpressionSuffixBehaviour.Include);
+                    return await hlaNameToTwoFieldAlleleConverter.ConvertHla(
+                        locus, hlaName, ExpressionSuffixBehaviour.Include, conversionBehaviour.HlaNomenclatureVersion);
                 case TargetHlaCategory.TwoFieldAlleleExcludingExpressionSuffix:
-                    return await hlaNameToTwoFieldAlleleConverter.ConvertHla(locus, hlaName, ExpressionSuffixBehaviour.Exclude);
+                    return await hlaNameToTwoFieldAlleleConverter.ConvertHla(
+                        locus, hlaName, ExpressionSuffixBehaviour.Exclude, conversionBehaviour.HlaNomenclatureVersion);
                 case TargetHlaCategory.GGroup:
                     //TODO ATLAS-394: After HMD has been decoupled from Scoring, use appropriate GGroup lookup service
                     return (await GetHlaScoringInfo(locus, hlaName, conversionBehaviour.HlaNomenclatureVersion)).MatchingGGroups.ToList();

@@ -70,7 +70,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             });
 
             await hlaNameToTwoFieldAlleleConverter.Received()
-                .ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Include);
+                .ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Include, Arg.Any<string>());
         }
 
         [Test]
@@ -84,7 +84,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             });
 
             await hlaNameToTwoFieldAlleleConverter.Received()
-                .ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Exclude);
+                .ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Exclude, Arg.Any<string>());
         }
 
         //TODO ATLAS-394: After HMD has been decoupled from Scoring, test using appropriate GGroup lookup service

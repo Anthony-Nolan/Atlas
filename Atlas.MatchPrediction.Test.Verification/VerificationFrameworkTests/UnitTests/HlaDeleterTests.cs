@@ -40,10 +40,8 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
             result.HlaTyping.Position2.Should().BeNull();
         }
 
-        [TestCase(0)]
-        [TestCase(50)]
-        [TestCase(100)]
-        public async Task DeleteRandomLocusHla_DeletesCorrectProportion(int proportion)
+        [Test]
+        public async Task DeleteRandomLocusHla_DeletesCorrectProportion([Values(0, 50, 100)] int proportion)
         {
             const int simulantCount = 100;
 

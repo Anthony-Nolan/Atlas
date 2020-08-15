@@ -6,13 +6,15 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.HLATypings;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
 
 namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
 {
     internal interface IHlaNameToTwoFieldAlleleConverter
     {
-        Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, ExpressionSuffixBehaviour behaviour);
+        Task<IReadOnlyCollection<string>> ConvertHla(
+            Locus locus, string hlaName, ExpressionSuffixBehaviour behaviour, string hlaNomenclatureVersion);
     }
 
     internal enum ExpressionSuffixBehaviour
@@ -26,18 +28,25 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
         private readonly IHlaCategorisationService hlaCategorisationService;
         private readonly IAlleleStringSplitterService alleleStringSplitter;
         private readonly IMacDictionary macDictionary;
+        private readonly IAlleleGroupExpander groupExpander;
 
         public HlaNameToTwoFieldAlleleConverter(
             IHlaCategorisationService hlaCategorisationService,
             IAlleleStringSplitterService alleleStringSplitter,
-            IMacDictionary macDictionary)
+            IMacDictionary macDictionary,
+            IAlleleGroupExpander groupExpander)
         {
             this.hlaCategorisationService = hlaCategorisationService;
             this.alleleStringSplitter = alleleStringSplitter;
             this.macDictionary = macDictionary;
+            this.groupExpander = groupExpander;
         }
 
-        public async Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, ExpressionSuffixBehaviour behaviour)
+        public async Task<IReadOnlyCollection<string>> ConvertHla(
+            Locus locus, 
+            string hlaName, 
+            ExpressionSuffixBehaviour behaviour,
+            string hlaNomenclatureVersion)
         {
             var inputCategory = hlaCategorisationService.GetHlaTypingCategory(hlaName);
 
@@ -46,9 +55,11 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
                 case HlaTypingCategory.Allele:
                     return new List<string> { GetTwoFieldAlleleName(locus, hlaName, behaviour) };
                 case HlaTypingCategory.GGroup:
-                    throw new NotImplementedException("GGroup to Two Field Conversion has not been implemented.");
+                    var gGroupAlleles = await groupExpander.ExpandAlleleGroup(locus, hlaName, hlaNomenclatureVersion);
+                    return GetTwoFieldAlleleNames(locus, gGroupAlleles, behaviour);
                 case HlaTypingCategory.PGroup:
-                    throw new NotImplementedException("PGroup to Two Field Conversion has not been implemented.");
+                    var pGroupAlleles = await groupExpander.ExpandAlleleGroup(locus, hlaName, hlaNomenclatureVersion);
+                    return GetTwoFieldAlleleNames(locus, pGroupAlleles, behaviour);
                 case HlaTypingCategory.AlleleStringOfNames:
                 case HlaTypingCategory.AlleleStringOfSubtypes:
                     var allelesFromAlleleString = alleleStringSplitter.GetAlleleNamesFromAlleleString(hlaName);

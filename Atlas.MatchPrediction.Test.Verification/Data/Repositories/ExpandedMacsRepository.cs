@@ -15,6 +15,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
         Task DeleteCode(string code);
         Task BulkInsert(IReadOnlyCollection<ExpandedMac> macs);
         Task<IEnumerable<string>> SelectCodesBySecondField(string secondField);
+        Task<IEnumerable<string>> SelectSecondFieldsByCode(string code);
     }
 
     internal class ExpandedMacsRepository : IExpandedMacsRepository
@@ -64,11 +65,21 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 
         public async Task<IEnumerable<string>> SelectCodesBySecondField(string secondField)
         {
-            var sql = @$"SELECT Code FROM ExpandedMacs WHERE SecondField = @{nameof(secondField)}";
+            var sql = @$"SELECT Code FROM ExpandedMacs WHERE SecondField = @{nameof(secondField)} ORDER BY Code";
 
             await using (var conn = new SqlConnection(connectionString))
             {
                 return await conn.QueryAsync<string>(sql, new { secondField });
+            }
+        }
+
+        public async Task<IEnumerable<string>> SelectSecondFieldsByCode(string code)
+        {
+            var sql = @$"SELECT SecondField FROM ExpandedMacs WHERE Code = @{nameof(code)} ORDER BY SecondField";
+
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                return await conn.QueryAsync<string>(sql, new { code });
             }
         }
 
