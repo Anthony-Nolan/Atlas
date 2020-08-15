@@ -15,17 +15,24 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
 
     internal class LocusHlaMasker : ILocusHlaMasker
     {
-        private readonly IHlaDeleter hlaDeleter;
+        private readonly ITwoFieldBuilder twoFieldBuilder;
         private readonly IHlaConverter hlaConverter;
         private readonly IMacBuilder macBuilder;
         private readonly IXxCodeBuilder xxCodeBuilder;
+        private readonly IHlaDeleter hlaDeleter;
 
-        public LocusHlaMasker(IHlaDeleter hlaDeleter, IHlaConverter hlaConverter, IMacBuilder macBuilder, IXxCodeBuilder xxCodeBuilder)
+        public LocusHlaMasker(
+            ITwoFieldBuilder twoFieldBuilder,
+            IHlaConverter hlaConverter,
+            IMacBuilder macBuilder,
+            IXxCodeBuilder xxCodeBuilder,
+            IHlaDeleter hlaDeleter)
         {
-            this.hlaDeleter = hlaDeleter;
+            this.twoFieldBuilder = twoFieldBuilder;
             this.hlaConverter = hlaConverter;
             this.macBuilder = macBuilder;
             this.xxCodeBuilder = xxCodeBuilder;
+            this.hlaDeleter = hlaDeleter;
         }
 
         public async Task<IReadOnlyCollection<SimulantLocusHla>> MaskHla(
@@ -88,11 +95,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
         {
             return category switch
             {
-                MaskingCategory.Delete => hlaDeleter.DeleteRandomLocusHla(request),
+                MaskingCategory.TwoField => twoFieldBuilder.ConvertRandomLocusHlaToTwoField(request),
                 MaskingCategory.PGroup => hlaConverter.ConvertRandomLocusHla(request, hlaNomenclatureVersion, TargetHlaCategory.PGroup),
                 MaskingCategory.Serology => hlaConverter.ConvertRandomLocusHla(request, hlaNomenclatureVersion, TargetHlaCategory.Serology),
                 MaskingCategory.MultipleAlleleCode => macBuilder.ConvertRandomLocusHlaToMacs(request, hlaNomenclatureVersion),
                 MaskingCategory.XxCode => xxCodeBuilder.ConvertRandomLocusHlaToXxCodes(request),
+                MaskingCategory.Delete => hlaDeleter.DeleteRandomLocusHla(request),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }

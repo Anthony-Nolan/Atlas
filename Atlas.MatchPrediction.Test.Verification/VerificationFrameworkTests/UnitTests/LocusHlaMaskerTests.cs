@@ -17,24 +17,26 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
     [TestFixture]
     public class LocusHlaMaskerTests
     {
-        private IHlaDeleter hlaDeleter;
+        private ITwoFieldBuilder twoFieldBuilder;
         private IHlaConverter hlaConverter;
         private IMacBuilder macBuilder;
         private IXxCodeBuilder xxCodeBuilder;
+        private IHlaDeleter hlaDeleter;
 
         private ILocusHlaMasker locusHlaMasker;
 
         [SetUp]
         public void SetUp()
         {
-            hlaDeleter = Substitute.For<IHlaDeleter>();
+            twoFieldBuilder = Substitute.For<ITwoFieldBuilder>();
             hlaConverter = Substitute.For<IHlaConverter>();
             macBuilder = Substitute.For<IMacBuilder>();
             xxCodeBuilder = Substitute.For<IXxCodeBuilder>();
-            
-            locusHlaMasker = new LocusHlaMasker(hlaDeleter, hlaConverter, macBuilder, xxCodeBuilder);
+            hlaDeleter = Substitute.For<IHlaDeleter>();
 
-            hlaDeleter.DeleteRandomLocusHla(default).ReturnsForAnyArgs(new TransformationResult()
+            locusHlaMasker = new LocusHlaMasker(twoFieldBuilder, hlaConverter, macBuilder, xxCodeBuilder, hlaDeleter);
+
+            twoFieldBuilder.ConvertRandomLocusHlaToTwoField(default).ReturnsForAnyArgs(new TransformationResult()
             {
                 SelectedTypings = new List<SimulantLocusHla>(),
                 RemainingTypings = new List<SimulantLocusHla>()
@@ -53,6 +55,12 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
             });
 
             xxCodeBuilder.ConvertRandomLocusHlaToXxCodes(default).ReturnsForAnyArgs(new TransformationResult()
+            {
+                SelectedTypings = new List<SimulantLocusHla>(),
+                RemainingTypings = new List<SimulantLocusHla>()
+            });
+
+            hlaDeleter.DeleteRandomLocusHla(default).ReturnsForAnyArgs(new TransformationResult()
             {
                 SelectedTypings = new List<SimulantLocusHla>(),
                 RemainingTypings = new List<SimulantLocusHla>()
@@ -172,6 +180,35 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
 
             await locusHlaMasker.Invoking(async x => await x.MaskHla(requests, typings))
                 .Should().ThrowAsync<ArgumentOutOfRangeException>();
+        }
+
+        [Test]
+        public async Task MaskHla_TwoFieldRequest_ConvertsHlaToRequestedProportions()
+        {
+            const MaskingCategory category = MaskingCategory.TwoField;
+
+            const int maskingProportion = 5;
+            const int simulantCount = 100;
+            const string hlaVersion = "version";
+
+            var typings = SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A).Build(100).ToList();
+
+            var requests = new LocusMaskingRequests
+            {
+                MaskingRequests = MaskingRequestBuilder.New
+                    .WithProportion(maskingProportion)
+                    .WithCategory(category)
+                    .Build(1),
+                HlaNomenclatureVersion = hlaVersion,
+                TotalSimulantCount = simulantCount
+            };
+
+            await locusHlaMasker.MaskHla(requests, typings);
+
+            await twoFieldBuilder.Received().ConvertRandomLocusHlaToTwoField(
+                Arg.Is<TransformationRequest>(x =>
+                    x.ProportionToTransform == maskingProportion &&
+                    x.TotalSimulantCount == simulantCount));
         }
 
         [Test]

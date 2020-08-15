@@ -3,6 +3,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Castle.Core.Internal;
 using System.Linq;
 using System.Threading.Tasks;
+using MoreLinq.Extensions;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
 {
@@ -20,10 +21,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
         }
 
-        /// <returns>Selects the first target typing the HLA converts to, else returns the unmodified HLA if it cannot be converted.
-        /// E.g., An allele has multiple serologies, only the first serology is selected, if <param name="target"/> is Serology.
-        /// E.g., A non-expressing allele will return the original typing, if <param name="target"/> is PGroup or Serology.
-        /// E.g., An expressing allele with no known equivalent serology will return the original allele, if <param name="target"/> is Serology.</returns>
+        /// <returns>Randomly selected target typing that the HLA converts to, else returns the original HLA if conversion not possible.
+        /// E.g., If <param name="target"/> is Serology, and allele has multiple serologies: returns a random serology.
+        /// E.g., If <param name="target"/> is PGroup or Serology, and allele is non-expressing: returns the original allele.
+        /// E.g., If <param name="target"/> is Serology, but the expressing allele has no known equivalent serology: returns the original allele.
+        /// </returns>
         public async Task<TransformationResult> ConvertRandomLocusHla(TransformationRequest request,
             string hlaNomenclatureVersion,
             TargetHlaCategory target)
@@ -38,7 +40,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
 
             return await TransformRandomlySelectedTypings(
                 request,
-                async hla => (await hlaMetadataDictionary.ConvertHla(locus, hla, target)).FirstOrDefault() ?? hla);
+                async hla => (await hlaMetadataDictionary.ConvertHla(locus, hla, target)).Shuffle().FirstOrDefault() ?? hla);
         }
     }
 }

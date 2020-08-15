@@ -1,40 +1,36 @@
 ﻿using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers;
 using Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.TestHelpers;
 using FluentAssertions;
 using NUnit.Framework;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.UnitTests
 {
     [TestFixture]
-    public class XxCodeBuilderTests
+    public class TwoFieldBuilderTests
     {
-        private IXxCodeBuilder xxCodeBuilder;
+        private ITwoFieldBuilder twoFieldBuilder;
 
         [SetUp]
         public void SetUp()
         {
-            xxCodeBuilder = new XxCodeBuilder();
+            twoFieldBuilder = new TwoFieldBuilder();
         }
 
-        [TestCase(":01")]
-        [TestCase(":01:01")]
-        [TestCase(":01:01G")]
-        public async Task ConvertRandomLocusHlaToXxCodes_ConvertsHlaToXxCodes(string hlaSuffix)
+        [TestCase("01:01")]
+        [TestCase("01:01:01")]
+        [TestCase("01:01:01N")]
+        [TestCase("01:01:01G")]
+        public async Task ConvertRandomLocusHlaToTwoField_ConvertsHlaToTwoFields(string hla)
         {
-            const string firstField = "01";
-            const string expectedXxCode = firstField + ":XX";
             const int simulantCount = 1;
 
             // have to use value that looks like a real allele/ G group to pass test
-            var hla = firstField + hlaSuffix;
-            var locusInfo = new LocusInfo<string>(hla);
-
             var typings = SimulantLocusHlaBuilder.New
-                .With(x => x.HlaTyping, locusInfo)
+                .With(x => x.HlaTyping, new LocusInfo<string>(hla))
                 .Build(simulantCount)
                 .ToList();
 
@@ -45,20 +41,52 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 Typings = typings
             };
 
-            var results = await xxCodeBuilder.ConvertRandomLocusHlaToXxCodes(request);
+            var results = await twoFieldBuilder.ConvertRandomLocusHlaToTwoField(request);
             var result = results.SelectedTypings.Single();
 
-            result.HlaTyping.Position1.Should().Be(expectedXxCode);
-            result.HlaTyping.Position2.Should().Be(expectedXxCode);
+            result.HlaTyping.Position1.Should().Be("01:01");
+            result.HlaTyping.Position2.Should().Be("01:01");
+        }
+
+        [TestCase("A")]
+        [TestCase("C")]
+        [TestCase("L")]
+        [TestCase("N")]
+        [TestCase("S")]
+        public async Task ConvertRandomLocusHlaToTwoField_TwoFieldAlleleWithExpressionSuffix_ReturnsOriginalHla(string expressionSuffix)
+        {
+            const int simulantCount = 1;
+
+            // have to use value that looks like a real allele/ G group to pass test
+            const string twoFieldName = "01:01";
+            var hla = twoFieldName + expressionSuffix;
+
+            var typings = SimulantLocusHlaBuilder.New
+                .With(x => x.HlaTyping, new LocusInfo<string>(hla))
+                .Build(simulantCount)
+                .ToList();
+
+            var request = new TransformationRequest
+            {
+                ProportionToTransform = 100,
+                TotalSimulantCount = simulantCount,
+                Typings = typings
+            };
+
+            var results = await twoFieldBuilder.ConvertRandomLocusHlaToTwoField(request);
+            var result = results.SelectedTypings.Single();
+
+            result.HlaTyping.Position1.Should().Be(hla);
+            result.HlaTyping.Position2.Should().Be(hla);
         }
 
         [Test]
-        public async Task ConvertRandomLocusHlaToXxCodes_ConvertsCorrectProportion([Values(0,50,100)] int proportion)
+        public async Task ConvertRandomLocusHlaToTwoField_ConvertsCorrectProportion([Values(0,50,100)] int proportion)
         {
             const int simulantCount = 100;
 
             var typings = SimulantLocusHlaBuilder.New
-                .With(x => x.HlaTyping, new LocusInfo<string>("01:01"))
+                .With(x => x.HlaTyping, new LocusInfo<string>("01:01:01"))
                 .Build(simulantCount)
                 .ToList();
 
@@ -69,7 +97,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 Typings = typings
             };
 
-            var results = await xxCodeBuilder.ConvertRandomLocusHlaToXxCodes(request);
+            var results = await twoFieldBuilder.ConvertRandomLocusHlaToTwoField(request);
 
             // `proportion` value can be used directly as long as `simulantCount` is 100
             results.SelectedTypings.Count.Should().Be(proportion);
@@ -77,12 +105,12 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
         }
 
         [Test]
-        public async Task ConvertRandomLocusHlaToXxCodes_NoOverlapBetweenSelectedAndRemainingTypings()
+        public async Task ConvertRandomLocusHlaToTwoField_NoOverlapBetweenSelectedAndRemainingTypings()
         {
             const int simulantCount = 10;
 
             var typings = SimulantLocusHlaBuilder.New
-                .With(x => x.HlaTyping, new LocusInfo<string>("01:01"))
+                .With(x => x.HlaTyping, new LocusInfo<string>("01:01:01"))
                 .WithIncrementingIds()
                 .Build(simulantCount)
                 .ToList();
@@ -94,7 +122,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 Typings = typings
             };
 
-            var results = await xxCodeBuilder.ConvertRandomLocusHlaToXxCodes(request);
+            var results = await twoFieldBuilder.ConvertRandomLocusHlaToTwoField(request);
             var selected = results.SelectedTypings.Select(x => x.GenotypeSimulantId);
             var remaining = results.RemainingTypings.Select(x => x.GenotypeSimulantId);
 
@@ -102,13 +130,13 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
         }
 
         [Test]
-        public async Task ConvertRandomLocusHlaToXxCodes_DoesNotModifyMetadata()
+        public async Task ConvertRandomLocusHlaToTwoField_DoesNotModifyMetadata()
         {
             const Locus locus = Locus.B;
             const int simulantCount = 1;
 
             var typings = SimulantLocusHlaBuilder.New
-                .With(x => x.HlaTyping, new LocusInfo<string>("01:01"))
+                .With(x => x.HlaTyping, new LocusInfo<string>("01:01:01"))
                 .With(x => x.Locus, locus)
                 .Build(simulantCount)
                 .ToList();
@@ -121,7 +149,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 Typings = typings
             };
 
-            var results = await xxCodeBuilder.ConvertRandomLocusHlaToXxCodes(request);
+            var results = await twoFieldBuilder.ConvertRandomLocusHlaToTwoField(request);
             var result = results.SelectedTypings.Single();
 
             result.Locus.Should().Be(locus);
