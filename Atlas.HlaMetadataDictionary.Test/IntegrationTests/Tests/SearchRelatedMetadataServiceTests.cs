@@ -4,6 +4,7 @@ using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -19,6 +20,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
     {
         private const Locus DefaultLocus = Locus.A;
         private const string CacheKey = "NmdpCodeLookup_A";
+        private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
         private ISearchRelatedMetadataService<IHlaMatchingMetadata> metadataService;
         private IAppCache appCache;
@@ -50,7 +52,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string hlaName = "XYZ:123:INVALID";
 
             Assert.ThrowsAsync<HlaMetadataDictionaryException>(
-                async () => await metadataService.GetHlaMetadata(DefaultLocus, hlaName, null));
+                async () => await metadataService.GetHlaMetadata(DefaultLocus, hlaName, HlaVersion));
         }
 
         [Test]
@@ -60,7 +62,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string macWithFirstField = "9999:FAKE";
 
             Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () => 
-                await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, null));
+                await metadataService.GetHlaMetadata(DefaultLocus, macWithFirstField, HlaVersion));
         }
 
         [Test]
@@ -71,7 +73,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string alleleString = existingAllele + "/" + missingAllele;
 
             Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () =>
-                await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null));
+                await metadataService.GetHlaMetadata(DefaultLocus, alleleString, HlaVersion));
         }
 
         [Test]
@@ -80,7 +82,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             const string alleleString = "01:133/9999";
 
             Assert.ThrowsAsync<HlaMetadataDictionaryException>(async () =>
-                await metadataService.GetHlaMetadata(DefaultLocus, alleleString, null));
+                await metadataService.GetHlaMetadata(DefaultLocus, alleleString, HlaVersion));
         }
     }
 }
