@@ -88,6 +88,7 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             services.AddScoped<IMaskedSimulantsGenerator, MaskedSimulantsGenerator>();
             services.AddScoped<ILocusHlaMasker, LocusHlaMasker>();
             services.AddScoped<IHlaDeleter, HlaDeleter>();
+            services.AddScoped<ITwoFieldBuilder, TwoFieldBuilder>();
             services.AddScoped<IHlaConverter, HlaConverter>();
             services.AddScoped<IMacBuilder, MacBuilder>();
             services.AddScoped<IExpandedMacCache, ExpandedMacCache>();

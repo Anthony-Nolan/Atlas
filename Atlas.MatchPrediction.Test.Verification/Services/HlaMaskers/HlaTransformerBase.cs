@@ -46,7 +46,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
                 HlaTyping = await typing.HlaTyping.MapAsync(locusHlaTransformer)
             }));
         }
-
     }
 
     internal class TransformationRequest
