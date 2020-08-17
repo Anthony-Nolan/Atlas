@@ -116,6 +116,7 @@ jobs:
   dependsOn: Terraform
   variables:
     matching_algorithm_validation_db_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.matching_algorithm_validation_db_connection_string'] ]
+    azure_storage_account_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.azure_storage_account_connection_string'] ]
   pool:
     name: Hosted Ubuntu 1604
   #Your build pipeline references an undefined variable named ‘Parameters.packagesDirectory’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
@@ -247,6 +248,8 @@ jobs:
         arguments: '--no-restore -v d'
 - job: Multiple_Allele_Code_Dictionary_Integration_Tests
   dependsOn: Terraform
+  variables:
+    azure_storage_account_connection_string: $[ dependencies.Terraform.outputs['OutputTFVars.azure_storage_account_connection_string'] ]
   pool:
     name: Hosted Ubuntu 1604
   steps:
@@ -262,7 +265,7 @@ jobs:
         numberOfLevels: 2
         keyname1: MacDictionary
         keyname2: AzureStorageConnectionString
-        valueToSet: '$(AZURE_STORAGE_CONNECTION_STRING)'
+        valueToSet: '$(azure_storage_account_connection_string)'
     - task: DotNetCoreCLI@2
       displayName: 'MacDictionary Integration Tests'
       inputs:
