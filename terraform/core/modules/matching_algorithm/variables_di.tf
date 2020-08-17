@@ -7,31 +7,6 @@ variable "app_service_plan" {
   })
 }
 
-variable "donor_import_sql_database" {
-  type = object({
-    name = string
-  })
-}
-
-variable "mac_import_table" {
-  type = object({
-    name = string
-  })
-}
-
-variable "sql_server" {
-  type = object({
-    name                        = string
-    fully_qualified_domain_name = string
-  })
-}
-
-variable "function_storage" {
-  type = object({
-    primary_connection_string = string
-  })
-}
-
 variable "azure_storage" {
   type = object({
     name                      = string
@@ -45,6 +20,30 @@ variable "application_insights" {
   })
 }
 
+variable "donor_import_sql_database" {
+  type = object({
+    name = string
+  })
+}
+
+variable "shared_function_storage" {
+  type = object({
+    primary_connection_string = string
+  })
+}
+
+variable "mac_import_table" {
+  type = object({
+    name = string
+  })
+}
+
+variable "resource_group" {
+  type = object({
+    name = string
+  })
+}
+
 variable "servicebus_namespace" {
   type = object({
     name = string
@@ -53,16 +52,35 @@ variable "servicebus_namespace" {
 
 variable "servicebus_namespace_authorization_rules" {
   type = object({
-    read-write = object({ primary_connection_string = string })
-    read-only  = object({ primary_connection_string = string })
-    write-only = object({ primary_connection_string = string })
+    read-write = object({
+      primary_connection_string = string
+    })
+    read-only = object({
+      primary_connection_string = string
+    })
+    write-only = object({
+      primary_connection_string = string
+    })
   })
 }
 
 variable "servicebus_topics" {
   type = object({
-    updated-searchable-donors = object({ name = string })
-    alerts                    = object({ name = string })
-    notifications             = object({ name = string })
+    updated-searchable-donors = object({
+      name = string
+    })
+    alerts = object({
+      name = string
+    })
+    notifications = object({
+      name = string
+    })
+  })
+}
+
+variable "sql_server" {
+  type = object({
+    name                        = string
+    fully_qualified_domain_name = string
   })
 }
