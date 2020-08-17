@@ -574,7 +574,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         private DonorImportFile CreateDonorImportFile(Builder<DonorUpdate> builder, string externalCode, string fileName, int order)
         {
             // We want to ensure each donor import is unique so we use order to determine HLA - order should be unique within each test.
-            var donor1 = builder.With(d => d.RecordId, externalCode).WithHomozygousHlaAt(Locus.A, $"*01:{order}").Build();
+            var donor1 = builder
+                .With(d => d.RecordId, externalCode)
+                .WithHomozygousHlaAt(Locus.A, $"*01:{order}").Build();
             var edit = new[]
             {
                 donor1

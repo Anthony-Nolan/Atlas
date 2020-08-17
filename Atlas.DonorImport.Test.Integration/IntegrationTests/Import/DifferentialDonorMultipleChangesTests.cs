@@ -72,7 +72,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
                 createUpdateBuilder.With(d => d.RecordId, "4").WithHomozygousHlaAt(Locus.B, "*01:02").Build(),
                 createUpdateBuilder.With(d => d.RecordId, "5").WithHomozygousHlaAt(Locus.B, "*01:02").Build(),
                 createUpdateBuilder.With(d => d.RecordId, "6").WithHomozygousHlaAt(Locus.A, "*01:03").Build(),
-                createUpdateBuilder.With(d => d.RecordId, "7").WithHla(HlaBuilder.New.WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:03").WithHomozygousMolecularHlaAtLocus(Locus.C, "*01:04").Build()).Build(),
+                createUpdateBuilder.With(d => d.RecordId, "7").WithHla(HlaBuilder.New.WithMolecularHlaAtAllLoci("01:01", "01:01").WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:03").WithHomozygousMolecularHlaAtLocus(Locus.C, "*01:04").Build()).Build(),
                 createUpdateBuilder.With(d => d.RecordId, "8").WithHomozygousHlaAt(Locus.A, "*01:03").Build(),
                 // recordId "9" hasn't been created yet.
             };
@@ -132,7 +132,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
                 //deleteUpdateBuilder.With(d => d.RecordId, "5").Build(),
                 //editUpdateBuilder.With(d => d.RecordId, "6").WithHomozygousHlaAt(Locus.B, "*01:04").Build(), //Note this overriding the A property on the original.
                 //createUpdateBuilder.With(d => d.RecordId, "7").WithHla(HlaBuilder.New.WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:03").WithHomozygousMolecularHlaAtLocus(Locus.C, "*01:04").Build()).Build(),
-                editUpdateBuilder.With(d => d.RecordId, "8").WithHla(HlaBuilder.New.WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:06").WithHomozygousMolecularHlaAtLocus(Locus.B, "*01:07").Build()).Build(),
+                editUpdateBuilder.With(d => d.RecordId, "8").WithHla(HlaBuilder.New.WithMolecularHlaAtAllLoci("01:01", "01:01").WithHomozygousMolecularHlaAtLocus(Locus.A, "*01:06").WithHomozygousMolecularHlaAtLocus(Locus.B, "*01:07").Build()).Build(),
                 // recordId "9" hasn't been created yet.
             };
 
@@ -161,83 +161,76 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
                 .Build();
             await donorFileImporter.ImportDonorFile(moreCreateFile);
 
-
+            const string defaultValidHla = "*01:01";
             var finalDonors = donorRepository.StreamAllDonors().ToList();
             finalDonors.Should().BeEquivalentTo(new[]
                 {
-                    new Donor
-                    {
-                        ExternalDonorCode = "1",
-                        AtlasId = 1,
-                        A_1 = "*01:01",
-                        A_2 = "*01:01",
-                        UpdateFile = "file1"
-                    },
+                    
+                    DatabaseDonorBuilder.New(defaultValidHla)
+                        .With(d => d.ExternalDonorCode, "1")
+                        .With(d => d.A_1,  "*01:01")
+                        .With(d => d.A_2,"*01:01")
+                        .With(d => d.UpdateFile, "file1")
+                        .Build(),
 
                     // ExternalDonorCode "2" got deleted.
                     
-                    new Donor
-                    {
-                        ExternalDonorCode = "3",
-                        AtlasId = -1,
-                        A_1 = "*01:04",
-                        A_2 = "*01:04",
-                        UpdateFile = "file4"
-                    },
-                    new Donor
-                    {
-                        ExternalDonorCode = "4",
-                        AtlasId = -1,
-                        C_1 = "*01:11",
-                        C_2 = "*01:11",
-                        UpdateFile = "file5"
-                    },
+                    DatabaseDonorBuilder.New(defaultValidHla)
+                        .With(d => d.ExternalDonorCode, "3")
+                        .With(d => d.A_1,  "*01:04")
+                        .With(d => d.A_2,"*01:04")
+                        .With(d => d.UpdateFile, "file4")
+                        .Build(),
+                    
+                    DatabaseDonorBuilder.New(defaultValidHla)
+                        .With(d => d.ExternalDonorCode, "4")
+                        .With(d => d.C_1,  "*01:11")
+                        .With(d => d.C_2,"*01:11")
+                        .With(d => d.UpdateFile, "file5")
+                        .Build(),
 
                     // ExternalDonorCode "5" got deleted.
                     
-                    new Donor
-                    {
-                        ExternalDonorCode = "6",
-                        AtlasId = -1,
-                        B_1 = "*01:04",
-                        B_2 = "*01:04",
-                        UpdateFile = "file2"
-                    },
-                    new Donor
-                    {
-                        ExternalDonorCode = "7",
-                        AtlasId = -1,
-                        A_1 = "*01:03",
-                        A_2 = "*01:03",
-                        C_1 = "*01:04",
-                        C_2 = "*01:04",
-                        UpdateFile = "file1"
-                    },
-                    new Donor
-                    {
-                        ExternalDonorCode = "8",
-                        AtlasId = -1,
-                        A_1 = "*01:06",
-                        A_2 = "*01:06",
-                        B_1 = "*01:07",
-                        B_2 = "*01:07",
-                        UpdateFile = "file4"
-                    },
-                    new Donor
-                    {
-                        ExternalDonorCode = "9",
-                        AtlasId = -1,
-                        C_1 = "*01:10",
-                        C_2 = "*01:10",
-                        UpdateFile = "file5"
-                    },
+                    DatabaseDonorBuilder.New(defaultValidHla)
+                        .With(d => d.ExternalDonorCode, "6")
+                        .With(d => d.B_1,  "*01:04")
+                        .With(d => d.B_2,"*01:04")
+                        .With(d => d.UpdateFile, "file2")
+                        .Build(),
+
+                    DatabaseDonorBuilder.New(defaultValidHla)
+                        .With(d => d.ExternalDonorCode, "7")
+                        .With(d => d.A_1,  "*01:03")
+                        .With(d => d.A_2,"*01:03")
+                        .With(d => d.C_1,  "*01:04")
+                        .With(d => d.C_2,"*01:04")
+                        .With(d => d.UpdateFile, "file1")
+                        .Build(),
+                    
+                    DatabaseDonorBuilder.New(defaultValidHla)
+                        .With(d => d.ExternalDonorCode, "8")
+                        .With(d => d.A_1,  "*01:06")
+                        .With(d => d.A_2,"*01:06")
+                        .With(d => d.B_1,  "*01:07")
+                        .With(d => d.B_2,"*01:07")
+                        .With(d => d.UpdateFile, "file4")
+                        .Build(),
+                    
+                    DatabaseDonorBuilder.New(defaultValidHla)
+                        .With(d => d.ExternalDonorCode, "9")
+                        .With(d => d.C_1,  "*01:10")
+                        .With(d => d.C_2,"*01:10")
+                        .With(d => d.UpdateFile, "file5")
+                        .Build(),
                 },
                 options =>
                     options
                         .Excluding(dbDonor => dbDonor.AtlasId)
                         .Excluding(dbDonor => dbDonor.Hash)
                         .Excluding(dbDonor => dbDonor.LastUpdated)
+                        .ExcludingMissingMembers()
            );
         }
+        
     }
 }
