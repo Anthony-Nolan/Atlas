@@ -9,6 +9,7 @@
   },
   "extensions": {
     "durableTask": {
+      "hubName": "AtlasFunctionsHub"
     }
   },
   "functionTimeout": "23:00:00"
