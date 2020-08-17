@@ -84,6 +84,10 @@ Once terraform has created ATLAS resources for the first time, certain actions m
   - Master host keys for any functions with Webhooks are necessary for setting up the webhook
     - The webhooks terraform script will fetch these values itself. 
     - The first terraform script must be run first, as it will create the functions and allow the second to fetch the host keys.
+- Elastic Service Plan - minimum instance count. (optional)
+    - TODO: ATLAS-667: Remove this once terraformed
+    - This is currently not supported by terraform, but to allow a pre-warmed instance count, we must have a minimum instance count. 
+    - Manually set the minimum instance count on all elastic app service plans to be at least as high as the pre-warmed instance count
 - Azure SQL Permissions
   - Service Accounts
     - Each service (e.g. matching) within ATLAS should have a service account created on the appropriate databases. The username and password for such accounts should then be set as a variable in the release pipeline.
