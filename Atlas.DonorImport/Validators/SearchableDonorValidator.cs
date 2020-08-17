@@ -1,4 +1,5 @@
-﻿using Atlas.DonorImport.Models.FileSchema;
+﻿using System.Data;
+using Atlas.DonorImport.Models.FileSchema;
 using FluentValidation;
 
 namespace Atlas.DonorImport.Validators
@@ -9,7 +10,7 @@ namespace Atlas.DonorImport.Validators
         {
             RuleFor(d => d.Hla)
                 .SetValidator(new SearchableHlaValidator())
-                .When(d => d.ChangeType == ImportDonorChangeType.Create || d.ChangeType == ImportDonorChangeType.Edit );
+                .When(d => d.ChangeType == ImportDonorChangeType.Create || d.ChangeType == ImportDonorChangeType.Edit);
         }
     }
 
@@ -17,22 +18,27 @@ namespace Atlas.DonorImport.Validators
     {
         public SearchableHlaValidator()
         {
-            RuleFor(h => h.A).NotEmpty().SetValidator(new ImportedLocusValidator());
-            RuleFor(h => h.B).NotEmpty().SetValidator(new ImportedLocusValidator());
-            RuleFor(h => h.DRB1).NotEmpty().SetValidator(new ImportedLocusValidator());
+            RuleFor(h => h.A).NotEmpty().SetValidator(new RequiredImportedLocusValidator());
+            RuleFor(h => h.B).NotEmpty().SetValidator(new RequiredImportedLocusValidator());
+            RuleFor(h => h.DRB1).NotEmpty().SetValidator(new RequiredImportedLocusValidator());
         }
     }
 
-    internal class ImportedLocusValidator : AbstractValidator<ImportedLocus>
+    internal class RequiredImportedLocusValidator : AbstractValidator<ImportedLocus>
     {
-        public ImportedLocusValidator()
+        public RequiredImportedLocusValidator()
         {
-            RuleFor(l => l.Dna).NotEmpty().SetValidator(new TwoFieldStringValidator());
+            RuleFor(l => l.Dna)
+                .NotEmpty()
+                .SetValidator(new RequiredTwoFieldStringValidator()).OnAnyFailure((l) =>
+                {
+                    RuleFor(locus => locus.Serology).NotEmpty().SetValidator(new RequiredTwoFieldStringValidator());
+                });
         }   
     }
-    internal class TwoFieldStringValidator : AbstractValidator<TwoFieldStringData>
+    internal class RequiredTwoFieldStringValidator : AbstractValidator<TwoFieldStringData>
     {
-        public TwoFieldStringValidator()
+        public RequiredTwoFieldStringValidator()
         {
             RuleFor(d => d.Field1).NotEmpty();
             RuleFor(d => d.Field2).NotEmpty();

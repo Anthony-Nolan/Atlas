@@ -184,7 +184,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
         
         [Test]
-        public async Task ImportDonors_IfMissingHlaHasNullValues_DoesNotAddToDatabase()
+        public async Task ImportDonors_IfRequiredLocusHasNullHlaValues_DoesNotAddToDatabase()
         {
             var donorUpdate = donorCreationBuilder.Build();
             
@@ -226,7 +226,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
         
         [Test]
-        public async Task ImportDonors_IfDeleteDonorHasInvalidHla_DonorIsStillDeleted()
+        public async Task ImportDonors_ForDonorDeletion_WithInvalidHla_DonorIsStillDeleted()
         {
             var donorUpdate = donorCreationBuilder.Build();
             var validFile = fileBuilder.WithDonors(donorUpdate).Build();
