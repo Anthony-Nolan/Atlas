@@ -159,7 +159,7 @@ jobs:
       numberOfLevels: 2
       keyname1: AzureStorage
       keyname2: ConnectionString
-      valueToSet: '$(AZURE_STORAGE_CONNECTION_STRING)'
+      valueToSet: '$(azure_storage_account_connection_string)'
       
   - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
     displayName: 'Set MAC Dictionary ConnectionString'
@@ -168,7 +168,7 @@ jobs:
       numberOfLevels: 2
       keyname1: MacDictionary
       keyname2: AzureStorageConnectionString
-      valueToSet: '$(AZURE_STORAGE_CONNECTION_STRING)'
+      valueToSet: '$(azure_storage_account_connection_string)'
       
   - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
     displayName: 'Set HLA Metadata Dictionary ConnectionString'
@@ -177,7 +177,7 @@ jobs:
       numberOfLevels: 2
       keyname1: HlaMetadataDictionary
       keyname2: AzureStorageConnectionString
-      valueToSet: '$(AZURE_STORAGE_CONNECTION_STRING)'
+      valueToSet: '$(azure_storage_account_connection_string)'
 
   - task: bendayconsulting.build-task.setjsonvalue.setjsonvalue@1
     displayName: 'Set Notification Service Bus ConnectionString'
