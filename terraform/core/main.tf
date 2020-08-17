@@ -96,12 +96,12 @@ module "match_prediction" {
     common_tags = local.common_tags
   }
 
-  app_service_plan     = azurerm_app_service_plan.atlas
-  sql_server           = azurerm_sql_server.atlas_sql_server
-  function_storage     = azurerm_storage_account.function_storage
-  mac_import_table     = module.multiple_allele_code_lookup.storage_table
-  azure_storage        = azurerm_storage_account.azure_storage
-  application_insights = azurerm_application_insights.atlas
+  app_service_plan        = azurerm_app_service_plan.atlas
+  sql_server              = azurerm_sql_server.atlas_sql_server
+  shared_function_storage = azurerm_storage_account.function_storage
+  mac_import_table        = module.multiple_allele_code_lookup.storage_table
+  azure_storage           = azurerm_storage_account.azure_storage
+  application_insights    = azurerm_application_insights.atlas
 
 
   servicebus_namespace_authorization_rules = {
@@ -134,12 +134,12 @@ module "donor_import" {
 
   default_servicebus_settings = local.service-bus
 
-  app_service_plan     = azurerm_app_service_plan.atlas
-  application_insights = azurerm_application_insights.atlas
-  azure_storage        = azurerm_storage_account.azure_storage
-  function_storage     = azurerm_storage_account.function_storage
-  servicebus_namespace = azurerm_servicebus_namespace.general
-  sql_server           = azurerm_sql_server.atlas_sql_server
+  app_service_plan        = azurerm_app_service_plan.atlas
+  application_insights    = azurerm_application_insights.atlas
+  azure_storage           = azurerm_storage_account.azure_storage
+  shared_function_storage = azurerm_storage_account.function_storage
+  servicebus_namespace    = azurerm_servicebus_namespace.general
+  sql_server              = azurerm_sql_server.atlas_sql_server
 
   servicebus_namespace_authorization_rules = {
     write-only = azurerm_servicebus_namespace_authorization_rule.write-only
