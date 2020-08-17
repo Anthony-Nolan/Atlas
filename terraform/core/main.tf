@@ -47,9 +47,10 @@ module "matching_algorithm" {
   donor_import_sql_database = module.donor_import.sql_database
   mac_import_table          = module.multiple_allele_code_lookup.storage_table
   sql_server                = azurerm_sql_server.atlas_sql_server
-  function_storage          = azurerm_storage_account.function_storage
+  shared_function_storage   = azurerm_storage_account.function_storage
   azure_storage             = azurerm_storage_account.azure_storage
   application_insights      = azurerm_application_insights.atlas
+  resource_group            = azurerm_resource_group.atlas_resource_group
   servicebus_namespace      = azurerm_servicebus_namespace.general
 
   servicebus_namespace_authorization_rules = {
