@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 
-namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices
+namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImport
 {
     internal interface IMacCodeDownloader
     {

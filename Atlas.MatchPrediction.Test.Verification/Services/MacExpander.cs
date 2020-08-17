@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
+using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services
 {
@@ -15,11 +16,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
         /// Expands and stores latest generic codes not already in the database.
         /// </summary>
         /// <returns></returns>
-        Task ExpandLatestGenericMacs();
+        Task ExpandAndStoreLatestGenericMacs();
     }
 
     internal class MacExpander : IMacExpander
     {
+        private const int BatchSize = 1000;
         private readonly IMacStreamer macStreamer;
         private readonly IExpandedMacsRepository repository;
 
@@ -29,35 +31,24 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
             this.repository = repository;
         }
 
-        public async Task ExpandLatestGenericMacs()
+        public async Task ExpandAndStoreLatestGenericMacs()
         {
-            var macs = await DownloadLatestMacsAsync();
+            var genericMacs = await StreamLatestGenericMacs();
 
-            const int bulkInsertPoint = 1000;
             var macCounter = 0;
             var expanded = new List<ExpandedMac>();
-            await foreach (var mac in macs)
+            await foreach (var mac in genericMacs)
             {
-                if (!mac.IsGeneric)
-                {
-                    continue;
-                }
-
-                macCounter++;
-
                 Debug.WriteLine($"Expanding code: {mac.Code}.");
 
-                expanded.AddRange(mac.SplitHla.Select(secondField => new ExpandedMac
-                {
-                    SecondField = secondField,
-                    Code = mac.Code
-                }));
+                expanded.AddRange(Expand(mac));
+                macCounter++;
 
-                if (macCounter == bulkInsertPoint)
+                if (macCounter == BatchSize)
                 {
                     await repository.BulkInsert(expanded);
-                    macCounter = 0;
                     expanded = new List<ExpandedMac>();
+                    macCounter = 0;
                 }
             }
 
@@ -67,15 +58,30 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
             }
         }
 
-        private async Task<IAsyncEnumerable<Mac>> DownloadLatestMacsAsync()
+        private async Task<IAsyncEnumerable<Mac>> StreamLatestGenericMacs()
         {
-            // this block handles possibility that rows for the last code may not
-            // have all been successfully inserted, e.g., in case of service interruption
-            var lastCode = await repository.GetLastCodeInserted();
-            await repository.DeleteCode(lastCode);
-            var newLastCode = await repository.GetLastCodeInserted();
+            var lastCode = await GetLastStoredCode();
+            return (await macStreamer.StreamMacsSince(lastCode)).Where(m => m.IsGeneric);
+        }
 
-            return await macStreamer.StreamLatestMacsAsync(newLastCode);
+        private async Task<string> GetLastStoredCode()
+        {
+            var lastCode = await repository.GetLastCodeInserted();
+
+            // It's possible that rows for the last code may not have all been successfully inserted.
+            // E.g., In case of service interruption. So it is safer to delete them before importing the latest codes.
+            await repository.DeleteCode(lastCode);
+
+            return await repository.GetLastCodeInserted();
+        }
+
+        private static IEnumerable<ExpandedMac> Expand(Mac mac)
+        {
+            return AlleleStringSplitter.SplitAlleleString(mac.Hla).Select(secondField => new ExpandedMac
+            {
+                SecondField = secondField,
+                Code = mac.Code
+            });
         }
     }
 }

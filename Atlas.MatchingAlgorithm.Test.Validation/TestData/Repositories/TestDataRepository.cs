@@ -74,7 +74,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
 
         public IEnumerable<Donor> GetDonors(IEnumerable<int> donorIds)
         {
-            return context.Donors.Where(d => donorIds.Contains(d.DonorId));
+            return context.Donors.AsQueryable().Where(d => donorIds.Contains(d.DonorId));
         }
 
         private void RemoveTestData()

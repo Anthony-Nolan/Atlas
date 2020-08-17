@@ -1,7 +1,7 @@
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface;
-using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices;
+using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
 using Atlas.MultipleAlleleCodeDictionary.Test.TestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;

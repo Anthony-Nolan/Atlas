@@ -1,17 +1,18 @@
-﻿using Atlas.Common.ApplicationInsights;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 
-namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices
+namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImport
 {
     internal interface IMacParser
     {
-        public IAsyncEnumerable<Mac> GetMacsAsync(Stream file, string lastMacEntry);
-        public Task<List<Mac>> GetMacsSince(Stream file, string lastMacEntry);
+        /// <summary>
+        /// Lazily streams MACs added to NMDP source since <paramref name="lastMacEntry"/>.
+        /// </summary>
+        public IAsyncEnumerable<Mac> StreamMacsSince(Stream file, string lastMacEntry);
     }
 
     internal class MacLineParser : IMacParser
@@ -23,7 +24,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices
             this.logger = logger;
         }
 
-        public async IAsyncEnumerable<Mac> GetMacsAsync(Stream file, string lastMacEntry)
+        public async IAsyncEnumerable<Mac> StreamMacsSince(Stream file, string lastMacEntry)
         {
             logger.SendTrace($"Parsing MACs since: {lastMacEntry}");
 
@@ -44,31 +45,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices
             }
         }
 
-        /// <inheritdoc />
-        public async Task<List<Mac>> GetMacsSince(Stream file, string lastMacEntry)
-        {
-            logger.SendTrace($"Parsing MACs since: {lastMacEntry}");
-            var macCodes = new List<Mac>();
-
-            using (var reader = new StreamReader(file))
-            {
-                ReadToEntry(reader, lastMacEntry);
-                while (!reader.EndOfStream)
-                {
-                    var macLine = (await reader.ReadLineAsync())?.TrimEnd();
-
-                    if (string.IsNullOrWhiteSpace(macLine))
-                    {
-                        continue;
-                    }
-
-                    macCodes.Add(ParseMac(macLine));
-                }
-            }
-
-            return macCodes;
-        }
-
         private static Mac ParseMac(string macString)
         {
             var substrings = macString.Split('\t');
@@ -76,7 +52,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices
             return new Mac(substrings[1], substrings[2], isGeneric);
         }
 
-        private static void ReadToEntry(StreamReader reader, string entryToReadTo = null)
+        private static void ReadToEntry(StreamReader reader, string entryToReadTo)
         {
             // The first two lines of the NMDP source file contain descriptions, so are discarded
             reader.ReadLine();

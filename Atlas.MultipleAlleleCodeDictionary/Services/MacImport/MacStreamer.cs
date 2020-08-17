@@ -1,16 +1,15 @@
-﻿using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
-using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices;
-using Polly;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
+using Polly;
 
-namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
+namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImport
 {
-    public interface IMacStreamer
+    internal interface IMacStreamer
     {
-        Task<IAsyncEnumerable<Mac>> StreamLatestMacsAsync(string lastMacEntry);
+        Task<IAsyncEnumerable<Mac>> StreamMacsSince(string lastMacEntry);
     }
 
     internal class MacStreamer : IMacStreamer
@@ -24,11 +23,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
             this.macParser = macParser;
         }
 
-        public async Task<IAsyncEnumerable<Mac>> StreamLatestMacsAsync(string lastMacEntry)
+        public async Task<IAsyncEnumerable<Mac>> StreamMacsSince(string lastMacEntry)
         {
             // do not wrap in `using` statement else stream will be disposed before being read!
             var macStream = await DownloadMacs();
-            return macParser.GetMacsAsync(macStream, lastMacEntry);
+            return macParser.StreamMacsSince(macStream, lastMacEntry);
         }
 
         private async Task<Stream> DownloadMacs()

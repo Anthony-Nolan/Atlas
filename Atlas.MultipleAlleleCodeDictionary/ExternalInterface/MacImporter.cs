@@ -1,11 +1,8 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
-using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices;
-using Polly;
+using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
 using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
@@ -19,16 +16,14 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
     internal class MacImporter : IMacImporter
     {
         private readonly IMacRepository macRepository;
-        private readonly IMacParser macParser;
+        private readonly IMacStreamer macStreamer;
         private readonly ILogger logger;
-        private readonly IMacCodeDownloader macCodeDownloader;
 
-        public MacImporter(IMacRepository macRepository, IMacParser macParser, ILogger logger, IMacCodeDownloader macCodeDownloader)
+        public MacImporter(IMacRepository macRepository, IMacStreamer macStreamer, ILogger logger)
         {
             this.macRepository = macRepository;
-            this.macParser = macParser;
+            this.macStreamer = macStreamer;
             this.logger = logger;
-            this.macCodeDownloader = macCodeDownloader;
         }
 
         public async Task RecreateMacTable()
@@ -46,11 +41,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
                 var lastEntryBeforeInsert = await macRepository.GetLastMacEntry();
                 logger.SendTrace($"{tracePrefix}The last MAC entry found was: {lastEntryBeforeInsert}");
 
-                List<Mac> newMacs;
-                await using (var macStream = await DownloadMacs())
-                {
-                    newMacs = await macParser.GetMacsSince(macStream, lastEntryBeforeInsert);
-                }
+                var newMacs = await (await macStreamer.StreamMacsSince(lastEntryBeforeInsert)).ToListAsync();
 
                 logger.SendTrace($"{tracePrefix}Attempting to insert {newMacs.Count} new MACs");
                 await macRepository.InsertMacs(newMacs);
@@ -62,12 +53,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
             }
 
             logger.SendTrace($"{tracePrefix}Successfully finished MAC Import");
-        }
-
-        private async Task<Stream> DownloadMacs()
-        {
-            var retryPolicy = Policy.Handle<Exception>().Retry(3);
-            return await retryPolicy.Execute(async () => await macCodeDownloader.DownloadAndUnzipStream());
         }
     }
 }

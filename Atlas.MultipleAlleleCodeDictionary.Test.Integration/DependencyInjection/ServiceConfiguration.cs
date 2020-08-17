@@ -6,7 +6,7 @@ using Atlas.Common.Notifications;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
-using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices;
+using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Test.Integration.Repositories;
 using Microsoft.Extensions.Configuration;

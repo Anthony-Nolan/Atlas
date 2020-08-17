@@ -1,14 +1,14 @@
-﻿using System;
+﻿using Atlas.Common.GeneticData.Hla.Models;
+using System;
 using System.Collections.Generic;
-using System.Net;
-using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.Common.GeneticData.Hla.Services.AlleleStringSplitters;
-using Atlas.Common.Utils.Http;
 
 namespace Atlas.Common.GeneticData.Hla.Services
 {
     public interface IAlleleStringSplitterService
     {
+        /// <summary>
+        /// Categorises the <paramref name="alleleString"/> and then applies appropriate allele string splitter.
+        /// </summary>
         IEnumerable<string> GetAlleleNamesFromAlleleString(string alleleString);
     }
 
@@ -24,37 +24,13 @@ namespace Atlas.Common.GeneticData.Hla.Services
         public IEnumerable<string> GetAlleleNamesFromAlleleString(string alleleString)
         {
             var typingCategory = categorisationService.GetHlaTypingCategory(alleleString);
-            AlleleStringSplitterBase splitter;
 
-            switch (typingCategory)
+            return typingCategory switch
             {
-                case HlaTypingCategory.AlleleStringOfNames:
-                    splitter = new AlleleStringOfNamesSplitter();
-                    break;
-                case HlaTypingCategory.AlleleStringOfSubtypes:
-                    splitter = new AlleleStringOfSubtypesSplitter();
-                    break;
-                default:
-                    throw new AtlasHttpException(
-                        HttpStatusCode.BadRequest,
-                        $"Hla typing is of category {typingCategory}; please submit an allele string.",
-                        new ArgumentException());
-            }
-
-            IEnumerable<string> alleleNames;
-            try
-            {
-                alleleNames = splitter.GetAlleleNamesFromAlleleString(alleleString);
-            }
-            catch (Exception ex)
-            {
-                throw new AtlasHttpException(
-                    HttpStatusCode.BadRequest,
-                    "Could not split the submitted allele string.",
-                    ex);
-            }
-
-            return alleleNames;
+                HlaTypingCategory.AlleleStringOfNames => AlleleStringSplitter.SplitAlleleStringOfNamesToAlleleNames(alleleString),
+                HlaTypingCategory.AlleleStringOfSubtypes => AlleleStringSplitter.SplitAlleleStringOfSubtypesToAlleleNames(alleleString),
+                _ => throw new ArgumentOutOfRangeException($"Hla typing is of category {typingCategory}; please submit an allele string.")
+            };
         }
     }
 }

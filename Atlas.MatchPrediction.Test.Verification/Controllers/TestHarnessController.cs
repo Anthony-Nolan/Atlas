@@ -27,7 +27,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Controllers
         {
             try
             {
-                await macExpander.ExpandLatestGenericMacs();
+                await macExpander.ExpandAndStoreLatestGenericMacs();
 
             }
             catch (Exception ex)
