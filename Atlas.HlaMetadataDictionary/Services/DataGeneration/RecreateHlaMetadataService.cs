@@ -24,6 +24,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
         private readonly IHlaScoringMetadataRepository hlaScoringMetadataRepository;
         private readonly IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository;
         private readonly IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository;
+        private readonly IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository;
         private readonly ILogger logger;
 
         public RecreateHlaMetadataService(
@@ -33,6 +34,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             IHlaScoringMetadataRepository hlaScoringMetadataRepository,
             IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository,
             IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository,
+            IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository,
             ILogger logger)
         {
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
@@ -41,6 +43,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             this.hlaScoringMetadataRepository = hlaScoringMetadataRepository;
             this.dpb1TceGroupsMetadataRepository = dpb1TceGroupsMetadataRepository;
             this.alleleGroupsMetadataRepository = alleleGroupsMetadataRepository;
+            this.gGroupToPGroupMetadataRepository = gGroupToPGroupMetadataRepository;
             this.logger = logger;
         }
 
@@ -69,7 +72,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
                 hlaMatchingMetadataRepository.RecreateHlaMetadataTable(metadataCollection.HlaMatchingMetadata, hlaNomenclatureVersion),
                 hlaScoringMetadataRepository.RecreateHlaMetadataTable(metadataCollection.HlaScoringMetadata, hlaNomenclatureVersion),
                 dpb1TceGroupsMetadataRepository.RecreateHlaMetadataTable(metadataCollection.Dpb1TceGroupMetadata, hlaNomenclatureVersion),
-                alleleGroupsMetadataRepository.RecreateHlaMetadataTable(metadataCollection.AlleleGroupMetadata, hlaNomenclatureVersion)
+                alleleGroupsMetadataRepository.RecreateHlaMetadataTable(metadataCollection.AlleleGroupMetadata, hlaNomenclatureVersion),
+                gGroupToPGroupMetadataRepository.RecreateHlaMetadataTable(metadataCollection.GGroupToPGroupMetadata, hlaNomenclatureVersion)
             );
         }
     }
