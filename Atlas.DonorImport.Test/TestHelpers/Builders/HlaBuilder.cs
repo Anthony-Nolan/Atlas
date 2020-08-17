@@ -22,6 +22,7 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
 
         internal static Builder<ImportedHla> WithHomozygousMolecularHlaAtAllLoci(this Builder<ImportedHla> builder, string field) => builder.WithMolecularHlaAtAllLoci(field, field);
         internal static Builder<ImportedHla> WithHomozygousMolecularHlaAtLocus(this Builder<ImportedHla> builder, Locus locus, string field) => builder.WithMolecularHlaAtLocus(locus, field, field);
+        internal static Builder<ImportedHla> WithValidHlaAtAllLoci(this Builder<ImportedHla> builder) => builder.WithMolecularHlaAtAllLoci("01:01", "01:01");
         
         internal static Builder<ImportedHla> WithMolecularHlaAtAllLoci(this Builder<ImportedHla> builder, string field1, string field2) =>
             builder

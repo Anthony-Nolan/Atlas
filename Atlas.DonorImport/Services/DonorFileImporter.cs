@@ -121,7 +121,10 @@ Manual investigation is recommended; see Application Insights for more informati
         private bool ValidateDonorIsSearchable(DonorUpdate donorUpdate)
         {
             var validationResult = new SearchableDonorValidator().Validate(donorUpdate);
-            if (validationResult.IsValid) return validationResult.IsValid;
+            if (validationResult.IsValid)
+            {
+                return validationResult.IsValid;
+            }
             var message = $"Insufficiently typed donor was not imported - ${donorUpdate.RecordId}";
             logger.SendTrace(message);
 
