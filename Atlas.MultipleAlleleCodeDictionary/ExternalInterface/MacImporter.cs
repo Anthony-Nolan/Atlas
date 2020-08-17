@@ -1,11 +1,10 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
-using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices;
-using Polly;
+using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
+using Dasync.Collections;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
@@ -18,17 +17,18 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
 
     internal class MacImporter : IMacImporter
     {
-        private readonly IMacRepository macRepository;
-        private readonly IMacParser macParser;
-        private readonly ILogger logger;
-        private readonly IMacCodeDownloader macCodeDownloader;
+        private const string TracePrefix = "Mac Import: ";
+        private const int BatchSize = 100;
 
-        public MacImporter(IMacRepository macRepository, IMacParser macParser, ILogger logger, IMacCodeDownloader macCodeDownloader)
+        private readonly IMacRepository macRepository;
+        private readonly IMacFetcher macFetcher;
+        private readonly ILogger logger;
+
+        public MacImporter(IMacRepository macRepository, IMacFetcher macFetcher, ILogger logger)
         {
             this.macRepository = macRepository;
-            this.macParser = macParser;
+            this.macFetcher = macFetcher;
             this.logger = logger;
-            this.macCodeDownloader = macCodeDownloader;
         }
 
         public async Task RecreateMacTable()
@@ -39,35 +39,29 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
 
         public async Task ImportLatestMacs()
         {
-            const string tracePrefix = "Mac Import: ";
-            logger.SendTrace($"{tracePrefix}Mac Import started");
+            logger.SendTrace($"{TracePrefix}Mac Import started");
             try
             {
                 var lastEntryBeforeInsert = await macRepository.GetLastMacEntry();
-                logger.SendTrace($"{tracePrefix}The last MAC entry found was: {lastEntryBeforeInsert}");
+                logger.SendTrace($"{TracePrefix}The last MAC entry found was: {lastEntryBeforeInsert}");
 
-                List<Mac> newMacs;
-                await using (var macStream = await DownloadMacs())
-                {
-                    newMacs = await macParser.GetMacsSince(macStream, lastEntryBeforeInsert);
-                }
-
-                logger.SendTrace($"{tracePrefix}Attempting to insert {newMacs.Count} new MACs");
-                await macRepository.InsertMacs(newMacs);
+                await macFetcher.FetchAndLazilyParseMacsSince(lastEntryBeforeInsert)
+                    .Batch(BatchSize)
+                    .ForEachAsync(InsertMacs);
             }
             catch (Exception e)
             {
-                logger.SendEvent(new ErrorEventModel($"{tracePrefix}Failed to finish MAC Import", e));
+                logger.SendEvent(new ErrorEventModel($"{TracePrefix}Failed to finish MAC Import", e));
                 throw;
             }
 
-            logger.SendTrace($"{tracePrefix}Successfully finished MAC Import");
+            logger.SendTrace($"{TracePrefix}Successfully finished MAC Import");
         }
 
-        private async Task<Stream> DownloadMacs()
+        private async Task InsertMacs(IReadOnlyCollection<Mac> macs)
         {
-            var retryPolicy = Policy.Handle<Exception>().Retry(3);
-            return await retryPolicy.Execute(async () => await macCodeDownloader.DownloadAndUnzipStream());
+            logger.SendTrace($"{TracePrefix}Attempting to insert {macs.Count} new MACs");
+            await macRepository.InsertMacs(macs);
         }
     }
 }

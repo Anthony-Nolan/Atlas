@@ -9,20 +9,20 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
 {
     internal class AlleleStringLookup : AlleleNamesLookupBase
     {
-        private readonly IAlleleStringSplitterService alleleSplitter;
+        private readonly IAlleleNamesExtractor alleleNamesExtractor;
         
         public AlleleStringLookup(
             IHlaMetadataRepository hlaMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
-            IAlleleStringSplitterService alleleSplitter)
+            IAlleleNamesExtractor alleleNamesExtractor)
             : base(hlaMetadataRepository, alleleNamesMetadataService)
         {
-            this.alleleSplitter = alleleSplitter;
+            this.alleleNamesExtractor = alleleNamesExtractor;
         }
 
         protected override async Task<List<string>> GetAlleleLookupNames(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
-            return await Task.Run(() => alleleSplitter.GetAlleleNamesFromAlleleString(lookupName).ToList());
+            return await Task.Run(() => alleleNamesExtractor.GetAlleleNamesFromAlleleString(lookupName).ToList());
         }
     }
 }

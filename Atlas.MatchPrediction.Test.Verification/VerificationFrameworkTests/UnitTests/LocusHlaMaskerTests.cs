@@ -48,7 +48,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 RemainingTypings = new List<SimulantLocusHla>()
             });
 
-            macBuilder.ConvertRandomLocusHlaToMacs(default, default).ReturnsForAnyArgs(new TransformationResult()
+            macBuilder.ConvertRandomHlaToMacs(default, default).ReturnsForAnyArgs(new TransformationResult()
             {
                 SelectedTypings = new List<SimulantLocusHla>(),
                 RemainingTypings = new List<SimulantLocusHla>()
@@ -294,7 +294,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
 
             await locusHlaMasker.MaskHla(requests, typings);
 
-            await macBuilder.Received().ConvertRandomLocusHlaToMacs(
+            await macBuilder.Received().ConvertRandomHlaToMacs(
                 Arg.Is<TransformationRequest>(x =>
                 x.ProportionToTransform == maskingProportion && x.TotalSimulantCount == simulantCount),
                 Arg.Any<string>());
@@ -379,7 +379,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 Arg.Is<TransformationRequest>(x =>
                 x.ProportionToTransform == maskingProportion && x.TotalSimulantCount == simulantCount));
 
-            await macBuilder.Received(1).ConvertRandomLocusHlaToMacs(
+            await macBuilder.Received(1).ConvertRandomHlaToMacs(
                 Arg.Is<TransformationRequest>(x =>
                 x.ProportionToTransform == maskingProportion && x.TotalSimulantCount == simulantCount), 
                 Arg.Any<string>());

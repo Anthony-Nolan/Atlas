@@ -6,8 +6,9 @@ using System.Net;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
+using Polly;
 
-namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices
+namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImport
 {
     internal interface IMacCodeDownloader
     {
@@ -31,6 +32,12 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices
         
         /// <inheritdoc />
         public async Task<Stream> DownloadAndUnzipStream()
+        {
+            var retryPolicy = Policy.Handle<Exception>().Retry(3);
+            return await retryPolicy.Execute(async () => await AttemptToDownloadAndUnzipStream());
+        }
+
+        private async Task<Stream> AttemptToDownloadAndUnzipStream()
         {
             logger.SendTrace($"Downloading MACs from NMDP source");
             var stream = await DownloadToMemoryStream();

@@ -30,7 +30,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
             IHlaCategorisationService hlaCategorisationService,
-            IAlleleStringSplitterService alleleSplitter,
+            IAlleleNamesExtractor alleleNamesExtractor,
             IMacDictionary macDictionary,
             IAlleleGroupExpander alleleGroupExpander,
             IPersistentCacheProvider cacheProvider)
@@ -38,7 +38,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 dpb1TceGroupsMetadataRepository,
                 alleleNamesMetadataService,
                 hlaCategorisationService,
-                alleleSplitter,
+                alleleNamesExtractor,
                 macDictionary,
                 alleleGroupExpander,
                 CacheKey,

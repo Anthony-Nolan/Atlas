@@ -30,7 +30,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
         private IHlaMatchingMetadataRepository hlaMetadataRepository;
         private IAlleleNamesMetadataService alleleNamesMetadataService;
         private IHlaCategorisationService hlaCategorisationService;
-        private IAlleleStringSplitterService alleleStringSplitterService;
+        private IAlleleNamesExtractor alleleNamesExtractor;
         private IMacDictionary macDictionary;
         private IAlleleGroupExpander alleleGroupExpander;
         private IAppCache cache;
@@ -41,7 +41,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
             hlaMetadataRepository = Substitute.For<IHlaMatchingMetadataRepository>();
             alleleNamesMetadataService = Substitute.For<IAlleleNamesMetadataService>();
             hlaCategorisationService = Substitute.For<IHlaCategorisationService>();
-            alleleStringSplitterService = Substitute.For<IAlleleStringSplitterService>();
+            alleleNamesExtractor = Substitute.For<IAlleleNamesExtractor>();
             macDictionary = Substitute.For<IMacDictionary>();
             alleleGroupExpander = Substitute.For<IAlleleGroupExpander>();
 
@@ -53,7 +53,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
                 hlaMetadataRepository,
                 alleleNamesMetadataService,
                 hlaCategorisationService,
-                alleleStringSplitterService,
+                alleleNamesExtractor,
                 macDictionary,
                 alleleGroupExpander,
                 cacheProvider);
@@ -79,7 +79,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
             string secondAllele)
         {
             hlaCategorisationService.GetHlaTypingCategory(hlaName).Returns(typingCategory);
-            alleleStringSplitterService.GetAlleleNamesFromAlleleString(hlaName).Returns(new List<string> { firstAllele, secondAllele });
+            alleleNamesExtractor.GetAlleleNamesFromAlleleString(hlaName).Returns(new List<string> { firstAllele, secondAllele });
 
             await metadataService.GetHlaMetadata(DefaultLocus, hlaName, "hla-db-version");
 

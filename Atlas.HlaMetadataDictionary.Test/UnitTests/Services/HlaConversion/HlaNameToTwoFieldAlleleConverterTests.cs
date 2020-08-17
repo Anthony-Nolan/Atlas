@@ -18,7 +18,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         private const string DefaultHlaName = "hla";
 
         private IHlaCategorisationService hlaCategorisationService;
-        private IAlleleStringSplitterService alleleStringSplitter;
+        private IAlleleNamesExtractor alleleNamesExtractor;
         private IMacDictionary macDictionary;
         private IAlleleGroupExpander groupExpander;
 
@@ -28,12 +28,12 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         public void SetUp()
         {
             hlaCategorisationService = Substitute.For<IHlaCategorisationService>();
-            alleleStringSplitter = Substitute.For<IAlleleStringSplitterService>();
+            alleleNamesExtractor = Substitute.For<IAlleleNamesExtractor>();
             macDictionary = Substitute.For<IMacDictionary>();
             groupExpander = Substitute.For<IAlleleGroupExpander>();
 
             converter = new HlaNameToTwoFieldAlleleConverter(
-                hlaCategorisationService, alleleStringSplitter, macDictionary, groupExpander);
+                hlaCategorisationService, alleleNamesExtractor, macDictionary, groupExpander);
         }
 
         [TestCase("01:01", "01:01")]
@@ -157,7 +157,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
 
             await converter.ConvertHla(DefaultLocus, DefaultHlaName, ExpressionSuffixBehaviour.Include, "version");
 
-            alleleStringSplitter.Received().GetAlleleNamesFromAlleleString(DefaultHlaName);
+            alleleNamesExtractor.Received().GetAlleleNamesFromAlleleString(DefaultHlaName);
         }
 
         [TestCase(HlaTypingCategory.AlleleStringOfNames)]
@@ -167,7 +167,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             hlaCategorisationService.GetHlaTypingCategory(DefaultHlaName).Returns(category);
 
             var alleleNames = new[] { "01:01:01", "02:01:01:01" };
-            alleleStringSplitter.GetAlleleNamesFromAlleleString(DefaultHlaName).Returns(alleleNames);
+            alleleNamesExtractor.GetAlleleNamesFromAlleleString(DefaultHlaName).Returns(alleleNames);
 
             const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Include;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option, "version");
@@ -182,7 +182,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             hlaCategorisationService.GetHlaTypingCategory(DefaultHlaName).Returns(category);
 
             var alleleNames = new[] { "01:01:01N", "02:01:01:01" };
-            alleleStringSplitter.GetAlleleNamesFromAlleleString(DefaultHlaName).Returns(alleleNames);
+            alleleNamesExtractor.GetAlleleNamesFromAlleleString(DefaultHlaName).Returns(alleleNames);
 
             const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Include;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option, "version");
@@ -197,7 +197,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             hlaCategorisationService.GetHlaTypingCategory(DefaultHlaName).Returns(category);
 
             var alleleNames = new[] { "01:01:01", "02:01:01:01" };
-            alleleStringSplitter.GetAlleleNamesFromAlleleString(DefaultHlaName).Returns(alleleNames);
+            alleleNamesExtractor.GetAlleleNamesFromAlleleString(DefaultHlaName).Returns(alleleNames);
 
             const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Exclude;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option, "version");
@@ -212,7 +212,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
             hlaCategorisationService.GetHlaTypingCategory(DefaultHlaName).Returns(category);
 
             var alleleNames = new[] { "01:01:01N", "02:01:01:01" };
-            alleleStringSplitter.GetAlleleNamesFromAlleleString(DefaultHlaName).Returns(alleleNames);
+            alleleNamesExtractor.GetAlleleNamesFromAlleleString(DefaultHlaName).Returns(alleleNames);
 
             const ExpressionSuffixBehaviour option = ExpressionSuffixBehaviour.Exclude;
             var result = await converter.ConvertHla(DefaultLocus, DefaultHlaName, option, "version");

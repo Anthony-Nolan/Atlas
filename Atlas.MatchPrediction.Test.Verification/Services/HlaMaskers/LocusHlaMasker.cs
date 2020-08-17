@@ -98,7 +98,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
                 MaskingCategory.TwoField => twoFieldBuilder.ConvertRandomLocusHlaToTwoField(request),
                 MaskingCategory.PGroup => hlaConverter.ConvertRandomLocusHla(request, hlaNomenclatureVersion, TargetHlaCategory.PGroup),
                 MaskingCategory.Serology => hlaConverter.ConvertRandomLocusHla(request, hlaNomenclatureVersion, TargetHlaCategory.Serology),
-                MaskingCategory.MultipleAlleleCode => macBuilder.ConvertRandomLocusHlaToMacs(request, hlaNomenclatureVersion),
+                MaskingCategory.MultipleAlleleCode => macBuilder.ConvertRandomHlaToMacs(request, hlaNomenclatureVersion),
                 MaskingCategory.XxCode => xxCodeBuilder.ConvertRandomLocusHlaToXxCodes(request),
                 MaskingCategory.Delete => hlaDeleter.DeleteRandomLocusHla(request),
                 _ => throw new ArgumentOutOfRangeException()
