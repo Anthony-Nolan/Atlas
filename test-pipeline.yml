@@ -38,6 +38,13 @@ jobs:
       env:
         ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
         ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+    - script: |
+        terraform import azurerm_resource_group.atlas_resource_group /subscriptions/6114522f-eea5-44ab-94ab-af37ffffc4d3/resourceGroups/ATLAS-SYSTEM-TEST-RESOURCE-GROUP
+      workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/system-tests'
+      displayName: 'terraform import'
+      env:
+        ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
     - bash: |
         echo Select terraform workspace and create if not exists
         terraform workspace select $(TerraformWorkspace) || terraform workspace new $(TerraformWorkspace)
