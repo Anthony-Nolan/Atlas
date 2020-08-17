@@ -1,5 +1,5 @@
 resource "azurerm_storage_account" "system_test_storage" {
-  name                     = lower("AtlasSystemTestStorageAccount")
+  name                     = lower("AtlasSystemTestStorage")
   resource_group_name      = azurerm_resource_group.atlas_resource_group.name
   location                 = local.location
   tags                     = local.common_tags
