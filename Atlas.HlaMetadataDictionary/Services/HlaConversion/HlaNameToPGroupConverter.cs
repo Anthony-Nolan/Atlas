@@ -56,6 +56,7 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
                 return null;
             }
 
+            //TODO: This is the building of the dictionary, generation service of the HMD
             var cacheKey = $"{locus}-GToPGroupLookup-{hlaNomenclatureVersion}";
             return await cache.GetSingleItemAndScheduleWholeCollectionCacheWarm(
                 cacheKey,
