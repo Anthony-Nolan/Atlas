@@ -51,7 +51,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         public async Task ImportDonors_ForEachAddition_AddsDonorToDatabase()
         {
             const int creationCount = 2;
-            const string donorCodePrefix = "test1";
+            const string donorCodePrefix = "test1-";
             var donorUpdates = donorCreationBuilder.WithRecordIdPrefix(donorCodePrefix).Build(creationCount).ToArray();
             var donorUpdateFile = fileBuilder.WithDonors(donorUpdates).Build();
 
@@ -69,7 +69,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var hlaObject1 = HlaBuilder.New.WithHomozygousMolecularHlaAtAllLoci(hla1).Build();
             var hlaObject2 = HlaBuilder.New.WithHomozygousMolecularHlaAtAllLoci(hla2).Build();
 
-            const string donorCodePrefix = "test2";
+            const string donorCodePrefix = "test2-";
             var donorUpdates =
                 donorCreationBuilder
                     .WithRecordIdPrefix(donorCodePrefix)
@@ -130,7 +130,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task ImportDonors_IfAdditionsAlreadyExist_ThrowsError_AndDoesNotAdd_NorSendMessages()
         {
-            const string donorCodePrefix = "test5";
+            const string donorCodePrefix = "test5-";
             var donorUpdates = donorCreationBuilder.WithRecordIdPrefix(donorCodePrefix).Build(4).ToArray();
             var donorUpdateFiles = fileBuilder.WithDonors(donorUpdates).Build(2).ToList();
 
@@ -148,15 +148,15 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task ImportDonors_IfSomeAdditionsAlreadyExistButOthersDoNot_ThrowsError_AndDoesNotAdd_NorChangeExisting_NorSendMessages()
         {
-            const string donorCodePrefix = "test6";
+            const string donorCodePrefix = "test6-";
             var updateBuilder = donorCreationBuilder.WithRecordIdPrefix(donorCodePrefix);
 
             var donorUpdates_Set1 = updateBuilder.Build(4).ToArray();
             var donorUpdates_Set2 = updateBuilder.Build(3).ToArray();
             var donorUpdates_Sets1And2 = donorUpdates_Set1.Union(donorUpdates_Set2).ToArray();
 
-            var donorUpdateFile_DonorSet1 = fileBuilder.WithDonors(donorUpdates_Set1).Build();
-            var donorUpdateFile_DonorSets1And2 = fileBuilder.WithDonors(donorUpdates_Sets1And2).Build();
+            var donorUpdateFile_DonorSet1 = fileBuilder.WithDonors(donorUpdates_Set1).With(d => d.UploadTime, DateTime.UtcNow.AddDays(-1)).Build();
+            var donorUpdateFile_DonorSets1And2 = fileBuilder.WithDonors(donorUpdates_Sets1And2).With(d => d.UploadTime, DateTime.UtcNow).Build();
 
             await donorFileImporter.ImportDonorFile(donorUpdateFile_DonorSet1);
             serviceBusClient.ClearReceivedCalls();
@@ -172,16 +172,79 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task ImportDonors_IfMissingMandatoryHlaTypings_DoesNotAddToDatabase()
         {
-            const string donorCodePrefix = "test-7";
-            var updateBuilder = donorCreationBuilder.WithRecordIdPrefix(donorCodePrefix);
-
-            var donorUpdate = updateBuilder.Build();
+            var donorUpdate = donorCreationBuilder.Build();
+            
             donorUpdate.Hla.A = null;
             var file = fileBuilder.WithDonors(donorUpdate).Build();
 
             await donorFileImporter.ImportDonorFile(file);
 
-            var result = await donorRepository.GetDonor(donorUpdate.RegistryCode);
+            var result = await donorRepository.GetDonor(donorUpdate.RecordId);
+            result.Should().BeNull();
+        }
+        
+        [Test]
+        public async Task ImportDonors_IfMissingHlaHasNullValues_DoesNotAddToDatabase()
+        {
+            var donorUpdate = donorCreationBuilder.Build();
+            
+            donorUpdate.Hla.A = new ImportedLocus
+            {
+                Dna = new TwoFieldStringData
+                {
+                    Field1 = null,
+                    Field2 = null
+                }
+            };
+            var file = fileBuilder.WithDonors(donorUpdate).Build();
+
+            await donorFileImporter.ImportDonorFile(file);
+
+            var result = await donorRepository.GetDonor(donorUpdate.RecordId);
+            result.Should().BeNull();
+        }
+
+        [Test]
+        public async Task ImportDonors_IfMissingHlaHasEmptyValues_DoesNotAddToDatabase()
+        {
+            var donorUpdate = donorCreationBuilder.Build();
+            
+            donorUpdate.Hla.A = new ImportedLocus
+            {
+                Dna = new TwoFieldStringData
+                {
+                    Field1 = "",
+                    Field2 = ""
+                }
+            };
+            var file = fileBuilder.WithDonors(donorUpdate).Build();
+
+            await donorFileImporter.ImportDonorFile(file);
+
+            var result = await donorRepository.GetDonor(donorUpdate.RecordId);
+            result.Should().BeNull();
+        }
+        
+        [Test]
+        public async Task ImportDonors_IfDeleteDonorHasInvalidHla_DonorIsStillDeleted()
+        {
+            var donorUpdate = donorCreationBuilder.Build();
+            var validFile = fileBuilder.WithDonors(donorUpdate).Build();
+            await donorFileImporter.ImportDonorFile(validFile);
+            var importedDonor = await donorRepository.GetDonor(donorUpdate.RecordId);
+            importedDonor.ExternalDonorCode.Should().Be(donorUpdate.RecordId);
+            
+            var donorDeletion = DonorUpdateBuilder
+                .New
+                .With(upd => upd.ChangeType, ImportDonorChangeType.Delete)
+                .With(upd => upd.RecordId, donorUpdate.RecordId)
+                .Build();
+            donorDeletion.Hla.A = null;
+            var invalidFile = fileBuilder.WithDonors(donorDeletion).Build();
+            
+            await donorFileImporter.ImportDonorFile(invalidFile);
+
+            var result = await donorRepository.GetDonor(donorUpdate.RecordId);
             result.Should().BeNull();
         }
     }

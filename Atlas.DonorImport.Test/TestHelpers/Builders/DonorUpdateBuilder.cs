@@ -11,7 +11,7 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
     {
         internal static Builder<DonorUpdate> New => Builder<DonorUpdate>.New
             .WithRecordIdPrefix("donor-update-")
-            .With(d => d.Hla, HlaBuilder.New.Build())
+            .With(d => d.Hla, HlaBuilder.New.WithValidHlaAtAllLoci().Build())
             .With(d => d.UpdateMode, UpdateMode.Differential)
             .With(d => d.DonorType, ImportDonorType.Adult);
 
@@ -27,7 +27,7 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
 
         internal static Builder<DonorUpdate> WithHomozygousHlaAt(this Builder<DonorUpdate> builder, Locus locus, string hla)
         {
-            return builder.With(d => d.Hla, HlaBuilder.New.WithHomozygousMolecularHlaAtLocus(locus, hla).Build());
+            return builder.With(d => d.Hla, HlaBuilder.New.WithValidHlaAtAllLoci().WithHomozygousMolecularHlaAtLocus(locus, hla).Build());
         }
     }
 
