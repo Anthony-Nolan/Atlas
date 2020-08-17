@@ -30,8 +30,10 @@ resource "azurerm_function_app" "atlas_function" {
     "AtlasFunction:AzureStorage:ConnectionString"           = azurerm_storage_account.azure_storage.primary_connection_string
     "AtlasFunction:AzureStorage:SearchResultsBlobContainer" = azurerm_storage_container.search_results_blob_container.name
     "AtlasFunction:MessagingServiceBus:ConnectionString"    = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
-    "AtlasFunction:MessagingServiceBus:SearchResultsTopic"  = azurerm_servicebus_topic.search-results-ready.name,
-    "AtlasFunction:Orchestration:MatchPredictionBatchSize"  = var.ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE,
+    "AtlasFunction:MessagingServiceBus:SearchResultsTopic"  = azurerm_servicebus_topic.search-results-ready.name
+    "AtlasFunction:Orchestration:MatchPredictionBatchSize"  = var.ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE
+
+    "FUNCTIONS_WORKER_RUNTIME" : "dotnet"
 
     "HlaMetadataDictionary:AzureStorageConnectionString" = azurerm_storage_account.azure_storage.primary_connection_string
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl"     = var.WMDA_FILE_URL

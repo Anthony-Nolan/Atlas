@@ -14,16 +14,22 @@ resource "azurerm_function_app" "atlas_donor_import_function" {
   tags = var.general.common_tags
 
   app_settings = {
-    "APPINSIGHTS_INSTRUMENTATIONKEY"               = var.application_insights.instrumentation_key
-    "ApplicationInsights:LogLevel"                 = var.APPLICATION_INSIGHTS_LOG_LEVEL
-    "AzureStorage:ConnectionString"                = var.azure_storage.primary_connection_string,
-    "AzureStorage:DonorFileBlobContainer"          = azurerm_storage_container.donor_blob_storage.name
+    "APPINSIGHTS_INSTRUMENTATIONKEY" = var.application_insights.instrumentation_key
+    "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
+
+    "AzureStorage:ConnectionString"       = var.azure_storage.primary_connection_string,
+    "AzureStorage:DonorFileBlobContainer" = azurerm_storage_container.donor_blob_storage.name
+
+    "FUNCTIONS_WORKER_RUNTIME" : "dotnet"
+
     "MessagingServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "MessagingServiceBus:MatchingDonorUpdateTopic" = azurerm_servicebus_topic.updated-searchable-donors.name
-    "NotificationsServiceBus:AlertsTopic"          = var.servicebus_topics.alerts.name
-    "NotificationsServiceBus:ConnectionString"     = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
-    "NotificationsServiceBus:NotificationsTopic"   = var.servicebus_topics.notifications.name
-    "WEBSITE_RUN_FROM_PACKAGE"                     = "1"
+
+    "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name
+    "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "NotificationsServiceBus:NotificationsTopic" = var.servicebus_topics.notifications.name
+
+    "WEBSITE_RUN_FROM_PACKAGE" = "1"
   }
 
   site_config {
