@@ -12,7 +12,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
 {
     internal interface IMacBuilder
     {
-        Task<TransformationResult> ConvertRandomLocusHlaToMacs(TransformationRequest request, string hlaNomenclatureVersion);
+        Task<TransformationResult> ConvertRandomHlaToMacs(TransformationRequest request, string hlaNomenclatureVersion);
     }
 
     internal class MacBuilder : HlaTransformerBase, IMacBuilder
@@ -31,7 +31,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
             this.cache = cache;
         }
 
-        public async Task<TransformationResult> ConvertRandomLocusHlaToMacs(TransformationRequest request, string hlaNomenclatureVersion)
+        public async Task<TransformationResult> ConvertRandomHlaToMacs(TransformationRequest request, string hlaNomenclatureVersion)
         {
             if (request.Typings.IsNullOrEmpty())
             {

@@ -35,7 +35,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IHlaScoringMetadataRepository hlaScoringMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
             IHlaCategorisationService hlaCategorisationService,
-            IAlleleStringSplitterService alleleSplitter,
+            IAlleleNamesExtractor alleleNamesExtractor,
             IMacDictionary macDictionary,
             IAlleleGroupExpander alleleGroupExpander,
             IPersistentCacheProvider cacheProvider
@@ -43,7 +43,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 hlaScoringMetadataRepository,
                 alleleNamesMetadataService,
                 hlaCategorisationService,
-                alleleSplitter,
+                alleleNamesExtractor,
                 macDictionary,
                 alleleGroupExpander,
                 CacheKey,

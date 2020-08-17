@@ -4,7 +4,7 @@ using Atlas.Common.Caching;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.Services;
-using Atlas.MultipleAlleleCodeDictionary.Services.MacImportServices;
+using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -37,16 +37,15 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjecti
             services.RegisterLifeTimeScopedCacheTypes();
         }
 
-        public static void RegisterMacStreamer(
+        internal static void RegisterMacFetcher(
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MacDownloadSettings> fetchMacDownloadSettings
         )
         {
             services.RegisterMacDownloadSettings(fetchApplicationInsightsSettings, fetchMacDownloadSettings);
-            services.RegisterMacDownloadServices();
+            services.RegisterMacFetcherServices();
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
-            services.AddScoped<IMacStreamer, MacStreamer>();
         }
 
         private static void RegisterMacDictionarySettings(
@@ -90,12 +89,13 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjecti
         {
             services.RegisterSharedServices();
 
-            services.RegisterMacDownloadServices();
+            services.RegisterMacFetcherServices();
             services.AddScoped<IMacImporter, MacImporter>();
         }
 
-        private static void RegisterMacDownloadServices(this IServiceCollection services)
+        private static void RegisterMacFetcherServices(this IServiceCollection services)
         {
+            services.AddScoped<IMacFetcher, MacFetcher>();
             services.AddScoped<IMacParser, MacLineParser>();
             services.AddScoped<IMacCodeDownloader, MacCodeDownloader>();
         }

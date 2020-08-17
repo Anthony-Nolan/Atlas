@@ -1,7 +1,8 @@
 ﻿namespace Atlas.MultipleAlleleCodeDictionary.Settings
 {
     /// <summary>
-    /// Settings only needed for import, but not reading, of the MAC Dictionary.
+    /// Settings needed for download of MACs from source.
+    /// Note: <see cref="MacDictionarySettings"/> contains configuration settings for the MAC dictionary itself.
     /// </summary>
     public class MacDownloadSettings
     {

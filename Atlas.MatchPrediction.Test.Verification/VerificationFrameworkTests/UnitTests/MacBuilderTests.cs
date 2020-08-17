@@ -55,7 +55,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 Typings = typings
             };
 
-            await macBuilder.ConvertRandomLocusHlaToMacs(request, "version");
+            await macBuilder.ConvertRandomHlaToMacs(request, "version");
 
             await cache.Received().GetCodesBySecondField("01");
         }
@@ -79,7 +79,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                     .ToList()
             };
 
-            var results = await macBuilder.ConvertRandomLocusHlaToMacs(request, "version");
+            var results = await macBuilder.ConvertRandomHlaToMacs(request, "version");
             var result = results.SelectedTypings.Single();
 
             result.HlaTyping.Position1.Should().Be(hla);
@@ -112,7 +112,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                     .ToList()
             };
 
-            var results = await macBuilder.ConvertRandomLocusHlaToMacs(request, "version");
+            var results = await macBuilder.ConvertRandomHlaToMacs(request, "version");
             var result = results.SelectedTypings.Single();
 
             const string expected = firstField + ":" + potentialMac;
@@ -145,7 +145,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                     .ToList()
             };
 
-            var results = await macBuilder.ConvertRandomLocusHlaToMacs(request, "version");
+            var results = await macBuilder.ConvertRandomHlaToMacs(request, "version");
             var result = results.SelectedTypings.Single();
 
             result.HlaTyping.Position1.Should().Be(hla);
@@ -185,7 +185,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                     .ToList()
             };
 
-            var results = await macBuilder.ConvertRandomLocusHlaToMacs(request, "version");
+            var results = await macBuilder.ConvertRandomHlaToMacs(request, "version");
             var result = results.SelectedTypings.Single();
 
             const string expected = firstField + ":" + macThree;

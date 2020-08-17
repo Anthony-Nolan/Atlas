@@ -1,4 +1,5 @@
 ﻿using Atlas.Common.ApplicationInsights;
+using Atlas.Common.Caching;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
@@ -15,7 +16,6 @@ using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Atlas.Common.Caching;
 
 namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 {
@@ -41,7 +41,7 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
                 fetchApplicationInsightsSettings,
                 fetchMacDictionarySettings
             );
-            services.RegisterMacStreamer(
+            services.RegisterMacFetcher(
                 fetchApplicationInsightsSettings,
                 fetchMacDownloadSettings);
         }
@@ -69,11 +69,11 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString)
         {
             services.AddScoped<IMacExpander, MacExpander>();
+
             services.AddScoped<ITestHarnessGenerator, TestHarnessGenerator>();
 
             services.AddScoped<IHaplotypeFrequenciesReader, HaplotypeFrequenciesReader>();
             services.AddScoped<IFrequencySetStreamer, FrequencySetStreamer>();
-
             services.AddScoped<INormalisedPoolGenerator, NormalisedPoolGenerator>(sp =>
                 {
                     var reader = sp.GetService<IHaplotypeFrequenciesReader>();

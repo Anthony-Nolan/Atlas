@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
+﻿using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
+using System.Collections.Generic;
 
 namespace Atlas.MultipleAlleleCodeDictionary.Services
 {
@@ -29,8 +28,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services
         /// </summary>
         private static IEnumerable<string> ExpandGenericMac(Mac mac, string firstField = null)
         {
-            var secondFields = mac.SplitHla;
-            return secondFields.Select(secondField => new MolecularAlleleDetails(firstField, secondField).AlleleNameWithoutPrefix).ToList();
+            return AlleleStringSplitter.SplitAlleleStringOfSubtypesToAlleleNames($"{firstField}:" + mac.Hla);
         }
 
         /// <remarks>
@@ -39,7 +37,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services
         /// </remarks>
         private static IEnumerable<string> ExpandSpecificMac(Mac mac)
         {
-            return mac.SplitHla;
+            return AlleleStringSplitter.SplitAlleleString(mac.Hla);
         }
     }
 }

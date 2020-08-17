@@ -29,7 +29,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
         private readonly IHlaMetadataRepository hlaMetadataRepository;
         private readonly IAlleleNamesMetadataService alleleNamesMetadataService;
-        private readonly IAlleleStringSplitterService alleleSplitter;
+        private readonly IAlleleNamesExtractor alleleNamesExtractor;
         private readonly IMacDictionary macDictionary;
         private readonly IAlleleGroupExpander alleleGroupExpander;
 
@@ -37,7 +37,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IHlaMetadataRepository hlaMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
             IHlaCategorisationService hlaCategorisationService,
-            IAlleleStringSplitterService alleleSplitter,
+            IAlleleNamesExtractor alleleNamesExtractor,
             IMacDictionary macDictionary,
             IAlleleGroupExpander alleleGroupExpander,
             string perTypeCacheKey,
@@ -47,7 +47,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             this.hlaMetadataRepository = hlaMetadataRepository;
             this.alleleNamesMetadataService = alleleNamesMetadataService;
             HlaCategorisationService = hlaCategorisationService;
-            this.alleleSplitter = alleleSplitter;
+            this.alleleNamesExtractor = alleleNamesExtractor;
             this.macDictionary = macDictionary;
             this.alleleGroupExpander = alleleGroupExpander;
         }
@@ -80,7 +80,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                     hlaTypingCategory,
                     hlaMetadataRepository,
                     alleleNamesMetadataService,
-                    alleleSplitter,
+                    alleleNamesExtractor,
                     macDictionary,
                     alleleGroupExpander);
         }

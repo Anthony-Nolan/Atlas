@@ -6,7 +6,7 @@ namespace Atlas.Common.GeneticData.Hla.Services
     {
         public static void RegisterCommonGeneticServices(this IServiceCollection services)
         {
-            services.AddScoped<IAlleleStringSplitterService, AlleleStringSplitterService>();
+            services.AddScoped<IAlleleNamesExtractor, AlleleNamesExtractor>();
             services.AddScoped<IHlaCategorisationService, HlaCategorisationService>();
         }
     }

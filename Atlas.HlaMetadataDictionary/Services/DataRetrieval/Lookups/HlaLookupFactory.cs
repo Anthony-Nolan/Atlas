@@ -12,7 +12,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
             HlaTypingCategory category,
             IHlaMetadataRepository hlaMetadataRepository,
             IAlleleNamesMetadataService alleleNamesMetadataService,
-            IAlleleStringSplitterService alleleSplitter,
+            IAlleleNamesExtractor alleleNamesExtractor,
             IMacDictionary macDictionary,
             IAlleleGroupExpander alleleGroupExpander)
         {
@@ -22,8 +22,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval.Lookups
                 HlaTypingCategory.XxCode => new XxCodeLookup(hlaMetadataRepository),
                 HlaTypingCategory.Serology => new SerologyLookup(hlaMetadataRepository),
                 HlaTypingCategory.NmdpCode => new MacLookup(hlaMetadataRepository, alleleNamesMetadataService, macDictionary),
-                HlaTypingCategory.AlleleStringOfNames => new AlleleStringLookup(hlaMetadataRepository, alleleNamesMetadataService, alleleSplitter),
-                HlaTypingCategory.AlleleStringOfSubtypes => new AlleleStringLookup(hlaMetadataRepository, alleleNamesMetadataService, alleleSplitter),
+                HlaTypingCategory.AlleleStringOfNames => new AlleleStringLookup(hlaMetadataRepository, alleleNamesMetadataService, alleleNamesExtractor),
+                HlaTypingCategory.AlleleStringOfSubtypes => new AlleleStringLookup(hlaMetadataRepository, alleleNamesMetadataService, alleleNamesExtractor),
                 HlaTypingCategory.PGroup => new AlleleGroupLookup(hlaMetadataRepository, alleleNamesMetadataService, alleleGroupExpander),
                 HlaTypingCategory.GGroup => new AlleleGroupLookup(hlaMetadataRepository, alleleNamesMetadataService, alleleGroupExpander),
                 _ => throw new ArgumentException(

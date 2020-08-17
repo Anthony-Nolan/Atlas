@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using Atlas.Common.Helpers;
+﻿using Atlas.Common.Helpers;
 using FluentAssertions;
 using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace Atlas.Common.Test.Helpers
 {

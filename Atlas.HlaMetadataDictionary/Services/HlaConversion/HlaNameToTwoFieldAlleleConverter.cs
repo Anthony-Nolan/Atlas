@@ -26,18 +26,18 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
     internal class HlaNameToTwoFieldAlleleConverter : IHlaNameToTwoFieldAlleleConverter
     {
         private readonly IHlaCategorisationService hlaCategorisationService;
-        private readonly IAlleleStringSplitterService alleleStringSplitter;
+        private readonly IAlleleNamesExtractor alleleNamesExtractor;
         private readonly IMacDictionary macDictionary;
         private readonly IAlleleGroupExpander groupExpander;
 
         public HlaNameToTwoFieldAlleleConverter(
             IHlaCategorisationService hlaCategorisationService,
-            IAlleleStringSplitterService alleleStringSplitter,
+            IAlleleNamesExtractor alleleNamesExtractor,
             IMacDictionary macDictionary,
             IAlleleGroupExpander groupExpander)
         {
             this.hlaCategorisationService = hlaCategorisationService;
-            this.alleleStringSplitter = alleleStringSplitter;
+            this.alleleNamesExtractor = alleleNamesExtractor;
             this.macDictionary = macDictionary;
             this.groupExpander = groupExpander;
         }
@@ -62,7 +62,7 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
                     return GetTwoFieldAlleleNames(locus, pGroupAlleles, behaviour);
                 case HlaTypingCategory.AlleleStringOfNames:
                 case HlaTypingCategory.AlleleStringOfSubtypes:
-                    var allelesFromAlleleString = alleleStringSplitter.GetAlleleNamesFromAlleleString(hlaName);
+                    var allelesFromAlleleString = alleleNamesExtractor.GetAlleleNamesFromAlleleString(hlaName);
                     return GetTwoFieldAlleleNames(locus, allelesFromAlleleString, behaviour);
                 case HlaTypingCategory.NmdpCode:
                     var allelesForNmdpCode = await macDictionary.GetHlaFromMac(hlaName);
