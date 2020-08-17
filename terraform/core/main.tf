@@ -96,7 +96,7 @@ module "match_prediction" {
     common_tags = local.common_tags
   }
 
-  app_service_plan        = azurerm_app_service_plan.atlas
+  app_service_plan        = azurerm_app_service_plan.atlas-consumption-plan
   sql_server              = azurerm_sql_server.atlas_sql_server
   shared_function_storage = azurerm_storage_account.function_storage
   mac_import_table        = module.multiple_allele_code_lookup.storage_table
