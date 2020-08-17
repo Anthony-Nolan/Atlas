@@ -20,9 +20,10 @@ variable "azure_storage" {
   })
 }
 
-variable "function_storage" {
+variable "shared_function_storage" {
   type = object({
-    primary_connection_string = string
+    primary_access_key = string
+    name               = string
   })
 }
 

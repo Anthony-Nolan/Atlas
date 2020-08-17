@@ -3,13 +3,14 @@ locals {
 }
 
 resource "azurerm_function_app" "atlas_match_prediction_function" {
-  name                      = local.atlas_match_prediction_function_name
-  resource_group_name       = var.app_service_plan.resource_group_name
-  location                  = var.general.location
-  app_service_plan_id       = var.app_service_plan.id
-  https_only                = true
-  version                   = "~3"
-  storage_connection_string = var.function_storage.primary_connection_string
+  name                       = local.atlas_match_prediction_function_name
+  resource_group_name        = var.app_service_plan.resource_group_name
+  location                   = var.general.location
+  app_service_plan_id        = var.app_service_plan.id
+  https_only                 = true
+  version                    = "~3"
+  storage_account_access_key = var.shared_function_storage.primary_access_key
+  storage_account_name       = var.shared_function_storage.name
 
   tags = var.general.common_tags
 

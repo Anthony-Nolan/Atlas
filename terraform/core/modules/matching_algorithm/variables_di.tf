@@ -28,7 +28,8 @@ variable "donor_import_sql_database" {
 
 variable "shared_function_storage" {
   type = object({
-    primary_connection_string = string
+    primary_access_key = string
+    name               = string
   })
 }
 
