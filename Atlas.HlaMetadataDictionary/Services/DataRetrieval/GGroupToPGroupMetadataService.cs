@@ -38,7 +38,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         {
             var pGroupMetadata = await gGroupToPGroupMetadataRepository.GetPGroupByGGroupIfExists(locus, lookupName, hlaNomenclatureVersion);
 
-            if (pGroupMetadata?.PGroup == null)
+            if (pGroupMetadata == null)
             {
                 throw new HlaMetadataDictionaryException(locus, lookupName, "GGroup not recognised, could not be converted to PGroup.");
             }
