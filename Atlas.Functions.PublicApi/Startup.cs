@@ -1,6 +1,12 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.Functions.PublicApi;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
+using Atlas.MatchingAlgorithm.DependencyInjection;
+using Atlas.MatchingAlgorithm.Settings;
+using Atlas.MatchingAlgorithm.Settings.Azure;
+using Atlas.MatchingAlgorithm.Settings.ServiceBus;
+using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -14,27 +20,34 @@ namespace Atlas.Functions.PublicApi
         public override void Configure(IFunctionsHostBuilder builder)
         {
             RegisterSettings(builder.Services);
+
+            // TODO: ATLAS-472: Allow registration of initiation only
+            builder.Services.RegisterMatchingAlgorithm(
+                _ => new AzureAuthenticationSettings(),
+                _ => new AzureDatabaseManagementSettings(),
+                _ => new DataRefreshSettings(),
+                _ => new DonorManagementSettings(),
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                _ => new AzureStorageSettings(),
+                _ => new HlaMetadataDictionarySettings(),
+                _ => new MacDictionarySettings(),
+                OptionsReaderFor<MessagingServiceBusSettings>(),
+                OptionsReaderFor<NotificationsServiceBusSettings>(),
+                _ => "",
+                _ => "",
+                _ => "",
+                _ => ""
+            );
         }
 
         private static void RegisterSettings(IServiceCollection services)
         {
-            // Atlas Function settings
-            // services.RegisterAsOptions<Settings.AzureStorageSettings>("AtlasFunction:AzureStorage");
-            // services.RegisterAsOptions<Settings.MessagingServiceBusSettings>("AtlasFunction:MessagingServiceBus");
-            // services.RegisterAsOptions<Settings.OrchestrationSettings>("AtlasFunction:Orchestration");
-
             // Shared settings
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
 
-            // Dictionary components
-            // services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
-            // services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
-            // services.RegisterAsOptions<MacImportSettings>("MacDictionary:Import");
-
-            // Matching Algorithm
-            // services.RegisterAsOptions<AzureStorageSettings>("Matching:AzureStorage");
-            // services.RegisterAsOptions<MessagingServiceBusSettings>("Matching:MessagingServiceBus");
+            // Matching Algorithm - initiation services only
+            services.RegisterAsOptions<MessagingServiceBusSettings>("Matching:MessagingServiceBus");
         }
     }
 }

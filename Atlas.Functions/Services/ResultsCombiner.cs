@@ -1,6 +1,6 @@
 using System.Linq;
 using Atlas.Functions.DurableFunctions.Search.Activity;
-using Atlas.Functions.Models.Search.Results;
+using Atlas.Functions.PublicApi.Models.Search.Results;
 using Atlas.Functions.Settings;
 using Microsoft.Extensions.Options;
 

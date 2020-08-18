@@ -1,9 +1,8 @@
 ﻿using System;
 using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 
-namespace Atlas.Functions.Models.Search.Requests
+namespace Atlas.Functions.PublicApi.Models.Search.Requests
 {
     public class MismatchCriteria
     {

@@ -1,7 +1,7 @@
 using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 
-namespace Atlas.Functions.Models.Search.Results
+namespace Atlas.Functions.PublicApi.Models.Search.Results
 {
     public class SearchResult
     {

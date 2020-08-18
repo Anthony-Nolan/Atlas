@@ -1,9 +1,10 @@
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Functions.DurableFunctions.Search.Orchestration;
-using Atlas.Functions.Models.Search.Requests;
+using Atlas.Functions.PublicApi.Models.Search.Requests;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using Atlas.MatchPrediction.ExternalInterface;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
@@ -46,14 +47,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             var validationResult = new SearchRequestValidator().Validate(matchingRequest);
             if (!validationResult.IsValid)
             {
-                return new HttpResponseMessage( HttpStatusCode.BadRequest ) {Content =  new StringContent(JsonConvert.SerializeObject(validationResult.Errors), System.Text.Encoding.UTF8, "application/json" ) };
+                return new HttpResponseMessage( HttpStatusCode.BadRequest ) {Content =  new StringContent(JsonConvert.SerializeObject(validationResult.Errors), Encoding.UTF8, "application/json" ) };
             }
 
             var probabilityRequestToValidate = searchRequest.ToPartialMatchProbabilitySearchRequest();
             var probabilityValidationResult = matchPredictionAlgorithm.ValidateMatchPredictionAlgorithmInput(probabilityRequestToValidate);
             if (!probabilityValidationResult.IsValid)
             {
-                return new HttpResponseMessage( HttpStatusCode.BadRequest ) {Content =  new StringContent(JsonConvert.SerializeObject(probabilityValidationResult.Errors), System.Text.Encoding.UTF8, "application/json" ) };
+                return new HttpResponseMessage( HttpStatusCode.BadRequest ) {Content =  new StringContent(JsonConvert.SerializeObject(probabilityValidationResult.Errors), Encoding.UTF8, "application/json" ) };
             }
             
             // Function input comes from the request content.

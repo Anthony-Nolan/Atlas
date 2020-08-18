@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Atlas.Functions.Models.Search.Results
+namespace Atlas.Functions.PublicApi.Models.Search.Results
 {
     public class SearchResultSet 
     {

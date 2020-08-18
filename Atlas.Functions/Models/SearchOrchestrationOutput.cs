@@ -1,6 +1,6 @@
 using System;
 
-namespace Atlas.Functions.Models.Search.Results
+namespace Atlas.Functions.Models
 {
     /// <summary>
     /// This is the data that will be returned on a poll to the status Query of the search orchestration function on success.

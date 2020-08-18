@@ -1,6 +1,6 @@
 ﻿using Atlas.Common.GeneticData.PhenotypeInfo;
 
-namespace Atlas.Functions.Models.Search.Requests
+namespace Atlas.Functions.PublicApi.Models.Search.Requests
 {
     public class SearchHlaData
     {
@@ -54,7 +54,7 @@ namespace Atlas.Functions.Models.Search.Requests
         public string SearchHla2 { get; set; }
     }
 
-    internal static class SearchHlaMappings
+    public static class SearchHlaMappings
     {
         public static PhenotypeInfo<string> ToPhenotypeInfo(this SearchHlaData hlaData)
         {

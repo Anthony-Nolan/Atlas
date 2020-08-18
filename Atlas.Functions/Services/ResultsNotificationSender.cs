@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Functions.Models.Search.Results;
+using Atlas.Functions.PublicApi.Models.Search.Results;
 using Atlas.Functions.Settings;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Options;

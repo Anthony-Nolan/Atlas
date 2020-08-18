@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
-using Atlas.Functions.Models.Search.Results;
+using Atlas.Functions.PublicApi.Models.Search.Results;
 using Atlas.Functions.Settings;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
