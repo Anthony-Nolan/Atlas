@@ -4,12 +4,13 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using Atlas.Common.ApplicationInsights;
+using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 {
     internal interface IGGroupToPGroupMetadataRepository : IHlaMetadataRepository
     {
-        Task<string> GetPGroupByGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion);
+        Task<IGGroupToPGroupMetadata> GetPGroupByGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion);
     }
 
     internal class GGroupToPGroupMetadataRepository : HlaMetadataRepositoryBase, IGGroupToPGroupMetadataRepository
@@ -26,11 +27,13 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         {
         }
 
-        public async Task<string> GetPGroupByGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
+        public async Task<IGGroupToPGroupMetadata> GetPGroupByGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
             var row = await GetHlaMetadataRowIfExists(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
 
-            return row?.SerialisedHlaInfo;
+            return row == null
+                ? null
+                : new GGroupToPGroupMetadata(row.Locus, row.LookupName, row.SerialisedHlaInfo);
         }
     }
 }

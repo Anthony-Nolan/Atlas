@@ -47,6 +47,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.AddSingleton<ICloudTableFactory, CloudTableFactory>();
             services.AddSingleton<ITableReferenceRepository, TableReferenceRepository>();
 
+            services.AddScoped<IGGroupToPGroupMetadataRepository, GGroupToPGroupMetadataRepository>();
             services.AddScoped<IHlaMatchingMetadataRepository, HlaMatchingMetadataRepository>();
             services.AddScoped<IHlaScoringMetadataRepository, HlaScoringMetadataRepository>();
             services.AddScoped<IAlleleNamesMetadataRepository, AlleleNamesMetadataRepository>();
@@ -65,6 +66,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.AddScoped<IAlleleNameVariantsExtractor, AlleleNameVariantsExtractor>();
             services.AddScoped<IReservedAlleleNamesExtractor, ReservedAlleleNamesExtractor>();
 
+            services.AddScoped<IGGroupToPGroupService, GGroupToPGroupService>();
             services.AddScoped<IAlleleNamesService, AlleleNamesService>();
             services.AddScoped<IHlaMatchPreCalculationService, HlaMatchPreCalculationService>();
             services.AddScoped<IDpb1TceGroupsService, Dpb1TceGroupsService>();
@@ -80,6 +82,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.AddScoped<IHlaConverter, HlaConverter>();
             services.AddScoped<IHlaNameToTwoFieldAlleleConverter, HlaNameToTwoFieldAlleleConverter>();
             services.AddScoped<IHlaNameToPGroupConverter, HlaNameToPGroupConverter>();
+            services.AddScoped<IGGroupToPGroupMetadataService, GGroupToPGroupMetadataService>();
             services.AddScoped<IAlleleNamesMetadataService, AlleleNamesMetadataService>();
             services.AddScoped<IAlleleGroupExpander, AlleleGroupExpander>();
             services.AddScoped<IHlaMetadataGenerationOrchestrator, HlaMetadataGenerationOrchestrator>();
