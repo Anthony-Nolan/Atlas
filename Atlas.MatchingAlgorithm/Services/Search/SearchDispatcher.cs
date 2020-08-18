@@ -30,7 +30,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             var identifiedSearchRequest = new IdentifiedSearchRequest
             {
-                MatchingRequest = matchingRequest,
+                SearchRequest = matchingRequest,
                 Id = searchRequestId
             };
             await searchServiceBusClient.PublishToSearchQueue(identifiedSearchRequest);

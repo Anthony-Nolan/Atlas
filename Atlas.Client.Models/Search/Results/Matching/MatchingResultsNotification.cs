@@ -6,6 +6,10 @@ namespace Atlas.Client.Models.Search.Results.Matching
 {
     public class MatchingResultsNotification
     {
+        /// <summary>
+        /// Include full search request details in results notification, as match prediction will need it to run,
+        /// which is triggered by this notification.
+        /// </summary>
         public SearchRequest SearchRequest { get; set; }
 
         public string SearchRequestId { get; set; }

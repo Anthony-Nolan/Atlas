@@ -62,7 +62,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         {
             var results = await context.CallActivityAsync<TimedResultSet<MatchingAlgorithmResultSet>>(
                 nameof(SearchActivityFunctions.RunMatchingAlgorithm),
-                new IdentifiedSearchRequest {Id = context.InstanceId, MatchingRequest = searchRequest}
+                new IdentifiedSearchRequest {Id = context.InstanceId, SearchRequest = searchRequest}
             );
             context.SetCustomStatus(new OrchestrationStatus
             {

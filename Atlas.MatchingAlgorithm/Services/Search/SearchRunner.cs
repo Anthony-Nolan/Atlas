@@ -48,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
         public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
         {
-            await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.MatchingRequest);
+            await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.SearchRequest);
             
             var searchRequestId = identifiedSearchRequest.Id;
             searchLoggingContext.SearchRequestId = searchRequestId;
@@ -60,7 +60,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
-                var results = (await searchService.Search(identifiedSearchRequest.MatchingRequest)).ToList();
+                var results = (await searchService.Search(identifiedSearchRequest.SearchRequest)).ToList();
                 stopwatch.Stop();
 
                 var blobContainerName = resultsBlobStorageClient.GetResultsContainerName();
@@ -78,7 +78,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 var notification = new MatchingResultsNotification
                 {
-                    
+                    SearchRequest = identifiedSearchRequest.SearchRequest,
                     SearchRequestId = searchRequestId,
                     SearchAlgorithmServiceVersion = searchAlgorithmServiceVersion,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
