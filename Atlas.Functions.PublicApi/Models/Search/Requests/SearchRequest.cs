@@ -2,7 +2,7 @@
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 
-namespace Atlas.Functions.Models.Search.Requests
+namespace Atlas.Functions.PublicApi.Models.Search.Requests
 {
     public class SearchRequest
     {
