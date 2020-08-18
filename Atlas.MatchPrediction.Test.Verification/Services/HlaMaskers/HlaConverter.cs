@@ -36,11 +36,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
             }
 
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
-            var locus = request.Typings.First().Locus;
 
             return await TransformRandomlySelectedTypings(
                 request,
-                async hla => (await hlaMetadataDictionary.ConvertHla(locus, hla, target)).Shuffle().FirstOrDefault() ?? hla);
+                async hla => (await hlaMetadataDictionary.ConvertHla(request.Locus, hla, target)).Shuffle().FirstOrDefault() ?? hla);
         }
     }
 }

@@ -119,16 +119,16 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
 
             var result = genotypeSimulator.SimulateGenotypes(1, pool).Single();
 
-            result.A_1.Should().Be("a-1");
-            result.A_2.Should().Be("a-2");
-            result.B_1.Should().Be("b-1");
-            result.B_2.Should().Be("b-2");
-            result.C_1.Should().Be("c-1");
-            result.C_2.Should().Be("c-2");
-            result.Dqb1_1.Should().Be("dqb1-1");
-            result.Dqb1_2.Should().Be("dqb1-2");
-            result.Drb1_1.Should().Be("drb1-1");
-            result.Drb1_2.Should().Be("drb1-2");
+            result.A.Position1.Should().Be("a-1");
+            result.A.Position2.Should().Be("a-2");
+            result.B.Position1.Should().Be("b-1");
+            result.B.Position2.Should().Be("b-2");
+            result.C.Position1.Should().Be("c-1");
+            result.C.Position2.Should().Be("c-2");
+            result.Dqb1.Position1.Should().Be("dqb1-1");
+            result.Dqb1.Position2.Should().Be("dqb1-2");
+            result.Drb1.Position1.Should().Be("drb1-1");
+            result.Drb1.Position2.Should().Be("drb1-2");
         }
 
         [Test, Repeat(10)]
@@ -164,8 +164,8 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
 
             var results = genotypeSimulator.SimulateGenotypes(requiredGenotypeCount, pool).ToList();
 
-            results.Select(r => r.A_1).Distinct().Should().BeEquivalentTo(firstHlaA, secondHlaA);
-            results.Select(r => r.A_2).Distinct().Should().BeEquivalentTo(firstHlaA, secondHlaA);
+            results.Select(r => r.A.Position1).Distinct().Should().BeEquivalentTo(firstHlaA, secondHlaA);
+            results.Select(r => r.A.Position2).Distinct().Should().BeEquivalentTo(firstHlaA, secondHlaA);
         }
 
         private static IReadOnlyCollection<UnorderedPair<int>> BuildPairsOfIdenticalNumbers(int number, int count)

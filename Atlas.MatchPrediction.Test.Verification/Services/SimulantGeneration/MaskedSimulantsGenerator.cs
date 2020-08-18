@@ -1,4 +1,5 @@
-﻿ using Atlas.Common.Utils.Extensions;
+﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
@@ -10,6 +11,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using MaskedHla =
+    Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<
+        System.Collections.Generic.IReadOnlyCollection<Atlas.MatchPrediction.Test.Verification.Models.SimulantLocusHla>>;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
 {
@@ -50,7 +54,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
             await WriteMaskingRecords(request, maskingRequests);
         }
 
-        private async Task<IReadOnlyCollection<SimulantLocusHla>> MaskGenotypesByLocus(
+        private async Task<MaskedHla> MaskGenotypesByLocus(
             GenerateSimulantsRequest request,
             MaskingRequests maskingRequests,
             string hlaNomenclatureVersion)
@@ -65,7 +69,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
                                     $"Expected {request.SimulantCount}, but retrieved {genotypeSimulants.Count}.");
             }
 
-            var results = await maskingRequests.MapAsync(async (locus, requests) =>
+            return await maskingRequests.MapAsync(async (locus, requests) =>
             {
                 if (!MatchPredictionStaticData.MatchPredictionLoci.Contains(locus))
                 {
@@ -74,6 +78,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
 
                 var locusRequest = new LocusMaskingRequests
                 {
+                    Locus = locus,
                     MaskingRequests = requests,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
                     TotalSimulantCount = request.SimulantCount
@@ -88,22 +93,25 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
 
                 return await locusHlaMasker.MaskHlaForSingleLocus(locusRequest, typings);
             });
-            
-            return MatchPredictionStaticData.MatchPredictionLoci.SelectMany(locus => results.GetLocus(locus)).ToList();
         }
 
         private static IReadOnlyCollection<Simulant> BuildSimulantsFromMaskedLoci(
-            IEnumerable<SimulantLocusHla> maskedLoci,
+            MaskedHla maskedLoci,
             GenerateSimulantsRequest request)
         {
-            return maskedLoci
-                .GroupBy(ml => ml.GenotypeSimulantId)
-                .Select(simulantLociHla => MapToSimulantDatabaseModel(
-                    request,
-                    SimulatedHlaTypingCategory.Masked,
-                    simulantLociHla.ToSimulatedHlaTyping(),
-                    simulantLociHla.Key))
+            // source locus chosen arbitrarily as ids at every locus should be the same
+            var genotypeIds = maskedLoci.A.Select(x => x.GenotypeSimulantId).ToHashSet();
+
+            return genotypeIds.Select(id => MapToSimulantDatabaseModel(
+                request, SimulatedHlaTypingCategory.Masked, GetPhenotypeById(maskedLoci, id), id))
                 .ToList();
+        }
+
+        private static PhenotypeInfo<string> GetPhenotypeById(MaskedHla source, int id)
+        {
+            return source.Map((l, data) =>
+                data.SingleOrDefault(d => d.GenotypeSimulantId == id)?.HlaTyping ?? new LocusInfo<string>())
+                .ToPhenotypeInfo();
         }
 
         private async Task WriteMaskingRecords(GenerateSimulantsRequest request, MaskingRequests maskingRequests)

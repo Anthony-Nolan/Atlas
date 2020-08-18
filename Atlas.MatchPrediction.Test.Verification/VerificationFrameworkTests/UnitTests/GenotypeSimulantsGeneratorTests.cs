@@ -8,6 +8,9 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 
 namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.UnitTests
 {
@@ -43,7 +46,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
         public async Task GenerateSimulants_WritesGenotypesToDatabaseWithCorrectMetadata(TestIndividualCategory testIndividualCategory)
         {
             const int testHarnessId = 123;
-            genotypeSimulator.SimulateGenotypes(default, default).ReturnsForAnyArgs(new[] { new SimulatedHlaTyping() });
+            genotypeSimulator.SimulateGenotypes(default, default).ReturnsForAnyArgs(new[] { new PhenotypeInfo<string>() });
 
             await simulantsGenerator.GenerateSimulants(
                 new GenerateSimulantsRequest
@@ -66,19 +69,13 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
         {
             genotypeSimulator.SimulateGenotypes(default, default).ReturnsForAnyArgs(new[]
             {
-                new SimulatedHlaTyping
-                {
-                    A_1 = "a-1",
-                    A_2 = "a-2",
-                    B_1 = "b-1",
-                    B_2 = "b-2",
-                    C_1 = "c-1",
-                    C_2 = "c-2",
-                    Dqb1_1 = "dqb1-1",
-                    Dqb1_2 = "dqb1-2",
-                    Drb1_1 = "drb1-1",
-                    Drb1_2 = "drb1-2"
-                }
+                new PhenotypeInfoBuilder<string>()
+                    .WithDataAt(Locus.A, "a-1", "a-2")
+                    .WithDataAt(Locus.B, "b-1", "b-2")
+                    .WithDataAt(Locus.C, "c-1", "c-2")
+                    .WithDataAt(Locus.Dqb1, "dqb1-1", "dqb1-2")
+                    .WithDataAt(Locus.Drb1, "drb1-1", "drb1-2")
+                    .Build()
             });
 
             await simulantsGenerator.GenerateSimulants(new GenerateSimulantsRequest(), default);
