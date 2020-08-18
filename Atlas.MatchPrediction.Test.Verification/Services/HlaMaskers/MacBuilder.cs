@@ -37,10 +37,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
             {
                 return new TransformationResult();
             }
-            var hmd = hmdFactory.BuildDictionary(hlaNomenclatureVersion);
-            var locus = request.Typings.First().Locus;
 
-            return await TransformRandomlySelectedTypings(request, hla => BuildMac(locus, hla, hmd));
+            var hmd = hmdFactory.BuildDictionary(hlaNomenclatureVersion);
+            return await TransformRandomlySelectedTypings(request, hla => BuildMac(request.Locus, hla, hmd));
         }
 
         /// <returns>Generic MAC whose expanded definition covers at least one allele within the G group

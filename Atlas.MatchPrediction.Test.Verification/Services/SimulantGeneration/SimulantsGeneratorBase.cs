@@ -1,6 +1,7 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Data.Models;
+﻿using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
-using Atlas.MatchPrediction.Test.Verification.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
         protected static Simulant MapToSimulantDatabaseModel(
             GenerateSimulantsRequest request,
             SimulatedHlaTypingCategory category,
-            SimulatedHlaTyping hlaTyping,
+            PhenotypeInfo<string> hlaTyping,
             int? sourceSimulantId = null)
         {
             return new Simulant
@@ -27,20 +28,20 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
                 TestHarness_Id = request.TestHarnessId,
                 TestIndividualCategory = request.TestIndividualCategory,
                 SimulatedHlaTypingCategory = category,
-                A_1 = hlaTyping.A_1,
-                A_2 = hlaTyping.A_2,
-                B_1 = hlaTyping.B_1,
-                B_2 = hlaTyping.B_2,
-                C_1 = hlaTyping.C_1,
-                C_2 = hlaTyping.C_2,
-                DQB1_1 = hlaTyping.Dqb1_1,
-                DQB1_2 = hlaTyping.Dqb1_2,
-                DRB1_1 = hlaTyping.Drb1_1,
-                DRB1_2 = hlaTyping.Drb1_2,
+                A_1 = hlaTyping.GetPosition(Locus.A, LocusPosition.One),
+                A_2 = hlaTyping.GetPosition(Locus.A, LocusPosition.Two),
+                B_1 = hlaTyping.GetPosition(Locus.B, LocusPosition.One),
+                B_2 = hlaTyping.GetPosition(Locus.B, LocusPosition.Two),
+                C_1 = hlaTyping.GetPosition(Locus.C, LocusPosition.One),
+                C_2 = hlaTyping.GetPosition(Locus.C, LocusPosition.Two),
+                DQB1_1 = hlaTyping.GetPosition(Locus.Dqb1, LocusPosition.One),
+                DQB1_2 = hlaTyping.GetPosition(Locus.Dqb1, LocusPosition.Two),
+                DRB1_1 = hlaTyping.GetPosition(Locus.Drb1, LocusPosition.One),
+                DRB1_2 = hlaTyping.GetPosition(Locus.Drb1, LocusPosition.Two),
                 SourceSimulantId = sourceSimulantId
             };
         }
-        
+
         protected async Task StoreSimulants(IReadOnlyCollection<Simulant> simulants)
         {
             await simulantsRepository.BulkInsertSimulants(simulants);

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.Test.Verification.Models;
 
@@ -70,8 +72,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
 
             foreach (var maskingRequest in request.MaskingRequests.Where(r => r.ProportionToMask > 0))
             {
+                Debug.WriteLine($"Masking {maskingRequest.ProportionToMask}% of {request.Locus} to {maskingRequest.MaskingCategory}.");
+
                 var transformationRequest = new TransformationRequest
                 {
+                    Locus = request.Locus,
                     ProportionToTransform = maskingRequest.ProportionToMask,
                     TotalSimulantCount = request.TotalSimulantCount,
                     Typings = remainingTypings
@@ -108,6 +113,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
 
     internal class LocusMaskingRequests
     {
+        public Locus Locus { get; set; }
         public IEnumerable<MaskingRequest> MaskingRequests { get; set; }
         public string HlaNomenclatureVersion { get; set; }
         public int TotalSimulantCount { get; set; }

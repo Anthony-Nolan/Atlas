@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Test.Verification.Models;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
@@ -9,7 +10,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
     {
         /// <param name="requiredGenotypeCount">Number of genotypes to be built.</param>
         /// <param name="pool">Data source for genotype simulation.</param>
-        IReadOnlyCollection<SimulatedHlaTyping> SimulateGenotypes(int requiredGenotypeCount, NormalisedHaplotypePool pool);
+        IReadOnlyCollection<PhenotypeInfo<string>> SimulateGenotypes(int requiredGenotypeCount, NormalisedHaplotypePool pool);
     }
 
     internal class GenotypeSimulator : IGenotypeSimulator
@@ -21,7 +22,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
             this.randomNumberGenerator = randomNumberGenerator;
         }
         
-        public IReadOnlyCollection<SimulatedHlaTyping> SimulateGenotypes(int requiredGenotypeCount, NormalisedHaplotypePool pool)
+        public IReadOnlyCollection<PhenotypeInfo<string>> SimulateGenotypes(int requiredGenotypeCount, NormalisedHaplotypePool pool)
         {
             var request = new GenerateRandomNumberRequest
             {
@@ -34,24 +35,17 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
             return pairs.AsParallel().Select(p => BuildSimulatedHlaTyping(pool, p)).ToList();
         }
 
-        private static SimulatedHlaTyping BuildSimulatedHlaTyping(NormalisedHaplotypePool pool, UnorderedPair<int> indexPair)
+        private static PhenotypeInfo<string> BuildSimulatedHlaTyping(NormalisedHaplotypePool pool, UnorderedPair<int> indexPair)
         {
             var firstHaplotype = pool.GetHaplotypeFrequencyByPoolIndex(indexPair.Item1);
             var secondHaplotype = pool.GetHaplotypeFrequencyByPoolIndex(indexPair.Item2);
 
-            return new SimulatedHlaTyping
-            {
-                A_1 = firstHaplotype.A,
-                A_2 = secondHaplotype.A,
-                B_1 = firstHaplotype.B,
-                B_2 = secondHaplotype.B,
-                C_1 = firstHaplotype.C,
-                C_2 = secondHaplotype.C,
-                Dqb1_1 = firstHaplotype.Dqb1,
-                Dqb1_2 = secondHaplotype.Dqb1,
-                Drb1_1 = firstHaplotype.Drb1,
-                Drb1_2 = secondHaplotype.Drb1
-            };
+            return new PhenotypeInfo<string>(
+                valueA: new LocusInfo<string>(firstHaplotype.A, secondHaplotype.A),
+                valueB: new LocusInfo<string>(firstHaplotype.B, secondHaplotype.B),
+                valueC: new LocusInfo<string>(firstHaplotype.C, secondHaplotype.C),
+                valueDqb1: new LocusInfo<string>(firstHaplotype.Dqb1, secondHaplotype.Dqb1),
+                valueDrb1: new LocusInfo<string>(firstHaplotype.Drb1, secondHaplotype.Drb1));
         }
     }
 }

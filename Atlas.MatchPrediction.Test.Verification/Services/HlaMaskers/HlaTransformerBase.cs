@@ -1,4 +1,5 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Models;
+﻿using Atlas.Common.GeneticData;
+using Atlas.MatchPrediction.Test.Verification.Models;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
 {
     internal class TransformationRequest
     {
+        public Locus Locus { get; set; }
         public int ProportionToTransform { get; set; }
         public int TotalSimulantCount { get; set; }
         public IReadOnlyCollection<SimulantLocusHla> Typings { get; set; }
