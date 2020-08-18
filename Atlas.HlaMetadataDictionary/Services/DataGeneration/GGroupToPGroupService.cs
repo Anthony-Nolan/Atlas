@@ -37,7 +37,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 
             var locusToAllelesToPGroup = GetLocusToAllelesToPGroup(pGroups);
 
-            return gGroups.Select(gGroup => GetMetadata(locusToAllelesToPGroup, gGroup)).Where(m => m != null);
+            return gGroups.Select(gGroup => GetMetadata(locusToAllelesToPGroup, gGroup));
         }
 
         private Dictionary<Tuple<Locus, string>, string> GetLocusToAllelesToPGroup(IEnumerable<IAlleleGroupMetadata> pGroups)
@@ -69,7 +69,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
                 .Select(allele => locusToAllelesToPGroup[new Tuple<Locus, string>(gGroups.Locus, allele)])
                 .FirstOrDefault();
 
-            return pGroup != null ? new GGroupToPGroupMetadata(gGroups.Locus, gGroups.LookupName, pGroup) : null;
+            return new GGroupToPGroupMetadata(gGroups.Locus, gGroups.LookupName, pGroup);
         }
 
         private static IAlleleGroupMetadata GetMetadataFromAlleleGroup(IWmdaAlleleGroup alleleGroup)
