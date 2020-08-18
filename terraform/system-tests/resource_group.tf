@@ -1,4 +1,4 @@
-resource "azurerm_resource_group" "atlas_resource_group" {
+resource "azurerm_resource_group" "atlas_system_tests_resource_group" {
   location = local.location
   name     = local.resource_group_name
 

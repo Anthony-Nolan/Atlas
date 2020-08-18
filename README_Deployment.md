@@ -1,4 +1,4 @@
-__## Deployment
+# Deployment
 
 As much as possible of deployment of the ATLAS system has been scripted, via a combination of Terraform (using the Azure Resource Manager provider), and Azure Devops .yml scripts.
 Atlas is supported in an Azure environment, built and deployed using Azure Devops - to change either would require some custom changes to the codebase.
@@ -6,6 +6,8 @@ Atlas is supported in an Azure environment, built and deployed using Azure Devop
 Note that two terraform scripts are used. The first, "terraform/core", covers the majority of ATLAS infrastructure. 
 The second, "terraform/webhooks", covers any webhooks that need setting up for e.g. eventGrid triggered functions. As webhooks need to send a 
 handshake request to the target as part of set-up, the relevant webhooks must have been deployed before this script can be run.
+
+## Manual Steps
 
 The following are the steps that are required to be taken manually when deploying ATLAS to a new environment.
 
@@ -69,11 +71,9 @@ would require a manual weekly update of the `IP_RESTRICTION_SETTINGS` variable, 
 
 ### Terraform Configuration
 
-- Before terraform can be run for the first time, a new terraform workspace should be manually created. During the release step, this new workspace should be selected.
-  - In development, we needed to create this workspace as a one-off command in our Devops release, before removing it for future releases.
-  - TODO: ATLAS-216: Ensure this can be run as a one-off locally, without needing to change and revert the Devops release pipeline
 - You will also need to register any relevant resource providers. See notes in `.\terraform\main.tf`.
-- All Atlas infrastructure is controlled via terraform scripts. If any specific naming or configuration changes are required for your installation, such changes should be made to the terraform scripts in a fork of the repository - changing them manually in Azure will lead to the changes being reverted on the next deployment to that environment.
+- All Atlas infrastructure is controlled via terraform scripts. If any specific naming or configuration changes are required for your installation, such changes should be made to the terraform scripts in 
+a fork of the repository - changing them manually in Azure will lead to the changes being reverted on the next deployment to that environment.
 
 ### Manual Azure Configuration (Post-terraform)
 
@@ -114,10 +114,32 @@ Once terraform has created ATLAS resources for the first time, certain actions m
   - IP Whitelisting (Optional)
     - By default, only other azure services will be allowed to access the database server through the firewall. For development access, any known IP addresses should be manually added to the IP whitelist in Azure.  
 
-### System Tests
+## System Tests
 
-The system tests require some Azure resources of their own - primarily SQL databases. For now these are manually created, in Azure.
-// TODO: ATLAS-314: Create these resources using terraform.
+### Resources
+
+The system tests require some Azure resources of their own: SQL databases, and Azure Storage.
+These resources are controlled by terraform scripts, which will be run by the test pipeline.
+
+### One-time Set-up
+
+Before the full suite of system tests can be run, some one-time set up must be performed. 
+
+#### HLA Metadata Dictionary
+
+The HLA Metadata dictionary must be refreshed to version 3330 for the matching validation test suite to run. 
+
+This can be achieved by configuring an ATLAS installation to use the test storage account (locally is recommended, but you can use a deployed environment if local running is not an option), then triggering the refresh job.
+
+This is triggered via an HTTP endpoint in the Matching Algorithm Functions App.
+
+#### MAC Dictionary
+
+A full import of the latest MACs should be performed (this can be a one-off, as tests should not ues as-yet unpublished MAC values)
+
+This can be achieved by configuring an ATLAS installation to use the test storage account (locally is recommended, but you can use a deployed environment if local running is not an option), then triggering the refresh job. 
+
+This is triggered via an HTTP endpoint in the Atlas Functions App.
 
 ## Releasing to multiple environments
 
