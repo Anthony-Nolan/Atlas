@@ -82,7 +82,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 TotalSimulantCount = typings.Count
             };
 
-            await locusHlaMasker.Invoking(async x => await x.MaskHla(requests, typings))
+            await locusHlaMasker.Invoking(async x => await x.MaskHlaForSingleLocus(requests, typings))
                 .Should().ThrowAsync<Exception>();
         }
 
@@ -101,7 +101,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 TotalSimulantCount = typings.Count + difference
             };
 
-            await locusHlaMasker.Invoking(async x => await x.MaskHla(requests, typings))
+            await locusHlaMasker.Invoking(async x => await x.MaskHlaForSingleLocus(requests, typings))
                 .Should().ThrowAsync<Exception>();
         }
 
@@ -113,7 +113,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
 
             var requests = new LocusMaskingRequests {TotalSimulantCount = typings.Count};
 
-            var results = await locusHlaMasker.MaskHla(requests, typings);
+            var results = await locusHlaMasker.MaskHlaForSingleLocus(requests, typings);
             var result = results.Single();
 
             result.Locus.Should().Be(typing.Locus);
@@ -135,7 +135,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 MaskingRequests = MaskingRequestBuilder.New.WithCategories(categories).Build(categories.Count)
             };
 
-            var results = await locusHlaMasker.MaskHla(requests, typings);
+            var results = await locusHlaMasker.MaskHlaForSingleLocus(requests, typings);
             var result = results.Single();
 
             result.Locus.Should().Be(typing.Locus);
@@ -159,7 +159,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                     .Build(categories.Count)
             };
 
-            await locusHlaMasker.Invoking(async x => await x.MaskHla(requests, typings))
+            await locusHlaMasker.Invoking(async x => await x.MaskHlaForSingleLocus(requests, typings))
                 .Should().ThrowAsync<ArgumentOutOfRangeException>();
         }
 
@@ -178,7 +178,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                     .Build(categories.Count)
             };
 
-            await locusHlaMasker.Invoking(async x => await x.MaskHla(requests, typings))
+            await locusHlaMasker.Invoking(async x => await x.MaskHlaForSingleLocus(requests, typings))
                 .Should().ThrowAsync<ArgumentOutOfRangeException>();
         }
 
@@ -203,7 +203,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 TotalSimulantCount = simulantCount
             };
 
-            await locusHlaMasker.MaskHla(requests, typings);
+            await locusHlaMasker.MaskHlaForSingleLocus(requests, typings);
 
             await twoFieldBuilder.Received().ConvertRandomLocusHlaToTwoField(
                 Arg.Is<TransformationRequest>(x =>
@@ -232,7 +232,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 TotalSimulantCount = simulantCount
             };
 
-            await locusHlaMasker.MaskHla(requests, typings);
+            await locusHlaMasker.MaskHlaForSingleLocus(requests, typings);
 
             await hlaConverter.Received().ConvertRandomLocusHla(
                 Arg.Is<TransformationRequest>(x =>
@@ -263,7 +263,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 TotalSimulantCount = simulantCount
             };
 
-            await locusHlaMasker.MaskHla(requests, typings);
+            await locusHlaMasker.MaskHlaForSingleLocus(requests, typings);
 
             await hlaConverter.Received().ConvertRandomLocusHla(
                 Arg.Is<TransformationRequest>(x =>
@@ -292,7 +292,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 TotalSimulantCount = simulantCount
             };
 
-            await locusHlaMasker.MaskHla(requests, typings);
+            await locusHlaMasker.MaskHlaForSingleLocus(requests, typings);
 
             await macBuilder.Received().ConvertRandomHlaToMacs(
                 Arg.Is<TransformationRequest>(x =>
@@ -319,7 +319,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 TotalSimulantCount = simulantCount
             };
 
-            await locusHlaMasker.MaskHla(requests, typings);
+            await locusHlaMasker.MaskHlaForSingleLocus(requests, typings);
 
             await xxCodeBuilder.Received().ConvertRandomLocusHlaToXxCodes(Arg.Is<TransformationRequest>(x =>
                 x.ProportionToTransform == maskingProportion &&
@@ -345,7 +345,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 TotalSimulantCount = simulantCount
             };
 
-            await locusHlaMasker.MaskHla(requests, typings);
+            await locusHlaMasker.MaskHlaForSingleLocus(requests, typings);
 
             await hlaDeleter.Received().DeleteRandomLocusHla(Arg.Is<TransformationRequest>(x =>
                 x.ProportionToTransform == maskingProportion &&
@@ -371,7 +371,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 }
             };
 
-            await locusHlaMasker.MaskHla(requests, typings);
+            await locusHlaMasker.MaskHlaForSingleLocus(requests, typings);
 
             await hlaDeleter.DidNotReceive().DeleteRandomLocusHla(Arg.Any<TransformationRequest>());
 

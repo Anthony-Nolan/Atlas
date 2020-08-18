@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Atlas.Common.Helpers
+namespace Atlas.Common.Utils
 {
     /// <summary>
     ///  Queue which automatically drops the oldest (first) entry upon new entry insertion when it gets full.

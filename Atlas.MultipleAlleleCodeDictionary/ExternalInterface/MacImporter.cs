@@ -1,10 +1,8 @@
 ﻿using Atlas.Common.ApplicationInsights;
 using Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories;
-using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
 using Dasync.Collections;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
@@ -18,7 +16,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
     internal class MacImporter : IMacImporter
     {
         private const string TracePrefix = "Mac Import: ";
-        private const int BatchSize = 100;
 
         private readonly IMacRepository macRepository;
         private readonly IMacFetcher macFetcher;
@@ -45,9 +42,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
                 var lastEntryBeforeInsert = await macRepository.GetLastMacEntry();
                 logger.SendTrace($"{TracePrefix}The last MAC entry found was: {lastEntryBeforeInsert}");
 
-                await macFetcher.FetchAndLazilyParseMacsSince(lastEntryBeforeInsert)
-                    .Batch(BatchSize)
-                    .ForEachAsync(InsertMacs);
+                var newMacs = await macFetcher.FetchAndLazilyParseMacsSince(lastEntryBeforeInsert).ToListAsync();
+
+                logger.SendTrace($"{TracePrefix}Attempting to insert {newMacs.Count} new MACs");
+                await macRepository.InsertMacs(newMacs);
             }
             catch (Exception e)
             {
@@ -56,12 +54,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.ExternalInterface
             }
 
             logger.SendTrace($"{TracePrefix}Successfully finished MAC Import");
-        }
-
-        private async Task InsertMacs(IReadOnlyCollection<Mac> macs)
-        {
-            logger.SendTrace($"{TracePrefix}Attempting to insert {macs.Count} new MACs");
-            await macRepository.InsertMacs(macs);
         }
     }
 }

@@ -84,23 +84,23 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 new MaskingRequests(),
                 default);
 
-            await locusHlaMasker.Received(1).MaskHla(
+            await locusHlaMasker.Received(1).MaskHlaForSingleLocus(
                 Arg.Any<LocusMaskingRequests>(),
                 Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.A));
-            await locusHlaMasker.Received(1).MaskHla(
+            await locusHlaMasker.Received(1).MaskHlaForSingleLocus(
                 Arg.Any<LocusMaskingRequests>(),
                 Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.B));
-            await locusHlaMasker.Received(1).MaskHla(
+            await locusHlaMasker.Received(1).MaskHlaForSingleLocus(
                 Arg.Any<LocusMaskingRequests>(),
                 Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.C));
-            await locusHlaMasker.Received(1).MaskHla(
+            await locusHlaMasker.Received(1).MaskHlaForSingleLocus(
                 Arg.Any<LocusMaskingRequests>(),
                 Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.Dqb1));
-            await locusHlaMasker.Received(1).MaskHla(
+            await locusHlaMasker.Received(1).MaskHlaForSingleLocus(
                 Arg.Any<LocusMaskingRequests>(),
                 Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.Drb1));
 
-            await locusHlaMasker.DidNotReceive().MaskHla(
+            await locusHlaMasker.DidNotReceive().MaskHlaForSingleLocus(
                 Arg.Any<LocusMaskingRequests>(),
                 Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x => x.Single().Locus == Locus.Dpb1));
         }
@@ -123,7 +123,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 new MaskingRequests(),
                 default);
 
-            await locusHlaMasker.Received(5).MaskHla(
+            await locusHlaMasker.Received(5).MaskHlaForSingleLocus(
                 Arg.Any<LocusMaskingRequests>(),
                 Arg.Is<IReadOnlyCollection<SimulantLocusHla>>(x =>
                     x.Select(g => g.GenotypeSimulantId).SequenceEqual(new[] { firstGenotype.Id, secondGenotype.Id }) &&
@@ -133,7 +133,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
         [Test]
         public async Task GenerateSimulants_BuildsSimulantFromMaskedLociTypings()
         {
-            locusHlaMasker.MaskHla(default, default).ReturnsForAnyArgs(
+            locusHlaMasker.MaskHlaForSingleLocus(default, default).ReturnsForAnyArgs(
                 BuildHlaFor(Locus.A),
 BuildHlaFor(Locus.B),
                 BuildHlaFor(Locus.C),
@@ -162,7 +162,7 @@ BuildHlaFor(Locus.B),
         {
             const int testHarnessId = 123;
 
-            var typings = locusHlaMasker.MaskHla(default, default).ReturnsForAnyArgs(
+            var typings = locusHlaMasker.MaskHlaForSingleLocus(default, default).ReturnsForAnyArgs(
                 BuildHlaFor(Locus.A),
                 BuildHlaFor(Locus.B),
                 BuildHlaFor(Locus.C),

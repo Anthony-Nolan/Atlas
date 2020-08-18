@@ -1,9 +1,9 @@
-﻿using Atlas.Common.Helpers;
+﻿using System.Collections.Generic;
+using Atlas.Common.GeneticData.Hla.Services;
 using FluentAssertions;
 using NUnit.Framework;
-using System.Collections.Generic;
 
-namespace Atlas.Common.Test.Helpers
+namespace Atlas.Common.Test.Hla.Services
 {
     public class AlleleSplitterTests
     {
