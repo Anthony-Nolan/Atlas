@@ -30,6 +30,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.DonorTypePa
         private const string AdultDonorInInvalidFileId = "5";
         private const string InvalidDonorId = "6";
 
+        private const string SerologyTypedDonorId = "7";
+
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
         {
@@ -86,6 +88,15 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.DonorTypePa
 
             var invalidDonor = await donorRepository.GetDonor(InvalidDonorId);
             invalidDonor.Should().BeNull();
+        }
+
+        [Test]
+        public async Task ImportDonors_WhenDonorSerologyTypedOnly_WillImportDonor()
+        {
+            await ImportDonorFile("serologyTypedDonor.json");
+
+            var donor = await donorRepository.GetDonor(SerologyTypedDonorId);
+            donor.ExternalDonorCode.Should().Be(SerologyTypedDonorId);
         }
 
         private async Task ImportValidDonorFile()
