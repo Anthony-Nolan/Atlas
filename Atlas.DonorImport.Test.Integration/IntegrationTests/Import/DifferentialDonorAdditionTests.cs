@@ -162,8 +162,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             serviceBusClient.ClearReceivedCalls();
 
             //ACT
-            //await donorFileImporter.Invoking(importer => importer.ImportDonorFile(donorUpdateFile_DonorSets1And2)).Should().ThrowAsync<Exception>();
-            await donorFileImporter.ImportDonorFile(donorUpdateFile_DonorSets1And2);
+            await donorFileImporter.Invoking(importer => importer.ImportDonorFile(donorUpdateFile_DonorSets1And2)).Should().ThrowAsync<Exception>();
 
             donorRepository.StreamAllDonors().Where(donor => donor.ExternalDonorCode.StartsWith(donorCodePrefix)).Should().HaveCount(4);
             await serviceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
