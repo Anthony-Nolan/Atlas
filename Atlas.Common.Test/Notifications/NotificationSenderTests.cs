@@ -7,7 +7,7 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using NUnit.Framework;
 
-namespace Atlas.Common.Test.Helpers
+namespace Atlas.Common.Test.Notifications
 {
     [TestFixture]
     public class NotificationSenderTests

@@ -43,7 +43,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
                 HaplotypeFrequencySetId = set.Id,
 
                 // TODO ATLAS-600 - Set version from value saved with HF set row in db
-                HlaNomenclatureVersion = "3400",
+                HlaNomenclatureVersion = "3410",
 
                 HaplotypeFrequencies = frequencies
             };

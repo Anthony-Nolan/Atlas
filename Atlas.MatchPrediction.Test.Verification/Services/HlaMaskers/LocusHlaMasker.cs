@@ -9,7 +9,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
 {
     internal interface ILocusHlaMasker
     {
-        Task<IReadOnlyCollection<SimulantLocusHla>> MaskHla(
+        Task<IReadOnlyCollection<SimulantLocusHla>> MaskHlaForSingleLocus(
             LocusMaskingRequests request, IReadOnlyCollection<SimulantLocusHla> genotypeHlaTypings);
     }
 
@@ -35,7 +35,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
             this.hlaDeleter = hlaDeleter;
         }
 
-        public async Task<IReadOnlyCollection<SimulantLocusHla>> MaskHla(
+        public async Task<IReadOnlyCollection<SimulantLocusHla>> MaskHlaForSingleLocus(
             LocusMaskingRequests request,
             IReadOnlyCollection<SimulantLocusHla> genotypeHlaTypings)
         {

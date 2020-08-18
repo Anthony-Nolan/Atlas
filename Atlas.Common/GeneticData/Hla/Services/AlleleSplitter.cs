@@ -2,7 +2,7 @@
 using System.Linq;
 using Atlas.Common.Utils.Extensions;
 
-namespace Atlas.Common.Helpers
+namespace Atlas.Common.GeneticData.Hla.Services
 {
     public static class AlleleSplitter
     {

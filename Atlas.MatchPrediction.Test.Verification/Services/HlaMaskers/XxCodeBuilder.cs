@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using Atlas.Common.Helpers;
+﻿using Atlas.Common.GeneticData.Hla.Services;
+using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers
 {

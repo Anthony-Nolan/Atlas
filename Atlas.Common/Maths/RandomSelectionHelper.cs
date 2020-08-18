@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Atlas.Common.Helpers
+namespace Atlas.Common.Maths
 {
     public static class RandomSelectionHelper
     {
@@ -22,7 +22,7 @@ namespace Atlas.Common.Helpers
 
         // Fisher-Yates shuffle 
         // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
-        public static IList<T> Shuffle<T>(this IList<T> list)
+        private static IList<T> Shuffle<T>(this IList<T> list)
         {
             var n = list.Count;
             while (n > 1)
