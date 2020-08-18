@@ -1,0 +1,34 @@
+﻿{
+  "updateMode": "full",
+  "donors": [
+    {
+      "RecordId": 7,
+      "ChangeType": "N",
+      "DonorType": "C",
+      "UpdateMode": "diff",
+      "Hla": {
+        "A": {
+          "ser": {
+            "Field1": "*03:112",
+            "Field2": "*24:02:13"
+          },
+          "Dna": null,
+        },
+        "B": {
+          "ser": {
+            "Field1": "*39:06:02:01",
+            "Field2": "*07:02:45"
+          },
+          "Dna": null,
+        },
+        "DRB1": {
+          "ser": {
+            "Field1": "*15:03:01:01",
+            "Field2": "*15:02:01:01"
+          },
+          "Dna": null,
+        }
+      }
+    }
+  ]
+}

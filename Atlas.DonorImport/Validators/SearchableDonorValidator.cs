@@ -28,12 +28,9 @@ namespace Atlas.DonorImport.Validators
     {
         public RequiredImportedLocusValidator()
         {
-            RuleFor(l => l.Dna)
-                .NotEmpty()
-                .SetValidator(new RequiredTwoFieldStringValidator()).OnAnyFailure((l) =>
-                {
-                    RuleFor(locus => locus.Serology).NotEmpty().SetValidator(new RequiredTwoFieldStringValidator());
-                });
+            RuleFor(l => l)
+                .Must(l => l.Dna != null && new RequiredTwoFieldStringValidator().Validate(l.Dna).IsValid)
+                .Unless(l => l.Serology != null && new RequiredTwoFieldStringValidator().Validate(l.Serology).IsValid);
         }   
     }
     internal class RequiredTwoFieldStringValidator : AbstractValidator<TwoFieldStringData>
