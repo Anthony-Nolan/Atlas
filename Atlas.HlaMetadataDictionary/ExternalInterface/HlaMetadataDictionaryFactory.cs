@@ -88,7 +88,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.hlaScoringMetadataService = hlaScoringMetadataService;
             this.dpb1TceGroupMetadataService = dpb1TceGroupMetadataService;
             this.gGroupToPGroupMetadataService = gGroupToPGroupMetadataService;
-
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;

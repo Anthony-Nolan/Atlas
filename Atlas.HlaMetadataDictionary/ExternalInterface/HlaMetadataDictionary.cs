@@ -66,6 +66,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
         private readonly IHlaScoringMetadataService hlaScoringMetadataService;
         private readonly IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
+        private readonly IGGroupToPGroupMetadataService gGroupToPGroupMetadataService;
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
@@ -78,6 +79,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService,
             IHlaScoringMetadataService hlaScoringMetadataService,
             IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
+            IGGroupToPGroupMetadataService gGroupToPGroupMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger)
@@ -89,6 +91,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.locusHlaMatchingMetadataService = locusHlaMatchingMetadataService;
             this.hlaScoringMetadataService = hlaScoringMetadataService;
             this.dpb1TceGroupMetadataService = dpb1TceGroupMetadataService;
+            this.gGroupToPGroupMetadataService = gGroupToPGroupMetadataService;
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
@@ -133,12 +136,6 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 HlaNomenclatureVersion = ActiveHlaNomenclatureVersion,
                 TargetHlaCategory = targetHlaCategory
             });
-        }
-
-        /// <inheritdoc />
-        public async Task<string> ConvertGGroupToPGroup(Locus locus, string gGroup)
-        {
-            return await hlaConverter.ConvertGGroupToPGroup(locus, gGroup, ActiveHlaNomenclatureVersion);
         }
 
         private bool ShouldRecreate(CreationBehaviour creationConfig)
@@ -187,12 +184,16 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             return await dpb1TceGroupMetadataService.GetDpb1TceGroup(dpb1HlaName, ActiveHlaNomenclatureVersion);
         }
 
+        public async Task<string> ConvertGGroupToPGroup(Locus locus, string gGroup)
+        {
+            return await gGroupToPGroupMetadataService.ConvertGGroupToPGroup(locus, gGroup, ActiveHlaNomenclatureVersion);
+        }
+
         public async Task<IEnumerable<string>> GetAllPGroups()
         {
             return await hlaMatchingMetadataService.GetAllPGroups(ActiveHlaNomenclatureVersion);
         }
 
-        /// <inheritdoc />
         public async Task<IDictionary<Locus, List<string>>> GetAllGGroups()
         {
             return await hlaScoringMetadataService.GetAllGGroups(ActiveHlaNomenclatureVersion);

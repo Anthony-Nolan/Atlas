@@ -14,7 +14,7 @@ using NUnit.Framework;
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
 {
     [TestFixture]
-    public class GGroupToPGroupConversionTests
+    public class GGroupToPGroupMetadataServiceTests
     {
         private const string CacheKey = nameof(GGroupToPGroupMetadataRepository);
         private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
