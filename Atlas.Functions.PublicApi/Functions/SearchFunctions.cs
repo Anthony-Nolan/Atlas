@@ -1,7 +1,7 @@
 using System.IO;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Validation;
-using Atlas.Functions.PublicApi.Models.Search.Requests;
 using Atlas.MatchingAlgorithm.Services.Search;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +27,7 @@ namespace Atlas.Functions.PublicApi.Functions
             var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
             try
             {
-                var id = await searchDispatcher.DispatchSearch(searchRequest.ToMatchingRequest());
+                var id = await searchDispatcher.DispatchSearch(searchRequest);
                 return new JsonResult(new SearchInitiationResponse {SearchIdentifier = id});
             }
             catch (ValidationException e)

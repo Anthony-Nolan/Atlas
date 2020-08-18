@@ -2,8 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.Utils;
-using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Helpers;
 using Atlas.MatchingAlgorithm.Services.Search;
@@ -14,6 +14,7 @@ using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
+using SearchInitiationResponse = Atlas.MatchingAlgorithm.Client.Models.SearchRequests.SearchInitiationResponse;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
@@ -32,7 +33,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         [FunctionName(nameof(InitiateSearch))]
         public async Task<IActionResult> InitiateSearch([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request)
         {
-            var searchRequest = JsonConvert.DeserializeObject<MatchingRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+            var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
             try
             {
                 var id = await searchDispatcher.DispatchSearch(searchRequest);

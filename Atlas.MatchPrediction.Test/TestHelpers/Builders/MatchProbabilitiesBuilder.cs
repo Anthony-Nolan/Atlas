@@ -1,6 +1,6 @@
 ﻿using Atlas.Common.Utils.Models;
 using LochNessBuilder;
-using Builder = LochNessBuilder.Builder<Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability.MatchProbabilities>;
+using Builder = LochNessBuilder.Builder<Atlas.Client.Models.Search.Results.MatchPrediction.MatchProbabilities>;
 
 namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 {
@@ -14,7 +14,11 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
             return builder.WithProbabilityValuesSetTo(value, value, value);
         }
 
-        public static Builder WithProbabilityValuesSetTo(this Builder builder, decimal zeroMismatchValue, decimal oneMismatchValue, decimal twoMismatchValue)
+        public static Builder WithProbabilityValuesSetTo(
+            this Builder builder,
+            decimal zeroMismatchValue,
+            decimal oneMismatchValue,
+            decimal twoMismatchValue)
         {
             return builder.With(r => r.ZeroMismatchProbability, new Probability(zeroMismatchValue))
                 .With(r => r.OneMismatchProbability, new Probability(oneMismatchValue))

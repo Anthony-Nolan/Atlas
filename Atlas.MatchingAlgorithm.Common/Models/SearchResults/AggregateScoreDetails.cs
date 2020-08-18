@@ -1,5 +1,5 @@
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
+using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 
 namespace Atlas.MatchingAlgorithm.Common.Models.SearchResults
 {

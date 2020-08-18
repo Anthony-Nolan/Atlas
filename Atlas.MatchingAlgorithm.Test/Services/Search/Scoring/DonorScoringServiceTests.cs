@@ -3,7 +3,6 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
@@ -21,6 +20,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring

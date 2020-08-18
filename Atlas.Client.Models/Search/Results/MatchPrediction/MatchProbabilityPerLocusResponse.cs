@@ -1,9 +1,9 @@
 ﻿using System;
 using Atlas.Common.Utils.Models;
 using LocusMatchCategories =
-    Atlas.Common.GeneticData.PhenotypeInfo.LocusInfo<Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability.PredictiveMatchCategory?>;
+    Atlas.Common.GeneticData.PhenotypeInfo.LocusInfo<Atlas.Client.Models.Search.Results.MatchPrediction.PredictiveMatchCategory?>;
 
-namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
+namespace Atlas.Client.Models.Search.Results.MatchPrediction
 {
     public class MatchProbabilityPerLocusResponse
     {

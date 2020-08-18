@@ -1,11 +1,11 @@
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation
 {

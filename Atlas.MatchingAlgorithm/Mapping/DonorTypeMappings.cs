@@ -1,13 +1,8 @@
 using System;
+using Atlas.Client.Models.Search;
 
-namespace Atlas.Functions.PublicApi.Models.Search
+namespace Atlas.MatchingAlgorithm.Mapping
 {
-    public enum DonorType
-    {
-        Adult,
-        Cord
-    }
-
     internal static class DonorTypeMappings
     {
         // TODO: ALAS-290: clean up DonorType enums 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
+using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 
 namespace Atlas.MatchingAlgorithm.Common.Models.Scoring
 {

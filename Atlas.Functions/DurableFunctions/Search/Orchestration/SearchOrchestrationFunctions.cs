@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.DurableFunctions.Search.Activity;
 using Atlas.Functions.Models;
-using Atlas.Functions.PublicApi.Models.Search.Requests;
 using Atlas.Functions.Services;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Microsoft.Azure.WebJobs;
@@ -61,7 +62,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         {
             var results = await context.CallActivityAsync<TimedResultSet<MatchingAlgorithmResultSet>>(
                 nameof(SearchActivityFunctions.RunMatchingAlgorithm),
-                new IdentifiedSearchRequest {Id = context.InstanceId, MatchingRequest = searchRequest.ToMatchingRequest()}
+                new IdentifiedSearchRequest {Id = context.InstanceId, MatchingRequest = searchRequest}
             );
             context.SetCustomStatus(new OrchestrationStatus
             {

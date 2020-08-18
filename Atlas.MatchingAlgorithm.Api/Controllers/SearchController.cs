@@ -1,8 +1,9 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Microsoft.AspNetCore.Mvc;
@@ -20,11 +21,11 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
     
         [HttpPost]
         [Route("search")]
-        public async Task<MatchingAlgorithmResultSet> Search([FromBody] MatchingRequest matchingRequest)
+        public async Task<MatchingAlgorithmResultSet> Search([FromBody] SearchRequest searchRequest)
         {
             try
             {
-                var results = (await searchService.Search(matchingRequest)).ToList();
+                var results = (await searchService.Search(searchRequest)).ToList();
 
                 return new MatchingAlgorithmResultSet
                 {

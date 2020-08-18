@@ -1,8 +1,8 @@
 using Atlas.Common.AzureStorage.Blob;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 
 namespace Atlas.MatchingAlgorithm.Clients.AzureStorage

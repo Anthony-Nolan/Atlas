@@ -2,12 +2,12 @@
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders.ScoringInfoBuilders;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Grading.GradingCalculators;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
 using System;
+using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 
 namespace Atlas.MatchingAlgorithm.Test.Services.Search.Scoring.Grading
 {

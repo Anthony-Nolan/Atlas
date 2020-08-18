@@ -1,6 +1,6 @@
 ﻿using System;
+using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults

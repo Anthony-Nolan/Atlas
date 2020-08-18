@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
+using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Common.Models.Scoring;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Confidence

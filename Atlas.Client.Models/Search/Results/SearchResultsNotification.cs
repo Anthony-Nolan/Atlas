@@ -1,6 +1,8 @@
 using System;
+// ReSharper disable MemberCanBeInternal
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace Atlas.Functions.PublicApi.Models.Search.Results
+namespace Atlas.Client.Models.Search.Results
 {
     public class SearchResultsNotification
     {

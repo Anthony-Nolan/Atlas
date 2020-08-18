@@ -17,6 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Atlas.Client.Models\Atlas.Client.Models.csproj" />
       <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
     </ItemGroup>
 

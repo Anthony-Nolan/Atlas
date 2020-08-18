@@ -2,11 +2,12 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Functions.DurableFunctions.Search.Orchestration;
-using Atlas.Functions.PublicApi.Models.Search.Requests;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using Atlas.MatchPrediction.ExternalInterface;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -42,9 +43,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
         {
             var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await request.Content.ReadAsStringAsync());
 
-            var matchingRequest = searchRequest.ToMatchingRequest();
+
+            var matchingRequest = searchRequest;
             
-            var validationResult = new SearchRequestValidator().Validate(matchingRequest);
+            var validationResult = await new SearchRequestValidator().ValidateAsync(matchingRequest);
             if (!validationResult.IsValid)
             {
                 return new HttpResponseMessage( HttpStatusCode.BadRequest ) {Content =  new StringContent(JsonConvert.SerializeObject(validationResult.Errors), Encoding.UTF8, "application/json" ) };

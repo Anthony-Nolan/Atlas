@@ -1,8 +1,8 @@
+using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Models;
-using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using LochNessBuilder;
-using Builder = LochNessBuilder.Builder<Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability.MatchProbabilityResponse>;
+using Builder = LochNessBuilder.Builder<Atlas.Client.Models.Search.Results.MatchPrediction.MatchProbabilityResponse>;
 
 namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 {
@@ -27,7 +27,8 @@ namespace Atlas.MatchPrediction.Test.TestHelpers.Builders
 
             return builder
                 .With(r => r.MatchProbabilities, matchProbabilities)
-                .With(r => r.MatchProbabilitiesPerLocus, new LociInfo<MatchProbabilityPerLocusResponse>(new MatchProbabilityPerLocusResponse(matchProbabilities)));
+                .With(r => r.MatchProbabilitiesPerLocus,
+                    new LociInfo<MatchProbabilityPerLocusResponse>(new MatchProbabilityPerLocusResponse(matchProbabilities)));
         }
     }
 }

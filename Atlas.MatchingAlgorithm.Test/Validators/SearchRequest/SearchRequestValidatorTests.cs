@@ -1,4 +1,5 @@
-﻿using Atlas.Common.GeneticData;
+﻿using Atlas.Client.Models.Search.Requests;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
@@ -30,18 +31,18 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         [Test]
         public void Validator_WithInvalidSearchType_ShouldHaveValidationError()
         {
-            validator.ShouldHaveValidationErrorFor(x => x.SearchType, (DonorType) 999);
+            validator.ShouldHaveValidationErrorFor(x => x.SearchDonorType, (Atlas.Client.Models.Search.DonorType) 999);
         }
 
         [TestCase(Locus.C)]
         [TestCase(Locus.Dqb1)]
         public void Validator_WithMatchCriteriaForOptionalLocus_ButNoHlaDataAtThatLocus_ShouldHaveValidationError(Locus locus)
         {
-            var matchingRequest = new MatchingRequestBuilder()
+            var matchingRequest = new SearchRequestBuilder()
                 .WithLocusMismatchCount(locus, 1)
                 .WithNullLocusSearchHla(locus)
                 .Build();
-            
+
             var result = validator.Validate(matchingRequest);
             result.IsValid.Should().BeFalse();
         }

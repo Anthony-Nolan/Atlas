@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
@@ -30,7 +31,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         public async Task DispatchSearch_DispatchesSearchWithId()
         {
             await searchDispatcher.DispatchSearch(
-                new MatchingRequestBuilder()
+                new SearchRequestBuilder()
                     .WithSearchHla(new PhenotypeInfo<string>("hla-type"))
                     .WithTotalMismatchCount(0)
                     .Build());
@@ -41,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public void DispatchSearch_ValidatesSearchRequest()
         {
-            var invalidSearchRequest = new MatchingRequest();
+            var invalidSearchRequest = new SearchRequest();
 
             Assert.ThrowsAsync<ValidationException>(() => searchDispatcher.DispatchSearch(invalidSearchRequest));
         }

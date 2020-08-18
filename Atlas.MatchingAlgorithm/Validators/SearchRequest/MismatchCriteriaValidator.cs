@@ -1,18 +1,17 @@
-using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
-using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
 {
-    public class MismatchCriteriaValidator : AbstractValidator<MismatchCriteria>
+    internal class MismatchCriteriaValidator : AbstractValidator<MismatchCriteria>
     {
         private const int MinimumMismatchCount = 0;
         private const int MaximumTotalMismatchCount = 4;
 
         public MismatchCriteriaValidator()
         {
-            RuleFor(x => x.LocusMismatchCounts)
+            RuleFor(x => x.LocusMismatchCriteria)
                 .NotNull()
                 .SetValidator(new LocusMismatchCriteriaValidator());
 

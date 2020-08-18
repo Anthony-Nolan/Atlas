@@ -120,6 +120,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.MatchPrediction.Test.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.Functions.PublicApi", "Atlas.Functions.PublicApi\Atlas.Functions.PublicApi.csproj", "{9917E69B-4B14-46DF-9DB9-0538C02CCAC6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.Client.Models", "Atlas.Client.Models\Atlas.Client.Models.csproj", "{9048423F-EA75-4D33-9B1A-48222429CB69}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -325,6 +327,12 @@ Global
 		{9917E69B-4B14-46DF-9DB9-0538C02CCAC6}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{9917E69B-4B14-46DF-9DB9-0538C02CCAC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9917E69B-4B14-46DF-9DB9-0538C02CCAC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9048423F-EA75-4D33-9B1A-48222429CB69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9048423F-EA75-4D33-9B1A-48222429CB69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9048423F-EA75-4D33-9B1A-48222429CB69}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{9048423F-EA75-4D33-9B1A-48222429CB69}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{9048423F-EA75-4D33-9B1A-48222429CB69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9048423F-EA75-4D33-9B1A-48222429CB69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

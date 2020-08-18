@@ -1,7 +1,7 @@
 using System.Collections.Generic;
+using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring.Aggregation;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults;
 using FluentAssertions;
