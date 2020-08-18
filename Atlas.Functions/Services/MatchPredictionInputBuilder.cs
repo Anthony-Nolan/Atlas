@@ -1,16 +1,15 @@
-using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.DonorImport.ExternalInterface.Models;
-using Atlas.Functions.Models.Search.Requests;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
-using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.Functions.PublicApi.Models.Search.Requests;
 using Atlas.Functions.Settings;
+using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchPrediction.ExternalInterface;
+using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
+using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using EnumStringValues;
 using Microsoft.Extensions.Options;
 

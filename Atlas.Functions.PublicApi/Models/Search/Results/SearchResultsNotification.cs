@@ -1,6 +1,6 @@
 using System;
 
-namespace Atlas.Functions.Models.Search.Results
+namespace Atlas.Functions.PublicApi.Models.Search.Results
 {
     public class SearchResultsNotification
     {

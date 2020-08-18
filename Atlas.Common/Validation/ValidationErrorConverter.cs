@@ -4,7 +4,7 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.Common.Utils.Http;
 using FluentValidation;
 
-namespace Atlas.MatchingAlgorithm.Helpers
+namespace Atlas.Common.Validation
 {
     public static class ValidationErrorConverter
     {

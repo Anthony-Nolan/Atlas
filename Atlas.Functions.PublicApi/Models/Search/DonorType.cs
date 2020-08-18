@@ -1,6 +1,6 @@
 using System;
 
-namespace Atlas.Functions.Models.Search
+namespace Atlas.Functions.PublicApi.Models.Search
 {
     public enum DonorType
     {

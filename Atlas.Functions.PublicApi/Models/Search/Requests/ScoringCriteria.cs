@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 
-namespace Atlas.Functions.Models.Search.Requests
+namespace Atlas.Functions.PublicApi.Models.Search.Requests
 {
     public class ScoringCriteria
     {
