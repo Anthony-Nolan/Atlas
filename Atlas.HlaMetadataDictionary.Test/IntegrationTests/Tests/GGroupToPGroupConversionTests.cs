@@ -1,9 +1,13 @@
 using System.Threading.Tasks;
+using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
-using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
+using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
+using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using FluentAssertions;
+using LazyCache;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -12,13 +16,26 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
     [TestFixture]
     public class GGroupToPGroupConversionTests
     {
-        private IHlaMetadataDictionary hlaMetadataDictionary;
+        private const string CacheKey = nameof(GGroupToPGroupMetadataRepository);
+        private const string HlaVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
-        [SetUp]
-        public void SetUp()
+        private IGGroupToPGroupMetadataService metadataService;
+        private IAppCache appCache;
+
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
-            var factory = DependencyInjection.DependencyInjection.Provider.GetService<IHlaMetadataDictionaryFactory>();
-            hlaMetadataDictionary = factory.BuildDictionary(FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion);
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                metadataService = DependencyInjection.DependencyInjection.Provider.GetService<IGGroupToPGroupMetadataService>();
+                appCache = DependencyInjection.DependencyInjection.Provider.GetService<IPersistentCacheProvider>().Cache;
+            });
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            appCache.Remove(CacheKey);
         }
 
         [TestCase(Locus.A, "01:01:01G", "01:01P")]
@@ -28,7 +45,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [TestCase(Locus.Drb1, "03:01:01G", "03:01P")]
         public async Task GetSinglePGroupForGGroup_WithMatchingPGroup_ReturnsPGroup(Locus locus, string gGroup, string expectedPGroup)
         {
-            var pGroup = await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, gGroup);
+            var pGroup = await metadataService.ConvertGGroupToPGroup(locus, gGroup, HlaVersion);
 
             pGroup.Should().Be(expectedPGroup);
         }
@@ -40,16 +57,17 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [TestCase(Locus.Drb1, "08:78N")]
         public async Task GetSinglePGroupForGGroup_WithNoMatchingPGroup_ReturnsNull(Locus locus, string gGroup)
         {
-            var pGroup = await hlaMetadataDictionary.ConvertGGroupToPGroup(locus, gGroup);
+            var pGroup = await metadataService.ConvertGGroupToPGroup(locus, gGroup, HlaVersion);
 
             pGroup.Should().Be(null);
         }
 
         [Test]
-        public async Task GetSinglePGroupForGGroup_ForInvalidGGroup_ThrowsException()
+        public void GetSinglePGroupForGGroup_ForInvalidGGroup_ThrowsException()
         {
-            await hlaMetadataDictionary.Invoking(h => h.ConvertGGroupToPGroup(Locus.A, "not-a-valid-g-group"))
-                .Should().ThrowAsync<HlaMetadataDictionaryException>();
+            metadataService.Invoking(async service =>
+                 await service.ConvertGGroupToPGroup(Locus.A, "not-a-valid-g-group", HlaVersion)
+                ).Should().Throw<HlaMetadataDictionaryException>();
         }
     }
 }

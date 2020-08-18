@@ -43,6 +43,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
         private readonly IHlaScoringMetadataService hlaScoringMetadataService;
         private readonly IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
+        private readonly IGGroupToPGroupMetadataService gGroupToPGroupMetadataService;
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
@@ -52,6 +53,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IHlaMatchingMetadataRepository matchingMetadataRepository;
         private readonly IHlaScoringMetadataRepository scoringMetadataRepository;
         private readonly IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository;
+        private readonly IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository;
 
         public HlaMetadataDictionaryFactory(
             IPersistentCacheProvider cacheProvider,
@@ -63,6 +65,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService,
             IHlaScoringMetadataService hlaScoringMetadataService,
             IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
+            IGGroupToPGroupMetadataService gGroupToPGroupMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger,
@@ -71,7 +74,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IAlleleNamesMetadataRepository alleleNamesRepository,
             IHlaMatchingMetadataRepository matchingMetadataRepository,
             IHlaScoringMetadataRepository scoringMetadataRepository,
-            IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository
+            IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository,
+            IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository
         )
         {
             this.cache = cacheProvider.Cache;
@@ -83,6 +87,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.locusHlaMatchingMetadataService = locusHlaMatchingMetadataService;
             this.hlaScoringMetadataService = hlaScoringMetadataService;
             this.dpb1TceGroupMetadataService = dpb1TceGroupMetadataService;
+            this.gGroupToPGroupMetadataService = gGroupToPGroupMetadataService;
+
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
@@ -92,6 +98,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.matchingMetadataRepository = matchingMetadataRepository;
             this.scoringMetadataRepository = scoringMetadataRepository;
             this.dpb1TceGroupsMetadataRepository = dpb1TceGroupsMetadataRepository;
+            this.gGroupToPGroupMetadataRepository = gGroupToPGroupMetadataRepository;
         }
 
         /// <summary>
@@ -143,6 +150,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 locusHlaMatchingMetadataService,
                 hlaScoringMetadataService,
                 dpb1TceGroupMetadataService,
+                gGroupToPGroupMetadataService,
                 hlaMetadataGenerationOrchestrator,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger);
@@ -155,7 +163,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 alleleNamesRepository,
                 matchingMetadataRepository,
                 scoringMetadataRepository,
-                dpb1TceGroupsMetadataRepository);
+                dpb1TceGroupsMetadataRepository,
+                gGroupToPGroupMetadataRepository);
         }
     }
 }

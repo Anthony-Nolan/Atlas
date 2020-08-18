@@ -28,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
         private readonly IHlaToScoringMetaDataConverter hlaToScoringMetaDataConverter;
         private readonly IDpb1TceGroupsService dpb1TceGroupsService;
         private readonly IAlleleGroupsService alleleGroupsService;
-        private readonly IGGroupToPGroupService gGroupToPGroupsService;
+        private readonly IGGroupToPGroupService gGroupToPGroupService;
         private readonly ILogger logger;
 
         public HlaMetadataGenerationOrchestrator(
@@ -38,7 +38,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             IHlaToScoringMetaDataConverter hlaToScoringMetaDataConverter,
             IDpb1TceGroupsService dpb1TceGroupsService,
             IAlleleGroupsService alleleGroupsService,
-            IGGroupToPGroupService gGroupToPGroupsService,
+            IGGroupToPGroupService gGroupToPGroupService,
             ILogger logger)
         {
             this.matchPreCalculationService = matchPreCalculationService;
@@ -47,7 +47,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             this.hlaToScoringMetaDataConverter = hlaToScoringMetaDataConverter;
             this.dpb1TceGroupsService = dpb1TceGroupsService;
             this.alleleGroupsService = alleleGroupsService;
-            this.gGroupToPGroupsService = gGroupToPGroupsService;
+            this.gGroupToPGroupService = gGroupToPGroupService;
             this.logger = logger;
         }
 
@@ -74,7 +74,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
                 var alleleGroupsMetadata = GetAlleleGroupsMetadata(hlaNomenclatureVersion).ToList();
 
                 logger.SendTrace("HlaMetadataDictionary: GGroup to PGroup");
-                var gGroupToPGroupMetadata = GGroupToPGroupMetadata(hlaNomenclatureVersion);
+                var gGroupToPGroupMetadata = GGroupToPGroupMetadata(hlaNomenclatureVersion).ToList();
 
                 return new HlaMetadataCollection
                 {
@@ -124,7 +124,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 
         private IEnumerable<ISerialisableHlaMetadata> GGroupToPGroupMetadata(string hlaNomenclatureVersion)
         {
-            return gGroupToPGroupsService.GetGGroupToPGroupMetadata(hlaNomenclatureVersion);
+            return gGroupToPGroupService.GetGGroupToPGroupMetadata(hlaNomenclatureVersion);
         }
     }
 }
