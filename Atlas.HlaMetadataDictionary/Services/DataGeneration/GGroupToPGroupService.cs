@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Repositories;
 using System.Linq;
@@ -36,39 +37,39 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 
             var locusToAllelesToPGroup = GetLocusToAllelesToPGroup(pGroups);
 
-            return gGroups.Select(g => new GGroupToPGroupMetadata(g.Locus, g.LookupName, GetPGroup(locusToAllelesToPGroup, g)));
+            return gGroups.Select(gGroup => GetMetadata(locusToAllelesToPGroup, gGroup)).Where(m => m != null);
         }
 
-        private static Dictionary<Locus, Dictionary<string, string>> GetLocusToAllelesToPGroup(IEnumerable<IAlleleGroupMetadata> pGroups)
+        private Dictionary<Tuple<Locus, string>, string> GetLocusToAllelesToPGroup(IEnumerable<IAlleleGroupMetadata> pGroups)
         {
-            var locusToAllelesToPGroup = new Dictionary<Locus, Dictionary<string, string>>();
+            var locusToAllelesToPGroup = new Dictionary<Tuple<Locus, string>, string>();
+
             foreach (var pGroup in pGroups)
             {
                 foreach (var allele in pGroup.AllelesInGroup)
                 {
-                    locusToAllelesToPGroup[pGroup.Locus] = new Dictionary<string, string>{{ allele, pGroup.LookupName }};
+                    if (locusToAllelesToPGroup.ContainsKey(new Tuple<Locus, string>(pGroup.Locus, allele)))
+                    {
+                        const string errorMessage = "Encountered allele at locus with multiple corresponding P Groups. This is not expected to be possible.";
+                        logger.SendTrace(errorMessage, LogLevel.Error, new Dictionary<string, string> {{"Allele", allele}});
+                        throw new HlaMetadataDictionaryException(pGroup.Locus, allele, errorMessage);
+                    }
+
+                    locusToAllelesToPGroup.Add(new Tuple<Locus, string>(pGroup.Locus, allele), pGroup.LookupName);
                 }
             }
 
             return locusToAllelesToPGroup;
         }
 
-        private string GetPGroup(IReadOnlyDictionary<Locus, Dictionary<string, string>> locusToAllelesToPGroup, IAlleleGroupMetadata gGroups)
+        private static IGGroupToPGroupMetadata GetMetadata(IReadOnlyDictionary<Tuple<Locus, string>, string> locusToAllelesToPGroup, IAlleleGroupMetadata gGroups)
         {
-            var allelesToPGroup = locusToAllelesToPGroup[gGroups.Locus];
+            var pGroup = gGroups.AllelesInGroup.Where(allele => 
+                    locusToAllelesToPGroup.ContainsKey(new Tuple<Locus, string>(gGroups.Locus, allele)))
+                .Select(allele => locusToAllelesToPGroup[new Tuple<Locus, string>(gGroups.Locus, allele)])
+                .FirstOrDefault();
 
-            var pGroups = (from alleles in gGroups.AllelesInGroup
-                where allelesToPGroup.ContainsKey(alleles)
-                select allelesToPGroup[alleles]).ToList();
-
-            if (pGroups.Count > 1)
-            {
-                const string errorMessage = "Encountered G Group with multiple corresponding P Groups. This is not expected to be possible.";
-                logger.SendTrace(errorMessage, LogLevel.Error, new Dictionary<string, string> {{"GGroup", gGroups.LookupName}});
-                throw new HlaMetadataDictionaryException(gGroups.Locus, gGroups.LookupName, errorMessage);
-            } 
-
-            return pGroups.FirstOrDefault();
+            return pGroup != null ? new GGroupToPGroupMetadata(gGroups.Locus, gGroups.LookupName, pGroup) : null;
         }
 
         private static IAlleleGroupMetadata GetMetadataFromAlleleGroup(IWmdaAlleleGroup alleleGroup)
