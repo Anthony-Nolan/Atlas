@@ -1,0 +1,11 @@
+{
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "snapshotConfiguration": {
+        "IsEnabled": true
+      }
+    }
+  },
+  "functionTimeout": "23:00:00"
+}
