@@ -23,7 +23,6 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         private const Locus DefaultLocus = Locus.A;
         private const string DefaultHlaName = "hla";
 
-        private IHlaNameToPGroupConverter hlaNameToPGroupConverter;
         private IHlaNameToTwoFieldAlleleConverter hlaNameToTwoFieldAlleleConverter;
         private IHlaScoringMetadataService scoringMetadataService;
 
@@ -33,15 +32,10 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         public void SetUp()
         {
             hlaNameToTwoFieldAlleleConverter = Substitute.For<IHlaNameToTwoFieldAlleleConverter>();
-            hlaNameToPGroupConverter = Substitute.For<IHlaNameToPGroupConverter>();
             scoringMetadataService = Substitute.For<IHlaScoringMetadataService>();
             var logger = Substitute.For<ILogger>();
 
-            hlaConverter = new HlaConverter(
-                hlaNameToTwoFieldAlleleConverter,
-                hlaNameToPGroupConverter,
-                scoringMetadataService
-            );
+            hlaConverter = new HlaConverter(hlaNameToTwoFieldAlleleConverter, scoringMetadataService);
         }
 
         [TestCase(null)]
@@ -137,7 +131,8 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
                 HlaNomenclatureVersion = version
             });
 
-            await hlaNameToPGroupConverter.Received().ConvertHla(DefaultLocus, DefaultHlaName, version);
+            await scoringMetadataService.Received()
+                .GetHlaMetadata(DefaultLocus, DefaultHlaName, version);
         }
 
         //TODO ATLAS-394: After HMD has been decoupled from Scoring, test using appropriate Serology lookup service
