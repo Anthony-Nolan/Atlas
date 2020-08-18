@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
@@ -8,11 +11,10 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
-using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
+using Atlas.MatchingAlgorithm.Mapping;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
@@ -21,7 +23,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 {
     public interface ISearchService
     {
-        Task<IEnumerable<MatchingAlgorithmResult>> Search(MatchingRequest matchingRequest);
+        Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest matchingRequest);
     }
 
     public class SearchService : ISearchService
@@ -48,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
-        public async Task<IEnumerable<MatchingAlgorithmResult>> Search(MatchingRequest matchingRequest)
+        public async Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest matchingRequest)
         {
             var expansionTimer = searchLogger.RunTimed($"{LoggingPrefix}Expand patient HLA");
             var criteria = await GetMatchCriteria(matchingRequest);
@@ -73,20 +75,20 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             return scoredMatches.Select(MapSearchResultToApiSearchResult);
         }
 
-        private async Task<AlleleLevelMatchCriteria> GetMatchCriteria(MatchingRequest matchingRequest)
+        private async Task<AlleleLevelMatchCriteria> GetMatchCriteria(SearchRequest matchingRequest)
         {
             var matchCriteria = matchingRequest.MatchCriteria;
             var searchHla = matchingRequest.SearchHlaData.ToPhenotypeInfo();
             var criteriaMappings = await Task.WhenAll(
-                MapLocusInformationToMatchCriteria(Locus.A, matchCriteria.LocusMismatchCounts.A, searchHla.A),
-                MapLocusInformationToMatchCriteria(Locus.B, matchCriteria.LocusMismatchCounts.B, searchHla.B),
-                MapLocusInformationToMatchCriteria(Locus.C, matchCriteria.LocusMismatchCounts.C, searchHla.C),
-                MapLocusInformationToMatchCriteria(Locus.Drb1, matchCriteria.LocusMismatchCounts.Drb1, searchHla.Drb1),
-                MapLocusInformationToMatchCriteria(Locus.Dqb1, matchCriteria.LocusMismatchCounts.Dqb1, searchHla.Dqb1));
+                MapLocusInformationToMatchCriteria(Locus.A, matchCriteria.LocusMismatchCriteria.A, searchHla.A),
+                MapLocusInformationToMatchCriteria(Locus.B, matchCriteria.LocusMismatchCriteria.B, searchHla.B),
+                MapLocusInformationToMatchCriteria(Locus.C, matchCriteria.LocusMismatchCriteria.C, searchHla.C),
+                MapLocusInformationToMatchCriteria(Locus.Drb1, matchCriteria.LocusMismatchCriteria.Drb1, searchHla.Drb1),
+                MapLocusInformationToMatchCriteria(Locus.Dqb1, matchCriteria.LocusMismatchCriteria.Dqb1, searchHla.Dqb1));
 
             return new AlleleLevelMatchCriteria
             {
-                SearchType = matchingRequest.SearchType,
+                SearchType = matchingRequest.SearchDonorType.ToMatchingAlgorithmDonorType(),
                 DonorMismatchCount = matchCriteria.DonorMismatchCount,
                 LocusMismatchA = criteriaMappings[0],
                 LocusMismatchB = criteriaMappings[1],
@@ -126,7 +128,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             return new MatchingAlgorithmResult
             {
                 AtlasDonorId = result.MatchResult.DonorInfo.DonorId,
-                DonorType = result.MatchResult.DonorInfo.DonorType,
+                DonorType = result.MatchResult.DonorInfo.DonorType.ToAtlasClientModel(),
 
                 // matching results
                 TotalMatchCount = result.MatchResult.TotalMatchCount,

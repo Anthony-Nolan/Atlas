@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
+﻿namespace Atlas.Client.Models.Search.Results.MatchPrediction
 {
     /// <summary>
     /// Values used to categorise the overall match probability.

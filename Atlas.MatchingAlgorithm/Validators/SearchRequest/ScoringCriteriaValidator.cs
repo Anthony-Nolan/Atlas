@@ -1,9 +1,9 @@
-﻿using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
+﻿using Atlas.Client.Models.Search.Requests;
 using FluentValidation;
 
 namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
 {
-    public class ScoringCriteriaValidator : AbstractValidator<ScoringCriteria>
+    internal class ScoringCriteriaValidator : AbstractValidator<ScoringCriteria>
     {
         public ScoringCriteriaValidator()
         {

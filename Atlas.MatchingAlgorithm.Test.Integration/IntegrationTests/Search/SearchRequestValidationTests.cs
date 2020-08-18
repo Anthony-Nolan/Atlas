@@ -9,6 +9,7 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Atlas.Client.Models.Search.Requests;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 {
@@ -19,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
     public class SearchRequestValidationTests
     {
         private ISearchDispatcher searchDispatcher;
-        private MatchingRequestBuilder defaultMatchingRequestBuilder;
+        private SearchRequestBuilder defaultSearchRequestBuilder;
 
         [SetUp]
         public void SetUp()
@@ -28,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 
             searchDispatcher = new SearchDispatcher(searchServiceBusClient);
 
-            defaultMatchingRequestBuilder = new MatchingRequestBuilder()
+            defaultSearchRequestBuilder = new SearchRequestBuilder()
                 .WithSearchType(DonorType.Adult)
                 .WithTotalMismatchCount(0)
                 .WithMismatchCountAtLoci(new List<Locus> {Locus.A, Locus.B, Locus.Drb1}, 0)
@@ -40,15 +41,16 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public void DispatchSearch_AllMandatoryFieldsHaveValidValues_DoesNotThrowValidationError()
         {
-            Assert.DoesNotThrowAsync(async () => await searchDispatcher.DispatchSearch(defaultMatchingRequestBuilder.Build()));
+            Assert.DoesNotThrowAsync(async () => await searchDispatcher.DispatchSearch(defaultSearchRequestBuilder.Build()));
         }
 
         [Test]
         public void DispatchSearch_SearchTypeIsEmpty_ThrowsValidationError()
         {
-            var defaultRequest = defaultMatchingRequestBuilder.Build();
-            var searchRequestWithoutSearchType = new MatchingRequest
+            var defaultRequest = defaultSearchRequestBuilder.Build();
+            var searchRequestWithoutSearchType = new SearchRequest
             {
+                SearchDonorType = (Atlas.Client.Models.Search.DonorType) 0,
                 MatchCriteria = defaultRequest.MatchCriteria,
                 SearchHlaData = defaultRequest.SearchHlaData,
                 ScoringCriteria = defaultRequest.ScoringCriteria
@@ -60,7 +62,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public void DispatchSearch_MatchCriteriaIsEmpty_ThrowsValidationError()
         {
-            var matchRequest = defaultMatchingRequestBuilder.Build();
+            var matchRequest = defaultSearchRequestBuilder.Build();
             matchRequest.MatchCriteria = null;
 
             Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchRequest));
@@ -71,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [TestCase(Locus.Drb1)]
         public void DispatchSearch_MatchCriteriaIsEmptyAtRequiredLocus_ThrowsValidationError(Locus locus)
         {
-            var matchRequest = defaultMatchingRequestBuilder.WithLocusMismatchCount(locus, null).Build();
+            var matchRequest = defaultSearchRequestBuilder.WithLocusMismatchCount(locus, null).Build();
 
             Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchRequest));
         }
@@ -88,7 +90,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [TestCase(3, Locus.Drb1)]
         public void DispatchSearch_MismatchCountInvalidAtSingleLocus_ThrowsValidationError(int mismatchCount, Locus locus)
         {
-            var matchRequest = defaultMatchingRequestBuilder.WithLocusMismatchCount(locus, mismatchCount).Build();
+            var matchRequest = defaultSearchRequestBuilder.WithLocusMismatchCount(locus, mismatchCount).Build();
 
             Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchRequest));
         }
@@ -97,7 +99,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [TestCase(5)]
         public void DispatchSearch_DonorMismatchCountIsInvalid_ThrowsValidationError(int donorMismatchCount)
         {
-            var matchRequest = defaultMatchingRequestBuilder.Build();
+            var matchRequest = defaultSearchRequestBuilder.Build();
             matchRequest.MatchCriteria.DonorMismatchCount = donorMismatchCount;
 
             Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchRequest));
@@ -106,7 +108,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public void DispatchSearch_LociToScoreIsNull_ThrowsValidationError()
         {
-            var matchRequest = defaultMatchingRequestBuilder.Build();
+            var matchRequest = defaultSearchRequestBuilder.Build();
             matchRequest.ScoringCriteria.LociToScore = null;
 
             Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchRequest));
@@ -115,7 +117,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public void DispatchSearch_LociToScoreContainsAlgorithmLocus_DoesNotThrowValidationError()
         {
-            var matchRequest = defaultMatchingRequestBuilder.Build();
+            var matchRequest = defaultSearchRequestBuilder.Build();
             matchRequest.ScoringCriteria.LociToScore = new List<Locus> {Locus.Dpb1};
 
             Assert.DoesNotThrowAsync(async () => await searchDispatcher.DispatchSearch(matchRequest));
@@ -124,7 +126,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public void DispatchSearch_LociToExcludeFromAggregateScoreIsNull_ThrowsValidationError()
         {
-            var matchRequest = defaultMatchingRequestBuilder.Build();
+            var matchRequest = defaultSearchRequestBuilder.Build();
             matchRequest.ScoringCriteria.LociToExcludeFromAggregateScore = null;
 
             Assert.ThrowsAsync<ValidationException>(async () => await searchDispatcher.DispatchSearch(matchRequest));
@@ -133,7 +135,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         [Test]
         public void DispatchSearch_LociToExcludeFromAggregateScoreContainsAlgorithmLocus_DoesNotThrowValidationError()
         {
-            var matchRequest = defaultMatchingRequestBuilder.Build();
+            var matchRequest = defaultSearchRequestBuilder.Build();
             matchRequest.ScoringCriteria.LociToExcludeFromAggregateScore = new List<Locus> {Locus.Dpb1};
 
             Assert.DoesNotThrowAsync(async () => await searchDispatcher.DispatchSearch(matchRequest));

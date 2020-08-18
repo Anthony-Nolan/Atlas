@@ -1,10 +1,11 @@
 using System.Net;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils.Http;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
@@ -21,7 +22,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
     [TestFixture]
     public class SearchRunnerTests
     {
-        private MatchingRequest DefaultMatchingRequest => new MatchingRequestBuilder().Build();
+        private SearchRequest DefaultMatchingRequest => new SearchRequestBuilder().Build();
 
         private ISearchServiceBusClient searchServiceBusClient;
         private ISearchService searchService;
@@ -51,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_RunsSearch()
         {
-            var searchRequest = new MatchingRequestBuilder().Build();
+            var searchRequest = new SearchRequestBuilder().Build();
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest {MatchingRequest = searchRequest});
 

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using LochNessBuilder;
@@ -8,7 +9,7 @@ using static EnumStringValues.EnumExtensions;
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 {
     [Builder]
-    public static class ScoringCriteriaBuilder
+    internal static class ScoringCriteriaBuilder
     {
         public static Builder<ScoringCriteria> New =>
             Builder<ScoringCriteria>.New

@@ -1,7 +1,7 @@
 using System;
+using Atlas.Client.Models.Search.Results.Matching.PerLocus;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using LazyCache;
 using Microsoft.Extensions.Caching.Memory;

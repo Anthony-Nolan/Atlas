@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
@@ -41,9 +42,9 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
             return new TestOutput(testInput, metrics, TestCases.Notes);
         }
 
-        private static MatchingRequest BuildSearchRequest(TestInput testInput)
+        private static SearchRequest BuildSearchRequest(TestInput testInput)
         {
-            var searchRequestBuilder = new MatchingRequestBuilder()
+            var searchRequestBuilder = new SearchRequestBuilder()
                 .WithSearchHla(testInput.Hla);
 
             switch (testInput.SearchType)

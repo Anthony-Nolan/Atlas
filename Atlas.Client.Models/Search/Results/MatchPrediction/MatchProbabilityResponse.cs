@@ -5,7 +5,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Models;
 using Newtonsoft.Json;
 
-namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
+namespace Atlas.Client.Models.Search.Results.MatchPrediction
 {
     public class MatchProbabilityResponse
     {

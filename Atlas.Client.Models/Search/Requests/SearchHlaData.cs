@@ -1,7 +1,10 @@
 ﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+// ReSharper disable MemberCanBeInternal
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace Atlas.Functions.PublicApi.Models.Search.Requests
+namespace Atlas.Client.Models.Search.Requests
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class SearchHlaData
     {
         /// <summary>

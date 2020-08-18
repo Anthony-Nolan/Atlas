@@ -5,8 +5,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Test.Performance.Models;
 using Newtonsoft.Json;
 
@@ -14,7 +15,7 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
 {
     public static class SearchTimingService
     {
-        public static async Task<SearchMetrics> TimeSearchRequest(MatchingRequest request, AlgorithmInstanceInfo algorithmInstanceInfo)
+        public static async Task<SearchMetrics> TimeSearchRequest(SearchRequest request, AlgorithmInstanceInfo algorithmInstanceInfo)
         {
             var client = GetClient(algorithmInstanceInfo);
             var stopwatch = new Stopwatch();

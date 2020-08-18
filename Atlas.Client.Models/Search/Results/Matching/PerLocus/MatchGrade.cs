@@ -1,4 +1,4 @@
-﻿namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults.PerLocus
+﻿namespace Atlas.Client.Models.Search.Results.Matching.PerLocus
 {
     public enum MatchGrade
     {

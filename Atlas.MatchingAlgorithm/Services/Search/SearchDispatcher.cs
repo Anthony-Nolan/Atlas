@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
@@ -10,7 +10,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 {
     public interface ISearchDispatcher
     {
-        Task<string> DispatchSearch(MatchingRequest matchingRequest);
+        Task<string> DispatchSearch(SearchRequest matchingRequest);
     }
 
     public class SearchDispatcher : ISearchDispatcher
@@ -23,9 +23,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search
         }
 
         /// <returns>A unique identifier for the dispatched search request</returns>
-        public async Task<string> DispatchSearch(MatchingRequest matchingRequest)
+        public async Task<string> DispatchSearch(SearchRequest matchingRequest)
         {
-            new SearchRequestValidator().ValidateAndThrow(matchingRequest);
+            await new SearchRequestValidator().ValidateAndThrowAsync(matchingRequest);
             var searchRequestId = Guid.NewGuid().ToString();
 
             var identifiedSearchRequest = new IdentifiedSearchRequest

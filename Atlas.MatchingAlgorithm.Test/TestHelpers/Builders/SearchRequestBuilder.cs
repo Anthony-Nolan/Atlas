@@ -1,25 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
-using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 {
-    public class MatchingRequestBuilder
+    public class SearchRequestBuilder
     {
-        private readonly MatchingRequest matchingRequest;
+        private readonly SearchRequest searchRequest;
         private PhenotypeInfo<string> searchHla;
         private LociInfo<int?> locusMismatchCounts;
 
-        public MatchingRequestBuilder()
+        public SearchRequestBuilder()
         {
-            matchingRequest = new MatchingRequest
+            searchRequest = new SearchRequest()
             {
-                SearchType = DonorType.Adult,
+                SearchDonorType = Atlas.Client.Models.Search.DonorType.Adult,
                 MatchCriteria = new MismatchCriteria
                 {
                     DonorMismatchCount = 0
@@ -43,13 +43,13 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 
         #region Match Criteria
 
-        public MatchingRequestBuilder WithTotalMismatchCount(int mismatchCount)
+        public SearchRequestBuilder WithTotalMismatchCount(int mismatchCount)
         {
-            matchingRequest.MatchCriteria.DonorMismatchCount = mismatchCount;
+            searchRequest.MatchCriteria.DonorMismatchCount = mismatchCount;
             return this;
         }
 
-        public MatchingRequestBuilder WithLocusMismatchCount(Locus locus, int? locusMismatchCount)
+        public SearchRequestBuilder WithLocusMismatchCount(Locus locus, int? locusMismatchCount)
         {
             if (locus == Locus.Dpb1)
             {
@@ -60,7 +60,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             return this;
         }
 
-        public MatchingRequestBuilder WithMismatchCountAtLoci(IEnumerable<Locus> loci, int locusMismatchCount)
+        public SearchRequestBuilder WithMismatchCountAtLoci(IEnumerable<Locus> loci, int locusMismatchCount)
         {
             return loci.Aggregate(this, (current, locus) => current.WithLocusMismatchCount(locus, locusMismatchCount));
         }
@@ -69,15 +69,15 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 
         #region Scoring Criteria
 
-        public MatchingRequestBuilder WithLociToScore(IEnumerable<Locus> loci)
+        public SearchRequestBuilder WithLociToScore(IEnumerable<Locus> loci)
         {
-            matchingRequest.ScoringCriteria.LociToScore = loci;
+            searchRequest.ScoringCriteria.LociToScore = loci.ToList();
             return this;
         }
 
-        public MatchingRequestBuilder WithLociExcludedFromScoringAggregates(IEnumerable<Locus> loci)
+        public SearchRequestBuilder WithLociExcludedFromScoringAggregates(IEnumerable<Locus> loci)
         {
-            matchingRequest.ScoringCriteria.LociToExcludeFromAggregateScore = loci;
+            searchRequest.ScoringCriteria.LociToExcludeFromAggregateScore = loci.ToList();
             return this;
         }
 
@@ -85,13 +85,13 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 
         #region Patient Hla
 
-        private MatchingRequestBuilder WithNullLocusSearchHla(Locus locus, LocusPosition position)
+        private SearchRequestBuilder WithNullLocusSearchHla(Locus locus, LocusPosition position)
         {
             searchHla = searchHla.SetPosition(locus, position, null);
             return this;
         }
 
-        public MatchingRequestBuilder WithNullLocusSearchHla(Locus locus)
+        public SearchRequestBuilder WithNullLocusSearchHla(Locus locus)
         {
             return WithNullLocusSearchHla(locus, LocusPosition.One)
                 .WithNullLocusSearchHla(locus, LocusPosition.Two);
@@ -100,7 +100,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
         /// <summary>
         /// Sets the HLA at given locus/position, ignoring any nulls. To explicitly set nulls within a non-empty LocusInfo, use <see cref="WithNullLocusSearchHla"/> 
         /// </summary>
-        public MatchingRequestBuilder WithLocusSearchHla(Locus locus, LocusPosition position, string hlaString)
+        public SearchRequestBuilder WithLocusSearchHla(Locus locus, LocusPosition position, string hlaString)
         {
             // API level validation will fail if individual hla are null, but not if the locus is omitted altogether. 
             // If tests need to be added which set individual values to null (i.e. to test that validation), another builder method should be used
@@ -124,7 +124,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             return this;
         }
 
-        public MatchingRequestBuilder WithSearchHla(PhenotypeInfo<string> newSearchHla)
+        public SearchRequestBuilder WithSearchHla(PhenotypeInfo<string> newSearchHla)
         {
             searchHla = newSearchHla;
             return this;
@@ -132,17 +132,17 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 
         #endregion
 
-        public MatchingRequestBuilder WithSearchType(DonorType donorType)
+        public SearchRequestBuilder WithSearchType(DonorType donorType)
         {
-            matchingRequest.SearchType = donorType;
+            searchRequest.SearchDonorType = donorType.ToAtlasClientModel();
             return this;
         }
 
-        public MatchingRequest Build()
+        public SearchRequest Build()
         {
-            matchingRequest.SearchHlaData = searchHla.ToPhenotypeInfoTransfer();
-            matchingRequest.MatchCriteria.LocusMismatchCounts = locusMismatchCounts.ToLociInfoTransfer();
-            return matchingRequest;
+            searchRequest.SearchHlaData = searchHla.ToPhenotypeInfoTransfer();
+            searchRequest.MatchCriteria.LocusMismatchCriteria = locusMismatchCounts.ToLociInfoTransfer();
+            return searchRequest;
         }
     }
 }

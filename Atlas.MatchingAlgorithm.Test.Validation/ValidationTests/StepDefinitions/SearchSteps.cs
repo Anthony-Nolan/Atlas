@@ -29,7 +29,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         public void GivenTheSearchTypeIs(string searchType)
         {
             var donorType = searchType.ParseToEnum<DonorType>();
-            var searchRequest = scenarioContext.Get<MatchingRequestBuilder>();
+            var searchRequest = scenarioContext.Get<SearchRequestBuilder>();
             scenarioContext.Set(searchRequest.WithSearchType(donorType));
         }
 
@@ -37,7 +37,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         public void GivenScoringIsAppliedToLoci(string locusString)
         {
             var loci = LocusParser.ParseLoci(locusString).ToList();
-            var searchRequest = scenarioContext.Get<MatchingRequestBuilder>();
+            var searchRequest = scenarioContext.Get<SearchRequestBuilder>();
             scenarioContext.Set(searchRequest.WithLociToScore(loci));
         }
 
@@ -45,7 +45,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         public void GivenLocusIsExcludedFromAggregateScoring(string locusString)
         {
             var locus = locusString.ParseToEnum<Locus>();
-            var searchRequest = scenarioContext.Get<MatchingRequestBuilder>();
+            var searchRequest = scenarioContext.Get<SearchRequestBuilder>();
             scenarioContext.Set(searchRequest.WithLociExcludedFromScoringAggregates(new List<Locus> {locus}));
         }
 
@@ -53,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         public async Task WhenIRunASixOutOfSixSearch()
         {
             var patientDataProvider = scenarioContext.Get<IPatientDataProvider>();
-            var searchRequestBuilder = scenarioContext.Get<MatchingRequestBuilder>();
+            var searchRequestBuilder = scenarioContext.Get<SearchRequestBuilder>();
             var searchHla = patientDataProvider.GetPatientHla();
 
             var searchRequest = searchRequestBuilder
@@ -72,7 +72,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         public async Task WhenIRunAnEightOutOfEightSearch()
         {
             var patientDataProvider = scenarioContext.Get<IPatientDataProvider>();
-            var searchRequestBuilder = scenarioContext.Get<MatchingRequestBuilder>();
+            var searchRequestBuilder = scenarioContext.Get<SearchRequestBuilder>();
             var searchHla = patientDataProvider.GetPatientHla();
 
             var searchRequest = searchRequestBuilder
@@ -91,7 +91,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         public async Task WhenIRunAFourOutOfEightSearch()
         {
             var patientDataProvider = scenarioContext.Get<IPatientDataProvider>();
-            var searchRequestBuilder = scenarioContext.Get<MatchingRequestBuilder>();
+            var searchRequestBuilder = scenarioContext.Get<SearchRequestBuilder>();
             var searchHla = patientDataProvider.GetPatientHla();
 
             var searchRequest = searchRequestBuilder
@@ -116,7 +116,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             foreach (var patientDataFactory in selector.PatientDataFactories)
             {
                 var searchHla = patientDataFactory.GetPatientHla();
-                var searchRequestBuilder = scenarioContext.Get<MatchingRequestBuilder>();
+                var searchRequestBuilder = scenarioContext.Get<SearchRequestBuilder>();
 
                 var searchRequest = searchRequestBuilder
                     .WithTotalMismatchCount(0)
@@ -143,7 +143,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         public async Task WhenIRunATenOutOfTenSearch()
         {
             var patientDataProvider = scenarioContext.Get<IPatientDataProvider>();
-            var searchRequestBuilder = scenarioContext.Get<MatchingRequestBuilder>();
+            var searchRequestBuilder = scenarioContext.Get<SearchRequestBuilder>();
             var searchHla = patientDataProvider.GetPatientHla();
 
             var searchRequest = searchRequestBuilder
@@ -163,7 +163,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         public async Task WhenIRunANineOutOfTenSearchAtLocus(string locusString)
         {
             var patientDataProvider = scenarioContext.Get<IPatientDataProvider>();
-            var searchRequestBuilder = scenarioContext.Get<MatchingRequestBuilder>();
+            var searchRequestBuilder = scenarioContext.Get<SearchRequestBuilder>();
 
             var searchHla = patientDataProvider.GetPatientHla();
             var locus = locusString.ParseToEnum<Locus>();
@@ -184,7 +184,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         public async Task WhenIRunAnEightOutOfTenSearch()
         {
             var patientDataProvider = scenarioContext.Get<IPatientDataProvider>();
-            var searchRequestBuilder = scenarioContext.Get<MatchingRequestBuilder>();
+            var searchRequestBuilder = scenarioContext.Get<SearchRequestBuilder>();
             var searchHla = patientDataProvider.GetPatientHla();
             var allowedMismatchLoci = LocusSettings.MatchingOnlyLoci;
 

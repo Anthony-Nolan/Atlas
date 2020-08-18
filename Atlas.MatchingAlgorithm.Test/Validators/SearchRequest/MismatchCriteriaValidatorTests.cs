@@ -1,4 +1,5 @@
-﻿using Atlas.Common.GeneticData;
+﻿using Atlas.Client.Models.Search.Requests;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
@@ -27,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         {
             var mismatchCriteria = new MismatchCriteria
             {
-                LocusMismatchCounts = new LociInfo<int?>(0).ToLociInfoTransfer(),
+                LocusMismatchCriteria = new LociInfo<int?>(0).ToLociInfoTransfer(),
                 DonorMismatchCount = totalMismatchCount
             };
 
@@ -39,7 +40,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         {
             var mismatchCriteria = new MismatchCriteria
             {
-                LocusMismatchCounts = null,
+                LocusMismatchCriteria = null,
             };
 
             validator.Invoking(v => v.ValidateAndThrow(mismatchCriteria)).Should().Throw<ValidationException>();
@@ -52,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         {
             var mismatchCriteria = new MismatchCriteria
             {
-                LocusMismatchCounts = new LociInfo<int?>(0).SetLocus(locus, null).ToLociInfoTransfer()
+                LocusMismatchCriteria = new LociInfo<int?>(0).SetLocus(locus, null).ToLociInfoTransfer()
             };
 
             validator.Invoking(v => v.ValidateAndThrow(mismatchCriteria)).Should().Throw<ValidationException>();
@@ -72,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         {
             var mismatchCriteria = new MismatchCriteria
             {
-                LocusMismatchCounts = new LociInfo<int?>(0).SetLocus(locus, mismatchCount).ToLociInfoTransfer()
+                LocusMismatchCriteria = new LociInfo<int?>(0).SetLocus(locus, mismatchCount).ToLociInfoTransfer()
             };
 
             validator.Invoking(v => v.ValidateAndThrow(mismatchCriteria)).Should().Throw<ValidationException>();

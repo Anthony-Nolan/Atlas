@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Atlas.MatchingAlgorithm.Client.Models.SearchResults
+namespace Atlas.Client.Models.Search.Results.Matching
 {
     public class MatchingAlgorithmResultSet
     {

@@ -1,4 +1,5 @@
-﻿using Atlas.Common.GeneticData.PhenotypeInfo;
+﻿using Atlas.Client.Models.Search.Results.MatchPrediction;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using FluentAssertions;

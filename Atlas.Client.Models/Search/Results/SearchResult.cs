@@ -1,7 +1,9 @@
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
-using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
+using Atlas.Client.Models.Search.Results.Matching;
+using Atlas.Client.Models.Search.Results.MatchPrediction;
 
-namespace Atlas.Functions.PublicApi.Models.Search.Results
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+
+namespace Atlas.Client.Models.Search.Results
 {
     public class SearchResult
     {

@@ -4,9 +4,10 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.MatchingAlgorithm.Api;
 using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Microsoft.AspNetCore.Hosting;
@@ -41,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests
             server.Dispose();
         }
 
-        public static async Task<SearchAlgorithmApiResult> Search(MatchingRequest matchingRequest)
+        public static async Task<SearchAlgorithmApiResult> Search(SearchRequest matchingRequest)
         {
             var result = await server.CreateRequest("/search")
                 .AddHeader(ApiKeyHeader, ApiKey)

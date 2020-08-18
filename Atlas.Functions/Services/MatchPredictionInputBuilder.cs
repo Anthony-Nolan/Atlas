@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.DonorImport.ExternalInterface.Models;
-using Atlas.Functions.PublicApi.Models.Search.Requests;
 using Atlas.Functions.Settings;
-using Atlas.MatchingAlgorithm.Client.Models.SearchResults;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
@@ -135,6 +135,6 @@ namespace Atlas.Functions.Services
         /// If a locus did not have match criteria provided, we do not want to calculate match probabilities at that locus.
         /// </summary>
         private static IEnumerable<Locus> ExcludedLoci(MismatchCriteria mismatchCriteria) =>
-            EnumExtensions.EnumerateValues<Locus>().Where(l => mismatchCriteria.MismatchCriteriaAtLocus(l) == null);
+            EnumExtensions.EnumerateValues<Locus>().Where(l => mismatchCriteria.LocusMismatchCriteria.ToLociInfo().GetLocus(l) == null);
     }
 }
