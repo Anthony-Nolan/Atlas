@@ -1,9 +1,9 @@
 ﻿using System.Linq;
-using Atlas.Common.Helpers;
+using Atlas.Common.Utils;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.Common.Test.Helpers
+namespace Atlas.Common.Test.Utils
 {
     public class FixedSizedQueueTests
     {

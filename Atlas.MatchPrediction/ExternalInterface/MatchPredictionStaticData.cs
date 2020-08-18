@@ -7,7 +7,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
     /// <summary>
     /// Provides access to pertinent, static information related to match prediction.
     /// </summary>
-    public static class MatchPredictionInfo
+    public static class MatchPredictionStaticData
     {
         public static IEnumerable<Locus> MatchPredictionLoci => LocusSettings.MatchPredictionLoci;
     }

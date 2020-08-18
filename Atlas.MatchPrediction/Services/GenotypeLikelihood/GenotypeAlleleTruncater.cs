@@ -1,5 +1,5 @@
-﻿using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Helpers;
+﻿using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.MatchPrediction.Services.GenotypeLikelihood
 {

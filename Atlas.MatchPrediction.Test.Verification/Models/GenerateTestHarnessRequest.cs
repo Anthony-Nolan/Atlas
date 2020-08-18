@@ -35,18 +35,24 @@ namespace Atlas.MatchPrediction.Test.Verification.Models
     [JsonConverter(typeof(StringEnumConverter))]
     public enum MaskingCategory
     {
-        // If genotype has >2 fields, truncates typing to its first two fields (does not preserve expression letters)
+        /// <summary>
+        /// If genotype has >2 fields, truncates typing to its first two fields (does not preserve expression letters)
+        /// </summary>
         TwoField,
 
         PGroup,
 
-        // a.k.a. "NMDP code"
+        /// <summary>
+        /// a.k.a. "NMDP code"
+        /// </summary>
         MultipleAlleleCode,
 
         XxCode,
         Serology,
 
-        // Delete the locus typing - not permitted at "required" matching loci.
+        /// <summary>
+        /// Delete the locus typing - not permitted at "required" matching loci.
+        /// </summary>
         Delete
     }
 }

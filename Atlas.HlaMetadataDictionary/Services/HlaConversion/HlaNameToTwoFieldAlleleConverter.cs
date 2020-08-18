@@ -43,8 +43,8 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
         }
 
         public async Task<IReadOnlyCollection<string>> ConvertHla(
-            Locus locus, 
-            string hlaName, 
+            Locus locus,
+            string hlaName,
             ExpressionSuffixBehaviour behaviour,
             string hlaNomenclatureVersion)
         {
@@ -53,7 +53,7 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
             switch (inputCategory)
             {
                 case HlaTypingCategory.Allele:
-                    return new List<string> { GetTwoFieldAlleleName(locus, hlaName, behaviour) };
+                    return GetTwoFieldAlleleNames(locus, new[] { hlaName }, behaviour);
                 case HlaTypingCategory.GGroup:
                     var gGroupAlleles = await groupExpander.ExpandAlleleGroup(locus, hlaName, hlaNomenclatureVersion);
                     return GetTwoFieldAlleleNames(locus, gGroupAlleles, behaviour);
