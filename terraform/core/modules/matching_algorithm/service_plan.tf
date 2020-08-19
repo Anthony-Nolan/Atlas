@@ -1,5 +1,5 @@
 // deploy matching algorithm to different service plan to control maximum worker count independently of top level functions
-// matching algorithm cannot be allowed to scale as much as match prediction, due to database ocncurrency limits
+// matching algorithm cannot be allowed to scale as much as match prediction, due to database concurrency limits
 resource "azurerm_app_service_plan" "atlas-matching-algorithm-elastic-plan" {
   name                = "${var.general.environment}-ATLAS-MATCHING-ELASTIC-PLAN"
   location            = var.general.location
