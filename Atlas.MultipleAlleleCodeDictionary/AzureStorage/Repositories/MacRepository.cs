@@ -27,11 +27,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
     {
         private readonly ILogger logger;
         protected readonly CloudTable Table;
-        private readonly string NonMetaDataFilter = TableQuery.GenerateFilterCondition(        
-        "PartitionKey",                                                
-        QueryComparisons.NotEqual,                                     
-        LastStoredMacMetadataEntity.MetadataPartitionKey               
-        );                                                                 
+        private readonly string NonMetaDataFilter = TableQuery.GenerateFilterCondition(
+        "PartitionKey",
+        QueryComparisons.NotEqual,
+        LastStoredMacMetadataEntity.MetadataPartitionKey
+        );
 
         public MacRepository(MacDictionarySettings macDictionarySettings, ILogger logger)
         {
