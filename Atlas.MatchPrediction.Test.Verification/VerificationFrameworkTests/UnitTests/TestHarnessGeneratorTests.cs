@@ -53,7 +53,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
 
             await testHarnessGenerator.GenerateTestHarness(new GenerateTestHarnessRequest());
 
-            await testHarnessRepository.Received().AddTestHarness(poolId);
+            await testHarnessRepository.Received().AddTestHarness(poolId, Arg.Any<string>());
         }
 
         [Test]

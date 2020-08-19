@@ -9,6 +9,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Models
     {
         public MaskingRequestsTransfer PatientMaskingRequests { get; set; }
         public MaskingRequestsTransfer DonorMaskingRequests { get; set; }
+
+        /// <summary>
+        /// Optional: Comments to store with the generated test harness.
+        /// </summary>
+        public string Comments { get; set; }
     }
 
     /// <summary>

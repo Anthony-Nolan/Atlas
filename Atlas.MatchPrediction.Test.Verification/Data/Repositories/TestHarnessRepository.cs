@@ -7,7 +7,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {
     internal interface ITestHarnessRepository
     {
-        Task<int> AddTestHarness(int poolId);
+        Task<int> AddTestHarness(int poolId, string comments);
         Task AddMaskingRecords(IEnumerable<MaskingRecord> records);
     }
 
@@ -20,11 +20,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             this.context = context;
         }
 
-        public async Task<int> AddTestHarness(int poolId)
+        public async Task<int> AddTestHarness(int poolId, string comments)
         {
             var harness = new TestHarness
             {
-                NormalisedPool_Id = poolId
+                NormalisedPool_Id = poolId,
+                Comments = comments
             };
 
             await context.TestHarnesses.AddAsync(harness);
