@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
+using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Functions.DurableFunctions.Search.Orchestration;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
@@ -33,39 +34,46 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             this.matchPredictionAlgorithm = matchPredictionAlgorithm;
             this.logger = logger;
         }
-        
+
         [FunctionName(nameof(Search))]
-        public async Task<HttpResponseMessage> Search(
-            [HttpTrigger(AuthorizationLevel.Function,  "post")]
-            [RequestBodyType(typeof(SearchRequest), nameof(SearchRequest))]
-            HttpRequestMessage request,
+        public async Task Search(
+            [ServiceBusTrigger(
+                "%AtlasFunction:MessagingServiceBus:MatchingResultsTopic%",
+                "%AtlasFunction:MessagingServiceBus:MatchingResultsSubscription%",
+                Connection = "AtlasFunction:MessagingServiceBus:ConnectionString"
+            )]
+            MatchingResultsNotification resultsNotification,
             [DurableClient] IDurableOrchestrationClient starter)
         {
-            var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await request.Content.ReadAsStringAsync());
+            var searchRequest = resultsNotification.SearchRequest;
 
-
-            var matchingRequest = searchRequest;
+            // var matchingRequest = searchRequest;
             
-            var validationResult = await new SearchRequestValidator().ValidateAsync(matchingRequest);
-            if (!validationResult.IsValid)
-            {
-                return new HttpResponseMessage( HttpStatusCode.BadRequest ) {Content =  new StringContent(JsonConvert.SerializeObject(validationResult.Errors), Encoding.UTF8, "application/json" ) };
-            }
+            // TODO: ATLAS-665: Move validation to top level layer.
+            // var validationResult = await new SearchRequestValidator().ValidateAsync(matchingRequest);
+            // if (!validationResult.IsValid)
+            // {
+                // return new HttpResponseMessage(HttpStatusCode.BadRequest)
+                    // {Content = new StringContent(JsonConvert.SerializeObject(validationResult.Errors), Encoding.UTF8, "application/json")};
+            // }
 
-            var probabilityRequestToValidate = searchRequest.ToPartialMatchProbabilitySearchRequest();
-            var probabilityValidationResult = matchPredictionAlgorithm.ValidateMatchPredictionAlgorithmInput(probabilityRequestToValidate);
-            if (!probabilityValidationResult.IsValid)
-            {
-                return new HttpResponseMessage( HttpStatusCode.BadRequest ) {Content =  new StringContent(JsonConvert.SerializeObject(probabilityValidationResult.Errors), Encoding.UTF8, "application/json" ) };
-            }
+            // var probabilityRequestToValidate = searchRequest.ToPartialMatchProbabilitySearchRequest();
+            // var probabilityValidationResult = matchPredictionAlgorithm.ValidateMatchPredictionAlgorithmInput(probabilityRequestToValidate);
+            // if (!probabilityValidationResult.IsValid)
+            // {
+                // return new HttpResponseMessage(HttpStatusCode.BadRequest)
+                    // {Content = new StringContent(JsonConvert.SerializeObject(probabilityValidationResult.Errors), Encoding.UTF8, "application/json")};
+            // }
+            
             
             // Function input comes from the request content.
+            // TODO: ATLAS-665: Use custom search request id
             var instanceId = await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.SearchOrchestrator), searchRequest);
-            
+
             logger.SendTrace($"Started search orchestration with ID = '{instanceId}'.");
 
+            // TODO: ATLAS-665: Return this from initiation endpoint?
             // returns response including GET URL to fetch status, and eventual output, of orchestration function
-            return starter.CreateCheckStatusResponse(request, instanceId);
         }
     }
 }
