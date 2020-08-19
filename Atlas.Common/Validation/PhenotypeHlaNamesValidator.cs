@@ -1,4 +1,3 @@
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Extensions;
 using FluentValidation;
@@ -30,10 +29,18 @@ namespace Atlas.Common.Validation
 
     public class RequiredLocusHlaNamesValidator : AbstractValidator<LocusInfoTransfer<string>>
     {
-        public RequiredLocusHlaNamesValidator()
+        public RequiredLocusHlaNamesValidator(string message = null)
         {
-            RuleFor(x => x.Position1).NotEmpty();
-            RuleFor(x => x.Position2).NotEmpty();
+            if (message != null)
+            {
+                RuleFor(x => x.Position1).NotEmpty().WithMessage(message);
+                RuleFor(x => x.Position2).NotEmpty().WithMessage(message);
+            }
+            else
+            {
+                RuleFor(x => x.Position1).NotEmpty();
+                RuleFor(x => x.Position2).NotEmpty();
+            }
         }
     }
 }
