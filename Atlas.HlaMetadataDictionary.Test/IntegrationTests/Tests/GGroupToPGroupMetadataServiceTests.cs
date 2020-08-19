@@ -35,6 +35,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [TearDown]
         public void TearDown()
         {
+            // clear MAC allele mappings between tests
             appCache.Remove(CacheKey);
         }
 
