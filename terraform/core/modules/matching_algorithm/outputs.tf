@@ -6,17 +6,17 @@ output "azure_storage" {
 
 output "function_app" {
   value = {
-    api_key  = var.FUNCTION_HOST_KEY
-    base_url = "https://${azurerm_function_app.atlas_matching_algorithm_function.default_hostname}"
-    app_name = local.matching_algorithm_function_app_name
+    api_key                 = var.FUNCTION_HOST_KEY
+    base_url                = "https://${azurerm_function_app.atlas_matching_algorithm_function.default_hostname}"
+    app_name                = local.matching_algorithm_function_app_name
     donor_matching_app_name = local.donor_management_function_app_name
   }
 }
 
 output "service_bus" {
   value = {
-    search_requests_queue = azurerm_servicebus_queue.matching-requests.name
-    search_results_topic  = azurerm_servicebus_topic.matching-results-ready.name
+    search_requests_queue  = azurerm_servicebus_queue.matching-requests.name
+    matching_results_topic = azurerm_servicebus_topic.matching-results-ready.name
   }
 }
 
