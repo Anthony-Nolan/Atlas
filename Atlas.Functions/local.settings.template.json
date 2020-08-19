@@ -5,8 +5,12 @@
     
     "AtlasFunction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AtlasFunction:AzureStorage:SearchResultsBlobContainer": "atlas-search-results",
+    
     "AtlasFunction:MessagingServiceBus:ConnectionString": "override-this",
+    "AtlasFunction:MessagingServiceBus:MatchingResultsSubscription": "match-prediction",
+    "AtlasFunction:MessagingServiceBus:MatchingResultsTopic": "matching-results-ready",
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic": "search-results-ready",
+    
     "AtlasFunction:Orchestration:MatchPredictionBatchSize": 100,
     
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
