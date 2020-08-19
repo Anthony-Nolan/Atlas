@@ -97,8 +97,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
             logger.SendTrace("Calculating last seen MAC from all MAC data. If this is called, last seen metadata has probably been deleted.");
             var query = new TableQuery<MacEntity>().Where(NonMetaDataFilter);
             var result = await Table.ExecuteQueryAsync(query);
-            var a = result.InOrderOfDefinition();
-            var b = result.InOrderOfDefinition().LastOrDefault();
             var latestMac = result.InOrderOfDefinition().LastOrDefault()?.Code;
             await StoreLatestMacRecord(latestMac);
             return latestMac;
