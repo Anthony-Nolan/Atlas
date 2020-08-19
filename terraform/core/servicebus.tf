@@ -70,3 +70,15 @@ resource "azurerm_servicebus_subscription" "audit-search-results-ready" {
   max_delivery_count                   = local.service-bus.default-message-retries
   dead_lettering_on_message_expiration = false
 }
+
+resource "azurerm_servicebus_subscription" "match-prediction-orchestration-search-results-ready" {
+  name                                 = "match-prediction-orchestration"
+  resource_group_name                  = azurerm_resource_group.atlas_resource_group.name
+  namespace_name                       = azurerm_servicebus_namespace.general.name
+  topic_name                           = module.matching_algorithm.service_bus.matching_results_topic
+  auto_delete_on_idle                  = local.service-bus.audit-subscription-idle-delete
+  default_message_ttl                  = local.service-bus.long-expiry
+  lock_duration                        = local.service-bus.default-read-lock
+  max_delivery_count                   = local.service-bus.default-message-retries
+  dead_lettering_on_message_expiration = false
+}

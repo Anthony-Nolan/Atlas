@@ -48,7 +48,7 @@ resource "azurerm_function_app" "atlas_function" {
     "Matching:AzureStorage:SearchResultsBlobContainer" = module.matching_algorithm.azure_storage.search_results_container
     "Matching:MessagingServiceBus:ConnectionString"    = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
     "Matching:MessagingServiceBus:SearchRequestsQueue" = module.matching_algorithm.service_bus.search_requests_queue
-    "Matching:MessagingServiceBus:SearchResultsTopic"  = module.matching_algorithm.service_bus.search_results_topic
+    "Matching:MessagingServiceBus:SearchResultsTopic"  = module.matching_algorithm.service_bus.matching_results_topic
 
     "NotificationsServiceBus:AlertsTopic"        = module.support.general.alerts_servicebus_topic.name
     "NotificationsServiceBus:ConnectionString"   = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
