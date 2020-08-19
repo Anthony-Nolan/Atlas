@@ -42,6 +42,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
             await CreatePatients(pool, testHarnessId, request.PatientMaskingRequests.ToMaskingRequests());
             await CreateDonors(pool, testHarnessId, request.DonorMaskingRequests.ToMaskingRequests());
 
+            await testHarnessRepository.MarkAsCompleted(testHarnessId);
+
             Debug.WriteLine("Done.");
             return testHarnessId;
         }
