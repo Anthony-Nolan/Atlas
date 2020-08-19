@@ -27,6 +27,11 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
     {
         private readonly ILogger logger;
         protected readonly CloudTable Table;
+        private readonly string NonMetaDataFilter = TableQuery.GenerateFilterCondition(        
+        "PartitionKey",                                                
+        QueryComparisons.NotEqual,                                     
+        LastStoredMacMetadataEntity.MetadataPartitionKey               
+        );                                                                 
 
         public MacRepository(MacDictionarySettings macDictionarySettings, ILogger logger)
         {
@@ -67,13 +72,7 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 
         public async Task<IReadOnlyCollection<Mac>> GetAllMacs()
         {
-            var nonMetadataFilter = TableQuery.GenerateFilterCondition(
-                "PartitionKey",
-                QueryComparisons.NotEqual,
-                LastStoredMacMetadataEntity.MetadataPartitionKey
-            );
-
-            var query = new TableQuery<MacEntity>().Where(nonMetadataFilter);
+            var query = new TableQuery<MacEntity>().Where(NonMetaDataFilter);
             var result = await Table.ExecuteQueryAsync(query);
             return result.Select(x => new Mac(x)).ToList().AsReadOnly();
         }
@@ -96,8 +95,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         private async Task<string> CalculateLastMacEntry()
         {
             logger.SendTrace("Calculating last seen MAC from all MAC data. If this is called, last seen metadata has probably been deleted.");
-            var query = new TableQuery<MacEntity>();
+            var query = new TableQuery<MacEntity>().Where(NonMetaDataFilter);
             var result = await Table.ExecuteQueryAsync(query);
+            var a = result.InOrderOfDefinition();
+            var b = result.InOrderOfDefinition().LastOrDefault();
             var latestMac = result.InOrderOfDefinition().LastOrDefault()?.Code;
             await StoreLatestMacRecord(latestMac);
             return latestMac;
