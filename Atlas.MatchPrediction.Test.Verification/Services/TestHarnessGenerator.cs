@@ -37,7 +37,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
             Debug.WriteLine("Generating normalised frequency pool.");
             var pool = await poolGenerator.GenerateNormalisedHaplotypeFrequencyPool();
 
-            var testHarnessId = await testHarnessRepository.AddTestHarness(pool.Id);
+            var testHarnessId = await testHarnessRepository.AddTestHarness(pool.Id, request.Comments);
             
             await CreatePatients(pool, testHarnessId, request.PatientMaskingRequests.ToMaskingRequests());
             await CreateDonors(pool, testHarnessId, request.DonorMaskingRequests.ToMaskingRequests());
