@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Repositories;
 using System.Linq;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
+using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.HlaTypingInfo;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
@@ -35,41 +35,36 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             var gGroups = dataset.GGroups.Select(GetMetadataFromAlleleGroup);
             var pGroups = dataset.PGroups.Select(GetMetadataFromAlleleGroup);
 
-            var locusToAllelesToPGroup = GetLocusToAllelesToPGroup(pGroups);
+            var alleleToPGroup = BuildAlleleToPGroupDictionary(pGroups);
 
-            return gGroups.Select(gGroup => GetMetadata(locusToAllelesToPGroup, gGroup));
+            return gGroups.Select(gGroup => GetMetadata(alleleToPGroup, gGroup));
         }
 
-        private Dictionary<Tuple<Locus, string>, string> GetLocusToAllelesToPGroup(IEnumerable<IAlleleGroupMetadata> pGroups)
+        private static Dictionary<(Locus, string), string> BuildAlleleToPGroupDictionary(IEnumerable<IAlleleGroupMetadata> pGroups)
         {
-            var locusToAllelesToPGroup = new Dictionary<Tuple<Locus, string>, string>();
-
-            foreach (var pGroup in pGroups)
+            return pGroups.SelectMany(pGroup =>
             {
-                foreach (var allele in pGroup.AllelesInGroup)
-                {
-                    if (locusToAllelesToPGroup.ContainsKey(new Tuple<Locus, string>(pGroup.Locus, allele)))
-                    {
-                        const string errorMessage = "Encountered allele at locus with multiple corresponding P Groups. This is not expected to be possible.";
-                        logger.SendTrace(errorMessage, LogLevel.Error, new Dictionary<string, string> {{"Allele", allele}});
-                        throw new HlaMetadataDictionaryException(pGroup.Locus, allele, errorMessage);
-                    }
+                var keys = pGroup.AllelesInGroup.Select(allele => (pGroup.Locus, allele));
+                return keys.ToDictionary(k => k, _ => pGroup.LookupName);
+            }).ToDictionary();
+        }
 
-                    locusToAllelesToPGroup.Add(new Tuple<Locus, string>(pGroup.Locus, allele), pGroup.LookupName);
-                }
+        private IGGroupToPGroupMetadata GetMetadata(IReadOnlyDictionary<(Locus, string), string> alleleToPGroup, IAlleleGroupMetadata gGroup)
+        {
+            // GGroup alleles with no PGroup are expected, as in the case of null expressing alleles only.
+            var pGroup = gGroup.AllelesInGroup.Where(allele =>
+                    alleleToPGroup.ContainsKey((gGroup.Locus, allele)))
+                .Select(allele => alleleToPGroup[(gGroup.Locus, allele)])
+                .Distinct().ToList();
+
+            if (pGroup.Count > 1)
+            {
+                const string errorMessage = "Encountered G Group at locus with multiple corresponding P Groups. This is not expected to be possible.";
+                logger.SendTrace(errorMessage, LogLevel.Error, new Dictionary<string, string> {{"G Group", gGroup.LookupName}});
+                throw new HlaMetadataDictionaryException(gGroup.Locus, gGroup.LookupName, errorMessage);
             }
 
-            return locusToAllelesToPGroup;
-        }
-
-        private static IGGroupToPGroupMetadata GetMetadata(IReadOnlyDictionary<Tuple<Locus, string>, string> locusToAllelesToPGroup, IAlleleGroupMetadata gGroups)
-        {
-            var pGroup = gGroups.AllelesInGroup.Where(allele => 
-                    locusToAllelesToPGroup.ContainsKey(new Tuple<Locus, string>(gGroups.Locus, allele)))
-                .Select(allele => locusToAllelesToPGroup[new Tuple<Locus, string>(gGroups.Locus, allele)])
-                .FirstOrDefault();
-
-            return new GGroupToPGroupMetadata(gGroups.Locus, gGroups.LookupName, pGroup);
+            return new GGroupToPGroupMetadata(gGroup.Locus, gGroup.LookupName, pGroup.FirstOrDefault());
         }
 
         private static IAlleleGroupMetadata GetMetadataFromAlleleGroup(IWmdaAlleleGroup alleleGroup)
