@@ -61,7 +61,7 @@ resource "azurerm_function_app" "atlas_matching_algorithm_function" {
   name                       = local.matching_algorithm_function_app_name
   resource_group_name        = var.app_service_plan.resource_group_name
   location                   = var.general.location
-  app_service_plan_id        = azurerm_app_service_plan.atlas-matching-algorithm-elastic-plan
+  app_service_plan_id        = azurerm_app_service_plan.atlas-matching-algorithm-elastic-plan.id
   https_only                 = true
   version                    = "~3"
   storage_account_access_key = azurerm_storage_account.matching_function_storage.primary_access_key
