@@ -103,12 +103,12 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 new[]
                 {
                     NormalisedPoolMemberBuilder.New
-                        .With(x => x.HaplotypeFrequency, firstHaplotype)
+                        .With(x => x.HaplotypeFrequencyFile, firstHaplotype)
                         .With(x => x.CopyNumber, 1)
                         .With(x => x.PoolIndexLowerBoundary, 0)
                         .Build(),
                     NormalisedPoolMemberBuilder.New
-                        .With(x => x.HaplotypeFrequency, secondHaplotype)
+                        .With(x => x.HaplotypeFrequencyFile, secondHaplotype)
                         .With(x => x.CopyNumber, 1)
                         .With(x => x.PoolIndexLowerBoundary, 1)
                         .Build()
@@ -139,13 +139,13 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
             const string secondHlaA = "second";
 
             var firstMember = NormalisedPoolMemberBuilder.New
-                .With(x => x.HaplotypeFrequency, HaplotypeFrequencyBuilder.Default.With(x => x.A, firstHlaA))
+                .With(x => x.HaplotypeFrequencyFile, HaplotypeFrequencyBuilder.Default.With(x => x.A, firstHlaA))
                 .With(x => x.CopyNumber, 5)
                 .With(x => x.PoolIndexLowerBoundary, 0)
                 .Build();
 
             var secondMember = NormalisedPoolMemberBuilder.New
-                .With(x => x.HaplotypeFrequency, HaplotypeFrequencyBuilder.Default.With(x => x.A, secondHlaA))
+                .With(x => x.HaplotypeFrequencyFile, HaplotypeFrequencyBuilder.Default.With(x => x.A, secondHlaA))
                 .With(x => x.CopyNumber, 5)
                 .With(x => x.PoolIndexLowerBoundary, firstMember.PoolIndexUpperBoundary + 1)
                 .Build();

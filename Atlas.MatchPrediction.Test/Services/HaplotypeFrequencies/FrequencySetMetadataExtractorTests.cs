@@ -19,7 +19,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         [TestCase("")]
         public void GetMetadataFromFullPath_IsNullOrEmpty_ThrowsException(string fullPath)
         {
-            metadataExtractor.Invoking(service => service.GetMetadataFromFullPath(fullPath))
+            metadataExtractor.Invoking(service => service.GetFileNameFromPath(fullPath))
                 .Should().Throw<Exception>();
         }
 
@@ -27,7 +27,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         [TestCase("/1/2/fileName")]
         public void GetMetadataFromFullPath_ContainsMoreThanTwoSubfolders_ThrowsException(string fullPath)
         {
-            metadataExtractor.Invoking(service => service.GetMetadataFromFullPath(fullPath))
+            metadataExtractor.Invoking(service => service.GetFileNameFromPath(fullPath))
                 .Should().Throw<Exception>();
         }
 
@@ -39,7 +39,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             const string fileName = "fileName";
             const string fullPath = registry + "/" + ethnicity + "/" + fileName;
 
-            var metaData = metadataExtractor.GetMetadataFromFullPath(fullPath);
+            var metaData = metadataExtractor.GetFileNameFromPath(fullPath);
 
             metaData.Registry.Should().Be(registry);
             metaData.Ethnicity.Should().Be(ethnicity);
@@ -53,7 +53,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             const string fileName = "fileName";
             const string fullPath = registry + "/" + fileName;
 
-            var metaData = metadataExtractor.GetMetadataFromFullPath(fullPath);
+            var metaData = metadataExtractor.GetFileNameFromPath(fullPath);
 
             metaData.Registry.Should().Be(registry);
             metaData.Name.Should().Be(fileName);
@@ -65,7 +65,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         {
             const string fileName = "fileName";
 
-            var metaData = metadataExtractor.GetMetadataFromFullPath(fileName);
+            var metaData = metadataExtractor.GetFileNameFromPath(fileName);
 
             metaData.Name.Should().Be(fileName);
             metaData.Registry.Should().BeNull();
@@ -85,7 +85,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             string expectedEthnicity
         )
         {
-            var metadata = metadataExtractor.GetMetadataFromFullPath(fullPath);
+            var metadata = metadataExtractor.GetFileNameFromPath(fullPath);
 
             metadata.Name.Should().Be(expectedFileName);
             metadata.Registry.Should().Be(expectedRegistry);
