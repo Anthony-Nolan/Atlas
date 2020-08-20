@@ -1,6 +1,6 @@
 terraform {
   backend "azurerm" {
-    key = "atlas.terraform.tfstate"
+    key = "atlas.systemtests.terraform.tfstate"
   }
 }
 
