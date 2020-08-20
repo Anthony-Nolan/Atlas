@@ -57,7 +57,7 @@ namespace Atlas.Functions
                 OptionsReaderFor<MacDownloadSettings>()
             );
 
-            builder.Services.RegisterMatchPredictionServices(
+            builder.Services.RegisterMatchPredictionAlgorithm(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),

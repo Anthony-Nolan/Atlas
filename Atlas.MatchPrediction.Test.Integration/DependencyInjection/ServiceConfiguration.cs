@@ -27,7 +27,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             var services = new ServiceCollection();
 
             services.SetUpConfiguration();
-            services.RegisterMatchPredictionServices(
+            services.RegisterMatchPredictionAlgorithm(
                 ApplicationInsightsSettingsReader,
                 _ => new HlaMetadataDictionarySettings(),
                 MacDictionarySettingsReader,
@@ -38,7 +38,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
             services.RegisterIntegrationTestServices();
             services.SetUpMockServices();
 
-            // This call must be made after `RegisterMatchPredictionServices()`, as it overrides the non-mock dictionary set up in that method
+            // This call must be made after `RegisterMatchPredictionAlgorithm()`, as it overrides the non-mock dictionary set up in that method
             services.RegisterFileBasedHlaMetadataDictionaryForTesting(ApplicationInsightsSettingsReader, _ => new MacDictionarySettings());
             services.SetUpMacDictionaryWithFileBackedRepository(
                 ApplicationInsightsSettingsReader,
