@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -61,26 +60,41 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 throw new EmptyHaplotypeFileException();
             }
 
-            var metadata = GetMetadata(file);
-            var set = await AddNewInactiveSet(metadata);
-            await StoreFrequencies(file.Contents, set.Id, convertToPGroups);
-            await setRepository.ActivateSet(set.Id);
-        }
+            // Load all frequencies into memory, to perform aggregation by PGroup.
+            // Largest known HF set is ~300,000 entries, which is reasonable to load into memory here.
+            var haplotypeFrequencyFile = frequencyCsvReader.GetFrequencies(file.Contents).ToList();
 
-        private HaplotypeFrequencySetMetadata GetMetadata(FrequencySetFile file)
-        {
-            var metadata = metadataExtractor.GetMetadataFromFullPath(file.FullPath);
+            var frequencySetData = haplotypeFrequencyFile
+                .Select(hf => new HaplotypeFrequencySetMetadata(hf, file.FileName)).Distinct().ToList();
 
-            if (!metadata.Ethnicity.IsNullOrEmpty() && metadata.Registry.IsNullOrEmpty())
+            if (frequencySetData.Count != 1)
             {
-                throw new InvalidFilePathException($"Cannot import set: Ethnicity ('{metadata.Ethnicity}') provided but no registry.");
+                throw new MalformedHaplotypeFileException("The nomenclature version, population ID, registry code, and ethnicity code must be the same for each frequency");
             }
 
-            return metadata;
+            var haplotypeFrequency = haplotypeFrequencyFile.Select(f => new HaplotypeFrequency
+            {
+                A = f.A,
+                B = f.B,
+                C = f.C,
+                DQB1 = f.Dqb1,
+                DRB1 = f.Drb1,
+                Frequency = f.Frequency,
+                TypingCategory = HaplotypeTypingCategory.GGroup
+            }).ToList();
+
+            var set = await AddNewInactiveSet(frequencySetData.First());
+            await StoreFrequencies(haplotypeFrequency, set.Id, convertToPGroups);
+            await setRepository.ActivateSet(set.Id);
         }
 
         private async Task<HaplotypeFrequencySet> AddNewInactiveSet(HaplotypeFrequencySetMetadata metadata)
         {
+            if (!metadata.Ethnicity.IsNullOrEmpty() && metadata.Registry.IsNullOrEmpty())
+            {
+                throw new MalformedHaplotypeFileException($"Cannot import set: Ethnicity ('{metadata.Ethnicity}') provided but no registry");
+            }
+
             var newSet = new HaplotypeFrequencySet
             {
                 RegistryCode = metadata.Registry,
@@ -93,12 +107,8 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             return await setRepository.AddSet(newSet);
         }
 
-        private async Task StoreFrequencies(Stream stream, int setId, bool convertToPGroups)
+        private async Task StoreFrequencies(IReadOnlyCollection<HaplotypeFrequency> gGroupHaplotypes, int setId, bool convertToPGroups)
         {
-            // Load all frequencies into memory, to perform aggregation by PGroup.
-            // Largest known HF set is ~300,000 entries, which is reasonable to load into memory here.
-            var gGroupHaplotypes = ReadGGroupHaplotypeFrequencies(stream);
-
             var haplotypes = gGroupHaplotypes.Select(r => r.Hla).ToList();
 
             if (haplotypes.Count != haplotypes.Distinct().Count())
@@ -128,20 +138,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             }
 
             await frequenciesRepository.AddHaplotypeFrequencies(setId, haplotypesToStore);
-        }
-
-        private IReadOnlyCollection<HaplotypeFrequency> ReadGGroupHaplotypeFrequencies(Stream stream)
-        {
-            return frequencyCsvReader.GetFrequencies(stream).Select(f => new HaplotypeFrequency
-            {
-                A = f.A,
-                B = f.B,
-                C = f.C,
-                DQB1 = f.Dqb1,
-                DRB1 = f.Drb1,
-                Frequency = f.Frequency,
-                TypingCategory = HaplotypeTypingCategory.GGroup
-            }).ToList();
         }
 
         private async Task<IEnumerable<HaplotypeFrequency>> ConvertHaplotypesToPGroupResolutionAndConsolidate(
