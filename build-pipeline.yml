@@ -33,6 +33,7 @@ jobs:
           command: 'build'
           projects: |
             Atlas.Functions
+            Atlas.Functions.PublicApi
             Atlas.DonorImport.Data
             Atlas.DonorImport.Functions
             Atlas.MatchingAlgorithm.Functions
@@ -69,6 +70,27 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/AtlasFunctions-$(Build.BuildId).zip'
           ArtifactName: functions
+
+      - task: CopyFiles@2
+        displayName: 'Copy Atlas Public Api Functions Build'
+        inputs:
+          SourceFolder: 'Atlas.Functions.PublicApi'
+          Contents: |
+            bin/**
+            *.config
+          TargetFolder: 'atlasPublicApiBuild'
+      - task: ArchiveFiles@2
+        displayName: 'Archive Atlas Public Api Functions Build'
+        inputs:
+          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/atlasPublicApiBuild/bin'
+          includeRootFolder: false
+          archiveFile: '$(Build.ArtifactStagingDirectory)/AtlasPublicApiFunctions-$(Build.BuildId).zip'
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: Atlas Functions'
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/AtlasPublicApiFunctions-$(Build.BuildId).zip'
+          ArtifactName: functions
+
       - task: CopyFiles@2
         displayName: 'Copy MatchingAlgorithm Functions Build'
         inputs:
