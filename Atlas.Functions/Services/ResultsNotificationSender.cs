@@ -33,7 +33,14 @@ namespace Atlas.Functions.Services
         /// <inheritdoc />
         public async Task PublishResultsMessage(SearchResultSet searchResultSet, DateTime searchInitiationTime)
         {
-            var searchTime = DateTime.UtcNow.Subtract(searchInitiationTime);
+            var orchestrationSearchTime = DateTime.UtcNow.Subtract(searchInitiationTime);
+            // Orchestration time covers everything in the orchestration function layer:
+            // [matching results download, donor info fetching, match prediction, results upload]
+            // It does not cover matching, which happens in another functions app - so we add it on here. 
+            // This means we don't track the queue time, on either the matching or orchestration queue - so user observed search time may be
+            // slightly longer than this reported time. This should only be noticeably different under high load. 
+            var searchTime = searchResultSet.MatchingAlgorithmTime + orchestrationSearchTime;
+            
             logger.SendTrace(
                 $"Search Request: {searchResultSet.SearchRequestId} finished. Matched {searchResultSet.TotalResults} donors in {searchTime} total.",
                 LogLevel.Info,
