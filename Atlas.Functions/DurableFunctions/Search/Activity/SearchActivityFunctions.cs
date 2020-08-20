@@ -212,7 +212,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             public IDictionary<int, Donor> DonorInformation { get; set; }
 
             /// <summary>
-            /// The time the search request was initiated. Used to calculate an overall search time for Atlas search requests.
+            /// The time the *orchestration function* was initiated. Used to calculate an overall search time for Atlas search requests.
             /// </summary>
             public DateTime SearchInitiated { get; set; }
         }
