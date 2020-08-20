@@ -137,6 +137,14 @@ This can be achieved by configuring an ATLAS installation to use the test storag
 
 This is triggered via an HTTP endpoint in the Matching Algorithm Functions App.
 
+The HLA Metadata Dictionary needs to be set to version 3330, as that was when the validation tests were written.
+So send a POST request to `http://localhost:7071/api/RefreshHlaMetadataDictionaryToSpecificVersion` with the body:
+```
+{
+	"Version": "3330"
+}
+``` 
+
 #### MAC Dictionary
 
 A full import of the latest MACs should be performed (this can be a one-off, as tests should not ues as-yet unpublished MAC values)
