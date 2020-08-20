@@ -26,10 +26,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         private IMessagingServiceBusClient serviceBusClient;
         private IDonorFileImporter donorFileImporter;
 
-        private List<Donor> InitialDonors;
+        private List<Donor> initialDonors;
         private const int InitialCount = 10;
         private readonly Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
-        private readonly Builder<DonorUpdate> donorDeletionBuilder =
+        private Builder<DonorUpdate> DonorDeletionBuilder =>
             DonorUpdateBuilder.New
                 .WithRecordIdPrefix("external-donor-code-")
                 .With(upd => upd.ChangeType, ImportDonorChangeType.Delete);
@@ -56,8 +56,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             await donorFileImporter.ImportDonorFile(donorUpdateFile);
 
-            InitialDonors = donorRepository.StreamAllDonors().ToList();
-            InitialDonors.Should().HaveCount(InitialCount);
+            initialDonors = donorRepository.StreamAllDonors().ToList();
+            initialDonors.Should().HaveCount(InitialCount);
         }
 
         [TearDown]
@@ -70,8 +70,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         public async Task ImportDonors_ForDeletions_RecordsAreRemovedFromDatabase()
         {
             const int deletionCount = 3;
-            var donorDeletes = donorDeletionBuilder
-                .With(update => update.RecordId, InitialDonors.Select(d => d.ExternalDonorCode).ToList())
+            var donorDeletes = DonorDeletionBuilder
+                .With(update => update.RecordId, initialDonors.Select(d => d.ExternalDonorCode).ToList())
                 .Build(deletionCount).ToArray();
 
             var donorDeleteFile = fileBuilder.WithDonors(donorDeletes);
@@ -87,7 +87,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         public async Task ImportDonors_ForDeletionsIfRecordsAreNotFound_DoesNotThrow_AndDoesNotAffectExistingRecords_AndDoesNotSendMessages()
         {
             const int deletionCount = 4;
-            var donorDeletes = donorDeletionBuilder
+            var donorDeletes = DonorDeletionBuilder
                 .With(update => update.RecordId, "Unknown")
                 .Build(deletionCount).ToArray();
 
@@ -124,10 +124,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
         private (DonorImportFile, List<int>) GenerateMixedDeletionFileWithMatchingAtlasIds(int goodDeletesCount, int badDeletesCount)
         {
-            var goodDeletes = donorDeletionBuilder
-                .With(update => update.RecordId, InitialDonors.Select(d => d.ExternalDonorCode).ToList())
+            var goodDeletes = DonorDeletionBuilder
+                .With(update => update.RecordId, initialDonors.Select(d => d.ExternalDonorCode).ToList())
                 .Build(goodDeletesCount).ToList();
-            var badDeletes = donorDeletionBuilder.With(update => update.RecordId, "Unknown").Build(badDeletesCount);
+            var badDeletes = DonorDeletionBuilder.With(update => update.RecordId, "Unknown").Build(badDeletesCount);
             var goodDeleteAtlasIds = goodDeletes.Select(delete => donorRepository.GetDonor(delete.RecordId).Result.AtlasId).ToList(); // Note reification must occur before we Import the File!
 
             var donorMixedDeleteFile = fileBuilder.WithDonors(goodDeletes.Union(badDeletes).ToArray()).Build();

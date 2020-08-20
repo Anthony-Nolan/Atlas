@@ -25,7 +25,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         private IMessagingServiceBusClient serviceBusClient;
         private IDonorFileImporter donorFileImporter;
         private readonly Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
-        private readonly Builder<DonorUpdate> donorCreationBuilder =
+        private  Builder<DonorUpdate> DonorCreationBuilder =>
             DonorUpdateBuilder.New
                 .WithRecordIdPrefix("external-donor-code-")
                 .With(upd => upd.ChangeType, ImportDonorChangeType.Create);
@@ -52,7 +52,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         {
             const int creationCount = 2;
             const string donorCodePrefix = "test1-";
-            var donorUpdates = donorCreationBuilder.WithRecordIdPrefix(donorCodePrefix).Build(creationCount).ToArray();
+            var donorUpdates = DonorCreationBuilder.WithRecordIdPrefix(donorCodePrefix).Build(creationCount).ToArray();
             var donorUpdateFile = fileBuilder.WithDonors(donorUpdates).Build();
 
             //ACT
@@ -71,7 +71,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             const string donorCodePrefix = "test2-";
             var donorUpdates =
-                donorCreationBuilder
+                DonorCreationBuilder
                     .WithRecordIdPrefix(donorCodePrefix)
                     .With(donor => donor.Hla, new []{ hlaObject1, hlaObject2})
                     .Build(2).ToArray();
@@ -92,7 +92,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         {
             const int creationCount = 3;
 
-            var donorUpdates = donorCreationBuilder.Build(creationCount).ToArray();
+            var donorUpdates = DonorCreationBuilder.Build(creationCount).ToArray();
             var donorUpdateFile = fileBuilder.WithDonors(donorUpdates).Build();
 
             serviceBusClient.ClearReceivedCalls();
@@ -107,7 +107,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task ImportDonors_ForEachAddition_SendsMatchingUpdateWithNewlyAssignedAtlasId()
         {
-            var donorUpdates = donorCreationBuilder.Build(2).ToArray();
+            var donorUpdates = DonorCreationBuilder.Build(2).ToArray();
             var donorUpdateFile = fileBuilder.WithDonors(donorUpdates).Build();
 
             serviceBusClient.ClearReceivedCalls();
@@ -131,7 +131,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         public async Task ImportDonors_IfAdditionsAlreadyExist_ThrowsError_AndDoesNotAdd_NorSendMessages()
         {
             const string donorCodePrefix = "test5-";
-            var donorUpdates = donorCreationBuilder.WithRecordIdPrefix(donorCodePrefix).Build(4).ToArray();
+            var donorUpdates = DonorCreationBuilder.WithRecordIdPrefix(donorCodePrefix).Build(4).ToArray();
             var donorUpdateFiles = fileBuilder.WithDonors(donorUpdates).Build(2).ToList();
 
             await donorFileImporter.ImportDonorFile(donorUpdateFiles.First());
@@ -149,7 +149,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         public async Task ImportDonors_IfSomeAdditionsAlreadyExistButOthersDoNot_ThrowsError_AndDoesNotAdd_NorChangeExisting_NorSendMessages()
         {
             const string donorCodePrefix = "test6-";
-            var updateBuilder = donorCreationBuilder.WithRecordIdPrefix(donorCodePrefix);
+            var updateBuilder = DonorCreationBuilder.WithRecordIdPrefix(donorCodePrefix);
 
             var donorUpdates_Set1 = updateBuilder.Build(4).ToArray();
             var donorUpdates_Set2 = updateBuilder.Build(3).ToArray();
@@ -172,7 +172,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task ImportDonors_IfMissingMandatoryHlaTypings_DoesNotAddToDatabase()
         {
-            var donorUpdate = donorCreationBuilder.Build();
+            var donorUpdate = DonorCreationBuilder.Build();
             
             donorUpdate.Hla.A = null;
             var file = fileBuilder.WithDonors(donorUpdate).Build();
@@ -186,7 +186,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task ImportDonors_IfRequiredLocusHasNullHlaValues_DoesNotAddToDatabase()
         {
-            var donorUpdate = donorCreationBuilder.Build();
+            var donorUpdate = DonorCreationBuilder.Build();
             
             donorUpdate.Hla.A = new ImportedLocus
             {
@@ -207,7 +207,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task ImportDonors_IfMissingHlaHasEmptyValues_DoesNotAddToDatabase()
         {
-            var donorUpdate = donorCreationBuilder.Build();
+            var donorUpdate = DonorCreationBuilder.Build();
             
             donorUpdate.Hla.A = new ImportedLocus
             {
@@ -228,7 +228,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task ImportDonors_ForDonorDeletion_WithInvalidHla_DonorIsStillDeleted()
         {
-            var donorUpdate = donorCreationBuilder.Build();
+            var donorUpdate = DonorCreationBuilder.Build();
             var validFile = fileBuilder.WithDonors(donorUpdate).Build();
             await donorFileImporter.ImportDonorFile(validFile);
             var importedDonor = await donorRepository.GetDonor(donorUpdate.RecordId);
