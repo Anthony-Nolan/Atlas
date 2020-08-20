@@ -51,8 +51,7 @@ locals {
 
     "Wmda:WmdaFileUri" = var.WMDA_FILE_URL
 
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "1"
-    "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
+    "WEBSITE_RUN_FROM_PACKAGE" = var.WEBSITE_RUN_FROM_PACKAGE
   }
   matching_algorithm_function_app_name = "${var.general.environment}-ATLAS-MATCHING-ALGORITHM-FUNCTIONS"
 }
