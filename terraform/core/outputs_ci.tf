@@ -57,6 +57,10 @@ output "matching-username-for-donor-import-database" {
   value = var.MATCHING_USERNAME_FOR_DONOR_IMPORT_DATABASE
 }
 
+output "public-api-function-app-name" {
+  value = local.atlas_public_api_function_app_name
+}
+
 output "sql-server" {
   value = azurerm_sql_server.atlas_sql_server.fully_qualified_domain_name
 }

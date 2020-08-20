@@ -275,7 +275,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                     updateConverter,
                     hlaVersionAccessor,
                     settings,
-                    logger, 
+                    logger,
                     loggingContext);
             });
         }
