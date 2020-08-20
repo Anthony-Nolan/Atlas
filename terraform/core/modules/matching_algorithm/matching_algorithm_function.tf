@@ -68,6 +68,7 @@ resource "azurerm_function_app" "atlas_matching_algorithm_function" {
   storage_account_name       = azurerm_storage_account.matching_function_storage.name
 
   site_config {
+    pre_warmed_instance_count = 1
     ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
       ip_address = ip
       subnet_id  = null
