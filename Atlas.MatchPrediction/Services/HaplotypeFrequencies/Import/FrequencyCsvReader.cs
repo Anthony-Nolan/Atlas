@@ -22,37 +22,37 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 ConfigureCsvReader(csv);
                 while (TryRead(csv))
                 {
-                    HaplotypeFrequency haplotypeFrequency = null;
+                    HaplotypeFrequency haplotypeFrequencyFile = null;
 
                     try
                     {
-                        haplotypeFrequency = csv.GetRecord<HaplotypeFrequency>();
+                        haplotypeFrequencyFile = csv.GetRecord<HaplotypeFrequency>();
                     }
                     catch (CsvHelperException e)
                     {
                         throw new HaplotypeFormatException(e);
                     }
 
-                    if (haplotypeFrequency == null)
+                    if (haplotypeFrequencyFile == null)
                     {
                         throw new MalformedHaplotypeFileException("Haplotype in input file could not be parsed.");
                     }
 
-                    if (haplotypeFrequency.Frequency == 0m)
+                    if (haplotypeFrequencyFile.Frequency == 0m)
                     {
                         throw new MalformedHaplotypeFileException($"Haplotype property frequency cannot be 0.");
                     }
 
-                    if (haplotypeFrequency.A == null ||
-                        haplotypeFrequency.B == null ||
-                        haplotypeFrequency.C == null ||
-                        haplotypeFrequency.Dqb1 == null ||
-                        haplotypeFrequency.Drb1 == null)
+                    if (haplotypeFrequencyFile.A == null ||
+                        haplotypeFrequencyFile.B == null ||
+                        haplotypeFrequencyFile.C == null ||
+                        haplotypeFrequencyFile.Dqb1 == null ||
+                        haplotypeFrequencyFile.Drb1 == null)
                     {
                         throw new MalformedHaplotypeFileException($"Haplotype loci cannot be null.");
                     }
 
-                    yield return haplotypeFrequency;
+                    yield return haplotypeFrequencyFile;
                 }
             }
         }
@@ -75,6 +75,10 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 Map(m => m.Dqb1);
                 Map(m => m.Drb1);
                 Map(m => m.Frequency).Name("freq");
+                Map(m => m.HlaNomenclatureVersion).Name("nomenclature_version");
+                Map(m => m.PopulationId).Name("population_id");
+                Map(m => m.RegistryCode).Name("don_pool");
+                Map(m => m.EthnicityCode).Name("ethn");
             }
         }
 

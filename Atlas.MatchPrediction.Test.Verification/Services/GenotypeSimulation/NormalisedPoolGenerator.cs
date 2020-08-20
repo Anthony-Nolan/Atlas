@@ -62,7 +62,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
             {
                 var poolMember = new NormalisedPoolMember
                 {
-                    HaplotypeFrequency = haplotypeFrequency,
+                    HaplotypeFrequencyFile = haplotypeFrequency,
                     CopyNumber = CalculateCopyNumber(haplotypeFrequency, lowestFrequency),
                     PoolIndexLowerBoundary = 1 + lastUpperBoundary
                 };
@@ -76,7 +76,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
             return new NormalisedHaplotypePool(poolId, sourceData.HlaNomenclatureVersion, poolMembers);
         }
 
-        private static decimal LowestFrequency(IReadOnlyCollection<HaplotypeFrequency> haplotypeFrequencies)
+        private static decimal LowestFrequency(IReadOnlyCollection<HaplotypeFrequencyFile> haplotypeFrequencies)
         {
             return haplotypeFrequencies
                 .OrderBy(s => s.Frequency)
@@ -84,7 +84,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
                 .Frequency;
         }
 
-        private static int CalculateCopyNumber(HaplotypeFrequency next, decimal lowestFrequency)
+        private static int CalculateCopyNumber(HaplotypeFrequencyFile next, decimal lowestFrequency)
         {
             return (int)decimal.Round(next.Frequency / lowestFrequency);
         }
@@ -117,12 +117,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
             return new NormalisedHaplotypeFrequency
             {
                 NormalisedPool_Id = poolId,
-                A = poolMember.HaplotypeFrequency.A,
-                B = poolMember.HaplotypeFrequency.B,
-                C = poolMember.HaplotypeFrequency.C,
-                DQB1 = poolMember.HaplotypeFrequency.Dqb1,
-                DRB1 = poolMember.HaplotypeFrequency.Drb1,
-                Frequency = poolMember.HaplotypeFrequency.Frequency,
+                A = poolMember.HaplotypeFrequencyFile.A,
+                B = poolMember.HaplotypeFrequencyFile.B,
+                C = poolMember.HaplotypeFrequencyFile.C,
+                DQB1 = poolMember.HaplotypeFrequencyFile.Dqb1,
+                DRB1 = poolMember.HaplotypeFrequencyFile.Drb1,
+                Frequency = poolMember.HaplotypeFrequencyFile.Frequency,
                 CopyNumber = poolMember.CopyNumber
             };
         }

@@ -43,7 +43,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 .Build();
 
             var secondMember = NormalisedPoolMemberBuilder.New
-                .With(x => x.HaplotypeFrequency, HaplotypeFrequencyBuilder.Default.With(h => h.A, secondMemberA))
+                .With(x => x.HaplotypeFrequencyFile, HaplotypeFrequencyBuilder.Default.With(h => h.A, secondMemberA))
                 .With(x => x.CopyNumber, 3)
                 .With(x => x.PoolIndexLowerBoundary, firstMember.PoolIndexUpperBoundary + 1)
                 .Build();
