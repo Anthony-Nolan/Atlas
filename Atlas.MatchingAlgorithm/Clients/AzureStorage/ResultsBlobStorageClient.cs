@@ -18,10 +18,10 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureStorage
         private readonly string resultsContainerName;
 
         // ReSharper disable once SuggestBaseTypeForParameter
-        public ResultsBlobStorageClient(AzureStorageSettings azureStorageSettings, IMatchingAlgorithmSearchLogger searchLogger)
-            : base(azureStorageSettings.ConnectionString, searchLogger)
+        public ResultsBlobStorageClient(AzureStorageSettings azureStorageSettings, IMatchingAlgorithmSearchLogger logger)
+            : base(azureStorageSettings.ConnectionString, logger)
         {
-            this.resultsContainerName = azureStorageSettings.SearchResultsBlobContainer;
+            resultsContainerName = azureStorageSettings.SearchResultsBlobContainer;
         }
 
         public async Task UploadResults(MatchingAlgorithmResultSet searchResultSet)

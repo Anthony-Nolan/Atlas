@@ -4,6 +4,7 @@
     "ApplicationInsights:LogLevel": "Info",
     
     "AtlasFunction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
+    "AtlasFunction:AzureStorage:MatchingResultsBlobContainer": "matching-algorithm-results",
     "AtlasFunction:AzureStorage:SearchResultsBlobContainer": "atlas-search-results",
     
     "AtlasFunction:MessagingServiceBus:ConnectionString": "override-this",

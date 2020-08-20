@@ -28,11 +28,14 @@ resource "azurerm_function_app" "atlas_function" {
     "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.atlas.instrumentation_key
     "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
-    "AtlasFunction:AzureStorage:ConnectionString"           = azurerm_storage_account.azure_storage.primary_connection_string
-    "AtlasFunction:AzureStorage:SearchResultsBlobContainer" = azurerm_storage_container.search_results_blob_container.name
-    "AtlasFunction:MessagingServiceBus:ConnectionString"    = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
-    "AtlasFunction:MessagingServiceBus:SearchResultsTopic"  = azurerm_servicebus_topic.search-results-ready.name
-    "AtlasFunction:Orchestration:MatchPredictionBatchSize"  = var.ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE
+    "AtlasFunction:AzureStorage:ConnectionString"                   = azurerm_storage_account.azure_storage.primary_connection_string
+    "AtlasFunction:AzureStorage:MatchingResultsBlobContainer"       = module.matching_algorithm.azure_storage.search_results_container
+    "AtlasFunction:AzureStorage:SearchResultsBlobContainer"         = azurerm_storage_container.search_results_blob_container.name
+    "AtlasFunction:MessagingServiceBus:ConnectionString"            = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
+    "AtlasFunction:MessagingServiceBus:MatchingResultsSubscription" = module.matching_algorithm.service_bus.matching_results_topic
+    "AtlasFunction:MessagingServiceBus:MatchingResultsTopic"        = azurerm_servicebus_subscription.match-prediction-orchestration-search-results-ready.name
+    "AtlasFunction:MessagingServiceBus:SearchResultsTopic"          = azurerm_servicebus_topic.search-results-ready.name
+    "AtlasFunction:Orchestration:MatchPredictionBatchSize"          = var.ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE
 
     "FUNCTIONS_WORKER_RUNTIME" : "dotnet"
 

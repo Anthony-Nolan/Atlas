@@ -85,7 +85,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     WasSuccessful = true,
                     NumberOfResults = results.Count,
                     BlobStorageContainerName = blobContainerName,
-                    SearchTimeInMilliseconds = stopwatch.ElapsedMilliseconds
+                    BlobStorageResultsFileName = searchResultSet.ResultsFileName,
+                    ElapsedTime = stopwatch.Elapsed
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
                 return searchResultSet;

@@ -1,4 +1,5 @@
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Notifications;
 using Atlas.Functions;
 using Atlas.Functions.Services;
@@ -13,6 +14,7 @@ using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 [assembly: FunctionsStartup(typeof(Startup))]
@@ -61,7 +63,7 @@ namespace Atlas.Functions
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 // TODO: ATLAS-600: Read HLA nomenclature version from file data, rather than hard coding
-                _ => new MatchPredictionImportSettings{ HlaNomenclatureVersion = "3410"},
+                _ => new MatchPredictionImportSettings {HlaNomenclatureVersion = "3410"},
                 ConnectionStringReader("MatchPrediction:Sql")
             );
         }
@@ -94,6 +96,13 @@ namespace Atlas.Functions
             services.AddScoped<IResultsCombiner, ResultsCombiner>();
             services.AddScoped<IResultsUploader, ResultsUploader>();
             services.AddScoped<ISearchCompletionMessageSender, SearchCompletionMessageSender>();
+            services.AddScoped<IMatchingResultsDownloader, MatchingResultsDownloader>();
+            services.AddScoped<IBlobDownloader, BlobDownloader>(sp =>
+            {
+                var logger = sp.GetService<ILogger>();
+                var connectionString = sp.GetService<IOptions<Settings.AzureStorageSettings>>().Value.ConnectionString;
+                return new BlobDownloader(connectionString, logger);
+            });
         }
     }
 }
