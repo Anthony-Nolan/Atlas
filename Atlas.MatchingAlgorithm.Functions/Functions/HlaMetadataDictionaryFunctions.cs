@@ -52,6 +52,5 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             var version = JsonConvert.DeserializeObject<VersionRequest>(await new StreamReader(httpRequest.Body).ReadToEndAsync()).Version;
             await hlaMetadataDictionary.RecreateHlaMetadataDictionary(CreationBehaviour.Specific(version));
         }
-
     }
 }

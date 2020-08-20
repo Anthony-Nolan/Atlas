@@ -45,8 +45,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             MatchingResultsNotification resultsNotification,
             [DurableClient] IDurableOrchestrationClient starter)
         {
-            var searchRequest = resultsNotification.SearchRequest;
-
             // var matchingRequest = searchRequest;
             
             // TODO: ATLAS-665: Move validation to top level layer.
@@ -66,11 +64,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             // }
             
             
-            // Function input comes from the request content.
-            // TODO: ATLAS-665: Use custom search request id
-            var instanceId = await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.SearchOrchestrator), searchRequest);
-
-            logger.SendTrace($"Started search orchestration with ID = '{instanceId}'.");
+            await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.SearchOrchestrator), resultsNotification);
+            logger.SendTrace($"Started match prediction orchestration with ID = '{resultsNotification.SearchRequestId}'.");
 
             // TODO: ATLAS-665: Return this from initiation endpoint?
             // returns response including GET URL to fetch status, and eventual output, of orchestration function

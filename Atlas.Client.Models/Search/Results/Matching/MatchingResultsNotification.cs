@@ -1,3 +1,4 @@
+using System;
 using Atlas.Client.Models.Search.Requests;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
@@ -26,7 +27,16 @@ namespace Atlas.Client.Models.Search.Results.Matching
         /// </summary>
         public string HlaNomenclatureVersion { get; set; }
 
+        /// <summary>
+        /// Name of the container in blob storage where matching results can be found.
+        /// </summary>
         public string BlobStorageContainerName { get; set; }
-        public long SearchTimeInMilliseconds { get; set; }
+
+        /// <summary>
+        /// Name of the file in which results are stored in blob storage. 
+        /// </summary>
+        public string BlobStorageResultsFileName { get; set; }
+        
+        public TimeSpan ElapsedTime { get; set; }
     }
 }

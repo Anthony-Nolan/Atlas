@@ -33,6 +33,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         private readonly IMatchPredictionInputBuilder matchPredictionInputBuilder;
         private readonly IResultsCombiner resultsCombiner;
         private readonly ISearchCompletionMessageSender searchCompletionMessageSender;
+        private readonly IMatchingResultsDownloader matchingResultsDownloader;
 
         public SearchActivityFunctions(
             // Matching Algorithm Services
@@ -45,7 +46,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             IResultsUploader searchResultsBlobUploader,
             IMatchPredictionInputBuilder matchPredictionInputBuilder,
             IResultsCombiner resultsCombiner,
-            ISearchCompletionMessageSender searchCompletionMessageSender)
+            ISearchCompletionMessageSender searchCompletionMessageSender,
+            IMatchingResultsDownloader matchingResultsDownloader)
         {
             this.searchRunner = searchRunner;
             this.donorReader = donorReader;
@@ -54,6 +56,31 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             this.matchPredictionInputBuilder = matchPredictionInputBuilder;
             this.resultsCombiner = resultsCombiner;
             this.searchCompletionMessageSender = searchCompletionMessageSender;
+            this.matchingResultsDownloader = matchingResultsDownloader;
+        }
+
+        [FunctionName(nameof(DownloadMatchingAlgorithmResults))]
+        public async Task<TimedResultSet<MatchingAlgorithmResultSet>> DownloadMatchingAlgorithmResults(
+            [ActivityTrigger] MatchingResultsNotification matchingResultsNotification)
+        {
+            try
+            {
+                var results = await matchingResultsDownloader.Download(matchingResultsNotification.BlobStorageResultsFileName);
+
+                return new TimedResultSet<MatchingAlgorithmResultSet>
+                {
+                    ElapsedTime = matchingResultsNotification.ElapsedTime,
+                    ResultSet = results
+                };
+            }
+            catch (Exception e)
+            {
+                await searchCompletionMessageSender.PublishFailureMessage(
+                    matchingResultsNotification.SearchRequestId,
+                    $"Failed to download results of matching algorithm.\n Exception: {e.Message}"
+                );
+                throw;
+            }
         }
 
         [FunctionName(nameof(RunMatchingAlgorithm))]
@@ -64,7 +91,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
                 var results = await searchRunner.RunSearch(searchRequest);
-                
+
                 return new TimedResultSet<MatchingAlgorithmResultSet>
                 {
                     ElapsedTime = stopwatch.Elapsed,
@@ -83,16 +110,17 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [FunctionName(nameof(FetchDonorInformation))]
-        public async Task<TimedResultSet<IDictionary<int, Donor>>> FetchDonorInformation([ActivityTrigger] Tuple<string, IEnumerable<int>> searchAndDonorIds)
+        public async Task<TimedResultSet<IDictionary<int, Donor>>> FetchDonorInformation(
+            [ActivityTrigger] Tuple<string, IEnumerable<int>> searchAndDonorIds)
         {
             var (searchId, donorIds) = searchAndDonorIds;
             try
             {
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
-                
+
                 var donorInfo = await donorReader.GetDonors(donorIds);
-                
+
                 return new TimedResultSet<IDictionary<int, Donor>>
                 {
                     ElapsedTime = stopwatch.Elapsed,
@@ -130,7 +158,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [FunctionName(nameof(RunMatchPrediction))]
-        public async Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> RunMatchPrediction([ActivityTrigger] MultipleDonorMatchProbabilityInput matchProbabilityInput)
+        public async Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> RunMatchPrediction(
+            [ActivityTrigger] MultipleDonorMatchProbabilityInput matchProbabilityInput)
         {
             try
             {
@@ -181,7 +210,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             /// Keyed by ATLAS ID
             /// </summary>
             public IDictionary<int, Donor> DonorInformation { get; set; }
-            
+
             /// <summary>
             /// The time the search request was initiated. Used to calculate an overall search time for Atlas search requests.
             /// </summary>

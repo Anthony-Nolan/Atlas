@@ -30,30 +30,48 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             [OrchestrationTrigger] IDurableOrchestrationContext context
         )
         {
-            var searchInitiated = context.CurrentUtcDateTime;
-            
-            var searchRequest = context.GetInput<SearchRequest>();
+            var orchestrationInitiated = context.CurrentUtcDateTime;
+            var notification = context.GetInput<MatchingResultsNotification>();
+            var searchRequest = notification.SearchRequest;
 
-            var timedSearchResults = await RunMatchingAlgorithm(context, searchRequest);
+            var timedSearchResults = await DownloadMatchingAlgorithmResults(context, notification);
             var searchResults = timedSearchResults.ResultSet;
 
             var timedDonorInformation = await FetchDonorInformation(context, searchResults);
             var donorInformation = timedDonorInformation.ResultSet;
 
             var matchPredictionResults = await RunMatchPredictionAlgorithm(context, searchRequest, searchResults, timedDonorInformation);
-            await PersistSearchResults(context, timedSearchResults, matchPredictionResults, donorInformation, searchInitiated);
+            await PersistSearchResults(context, timedSearchResults, matchPredictionResults, donorInformation, orchestrationInitiated);
 
             // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
             return new SearchOrchestrationOutput
             {
                 MatchingAlgorithmTime = timedSearchResults.ElapsedTime,
                 MatchPredictionTime = matchPredictionResults.ElapsedTime,
-                TotalSearchTime = context.CurrentUtcDateTime.Subtract(searchInitiated),
+                TotalSearchTime = context.CurrentUtcDateTime.Subtract(orchestrationInitiated),
                 MatchingDonorCount = searchResults.ResultCount,
                 MatchingResultFileName = searchResults.ResultsFileName,
                 MatchingResultBlobContainer = searchResults.BlobStorageContainerName,
                 HlaNomenclatureVersion = searchResults.HlaNomenclatureVersion
             };
+        }
+
+        private static async Task<TimedResultSet<MatchingAlgorithmResultSet>> DownloadMatchingAlgorithmResults(
+            IDurableOrchestrationContext context,
+            MatchingResultsNotification notification)
+        {
+            var matchingResults = await context.CallActivityAsync<TimedResultSet<MatchingAlgorithmResultSet>>(
+                nameof(SearchActivityFunctions.DownloadMatchingAlgorithmResults),
+                notification
+            );
+
+            context.SetCustomStatus(new OrchestrationStatus
+            {
+                LastCompletedStage = "MatchingAlgorithm",
+                ElapsedTimeOfStage = notification.ElapsedTime,
+            });
+
+            return matchingResults;
         }
 
         private static async Task<TimedResultSet<MatchingAlgorithmResultSet>> RunMatchingAlgorithm(
