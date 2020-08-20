@@ -1,18 +1,12 @@
-using System.Net;
+using System;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Functions.DurableFunctions.Search.Orchestration;
-using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using Atlas.MatchPrediction.ExternalInterface;
-using Atlas.MatchPrediction.ExternalInterface.Models;
-using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
 
 namespace Atlas.Functions.DurableFunctions.Search.Client
@@ -45,30 +39,33 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             MatchingResultsNotification resultsNotification,
             [DurableClient] IDurableOrchestrationClient starter)
         {
-            // var matchingRequest = searchRequest;
-            
-            // TODO: ATLAS-665: Move validation to top level layer.
-            // var validationResult = await new SearchRequestValidator().ValidateAsync(matchingRequest);
-            // if (!validationResult.IsValid)
-            // {
-                // return new HttpResponseMessage(HttpStatusCode.BadRequest)
-                    // {Content = new StringContent(JsonConvert.SerializeObject(validationResult.Errors), Encoding.UTF8, "application/json")};
-            // }
+            var searchId = resultsNotification.SearchRequestId;
+            await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.SearchOrchestrator), searchId, resultsNotification);
 
-            // var probabilityRequestToValidate = searchRequest.ToPartialMatchProbabilitySearchRequest();
-            // var probabilityValidationResult = matchPredictionAlgorithm.ValidateMatchPredictionAlgorithmInput(probabilityRequestToValidate);
-            // if (!probabilityValidationResult.IsValid)
-            // {
-                // return new HttpResponseMessage(HttpStatusCode.BadRequest)
-                    // {Content = new StringContent(JsonConvert.SerializeObject(probabilityValidationResult.Errors), Encoding.UTF8, "application/json")};
-            // }
-            
-            
-            await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.SearchOrchestrator), resultsNotification);
-            logger.SendTrace($"Started match prediction orchestration with ID = '{resultsNotification.SearchRequestId}'.");
+            try
+            {
+                logger.SendTrace($"Started match prediction orchestration with ID = '{searchId}'.");
+                var statusCheck = await GetStatusCheckEndpoints(starter, searchId);
+                logger.SendTrace(statusCheck.StatusQueryGetUri);
+            }
+            catch (Exception e)
+            {
+                // This function cannot be allowed to fail post-orchestration scheduling, as it would then retry, and we cannot schedule more than one orchestrator with the same id.
+                // We are only doing logging past this point, so if it fails we just swallow exceptions.
+            }
+        }
 
-            // TODO: ATLAS-665: Return this from initiation endpoint?
-            // returns response including GET URL to fetch status, and eventual output, of orchestration function
+        private static async Task<StatusCheckEndpoints> GetStatusCheckEndpoints(IDurableOrchestrationClient orchestrationClient, string searchId)
+        {
+            // Log status check endpoints for convenience of debugging long search requests
+            var checkStatusResponse = orchestrationClient.CreateCheckStatusResponse(new HttpRequestMessage(), searchId);
+            return JsonConvert.DeserializeObject<StatusCheckEndpoints>(await checkStatusResponse.Content.ReadAsStringAsync());
+        }
+
+        private class StatusCheckEndpoints
+        {
+            // ReSharper disable once UnusedAutoPropertyAccessor.Local
+            public string StatusQueryGetUri { get; set; }
         }
     }
 }

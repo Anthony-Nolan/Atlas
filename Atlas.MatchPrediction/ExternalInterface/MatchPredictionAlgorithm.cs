@@ -18,8 +18,6 @@ namespace Atlas.MatchPrediction.ExternalInterface
     {
         public Task<MatchProbabilityResponse> RunMatchPredictionAlgorithm(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput);
 
-        public ValidationResult ValidateMatchPredictionAlgorithmInput(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput);
-
         /// <returns>A dictionary of DonorIds to Match Prediction Result</returns>
         public Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> RunMatchPredictionAlgorithmBatch(
             MultipleDonorMatchProbabilityInput multipleDonorMatchProbabilityInput);
@@ -82,11 +80,6 @@ namespace Atlas.MatchPrediction.ExternalInterface
             return await haplotypeFrequencyService.GetHaplotypeFrequencySets(
                 haplotypeFrequencySetInput.DonorInfo,
                 haplotypeFrequencySetInput.PatientInfo);
-        }
-
-        public ValidationResult ValidateMatchPredictionAlgorithmInput(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput)
-        {
-            return new MatchProbabilityNonDonorValidator().Validate(singleDonorMatchProbabilityInput);
         }
     }
 }

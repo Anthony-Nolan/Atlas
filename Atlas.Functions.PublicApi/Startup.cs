@@ -6,6 +6,7 @@ using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
+using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,6 +39,8 @@ namespace Atlas.Functions.PublicApi
                 _ => "",
                 _ => ""
             );
+            
+            builder.Services.RegisterMatchPredictionValidator();
         }
 
         private static void RegisterSettings(IServiceCollection services)

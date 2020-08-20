@@ -22,7 +22,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 {
     public static class ServiceConfiguration
     {
-        public static void RegisterMatchPredictionServices(
+        public static void RegisterMatchPredictionAlgorithm(
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
@@ -45,6 +45,11 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             );
         }
 
+        public static void RegisterMatchPredictionValidator(this IServiceCollection services)
+        {
+            services.AddScoped<IMatchPredictionAlgorithmValidator, MatchPredictionAlgorithmValidator>();
+        }
+        
         public static void RegisterHaplotypeFrequenciesReader(
             this IServiceCollection services,
             Func<IServiceProvider, string> fetchMatchPredictionDatabaseConnectionString)

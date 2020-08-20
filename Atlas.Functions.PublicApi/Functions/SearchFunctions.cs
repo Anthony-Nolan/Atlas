@@ -1,9 +1,11 @@
 using System.IO;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
-using Atlas.Common.Validation;
 using Atlas.MatchingAlgorithm.Services.Search;
-using FluentValidation;
+using Atlas.MatchingAlgorithm.Validators.SearchRequest;
+using Atlas.MatchPrediction.ExternalInterface;
+using Atlas.MatchPrediction.ExternalInterface.Models;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -15,25 +17,39 @@ namespace Atlas.Functions.PublicApi.Functions
     public class SearchFunctions
     {
         private readonly ISearchDispatcher searchDispatcher;
+        private readonly IMatchPredictionAlgorithmValidator matchPredictionAlgorithmValidator;
 
-        public SearchFunctions(ISearchDispatcher searchDispatcher)
+        public SearchFunctions(ISearchDispatcher searchDispatcher, IMatchPredictionAlgorithmValidator matchPredictionAlgorithmValidator)
         {
             this.searchDispatcher = searchDispatcher;
+            this.matchPredictionAlgorithmValidator = matchPredictionAlgorithmValidator;
         }
-        
+
         [FunctionName(nameof(Search))]
-        public async Task<IActionResult> Search([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request)
+        public async Task<IActionResult> Search(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            HttpRequest request)
         {
             var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
-            try
+
+            var matchingValidationResult = await new SearchRequestValidator().ValidateAsync(searchRequest);
+            if (!matchingValidationResult.IsValid)
             {
-                var id = await searchDispatcher.DispatchSearch(searchRequest);
-                return new JsonResult(new SearchInitiationResponse {SearchIdentifier = id});
+                return BuildValidationResponse(matchingValidationResult);
             }
-            catch (ValidationException e)
+
+            var probabilityRequestToValidate = searchRequest.ToPartialMatchProbabilitySearchRequest();
+            var probabilityValidationResult = matchPredictionAlgorithmValidator.ValidateMatchPredictionAlgorithmInput(probabilityRequestToValidate);
+            if (!probabilityValidationResult.IsValid)
             {
-                return new BadRequestObjectResult(e.ToValidationErrorsModel());
+                return BuildValidationResponse(probabilityValidationResult);
             }
+
+            var id = await searchDispatcher.DispatchSearch(searchRequest);
+            return new JsonResult(new SearchInitiationResponse {SearchIdentifier = id});
         }
+
+        private static IActionResult BuildValidationResponse(ValidationResult validationResult) =>
+            new BadRequestObjectResult(validationResult.Errors);
     }
 }
