@@ -1,15 +1,6 @@
-// TODO: ATLAS-314: finish off and test this terraform code
-// This code has not been tested, it was dropped mid way through when deemed out of scope of another ticket.
-// It has been deemed likely enough to be useful in ATLAS-314 that it has been left in regardless
-
-// TODO: ATLAS-314: Parameterise backend details 
-// See non-test terraform for examples.
 terraform {
   backend "azurerm" {
-    storage_account_name = "novaterraform"
-    container_name       = "terraform-state"
-    key                  = "atlas.systemtests.terraform.tfstate"
-    resource_group_name  = "AN-RESOURCE-GROUP"
+    key = "atlas.terraform.tfstate"
   }
 }
 
