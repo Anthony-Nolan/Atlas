@@ -1,5 +1,6 @@
 locals {
-  atlas_function_app_name = "${local.environment}-ATLAS-FUNCTIONS"
+  atlas_function_app_name            = "${local.environment}-ATLAS-FUNCTIONS"
+  atlas_public_api_function_app_name = "${local.environment}-ATLAS-API"
 }
 
 resource "azurerm_function_app" "atlas_function" {
@@ -88,5 +89,45 @@ resource "azurerm_function_app" "atlas_function" {
     name  = "MatchPrediction:Sql"
     type  = "SQLAzure"
     value = module.match_prediction.sql_database.connection_string
+  }
+}
+
+resource "azurerm_function_app" "atlas_public_api_function" {
+  name                       = local.atlas_public_api_function_app_name
+  resource_group_name        = azurerm_resource_group.atlas_resource_group.name
+  location                   = local.location
+  app_service_plan_id        = azurerm_app_service_plan.atlas-public-api-elastic-plan.id
+  https_only                 = true
+  version                    = "~3"
+  storage_account_access_key = azurerm_storage_account.function_storage.primary_access_key
+  storage_account_name       = azurerm_storage_account.function_storage.name
+
+  tags = local.common_tags
+
+  site_config {
+    pre_warmed_instance_count = 1
+    ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
+      ip_address = ip
+      subnet_id  = null
+    }]
+  }
+
+  app_settings = {
+    // APPINSIGHTS_INSTRUMENTATIONKEY
+    //      The azure functions dashboard requires the instrumentation key with this name to integrate with application insights.
+    "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.atlas.instrumentation_key
+    "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
+
+    "FUNCTIONS_WORKER_RUNTIME" : "dotnet"
+
+    "Matching:MessagingServiceBus:ConnectionString"    = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "Matching:MessagingServiceBus:SearchRequestsQueue" = module.matching_algorithm.service_bus.search_requests_queue
+    "Matching:MessagingServiceBus:SearchResultsTopic"  = module.matching_algorithm.service_bus.matching_results_topic
+
+    "NotificationsServiceBus:AlertsTopic"        = module.support.general.alerts_servicebus_topic.name
+    "NotificationsServiceBus:ConnectionString"   = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
+    "NotificationsServiceBus:NotificationsTopic" = module.support.general.notifications_servicebus_topic.name
+
+    "WEBSITE_RUN_FROM_PACKAGE" = var.WEBSITE_RUN_FROM_PACKAGE
   }
 }
