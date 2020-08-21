@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -59,17 +60,13 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
             // Load all frequencies into memory, to perform aggregation by PGroup.
             // Largest known HF set is ~300,000 entries, which is reasonable to load into memory here.
-            var HaplotypeFrequency = frequencyCsvReader.GetFrequencies(file.Contents).ToList();
+            var haplotypeFrequencyFile = frequencyCsvReader.GetFrequencies(file.Contents).ToList();
 
-            var frequencySetData = HaplotypeFrequency
-                .Select(hf => new HaplotypeFrequencySetMetadata(hf, file.FileName)).Distinct().ToList();
+            var frequencySetData =  new HaplotypeFrequencySetMetadata(haplotypeFrequencyFile.First(), file.FileName);
 
-            if (frequencySetData.Count != 1)
-            {
-                throw new MalformedHaplotypeFileException("The nomenclature version, population ID, registry code, and ethnicity code must be the same for each frequency");
-            }
+            var set = await AddNewInactiveSet(frequencySetData);
 
-            var haplotypeFrequency = HaplotypeFrequency.Select(f => new HaplotypeFrequency
+            var haplotypeFrequency = haplotypeFrequencyFile.Select(f => new HaplotypeFrequency
             {
                 A = f.A,
                 B = f.B,
@@ -80,7 +77,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 TypingCategory = HaplotypeTypingCategory.GGroup
             }).ToList();
 
-            var set = await AddNewInactiveSet(frequencySetData.First());
             await StoreFrequencies(haplotypeFrequency, set.Id, convertToPGroups);
             await setRepository.ActivateSet(set.Id);
         }
@@ -96,6 +92,8 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             {
                 RegistryCode = metadata.Registry,
                 EthnicityCode = metadata.Ethnicity,
+                HlaNomenclatureVersion = metadata.HlaNomenclatureVersion,
+                PopulationId = metadata.PopulationId,
                 Active = false,
                 Name = metadata.Name,
                 DateTimeAdded = DateTimeOffset.Now

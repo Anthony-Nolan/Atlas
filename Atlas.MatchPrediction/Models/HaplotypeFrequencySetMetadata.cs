@@ -14,13 +14,13 @@ namespace Atlas.MatchPrediction.Models
         {
         }
 
-        public HaplotypeFrequencySetMetadata(HaplotypeFrequency HaplotypeFrequency, string name)
+        public HaplotypeFrequencySetMetadata(HaplotypeFrequency haplotypeFrequency, string name)
         {
-            Registry = HaplotypeFrequency.RegistryCode;
-            Ethnicity = HaplotypeFrequency.EthnicityCode;
+            Registry = haplotypeFrequency.RegistryCode;
+            Ethnicity = haplotypeFrequency.EthnicityCode;
             Name = name;
-            PopulationId = HaplotypeFrequency.PopulationId;
-            HlaNomenclatureVersion = HaplotypeFrequency.HlaNomenclatureVersion;
+            PopulationId = haplotypeFrequency.PopulationId;
+            HlaNomenclatureVersion = haplotypeFrequency.HlaNomenclatureVersion;
         }
     }
 }

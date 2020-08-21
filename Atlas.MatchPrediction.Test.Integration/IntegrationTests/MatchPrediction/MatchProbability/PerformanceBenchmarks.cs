@@ -8,7 +8,6 @@ using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
-using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
 using FluentAssertions;
 using LochNessBuilder;
@@ -206,7 +205,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var filePath = $"Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.large.csv";
 
             await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(filePath))
-            using (var file = FrequencySetFileBuilder.FileWithoutContents(RegistryCode, EthnicityCode)
+            using (var file = FrequencySetFileBuilder.FileWithoutContents()
                 .WithHaplotypeFrequencyFileStream(stream)
                 .Build()
             )
