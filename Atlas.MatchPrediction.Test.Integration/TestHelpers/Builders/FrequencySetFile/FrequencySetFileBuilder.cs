@@ -24,7 +24,7 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
 
             return Builder.New
                 .With(x => x.FileName, uniqueFileName)
-                .With(x => x.FullPath, BuildFilePath(uniqueFileName, registryCode, ethnicityCode));
+                .With(x => x.FileName, BuildFilePath(uniqueFileName, registryCode, ethnicityCode));
         }
 
         internal static Builder New(string registryCode, string ethnicityCode, int haplotypeCount = 1, decimal frequencyValue = 0.00001m)
@@ -49,7 +49,7 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
             return builder.With(x => x.Contents, GetStream(BuildCsvFile(haplotypeFrequencies)));
         }
 
-        internal static Builder WithHaplotypeFrequencyFileStream(this Builder builder, Stream stream)
+        internal static Builder WithHaplotypeFrequencyStream(this Builder builder, Stream stream)
         {
             return builder.With(f => f.Contents, stream);
         }

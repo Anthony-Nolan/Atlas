@@ -8,6 +8,6 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Tes
     {
         public static Builder<NormalisedPoolMember> New =>
         Builder<NormalisedPoolMember>.New
-            .With(x => x.HaplotypeFrequencyFile, HaplotypeFrequencyBuilder.Default);
+            .With(x => x.HaplotypeFrequency, HaplotypeFrequencyBuilder.Default);
     }
 }

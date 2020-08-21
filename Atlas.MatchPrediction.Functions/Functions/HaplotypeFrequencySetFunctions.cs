@@ -43,7 +43,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
             using (var file = new FrequencySetFile
             {
                 Contents = blobStream,
-                FullPath = blobCreatedEvent.Subject,
+                FileName = blobCreatedEvent.Subject,
                 UploadedDateTime = blobCreatedEvent.EventTime
             })
             {

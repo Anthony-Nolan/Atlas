@@ -20,7 +20,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Models
             TotalCopyNumber = poolMembers.Sum(h => h.CopyNumber);
         }
 
-        public HaplotypeFrequencyFile GetHaplotypeFrequencyByPoolIndex(int poolIndex)
+        public HaplotypeFrequency GetHaplotypeFrequencyByPoolIndex(int poolIndex)
         {
             if (poolIndex < 0)
             {
@@ -34,13 +34,13 @@ namespace Atlas.MatchPrediction.Test.Verification.Models
 
             return PoolMembers
                 .Single(p => p.PoolIndexLowerBoundary <= poolIndex && poolIndex <= p.PoolIndexUpperBoundary)
-                .HaplotypeFrequencyFile;
+                .HaplotypeFrequency;
         }
     }
 
     public class NormalisedPoolMember
     {
-        public HaplotypeFrequencyFile HaplotypeFrequencyFile { get; set; }
+        public HaplotypeFrequency HaplotypeFrequency { get; set; }
         public int CopyNumber { get; set; }
         public int PoolIndexLowerBoundary { get; set; }
         public int PoolIndexUpperBoundary => PoolIndexLowerBoundary + CopyNumber - 1;
