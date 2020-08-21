@@ -4,86 +4,66 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Utils.Extensions;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using LochNessBuilder;
-using Builder = LochNessBuilder.Builder<Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile.TestFrequencySetFile>;
+using Builder = LochNessBuilder.Builder<Atlas.MatchPrediction.Models.FrequencySetFile>;
 
 namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile
 {
     [Builder]
     internal static class FrequencySetFileBuilder
     {
-        private const string CsvHeader = "a;b;c;dqb1;drb1;freq";
+        private const string CsvHeader = "a;b;c;dqb1;drb1;freq;nomenclature_version;population_id;don_pool;ethn";
 
-        internal static Builder FileWithoutContents(string registryCode, string ethnicityCode)
+        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
+        private const string PopulationId = "1";
+
+        internal static Builder FileWithoutContents()
         {
             var uniqueFileName = $"file-{DateTime.Now:HHmmssffff}.csv";
 
-            return Builder.New
-                .With(x => x.FileName, uniqueFileName)
-                .With(x => x.FileName, BuildFilePath(uniqueFileName, registryCode, ethnicityCode));
+            return Builder.New.With(x => x.FileName, uniqueFileName);
         }
 
         internal static Builder New(string registryCode, string ethnicityCode, int haplotypeCount = 1, decimal frequencyValue = 0.00001m)
         {
-            return FileWithoutContents(registryCode, ethnicityCode)
-                .With(x => x.Contents, GetStream(BuildCsvFile(haplotypeCount, frequencyValue)));
+            return FileWithoutContents()
+                .With(x => x.Contents, GetStream(BuildCsvFile(haplotypeCount, frequencyValue, registryCode, ethnicityCode)));
         }
 
         internal static Builder New(string registryCode, string ethnicityCode, IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
         {
-            return FileWithoutContents(registryCode, ethnicityCode).WithHaplotypeFrequencies(haplotypeFrequencies);
+            return FileWithoutContents().WithHaplotypeFrequencies(haplotypeFrequencies, registryCode, ethnicityCode);
         }
 
-        internal static Builder New(IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
+        internal static Builder WithHaplotypeFrequencies(
+            this Builder builder,
+            IEnumerable<HaplotypeFrequency> haplotypeFrequencies,
+            string registryCode,
+            string ethnicityCode)
         {
-            return FileWithoutContents(null, null)
-                .With(x => x.Contents, GetStream(BuildCsvFile(haplotypeFrequencies)));
+            return builder.With(x => 
+                x.Contents,
+                GetStream(BuildCsvFile(haplotypeFrequencies, registryCode, ethnicityCode)));
         }
 
-        internal static Builder WithHaplotypeFrequencies(this Builder builder, IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
-        {
-            return builder.With(x => x.Contents, GetStream(BuildCsvFile(haplotypeFrequencies)));
-        }
-
-        internal static Builder WithHaplotypeFrequencyStream(this Builder builder, Stream stream)
+        internal static Builder WithHaplotypeFrequencyFileStream(this Builder builder, Stream stream)
         {
             return builder.With(f => f.Contents, stream);
         }
 
         internal static Builder WithInvalidCsvFormat(string registryCode, string ethnicityCode, int haplotypeCount = 1, decimal frequencyValue = 0.00001m)
         {
-            var csvString = BuildCsvFile(haplotypeCount, frequencyValue);
+            var csvString = BuildCsvFile(haplotypeCount, frequencyValue, registryCode, ethnicityCode);
 
-            return FileWithoutContents(registryCode, ethnicityCode)
+            return FileWithoutContents()
                 .With(x => x.Contents, GetStream(csvString.Substring(csvString.Length - 10)));
         }
 
-        /// <param name="registryCode">Path will only contain file name if this is null.</param>
-        /// <param name="ethnicityCode">Path will only contain registry code and file name if this is null.</param>
-        private static string BuildFilePath(string fileName, string registryCode, string ethnicityCode)
-        {
-            if (registryCode.IsNullOrEmpty())
-            {
-                return fileName;
-            }
-
-            var path = new StringBuilder(registryCode + "/");
-
-            if (!ethnicityCode.IsNullOrEmpty())
-            {
-                path.Append(ethnicityCode + "/");
-            }
-
-            path.Append(fileName);
-
-            return path.ToString();
-        }
-
-        private static string BuildCsvFile(int frequencyCount, decimal frequencyValue)
+        private static string BuildCsvFile(int frequencyCount, decimal frequencyValue, string registryCode, string ethnicityCode)
         {
             var file = new StringBuilder(CsvHeader + Environment.NewLine);
 
@@ -101,7 +81,11 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
                                                      $"{haplotype.C.Position1};" +
                                                      $"{haplotype.Dqb1.Position1};" +
                                                      $"{haplotype.Drb1.Position1};" +
-                                                     $"{frequencyValue}";
+                                                     $"{frequencyValue};" +
+                                                     $"{HlaNomenclatureVersion};" +
+                                                     $"{PopulationId};" +
+                                                     $"{registryCode};" +
+                                                     $"{ethnicityCode}";
                     file.AppendLine(csvFileBodySingleFrequency);
                 }
 
@@ -109,10 +93,12 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
             }
         }
 
-        private static string BuildCsvFile(IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
+        private static string BuildCsvFile(IEnumerable<HaplotypeFrequency> haplotypeFrequencies, string registryCode, string ethnicityCode)
         {
             var csvFileBodyFrequencies = haplotypeFrequencies
-                .Select(h => $"{h.A};{h.B};{h.C};{h.DQB1};{h.DRB1};{h.Frequency}").ToList();
+                .Select(h => 
+                    $"{h.A};{h.B};{h.C};{h.DQB1};{h.DRB1};{h.Frequency};{HlaNomenclatureVersion};{PopulationId};{registryCode};{ethnicityCode};")
+                .ToList();
 
             var file = new StringBuilder(CsvHeader + Environment.NewLine);
 
