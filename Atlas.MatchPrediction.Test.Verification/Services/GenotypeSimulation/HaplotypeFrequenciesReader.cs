@@ -49,7 +49,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
             };
         }
 
-        private async Task<IReadOnlyCollection<HaplotypeFrequencyFile>> ReadHaplotypeFrequenciesFromFile(HaplotypeFrequencySet set)
+        private async Task<IReadOnlyCollection<HaplotypeFrequency>> ReadHaplotypeFrequenciesFromFile(HaplotypeFrequencySet set)
         {
             var fileStream = await setStreamer.GetFileContents(set.Name);
 
@@ -63,6 +63,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
     {
         public int? HaplotypeFrequencySetId { get; set; }
         public string HlaNomenclatureVersion { get; set; }
-        public IReadOnlyCollection<HaplotypeFrequencyFile> HaplotypeFrequencies { get; set; }
+        public IReadOnlyCollection<HaplotypeFrequency> HaplotypeFrequencies { get; set; }
     }
 }

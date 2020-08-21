@@ -108,10 +108,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 const string summary = "Haplotype file was present but it was empty.";
                 await LogErrorAndSendAlert(file, summary, ex.StackTrace);
             }
-            catch (InvalidFilePathException ex)
-            {
-                await LogErrorAndSendAlert(file, ex.Message, ex.StackTrace);
-            }
             catch (MalformedHaplotypeFileException ex)
             {
                 await LogErrorAndSendAlert(file, ex.Message, ex.StackTrace);
@@ -256,7 +252,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
             await notificationSender.SendNotification(
                 successName,
-                $"Import of file, '{file.FullPath}', has completed successfully.",
+                $"Import of file, '{file.FileName}', has completed successfully.",
                 NotificationConstants.OriginatorName);
         }
 
@@ -274,7 +270,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
             await notificationSender.SendAlert(
                 errorName,
-                $"Import of file, '{file.FullPath}', failed with the following exception message: \"{ex.GetBaseException().Message}\". "
+                $"Import of file, '{file.FileName}', failed with the following exception message: \"{ex.GetBaseException().Message}\". "
                 + "Full exception info has been logged to Application Insights.",
                 Priority.High,
                 NotificationConstants.OriginatorName);

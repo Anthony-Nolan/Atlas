@@ -10,7 +10,7 @@ namespace Atlas.MatchPrediction.ApplicationInsights
         public HaplotypeFrequencySetImportEventModel(string name, FrequencySetFile file) : base(name)
         {
             Level = LogLevel.Info;
-            Properties.Add(nameof(file.FullPath), file.FullPath);
+            Properties.Add(nameof(file.FileName), file.FileName);
             Properties.Add("TotalImportDurationInMs", GetDurationInMilliseconds(file));
             Properties.Add(nameof(file.UploadedDateTime), GetFormattedDateTimeString(file.UploadedDateTime));
             Properties.Add(nameof(file.ImportedDateTime), GetFormattedDateTimeString(file.ImportedDateTime));

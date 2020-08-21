@@ -102,7 +102,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             services.AddScoped<IMatchPredictionAlgorithm, MatchPredictionAlgorithm>();
             services.AddScoped<IDonorInputBatcher, DonorInputBatcher>();
             
-            services.AddScoped<IFrequencySetMetadataExtractor, FrequencySetMetadataExtractor>();
             services.AddScoped<IFrequencySetImporter, FrequencySetImporter>();
             services.AddScoped<IFrequencyCsvReader, FrequencyCsvReader>();
             services.AddScoped<IHaplotypeFrequencyService, HaplotypeFrequencyService>();
