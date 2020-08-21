@@ -27,7 +27,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
     internal class FrequencySetImporter : IFrequencySetImporter
     {
-        private readonly IFrequencySetMetadataExtractor metadataExtractor;
         private readonly IFrequencyCsvReader frequencyCsvReader;
         private readonly IHaplotypeFrequencySetRepository setRepository;
         private readonly IHaplotypeFrequenciesRepository frequenciesRepository;
@@ -36,7 +35,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         private readonly MatchPredictionImportSettings matchPredictionImportSettings;
 
         public FrequencySetImporter(
-            IFrequencySetMetadataExtractor metadataExtractor,
             IFrequencyCsvReader frequencyCsvReader,
             IHaplotypeFrequencySetRepository setRepository,
             IHaplotypeFrequenciesRepository frequenciesRepository,
@@ -44,7 +42,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             ILogger logger,
             MatchPredictionImportSettings matchPredictionImportSettings)
         {
-            this.metadataExtractor = metadataExtractor;
             this.frequencyCsvReader = frequencyCsvReader;
             this.setRepository = setRepository;
             this.frequenciesRepository = frequenciesRepository;
@@ -62,9 +59,9 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
             // Load all frequencies into memory, to perform aggregation by PGroup.
             // Largest known HF set is ~300,000 entries, which is reasonable to load into memory here.
-            var haplotypeFrequencyFile = frequencyCsvReader.GetFrequencies(file.Contents).ToList();
+            var HaplotypeFrequency = frequencyCsvReader.GetFrequencies(file.Contents).ToList();
 
-            var frequencySetData = haplotypeFrequencyFile
+            var frequencySetData = HaplotypeFrequency
                 .Select(hf => new HaplotypeFrequencySetMetadata(hf, file.FileName)).Distinct().ToList();
 
             if (frequencySetData.Count != 1)
@@ -72,7 +69,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 throw new MalformedHaplotypeFileException("The nomenclature version, population ID, registry code, and ethnicity code must be the same for each frequency");
             }
 
-            var haplotypeFrequency = haplotypeFrequencyFile.Select(f => new HaplotypeFrequency
+            var haplotypeFrequency = HaplotypeFrequency.Select(f => new HaplotypeFrequency
             {
                 A = f.A,
                 B = f.B,

@@ -7,7 +7,6 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
-using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
@@ -19,7 +18,6 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 {
     public class HaplotypeFrequencySetImportServiceTests
     {
-        private IFrequencySetMetadataExtractor metadataExtractor;
         private IFrequencyCsvReader frequenciesStreamReader;
         private IHaplotypeFrequencySetRepository setRepository;
         private IHaplotypeFrequenciesRepository frequenciesRepository;
@@ -29,7 +27,6 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         [SetUp]
         public void Setup()
         {
-            metadataExtractor = Substitute.For<IFrequencySetMetadataExtractor>();
             frequenciesStreamReader = Substitute.For<IFrequencyCsvReader>();
             setRepository = Substitute.For<IHaplotypeFrequencySetRepository>();
             frequenciesRepository = Substitute.For<IHaplotypeFrequenciesRepository>();
@@ -40,17 +37,9 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 
             var logger = Substitute.For<ILogger>();
 
-            metadataExtractor.GetFileNameFromPath(Arg.Any<string>()).Returns(new HaplotypeFrequencySetMetadata
-            {
-                Name = "file"
-            });
-
-            frequenciesStreamReader.GetFrequencies(Arg.Any<Stream>()).Returns(new List<HaplotypeFrequencyFile> {new HaplotypeFrequencyFile()});
-
             setRepository.AddSet(Arg.Any<HaplotypeFrequencySet>()).Returns(new HaplotypeFrequencySet {Id = 1});
 
             importer = new FrequencySetImporter(
-                metadataExtractor,
                 frequenciesStreamReader,
                 setRepository,
                 frequenciesRepository,
@@ -63,7 +52,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         [Test]
         public void Import_ContentsIsNull_ThrowsException()
         {
-            var file = new FrequencySetFile {FullPath = "file", Contents = null};
+            var file = new FrequencySetFile {FileName = "file", Contents = null};
             importer.Invoking(async service => await service.Import(file))
                 .Should().Throw<Exception>();
         }
@@ -75,13 +64,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             const string name = "name";
             var fullPath = $"/{ethnicity}/{name}";
 
-            metadataExtractor.GetFileNameFromPath(fullPath).Returns(new HaplotypeFrequencySetMetadata
-            {
-                Ethnicity = ethnicity,
-                Name = name
-            });
-
-            var file = new FrequencySetFile {FullPath = fullPath, Contents = Stream.Null};
+            var file = new FrequencySetFile { FileName = fullPath, Contents = Stream.Null};
 
             importer.Invoking(async service => await service.Import(file)).Should().Throw<Exception>();
         }
@@ -93,13 +76,11 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 
             using var file = new FrequencySetFile
             {
-                FullPath = fullPath,
+                FileName = fullPath,
                 Contents = new MemoryStream(Encoding.UTF8.GetBytes("test"))
             };
 
             await importer.Import(file);
-
-            metadataExtractor.Received().GetFileNameFromPath(fullPath);
         }
 
         [Test]
@@ -110,16 +91,10 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             const string name = "name";
             var fullPath = $"{registry}/{ethnicity}/{name}";
 
-            metadataExtractor.GetFileNameFromPath(fullPath).Returns(new HaplotypeFrequencySetMetadata
-            {
-                Registry = registry,
-                Ethnicity = ethnicity,
-                Name = name
-            });
 
             using var file = new FrequencySetFile
             {
-                FullPath = fullPath,
+                FileName = fullPath,
                 Contents = new MemoryStream(Encoding.UTF8.GetBytes("test"))
             };
 
@@ -136,12 +111,12 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         [Test]
         public async Task Import_StoresFrequenciesInRepository()
         {
-            var frequencies = new List<HaplotypeFrequencyFile> {new HaplotypeFrequencyFile()};
+            var frequencies = new List<HaplotypeFrequency> {new HaplotypeFrequency()};
             frequenciesStreamReader.GetFrequencies(Arg.Any<Stream>()).Returns(frequencies);
 
             using var file = new FrequencySetFile
             {
-                FullPath = "file",
+                FileName = "file",
                 Contents = new MemoryStream(Encoding.UTF8.GetBytes("test"))
             };
 
@@ -154,11 +129,11 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         [Test]
         public void Import_NoFrequencies_ThrowsException()
         {
-            frequenciesStreamReader.GetFrequencies(Arg.Any<Stream>()).Returns(new List<HaplotypeFrequencyFile>());
+            frequenciesStreamReader.GetFrequencies(Arg.Any<Stream>()).Returns(new List<HaplotypeFrequency>());
 
             using var file = new FrequencySetFile
             {
-                FullPath = "file",
+                FileName = "file",
                 Contents = new MemoryStream(Encoding.UTF8.GetBytes("test"))
             };
 

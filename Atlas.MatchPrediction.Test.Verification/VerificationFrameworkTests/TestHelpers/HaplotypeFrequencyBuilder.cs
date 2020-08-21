@@ -8,8 +8,8 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Tes
     {
         private const string DefaultHla = "hla";
 
-        public static Builder<HaplotypeFrequencyFile> Default =>
-            Builder<HaplotypeFrequencyFile>.New
+        public static Builder<HaplotypeFrequency> Default =>
+            Builder<HaplotypeFrequency>.New
                 .With(x => x.A, DefaultHla)
                 .With(x => x.B, DefaultHla)
                 .With(x => x.C, DefaultHla)

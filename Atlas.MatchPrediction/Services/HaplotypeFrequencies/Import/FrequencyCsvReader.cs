@@ -22,37 +22,37 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 ConfigureCsvReader(csv);
                 while (TryRead(csv))
                 {
-                    HaplotypeFrequency haplotypeFrequencyFile = null;
+                    HaplotypeFrequency haplotypeFrequency = null;
 
                     try
                     {
-                        haplotypeFrequencyFile = csv.GetRecord<HaplotypeFrequency>();
+                        haplotypeFrequency = csv.GetRecord<HaplotypeFrequency>();
                     }
                     catch (CsvHelperException e)
                     {
                         throw new HaplotypeFormatException(e);
                     }
 
-                    if (haplotypeFrequencyFile == null)
+                    if (haplotypeFrequency == null)
                     {
                         throw new MalformedHaplotypeFileException("Haplotype in input file could not be parsed.");
                     }
 
-                    if (haplotypeFrequencyFile.Frequency == 0m)
+                    if (haplotypeFrequency.Frequency == 0m)
                     {
                         throw new MalformedHaplotypeFileException($"Haplotype property frequency cannot be 0.");
                     }
 
-                    if (haplotypeFrequencyFile.A == null ||
-                        haplotypeFrequencyFile.B == null ||
-                        haplotypeFrequencyFile.C == null ||
-                        haplotypeFrequencyFile.Dqb1 == null ||
-                        haplotypeFrequencyFile.Drb1 == null)
+                    if (haplotypeFrequency.A == null ||
+                        haplotypeFrequency.B == null ||
+                        haplotypeFrequency.C == null ||
+                        haplotypeFrequency.Dqb1 == null ||
+                        haplotypeFrequency.Drb1 == null)
                     {
                         throw new MalformedHaplotypeFileException($"Haplotype loci cannot be null.");
                     }
 
-                    yield return haplotypeFrequencyFile;
+                    yield return haplotypeFrequency;
                 }
             }
         }
