@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using CsvHelper;
@@ -15,6 +16,26 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
     internal class FrequencyCsvReader : IFrequencyCsvReader
     {
         public IEnumerable<HaplotypeFrequency> GetFrequencies(Stream stream)
+        {
+            var haplotypeFrequencies = ReadCsv(stream).ToList();
+
+            if (!FrequencySetValidity(haplotypeFrequencies))
+            {
+                throw new MalformedHaplotypeFileException("The nomenclature version, population ID, registry code, and ethnicity code must be the same for each frequency");
+            }
+
+            return haplotypeFrequencies;
+        }
+
+        private static bool FrequencySetValidity(IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
+        {
+            var distinctFrequencySetInfo = haplotypeFrequencies
+                .Select(hf => new {hf.RegistryCode, hf.EthnicityCode, hf.HlaNomenclatureVersion, hf.PopulationId}).Distinct();
+
+            return distinctFrequencySetInfo.Count() == 1;
+        }
+
+        public IEnumerable<HaplotypeFrequency> ReadCsv(Stream stream)
         {
             using (var reader = new StreamReader(stream))
             using (var csv = new CsvReader(reader))
@@ -60,6 +81,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         private static void ConfigureCsvReader(IReaderRow csvReader)
         {
             csvReader.Configuration.Delimiter = ";";
+            csvReader.Configuration.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("");
             csvReader.Configuration.PrepareHeaderForMatch = (header, index) => header.ToUpper();
             csvReader.Configuration.RegisterClassMap<HaplotypeFrequencyMap>();
         }

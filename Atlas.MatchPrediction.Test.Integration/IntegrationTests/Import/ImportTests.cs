@@ -127,8 +127,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         public async Task Import_ForHaplotypeWithoutNullAlleles_ConvertsToPGroups()
         {
             using var file = FrequencySetFileBuilder
-                .New(null, null)
-                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                .New(null, null, new List<HaplotypeFrequency>
                 {
                     new HaplotypeFrequency
                     {
@@ -142,8 +141,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                         ),
                         Frequency = 0.5m
                     }
-                })
-                .Build();
+                }).Build();
 
             await service.ImportFrequencySet(file);
 
@@ -173,16 +171,14 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 valueDrb1: "03:07:01G"
             );
             using var file = FrequencySetFileBuilder
-                .New(null, null)
-                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                .New(null, null, new List<HaplotypeFrequency>
                 {
                     new HaplotypeFrequency
                     {
                         Hla = hla,
                         Frequency = 0.5m
                     }
-                })
-                .Build();
+                }).Build();
 
             await service.ImportFrequencySet(file, false);
 
@@ -205,12 +201,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 valueDrb1: "03:07:01G"
             );
             using var file = FrequencySetFileBuilder
-                .New(null, null)
-                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                .New(null, null, new List<HaplotypeFrequency>
                 {
                     new HaplotypeFrequency {Hla = hla, Frequency = 0.5m}
-                })
-                .Build();
+                }).Build();
 
             await service.ImportFrequencySet(file);
 
@@ -232,8 +226,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 .WithDataAt(Locus.Drb1, "03:02:01G");
             
             using var file = FrequencySetFileBuilder
-                .New(null, null)
-                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                .New(null, null,new List<HaplotypeFrequency>
                 {
                     new HaplotypeFrequency
                     {
@@ -259,7 +252,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                     {
                         Hla = gGroupsBuilder.WithDataAt(Locus.C, "04:01:02").WithDataAt(Locus.Dqb1, "06:02:02").Build(),
                         Frequency = 0.0000001m
-                    },
+                    }
                 })
                 .Build();
 
@@ -293,7 +286,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task Import_FileWithoutContents_SendsAlert()
         {
-            using var file = FrequencySetFileBuilder.FileWithoutContents(null, null).Build();
+            using var file = FrequencySetFileBuilder.FileWithoutContents().Build();
 
             await service.ImportFrequencySet(file);
 
@@ -306,7 +299,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         public async Task Import_InvalidFilePath_SendsAlert(string invalidPath)
         {
             using var file = FrequencySetFileBuilder.New(null, null)
-                .With(x => x.FullPath, invalidPath)
+                .With(x => x.FileName, invalidPath)
                 .Build();
 
             await service.ImportFrequencySet(file);
@@ -326,8 +319,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 valueDrb1: "03:07:01G"
             );
             using var file = FrequencySetFileBuilder
-                .New(null, null)
-                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                .New(null, null, new List<HaplotypeFrequency>
                 {
                     new HaplotypeFrequency {Hla = hla, Frequency = 0m}
                 })
@@ -350,8 +342,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 .WithDataAt(Locus.Drb1, "03:02:01G");
 
             using var file = FrequencySetFileBuilder
-                .New(null, null)
-                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                .New(null, null, new List<HaplotypeFrequency>
                 {
                     new HaplotypeFrequency
                     {
@@ -390,8 +381,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 valueDrb1: "03:07:01G"
             );
             using var file = FrequencySetFileBuilder
-                .New(null, null)
-                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                .New(null, null, new List<HaplotypeFrequency>
                 {
                     new HaplotypeFrequency {Hla = hla, Frequency = 0.1m}
                 })
@@ -416,8 +406,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 valueDrb1: "03:07:01G"
             );
             using var file = FrequencySetFileBuilder
-                .New(null, null)
-                .WithHaplotypeFrequencies(new List<HaplotypeFrequency>
+                .New(null, null, new List<HaplotypeFrequency>
                 {
                     new HaplotypeFrequency {Hla = hla, Frequency = 0.1m}
                 })
