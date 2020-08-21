@@ -157,7 +157,7 @@ variable "MATCHING_USERNAME_FOR_DONOR_IMPORT_DATABASE" {
 
 variable "ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE" {
   type    = number
-  default = 100
+  default = 10
 }
 
 variable "SERVICE_PLAN_SKU" {
