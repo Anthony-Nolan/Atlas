@@ -15,7 +15,6 @@ using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
@@ -28,11 +27,10 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
-            Func<IServiceProvider, MatchPredictionImportSettings> fetchImportSettings,
             Func<IServiceProvider, string> fetchSqlConnectionString
         )
         {
-            services.RegisterSettings(fetchNotificationsServiceBusSettings, fetchImportSettings);
+            services.RegisterSettings(fetchNotificationsServiceBusSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices();
             services.RegisterDatabaseServices(fetchSqlConnectionString);
@@ -63,11 +61,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 
         private static void RegisterSettings(
             this IServiceCollection services,
-            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
-            Func<IServiceProvider, MatchPredictionImportSettings> fetchImportSettings)
+            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings)
         {
             services.MakeSettingsAvailableForUse(fetchNotificationsServiceBusSettings);
-            services.MakeSettingsAvailableForUse(fetchImportSettings);
         }
 
         private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)

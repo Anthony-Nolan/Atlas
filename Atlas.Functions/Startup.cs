@@ -9,7 +9,6 @@ using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
@@ -62,8 +61,6 @@ namespace Atlas.Functions
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
-                // TODO: ATLAS-600: Read HLA nomenclature version from file data, rather than hard coding
-                _ => new MatchPredictionImportSettings {HlaNomenclatureVersion = "3410"},
                 ConnectionStringReader("MatchPrediction:Sql")
             );
         }

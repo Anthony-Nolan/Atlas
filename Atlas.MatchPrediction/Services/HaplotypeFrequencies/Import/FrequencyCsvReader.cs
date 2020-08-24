@@ -10,12 +10,12 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 {
     public interface IFrequencyCsvReader
     {
-        IEnumerable<HaplotypeFrequency> GetFrequencies(Stream stream);
+        IEnumerable<HaplotypeFrequencyMetadata> GetFrequencies(Stream stream);
     }
 
     internal class FrequencyCsvReader : IFrequencyCsvReader
     {
-        public IEnumerable<HaplotypeFrequency> GetFrequencies(Stream stream)
+        public IEnumerable<HaplotypeFrequencyMetadata> GetFrequencies(Stream stream)
         {
             var haplotypeFrequencies = ReadCsv(stream).ToList();
 
@@ -27,7 +27,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             return haplotypeFrequencies;
         }
 
-        private static bool FrequencySetValidity(IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
+        private static bool FrequencySetValidity(IEnumerable<HaplotypeFrequencyMetadata> haplotypeFrequencies)
         {
             var distinctFrequencySetInfo = haplotypeFrequencies
                 .Select(hf => new {hf.RegistryCode, hf.EthnicityCode, hf.HlaNomenclatureVersion, hf.PopulationId}).Distinct();
@@ -35,7 +35,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             return distinctFrequencySetInfo.Count() == 1;
         }
 
-        public IEnumerable<HaplotypeFrequency> ReadCsv(Stream stream)
+        public IEnumerable<HaplotypeFrequencyMetadata> ReadCsv(Stream stream)
         {
             using (var reader = new StreamReader(stream))
             using (var csv = new CsvReader(reader))
@@ -43,11 +43,11 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 ConfigureCsvReader(csv);
                 while (TryRead(csv))
                 {
-                    HaplotypeFrequency haplotypeFrequency = null;
+                    HaplotypeFrequencyMetadata haplotypeFrequency = null;
 
                     try
                     {
-                        haplotypeFrequency = csv.GetRecord<HaplotypeFrequency>();
+                        haplotypeFrequency = csv.GetRecord<HaplotypeFrequencyMetadata>();
                     }
                     catch (CsvHelperException e)
                     {
@@ -87,7 +87,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         }
 
         // ReSharper disable once ClassNeverInstantiated.Local
-        private sealed class HaplotypeFrequencyMap : ClassMap<HaplotypeFrequency>
+        private sealed class HaplotypeFrequencyMap : ClassMap<HaplotypeFrequencyMetadata>
         {
             public HaplotypeFrequencyMap()
             {

@@ -6,6 +6,7 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System.Threading.Tasks;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.IndividualSteps.HaplotypeFrequencySetSelection
 {
@@ -27,6 +28,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         private static readonly FrequencySetMetadata GlobalPopulation = FrequencySetMetadataBuilder.New.Build();
 
         private readonly IHaplotypeFrequencyService service;
+
+        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
         public HaplotypeFrequencySetSelectionTests()
         {
@@ -207,7 +210,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         private async Task ImportHaplotypeSet(string registry, string ethnicity)
         {
-            using var file = FrequencySetFileBuilder.New(registry, ethnicity).Build();
+            using var file = FrequencySetFileBuilder.New(registry, ethnicity, 1, HlaNomenclatureVersion).Build();
             await service.ImportFrequencySet(file);
         }
     }

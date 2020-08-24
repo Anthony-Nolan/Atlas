@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -13,7 +12,6 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
-using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using Atlas.MatchPrediction.Utils;
@@ -33,22 +31,19 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         private readonly IHaplotypeFrequenciesRepository frequenciesRepository;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly ILogger logger;
-        private readonly MatchPredictionImportSettings matchPredictionImportSettings;
 
         public FrequencySetImporter(
             IFrequencyCsvReader frequencyCsvReader,
             IHaplotypeFrequencySetRepository setRepository,
             IHaplotypeFrequenciesRepository frequenciesRepository,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
-            ILogger logger,
-            MatchPredictionImportSettings matchPredictionImportSettings)
+            ILogger logger)
         {
             this.frequencyCsvReader = frequencyCsvReader;
             this.setRepository = setRepository;
             this.frequenciesRepository = frequenciesRepository;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
             this.logger = logger;
-            this.matchPredictionImportSettings = matchPredictionImportSettings;
         }
 
         public async Task Import(FrequencySetFile file, bool convertToPGroups)
@@ -77,7 +72,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 TypingCategory = HaplotypeTypingCategory.GGroup
             }).ToList();
 
-            await StoreFrequencies(haplotypeFrequency, set.Id, convertToPGroups);
+            await StoreFrequencies(haplotypeFrequency, set.Id, convertToPGroups, frequencySetData.HlaNomenclatureVersion);
             await setRepository.ActivateSet(set.Id);
         }
 
@@ -102,7 +97,11 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             return await setRepository.AddSet(newSet);
         }
 
-        private async Task StoreFrequencies(IReadOnlyCollection<HaplotypeFrequency> gGroupHaplotypes, int setId, bool convertToPGroups)
+        private async Task StoreFrequencies(
+            IReadOnlyCollection<HaplotypeFrequency> gGroupHaplotypes,
+            int setId,
+            bool convertToPGroups,
+            string hlaNomenclatureVersion)
         {
             var haplotypes = gGroupHaplotypes.Select(r => r.Hla).ToList();
 
@@ -116,7 +115,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 throw new EmptyHaplotypeFileException();
             }
 
-            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(matchPredictionImportSettings.HlaNomenclatureVersion);
+            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
 
             var haplotypesToStore = convertToPGroups
                 ? await ConvertHaplotypesToPGroupResolutionAndConsolidate(gGroupHaplotypes, hlaMetadataDictionary)
