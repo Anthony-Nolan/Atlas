@@ -39,7 +39,7 @@ namespace Atlas.DonorImport.Data.Context
 
             var optionsBuilder = new DbContextOptionsBuilder<DonorContext>();
 
-            optionsBuilder.UseSqlServer(connectionString);
+            optionsBuilder.UseSqlServer(connectionString, builder => { builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null); });
 
             return new DonorContext(optionsBuilder.Options);
         }

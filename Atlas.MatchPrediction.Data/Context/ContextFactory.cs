@@ -39,7 +39,7 @@ namespace Atlas.MatchPrediction.Data.Context
 
             var optionsBuilder = new DbContextOptionsBuilder<MatchPredictionContext>();
 
-            optionsBuilder.UseSqlServer(connectionString);
+            optionsBuilder.UseSqlServer(connectionString, builder => { builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null); });
 
             return new MatchPredictionContext(optionsBuilder.Options);
         }
