@@ -55,11 +55,14 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
             // Load all frequencies into memory, to perform aggregation by PGroup.
             // Largest known HF set is ~300,000 entries, which is reasonable to load into memory here.
-            var haplotypeFrequencyFile = frequencyCsvReader.GetFrequencies(file.Contents).ToList();
+            var haplotypeFrequencyFile = frequencyCsvReader.ImportHaplotypeFrequencyRecord(file.Contents).ToList();
 
-            var frequencySetData =  new HaplotypeFrequencySetMetadata(haplotypeFrequencyFile.First(), file.FileName);
+            if (!FrequencySetValidity(haplotypeFrequencyFile))
+            {
+                throw new MalformedHaplotypeFileException("The nomenclature version, population ID, registry code, and ethnicity code must be the same for each frequency");
+            }
 
-            var set = await AddNewInactiveSet(frequencySetData);
+            var set = await AddNewInactiveSet(haplotypeFrequencyFile.First(), file.FileName);
 
             var haplotypeFrequency = haplotypeFrequencyFile.Select(f => new HaplotypeFrequency
             {
@@ -72,25 +75,33 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 TypingCategory = HaplotypeTypingCategory.GGroup
             }).ToList();
 
-            await StoreFrequencies(haplotypeFrequency, set.Id, convertToPGroups, frequencySetData.HlaNomenclatureVersion);
+            await StoreFrequencies(haplotypeFrequency, set.Id, convertToPGroups, set.HlaNomenclatureVersion);
             await setRepository.ActivateSet(set.Id);
         }
 
-        private async Task<HaplotypeFrequencySet> AddNewInactiveSet(HaplotypeFrequencySetMetadata metadata)
+        private static bool FrequencySetValidity(IEnumerable<HaplotypeFrequencyFileSchema> haplotypeFrequencies)
         {
-            if (!metadata.Ethnicity.IsNullOrEmpty() && metadata.Registry.IsNullOrEmpty())
+            var distinctFrequencySetInfo = haplotypeFrequencies
+                .Select(hf => new { hf.RegistryCode, hf.EthnicityCode, hf.HlaNomenclatureVersion, hf.PopulationId }).Distinct();
+
+            return distinctFrequencySetInfo.Count() == 1;
+        }
+
+        private async Task<HaplotypeFrequencySet> AddNewInactiveSet(HaplotypeFrequencyFileSchema metadata, string fileName)
+        {
+            if (!metadata.EthnicityCode.IsNullOrEmpty() && metadata.RegistryCode.IsNullOrEmpty())
             {
-                throw new MalformedHaplotypeFileException($"Cannot import set: Ethnicity ('{metadata.Ethnicity}') provided but no registry");
+                throw new MalformedHaplotypeFileException($"Cannot import set: Ethnicity ('{metadata.EthnicityCode}') provided but no registry");
             }
 
             var newSet = new HaplotypeFrequencySet
             {
-                RegistryCode = metadata.Registry,
-                EthnicityCode = metadata.Ethnicity,
+                RegistryCode = metadata.RegistryCode,
+                EthnicityCode = metadata.EthnicityCode,
                 HlaNomenclatureVersion = metadata.HlaNomenclatureVersion,
                 PopulationId = metadata.PopulationId,
                 Active = false,
-                Name = metadata.Name,
+                Name = fileName,
                 DateTimeAdded = DateTimeOffset.Now
             };
 

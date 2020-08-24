@@ -25,7 +25,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         [Test]
         public void GetFrequencies_StreamIsNull_ThrowsException()
         {
-            reader.Invoking(service => service.GetFrequencies(null).ToList()).Should().Throw<Exception>();
+            reader.Invoking(service => service.ImportHaplotypeFrequencyRecord(null).ToList()).Should().Throw<Exception>();
         }
 
         [Test]
@@ -35,7 +35,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             {
                 using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("invalid-file")))
                 {
-                    return service.GetFrequencies(stream).ToList();
+                    return service.ImportHaplotypeFrequencyRecord(stream).ToList();
                 }
             }).Should().Throw<HaplotypeFormatException>();
         }
@@ -48,7 +48,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvFile)))
             {
-                var frequencies = reader.GetFrequencies(stream);
+                var frequencies = reader.ImportHaplotypeFrequencyRecord(stream);
                 frequencies.Count().Should().Be(count);
             }
         }

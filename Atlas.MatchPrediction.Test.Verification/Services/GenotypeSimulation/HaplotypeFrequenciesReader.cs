@@ -41,7 +41,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
             return new HaplotypeFrequenciesReaderResult
             {
                 HaplotypeFrequencySetId = set.Id,
+
+                // All frequencies in a set use the same nomenclature version, so we pick an arbitrary value
                 HlaNomenclatureVersion = frequencies.FirstOrDefault()?.HlaNomenclatureVersion,
+
                 HaplotypeFrequencies = frequencies
             };
         }
@@ -51,7 +54,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
             var fileStream = await setStreamer.GetFileContents(set.Name);
 
             return csvReader
-                .GetFrequencies(fileStream)
+                .ImportHaplotypeFrequencyRecord(fileStream)
                 .ToList();
         }
     }

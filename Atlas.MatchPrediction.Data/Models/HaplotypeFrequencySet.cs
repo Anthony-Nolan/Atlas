@@ -15,6 +15,9 @@ namespace Atlas.MatchPrediction.Data.Models
         [MaxLength(256)]
         public string EthnicityCode { get; set; }
 
+        /// <summary>
+        /// PopulationId is included to help for finding sets by the original PopulationId
+        /// </summary>
         public int PopulationId { get; set; }
         public string HlaNomenclatureVersion { get; set; }
         public bool Active { get; set; }

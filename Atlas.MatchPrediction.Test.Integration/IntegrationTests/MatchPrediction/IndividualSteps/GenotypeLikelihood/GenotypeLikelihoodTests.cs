@@ -42,7 +42,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         private const string DefaultRegistryCode = "registry-code";
         private readonly ISet<Locus> allLoci = LocusSettings.MatchPredictionLoci;
         private HaplotypeFrequencySet haplotypeFrequencySet;
-        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
@@ -204,7 +203,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             string registryCode,
             string ethnicityCode)
         {
-            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode,1, HlaNomenclatureVersion, haplotypes)
+            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode)
                 .Build();
             await importService.ImportFrequencySet(file, false);
 
