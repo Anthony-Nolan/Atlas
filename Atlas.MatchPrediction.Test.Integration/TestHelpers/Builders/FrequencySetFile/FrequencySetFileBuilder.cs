@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Data.Models;
+using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using LochNessBuilder;
@@ -18,9 +18,6 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
     {
         private const string CsvHeader = "a;b;c;dqb1;drb1;freq;nomenclature_version;population_id;don_pool;ethn";
 
-        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
-        private const string PopulationId = "1";
-
         internal static Builder FileWithoutContents()
         {
             var uniqueFileName = $"file-{DateTime.Now:HHmmssffff}.csv";
@@ -28,26 +25,52 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
             return Builder.New.With(x => x.FileName, uniqueFileName);
         }
 
-        internal static Builder New(string registryCode, string ethnicityCode, int haplotypeCount = 1, decimal frequencyValue = 0.00001m)
+        internal static Builder New(
+            string registryCode, 
+            string ethnicityCode, 
+            int populationId,
+            string nomenclatureVersion,
+            int haplotypeCount = 1,
+            decimal frequencyValue = 0.00001m)
         {
             return FileWithoutContents()
-                .With(x => x.Contents, GetStream(BuildCsvFile(haplotypeCount, frequencyValue, registryCode, ethnicityCode)));
+                .With(x => x.Contents, 
+                    GetStream(BuildCsvFile(haplotypeCount, frequencyValue, registryCode, ethnicityCode, populationId, nomenclatureVersion)));
         }
 
-        internal static Builder New(string registryCode, string ethnicityCode, IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
-        {
-            return FileWithoutContents().WithHaplotypeFrequencies(haplotypeFrequencies, registryCode, ethnicityCode);
-        }
-
-        internal static Builder WithHaplotypeFrequencies(
-            this Builder builder,
-            IEnumerable<HaplotypeFrequency> haplotypeFrequencies,
+        internal static Builder New(
             string registryCode,
-            string ethnicityCode)
+            string ethnicityCode,
+            int populationId,
+            string nomenclatureVersion, 
+            IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
+        {
+            return FileWithoutContents()
+                .WithHaplotypeFrequencies(registryCode, ethnicityCode, populationId, nomenclatureVersion, haplotypeFrequencies);
+        }
+
+        internal static Builder New(IEnumerable<HaplotypeFrequencyMetadata> haplotypeFrequencies)
+        {
+            return FileWithoutContents().WithHaplotypeFrequencies(haplotypeFrequencies);
+        }
+
+        internal static Builder WithHaplotypeFrequencies(this Builder builder, IEnumerable<HaplotypeFrequencyMetadata> haplotypeFrequencies)
         {
             return builder.With(x => 
                 x.Contents,
-                GetStream(BuildCsvFile(haplotypeFrequencies, registryCode, ethnicityCode)));
+                GetStream(BuildCsvFile(haplotypeFrequencies)));
+        }
+
+        internal static Builder WithHaplotypeFrequencies(this Builder builder,
+            string registryCode,
+            string ethnicityCode,
+            int populationId,
+            string nomenclatureVersion, 
+            IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
+        {
+            return builder.With(x =>
+                    x.Contents,
+                GetStream(BuildCsvFile(registryCode, ethnicityCode, populationId, nomenclatureVersion, haplotypeFrequencies)));
         }
 
         internal static Builder WithHaplotypeFrequencyFileStream(this Builder builder, Stream stream)
@@ -55,15 +78,27 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
             return builder.With(f => f.Contents, stream);
         }
 
-        internal static Builder WithInvalidCsvFormat(string registryCode, string ethnicityCode, int haplotypeCount = 1, decimal frequencyValue = 0.00001m)
+        internal static Builder WithInvalidCsvFormat(
+            string registryCode,
+            string ethnicityCode,
+            int populationId,
+            string nomenclatureVersion,
+            int haplotypeCount = 1,
+            decimal frequencyValue = 0.00001m)
         {
-            var csvString = BuildCsvFile(haplotypeCount, frequencyValue, registryCode, ethnicityCode);
+            var csvString = BuildCsvFile(haplotypeCount, frequencyValue, registryCode, ethnicityCode, populationId, nomenclatureVersion);
 
             return FileWithoutContents()
                 .With(x => x.Contents, GetStream(csvString.Substring(csvString.Length - 10)));
         }
 
-        private static string BuildCsvFile(int frequencyCount, decimal frequencyValue, string registryCode, string ethnicityCode)
+        private static string BuildCsvFile(
+            int frequencyCount,
+            decimal frequencyValue, 
+            string registryCode, 
+            string ethnicityCode,
+            int populationId,
+            string nomenclatureVersion)
         {
             var file = new StringBuilder(CsvHeader + Environment.NewLine);
 
@@ -82,8 +117,8 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
                                                      $"{haplotype.Dqb1.Position1};" +
                                                      $"{haplotype.Drb1.Position1};" +
                                                      $"{frequencyValue};" +
-                                                     $"{HlaNomenclatureVersion};" +
-                                                     $"{PopulationId};" +
+                                                     $"{nomenclatureVersion};" +
+                                                     $"{populationId};" +
                                                      $"{registryCode};" +
                                                      $"{ethnicityCode}";
                     file.AppendLine(csvFileBodySingleFrequency);
@@ -93,13 +128,33 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
             }
         }
 
-        private static string BuildCsvFile(IEnumerable<HaplotypeFrequency> haplotypeFrequencies, string registryCode, string ethnicityCode)
+        private static string BuildCsvFile(
+            string registryCode,
+            string ethnicityCode,
+            int populationId,
+            string nomenclatureVersion,
+            IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
+        {
+            var csvFileBodyFrequencies = haplotypeFrequencies
+                .Select(h =>
+                    $"{h.A};{h.B};{h.C};{h.DQB1};{h.DRB1};{h.Frequency};{nomenclatureVersion};{populationId};{registryCode};{ethnicityCode};")
+                .ToList();
+
+            return ToFile(csvFileBodyFrequencies);
+        }
+
+        private static string BuildCsvFile(IEnumerable<HaplotypeFrequencyMetadata> haplotypeFrequencies)
         {
             var csvFileBodyFrequencies = haplotypeFrequencies
                 .Select(h => 
-                    $"{h.A};{h.B};{h.C};{h.DQB1};{h.DRB1};{h.Frequency};{HlaNomenclatureVersion};{PopulationId};{registryCode};{ethnicityCode};")
+                    $"{h.A};{h.B};{h.C};{h.Dqb1};{h.Drb1};{h.Frequency};{h.HlaNomenclatureVersion};{h.PopulationId};{h.RegistryCode};{h.EthnicityCode};")
                 .ToList();
 
+            return ToFile(csvFileBodyFrequencies);
+        }
+
+        private static string ToFile(IEnumerable<string> csvFileBodyFrequencies)
+        {
             var file = new StringBuilder(CsvHeader + Environment.NewLine);
 
             foreach (var csvFileBodyFrequency in csvFileBodyFrequencies)

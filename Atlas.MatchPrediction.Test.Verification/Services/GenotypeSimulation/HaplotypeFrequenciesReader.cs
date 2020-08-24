@@ -41,15 +41,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
             return new HaplotypeFrequenciesReaderResult
             {
                 HaplotypeFrequencySetId = set.Id,
-
-                // TODO ATLAS-600 - Set version from value saved with HF set row in db
-                HlaNomenclatureVersion = "3410",
-
+                HlaNomenclatureVersion = frequencies.FirstOrDefault()?.HlaNomenclatureVersion,
                 HaplotypeFrequencies = frequencies
             };
         }
 
-        private async Task<IReadOnlyCollection<HaplotypeFrequency>> ReadHaplotypeFrequenciesFromFile(HaplotypeFrequencySet set)
+        private async Task<IReadOnlyCollection<HaplotypeFrequencyMetadata>> ReadHaplotypeFrequenciesFromFile(HaplotypeFrequencySet set)
         {
             var fileStream = await setStreamer.GetFileContents(set.Name);
 
@@ -63,6 +60,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
     {
         public int? HaplotypeFrequencySetId { get; set; }
         public string HlaNomenclatureVersion { get; set; }
-        public IReadOnlyCollection<HaplotypeFrequency> HaplotypeFrequencies { get; set; }
+        public IReadOnlyCollection<HaplotypeFrequencyMetadata> HaplotypeFrequencies { get; set; }
     }
 }

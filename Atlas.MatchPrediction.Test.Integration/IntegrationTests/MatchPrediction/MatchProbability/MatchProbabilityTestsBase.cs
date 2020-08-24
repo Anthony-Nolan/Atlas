@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Data.Models;
@@ -43,7 +42,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             string registryCode = DefaultRegistryCode,
             string ethnicityCode = DefaultEthnicityCode)
         {
-            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode, haplotypes).Build();
+            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode, 1, HlaNomenclatureVersion, haplotypes).Build();
             await ImportService.ImportFrequencySet(file);
         }
 

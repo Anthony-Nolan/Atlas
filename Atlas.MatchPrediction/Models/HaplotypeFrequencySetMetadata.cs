@@ -14,7 +14,7 @@ namespace Atlas.MatchPrediction.Models
         {
         }
 
-        public HaplotypeFrequencySetMetadata(HaplotypeFrequency haplotypeFrequency, string name)
+        public HaplotypeFrequencySetMetadata(HaplotypeFrequencyMetadata haplotypeFrequency, string name)
         {
             Registry = haplotypeFrequency.RegistryCode;
             Ethnicity = haplotypeFrequency.EthnicityCode;

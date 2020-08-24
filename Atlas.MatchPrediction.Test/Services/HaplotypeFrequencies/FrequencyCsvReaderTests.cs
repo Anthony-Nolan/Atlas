@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
-using CsvHelper;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -12,8 +11,8 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
 {
     public class FrequencyCsvReaderTests
     {
-        private const string CsvHeader = "a;b;c;drb1;dqb1;population_id;freq";
-        private const string CsvFileBodySingleFrequency = "A-HLA;B-HLA;C-HLA;DRB1-HLA;DQBQ-HLA;1;0.00001";
+        private const string CsvHeader = "a;b;c;drb1;dqb1;population_id;freq;nomenclature_version;population_id;don_pool;ethn";
+        private const string CsvFileBodySingleFrequency = "A-HLA;B-HLA;C-HLA;DRB1-HLA;DQBQ-HLA;1;0.00001;3330;1;Reg;Eth";
 
         private IFrequencyCsvReader reader;
 

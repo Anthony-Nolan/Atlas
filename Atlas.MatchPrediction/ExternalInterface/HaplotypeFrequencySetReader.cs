@@ -27,7 +27,9 @@ namespace Atlas.MatchPrediction.ExternalInterface
                 Id = set.Id,
                 Name = set.Name,
                 RegistryCode = set.RegistryCode,
-                EthnicityCode = set.EthnicityCode
+                EthnicityCode = set.EthnicityCode,
+                PopulationId = set.PopulationId,
+                HlaNomenclatureVersion = set.HlaNomenclatureVersion
             };
         }
     }
