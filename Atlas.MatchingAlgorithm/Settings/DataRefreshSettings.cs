@@ -16,5 +16,14 @@ namespace Atlas.MatchingAlgorithm.Settings
         /// </summary>
         /// <seealso cref="DonorManagementSettings.OngoingDifferentialDonorUpdatesShouldBeFullyTransactional"/>
         public bool DataRefreshDonorUpdatesShouldBeFullyTransactional { get; set; }
+
+        /// <summary>
+        /// Name of topic where notifications of job completion (both success and failure) should be sent,
+        /// in order to permit the automation of downstream tasks.
+        /// Note: This is distinct from the support topics. Messages sent to <see cref="CompletionTopic"/> are designed
+        /// to be consumed by automated workflows, whereas messages sent to the support topics are designed to be
+        /// read by end-users in the support team.
+        /// </summary>
+        public string CompletionTopic { get; set; }
     }
 }

@@ -13,6 +13,7 @@ using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
 using FluentAssertions;
@@ -32,7 +33,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
 
         private IAzureDatabaseManager azureDatabaseManager;
-        private IDataRefreshNotificationSender dataRefreshNotificationSender;
+        private IDataRefreshSupportNotificationSender dataRefreshSupportNotificationSender;
+        private IDataRefreshCompletionNotifier dataRefreshCompletionNotifier;
 
         private IDataRefreshOrchestrator dataRefreshOrchestrator;
         private const string ExistingHlaVersion = "old";
@@ -48,7 +50,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             dataRefreshRunner = Substitute.For<IDataRefreshRunner>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
-            dataRefreshNotificationSender = Substitute.For<IDataRefreshNotificationSender>();
+            dataRefreshSupportNotificationSender = Substitute.For<IDataRefreshSupportNotificationSender>();
+            dataRefreshCompletionNotifier = Substitute.For<IDataRefreshCompletionNotifier>();
 
             dataRefreshOrchestrator = BuildDataRefreshOrchestrator();
         }
@@ -73,7 +76,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 dataRefreshHistoryRepository,
                 azureDatabaseManager,
                 new AzureDatabaseNameProvider(settings),
-                dataRefreshNotificationSender
+                dataRefreshSupportNotificationSender,
+                dataRefreshCompletionNotifier
             );
         }
 
@@ -297,25 +301,25 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshNotificationSender.ReceivedWithAnyArgs().SendInitialisationNotification(default);
+            await dataRefreshSupportNotificationSender.ReceivedWithAnyArgs().SendInitialisationNotification(default);
         }
 
         [Test]
-        public async Task RefreshData_SendsNotificationOnSuccess()
+        public async Task RefreshData_NotifiesOnSuccess()
         {
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshNotificationSender.ReceivedWithAnyArgs().SendSuccessNotification(default);
+            await dataRefreshCompletionNotifier.ReceivedWithAnyArgs().NotifyOfSuccess(default);
         }
 
         [Test]
-        public async Task RefreshData_SendsAlertOnFailure()
+        public async Task RefreshData_NotifiesOnFailure()
         {
             dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception());
 
             await dataRefreshOrchestrator.RefreshDataIfNecessary();
 
-            await dataRefreshNotificationSender.ReceivedWithAnyArgs().SendFailureAlert(default);
+            await dataRefreshCompletionNotifier.ReceivedWithAnyArgs().NotifyOfFailure(default);
         }
 
         [Test]

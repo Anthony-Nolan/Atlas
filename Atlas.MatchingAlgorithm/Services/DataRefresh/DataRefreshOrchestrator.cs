@@ -12,6 +12,7 @@ using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Settings;
 using EnumStringValues;
 
@@ -46,7 +47,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IAzureDatabaseManager azureDatabaseManager;
         private readonly IActiveDatabaseProvider activeDatabaseProvider;
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
-        private readonly IDataRefreshNotificationSender dataRefreshNotificationSender;
+        private readonly IDataRefreshSupportNotificationSender dataRefreshNotificationSender;
+        private readonly IDataRefreshCompletionNotifier dataRefreshCompletionNotifier;
 
         public DataRefreshOrchestrator(
             IMatchingAlgorithmImportLogger logger,
@@ -58,7 +60,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
             IAzureDatabaseManager azureDatabaseManager,
             IAzureDatabaseNameProvider azureDatabaseNameProvider,
-            IDataRefreshNotificationSender dataRefreshNotificationSender)
+            IDataRefreshSupportNotificationSender dataRefreshNotificationSender,
+            IDataRefreshCompletionNotifier dataRefreshCompletionNotifier)
         {
             this.logger = logger;
             this.dataRefreshSettings = dataRefreshSettings;
@@ -68,6 +71,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             this.azureDatabaseManager = azureDatabaseManager;
             this.azureDatabaseNameProvider = azureDatabaseNameProvider;
             this.dataRefreshNotificationSender = dataRefreshNotificationSender;
+            this.dataRefreshCompletionNotifier = dataRefreshCompletionNotifier;
 
             activeVersionHlaMetadataDictionary = hlaNomenclatureVersionAccessor.DoesActiveHlaNomenclatureVersionExist()
                 ? hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion())
@@ -156,13 +160,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                 var previouslyActiveDatabase = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetActiveDatabase());
                 await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, true, newWmdaHlaNomenclatureVersion);
                 await ScaleDownDatabaseToDormantLevel(previouslyActiveDatabase);
-                await dataRefreshNotificationSender.SendSuccessNotification(dataRefreshRecordId);
+                await dataRefreshCompletionNotifier.NotifyOfSuccess(dataRefreshRecordId);
                 logger.SendTrace("Data Refresh Succeeded.");
             }
             catch (Exception e)
             {
                 logger.SendTrace($"Data Refresh Failed: ${e}", LogLevel.Critical);
-                await dataRefreshNotificationSender.SendFailureAlert(dataRefreshRecordId);
+                await dataRefreshCompletionNotifier.NotifyOfFailure(dataRefreshRecordId);
                 await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, false, null);
             }
         }
