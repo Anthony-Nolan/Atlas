@@ -12,6 +12,7 @@
     "AzureStorage:SearchResultsBlobContainer": "search-algorithm-results",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "DataRefresh:ActiveDatabaseSize": "S3",
+    "DataRefresh:CompletionTopic": "completed-data-refresh-jobs",
     "DataRefresh:CronTab": "0 0 0 * * Monday",
     "DataRefresh:DatabaseAName": "not-used-locally",
     "DataRefresh:DatabaseBName": "not-used-locally",

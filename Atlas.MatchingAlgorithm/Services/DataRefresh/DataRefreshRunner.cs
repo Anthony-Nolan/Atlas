@@ -16,6 +16,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Settings;
 using EnumStringValues;
@@ -43,7 +44,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private readonly IAzureDatabaseNameProvider azureDatabaseNameProvider;
         private readonly IAzureDatabaseManager azureDatabaseManager;
         private readonly IHlaMetadataDictionary activeVersionHlaMetadataDictionary;
-        private readonly IDataRefreshNotificationSender dataRefreshNotificationSender;
+        private readonly IDataRefreshSupportNotificationSender dataRefreshNotificationSender;
         private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private readonly MatchingAlgorithmImportLoggingContext loggingContext;
 
@@ -106,7 +107,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             IHlaProcessor hlaProcessor,
             IDonorUpdateProcessor differentialDonorUpdateProcessor,
             IMatchingAlgorithmImportLogger logger,
-            IDataRefreshNotificationSender dataRefreshNotificationSender,
+            IDataRefreshSupportNotificationSender dataRefreshNotificationSender,
             IDataRefreshHistoryRepository dataRefreshHistoryRepository,
             MatchingAlgorithmImportLoggingContext loggingContext)
         {

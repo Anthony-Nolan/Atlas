@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
@@ -16,6 +15,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh;
@@ -36,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         private IDonorImporter donorImporter;
         private IHlaProcessor hlaProcessor;
         private IDonorUpdateProcessor donorUpdateProcessor;
-        private IDataRefreshNotificationSender dataRefreshNotificationSender;
+        private IDataRefreshSupportNotificationSender dataRefreshNotificationSender;
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
 
         private IDataRefreshRunner dataRefreshRunner;
@@ -55,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             hlaProcessor = Substitute.For<IHlaProcessor>();
             donorUpdateProcessor = Substitute.For<IDonorUpdateProcessor>();
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
-            dataRefreshNotificationSender = Substitute.For<IDataRefreshNotificationSender>();
+            dataRefreshNotificationSender = Substitute.For<IDataRefreshSupportNotificationSender>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
 
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(DataRefreshRecordBuilder.New.Build());

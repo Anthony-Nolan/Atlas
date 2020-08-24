@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
@@ -9,6 +8,7 @@ using Atlas.MatchingAlgorithm.Models.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.AzureManagement;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Settings;
 using NSubstitute;
 using NUnit.Framework;
@@ -23,7 +23,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IActiveDatabaseProvider activeDatabaseProvider;
         private IAzureDatabaseManager azureDatabaseManager;
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
-        private IDataRefreshNotificationSender notificationSender;
+        private IDataRefreshSupportNotificationSender notificationSender;
 
         private IDataRefreshCleanupService dataRefreshCleanupService;
 
@@ -35,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             azureDatabaseManager = Substitute.For<IAzureDatabaseManager>();
             dataRefreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
-            notificationSender = Substitute.For<IDataRefreshNotificationSender>();
+            notificationSender = Substitute.For<IDataRefreshSupportNotificationSender>();
 
             dataRefreshCleanupService = BuildDataRefreshCleanupService();
         }

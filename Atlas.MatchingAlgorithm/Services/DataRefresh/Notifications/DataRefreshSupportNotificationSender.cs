@@ -2,9 +2,12 @@ using System.Threading.Tasks;
 using Atlas.Common.Notifications;
 using Atlas.MatchingAlgorithm.Config;
 
-namespace Atlas.MatchingAlgorithm.Services.DataRefresh
+namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications
 {
-    public interface IDataRefreshNotificationSender
+    /// <summary>
+    /// Sends data refresh messages to the appropriate support topic in order to notify or alert the support team.
+    /// </summary>
+    public interface IDataRefreshSupportNotificationSender
     {
         Task SendInitialisationNotification(int recordId);
         Task SendContinuationNotification(int recordId);
@@ -15,11 +18,11 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         Task SendRecommendManualCleanupAlert();
     }
     
-    public class DataRefreshNotificationSender: IDataRefreshNotificationSender
+    public class DataRefreshSupportNotificationSender: IDataRefreshSupportNotificationSender
     {
         private readonly INotificationSender notificationSender;
 
-        public DataRefreshNotificationSender(INotificationSender notificationSender)
+        public DataRefreshSupportNotificationSender(INotificationSender notificationSender)
         {
             this.notificationSender = notificationSender;
         }

@@ -24,6 +24,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
+using Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications;
 using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Services.Search;
@@ -70,7 +71,8 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterSettingsForDataRefresh(
                 fetchAzureAuthenticationSettings,
                 fetchAzureDatabaseManagementSettings,
-                fetchDataRefreshSettings
+                fetchDataRefreshSettings,
+                fetchMessagingServiceBusSettings
             );
 
             services.RegisterMatchingAlgorithmDonorManagementOnly(
@@ -168,8 +170,10 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IHlaProcessor, HlaProcessor>();
             services.AddScoped<IDataRefreshOrchestrator, DataRefreshOrchestrator>();
             services.AddScoped<IDataRefreshRunner, DataRefreshRunner>();
-            services.AddScoped<IDataRefreshNotificationSender, DataRefreshNotificationSender>();
+            services.AddScoped<IDataRefreshSupportNotificationSender, DataRefreshSupportNotificationSender>();
+            services.AddScoped<IDataRefreshCompletionNotifier, DataRefreshCompletionNotifier>();
             services.AddScoped<IDataRefreshCleanupService, DataRefreshCleanupService>();
+            services.AddScoped<IDataRefreshServiceBusClient, DataRefreshServiceBusClient>();
 
             // Matching Services
             services.AddScoped<IMatchingService, MatchingService>();
@@ -294,11 +298,13 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings,
             Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
-            Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings)
+            Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
             services.MakeSettingsAvailableForUse(fetchAzureAuthenticationSettings);
             services.MakeSettingsAvailableForUse(fetchAzureDatabaseManagementSettings);
             services.MakeSettingsAvailableForUse(fetchDataRefreshSettings);
+            services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
         }
     }
 }
