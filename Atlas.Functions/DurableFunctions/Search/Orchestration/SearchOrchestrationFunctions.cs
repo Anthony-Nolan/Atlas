@@ -10,7 +10,6 @@ using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.DurableFunctions.Search.Activity;
 using Atlas.Functions.Models;
 using Atlas.Functions.Services;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -23,8 +22,11 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
     /// Logging should be avoided in this function due to this.
     /// Any expensive or non-deterministic code should be called from an Activity function.
     /// </summary>
+    // ReSharper disable once MemberCanBeInternal
     public static class SearchOrchestrationFunctions
     {
+        private static readonly RetryOptions RetryOptions = new RetryOptions(TimeSpan.FromSeconds(5), 5) {BackoffCoefficient = 2};
+
         [FunctionName(nameof(SearchOrchestrator))]
         public static async Task<SearchOrchestrationOutput> SearchOrchestrator(
             [OrchestrationTrigger] IDurableOrchestrationContext context
@@ -60,8 +62,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             IDurableOrchestrationContext context,
             MatchingResultsNotification notification)
         {
-            var matchingResults = await context.CallActivityAsync<TimedResultSet<MatchingAlgorithmResultSet>>(
+            var matchingResults = await context.CallActivityWithRetryAsync<TimedResultSet<MatchingAlgorithmResultSet>>(
                 nameof(SearchActivityFunctions.DownloadMatchingAlgorithmResults),
+                RetryOptions,
                 notification
             );
 
@@ -72,22 +75,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             });
 
             return matchingResults;
-        }
-
-        private static async Task<TimedResultSet<MatchingAlgorithmResultSet>> RunMatchingAlgorithm(
-            IDurableOrchestrationContext context,
-            SearchRequest searchRequest)
-        {
-            var results = await context.CallActivityAsync<TimedResultSet<MatchingAlgorithmResultSet>>(
-                nameof(SearchActivityFunctions.RunMatchingAlgorithm),
-                new IdentifiedSearchRequest {Id = context.InstanceId, SearchRequest = searchRequest}
-            );
-            context.SetCustomStatus(new OrchestrationStatus
-            {
-                LastCompletedStage = nameof(RunMatchingAlgorithm),
-                ElapsedTimeOfStage = results.ElapsedTime,
-            });
-            return results;
         }
 
         private static async Task<TimedResultSet<Dictionary<int, MatchProbabilityResponse>>> RunMatchPredictionAlgorithm(
@@ -130,8 +117,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             MatchingAlgorithmResultSet searchResults,
             Dictionary<int, Donor> donorInformation)
         {
-            return await context.CallActivityAsync<IEnumerable<MultipleDonorMatchProbabilityInput>>(
+            return await context.CallActivityWithRetryAsync<IEnumerable<MultipleDonorMatchProbabilityInput>>(
                 nameof(SearchActivityFunctions.BuildMatchPredictionInputs),
+                RetryOptions,
                 new MatchPredictionInputParameters
                 {
                     SearchRequest = searchRequest,
@@ -149,8 +137,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 matchingAlgorithmResults.MatchingAlgorithmResults.Select(r => r.AtlasDonorId)
             );
 
-            var donorInfo = await context.CallActivityAsync<TimedResultSet<Dictionary<int, Donor>>>(
+            var donorInfo = await context.CallActivityWithRetryAsync<TimedResultSet<Dictionary<int, Donor>>>(
                 nameof(SearchActivityFunctions.FetchDonorInformation),
+                RetryOptions,
                 activityInput
             );
 
@@ -169,8 +158,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             MultipleDonorMatchProbabilityInput matchProbabilityInput
         )
         {
-            return await context.CallActivityAsync<IReadOnlyDictionary<int, MatchProbabilityResponse>>(
+            return await context.CallActivityWithRetryAsync<IReadOnlyDictionary<int, MatchProbabilityResponse>>(
                 nameof(SearchActivityFunctions.RunMatchPrediction),
+                RetryOptions,
                 matchProbabilityInput
             );
         }
@@ -183,8 +173,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             DateTime searchInitiated)
         {
             // Note that this serializes the match prediction results, using default settings - which rounds any decimals to 15dp.
-            await context.CallActivityAsync(
+            await context.CallActivityWithRetryAsync(
                 nameof(SearchActivityFunctions.PersistSearchResults),
+                RetryOptions,
                 new SearchActivityFunctions.PersistSearchResultsParameters
                 {
                     DonorInformation = donorInformation,
