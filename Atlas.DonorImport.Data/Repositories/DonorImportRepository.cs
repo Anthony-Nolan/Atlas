@@ -55,8 +55,7 @@ namespace Atlas.DonorImport.Data.Repositories
                     {columnUpdateStrings}
                 WHERE {nameof(Donor.AtlasId)} = @{nameof(Donor.AtlasId)}
                 ";
-
-            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            
             await using (var conn = NewConnection())
             {
                 conn.Open();
@@ -64,7 +63,6 @@ namespace Atlas.DonorImport.Data.Repositories
                 {
                     await conn.ExecuteAsync(sql, donorEdit, commandTimeout: 600);
                 }
-                transaction.Complete();
                 conn.Close();
             }
         }
