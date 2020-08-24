@@ -13,7 +13,6 @@ namespace Atlas.MatchPrediction.Data.Repositories
     {
         Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies);
 
-        Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypeFrequencies(IEnumerable<HaplotypeHla> haplotypes, int setId);
         Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId);
     }
 
@@ -91,51 +90,22 @@ namespace Atlas.MatchPrediction.Data.Repositories
             return dataTable;
         }
 
-        public async Task<Dictionary<HaplotypeHla, decimal>> GetHaplotypeFrequencies(IEnumerable<HaplotypeHla> haplotypes, int setId)
-        {
-            var haplotypeInfo = new Dictionary<HaplotypeHla, decimal>();
-            var distinctHaplotypes = haplotypes.ToList().Distinct();
-
-            // TODO: ATLAS-2: Investigate if quicker to run multiple queries vs collated one to fetch everything in one go.
-            var sql = @$"
-                SELECT Frequency 
-                FROM HaplotypeFrequencies
-                WHERE 
-                    A = @A AND
-                    B = @B AND
-                    C = @C AND
-                    DQB1 = @Dqb1 AND
-                    DRB1 = @Drb1 AND
-                    Set_Id = @setId
-                ";
-
-            await using (var conn = new SqlConnection(connectionString))
-            {
-                foreach (var haplotype in distinctHaplotypes)
-                {
-                    var frequency = await conn.QueryFirstOrDefaultAsync<decimal>(
-                        sql,
-                        new {haplotype.A, haplotype.B, haplotype.C, haplotype.Dqb1, haplotype.Drb1, setId},
-                        commandTimeout: 300);
-                    haplotypeInfo.Add(haplotype, frequency);
-                }
-            }
-
-            return haplotypeInfo;
-        }
-
         /// <inheritdoc />
         public async Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId)
         {
             const string sql = "SELECT * FROM HaplotypeFrequencies WHERE Set_Id = @setId";
-            await using (var conn = new SqlConnection(connectionString))
+
+            return await RetryConfig.AsyncRetryPolicy.ExecuteAsync(async () =>
             {
-                var frequencyModels = await conn.QueryAsync<HaplotypeFrequency>(sql, new {setId}, commandTimeout: 600);
-                return frequencyModels.ToDictionary(
-                    f => f.Haplotype(),
-                    f => f
-                );
-            }
+                await using (var conn = new SqlConnection(connectionString))
+                {
+                    var frequencyModels = await conn.QueryAsync<HaplotypeFrequency>(sql, new {setId}, commandTimeout: 600);
+                    return frequencyModels.ToDictionary(
+                        f => f.Haplotype(),
+                        f => f
+                    );
+                }
+            });
         }
     }
 }

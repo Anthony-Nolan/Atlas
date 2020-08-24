@@ -1,8 +1,8 @@
+using System.Linq;
+using System.Threading.Tasks;
 using Atlas.MatchPrediction.Data.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Data.Repositories
 {
@@ -27,11 +27,14 @@ namespace Atlas.MatchPrediction.Data.Repositories
                     ISNULL(s.RegistryCode,'') = ISNULL(@{nameof(registryCode)},'') AND
                     ISNULL(s.ethnicityCode,'') = ISNULL(@{nameof(ethnicityCode)},'')";
 
-            await using (var conn = new SqlConnection(connectionString))
+            return await RetryConfig.AsyncRetryPolicy.ExecuteAsync(async () =>
             {
-                var result = await conn.QueryAsync<HaplotypeFrequencySet>(sql, new {registryCode, ethnicityCode});
-                return result.SingleOrDefault();
-            }
+                await using (var conn = new SqlConnection(connectionString))
+                {
+                    var result = await conn.QueryAsync<HaplotypeFrequencySet>(sql, new {registryCode, ethnicityCode});
+                    return result.SingleOrDefault();
+                }
+            });
         }
     }
 }
