@@ -12,6 +12,7 @@ namespace Atlas.DonorImport.Services
     {
         public Task<IEnumerable<DonorUpdate>> FilterDonorUpdatesBasedOnUpdateTime(IEnumerable<DonorUpdate> donorUpdates, DateTime uploadTime);
         public Task SetLastUpdated(DonorUpdate donorUpdate, DateTime lastUpdated);
+        public Task SetLastUpdatedByBatch(List<DonorUpdate> donorBatch, DateTime lastUpdateTime);
     }
     
     internal class DonorImportLogService : IDonorImportLogService
@@ -33,10 +34,16 @@ namespace Atlas.DonorImport.Services
             await repository.SetLastUpdated(donorUpdate.RecordId, lastUpdated);
         }
 
+        public async Task SetLastUpdatedByBatch(List<DonorUpdate> donorBatch, DateTime lastUpdateTime)
+        {
+            var donorIdBatch = donorBatch.Select(d => d.RecordId);
+            await repository.SetLastUpdatedByBatch(donorIdBatch, lastUpdateTime);
+        }
+
         private async Task<bool> ShouldUpdateDonor(DonorUpdate donorUpdate, DateTime uploadTime)
         {
             var date = await repository.GetLastUpdateForDonorWithId(donorUpdate.RecordId);
-            return uploadTime > date;
+            return uploadTime >= date;
         }
     }
 }
