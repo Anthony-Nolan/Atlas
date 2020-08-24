@@ -84,9 +84,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 
                 GROUP BY InnerDonorId, TypePosition";
 
+            // TODO: ATLAS-686: Work out why this is so much slower for DQB1 than for C
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                return await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 300);
+                return await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 450);
             }
         }
 
