@@ -31,14 +31,14 @@ namespace Atlas.Client.Models.Search.Results.Matching
         ///     The number of the total potential matches.
         ///     The TotalMatchCount is a sum of potential and exact matches, so an exact match count can be calculated as the difference of these values.
         ///     This will only count loci specified in the search request
-        ///     TODO ATLAS-539 - confirm how this should be calculated (if at all) when only some or none of match loci have been scored
+        ///     TODO: ATLAS-540: make it clear which properties will only be applied to scored loci
         /// </summary>
         public int PotentialMatchCount { get; set; }
 
         /// <summary>
         ///     The number of the total exact matches.
         ///     The TotalMatchCount is a sum of potential and exact matches, so an exact match count can be calculated as the difference of these values
-        ///     TODO ATLAS-539 - confirm how this should be calculated (if at all) when only some or none of match loci have been scored
+        ///     TODO: ATLAS-540: make it clear which properties will only be applied to scored loci
         /// </summary>
         public int ExactMatchCount => TotalMatchCount - PotentialMatchCount;
 
