@@ -53,36 +53,36 @@ namespace Atlas.DonorImport.Services
 
             var importedDonorCount = 0;
             var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents);
-            
+
             try
             {
-                var donorUpdates = lazyFile.ReadLazyDonorUpdates().ToList();
-                    var searchableDonors = donorUpdates.Where(ValidateDonorIsSearchable);
-                    var donorUpdatesToApply = await donorLogService.FilterDonorUpdatesBasedOnUpdateTime(searchableDonors, file.UploadTime);
-                    foreach (var donorUpdateBatch in donorUpdatesToApply.Batch(BatchSize))
+                var donorUpdates = lazyFile.ReadLazyDonorUpdates();
+                var searchableDonors = donorUpdates.Where(ValidateDonorIsSearchable);
+                var donorUpdatesToApply = await donorLogService.FilterDonorUpdatesBasedOnUpdateTime(searchableDonors, file.UploadTime);
+                foreach (var donorUpdateBatch in donorUpdatesToApply.Batch(BatchSize))
+                {
+                    var reifiedDonorBatch = donorUpdateBatch.ToList();
+                    using (var transactionScope = new AsyncTransactionScope())
                     {
-                        var reifiedDonorBatch = donorUpdateBatch.ToList();
-                        using (var transactionScope = new AsyncTransactionScope())
+                        await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file);
+                        foreach (var donorUpdate in reifiedDonorBatch)
                         {
-                            await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file);
-                            foreach (var donorUpdate in reifiedDonorBatch)
-                            {
-                                await donorLogService.SetLastUpdated(donorUpdate, file.UploadTime);
-                            }
-                            transactionScope.Complete();
+                            await donorLogService.SetLastUpdated(donorUpdate, file.UploadTime);
                         }
+
+                        transactionScope.Complete();
                         
                         importedDonorCount += reifiedDonorBatch.Count;
                     }
 
                     await donorImportFileHistoryService.RegisterSuccessfulDonorImport(file);
+                }
 
-                    logger.SendTrace($"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).");
-                    await notificationSender.SendNotification($"Donor Import Successful: {file.FileLocation}",
-                        $"Imported {importedDonorCount} donor(s) from file {file.FileLocation}",
-                        nameof(ImportDonorFile)
-                    );
-                
+                logger.SendTrace($"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).");
+                await notificationSender.SendNotification($"Donor Import Successful: {file.FileLocation}",
+                    $"Imported {importedDonorCount} donor(s) from file {file.FileLocation}",
+                    nameof(ImportDonorFile)
+                );
             }
             catch (EmptyDonorFileException e)
             {
@@ -131,6 +131,7 @@ Manual investigation is recommended; see Application Insights for more informati
             {
                 return validationResult.IsValid;
             }
+
             var message = $"Insufficiently typed donor was not imported - ${donorUpdate.RecordId}";
             logger.SendTrace(message);
 

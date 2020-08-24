@@ -71,7 +71,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
         
         [Test]
-        public async Task DonorImportOrder_CreateThenCreateImportOutOfOrder_DoesNotUpdateDonor()
+        public async Task DonorImportOrder_CreateThenCreateImportOutOfOrder_ThrowsException()
         {
             // File 1 = Create
             var donorExternalCode = "1";
@@ -87,8 +87,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var result1 = await donorRepository.GetDonor(donorExternalCode);
             result1.UpdateFile.Should().Be(file2Name);
             
-            // import File 2, donor remains unchanged.
-            await donorFileImporter.ImportDonorFile(createFile1);
+            // import File 2, it should throw exception and donor remain unchanged.
+            Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(createFile1));
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.UpdateFile.Should().Be(file2Name);
         }
@@ -163,7 +163,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
         
         [Test]
-        public async Task DonorImportOrder_CreateThenDeleteOutOfOrder_EndsUpWithNoDonor()
+        public async Task DonorImportOrder_CreateThenDeleteOutOfOrder_ErrorsWithOutOfDateDonor()
         {
             // File 1 = Create
             var donorExternalCode = "1";
@@ -174,7 +174,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var file2Name = "file-2";
             var deleteFile = CreateDonorImportFile(deleteUpdateBuilder, donorExternalCode, file2Name, 2);
             
-            // Import File 2, expect no donor
+            // Import File 2, expect error and no donor
             await donorFileImporter.ImportDonorFile(deleteFile);
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.Should().BeNull();
@@ -182,7 +182,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             // import File 1, check it is imported (even though out of date)
             await donorFileImporter.ImportDonorFile(createFile);
             var result1 = await donorRepository.GetDonor(donorExternalCode);
-            result1.Should().BeNull();
+            result1.UpdateFile.Should().Be(file1Name);
         }
         
         [Test]
@@ -211,7 +211,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
         
         [Test]
-        public async Task DonorImportOrder_EditThenCreateWithoutPreExistingDonorOutOfOrder_CreatesWithoutEditing()
+        public async Task DonorImportOrder_EditThenCreateWithoutPreExistingDonorOutOfOrder_CreatesAndEditsWithUpToDateDonor()
         {
             // File 1 = Edit
             var donorExternalCode = "1";
@@ -230,7 +230,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             // import File 1, expect donor edit
             await donorFileImporter.ImportDonorFile(editFile);
             var result1 = await donorRepository.GetDonor(donorExternalCode);
-            result1.UpdateFile.Should().Be(file2Name);
+            result1.UpdateFile.Should().Be(file1Name);
             
         }
         
@@ -377,7 +377,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
         
         [Test]
-        public async Task DonorImportOrder_UpdateThenDeleteOutOfOrder_Deletes()
+        public async Task DonorImportOrder_UpdateThenDeleteOutOfOrder_DeletesWithException()
         {
             var donorExternalCode = "1";
             
@@ -399,7 +399,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             result1.Should().BeNull();
             
             // import File 1, Exception with no donor
-            await donorFileImporter.ImportDonorFile(editFile);
+            Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(editFile));
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.Should().BeNull();
         }
