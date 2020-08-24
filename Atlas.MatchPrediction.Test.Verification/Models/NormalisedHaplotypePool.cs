@@ -20,7 +20,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Models
             TotalCopyNumber = poolMembers.Sum(h => h.CopyNumber);
         }
 
-        public HaplotypeFrequency GetHaplotypeFrequencyByPoolIndex(int poolIndex)
+        public HaplotypeFrequencyMetadata GetHaplotypeFrequencyByPoolIndex(int poolIndex)
         {
             if (poolIndex < 0)
             {
@@ -40,7 +40,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Models
 
     public class NormalisedPoolMember
     {
-        public HaplotypeFrequency HaplotypeFrequency { get; set; }
+        public HaplotypeFrequencyMetadata HaplotypeFrequency { get; set; }
         public int CopyNumber { get; set; }
         public int PoolIndexLowerBoundary { get; set; }
         public int PoolIndexUpperBoundary => PoolIndexLowerBoundary + CopyNumber - 1;
