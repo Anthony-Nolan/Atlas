@@ -1,14 +1,14 @@
-﻿using Atlas.Common.GeneticData;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Atlas.Common.GeneticData;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
-using Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.TestHelpers;
+using Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.UnitTests
+namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
 {
     [TestFixture]
     public class GenotypeSimulatorTests

@@ -7,10 +7,12 @@ This code is designed to be run locally; it is not production quality and cannot
   - Relies on locally-run MatchingAlgorithm API.
 
 - `Atlas.MatchPrediction.Test.Verification`
-  - Web API project for manual verification of the Match Prediction Algorithm (MPA).
+  - Functions project for the manual verification of the Match Prediction Algorithm (MPA).
   - Verification involves generating a harness of simulated patients and donors, running it through search requests,
 	and collating the final results to determine the accuracy of match probabilities.
-  - Includes minimal suite of unit tests, with sufficient coverage only to ensure the reliability of the generated data.
+
+- `Atlas.MatchPrediction.Test.Verification.Test`
+  - Minimal suite of unit tests for the `Atlas.MatchPrediction.Test.Verification` project, with sufficient coverage only to ensure the reliability of the generated data.
 
 
 ## Verification
@@ -23,11 +25,11 @@ This code is designed to be run locally; it is not production quality and cannot
     - Set Startup Project (Context menu of Solution Explorer) to be `Atlas.MatchPrediction.Test.Verification`.
     - Run `Update-Database` in the console.
     - Open your local SQL Server and verify the creation of the database: `AtlasMatchPredictionVerification`.
-- Compile and Run API
+- Compile and Run Functions app
   - Set Startup Project to `Atlas.MatchPrediction.Test.Verification`.
-  - Compile and Run.
-  - It should open a Swagger UI page automatically.
-  - Scroll to the `api-check` endpoint, fire it and confirm that you receive an `OK 200` response in under a second.
+  - Compile and Run - a console window will pop-up, and a list of functions will be displayed if everything loads successfully.
+  - Load the Swagger UI by copying the `SwaggerUi` function URL from the console into a web browser.
+  - Scroll to the `HealthCheck` endpoint, fire it and confirm that you receive an `OK 200` response in under a second.
 - Configure remote connection settings:
   - The verification framework runs locally, but depends on some deployed resources to generate the test harness, namely:
       - Match Prediction database and azure storage for global haplotype frequencies;
@@ -35,10 +37,8 @@ This code is designed to be run locally; it is not production quality and cannot
         use the remote HMD that has already been populated on the remote environment.
       - Search orchestrator function, to run search requests.
   - Therefore, the remote environment should have been set up before running the framework.
-  - User secrets are used to override the default local settings with the remote settings.
-  - Open the `secrets.json` file.
-    - In VS this is achieved by: Solution Explorer > `Atlas.MatchPrediction.Test.Verification` > Context Menu > "Manage User Secrets"
-  - Add the following json with the appropriate values:
+  - The project's `local.settings.json` file should be used to override default local settings with the remote settings.
+  - Override the following settings with the appropriate values:
       ```json
       {
           "AzureStorage": {
@@ -79,9 +79,9 @@ The following steps must be completed prior to generating the test harness.
 ##### Populate/refresh the Local MAC store
 - For performance reasons, the masking step relies on expanded MAC definitions stored in the verification database, rather than the MAC dictionary.
   - This store must be populated before generating the first test harness.
-  - This is achieved by calling the endpoint: `POST /expanded-macs` on the Verification API.
+  - This is achieved by calling the http-triggered function: `ExpandGenericMacs`.
   - This only needs to be done once, and will take a few mins to complete.
-- It is advisable to refresh the local store (via the same endpoint) before generating a new test harness for a later HLA nomenclature version,
+- It is advisable to refresh the local store (via the same function) before generating a new test harness for a later HLA nomenclature version,
     as new MACs are often created to cover changes to P and G groups.
   - Subsequent refreshes should complete faster, as only the latest codes are processed and stored.
 
@@ -94,7 +94,7 @@ The following steps must be completed prior to generating the test harness.
 - If the active, global HF set needs to be changed, upload a new file (ideally, with a unique name), and regenerate the test harness prior to running verification.
 
 #### Generating the Test Harness
-- After the pre-generation steps have been successfully completed, launch the API and call the endpoint: `POST /test-harness`.
+- After the pre-generation steps have been successfully completed, launch the local functions app and call the http function: `GenerateTestHarness`.
   - Per locus masking instructions for patients and donors should be submitted within the request body (see Swagger UI for request model and masking options).
   - If successful, the unique ID of the generated test harness will be returned in the response.
   - Total time taken to complete the request will depend on the masking requests made (MACs take the longest to assign).

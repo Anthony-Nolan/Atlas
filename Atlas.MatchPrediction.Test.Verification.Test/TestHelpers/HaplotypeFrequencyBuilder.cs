@@ -1,8 +1,7 @@
-﻿using Atlas.MatchPrediction.ExternalInterface.Models;
-using Atlas.MatchPrediction.Models;
+﻿using Atlas.MatchPrediction.Models;
 using LochNessBuilder;
 
-namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.TestHelpers
+namespace Atlas.MatchPrediction.Test.Verification.Test.TestHelpers
 {
     [Builder]
     internal static class HaplotypeFrequencyBuilder

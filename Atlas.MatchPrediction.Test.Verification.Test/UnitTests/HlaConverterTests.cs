@@ -1,16 +1,16 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers;
-using Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.TestHelpers;
+using Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
+using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentAssertions;
 
-namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.UnitTests
+namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
 {
     [TestFixture]
     public class HlaConverterTests

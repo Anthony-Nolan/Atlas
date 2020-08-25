@@ -1,0 +1,20 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "ApplicationInsights:InstrumentationKey": "dummy-key",
+    "ApplicationInsights:LogLevel": "Info",
+
+    "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
+    "AzureStorage:HaplotypeFrequencySetBlobContainer": "haplotype-frequency-set-import",
+
+    "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
+
+    "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
+    "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
+    "MacDictionary:Download:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip"
+  },
+  "ConnectionStrings": {
+    "MatchPredictionVerification:Sql": "Data Source=(local);Initial Catalog=AtlasMatchPredictionVerification;Integrated Security=True;MultipleActiveResultSets=True;",
+    "MatchPrediction:Sql": "Data Source=(local);Initial Catalog=AtlasMatchPrediction;Integrated Security=True;MultipleActiveResultSets=True;"
+  }
+}

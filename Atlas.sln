@@ -116,11 +116,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ManualTesting", "ManualTest
 		README_ManualTesting.md = README_ManualTesting.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.MatchPrediction.Test.Verification", "Atlas.MatchPrediction.Test.Verification\Atlas.MatchPrediction.Test.Verification.csproj", "{2D4D9130-B6B4-49CD-BFB8-FB2779277220}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction.Test.Verification", "Atlas.MatchPrediction.Test.Verification\Atlas.MatchPrediction.Test.Verification.csproj", "{2D4D9130-B6B4-49CD-BFB8-FB2779277220}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.Functions.PublicApi", "Atlas.Functions.PublicApi\Atlas.Functions.PublicApi.csproj", "{9917E69B-4B14-46DF-9DB9-0538C02CCAC6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.Functions.PublicApi", "Atlas.Functions.PublicApi\Atlas.Functions.PublicApi.csproj", "{9917E69B-4B14-46DF-9DB9-0538C02CCAC6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.Client.Models", "Atlas.Client.Models\Atlas.Client.Models.csproj", "{9048423F-EA75-4D33-9B1A-48222429CB69}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.Client.Models", "Atlas.Client.Models\Atlas.Client.Models.csproj", "{9048423F-EA75-4D33-9B1A-48222429CB69}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.MatchPrediction.Test.Verification.Test", "Atlas.MatchPrediction.Test.Verification.Test\Atlas.MatchPrediction.Test.Verification.Test.csproj", "{F1FC0799-415E-405B-B2DB-24AE6204F508}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -333,6 +335,12 @@ Global
 		{9048423F-EA75-4D33-9B1A-48222429CB69}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{9048423F-EA75-4D33-9B1A-48222429CB69}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9048423F-EA75-4D33-9B1A-48222429CB69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1FC0799-415E-405B-B2DB-24AE6204F508}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1FC0799-415E-405B-B2DB-24AE6204F508}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1FC0799-415E-405B-B2DB-24AE6204F508}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1FC0799-415E-405B-B2DB-24AE6204F508}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{F1FC0799-415E-405B-B2DB-24AE6204F508}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1FC0799-415E-405B-B2DB-24AE6204F508}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -370,6 +378,7 @@ Global
 		{DA4729BC-8829-474F-9DDC-257F61AC07BC} = {DCB9E81B-16A1-4D0D-BB02-42A138B4D078}
 		{122DA7C4-50ED-45A5-97D9-9CFC3391A87B} = {E5979876-0294-475D-8970-A384B2DDEB8C}
 		{2D4D9130-B6B4-49CD-BFB8-FB2779277220} = {EF1B180D-37D3-4A7A-9F2D-0E7DF3F14D36}
+		{F1FC0799-415E-405B-B2DB-24AE6204F508} = {EF1B180D-37D3-4A7A-9F2D-0E7DF3F14D36}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB0B0AD5-58AC-4CDF-826D-C653D03DC2AC}
