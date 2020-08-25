@@ -41,6 +41,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.ZeroMismatchProbabilityPerLocus.Should().Be(expectedMismatchProbabilityPerLocus);
             matchDetails.OneMismatchProbabilityPerLocus.Should().Be(expectedMismatchProbabilityPerLocus);
             matchDetails.TwoMismatchProbabilityPerLocus.Should().Be(expectedMismatchProbabilityPerLocus);
+            matchDetails.DonorFrequencySetNomenclatureVersion.Should().Be(null);
+            matchDetails.DonorFrequencySetNomenclatureVersion.Should().Be(null);
         }
 
         [Test]
@@ -54,7 +56,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 DefaultHaplotypeFrequency2.With(h => h.Frequency, 0.00001m).Build(),
             };
 
-            await ImportFrequencies(possibleHaplotypes, null, null);
+            await ImportFrequencies(possibleHaplotypes);
 
             var expectedZeroMismatchProbabilityPerLocus = new LociInfo<decimal?>(1).SetLocus(Locus.Dpb1, null);
             var expectedOneMismatchProbabilityPerLocus = new LociInfo<decimal?>(0).SetLocus(Locus.Dpb1, null);
@@ -68,6 +70,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
             matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
             matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
+            matchDetails.DonorFrequencySetNomenclatureVersion.Should().Be("3400");
+            matchDetails.DonorFrequencySetNomenclatureVersion.Should().Be("3400");
         }
 
         [Test]
@@ -121,6 +125,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
             matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
             matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
+            matchDetails.DonorFrequencySetNomenclatureVersion.Should().Be("3400");
+            matchDetails.DonorFrequencySetNomenclatureVersion.Should().Be("3400");
         }
 
         [Test]
@@ -208,6 +214,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
             matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
             matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
+            matchDetails.DonorFrequencySetNomenclatureVersion.Should().Be("3400");
+            matchDetails.DonorFrequencySetNomenclatureVersion.Should().Be("3400");
         }
 
         [Test]
@@ -299,6 +307,8 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             matchDetails.ZeroMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedZeroMismatchProbabilityPerLocus);
             matchDetails.OneMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedOneMismatchProbabilityPerLocus);
             matchDetails.TwoMismatchProbabilityPerLocus.ToDecimals().Should().Be(expectedTwoMismatchProbabilityPerLocus);
+            matchDetails.DonorFrequencySetNomenclatureVersion.Should().Be("3400");
+            matchDetails.DonorFrequencySetNomenclatureVersion.Should().Be("3400");
         }
 
         [Test]

@@ -39,6 +39,8 @@ namespace Atlas.Client.Models.Search.Results.MatchPrediction
         public LociInfo<Probability> TwoMismatchProbabilityPerLocus =>
             MatchProbabilitiesPerLocus.Map(x => x?.MatchProbabilities.TwoMismatchProbability);
 
+        public string PatientFrequencySetNomenclatureVersion { get; set; }
+        public string DonorFrequencySetNomenclatureVersion { get; set; }
         public bool IsPatientPhenotypeUnrepresented { get; set; }
         public bool IsDonorPhenotypeUnrepresented { get; set; }
 
@@ -65,7 +67,9 @@ namespace Atlas.Client.Models.Search.Results.MatchPrediction
                 MatchProbabilities = MatchProbabilities.Round(decimalPlaces),
                 MatchProbabilitiesPerLocus = MatchProbabilitiesPerLocus.Map((_, p) => p?.Round(decimalPlaces)),
                 IsPatientPhenotypeUnrepresented = IsPatientPhenotypeUnrepresented,
-                IsDonorPhenotypeUnrepresented = IsDonorPhenotypeUnrepresented
+                IsDonorPhenotypeUnrepresented = IsDonorPhenotypeUnrepresented,
+                PatientFrequencySetNomenclatureVersion = PatientFrequencySetNomenclatureVersion,
+                DonorFrequencySetNomenclatureVersion = DonorFrequencySetNomenclatureVersion
             };
         }
 
