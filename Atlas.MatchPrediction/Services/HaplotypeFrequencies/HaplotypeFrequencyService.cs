@@ -237,6 +237,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         {
             return new HaplotypeFrequencySet
             {
+                HlaNomenclatureVersion = set.HlaNomenclatureVersion,
                 EthnicityCode = set.EthnicityCode,
                 Id = set.Id,
                 Name = set.Name,
