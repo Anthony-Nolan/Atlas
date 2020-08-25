@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace Atlas.Common.Notifications
 {
-    internal interface INotificationsClient
+    public interface INotificationsClient
     {
         Task SendAlert(Alert alert);
         Task SendNotification(Notification notification);

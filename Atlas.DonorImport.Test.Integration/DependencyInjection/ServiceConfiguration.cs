@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using System.Transactions;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.Clients;
@@ -25,7 +26,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
         public static IServiceProvider CreateProvider()
         {
             var services = new ServiceCollection();
-            
+
             SetUpConfiguration(services);
             services.RegisterDonorImport(
                 sp => new ApplicationInsightsSettings {LogLevel = "Info"},
@@ -43,7 +44,8 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
             services.AddScoped(sp => new ContextFactory().Create(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
             services.AddScoped<IDonorInspectionRepository>(sp =>
                 new DonorInspectionRepository(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
-            services.AddScoped<IDonorImportHistoryRepository>(sp => new DonorImportHistoryRepository(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
+            services.AddScoped<IDonorImportHistoryRepository>(sp =>
+                new DonorImportHistoryRepository(ConnectionStringReader(DonorStoreSqlConnectionString)(sp)));
             services.AddScoped<IDonorImportFileHistoryService, DonorImportFileHistoryService>();
         }
 
@@ -59,14 +61,39 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
 
         private static void SetUpMockServices(IServiceCollection services)
         {
+            // Service bus client package will throw if it detects an ongoing transaction, as it doesn't support distributed transactions.
+            // We emulate that on all service bus clients here to enable testing for such cases.
+
             var mockSearchServiceBusClient = Substitute.For<IMessagingServiceBusClient>();
             mockSearchServiceBusClient
                 .PublishDonorUpdateMessage(Arg.Any<SearchableDonorUpdate>())
-                .Returns(Task.CompletedTask);
-            
+                .Returns(Task.CompletedTask)
+                .AndDoes(_ => ThrowIfInTransaction());
+
+            mockSearchServiceBusClient
+                .WhenForAnyArgs(x => x.PublishDonorUpdateMessage(null))
+                .Do(_ => ThrowIfInTransaction());
+
+            var mockNotificationsClient = Substitute.For<INotificationsClient>();
+
+            mockNotificationsClient
+                .WhenForAnyArgs(x => x.SendAlert(null))
+                .Do(_ => ThrowIfInTransaction());
+            mockNotificationsClient
+                .WhenForAnyArgs(x => x.SendNotification(null))
+                .Do(_ => ThrowIfInTransaction());
+
             services.AddScoped(sp => Substitute.For<ILogger>());
             services.AddScoped(sp => mockSearchServiceBusClient);
-            services.AddScoped(sp => Substitute.For<INotificationSender>());
+            services.AddScoped(sp => mockNotificationsClient);
+        }
+
+        private static void ThrowIfInTransaction()
+        {
+            if (Transaction.Current != null)
+            {
+                throw new Exception("Transaction detected. Throwing as we do not want to support transactions in this context...");
+            }
         }
     }
 }
