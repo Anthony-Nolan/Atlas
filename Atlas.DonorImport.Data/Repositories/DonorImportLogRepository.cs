@@ -74,7 +74,7 @@ namespace Atlas.DonorImport.Data.Repositories
             {
                 connection.Open();
                 var sql = $"SELECT COUNT(*) FROM {DonorLogTableName} WHERE {ExternalDonorCodeColumnName} = (@donorId)";
-                var result = connection.QuerySingle<int>(sql, new {donorId});
+                var result = connection.QuerySingleOrDefault<int?>(sql, new {donorId});
                 connection.Close();
                 return result > 0;
             }
