@@ -7,7 +7,7 @@ using CsvHelper.Configuration;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 {
-    internal interface IFrequencyCsvReader
+    public interface IFrequencyCsvReader
     {
         IEnumerable<HaplotypeFrequencyFileRecord> GetFrequencies(Stream stream);
     }
@@ -52,7 +52,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                         throw new MalformedHaplotypeFileException($"Haplotype loci cannot be null.");
                     }
 
-                    yield return new HaplotypeFrequencyFileRecord();
+                    yield return haplotypeFrequency;
                 }
             }
         }

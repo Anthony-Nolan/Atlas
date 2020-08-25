@@ -1,4 +1,5 @@
 ﻿using Atlas.MatchPrediction.ExternalInterface.Models;
+using Atlas.MatchPrediction.Models;
 using LochNessBuilder;
 
 namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.TestHelpers
@@ -8,8 +9,8 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Tes
     {
         private const string DefaultHla = "hla";
 
-        public static Builder<HaplotypeFrequencyMetadata> Default =>
-            Builder<HaplotypeFrequencyMetadata>.New
+        public static Builder<HaplotypeFrequencyFileRecord> Default =>
+            Builder<HaplotypeFrequencyFileRecord>.New
                 .With(x => x.A, DefaultHla)
                 .With(x => x.B, DefaultHla)
                 .With(x => x.C, DefaultHla)

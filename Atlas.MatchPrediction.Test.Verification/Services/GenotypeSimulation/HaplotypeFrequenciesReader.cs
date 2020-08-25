@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.ExternalInterface;
-using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
+using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
@@ -49,13 +49,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
             };
         }
 
-        private async Task<IReadOnlyCollection<HaplotypeFrequencyMetadata>> ReadHaplotypeFrequenciesFromFile(HaplotypeFrequencySet set)
+        private async Task<IReadOnlyCollection<HaplotypeFrequencyFileRecord>> ReadHaplotypeFrequenciesFromFile(HaplotypeFrequencySet set)
         {
             var fileStream = await setStreamer.GetFileContents(set.Name);
 
-            return csvReader
-                .ImportHaplotypeFrequencyRecord(fileStream)
-                .ToList();
+            return csvReader.GetFrequencies(fileStream).ToList();
         }
     }
 
@@ -63,6 +61,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
     {
         public int? HaplotypeFrequencySetId { get; set; }
         public string HlaNomenclatureVersion { get; set; }
-        public IReadOnlyCollection<HaplotypeFrequencyMetadata> HaplotypeFrequencies { get; set; }
+        public IReadOnlyCollection<HaplotypeFrequencyFileRecord> HaplotypeFrequencies { get; set; }
     }
 }

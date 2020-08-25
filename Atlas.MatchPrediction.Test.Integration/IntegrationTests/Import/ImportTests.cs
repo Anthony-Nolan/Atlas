@@ -8,7 +8,6 @@ using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
-using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencySetFile;
@@ -27,7 +26,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         private IHaplotypeFrequencyInspectionRepository inspectionRepository;
         private INotificationSender notificationSender;
 
-        private const string NomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
+        private const string NomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -87,7 +86,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         [TestCase("registry", "ethnicity")]
         public async Task Import_StoresFrequencies(string registryCode, string ethnicityCode)
         {
-            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode, 1, NomenclatureVersion, 10).Build();
+            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode, NomenclatureVersion, 1, 10).Build();
 
             await service.ImportFrequencySet(file);
 
@@ -290,20 +289,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         public async Task Import_FileWithoutContents_SendsAlert()
         {
             using var file = FrequencySetFileBuilder.FileWithoutContents().Build();
-
-            await service.ImportFrequencySet(file);
-
-            await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
-        }
-
-        [TestCase("")]
-        [TestCase("//ethnicity-only/file")]
-        [TestCase("/too/many/subfolders/file")]
-        public async Task Import_InvalidFilePath_SendsAlert(string invalidPath)
-        {
-            using var file = FrequencySetFileBuilder.New()
-                .With(x => x.FileName, invalidPath)
-                .Build();
 
             await service.ImportFrequencySet(file);
 

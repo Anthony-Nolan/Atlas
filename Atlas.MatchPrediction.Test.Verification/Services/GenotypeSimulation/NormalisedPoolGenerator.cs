@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
-using Atlas.MatchPrediction.ExternalInterface.Models;
+using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
@@ -76,7 +76,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
             return new NormalisedHaplotypePool(poolId, sourceData.HlaNomenclatureVersion, poolMembers);
         }
 
-        private static decimal LowestFrequency(IReadOnlyCollection<HaplotypeFrequencyMetadata> haplotypeFrequencies)
+        private static decimal LowestFrequency(IReadOnlyCollection<HaplotypeFrequencyFileRecord> haplotypeFrequencies)
         {
             return haplotypeFrequencies
                 .OrderBy(s => s.Frequency)
@@ -84,7 +84,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
                 .Frequency;
         }
 
-        private static int CalculateCopyNumber(HaplotypeFrequencyMetadata next, decimal lowestFrequency)
+        private static int CalculateCopyNumber(HaplotypeFrequencyFileRecord next, decimal lowestFrequency)
         {
             return (int)decimal.Round(next.Frequency / lowestFrequency);
         }
