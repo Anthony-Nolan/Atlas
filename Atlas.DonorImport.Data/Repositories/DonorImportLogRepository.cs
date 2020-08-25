@@ -15,6 +15,8 @@ namespace Atlas.DonorImport.Data.Repositories
         public Task<DateTime> GetLastUpdateForDonorWithId(string donorId);
         public Task SetLastUpdated(string donorId, DateTime lastUpdateTime);
         public Task SetLastUpdatedByBatch(IEnumerable<string> donorBatch, DateTime lastUpdateTime);
+        public Task<bool> CheckDonorExists(string donorId);
+        public Task DeleteDonorLog(string donorId);
     }
 
     public class DonorImportLogRepository : IDonorImportLogRepository
@@ -33,7 +35,7 @@ namespace Atlas.DonorImport.Data.Repositories
         {
             await using (var connection = new SqlConnection(ConnectionString))
             {
-                const string sql = "SELECT LastUpdateFileUploadTime FROM DonorLogs WHERE ExternalDonorCode = (@DonorId)";
+                var sql = $"SELECT {LastUpdatedColumnName} FROM {DonorLogTableName} WHERE {ExternalDonorCodeColumnName} = (@DonorId)";
                 return await connection.QuerySingleOrDefaultAsync<DateTime>(sql, new {DonorId = donorId});
             }
         }
@@ -42,11 +44,11 @@ namespace Atlas.DonorImport.Data.Repositories
         {
             using (var connection = new SqlConnection(ConnectionString))
             {
-                const string donorExistsSql = "SELECT COUNT(*) FROM DonorLogs WHERE ExternalDonorCode = (@DonorId)";
+                var donorExistsSql = $"SELECT COUNT(*) FROM {DonorLogTableName} WHERE {ExternalDonorCodeColumnName} = (@DonorId)";
                 var result = connection.QuerySingle<int>(donorExistsSql, new {DonorId = donorId});
                 var querySql = result == 0
-                    ? "INSERT INTO DonorLogs (ExternalDonorCode, LastUpdateFileUploadTime) VALUES ((@DonorId), (@LastUpdateTime))"
-                    : "UPDATE DonorLogs SET LastUpdateFileUploadTime = (@LastUpdateTime) WHERE ExternalDonorCode = (@DonorId)";
+                    ? $"INSERT INTO {DonorLogTableName} ({ExternalDonorCodeColumnName}, {LastUpdatedColumnName}) VALUES ((@DonorId), (@LastUpdateTime))"
+                    : $"UPDATE {DonorLogTableName} SET {LastUpdatedColumnName} = (@LastUpdateTime) WHERE {ExternalDonorCodeColumnName} = (@DonorId)";
 
                 await connection.ExecuteAsync(querySql, new {DonorId = donorId, LastUpdateTime = lastUpdateTime});
             }
@@ -62,6 +64,29 @@ namespace Atlas.DonorImport.Data.Repositories
                 var (donorsToUpdate, donorsToInsert) = donorIdBatch.ReifyAndSplit(d => result.Contains(d));
                 await InsertDonorBatch(connection, donorsToInsert, lastUpdateTime);
                 await UpdateDonorBatch(connection, donorsToUpdate, lastUpdateTime);
+                connection.Close();
+            }
+        }
+
+        public async Task<bool> CheckDonorExists(string donorId)
+        {
+            await using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+                var sql = $"SELECT COUNT(*) FROM {DonorLogTableName} WHERE {ExternalDonorCodeColumnName} = (@donorId)";
+                var result = connection.QuerySingle<int>(sql, new {donorId});
+                connection.Close();
+                return result > 0;
+            }
+        }
+
+        public async Task DeleteDonorLog(string donorId)
+        {
+            await using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+                var sql = $"DELETE FROM {DonorLogTableName} WHERE {ExternalDonorCodeColumnName} = (@donorId)";
+                await connection.ExecuteAsync(sql, new {donorId});
                 connection.Close();
             }
         }
