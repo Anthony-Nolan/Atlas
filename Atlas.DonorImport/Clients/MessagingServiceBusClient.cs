@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
 using Atlas.Common.ServiceBus;
+using Atlas.Common.Utils;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Microsoft.Azure.ServiceBus;
@@ -41,7 +42,7 @@ namespace Atlas.DonorImport.Clients
             var json = JsonConvert.SerializeObject(donorUpdate);
             var message = new Message(Encoding.UTF8.GetBytes(json));
 
-            using (new TransactionScope(TransactionScopeOption.Suppress))
+            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
             {
                 await donorUpdateTopicClient.SendAsync(message);
             }

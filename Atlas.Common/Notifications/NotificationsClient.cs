@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Transactions;
 using Atlas.Common.Notifications.MessageModels;
 using Atlas.Common.ServiceBus;
+using Atlas.Common.Utils;
 using Microsoft.Azure.ServiceBus;
 using Newtonsoft.Json;
 
@@ -28,7 +29,7 @@ namespace Atlas.Common.Notifications
         public async Task SendAlert(Alert alert)
         {
             var message = BuildMessage(alert);
-            using (new TransactionScope(TransactionScopeOption.Suppress))
+            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
             {
                 await alertTopicClient.SendAsync(message);
             }
@@ -37,7 +38,7 @@ namespace Atlas.Common.Notifications
         public async Task SendNotification(Notification notification)
         {
             var message = BuildMessage(notification);
-            using (new TransactionScope(TransactionScopeOption.Suppress))
+            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
             {
                 await notificationTopicClient.SendAsync(message);
             }

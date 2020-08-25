@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Transactions;
+using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Models;
 using Dapper;
@@ -56,7 +56,7 @@ namespace Atlas.DonorImport.Data.Repositories
                 WHERE {nameof(Donor.AtlasId)} = @{nameof(Donor.AtlasId)}
                 ";
 
-            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            using (var transaction = new AsyncTransactionScope())
             {
                 await using (var conn = NewConnection())
                 {
