@@ -36,6 +36,12 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             var notification = context.GetInput<MatchingResultsNotification>();
             var searchRequest = notification.SearchRequest;
 
+            if (!notification.WasSuccessful)
+            {
+                await SendFailureNotification(context, "Matching Algorithm");
+                return null;
+            }
+            
             var timedSearchResults = await DownloadMatchingAlgorithmResults(context, notification);
             var searchResults = timedSearchResults.ResultSet;
 
