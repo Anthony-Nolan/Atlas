@@ -20,6 +20,7 @@ locals {
     "AzureStorage:SearchResultsBlobContainer" = azurerm_storage_container.search_matching_results_blob_container.name
 
     "DataRefresh:ActiveDatabaseSize"                                                        = var.DATA_REFRESH_DB_SIZE_ACTIVE
+    "DataRefresh:CompletionTopic"                                                           = azurerm_servicebus_topic.completed-data-refresh-jobs.name
     "DataRefresh:CronTab"                                                                   = var.DATA_REFRESH_CRONTAB
     "DataRefresh:DatabaseAName"                                                             = azurerm_sql_database.atlas-matching-transient-a.name
     "DataRefresh:DatabaseBName"                                                             = azurerm_sql_database.atlas-matching-transient-b.name
