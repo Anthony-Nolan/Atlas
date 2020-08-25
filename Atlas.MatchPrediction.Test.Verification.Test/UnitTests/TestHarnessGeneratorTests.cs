@@ -1,4 +1,6 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Data.Models;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services;
@@ -6,10 +8,8 @@ using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
 using Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration;
 using NSubstitute;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
-namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.UnitTests
+namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
 {
     [TestFixture]
     public class TestHarnessGeneratorTests

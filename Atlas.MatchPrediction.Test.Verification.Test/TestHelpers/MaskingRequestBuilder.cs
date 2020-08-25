@@ -2,7 +2,7 @@
 using Atlas.MatchPrediction.Test.Verification.Models;
 using LochNessBuilder;
 
-namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.TestHelpers
+namespace Atlas.MatchPrediction.Test.Verification.Test.TestHelpers
 {
     [Builder]
     internal static class MaskingRequestBuilder

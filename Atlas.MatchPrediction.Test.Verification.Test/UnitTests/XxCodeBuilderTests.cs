@@ -1,30 +1,42 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers;
-using Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.TestHelpers;
+using Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.UnitTests
+namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
 {
     [TestFixture]
-    public class HlaDeleterTests
+    public class XxCodeBuilderTests
     {
-        private IHlaDeleter deleter;
+        private IXxCodeBuilder xxCodeBuilder;
 
         [SetUp]
         public void SetUp()
         {
-            deleter = new HlaDeleter();
+            xxCodeBuilder = new XxCodeBuilder();
         }
 
-        [Test]
-        public async Task DeleteRandomLocusHla_DeletesHla()
+        [TestCase(":01")]
+        [TestCase(":01:01")]
+        [TestCase(":01:01G")]
+        public async Task ConvertRandomLocusHlaToXxCodes_ConvertsHlaToXxCodes(string hlaSuffix)
         {
+            const string firstField = "01";
+            const string expectedXxCode = firstField + ":XX";
             const int simulantCount = 1;
-            
-            var typings = SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A).Build(simulantCount).ToList();
+
+            // have to use value that looks like a real allele/ G group to pass test
+            var hla = firstField + hlaSuffix;
+            var locusInfo = new LocusInfo<string>(hla);
+
+            var typings = SimulantLocusHlaBuilder.New
+                .With(x => x.HlaTyping, locusInfo)
+                .Build(simulantCount)
+                .ToList();
 
             var request = new TransformationRequest
             {
@@ -33,19 +45,22 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 Typings = typings
             };
 
-            var results = await deleter.DeleteRandomLocusHla(request);
+            var results = await xxCodeBuilder.ConvertRandomLocusHlaToXxCodes(request);
             var result = results.SelectedTypings.Single();
 
-            result.HlaTyping.Position1.Should().BeNull();
-            result.HlaTyping.Position2.Should().BeNull();
+            result.HlaTyping.Position1.Should().Be(expectedXxCode);
+            result.HlaTyping.Position2.Should().Be(expectedXxCode);
         }
 
         [Test]
-        public async Task DeleteRandomLocusHla_DeletesCorrectProportion([Values(0, 50, 100)] int proportion)
+        public async Task ConvertRandomLocusHlaToXxCodes_ConvertsCorrectProportion([Values(0,50,100)] int proportion)
         {
             const int simulantCount = 100;
 
-            var typings = SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A).Build(simulantCount).ToList();
+            var typings = SimulantLocusHlaBuilder.New
+                .With(x => x.HlaTyping, new LocusInfo<string>("01:01"))
+                .Build(simulantCount)
+                .ToList();
 
             var request = new TransformationRequest
             {
@@ -54,7 +69,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 Typings = typings
             };
 
-            var results = await deleter.DeleteRandomLocusHla(request);
+            var results = await xxCodeBuilder.ConvertRandomLocusHlaToXxCodes(request);
 
             // `proportion` value can be used directly as long as `simulantCount` is 100
             results.SelectedTypings.Count.Should().Be(proportion);
@@ -62,12 +77,12 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
         }
 
         [Test]
-        public async Task DeleteRandomLocusHla_NoOverlapBetweenSelectedAndRemainingTypings()
+        public async Task ConvertRandomLocusHlaToXxCodes_NoOverlapBetweenSelectedAndRemainingTypings()
         {
             const int simulantCount = 10;
 
             var typings = SimulantLocusHlaBuilder.New
-                .WithTypingFromLocusName(Locus.A)
+                .With(x => x.HlaTyping, new LocusInfo<string>("01:01"))
                 .WithIncrementingIds()
                 .Build(simulantCount)
                 .ToList();
@@ -79,7 +94,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 Typings = typings
             };
 
-            var results = await deleter.DeleteRandomLocusHla(request);
+            var results = await xxCodeBuilder.ConvertRandomLocusHlaToXxCodes(request);
             var selected = results.SelectedTypings.Select(x => x.GenotypeSimulantId);
             var remaining = results.RemainingTypings.Select(x => x.GenotypeSimulantId);
 
@@ -87,12 +102,16 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
         }
 
         [Test]
-        public async Task DeleteRandomLocusHla_DoesNotModifyMetadata()
+        public async Task ConvertRandomLocusHlaToXxCodes_DoesNotModifyMetadata()
         {
             const Locus locus = Locus.B;
             const int simulantCount = 1;
 
-            var typings = SimulantLocusHlaBuilder.New.WithTypingFromLocusName(locus).Build(simulantCount).ToList();
+            var typings = SimulantLocusHlaBuilder.New
+                .With(x => x.HlaTyping, new LocusInfo<string>("01:01"))
+                .With(x => x.Locus, locus)
+                .Build(simulantCount)
+                .ToList();
             var typing = typings.First();
 
             var request = new TransformationRequest
@@ -102,7 +121,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
                 Typings = typings
             };
 
-            var results = await deleter.DeleteRandomLocusHla(request);
+            var results = await xxCodeBuilder.ConvertRandomLocusHlaToXxCodes(request);
             var result = results.SelectedTypings.Single();
 
             result.Locus.Should().Be(locus);

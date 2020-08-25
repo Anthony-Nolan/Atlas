@@ -1,9 +1,9 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
+﻿using System.Linq;
+using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
 using FluentAssertions;
 using NUnit.Framework;
-using System.Linq;
 
-namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.UnitTests
+namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
 {
     [TestFixture]
     public class RandomNumberGeneratorTests

@@ -1,62 +1,33 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
+using Atlas.MatchPrediction.Test.Verification;
 using Atlas.MatchPrediction.Test.Verification.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
+
+[assembly: FunctionsStartup(typeof(Startup))]
 
 namespace Atlas.MatchPrediction.Test.Verification
 {
-    public class Startup
+    internal class Startup : FunctionsStartup
     {
-        public Startup(IConfiguration configuration)
+        public override void Configure(IFunctionsHostBuilder builder)
         {
-            Configuration = configuration;
-        }
+            // Stops the Visual Studio debug window from being flooded with not-very-helpful AI telemetry messages!
+            TelemetryDebugWriter.IsTracingDisabled = true;
 
-        public IConfiguration Configuration { get; }
+            RegisterSettings(builder.Services);
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddControllers()
-                // needed to allow enums backed props in http request body to be submitted as strings
-                .AddNewtonsoftJson();
-
-            RegisterSettings(services);
-
-            services.RegisterVerificationServices(
+            builder.Services.RegisterVerificationServices(
                 ConnectionStringReader("MatchPredictionVerification:Sql"),
                 ConnectionStringReader("MatchPrediction:Sql"),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MacDownloadSettings>());
-
-            services.ConfigureSwaggerService();
-
-            services.AddMvc(options => { options.EnableEndpointRouting = false; });
-        }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            // Stops the Visual Studio debug window from being flooded with not-very-helpful AI telemetry messages!
-            TelemetryDebugWriter.IsTracingDisabled = true;
-
-            app.ConfigureSwagger();
-
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            
-            app.UseMvc();
         }
 
         private static void RegisterSettings(IServiceCollection services)

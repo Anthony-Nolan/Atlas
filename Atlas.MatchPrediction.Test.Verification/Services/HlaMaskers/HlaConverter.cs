@@ -1,8 +1,8 @@
 ﻿using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
-using Castle.Core.Internal;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Utils.Extensions;
 using MoreLinq.Extensions;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers

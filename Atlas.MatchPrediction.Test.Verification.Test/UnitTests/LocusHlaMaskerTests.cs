@@ -1,18 +1,18 @@
-﻿using Atlas.Common.GeneticData;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers;
-using Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.TestHelpers;
+using Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
 using EnumStringValues;
 using FluentAssertions;
 using NSubstitute;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 
-namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.UnitTests
+namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
 {
     [TestFixture]
     public class LocusHlaMaskerTests
@@ -149,7 +149,7 @@ namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.Uni
         {
             var typings = new List<SimulantLocusHla> {SimulantLocusHlaBuilder.New.WithTypingFromLocusName(Locus.A)};
 
-            var categories = EnumExtensions.EnumerateValues<MaskingCategory>().ToList();
+            var categories = EnumStringValues.EnumExtensions.EnumerateValues<MaskingCategory>().ToList();
             var requests = new LocusMaskingRequests
             {
                 TotalSimulantCount = typings.Count,

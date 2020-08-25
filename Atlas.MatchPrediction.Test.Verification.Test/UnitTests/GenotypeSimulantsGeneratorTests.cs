@@ -1,18 +1,18 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Data.Models;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
+using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
 using Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration;
 using NSubstitute;
 using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Test.SharedTestHelpers.Builders;
 
-namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.UnitTests
+namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
 {
     [TestFixture]
     public class GenotypeSimulantsGeneratorTests

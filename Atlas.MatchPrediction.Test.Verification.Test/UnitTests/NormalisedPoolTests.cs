@@ -1,9 +1,9 @@
 ﻿using Atlas.MatchPrediction.Test.Verification.Models;
-using Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.TestHelpers;
+using Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Atlas.MatchPrediction.Test.Verification.VerificationFrameworkTests.UnitTests
+namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
 {
     [TestFixture]
     public class NormalisedPoolTests
