@@ -6,6 +6,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Repositories;
+using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Models.Mapping;
@@ -143,7 +144,7 @@ namespace Atlas.DonorImport.Services
         {
             if (!codesToIdsDictionary.TryGetValue(donorCode, out var atlasDonorId))
             {
-                throw new Exception($"Could not find expected donor in Atlas database: {donorCode}");
+                throw new DonorNotFoundException($"Could not find expected donor in Atlas database: {donorCode}");
             }
 
             return atlasDonorId;

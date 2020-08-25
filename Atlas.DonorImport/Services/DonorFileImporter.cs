@@ -71,7 +71,7 @@ namespace Atlas.DonorImport.Services
                         }
 
                         transactionScope.Complete();
-                        
+
                         importedDonorCount += reifiedDonorBatch.Count;
                     }
 
@@ -88,20 +88,23 @@ namespace Atlas.DonorImport.Services
             catch (EmptyDonorFileException e)
             {
                 const string summary = "Donor file was present but it was empty.";
-                await LogErrorAndSendAlert(file, summary, e.StackTrace);
+                await LogFileErrorAndSendAlert(file, summary, e.StackTrace);
             }
             catch (MalformedDonorFileException e)
             {
-                await LogErrorAndSendAlert(file, e.Message, e.StackTrace);
+                await LogFileErrorAndSendAlert(file, e.Message, e.StackTrace);
             }
             catch (DonorFormatException e)
             {
-                await LogErrorAndSendAlert(file, e.Message, e.InnerException?.Message);
+                await LogFileErrorAndSendAlert(file, e.Message, e.InnerException?.Message);
             }
             catch (DuplicateDonorImportException e)
             {
-                logger.SendTrace(e.Message, LogLevel.Warn);
-                await notificationSender.SendAlert(e.Message, e.InnerException?.Message, Priority.Medium, nameof(ImportDonorFile));
+                await LogGenericErrorAndSendAlert(e);
+            }
+            catch (DonorNotFoundException e)
+            {
+                await LogGenericErrorAndSendAlert(e);
             }
             catch (Exception e)
             {
@@ -117,8 +120,14 @@ Manual investigation is recommended; see Application Insights for more informati
                 throw;
             }
         }
+        
+        private async Task LogGenericErrorAndSendAlert(Exception e)
+        {
+            logger.SendTrace(e.Message, LogLevel.Warn);
+            await notificationSender.SendAlert(e.Message, e.InnerException?.Message, Priority.Medium, nameof(ImportDonorFile));
+        }
 
-        private async Task LogErrorAndSendAlert(DonorImportFile file, string message, string description)
+        private async Task LogFileErrorAndSendAlert(DonorImportFile file, string message, string description)
         {
             await donorImportFileHistoryService.RegisterFailedDonorImportWithPermanentError(file);
             logger.SendTrace(message, LogLevel.Warn);
