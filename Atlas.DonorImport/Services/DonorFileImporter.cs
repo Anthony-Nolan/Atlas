@@ -29,6 +29,7 @@ namespace Atlas.DonorImport.Services
         private readonly INotificationSender notificationSender;
         private readonly IDonorImportLogService donorLogService;
         private readonly ILogger logger;
+        private readonly SearchableDonorValidator searchableDonorValidator;
 
         public DonorFileImporter(
             IDonorImportFileParser fileParser,
@@ -44,6 +45,7 @@ namespace Atlas.DonorImport.Services
             this.notificationSender = notificationSender;
             this.donorLogService = donorLogService;
             this.logger = logger;
+            searchableDonorValidator = new SearchableDonorValidator();
         }
 
         public async Task ImportDonorFile(DonorImportFile file)
@@ -65,10 +67,7 @@ namespace Atlas.DonorImport.Services
                     using (var transactionScope = new AsyncTransactionScope())
                     {
                         await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file);
-                        foreach (var donorUpdate in reifiedDonorBatch)
-                        {
-                            await donorLogService.SetLastUpdated(donorUpdate, file.UploadTime);
-                        }
+                        await donorLogService.SetLastUpdated(file.UploadTime, reifiedDonorBatch);
 
                         transactionScope.Complete();
 
@@ -135,7 +134,7 @@ Manual investigation is recommended; see Application Insights for more informati
 
         private bool ValidateDonorIsSearchable(DonorUpdate donorUpdate)
         {
-            var validationResult = new SearchableDonorValidator().Validate(donorUpdate);
+            var validationResult = searchableDonorValidator.Validate(donorUpdate);
             if (!validationResult.IsValid)
             {
                 var message = $"Insufficiently typed donor was not imported - ${donorUpdate.RecordId}";

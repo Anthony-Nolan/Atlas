@@ -120,11 +120,6 @@ namespace Atlas.DonorImport.Services
             if (editedDonors.Count > 0)
             {
                 await donorImportRepository.UpdateDonorBatch(editedDonors, file.UploadTime);
-                foreach (var donorEdit in editedDonors)
-                {
-                    await donorImportLogRepository.SetLastUpdated(donorEdit.ExternalDonorCode, file.UploadTime);
-                }
-                
                 var donorEditMessages = editedDonors.Select(MapToMatchingUpdateMessage).ToList();
                 await messagingServiceBusClient.PublishDonorUpdateMessages(donorEditMessages);
             }
