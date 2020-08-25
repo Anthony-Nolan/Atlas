@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Transactions;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
+using Atlas.Common.ServiceBus;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Context;
 using Atlas.DonorImport.Data.Repositories;
@@ -12,6 +13,7 @@ using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
+using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
@@ -25,6 +27,13 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
 
         public static IServiceProvider CreateProvider()
         {
+            var services = BuildServiceCollection();
+            return services.BuildServiceProvider();
+        }
+
+        // Expose service collection to allow individual test suites to mock classes if needed
+        public static ServiceCollection BuildServiceCollection()
+        {
             var services = new ServiceCollection();
 
             SetUpConfiguration(services);
@@ -36,7 +45,8 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
             );
             RegisterIntegrationTestServices(services);
             SetUpMockServices(services);
-            return services.BuildServiceProvider();
+            
+            return services;
         }
 
         private static void RegisterIntegrationTestServices(IServiceCollection services)
@@ -63,29 +73,16 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
         {
             // Service bus client package will throw if it detects an ongoing transaction, as it doesn't support distributed transactions.
             // We emulate that on all service bus clients here to enable testing for such cases.
-
-            var mockSearchServiceBusClient = Substitute.For<IMessagingServiceBusClient>();
-            mockSearchServiceBusClient
-                .PublishDonorUpdateMessage(Arg.Any<SearchableDonorUpdate>())
-                .Returns(Task.CompletedTask)
-                .AndDoes(_ => ThrowIfInTransaction());
-
-            mockSearchServiceBusClient
-                .WhenForAnyArgs(x => x.PublishDonorUpdateMessage(null))
+            var mockTopicClient = Substitute.For<ITopicClient>();
+            mockTopicClient
+                .WhenForAnyArgs(x => x.SendAsync((Message) default))
                 .Do(_ => ThrowIfInTransaction());
 
-            var mockNotificationsClient = Substitute.For<INotificationsClient>();
-
-            mockNotificationsClient
-                .WhenForAnyArgs(x => x.SendAlert(null))
-                .Do(_ => ThrowIfInTransaction());
-            mockNotificationsClient
-                .WhenForAnyArgs(x => x.SendNotification(null))
-                .Do(_ => ThrowIfInTransaction());
-
+            var mockTopicClientFactory = Substitute.For<ITopicClientFactory>();
+            mockTopicClientFactory.BuildTopicClient(default, default).ReturnsForAnyArgs(mockTopicClient);
+            
             services.AddScoped(sp => Substitute.For<ILogger>());
-            services.AddScoped(sp => mockSearchServiceBusClient);
-            services.AddScoped(sp => mockNotificationsClient);
+            services.AddScoped(sp => mockTopicClientFactory);
         }
 
         private static void ThrowIfInTransaction()

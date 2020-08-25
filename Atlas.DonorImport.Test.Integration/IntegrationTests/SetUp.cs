@@ -13,7 +13,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                DependencyInjection.DependencyInjection.Provider = ServiceConfiguration.CreateProvider();
+                DependencyInjection.DependencyInjection.BackingProvider = ServiceConfiguration.CreateProvider();
                 ResetDatabase();
             });
         }

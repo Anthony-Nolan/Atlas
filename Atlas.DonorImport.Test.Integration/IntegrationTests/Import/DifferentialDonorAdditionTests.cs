@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Notifications;
 using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.Common.Test.Validation;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models.FileSchema;
@@ -21,11 +23,14 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
     [TestFixture]
     public class DifferentialDonorAdditionTests
     {
+        private IMessagingServiceBusClient mockServiceBusClient;
+        private INotificationSender mockNotificationsSender;
+        
         private IDonorInspectionRepository donorRepository;
-        private IMessagingServiceBusClient serviceBusClient;
         private IDonorFileImporter donorFileImporter;
         private readonly Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
-        private  Builder<DonorUpdate> DonorCreationBuilder =>
+
+        private Builder<DonorUpdate> DonorCreationBuilder =>
             DonorUpdateBuilder.New
                 .WithRecordIdPrefix("external-donor-code-")
                 .With(upd => upd.ChangeType, ImportDonorChangeType.Create);
@@ -35,8 +40,15 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
+                mockServiceBusClient = Substitute.For<IMessagingServiceBusClient>();
+                mockNotificationsSender = Substitute.For<INotificationSender>();
+                var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
+                services.AddScoped(sp => mockServiceBusClient);
+                services.AddScoped(sp => mockNotificationsSender);
+                DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
+
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
-                serviceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<IMessagingServiceBusClient>();
+                mockServiceBusClient = DependencyInjection.DependencyInjection.Provider.GetService<IMessagingServiceBusClient>();
                 donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
             });
         }
@@ -44,7 +56,19 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(DatabaseManager.ClearDatabases);
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                // Ensure any mocks set up for this test do not stick around.
+                DependencyInjection.DependencyInjection.BackingProvider = DependencyInjection.ServiceConfiguration.CreateProvider();
+                DatabaseManager.ClearDatabases();
+            });
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            mockNotificationsSender.ClearReceivedCalls();
+            mockServiceBusClient.ClearReceivedCalls();
         }
 
         [Test]
@@ -73,7 +97,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var donorUpdates =
                 DonorCreationBuilder
                     .WithRecordIdPrefix(donorCodePrefix)
-                    .With(donor => donor.Hla, new []{ hlaObject1, hlaObject2})
+                    .With(donor => donor.Hla, new[] {hlaObject1, hlaObject2})
                     .Build(2).ToArray();
             var donorUpdateFile = fileBuilder.WithDonors(donorUpdates).Build();
 
@@ -95,13 +119,13 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var donorUpdates = DonorCreationBuilder.Build(creationCount).ToArray();
             var donorUpdateFile = fileBuilder.WithDonors(donorUpdates).Build();
 
-            serviceBusClient.ClearReceivedCalls();
+            mockServiceBusClient.ClearReceivedCalls();
 
             //ACT
             await donorFileImporter.ImportDonorFile(donorUpdateFile);
 
-            await serviceBusClient.Received(creationCount).PublishDonorUpdateMessage(Arg.Any<SearchableDonorUpdate>());
-            await serviceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
+            await mockServiceBusClient.Received(creationCount).PublishDonorUpdateMessage(Arg.Any<SearchableDonorUpdate>());
+            await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
         }
 
         [Test]
@@ -110,19 +134,19 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var donorUpdates = DonorCreationBuilder.Build(2).ToArray();
             var donorUpdateFile = fileBuilder.WithDonors(donorUpdates).Build();
 
-            serviceBusClient.ClearReceivedCalls();
+            mockServiceBusClient.ClearReceivedCalls();
 
             //ACT
             await donorFileImporter.ImportDonorFile(donorUpdateFile);
-            
+
             var donor1 = await donorRepository.GetDonor(donorUpdates[0].RecordId);
             var donor2 = await donorRepository.GetDonor(donorUpdates[1].RecordId);
-            
+
             donor1.AtlasId.Should().NotBe(donor2.AtlasId);
-            await serviceBusClient.Received().PublishDonorUpdateMessage(Arg.Is<SearchableDonorUpdate>(u =>
+            await mockServiceBusClient.Received().PublishDonorUpdateMessage(Arg.Is<SearchableDonorUpdate>(u =>
                 u.DonorId == donor1.AtlasId && u.SearchableDonorInformation.DonorId == donor1.AtlasId)
             );
-            await serviceBusClient.Received().PublishDonorUpdateMessage(Arg.Is<SearchableDonorUpdate>(u =>
+            await mockServiceBusClient.Received().PublishDonorUpdateMessage(Arg.Is<SearchableDonorUpdate>(u =>
                 u.DonorId == donor2.AtlasId && u.SearchableDonorInformation.DonorId == donor2.AtlasId)
             );
         }
@@ -135,14 +159,14 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var donorUpdateFiles = fileBuilder.WithDonors(donorUpdates).Build(2).ToList();
 
             await donorFileImporter.ImportDonorFile(donorUpdateFiles.First());
-            serviceBusClient.ClearReceivedCalls();
+            mockServiceBusClient.ClearReceivedCalls();
 
             //ACT
             await donorFileImporter.Invoking(importer => importer.ImportDonorFile(donorUpdateFiles.Last())).Should().ThrowAsync<Exception>();
 
             donorRepository.StreamAllDonors().Where(donor => donor.ExternalDonorCode.StartsWith(donorCodePrefix)).Should().HaveCount(4);
-            await serviceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
-            await serviceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessage(default);
+            await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
+            await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessage(default);
         }
 
         [Test]
@@ -159,21 +183,23 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var donorUpdateFile_DonorSets1And2 = fileBuilder.WithDonors(donorUpdates_Sets1And2).With(d => d.UploadTime, DateTime.UtcNow).Build();
 
             await donorFileImporter.ImportDonorFile(donorUpdateFile_DonorSet1);
-            serviceBusClient.ClearReceivedCalls();
+            mockServiceBusClient.ClearReceivedCalls();
 
             //ACT
-            await donorFileImporter.Invoking(importer => importer.ImportDonorFile(donorUpdateFile_DonorSets1And2)).Should().ThrowAsync<Exception>();
+            await donorFileImporter.ImportDonorFile(donorUpdateFile_DonorSets1And2);
+
+            await mockNotificationsSender.ReceivedWithAnyArgs(1).SendAlert(default, default, default, default);
             
             donorRepository.StreamAllDonors().Where(donor => donor.ExternalDonorCode.StartsWith(donorCodePrefix)).Should().HaveCount(4);
-            await serviceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
-            await serviceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessage(default);
+            await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
+            await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessage(default);
         }
 
         [Test]
         public async Task ImportDonors_IfMissingMandatoryHlaTypings_DoesNotAddToDatabase()
         {
             var donorUpdate = DonorCreationBuilder.Build();
-            
+
             donorUpdate.Hla.A = null;
             var file = fileBuilder.WithDonors(donorUpdate).Build();
 
@@ -182,12 +208,12 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var result = await donorRepository.GetDonor(donorUpdate.RecordId);
             result.Should().BeNull();
         }
-        
+
         [Test]
         public async Task ImportDonors_IfRequiredLocusHasNullHlaValues_DoesNotAddToDatabase()
         {
             var donorUpdate = DonorCreationBuilder.Build();
-            
+
             donorUpdate.Hla.A = new ImportedLocus
             {
                 Dna = new TwoFieldStringData
@@ -208,7 +234,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         public async Task ImportDonors_IfMissingHlaHasEmptyValues_DoesNotAddToDatabase()
         {
             var donorUpdate = DonorCreationBuilder.Build();
-            
+
             donorUpdate.Hla.A = new ImportedLocus
             {
                 Dna = new TwoFieldStringData
@@ -224,7 +250,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var result = await donorRepository.GetDonor(donorUpdate.RecordId);
             result.Should().BeNull();
         }
-        
+
         [Test]
         public async Task ImportDonors_ForDonorDeletion_WithInvalidHla_DonorIsStillDeleted()
         {
@@ -233,7 +259,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             await donorFileImporter.ImportDonorFile(validFile);
             var importedDonor = await donorRepository.GetDonor(donorUpdate.RecordId);
             importedDonor.ExternalDonorCode.Should().Be(donorUpdate.RecordId);
-            
+
             var donorDeletion = DonorUpdateBuilder
                 .New
                 .With(upd => upd.ChangeType, ImportDonorChangeType.Delete)
@@ -241,7 +267,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
                 .Build();
             donorDeletion.Hla.A = null;
             var invalidFile = fileBuilder.WithDonors(donorDeletion).Build();
-            
+
             await donorFileImporter.ImportDonorFile(invalidFile);
 
             var result = await donorRepository.GetDonor(donorUpdate.RecordId);

@@ -20,15 +20,15 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
     [TestFixture]
     public class UploadOrderTests
     {
+        private INotificationSender mockNotificationSender;
+        
         private Builder<DonorUpdate> createUpdateBuilder;
         private Builder<DonorUpdate> editUpdateBuilder;
         private Builder<DonorUpdate> deleteUpdateBuilder;
         private Builder<DonorImportFile> fileBuilder;
         private IDonorFileImporter donorFileImporter;
         private IDonorInspectionRepository donorRepository;
-        private INotificationSender mockNotificationSender;
 
-        
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
@@ -39,16 +39,32 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
+                mockNotificationSender = Substitute.For<INotificationSender>();
+                var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
+                services.AddScoped(sp => mockNotificationSender);
+                DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
+                
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
                 donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
                 mockNotificationSender = DependencyInjection.DependencyInjection.Provider.GetService<INotificationSender>();
             });
         }
-        
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            // Ensure any mocks set up for this test do not stick around.
+            DependencyInjection.DependencyInjection.BackingProvider = DependencyInjection.ServiceConfiguration.CreateProvider();
+        }
+
         [TearDown]
         public void TearDown()
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(DatabaseManager.ClearDatabases);
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                mockNotificationSender.ClearReceivedCalls();
+                DatabaseManager.ClearDatabases();
+            });
         }
 
         [Test]

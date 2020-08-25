@@ -1,6 +1,8 @@
 ﻿using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 using Atlas.Common.Notifications.MessageModels;
+using Atlas.Common.ServiceBus;
 using Microsoft.Azure.ServiceBus;
 using Newtonsoft.Json;
 
@@ -14,25 +16,31 @@ namespace Atlas.Common.Notifications
 
     internal class NotificationsClient : INotificationsClient
     {
-        private readonly TopicClient notificationTopicClient;
-        private readonly TopicClient alertTopicClient;
+        private readonly ITopicClient notificationTopicClient;
+        private readonly ITopicClient alertTopicClient;
 
-        public NotificationsClient(NotificationsServiceBusSettings settings)
+        public NotificationsClient(NotificationsServiceBusSettings settings, ITopicClientFactory topicClientFactory)
         {
-            notificationTopicClient = new TopicClient(settings.ConnectionString, settings.NotificationsTopic);
-            alertTopicClient = new TopicClient(settings.ConnectionString, settings.AlertsTopic);
+            notificationTopicClient = topicClientFactory.BuildTopicClient(settings.ConnectionString, settings.NotificationsTopic);
+            alertTopicClient = topicClientFactory.BuildTopicClient(settings.ConnectionString, settings.AlertsTopic);
         }
 
         public async Task SendAlert(Alert alert)
         {
             var message = BuildMessage(alert);
-            await alertTopicClient.SendAsync(message);
+            using (new TransactionScope(TransactionScopeOption.Suppress))
+            {
+                await alertTopicClient.SendAsync(message);
+            }
         }
 
         public async Task SendNotification(Notification notification)
         {
             var message = BuildMessage(notification);
-            await notificationTopicClient.SendAsync(message);
+            using (new TransactionScope(TransactionScopeOption.Suppress))
+            {
+                await notificationTopicClient.SendAsync(message);
+            }
         }
 
         private static Message BuildMessage(BaseNotificationsMessage message)
