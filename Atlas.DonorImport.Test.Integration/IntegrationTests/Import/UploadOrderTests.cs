@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Notifications;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models.FileSchema;
@@ -11,6 +12,7 @@ using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using FluentAssertions;
 using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
@@ -24,6 +26,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         private Builder<DonorImportFile> fileBuilder;
         private IDonorFileImporter donorFileImporter;
         private IDonorInspectionRepository donorRepository;
+        private INotificationSender mockNotificationSender;
 
         
         [OneTimeSetUp]
@@ -38,6 +41,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             {
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
                 donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
+                mockNotificationSender = DependencyInjection.DependencyInjection.Provider.GetService<INotificationSender>();
             });
         }
         
@@ -88,7 +92,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             result1.UpdateFile.Should().Be(file2Name);
             
             // import File 2, it should throw exception and donor remain unchanged.
-            Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(createFile1));
+            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            //Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(createFile1));
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.UpdateFile.Should().Be(file2Name);
         }
@@ -199,7 +204,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             
             // import File 1, expect exception and no donor.
-            Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(editFile));
+            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            // Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(editFile));
             var result1 = await donorRepository.GetDonor(donorExternalCode);
             result1.Should().BeNull();
             
@@ -259,7 +265,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             
 
             // import File 2, Exception and unchanged donor
-            Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(createFile));
+            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            //Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(createFile));
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.UpdateFile.Should().Be(file1Name);
         }
@@ -282,7 +289,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var createFile = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, file2Name, 2);
 
             // import File 2, Throws Error, donor is unchanged.
-            Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(createFile));
+            //Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(createFile));
+            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.UpdateFile.Should().Be(initialFileName);
             
@@ -399,7 +407,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             result1.Should().BeNull();
             
             // import File 1, Exception with no donor
-            Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(editFile));
+            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
+            //Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(editFile));
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.Should().BeNull();
         }
@@ -451,7 +460,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var createFile = CreateDonorImportFile(createUpdateBuilder, donorExternalCode, file2Name, 2);
 
             // import File 2, Error
-            Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(createFile));
+            //Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(createFile));
+            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             var result1 = await donorRepository.GetDonor(donorExternalCode);
             result1.UpdateFile.Should().Be(preExitingFileName);
             
@@ -484,7 +494,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             result1.Should().BeNull();
             
             // import File 2, Error, no Donor
-            Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(editFile));
+            //Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(editFile));
+            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.Should().BeNull();
         }
@@ -538,7 +549,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             result1.Should().BeNull();
             
             // import File 2, Error, still no Donor
-            Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(deleteFile2));
+            //Assert.ThrowsAsync(Is.InstanceOf<Exception>(), async () => await donorFileImporter.ImportDonorFile(deleteFile2));
+            await mockNotificationSender.ReceivedWithAnyArgs().SendAlert(default, default, default, default);
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.Should().BeNull();
         }
