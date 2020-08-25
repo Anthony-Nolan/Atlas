@@ -12,9 +12,9 @@ namespace Atlas.DonorImport.Services
     internal interface IDonorImportLogService
     {
         public Task<IEnumerable<DonorUpdate>> FilterDonorUpdatesBasedOnUpdateTime(IEnumerable<DonorUpdate> donorUpdates, DateTime uploadTime);
-        public Task SetLastUpdated(DonorUpdate donorUpdate, DateTime lastUpdated);
+        public Task SetLastUpdated(DateTime lastUpdated, IReadOnlyCollection<DonorUpdate> updates);
     }
-    
+
     internal class DonorImportLogService : IDonorImportLogService
     {
         private readonly IDonorImportLogRepository repository;
@@ -23,22 +23,18 @@ namespace Atlas.DonorImport.Services
         {
             this.repository = repository;
         }
-        
+
         public async Task<IEnumerable<DonorUpdate>> FilterDonorUpdatesBasedOnUpdateTime(IEnumerable<DonorUpdate> donorUpdates, DateTime uploadTime)
         {
             return await donorUpdates.WhereAsync(async du => await ShouldUpdateDonor(du, uploadTime));
         }
 
-        public async Task SetLastUpdated(DonorUpdate donorUpdate, DateTime lastUpdated)
+        public async Task SetLastUpdated(DateTime lastUpdated, IReadOnlyCollection<DonorUpdate> updates)
         {
-            if (donorUpdate.ChangeType == ImportDonorChangeType.Delete)
-            {
-                await repository.DeleteDonorLog(donorUpdate.RecordId);
-            }
-            else
-            {
-                await repository.SetLastUpdated(donorUpdate.RecordId, lastUpdated);
-            }
+            var (deletions, upserts) = updates.ReifyAndSplit(u => u.ChangeType == ImportDonorChangeType.Delete);
+
+            await repository.DeleteDonorLogBatch(deletions.Select(u => u.RecordId).ToList());
+            await repository.SetLastUpdatedBatch(upserts.Select(u => u.RecordId), lastUpdated);
         }
 
         private async Task<bool> ShouldUpdateDonor(DonorUpdate donorUpdate, DateTime uploadTime)
@@ -46,7 +42,8 @@ namespace Atlas.DonorImport.Services
             var donorExists = await repository.CheckDonorExists(donorUpdate.RecordId);
             if (donorExists && donorUpdate.ChangeType == ImportDonorChangeType.Create)
             {
-                throw new DuplicateDonorImportException($"Attempted to create a donor that already existed. External Donor Code: {donorUpdate.RecordId}");
+                throw new DuplicateDonorImportException(
+                    $"Attempted to create a donor that already existed. External Donor Code: {donorUpdate.RecordId}");
             }
 
             var date = await repository.GetLastUpdateForDonorWithId(donorUpdate.RecordId);
