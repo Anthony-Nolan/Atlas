@@ -62,10 +62,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             IDurableOrchestrationContext context,
             MatchingResultsNotification notification)
         {
-            var matchingResults = await context.CallActivityWithRetryAsync<TimedResultSet<MatchingAlgorithmResultSet>>(
-                nameof(SearchActivityFunctions.DownloadMatchingAlgorithmResults),
-                RetryOptions,
-                notification
+            var matchingResults = await RunStageAndHandleFailures(async () =>
+                    await context.CallActivityWithRetryAsync<TimedResultSet<MatchingAlgorithmResultSet>>(
+                        nameof(SearchActivityFunctions.DownloadMatchingAlgorithmResults),
+                        RetryOptions,
+                        notification
+                    ),
+                context,
+                nameof(DownloadMatchingAlgorithmResults)
             );
 
             context.SetCustomStatus(new OrchestrationStatus
@@ -117,15 +121,19 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             MatchingAlgorithmResultSet searchResults,
             Dictionary<int, Donor> donorInformation)
         {
-            return await context.CallActivityWithRetryAsync<IEnumerable<MultipleDonorMatchProbabilityInput>>(
-                nameof(SearchActivityFunctions.BuildMatchPredictionInputs),
-                RetryOptions,
-                new MatchPredictionInputParameters
-                {
-                    SearchRequest = searchRequest,
-                    MatchingAlgorithmResults = searchResults,
-                    DonorDictionary = donorInformation
-                });
+            return await RunStageAndHandleFailures(async () =>
+                    await context.CallActivityWithRetryAsync<IEnumerable<MultipleDonorMatchProbabilityInput>>(
+                        nameof(SearchActivityFunctions.BuildMatchPredictionInputs),
+                        RetryOptions,
+                        new MatchPredictionInputParameters
+                        {
+                            SearchRequest = searchRequest,
+                            MatchingAlgorithmResults = searchResults,
+                            DonorDictionary = donorInformation
+                        }),
+                context,
+                nameof(BuildMatchPredictionInputs)
+            );
         }
 
         private static async Task<TimedResultSet<Dictionary<int, Donor>>> FetchDonorInformation(
@@ -137,10 +145,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 matchingAlgorithmResults.MatchingAlgorithmResults.Select(r => r.AtlasDonorId)
             );
 
-            var donorInfo = await context.CallActivityWithRetryAsync<TimedResultSet<Dictionary<int, Donor>>>(
-                nameof(SearchActivityFunctions.FetchDonorInformation),
-                RetryOptions,
-                activityInput
+            var donorInfo = await RunStageAndHandleFailures(async () =>
+                    await context.CallActivityWithRetryAsync<TimedResultSet<Dictionary<int, Donor>>>(
+                        nameof(SearchActivityFunctions.FetchDonorInformation),
+                        RetryOptions,
+                        activityInput
+                    ),
+                context,
+                nameof(FetchDonorInformation)
             );
 
             context.SetCustomStatus(new OrchestrationStatus
@@ -158,11 +170,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             MultipleDonorMatchProbabilityInput matchProbabilityInput
         )
         {
-            return await context.CallActivityWithRetryAsync<IReadOnlyDictionary<int, MatchProbabilityResponse>>(
-                nameof(SearchActivityFunctions.RunMatchPrediction),
-                RetryOptions,
-                matchProbabilityInput
-            );
+            return await RunStageAndHandleFailures(async () =>
+                    await context.CallActivityWithRetryAsync<IReadOnlyDictionary<int, MatchProbabilityResponse>>(
+                        nameof(SearchActivityFunctions.RunMatchPrediction),
+                        RetryOptions,
+                        matchProbabilityInput
+                    ),
+                context,
+                nameof(RunMatchPredictionForDonorBatch));
         }
 
         private static async Task PersistSearchResults(
@@ -173,23 +188,56 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             DateTime searchInitiated)
         {
             // Note that this serializes the match prediction results, using default settings - which rounds any decimals to 15dp.
-            await context.CallActivityWithRetryAsync(
-                nameof(SearchActivityFunctions.PersistSearchResults),
-                RetryOptions,
-                new SearchActivityFunctions.PersistSearchResultsParameters
-                {
-                    DonorInformation = donorInformation,
-                    MatchPredictionResults = matchPredictionResults,
-                    MatchingAlgorithmResultSet = searchResults,
-                    SearchInitiated = searchInitiated
-                }
-            );
+            await RunStageAndHandleFailures(async () => await context.CallActivityWithRetryAsync(
+                    nameof(SearchActivityFunctions.PersistSearchResults),
+                    RetryOptions,
+                    new SearchActivityFunctions.PersistSearchResultsParameters
+                    {
+                        DonorInformation = donorInformation,
+                        MatchPredictionResults = matchPredictionResults,
+                        MatchingAlgorithmResultSet = searchResults,
+                        SearchInitiated = searchInitiated
+                    }
+                ),
+                context,
+                nameof(PersistSearchResults));
 
             context.SetCustomStatus(new OrchestrationStatus
             {
                 LastCompletedStage = nameof(PersistSearchResults),
                 ElapsedTimeOfStage = null,
             });
+        }
+
+        private static async Task RunStageAndHandleFailures(Func<Task> runStage, IDurableOrchestrationContext context, string stageName) =>
+            await RunStageAndHandleFailures(async () =>
+            {
+                await runStage();
+                return true;
+            }, context, stageName);
+
+        private static async Task<T> RunStageAndHandleFailures<T>(Func<Task<T>> runStage, IDurableOrchestrationContext context, string stageName)
+        {
+            try
+            {
+                return await runStage();
+            }
+            catch
+            {
+                await SendFailureNotification(context, stageName);
+                throw;
+            }
+        }
+
+        private static async Task SendFailureNotification(IDurableOrchestrationContext context, string failedStage)
+        {
+            await context.CallActivityWithRetryAsync(
+                nameof(SearchActivityFunctions.SendFailureNotification),
+                RetryOptions,
+                (context.InstanceId, failedStage)
+            );
+
+            context.SetCustomStatus($"Search failed, during stage: {failedStage}");
         }
     }
 }

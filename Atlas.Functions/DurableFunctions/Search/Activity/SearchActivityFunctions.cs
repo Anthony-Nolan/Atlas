@@ -63,50 +63,27 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         public async Task<TimedResultSet<MatchingAlgorithmResultSet>> DownloadMatchingAlgorithmResults(
             [ActivityTrigger] MatchingResultsNotification matchingResultsNotification)
         {
-            try
+            var results = await matchingResultsDownloader.Download(matchingResultsNotification.BlobStorageResultsFileName);
+            return new TimedResultSet<MatchingAlgorithmResultSet>
             {
-                var results = await matchingResultsDownloader.Download(matchingResultsNotification.BlobStorageResultsFileName);
-
-                return new TimedResultSet<MatchingAlgorithmResultSet>
-                {
-                    ElapsedTime = matchingResultsNotification.ElapsedTime,
-                    ResultSet = results
-                };
-            }
-            catch (Exception e)
-            {
-                await searchCompletionMessageSender.PublishFailureMessage(
-                    matchingResultsNotification.SearchRequestId,
-                    $"Failed to download results of matching algorithm.\n Exception: {e.Message}"
-                );
-                throw;
-            }
+                ElapsedTime = matchingResultsNotification.ElapsedTime,
+                ResultSet = results
+            };
         }
 
         [FunctionName(nameof(RunMatchingAlgorithm))]
         public async Task<TimedResultSet<MatchingAlgorithmResultSet>> RunMatchingAlgorithm([ActivityTrigger] IdentifiedSearchRequest searchRequest)
         {
-            try
-            {
-                var stopwatch = new Stopwatch();
-                stopwatch.Start();
-                var results = await searchRunner.RunSearch(searchRequest);
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            var results = await searchRunner.RunSearch(searchRequest);
 
-                return new TimedResultSet<MatchingAlgorithmResultSet>
-                {
-                    ElapsedTime = stopwatch.Elapsed,
-                    FinishedTimeUtc = DateTime.UtcNow,
-                    ResultSet = results
-                };
-            }
-            catch (Exception e)
+            return new TimedResultSet<MatchingAlgorithmResultSet>
             {
-                await searchCompletionMessageSender.PublishFailureMessage(
-                    searchRequest.Id,
-                    $"Failed to run matching algorithm.\n Exception: {e.Message}"
-                );
-                throw;
-            }
+                ElapsedTime = stopwatch.Elapsed,
+                FinishedTimeUtc = DateTime.UtcNow,
+                ResultSet = results
+            };
         }
 
         [FunctionName(nameof(FetchDonorInformation))]
@@ -114,28 +91,17 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             [ActivityTrigger] Tuple<string, IEnumerable<int>> searchAndDonorIds)
         {
             var (searchId, donorIds) = searchAndDonorIds;
-            try
-            {
-                var stopwatch = new Stopwatch();
-                stopwatch.Start();
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
 
-                var donorInfo = await donorReader.GetDonors(donorIds);
+            var donorInfo = await donorReader.GetDonors(donorIds);
 
-                return new TimedResultSet<IDictionary<int, Donor>>
-                {
-                    ElapsedTime = stopwatch.Elapsed,
-                    FinishedTimeUtc = DateTime.UtcNow,
-                    ResultSet = donorInfo,
-                };
-            }
-            catch (Exception e)
+            return new TimedResultSet<IDictionary<int, Donor>>
             {
-                await searchCompletionMessageSender.PublishFailureMessage(
-                    searchId,
-                    $"Failed to fetch donor data for use in match prediction.\n Exception: {e.Message}"
-                );
-                throw;
-            }
+                ElapsedTime = stopwatch.Elapsed,
+                FinishedTimeUtc = DateTime.UtcNow,
+                ResultSet = donorInfo,
+            };
         }
 
         [FunctionName(nameof(BuildMatchPredictionInputs))]
@@ -143,55 +109,33 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             [ActivityTrigger] MatchPredictionInputParameters matchPredictionInputParameters
         )
         {
-            try
-            {
-                return matchPredictionInputBuilder.BuildMatchPredictionInputs(matchPredictionInputParameters);
-            }
-            catch (Exception e)
-            {
-                await searchCompletionMessageSender.PublishFailureMessage(
-                    matchPredictionInputParameters.MatchingAlgorithmResults.SearchRequestId,
-                    $"Failed to build match prediction inputs.\n Exception: {e.Message}"
-                );
-                throw;
-            }
+            return matchPredictionInputBuilder.BuildMatchPredictionInputs(matchPredictionInputParameters);
         }
 
         [FunctionName(nameof(RunMatchPrediction))]
         public async Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> RunMatchPrediction(
             [ActivityTrigger] MultipleDonorMatchProbabilityInput matchProbabilityInput)
         {
-            try
-            {
-                return await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(matchProbabilityInput);
-            }
-            catch (Exception e)
-            {
-                await searchCompletionMessageSender.PublishFailureMessage(
-                    matchProbabilityInput.SearchRequestId,
-                    $"Failed to run match prediction algorithm.\n Exception: {e.Message}"
-                );
-                throw;
-            }
+            return await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(matchProbabilityInput);
         }
 
         [FunctionName(nameof(PersistSearchResults))]
         public async Task PersistSearchResults([ActivityTrigger] PersistSearchResultsParameters parameters)
         {
-            try
-            {
-                var resultSet = resultsCombiner.CombineResults(parameters);
-                await searchResultsBlobUploader.UploadResults(resultSet);
-                await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated);
-            }
-            catch (Exception e)
-            {
-                await searchCompletionMessageSender.PublishFailureMessage(
-                    parameters.MatchingAlgorithmResultSet.ResultSet.SearchRequestId,
-                    $"Failed to persist search results.\n Exception: {e.Message}"
-                );
-                throw;
-            }
+            var resultSet = resultsCombiner.CombineResults(parameters);
+            await searchResultsBlobUploader.UploadResults(resultSet);
+            await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated);
+        }
+
+        [FunctionName(nameof(SendFailureNotification))]
+        public async Task SendFailureNotification([ActivityTrigger] (string, string) failureInfo)
+        {
+            var (requestId, failedStage) = failureInfo;
+
+            await searchCompletionMessageSender.PublishFailureMessage(
+                requestId,
+                $"Search failed at stage: {failedStage}. See Application Insights for failure details."
+            );
         }
 
         /// <summary>
