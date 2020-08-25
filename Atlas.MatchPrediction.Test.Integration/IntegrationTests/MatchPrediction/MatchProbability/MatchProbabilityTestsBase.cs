@@ -42,7 +42,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             string registryCode = DefaultRegistryCode,
             string ethnicityCode = DefaultEthnicityCode)
         {
-            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode, 1, HlaNomenclatureVersion, haplotypes).Build();
+            using var file = FrequencySetFileBuilder.New(haplotypes, registryCode, ethnicityCode).Build();
             await ImportService.ImportFrequencySet(file);
         }
 
