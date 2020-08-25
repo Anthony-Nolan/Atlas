@@ -55,15 +55,19 @@ namespace Atlas.DonorImport.Data.Repositories
                     {columnUpdateStrings}
                 WHERE {nameof(Donor.AtlasId)} = @{nameof(Donor.AtlasId)}
                 ";
-            
-            await using (var conn = NewConnection())
+
+            using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                conn.Open();
-                foreach (var donorEdit in editedDonorsWithAtlasIds)
+                await using (var conn = NewConnection())
                 {
-                    await conn.ExecuteAsync(sql, donorEdit, commandTimeout: 600);
+                    conn.Open();
+                    foreach (var donorEdit in editedDonorsWithAtlasIds)
+                    {
+                        await conn.ExecuteAsync(sql, donorEdit, commandTimeout: 600);
+                    }
+                    transaction.Complete();
+                    conn.Close();
                 }
-                conn.Close();
             }
         }
 

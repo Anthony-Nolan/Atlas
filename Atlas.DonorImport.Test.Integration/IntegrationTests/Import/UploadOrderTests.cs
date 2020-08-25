@@ -174,7 +174,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var file2Name = "file-2";
             var deleteFile = CreateDonorImportFile(deleteUpdateBuilder, donorExternalCode, file2Name, 2);
             
-            // Import File 2, expect error and no donor
+            // Import File 2, expect no error and no donor
             await donorFileImporter.ImportDonorFile(deleteFile);
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.Should().BeNull();
@@ -211,7 +211,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         }
         
         [Test]
-        public async Task DonorImportOrder_EditThenCreateWithoutPreExistingDonorOutOfOrder_CreatesAndEditsWithUpToDateDonor()
+        public async Task DonorImportOrder_EditThenCreateWithoutPreExistingDonorOutOfOrder_CreatesAndDiscardsEdit()
         {
             // File 1 = Edit
             var donorExternalCode = "1";
@@ -227,10 +227,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var result2 = await donorRepository.GetDonor(donorExternalCode);
             result2.UpdateFile.Should().Be(file2Name);
             
-            // import File 1, expect donor edit
+            // import File 1, expect no change
             await donorFileImporter.ImportDonorFile(editFile);
             var result1 = await donorRepository.GetDonor(donorExternalCode);
-            result1.UpdateFile.Should().Be(file1Name);
+            result1.UpdateFile.Should().Be(file2Name);
             
         }
         

@@ -79,6 +79,7 @@ namespace Atlas.DonorImport.Services
                 }
 
                 logger.SendTrace($"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).");
+                // NB Service Buses don't support being run in a transactionScope, hence we completed it earlier.
                 await notificationSender.SendNotification($"Donor Import Successful: {file.FileLocation}",
                     $"Imported {importedDonorCount} donor(s) from file {file.FileLocation}",
                     nameof(ImportDonorFile)
