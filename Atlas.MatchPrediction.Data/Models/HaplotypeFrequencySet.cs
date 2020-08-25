@@ -15,6 +15,11 @@ namespace Atlas.MatchPrediction.Data.Models
         [MaxLength(256)]
         public string EthnicityCode { get; set; }
 
+        /// <summary>
+        /// Source data for frequency sets is identified by a Population Id.
+        /// Internally we use metadata (e.g. registry, ethnicity) for set selection, and an internal ID as the set primary key.
+        /// Population ID is stored to enable quick cross-referencing to the source data, but is not used by ATLAS.
+        /// </summary>
         public int PopulationId { get; set; }
         public string HlaNomenclatureVersion { get; set; }
         public bool Active { get; set; }

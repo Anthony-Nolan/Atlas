@@ -1,41 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using Atlas.MatchPrediction.ExternalInterface.Models;
+using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using CsvHelper;
 using CsvHelper.Configuration;
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 {
-    public interface IFrequencyCsvReader
+    internal interface IFrequencyCsvReader
     {
-        IEnumerable<HaplotypeFrequencyMetadata> GetFrequencies(Stream stream);
+        IEnumerable<HaplotypeFrequencyFileRecord> GetFrequencies(Stream stream);
     }
 
     internal class FrequencyCsvReader : IFrequencyCsvReader
     {
-        public IEnumerable<HaplotypeFrequencyMetadata> GetFrequencies(Stream stream)
-        {
-            var haplotypeFrequencies = ReadCsv(stream).ToList();
-
-            if (!FrequencySetValidity(haplotypeFrequencies))
-            {
-                throw new MalformedHaplotypeFileException("The nomenclature version, population ID, registry code, and ethnicity code must be the same for each frequency");
-            }
-
-            return haplotypeFrequencies;
-        }
-
-        private static bool FrequencySetValidity(IEnumerable<HaplotypeFrequencyMetadata> haplotypeFrequencies)
-        {
-            var distinctFrequencySetInfo = haplotypeFrequencies
-                .Select(hf => new {hf.RegistryCode, hf.EthnicityCode, hf.HlaNomenclatureVersion, hf.PopulationId}).Distinct();
-
-            return distinctFrequencySetInfo.Count() == 1;
-        }
-
-        public IEnumerable<HaplotypeFrequencyMetadata> ReadCsv(Stream stream)
+        public IEnumerable<HaplotypeFrequencyFileRecord> GetFrequencies(Stream stream)
         {
             using (var reader = new StreamReader(stream))
             using (var csv = new CsvReader(reader))
@@ -43,11 +22,11 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 ConfigureCsvReader(csv);
                 while (TryRead(csv))
                 {
-                    HaplotypeFrequencyMetadata haplotypeFrequency = null;
+                    HaplotypeFrequencyFileRecord haplotypeFrequency = null;
 
                     try
                     {
-                        haplotypeFrequency = csv.GetRecord<HaplotypeFrequencyMetadata>();
+                        haplotypeFrequency = csv.GetRecord<HaplotypeFrequencyFileRecord>();
                     }
                     catch (CsvHelperException e)
                     {
@@ -73,7 +52,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                         throw new MalformedHaplotypeFileException($"Haplotype loci cannot be null.");
                     }
 
-                    yield return haplotypeFrequency;
+                    yield return new HaplotypeFrequencyFileRecord();
                 }
             }
         }
@@ -87,7 +66,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         }
 
         // ReSharper disable once ClassNeverInstantiated.Local
-        private sealed class HaplotypeFrequencyMap : ClassMap<HaplotypeFrequencyMetadata>
+        private sealed class HaplotypeFrequencyMap : ClassMap<HaplotypeFrequencyFileRecord>
         {
             public HaplotypeFrequencyMap()
             {

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
@@ -18,6 +19,9 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
     {
         private const string CsvHeader = "a;b;c;dqb1;drb1;freq;nomenclature_version;population_id;don_pool;ethn";
 
+        private const int DefaultPopulationId = 1;
+        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
+
         internal static Builder FileWithoutContents()
         {
             var uniqueFileName = $"file-{DateTime.Now:HHmmssffff}.csv";
@@ -26,10 +30,10 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
         }
 
         internal static Builder New(
-            string registryCode, 
-            string ethnicityCode, 
-            int populationId,
-            string nomenclatureVersion,
+            string registryCode = null, 
+            string ethnicityCode = null, 
+            int populationId = DefaultPopulationId,
+            string nomenclatureVersion = HlaNomenclatureVersion,
             int haplotypeCount = 1,
             decimal frequencyValue = 0.00001m)
         {
@@ -39,29 +43,30 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
         }
 
         internal static Builder New(
-            string registryCode,
-            string ethnicityCode,
-            int populationId,
-            string nomenclatureVersion, 
-            IEnumerable<HaplotypeFrequency> haplotypeFrequencies)
+            IEnumerable<HaplotypeFrequency> haplotypeFrequencies,
+            string registryCode = null,
+            string ethnicityCode = null,
+            int populationId = DefaultPopulationId,
+            string nomenclatureVersion = HlaNomenclatureVersion)
         {
             return FileWithoutContents()
                 .WithHaplotypeFrequencies(registryCode, ethnicityCode, populationId, nomenclatureVersion, haplotypeFrequencies);
         }
 
-        internal static Builder New(IEnumerable<HaplotypeFrequencyMetadata> haplotypeFrequencies)
+        internal static Builder New(IEnumerable<(HaplotypeFrequency, HaplotypeFrequencySet)> haplotypeFrequencies)
         {
             return FileWithoutContents().WithHaplotypeFrequencies(haplotypeFrequencies);
         }
 
-        internal static Builder WithHaplotypeFrequencies(this Builder builder, IEnumerable<HaplotypeFrequencyMetadata> haplotypeFrequencies)
+        internal static Builder WithHaplotypeFrequencies(this Builder builder, IEnumerable<(HaplotypeFrequency, HaplotypeFrequencySet)> haplotypeFrequencies)
         {
             return builder.With(x => 
                 x.Contents,
                 GetStream(BuildCsvFile(haplotypeFrequencies)));
         }
 
-        internal static Builder WithHaplotypeFrequencies(this Builder builder,
+        internal static Builder WithHaplotypeFrequencies(
+            this Builder builder,
             string registryCode,
             string ethnicityCode,
             int populationId,
@@ -79,10 +84,10 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
         }
 
         internal static Builder WithInvalidCsvFormat(
-            string registryCode,
-            string ethnicityCode,
-            int populationId,
-            string nomenclatureVersion,
+            string registryCode = null,
+            string ethnicityCode = null,
+            int populationId = DefaultPopulationId,
+            string nomenclatureVersion = HlaNomenclatureVersion,
             int haplotypeCount = 1,
             decimal frequencyValue = 0.00001m)
         {
@@ -143,11 +148,20 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
             return ToFile(csvFileBodyFrequencies);
         }
 
-        private static string BuildCsvFile(IEnumerable<HaplotypeFrequencyMetadata> haplotypeFrequencies)
+        private static string BuildCsvFile(IEnumerable<(HaplotypeFrequency, HaplotypeFrequencySet)> haplotypeFrequencies)
         {
             var csvFileBodyFrequencies = haplotypeFrequencies
                 .Select(h => 
-                    $"{h.A};{h.B};{h.C};{h.Dqb1};{h.Drb1};{h.Frequency};{h.HlaNomenclatureVersion};{h.PopulationId};{h.RegistryCode};{h.EthnicityCode};")
+                    $"{h.Item1.A};" +
+                    $"{h.Item1.B};" +
+                    $"{h.Item1.C};" +
+                    $"{h.Item1.DQB1};" +
+                    $"{h.Item1.DRB1};" +
+                    $"{h.Item1.Frequency};" +
+                    $"{h.Item2.HlaNomenclatureVersion};" +
+                    $"{h.Item2.PopulationId};" +
+                    $"{h.Item2.RegistryCode};" +
+                    $"{h.Item2.EthnicityCode}")
                 .ToList();
 
             return ToFile(csvFileBodyFrequencies);
