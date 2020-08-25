@@ -138,7 +138,7 @@ Manual investigation is recommended; see Application Insights for more informati
             if (!validationResult.IsValid)
             {
                 var message = $"Insufficiently typed donor was not imported - ${donorUpdate.RecordId}";
-                logger.SendTrace(message);
+                logger.SendTrace(message, LogLevel.Verbose);
             }
 
             return validationResult.IsValid;
