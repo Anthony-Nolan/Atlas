@@ -48,7 +48,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
                 var statusCheck = await GetStatusCheckEndpoints(starter, searchId);
                 logger.SendTrace(statusCheck.StatusQueryGetUri);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // This function cannot be allowed to fail post-orchestration scheduling, as it would then retry, and we cannot schedule more than one orchestrator with the same id.
                 // We are only doing logging past this point, so if it fails we just swallow exceptions.

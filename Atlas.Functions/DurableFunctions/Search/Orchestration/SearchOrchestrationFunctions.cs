@@ -41,7 +41,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 await SendFailureNotification(context, "Matching Algorithm");
                 return null;
             }
-            
+
             var timedSearchResults = await DownloadMatchingAlgorithmResults(context, notification);
             var searchResults = timedSearchResults.ResultSet;
 
@@ -95,7 +95,13 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         {
             var matchPredictionInputs = await BuildMatchPredictionInputs(context, searchRequest, searchResults, donorInformation.ResultSet);
             var matchPredictionTasks = matchPredictionInputs.Select(r => RunMatchPredictionForDonorBatch(context, r)).ToList();
-            var matchPredictionResults = (await Task.WhenAll(matchPredictionTasks)).SelectMany(x => x).ToDictionary();
+            var matchPredictionResults = (await RunStageAndHandleFailures(
+                    async () => await Task.WhenAll(matchPredictionTasks),
+                    context,
+                    nameof(RunMatchPredictionAlgorithm)
+                ))
+                .SelectMany(x => x)
+                .ToDictionary();
 
             // We cannot use a stopwatch, as orchestration functions must be deterministic, and may be called multiple times.
             // Results of activity functions are constant across multiple invocations, so we can trust that finished time of the previous stage will remain constant 
@@ -176,14 +182,12 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             MultipleDonorMatchProbabilityInput matchProbabilityInput
         )
         {
-            return await RunStageAndHandleFailures(async () =>
-                    await context.CallActivityWithRetryAsync<IReadOnlyDictionary<int, MatchProbabilityResponse>>(
-                        nameof(SearchActivityFunctions.RunMatchPrediction),
-                        RetryOptions,
-                        matchProbabilityInput
-                    ),
-                context,
-                nameof(RunMatchPredictionForDonorBatch));
+            // Do not add error handling to this, as we will then see multiple failure notifications with multiple batches
+            return await context.CallActivityWithRetryAsync<IReadOnlyDictionary<int, MatchProbabilityResponse>>(
+                nameof(SearchActivityFunctions.RunMatchPrediction),
+                RetryOptions,
+                matchProbabilityInput
+            );
         }
 
         private static async Task PersistSearchResults(
