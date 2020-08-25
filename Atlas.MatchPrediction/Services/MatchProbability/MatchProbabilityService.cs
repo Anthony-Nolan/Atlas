@@ -205,11 +205,16 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
                 using (logger.RunTimed("Calculate match probability", LogLevel.Verbose))
                 {
-                    return matchProbabilityCalculator.CalculateMatchProbability(
+                    var matchProbability = matchProbabilityCalculator.CalculateMatchProbability(
                         new SubjectCalculatorInputs {Genotypes = patientStringGenotypes, GenotypeLikelihoods = patientGenotypeLikelihoods},
                         new SubjectCalculatorInputs {Genotypes = donorStringGenotypes, GenotypeLikelihoods = donorGenotypeLikelihoods},
                         patientDonorMatchDetails,
                         allowedLoci);
+
+                    matchProbability.DonorFrequencySetNomenclatureVersion = frequencySets.DonorSet.HlaNomenclatureVersion;
+                    matchProbability.PatientFrequencySetNomenclatureVersion = frequencySets.PatientSet.HlaNomenclatureVersion;
+
+                    return matchProbability;
                 }
             }
         }
