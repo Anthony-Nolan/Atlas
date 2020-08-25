@@ -20,7 +20,7 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
         private const string CsvHeader = "a;b;c;dqb1;drb1;freq;nomenclature_version;population_id;don_pool;ethn";
 
         private const int DefaultPopulationId = 1;
-        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
+        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
 
         internal static Builder FileWithoutContents()
         {
@@ -31,9 +31,9 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
 
         internal static Builder New(
             string registryCode = null, 
-            string ethnicityCode = null, 
-            int populationId = DefaultPopulationId,
+            string ethnicityCode = null,
             string nomenclatureVersion = HlaNomenclatureVersion,
+            int populationId = DefaultPopulationId,
             int haplotypeCount = 1,
             decimal frequencyValue = 0.00001m)
         {

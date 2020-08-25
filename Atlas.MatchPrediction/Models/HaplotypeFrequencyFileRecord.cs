@@ -1,6 +1,6 @@
 ﻿namespace Atlas.MatchPrediction.Models
 {
-    internal class HaplotypeFrequencyFileRecord
+    public class HaplotypeFrequencyFileRecord
     {
         public string A { get; set; }
         public string B { get; set; }
