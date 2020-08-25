@@ -46,7 +46,7 @@ namespace Atlas.DonorImport.Services
             var donorExists = await repository.CheckDonorExists(donorUpdate.RecordId);
             if (donorExists && donorUpdate.ChangeType == ImportDonorChangeType.Create)
             {
-                throw new Exception("Tried to Insert a new donor but it already existed.");
+                throw new DuplicateDonorImportException($"Attempted to create a donor that already existed. External Donor Code: {donorUpdate.RecordId}");
             }
 
             var date = await repository.GetLastUpdateForDonorWithId(donorUpdate.RecordId);
