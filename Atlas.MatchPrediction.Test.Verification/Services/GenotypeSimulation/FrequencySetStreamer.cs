@@ -15,7 +15,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
     {
         private readonly string containerName;
 
-        public FrequencySetStreamer(IOptions<MatchPredictionAzureStorageSettings> settings) : base(settings.Value.ConnectionString)
+        public FrequencySetStreamer(IOptions<VerificationAzureStorageSettings> settings) : base(settings.Value.ConnectionString)
         {
             containerName = settings.Value.HaplotypeFrequencySetBlobContainer;
         }

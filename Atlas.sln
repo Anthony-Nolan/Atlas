@@ -122,7 +122,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.Functions.PublicApi",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.Client.Models", "Atlas.Client.Models\Atlas.Client.Models.csproj", "{9048423F-EA75-4D33-9B1A-48222429CB69}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.MatchPrediction.Test.Verification.Test", "Atlas.MatchPrediction.Test.Verification.Test\Atlas.MatchPrediction.Test.Verification.Test.csproj", "{F1FC0799-415E-405B-B2DB-24AE6204F508}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atlas.MatchPrediction.Test.Verification.Test", "Atlas.MatchPrediction.Test.Verification.Test\Atlas.MatchPrediction.Test.Verification.Test.csproj", "{F1FC0799-415E-405B-B2DB-24AE6204F508}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Atlas.MatchPrediction.Test.Verification.Data", "Atlas.MatchPrediction.Test.Verification.Data\Atlas.MatchPrediction.Test.Verification.Data.csproj", "{E9E4EFDF-7AAC-4881-89EB-AC884D257748}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -341,6 +343,12 @@ Global
 		{F1FC0799-415E-405B-B2DB-24AE6204F508}.Development|Any CPU.Build.0 = Debug|Any CPU
 		{F1FC0799-415E-405B-B2DB-24AE6204F508}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F1FC0799-415E-405B-B2DB-24AE6204F508}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9E4EFDF-7AAC-4881-89EB-AC884D257748}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9E4EFDF-7AAC-4881-89EB-AC884D257748}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9E4EFDF-7AAC-4881-89EB-AC884D257748}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9E4EFDF-7AAC-4881-89EB-AC884D257748}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{E9E4EFDF-7AAC-4881-89EB-AC884D257748}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9E4EFDF-7AAC-4881-89EB-AC884D257748}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -379,6 +387,7 @@ Global
 		{122DA7C4-50ED-45A5-97D9-9CFC3391A87B} = {E5979876-0294-475D-8970-A384B2DDEB8C}
 		{2D4D9130-B6B4-49CD-BFB8-FB2779277220} = {EF1B180D-37D3-4A7A-9F2D-0E7DF3F14D36}
 		{F1FC0799-415E-405B-B2DB-24AE6204F508} = {EF1B180D-37D3-4A7A-9F2D-0E7DF3F14D36}
+		{E9E4EFDF-7AAC-4881-89EB-AC884D257748} = {EF1B180D-37D3-4A7A-9F2D-0E7DF3F14D36}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB0B0AD5-58AC-4CDF-826D-C653D03DC2AC}
