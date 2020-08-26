@@ -143,6 +143,7 @@ module "donor_import" {
 
   servicebus_namespace_authorization_rules = {
     write-only = azurerm_servicebus_namespace_authorization_rule.write-only
+    read-write = azurerm_servicebus_namespace_authorization_rule.read-write
   }
 
   servicebus_topics = {
