@@ -76,7 +76,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             services.RegisterNotificationSender(fetchNotificationsServiceBusSettings, fetchApplicationInsightsSettings);
         }
 
-        private static void RegisterImportDatabaseTypes(
+       internal static void RegisterImportDatabaseTypes(
             this IServiceCollection services,
             Func<IServiceProvider, string> fetchDonorImportDatabaseConnectionString)
         {

@@ -6,15 +6,24 @@
 
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:HaplotypeFrequencySetBlobContainer": "haplotype-frequency-set-import",
+    
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+
+    "DataRefresh:RequestUrl": "override-this",
+    "DataRefresh:CompletionTopic": "completed-data-refresh-jobs",
+    "DataRefresh:CompletionTopicSubscription": "override-this",
 
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
 
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
-    "MacDictionary:Download:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip"
+    "MacDictionary:Download:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
+
+    "MessagingServiceBus:ConnectionString": "override-this"
   },
   "ConnectionStrings": {
     "MatchPredictionVerification:Sql": "Data Source=(local);Initial Catalog=AtlasMatchPredictionVerification;Integrated Security=True;MultipleActiveResultSets=True;",
-    "MatchPrediction:Sql": "Data Source=(local);Initial Catalog=AtlasMatchPrediction;Integrated Security=True;MultipleActiveResultSets=True;"
+    "MatchPrediction:Sql": "Data Source=(local);Initial Catalog=AtlasMatchPrediction;Integrated Security=True;MultipleActiveResultSets=True;",
+    "DonorImport:Sql": "Data Source=(local);Initial Catalog=AtlasDonorImport;Integrated Security=True;MultipleActiveResultSets=True;"
   }
 }
