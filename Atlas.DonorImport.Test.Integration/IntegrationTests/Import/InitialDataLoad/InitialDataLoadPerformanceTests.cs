@@ -35,7 +35,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
         [IgnoreExceptOnCiPerfTest("Performance Test. 10_000 donors ran in ~20 seconds.")]
         public async Task ImportDonors_AllValid_Performance()
         {
-            var file = DonorImportFileBuilder.NewWithoutContents.WithDonorCount(10_000);
+            var file = DonorImportFileBuilder.NewWithoutContents.WithDonorCount(35_000);
 
             await donorFileImporter.ImportDonorFile(file);
         }

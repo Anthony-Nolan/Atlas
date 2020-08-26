@@ -11,7 +11,7 @@ namespace Atlas.DonorImport.Services
 {
     internal interface IDonorImportLogService
     {
-        public Task<IEnumerable<DonorUpdate>> FilterDonorUpdatesBasedOnUpdateTime(IEnumerable<DonorUpdate> donorUpdates, DateTime uploadTime);
+        public IAsyncEnumerable<DonorUpdate> FilterDonorUpdatesBasedOnUpdateTime(IEnumerable<DonorUpdate> donorUpdates, DateTime uploadTime);
         public Task SetLastUpdated(DateTime lastUpdated, IReadOnlyCollection<DonorUpdate> updates);
     }
 
@@ -24,9 +24,15 @@ namespace Atlas.DonorImport.Services
             this.repository = repository;
         }
 
-        public async Task<IEnumerable<DonorUpdate>> FilterDonorUpdatesBasedOnUpdateTime(IEnumerable<DonorUpdate> donorUpdates, DateTime uploadTime)
+        public async IAsyncEnumerable<DonorUpdate> FilterDonorUpdatesBasedOnUpdateTime(IEnumerable<DonorUpdate> donorUpdates, DateTime uploadTime)
         {
-            return await donorUpdates.WhereAsync(async du => await ShouldUpdateDonor(du, uploadTime));
+            foreach (var update in donorUpdates)
+            {
+                if (await ShouldUpdateDonor(update, uploadTime))
+                {
+                    yield return update;
+                }
+            }
         }
 
         public async Task SetLastUpdated(DateTime lastUpdated, IReadOnlyCollection<DonorUpdate> updates)

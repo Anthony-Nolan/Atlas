@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Transactions;
+using Dasync.Collections;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.Common.Utils;
@@ -9,7 +9,6 @@ using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Validators;
-using MoreLinq.Extensions;
 
 // ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
 
@@ -60,8 +59,8 @@ namespace Atlas.DonorImport.Services
             {
                 var donorUpdates = lazyFile.ReadLazyDonorUpdates();
                 var searchableDonors = donorUpdates.Where(ValidateDonorIsSearchable);
-                var donorUpdatesToApply = await donorLogService.FilterDonorUpdatesBasedOnUpdateTime(searchableDonors, file.UploadTime);
-                foreach (var donorUpdateBatch in donorUpdatesToApply.Batch(BatchSize))
+                var donorUpdatesToApply = donorLogService.FilterDonorUpdatesBasedOnUpdateTime(searchableDonors, file.UploadTime);
+                await foreach (var donorUpdateBatch in donorUpdatesToApply.Batch(BatchSize))
                 {
                     var reifiedDonorBatch = donorUpdateBatch.ToList();
                     using (var transactionScope = new AsyncTransactionScope())

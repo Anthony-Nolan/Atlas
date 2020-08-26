@@ -67,19 +67,5 @@ namespace Atlas.Common.Utils.Extensions
         /// explanation on why this is recommended
         /// </summary>
         public static decimal SumDecimals(this IEnumerable<decimal> decimals) => decimals.OrderBy(x => x).Sum();
-
-        public static async Task<IEnumerable<T>> WhereAsync<T>(this IEnumerable<T> enumerable, Func<T, Task<bool>> predicate)
-        {
-            var items = new List<T>();
-            foreach (var item in enumerable)
-            {
-                if (await predicate(item))
-                {
-                    items.Add(item);
-                }
-            }
-
-            return items;
-        }
     }
 }
