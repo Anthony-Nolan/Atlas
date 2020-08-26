@@ -61,6 +61,19 @@ namespace Atlas.Common.Utils.Extensions
             return enumerable.Except(new[] {singleItem});
         }
 
+        public static IEnumerable<T> FilterAndCallbackIfFiltered<T>(this IEnumerable<T> enumerable,Func<T, bool> filterFunction, Action<T> callback)
+        {
+            foreach (var obj in enumerable)
+            {
+                if (filterFunction(obj))
+                {
+                    yield return obj;
+                }
+
+                callback(obj);
+            }
+        }
+
         /// <summary>
         /// When summing decimals, we should always sort in increasing size first, to avoid loss of data via loss of floating point precision
         /// See https://stackoverflow.com/questions/6699066/in-which-order-should-floats-be-added-to-get-the-most-precise-result for an
