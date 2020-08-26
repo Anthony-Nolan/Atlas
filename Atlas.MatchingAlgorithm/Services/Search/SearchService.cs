@@ -129,18 +129,22 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 AtlasDonorId = result.MatchResult.DonorInfo.DonorId,
                 DonorType = result.MatchResult.DonorInfo.DonorType.ToAtlasClientModel(),
+                
+                MatchingResult = new MatchingResult
+                {
+                    TotalMatchCount = result.MatchResult.TotalMatchCount,
+                    DonorHla = result.MatchResult.DonorInfo.HlaNames.ToPhenotypeInfoTransfer(),
+                    TypedLociCount = result.MatchResult.TypedLociCount,
+                },
 
-                // matching results
-                TotalMatchCount = result.MatchResult.TotalMatchCount,
-                DonorHla = result.MatchResult.DonorInfo.HlaNames.ToPhenotypeInfoTransfer(),
-                TypedLociCount = result.MatchResult.TypedLociCount,
-
-                // scoring results
-                MatchCategory = result.ScoreResult?.AggregateScoreDetails.MatchCategory,
-                ConfidenceScore = result.ScoreResult?.AggregateScoreDetails.ConfidenceScore,
-                GradeScore = result.ScoreResult?.AggregateScoreDetails.GradeScore,
-                TypedLociCountAtScoredLoci = result.ScoreResult?.AggregateScoreDetails.TypedLociCount,
-
+                ScoringResult = new ScoringResult
+                {
+                    MatchCategory = result.ScoreResult?.AggregateScoreDetails.MatchCategory,
+                    ConfidenceScore = result.ScoreResult?.AggregateScoreDetails.ConfidenceScore,
+                    GradeScore = result.ScoreResult?.AggregateScoreDetails.GradeScore,
+                    TypedLociCountAtScoredLoci = result.ScoreResult?.AggregateScoreDetails.TypedLociCount,
+                },
+                
                 // combines both matching and scoring results
                 PotentialMatchCount = result.PotentialMatchCount,
                 SearchResultAtLocusA = MapSearchResultToApiLocusSearchResult(result, Locus.A),

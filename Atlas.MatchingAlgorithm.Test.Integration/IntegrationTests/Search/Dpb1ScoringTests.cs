@@ -183,7 +183,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var searchResults = await searchService.Search(searchRequest);
             var result = searchResults.SingleOrDefault(d => d.AtlasDonorId == testDonorId);
 
-            result.MatchCategory.Should().NotBe(MatchCategory.Mismatch);
+            result.ScoringResult.MatchCategory.Should().NotBe(MatchCategory.Mismatch);
         }
 
         [Test]
@@ -192,7 +192,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
             var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
-            result.MatchCategory.Should().Be(MatchCategory.Mismatch);
+            result.ScoringResult.MatchCategory.Should().Be(MatchCategory.Mismatch);
         }
 
         private static PhenotypeInfo<string> GetDefaultPhenotype()
