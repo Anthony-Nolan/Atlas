@@ -32,10 +32,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
         }
 
         [Test]
-        [IgnoreExceptOnCiPerfTest("Performance Test. 10_000 donors ran in ~10 seconds.")]
+        [IgnoreExceptOnCiPerfTest("Performance Test. 30_000 donors ran in ~17 seconds.")]
         public async Task ImportDonors_AllValid_Performance()
         {
-            var file = DonorImportFileBuilder.NewWithoutContents.WithDonorCount(10_000);
+            var file = DonorImportFileBuilder.NewWithoutContents.WithDonorCount(30_000, true);
 
             await donorFileImporter.ImportDonorFile(file);
         }
@@ -46,22 +46,22 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
         {
             var hla = HlaBuilder.New.WithValidHlaAtAllLoci().WithMolecularHlaAtLocus(Locus.B, null, null).Build();
             var donors = DonorUpdateBuilder.New.WithHla(hla).Build(100_000);
-            var file = DonorImportFileBuilder.NewWithoutContents.WithDonors(donors.ToArray());
+            var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(donors.ToArray());
 
             await donorFileImporter.ImportDonorFile(file);
         }
         
         [Test]
-        [IgnoreExceptOnCiPerfTest("Performance Test. 10_000 donors ran in ~5 seconds.")]
+        [IgnoreExceptOnCiPerfTest("Performance Test. 30_000 donors ran in ~11 seconds.")]
         public async Task ImportDonors_HalfInvalid_Performance()
         {
-            const int donorCount = 10_000;
+            const int donorCount = 30_000;
             
             var invalidHla = HlaBuilder.New.WithValidHlaAtAllLoci().WithMolecularHlaAtLocus(Locus.B, null, null).Build();
             var invalidDonors = DonorUpdateBuilder.New.WithHla(invalidHla).Build(donorCount/2);
             var validDonors = DonorUpdateBuilder.New.Build(donorCount/2);
 
-            var file = DonorImportFileBuilder.NewWithoutContents.WithDonors(invalidDonors.Concat(validDonors).ToArray());
+            var file = DonorImportFileBuilder.NewWithoutContents.WithInitialDonors(invalidDonors.Concat(validDonors).ToArray());
             await donorFileImporter.ImportDonorFile(file);
         }
     }

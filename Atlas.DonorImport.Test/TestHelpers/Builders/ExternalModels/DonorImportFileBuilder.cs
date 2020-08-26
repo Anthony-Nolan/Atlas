@@ -25,16 +25,30 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels
                 .With(f => f.Contents, contentsBuilder.Build().ToStream());
         }
 
-        public static Builder<DonorImportFile> WithDonorCount(this Builder<DonorImportFile> builder, int numberOfDonors)
+        public static Builder<DonorImportFile> WithDonorCount(this Builder<DonorImportFile> builder, int numberOfDonors, bool isInitialImport = false)
         {
             return builder
-                .With(f => f.Contents, DonorImportFileContentsBuilder.New.WithDonorCount(numberOfDonors).Build().ToStream());
+                .With(f => f.Contents, DonorImportFileContentsBuilder.New
+                    .WithDonorCount(numberOfDonors)
+                    .WithUpdateMode(isInitialImport ? UpdateMode.Full : UpdateMode.Differential)
+                    .Build()
+                    .ToStream());
         }
 
         public static Builder<DonorImportFile> WithDonors(this Builder<DonorImportFile> builder, params DonorUpdate[] donors)
         {
             return builder
                 .With(f => f.Contents, DonorImportFileContentsBuilder.New.WithDonors(donors).Build().ToStream());
+        }
+
+        public static Builder<DonorImportFile> WithInitialDonors(this Builder<DonorImportFile> builder, params DonorUpdate[] donors)
+        {
+            return builder
+                .With(f => f.Contents, DonorImportFileContentsBuilder.New
+                    .WithDonors(donors)
+                    .WithUpdateMode(UpdateMode.Full)
+                    .Build()
+                    .ToStream());
         }
         
         private static Builder<DonorImportFile> WithFileLocation(this Builder<DonorImportFile> builder, string recordIdPrefix)
