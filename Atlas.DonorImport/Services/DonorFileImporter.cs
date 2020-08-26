@@ -66,7 +66,7 @@ namespace Atlas.DonorImport.Services
                     using (var transactionScope = new AsyncTransactionScope())
                     {
                         await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file);
-                        await donorLogService.SetLastUpdated(file.UploadTime, reifiedDonorBatch);
+                        await donorLogService.SetLastUpdated(reifiedDonorBatch, file.UploadTime);
 
                         transactionScope.Complete();
 

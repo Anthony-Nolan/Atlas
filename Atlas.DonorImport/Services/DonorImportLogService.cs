@@ -6,13 +6,14 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.Models.FileSchema;
+using MoreLinq;
 
 namespace Atlas.DonorImport.Services
 {
     internal interface IDonorImportLogService
     {
         public IAsyncEnumerable<DonorUpdate> FilterDonorUpdatesBasedOnUpdateTime(IEnumerable<DonorUpdate> donorUpdates, DateTime uploadTime);
-        public Task SetLastUpdated(DateTime lastUpdated, IReadOnlyCollection<DonorUpdate> updates);
+        public Task SetLastUpdated(IReadOnlyCollection<DonorUpdate> updates, DateTime lastUpdated);
     }
 
     internal class DonorImportLogService : IDonorImportLogService
@@ -26,34 +27,40 @@ namespace Atlas.DonorImport.Services
 
         public async IAsyncEnumerable<DonorUpdate> FilterDonorUpdatesBasedOnUpdateTime(IEnumerable<DonorUpdate> donorUpdates, DateTime uploadTime)
         {
-            foreach (var update in donorUpdates)
+            foreach (var updateBatch in donorUpdates.Batch(2000))
             {
-                if (await ShouldUpdateDonor(update, uploadTime))
+                var reifiedDonorBatch = updateBatch.ToList();
+                var updateDates = await repository.GetLastUpdatedTimes(reifiedDonorBatch.Select(u => u.RecordId).ToList());
+
+                foreach (var update in reifiedDonorBatch)
                 {
+                    var externalDonorCode = update.RecordId;
+                    var donorExists = updateDates.ContainsKey(externalDonorCode);
+                    if (donorExists && update.ChangeType == ImportDonorChangeType.Create)
+                    {
+                        throw new DuplicateDonorImportException(
+                            $"Attempted to create a donor that already existed. External Donor Code: {externalDonorCode}");
+                    }
+
+                    if (updateDates.TryGetValue(externalDonorCode, out var lastUpdateTime))
+                    {
+                        if (lastUpdateTime >= uploadTime)
+                        {
+                            yield break;
+                        }
+                    }
+
                     yield return update;
                 }
             }
         }
 
-        public async Task SetLastUpdated(DateTime lastUpdated, IReadOnlyCollection<DonorUpdate> updates)
+        public async Task SetLastUpdated(IReadOnlyCollection<DonorUpdate> updates, DateTime lastUpdated)
         {
             var (deletions, upserts) = updates.ReifyAndSplit(u => u.ChangeType == ImportDonorChangeType.Delete);
 
             await repository.DeleteDonorLogBatch(deletions.Select(u => u.RecordId).ToList());
             await repository.SetLastUpdatedBatch(upserts.Select(u => u.RecordId), lastUpdated);
-        }
-
-        private async Task<bool> ShouldUpdateDonor(DonorUpdate donorUpdate, DateTime uploadTime)
-        {
-            var donorExists = await repository.CheckDonorExists(donorUpdate.RecordId);
-            if (donorExists && donorUpdate.ChangeType == ImportDonorChangeType.Create)
-            {
-                throw new DuplicateDonorImportException(
-                    $"Attempted to create a donor that already existed. External Donor Code: {donorUpdate.RecordId}");
-            }
-
-            var date = await repository.GetLastUpdateForDonorWithId(donorUpdate.RecordId);
-            return uploadTime >= date;
         }
     }
 }
