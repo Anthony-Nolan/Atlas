@@ -32,27 +32,27 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
         }
 
         [Test]
-        [IgnoreExceptOnCiPerfTest("Performance Test. 10_000 donors ran in ~20 seconds.")]
+        [IgnoreExceptOnCiPerfTest("Performance Test. 10_000 donors ran in ~10 seconds.")]
         public async Task ImportDonors_AllValid_Performance()
         {
-            var file = DonorImportFileBuilder.NewWithoutContents.WithDonorCount(35_000);
+            var file = DonorImportFileBuilder.NewWithoutContents.WithDonorCount(10_000);
 
             await donorFileImporter.ImportDonorFile(file);
         }
 
         [Test]
-        [IgnoreExceptOnCiPerfTest("Performance Test. 10_000 donors ran in ~4 seconds.")]
+        [IgnoreExceptOnCiPerfTest("Performance Test. 100_000 donors ran in ~10 seconds.")]
         public async Task ImportDonors_AllInvalid_Performance()
         {
             var hla = HlaBuilder.New.WithValidHlaAtAllLoci().WithMolecularHlaAtLocus(Locus.B, null, null).Build();
-            var donors = DonorUpdateBuilder.New.WithHla(hla).Build(10_000);
+            var donors = DonorUpdateBuilder.New.WithHla(hla).Build(100_000);
             var file = DonorImportFileBuilder.NewWithoutContents.WithDonors(donors.ToArray());
 
             await donorFileImporter.ImportDonorFile(file);
         }
         
         [Test]
-        [IgnoreExceptOnCiPerfTest("Performance Test. 10_000 donors ran in ~12 seconds.")]
+        [IgnoreExceptOnCiPerfTest("Performance Test. 10_000 donors ran in ~5 seconds.")]
         public async Task ImportDonors_HalfInvalid_Performance()
         {
             const int donorCount = 10_000;
