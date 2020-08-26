@@ -14,12 +14,12 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         private const string CsvHeader = "a;b;c;drb1;dqb1;population_id;freq;nomenclature_version;population_id;don_pool;ethn";
         private const string CsvFileBodySingleFrequency = "A-HLA;B-HLA;C-HLA;DRB1-HLA;DQBQ-HLA;1;0.00001;3330;1;Reg;Eth";
 
-        private IFrequencyCsvReader reader;
+        private IFrequencyJsonReader reader;
 
         [SetUp]
         public void Setup()
         {
-            reader = new FrequencyCsvReader();
+            reader = new FrequencyJsonReader();
         }
 
         [Test]
