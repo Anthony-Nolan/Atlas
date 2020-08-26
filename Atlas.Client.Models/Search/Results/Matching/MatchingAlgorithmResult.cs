@@ -8,6 +8,10 @@ namespace Atlas.Client.Models.Search.Results.Matching
     /// </summary>
     public class MatchingAlgorithmResult
     {
+        public MatchingResult MatchingResult { get; set; }
+        
+        public ScoringResult ScoringResult { get; set; }
+        
         /// <summary>
         ///     The ATLAS ID of the donor for lookup in donor registries.
         /// </summary>
@@ -109,5 +113,15 @@ namespace Atlas.Client.Models.Search.Results.Matching
         ///     - when donor details are updated between running a search and viewing the results.
         /// </summary>
         public PhenotypeInfoTransfer<string> DonorHla { get; set; }
+    }
+
+    public class MatchingResult
+    {
+        
+    }
+
+    public class ScoringResult
+    {
+        
     }
 }
