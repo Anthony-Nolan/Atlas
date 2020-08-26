@@ -24,6 +24,7 @@ namespace Atlas.MatchPrediction.Test.Verification
             builder.Services.RegisterVerificationServices(
                 ConnectionStringReader("MatchPredictionVerification:Sql"),
                 ConnectionStringReader("MatchPrediction:Sql"),
+                ConnectionStringReader("DonorImport:Sql"),
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),

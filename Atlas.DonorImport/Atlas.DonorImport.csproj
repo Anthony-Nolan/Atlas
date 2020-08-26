@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -23,6 +23,7 @@
     <ItemGroup>
         <InternalsVisibleTo Include="Atlas.DonorImport.Test" />
         <InternalsVisibleTo Include="Atlas.DonorImport.Test.Integration" />
+        <InternalsVisibleTo Include="Atlas.MatchPrediction.Test.Verification" />
         <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     </ItemGroup>
 

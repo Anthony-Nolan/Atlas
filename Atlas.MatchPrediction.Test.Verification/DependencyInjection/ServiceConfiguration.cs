@@ -16,6 +16,7 @@ using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 
 namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 {
@@ -25,6 +26,7 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             this IServiceCollection services,
             Func<IServiceProvider, string> fetchMatchPredictionVerificationSqlConnectionString,
             Func<IServiceProvider, string> fetchMatchPredictionSqlConnectionString,
+            Func<IServiceProvider, string> fetchDonorImportSqlConnectionString,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
@@ -36,19 +38,21 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             services.RegisterServices(fetchMatchPredictionSqlConnectionString);
             services.RegisterLifeTimeScopedCacheTypes();
             services.RegisterHaplotypeFrequenciesReader(fetchMatchPredictionSqlConnectionString);
+
             services.RegisterHlaMetadataDictionary(
                 fetchHlaMetadataDictionarySettings,
                 fetchApplicationInsightsSettings,
                 fetchMacDictionarySettings
             );
-            services.RegisterMacFetcher(
-                fetchApplicationInsightsSettings,
-                fetchMacDownloadSettings);
+
+            services.RegisterMacFetcher(fetchApplicationInsightsSettings, fetchMacDownloadSettings);
+            services.RegisterImportDatabaseTypes(fetchDonorImportSqlConnectionString);
         }
 
         private static void RegisterSettings(this IServiceCollection services)
         {
-            services.RegisterAsOptions<MatchPredictionAzureStorageSettings>("AzureStorage");
+            services.RegisterAsOptions<VerificationAzureStorageSettings>("AzureStorage");
+            services.RegisterAsOptions<VerificationDataRefreshSettings>("DataRefresh");
         }
 
         private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)
@@ -62,6 +66,7 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 
             services.AddScoped(sp => new ContextFactory().Create(fetchSqlConnectionString(sp)));
             services.AddScoped<ITestHarnessRepository, TestHarnessRepository>();
+            services.AddScoped<ITestDonorExportRepository, TestDonorExportRepository>();
         }
 
         private static void RegisterServices(
@@ -71,7 +76,6 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             services.AddScoped<IMacExpander, MacExpander>();
 
             services.AddScoped<ITestHarnessGenerator, TestHarnessGenerator>();
-
             services.AddScoped<IHaplotypeFrequenciesReader, HaplotypeFrequenciesReader>();
             services.AddScoped<IFrequencySetStreamer, FrequencySetStreamer>();
             services.AddScoped<INormalisedPoolGenerator, NormalisedPoolGenerator>(sp =>
@@ -84,7 +88,6 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             services.AddScoped<IGenotypeSimulator, GenotypeSimulator>();
             services.AddScoped<IRandomNumberGenerator, RandomNumberGenerator>();
             services.AddScoped<IGenotypeSimulantsGenerator, GenotypeSimulantsGenerator>();
-
             services.AddScoped<IMaskedSimulantsGenerator, MaskedSimulantsGenerator>();
             services.AddScoped<ILocusHlaMasker, LocusHlaMasker>();
             services.AddScoped<IHlaDeleter, HlaDeleter>();
@@ -93,6 +96,9 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             services.AddScoped<IMacBuilder, MacBuilder>();
             services.AddScoped<IExpandedMacCache, ExpandedMacCache>();
             services.AddScoped<IXxCodeBuilder, XxCodeBuilder>();
+
+            services.AddScoped<IAtlasPreparer, AtlasPreparer>();
+            services.AddScoped<ITestDonorExporter, TestDonorExporter>();
         }
     }
 }

@@ -14,15 +14,18 @@ This code is designed to be run locally; it is not production quality and cannot
 - `Atlas.MatchPrediction.Test.Verification.Test`
   - Minimal suite of unit tests for the `Atlas.MatchPrediction.Test.Verification` project, with sufficient coverage only to ensure the reliability of the generated data.
 
+- `Atlas.MatchPrediction.Test.Verification.Data`
+  - Project to manage Entity Framework migrations for the local Verification database.
+
 
 ## Verification
 
 ### Start Up Guide
 - Run Migrations
-  - Run EF Core Migrations for the `Atlas.MatchPrediction.Test.Verification` project.
+  - Run EF Core Migrations for the `Atlas.MatchPrediction.Test.Verification.Data` project.
   - Instructions for VS PkgMgrCons
-    - Set Default Project (dropdown in PkgMgrConsole window) to be `Atlas.MatchPrediction.Test.Verification`.
-    - Set Startup Project (Context menu of Solution Explorer) to be `Atlas.MatchPrediction.Test.Verification`.
+    - Set Default Project (dropdown in PkgMgrConsole window) to be `Atlas.MatchPrediction.Test.Verification.Data`.
+    - Set Startup Project (Context menu of Solution Explorer) to be `Atlas.MatchPrediction.Test.Verification.Data`.
     - Run `Update-Database` in the console.
     - Open your local SQL Server and verify the creation of the database: `AtlasMatchPredictionVerification`.
 - Compile and Run Functions app
@@ -35,21 +38,28 @@ This code is designed to be run locally; it is not production quality and cannot
       - Match Prediction database and azure storage for global haplotype frequencies;
       - HLA metadata dictionary (HMD) to generate masked typings - you could use the local storage emulator, but it is easier (and perhaps faster) to
         use the remote HMD that has already been populated on the remote environment.
+      - Donor import database and data refresh functionality to populate Atlas donor stores with test donors.
       - Search orchestrator function, to run search requests.
   - Therefore, the remote environment should have been set up before running the framework.
-  - The project's `local.settings.json` file should be used to override default local settings with the remote settings.
-  - Override the following settings with the appropriate values:
+    - Note: it is essential that the remote environment is dedicated to verification, so the framework can safely
+      manipulate data as required and make assumptions about the state of various features.
+  - Use the project's `local.settings.json` file to override default local values with the remote values:
       ```json
       {
-          "AzureStorage": {
-            "ConnectionString": "value"
-          },
-          "ConnectionStrings": {
-            "MatchPrediction:Sql": "value"
-          },
-          "HlaMetadataDictionary": {
-            "AzureStorageConnectionString": "value"
-          }
+        "Values":{
+          "AzureStorage:ConnectionString": "remote-connection-string",
+          ...
+          "DataRefresh:RequestUrl": "url-to-force-data-refresh-function",
+          "DataRefresh:CompletionTopicSubscription": "subscription-name",
+          ...
+          "HlaMetadataDictionary:AzureStorageConnectionString": "remote-connection-string"
+          ...
+          "MessagingServiceBus:ConnectionString": "remote-connection-string"
+        }
+        "ConnectionStrings": {
+          "MatchPrediction:Sql": "remote-connection-string",
+          "DonorImport:Sql": "remote-connection-string"
+        },
           TODO: ATLAS-477: extend with further settings
       }
       ```
@@ -112,6 +122,32 @@ The following steps must be completed prior to generating the test harness.
       - E.g., some alleles are not listed in the expanded definitions of any published MACs.
       - Etc.
       - This means that the proportions of masking categories found within the final test harness may differ to those listed in the request.
+
+### Prepare Atlas to receive Search Requests
+- Test donors need to be exported to the remote verification environment before search requests can be run.
+  - Further, donor stores should only contain donors from one test harness at any one time.
+- To achieve this, launch the local functions app and call the http function: `PrepareAtlasDonorStores`.
+  - This takes in the ID of a completed test harness (see Swagger UI for request model).
+  - Calling this function wipes the remote donor import donor store, re-populates it with donors from the test harness
+    specified in the request, and finally forces a data refresh on the matching algorithm; this can all take several minutes.
+  - Ensure the following settings have been overriden in `local.settings.json` with values for the remote environment:
+      `DataRefresh:RequestUrl`, `DataRefresh:CompletionTopicSubscription`, and `DonorImport:Sql`.
+- As data refresh is a long-running process, a servicebus-triggered function, `HandleDataRefreshCompletion`, is
+    used to determine when data refresh has actually completed.
+  - The local verification functions app should be left running to allow the triggering of `HandleDataRefreshCompletion`.
+  - On receipt of a new job completion message, the record for the last export attempt is updated with data refresh details,
+    including whether the job succeeded or failed - a failure should prompt further investigation before re-attempting export.
+  - If data refresh job is interrupted before it completes, manually invoke the `ContinueDataRefresh` function
+    on the remote Matching Algorithm functions app.
+- At present, it is not possible to tie an export attempt to a data refresh request *before* the refresh job has completed;
+  some checks have been added to ensure only one export is attempted at a time.
+  - If the `PrepareAtlasDonorStores` function complains about incomplete test donor export records, try the following:
+    - Check whether a data refresh is still in progress; if so, leave the local functions app running so it can detect
+      the job completion message and update the open export record.
+    - If the data refresh job was interrupted, manually invoke the remote `ContinueDataRefresh` function. Again, leave
+      the local verifications function app running to pick up the completion message.
+    - If the interrupted data refresh job cannot be continued for some reason, then it is best to manually delete the open
+      export record from the local verification database, and start from scratch.
 
 ### Running Search Requests using Test Harness
 TODO: ATLAS-477

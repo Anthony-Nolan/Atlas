@@ -22,4 +22,7 @@
     <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Atlas.MatchPrediction.Test.Verification" />
+  </ItemGroup>
 </Project>
