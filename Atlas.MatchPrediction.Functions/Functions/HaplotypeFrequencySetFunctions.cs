@@ -11,6 +11,7 @@ using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Atlas.MatchPrediction.Functions.Functions
@@ -43,7 +44,7 @@ namespace Atlas.MatchPrediction.Functions.Functions
             using (var file = new FrequencySetFile
             {
                 Contents = blobStream,
-                FileName = blobCreatedEvent.Subject,
+                FileName = blobCreatedEvent.Subject.Split("/").Last(),
                 UploadedDateTime = blobCreatedEvent.EventTime
             })
             {
