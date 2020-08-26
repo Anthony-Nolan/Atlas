@@ -6,6 +6,8 @@
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:DonorFileBlobContainer": "donors",
     "MessagingServiceBus:ConnectionString": "override-this",
+    "MessagingServiceBus:ImportFileSubscription": "donor-import",
+    "MessagingServiceBus:ImportFileTopic": "donor-import-file-uploads",
     "MessagingServiceBus:MatchingDonorUpdateTopic": "updated-searchable-donors",
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",

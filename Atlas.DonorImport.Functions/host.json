@@ -8,8 +8,11 @@
       }
     },
     "extensions": {
-      "http": {
-        "maxConcurrentRequests": 1
+      "serviceBus": {
+        "messageHandlerOptions": {
+          "maxConcurrentCalls": 2,
+          "maxAutoRenewDuration": "00:55:00"
+        }
       }
     }
   },

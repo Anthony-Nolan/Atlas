@@ -42,7 +42,7 @@ resource "azurerm_servicebus_subscription" "donor-import-file-processor" {
   dead_lettering_on_message_expiration = false
 }
 
-resource "azurerm_servicebus_subscription" "donor-import-file-upload-audit" {
+resource "azurerm_servicebus_subscription" "audit-donor-import-file-upload" {
   name                                 = "audit"
   resource_group_name                  = var.app_service_plan.resource_group_name
   namespace_name                       = var.servicebus_namespace.name
