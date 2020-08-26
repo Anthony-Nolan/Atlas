@@ -5,6 +5,7 @@ using Dasync.Collections;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.Common.Utils;
+using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models.FileSchema;
@@ -58,7 +59,7 @@ namespace Atlas.DonorImport.Services
             try
             {
                 var donorUpdates = lazyFile.ReadLazyDonorUpdates();
-                var searchableDonors = donorUpdates.Where(ValidateDonorIsSearchable);
+                var (searchableDonors, unSearchableDonors) = donorUpdates.ReifyAndSplit(ValidateDonorIsSearchable);
                 var donorUpdatesToApply = donorLogService.FilterDonorUpdatesBasedOnUpdateTime(searchableDonors, file.UploadTime);
                 await foreach (var donorUpdateBatch in donorUpdatesToApply.Batch(BatchSize))
                 {
@@ -75,8 +76,11 @@ namespace Atlas.DonorImport.Services
 
                 }
                 await donorImportFileHistoryService.RegisterSuccessfulDonorImport(file);
+                
+                var unsearchableDonorIds = string.Join(", ", unSearchableDonors.Select(d => d.RecordId));
 
-                logger.SendTrace($"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).");
+                logger.SendTrace(@$"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).
+                    {unSearchableDonors.Count} Were not imported due to being unsearchable. The codes for these are: {unsearchableDonorIds}");
                 await notificationSender.SendNotification($"Donor Import Successful: {file.FileLocation}",
                     $"Imported {importedDonorCount} donor(s) from file {file.FileLocation}",
                     nameof(ImportDonorFile)
@@ -128,12 +132,6 @@ Manual investigation is recommended; see Application Insights for more informati
         private bool ValidateDonorIsSearchable(DonorUpdate donorUpdate)
         {
             var validationResult = searchableDonorValidator.Validate(donorUpdate);
-            if (!validationResult.IsValid)
-            {
-                var message = $"Insufficiently typed donor was not imported - ${donorUpdate.RecordId}";
-                logger.SendTrace(message, LogLevel.Verbose);
-            }
-
             return validationResult.IsValid;
         }
     }
