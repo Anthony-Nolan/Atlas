@@ -46,8 +46,8 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
             IEnumerable<HaplotypeFrequency> haplotypeFrequencies,
             string registryCode = null,
             string ethnicityCode = null,
-            int populationId = DefaultPopulationId,
-            string nomenclatureVersion = HlaNomenclatureVersion)
+            string nomenclatureVersion = HlaNomenclatureVersion,
+            int populationId = DefaultPopulationId)
         {
             return FileWithoutContents()
                 .WithHaplotypeFrequencies(registryCode, ethnicityCode, populationId, nomenclatureVersion, haplotypeFrequencies);

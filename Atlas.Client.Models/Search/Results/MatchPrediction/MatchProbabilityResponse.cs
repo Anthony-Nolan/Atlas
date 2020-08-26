@@ -39,8 +39,18 @@ namespace Atlas.Client.Models.Search.Results.MatchPrediction
         public LociInfo<Probability> TwoMismatchProbabilityPerLocus =>
             MatchProbabilitiesPerLocus.Map(x => x?.MatchProbabilities.TwoMismatchProbability);
 
+        /// <summary>
+        /// Nomenclature version used for HF set generation + processing for the patient.
+        /// NOTE: HLA expansion of the request was done using the input version.
+        /// </summary>
         public string PatientFrequencySetNomenclatureVersion { get; set; }
+
+        /// <summary>
+        /// Nomenclature version used for HF set generation + processing for the donor.
+        /// NOTE: HLA expansion of the request was done using the input version.
+        /// </summary>
         public string DonorFrequencySetNomenclatureVersion { get; set; }
+
         public bool IsPatientPhenotypeUnrepresented { get; set; }
         public bool IsDonorPhenotypeUnrepresented { get; set; }
 

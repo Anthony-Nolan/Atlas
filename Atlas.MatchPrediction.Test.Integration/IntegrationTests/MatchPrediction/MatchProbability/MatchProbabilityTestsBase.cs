@@ -40,9 +40,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         protected async Task ImportFrequencies(
             IEnumerable<HaplotypeFrequency> haplotypes,
             string registryCode = DefaultRegistryCode,
-            string ethnicityCode = DefaultEthnicityCode)
+            string ethnicityCode = DefaultEthnicityCode,
+            string nomenclatureVersion = HlaNomenclatureVersion)
         {
-            using var file = FrequencySetFileBuilder.New(haplotypes, registryCode, ethnicityCode).Build();
+            using var file = FrequencySetFileBuilder.New(haplotypes, registryCode, ethnicityCode, nomenclatureVersion).Build();
             await ImportService.ImportFrequencySet(file);
         }
 
