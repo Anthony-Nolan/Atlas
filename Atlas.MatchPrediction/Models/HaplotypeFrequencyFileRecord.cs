@@ -1,16 +1,24 @@
-﻿namespace Atlas.MatchPrediction.Models
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
+
+namespace Atlas.MatchPrediction.Models
 {
     public class HaplotypeFrequencyFileRecord
     {
-        public string A { get; set; }
-        public string B { get; set; }
-        public string C { get; set; }
-        public string Dqb1 { get; set; }
-        public string Drb1 { get; set; }
-        public decimal Frequency { get; set; }
-        public string HlaNomenclatureVersion { get; set; }
+        // ReSharper disable once StringLiteralTypo
+        [JsonProperty(PropertyName = "ethn")]
+        public string Ethnicity { get; set; }
+
+        [JsonProperty(PropertyName = "donPool")]
+        public string[] RegistryCodes { get; set; }
+
+        [JsonProperty(PropertyName = "nomenclatureVersion")]
+        public string NomenclatureVersion { get; set; }
+
+        [JsonProperty(PropertyName = "populationId")]
         public int PopulationId { get; set; }
-        public string RegistryCode { get; set; }
-        public string EthnicityCode { get; set; }
+
+        [JsonProperty(PropertyName = "frequencies")]
+        public IEnumerable<HaplotypeFrequencyRecord> Frequencies { get; set; }
     }
 }
