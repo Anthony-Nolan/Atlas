@@ -18,6 +18,8 @@ namespace Atlas.DonorImport.Services
 
     internal class DonorImportLogService : IDonorImportLogService
     {
+        // Parameterisation limit for SQL queries is 2100, so anything larger than this will need to be batched in the repository layer anyway.
+        private const int UpdateFilterBatchSize = 2000;
         private readonly IDonorImportLogRepository repository;
 
         public DonorImportLogService(IDonorImportLogRepository repository)
@@ -27,7 +29,7 @@ namespace Atlas.DonorImport.Services
 
         public async IAsyncEnumerable<DonorUpdate> FilterDonorUpdatesBasedOnUpdateTime(IEnumerable<DonorUpdate> donorUpdates, DateTime uploadTime)
         {
-            foreach (var updateBatch in donorUpdates.Batch(2000))
+            foreach (var updateBatch in donorUpdates.Batch(UpdateFilterBatchSize))
             {
                 var reifiedDonorBatch = updateBatch.ToList();
                 var updateDates = await repository.GetLastUpdatedTimes(reifiedDonorBatch.Select(u => u.RecordId).ToList());

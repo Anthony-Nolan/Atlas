@@ -34,7 +34,6 @@ namespace Atlas.DonorImport.Data.Repositories
             ConnectionString = connectionString;
         }
 
-        /// <inheritdoc />
         public async Task<IReadOnlyDictionary<string, DateTime>> GetLastUpdatedTimes(IReadOnlyCollection<string> externalDonorCodes)
         {
             await using (var connection = new SqlConnection(ConnectionString))
@@ -52,7 +51,7 @@ namespace Atlas.DonorImport.Data.Repositories
                 var donorCodes = externalDonorCodes.ToList();
 
                 connection.Open();
-                const string sql = @"SELECT ExternalDonorCode FROM DonorLogs WHERE ExternalDonorCode IN @ExternalDonorCodes";
+                var sql = $@"SELECT {ExternalDonorCodeColumnName} FROM {DonorLogTableName} WHERE {ExternalDonorCodeColumnName} IN @ExternalDonorCodes";
 
                 var existingRecords = await donorCodes.ProcessInBatchesAsync(
                     2000,
