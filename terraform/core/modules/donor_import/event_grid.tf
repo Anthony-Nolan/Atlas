@@ -1,5 +1,5 @@
-resource "azurerm_eventgrid_event_subscription" "donor-file-upload" {
-  name  = "${lower(var.general.environment)}-donor-file-upload-subscription"
+resource "azurerm_eventgrid_event_subscription" "donor-file-upload-to-service-bus" {
+  name  = "${lower(var.general.environment)}-donor-file-upload-to-service-bus"
   scope = var.azure_storage.id
   included_event_types = [
     "Microsoft.Storage.BlobCreated"
