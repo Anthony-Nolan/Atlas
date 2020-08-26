@@ -39,6 +39,9 @@ variable "servicebus_namespace_authorization_rules" {
     write-only = object({
       primary_connection_string = string
     })
+    read-write = object({
+      primary_connection_string = string
+    })
   })
 }
 

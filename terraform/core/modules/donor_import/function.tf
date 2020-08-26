@@ -23,7 +23,7 @@ resource "azurerm_function_app" "atlas_donor_import_function" {
 
     "FUNCTIONS_WORKER_RUNTIME" : "dotnet"
 
-    "MessagingServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
+    "MessagingServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
     "MessagingServiceBus:ImportFileSubscription"   = azurerm_servicebus_subscription.donor-import-file-processor.name
     "MessagingServiceBus:ImportFileTopic"          = azurerm_servicebus_topic.donor-import-file-uploads.name
     "MessagingServiceBus:MatchingDonorUpdateTopic" = azurerm_servicebus_topic.updated-searchable-donors.name
