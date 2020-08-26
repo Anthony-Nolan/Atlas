@@ -61,7 +61,17 @@ namespace Atlas.Common.Utils.Extensions
             return enumerable.Except(new[] {singleItem});
         }
 
-        public static IEnumerable<T> FilterAndCallbackIfFiltered<T>(this IEnumerable<T> enumerable,Func<T, bool> filterFunction, Action<T> callback)
+        /// <summary>
+        /// Filters a collection based on a provided function. If an object is filtered (i.e the filterFunction returned false)
+        /// then a callback function will be called, with the object as its only parameter.
+        /// </summary>
+        /// <param name="enumerable"> The collection to be filtered</param>
+        /// <param name="filterFunction"> The filterFunction. If this returns true, the object is kept in the collection,
+        ///  otherwise it is removed, and the callback function is called.</param>
+        /// <param name="callback"> if an object is filtered out this callback will be called</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static IEnumerable<T> FilterAndCallbackIfFiltered<T>(this IEnumerable<T> enumerable, Func<T, bool> filterFunction, Action<T> callback)
         {
             foreach (var obj in enumerable)
             {

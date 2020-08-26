@@ -31,7 +31,6 @@ namespace Atlas.DonorImport.Services
         private readonly IDonorImportLogService donorLogService;
         private readonly ILogger logger;
         private readonly SearchableDonorValidator searchableDonorValidator;
-        private List<string> InvalidDonorIds;
 
         public DonorFileImporter(
             IDonorImportFileParser fileParser,
@@ -48,7 +47,7 @@ namespace Atlas.DonorImport.Services
             this.donorLogService = donorLogService;
             this.logger = logger;
             searchableDonorValidator = new SearchableDonorValidator();
-            InvalidDonorIds = new List<string>();
+            
         }
 
         public async Task ImportDonorFile(DonorImportFile file)
@@ -61,8 +60,9 @@ namespace Atlas.DonorImport.Services
 
             try
             {
+                var invalidDonorIds = new List<string>();
                 var donorUpdates = lazyFile.ReadLazyDonorUpdates();
-                var validDonors = donorUpdates.FilterAndCallbackIfFiltered(ValidateDonorIsSearchable, RecordUnsearchableDonor);
+                var validDonors = donorUpdates.FilterAndCallbackIfFiltered(ValidateDonorIsSearchable, du => invalidDonorIds.Add(du.RecordId));
                 var donorUpdatesToApply = donorLogService.FilterDonorUpdatesBasedOnUpdateTime(validDonors, file.UploadTime);
                 await foreach (var donorUpdateBatch in donorUpdatesToApply.Batch(BatchSize))
                 {
@@ -80,10 +80,10 @@ namespace Atlas.DonorImport.Services
                 }
                 await donorImportFileHistoryService.RegisterSuccessfulDonorImport(file);
                 
-                var unsearchableDonorIds = string.Join(", ", InvalidDonorIds);
+                var unsearchableDonorIds = string.Join(", ", invalidDonorIds);
 
                 logger.SendTrace(@$"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).
-                    {InvalidDonorIds.Count} Were not imported due to being unsearchable. The codes for these are: {unsearchableDonorIds}");
+                    {invalidDonorIds.Count} Were not imported due to being unsearchable. The codes for these are: {unsearchableDonorIds}");
                 await notificationSender.SendNotification($"Donor Import Successful: {file.FileLocation}",
                     $"Imported {importedDonorCount} donor(s) from file {file.FileLocation}",
                     nameof(ImportDonorFile)
@@ -125,11 +125,6 @@ Manual investigation is recommended; see Application Insights for more informati
             }
         }
 
-        private void RecordUnsearchableDonor(DonorUpdate donorUpdate)
-        {
-            InvalidDonorIds.Add(donorUpdate.RecordId);
-        }
-        
 
         private async Task LogFileErrorAndSendAlert(DonorImportFile file, string message, string description)
         {
