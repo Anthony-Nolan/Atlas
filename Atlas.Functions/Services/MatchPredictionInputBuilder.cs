@@ -122,7 +122,7 @@ namespace Atlas.Functions.Services
             return new DonorInput
             {
                 DonorId = matchingAlgorithmResult.AtlasDonorId,
-                DonorHla = matchingAlgorithmResult.DonorHla,
+                DonorHla = matchingAlgorithmResult.MatchingResult.DonorHla,
                 DonorFrequencySetMetadata = new FrequencySetMetadata
                 {
                     EthnicityCode = donorInfo.EthnicityCode,

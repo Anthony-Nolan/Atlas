@@ -162,7 +162,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
             // 3 match loci (A, B, DRB1) x 2
-            result?.TotalMatchCount.Should().Be(6);
+            result?.MatchingResult.TotalMatchCount.Should().Be(6);
         }
 
         [Test]
