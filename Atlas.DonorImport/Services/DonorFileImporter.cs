@@ -97,11 +97,11 @@ namespace Atlas.DonorImport.Services
             }
             catch (DuplicateDonorImportException e)
             {
-                await LogGenericErrorAndSendAlert(e);
+                await LogFileErrorAndSendAlert(file, e.Message, e.InnerException?.Message);
             }
             catch (DonorNotFoundException e)
             {
-                await LogGenericErrorAndSendAlert(e);
+                await LogFileErrorAndSendAlert(file, e.Message, e.InnerException?.Message);
             }
             catch (Exception e)
             {
@@ -116,12 +116,6 @@ Manual investigation is recommended; see Application Insights for more informati
 
                 throw;
             }
-        }
-        
-        private async Task LogGenericErrorAndSendAlert(Exception e)
-        {
-            logger.SendTrace(e.Message, LogLevel.Warn);
-            await notificationSender.SendAlert(e.Message, e.InnerException?.Message, Priority.Medium, nameof(ImportDonorFile));
         }
 
         private async Task LogFileErrorAndSendAlert(DonorImportFile file, string message, string description)
