@@ -29,6 +29,13 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders
         {
             return builder.With(c => c.donors, donors);
         }
+
+        public static Builder<SerialisableDonorImportFileContents> WithUpdateMode(
+            this Builder<SerialisableDonorImportFileContents> builder,
+            UpdateMode updateMode)
+        {
+            return builder.With(c => c.updateMode, updateMode);
+        }
     }
     
     [Builder]
