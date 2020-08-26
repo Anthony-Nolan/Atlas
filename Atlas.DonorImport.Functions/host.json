@@ -6,6 +6,11 @@
       "samplingSettings": {
         "isEnabled": true
       }
+    },
+    "extensions": {
+      "http": {
+        "maxConcurrentRequests": 1
+      }
     }
   },
   "functionTimeout": "00:10:00"
