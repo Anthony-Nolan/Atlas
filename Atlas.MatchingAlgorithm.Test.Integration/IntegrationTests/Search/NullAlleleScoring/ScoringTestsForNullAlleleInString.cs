@@ -128,8 +128,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameNoSuffix.Phenotype,
                 expressingAlleleFromSameGGroupAsNullAllele.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
         }
 
         [Test]
@@ -141,8 +141,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
 
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameNoSuffix.Phenotype, donorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
         }
 
         [Test]
@@ -150,8 +150,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameNoSuffix.Phenotype, nullAllele.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -159,8 +159,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameNoSuffix.Phenotype, differentNullAllele.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -169,8 +169,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameNoSuffix.Phenotype,
                 nullAlleleAsTwoFieldNameNoSuffix.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
         }
 
         [Test]
@@ -179,8 +179,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameNoSuffix.Phenotype,
                 nullAlleleAsTwoFieldNameWithSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -190,8 +190,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameNoSuffix.Phenotype,
                 nullAlleleAsThreeFieldNameNoSuffix.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
         }
 
         [Test]
@@ -200,8 +200,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameNoSuffix.Phenotype,
                 nullAlleleAsThreeFieldNameWithSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -211,8 +211,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameNoSuffix.Phenotype,
                 nullAlleleAsStringWithExpressingAlleleOfSameGGroup.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
         }
 
         [Test]
@@ -222,8 +222,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameNoSuffix.Phenotype,
                 nullAlleleAsThreeFieldNameWithSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -231,8 +231,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameNoSuffix.Phenotype, nullAlleleAsXxCode.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
         }
 
         #endregion
@@ -245,8 +245,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameWithSuffix.Phenotype,
                 expressingAlleleFromSameGGroupAsNullAllele.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -258,8 +258,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
 
             var result = await FourOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameWithSuffix.Phenotype, donorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -267,8 +267,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameWithSuffix.Phenotype, nullAllele.DonorId);
 
-            matchGradesForMatchingNullAlleles.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
+            matchGradesForMatchingNullAlleles.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
         }
 
         [Test]
@@ -276,8 +276,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameWithSuffix.Phenotype, differentNullAllele.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.NullMismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.NullMismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
         }
 
         [Test]
@@ -286,8 +286,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameWithSuffix.Phenotype,
                 nullAlleleAsTwoFieldNameWithSuffix.DonorId);
 
-            matchGradesForMatchingNullAlleles.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
+            matchGradesForMatchingNullAlleles.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
         }
 
         [Test]
@@ -296,8 +296,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameWithSuffix.Phenotype,
                 nullAlleleAsThreeFieldNameNoSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -306,8 +306,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameWithSuffix.Phenotype,
                 nullAlleleAsThreeFieldNameNoSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -317,8 +317,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameWithSuffix.Phenotype,
                 nullAlleleAsThreeFieldNameWithSuffix.DonorId);
 
-            matchGradesForMatchingNullAlleles.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
+            matchGradesForMatchingNullAlleles.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
         }
 
         [Test]
@@ -328,8 +328,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameWithSuffix.Phenotype,
                 nullAlleleAsStringWithExpressingAlleleOfSameGGroup.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -339,8 +339,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameWithSuffix.Phenotype,
                 nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -348,8 +348,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsTwoFieldNameWithSuffix.Phenotype, nullAlleleAsXxCode.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         #endregion
@@ -362,8 +362,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameNoSuffix.Phenotype,
                 expressingAlleleFromSameGGroupAsNullAllele.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
         }
 
         [Test]
@@ -377,8 +377,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameNoSuffix.Phenotype, donorId);
 
             // Position under test
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
         }
 
         [Test]
@@ -386,8 +386,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameNoSuffix.Phenotype, nullAllele.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -395,8 +395,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameNoSuffix.Phenotype, differentNullAllele.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -405,8 +405,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameNoSuffix.Phenotype,
                 nullAlleleAsThreeFieldNameNoSuffix.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
         }
 
         [Test]
@@ -415,8 +415,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameNoSuffix.Phenotype,
                 nullAlleleAsTwoFieldNameWithSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -426,8 +426,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameNoSuffix.Phenotype,
                 nullAlleleAsTwoFieldNameNoSuffix.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
         }
 
         [Test]
@@ -436,8 +436,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameNoSuffix.Phenotype,
                 nullAlleleAsThreeFieldNameWithSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -447,8 +447,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameNoSuffix.Phenotype,
                 nullAlleleAsStringWithExpressingAlleleOfSameGGroup.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
         }
 
         [Test]
@@ -458,8 +458,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameNoSuffix.Phenotype,
                 nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -467,8 +467,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameNoSuffix.Phenotype, nullAlleleAsXxCode.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
         }
 
         #endregion
@@ -481,8 +481,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameWithSuffix.Phenotype,
                 expressingAlleleFromSameGGroupAsNullAllele.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -494,8 +494,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
 
             var result = await FourOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameWithSuffix.Phenotype, donorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -503,8 +503,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameWithSuffix.Phenotype, nullAllele.DonorId);
 
-            matchGradesForMatchingNullAlleles.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
+            matchGradesForMatchingNullAlleles.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
         }
 
         [Test]
@@ -512,8 +512,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameWithSuffix.Phenotype, differentNullAllele.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.NullMismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.NullMismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
         }
 
         [Test]
@@ -522,8 +522,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameWithSuffix.Phenotype,
                 nullAlleleAsThreeFieldNameWithSuffix.DonorId);
 
-            matchGradesForMatchingNullAlleles.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
+            matchGradesForMatchingNullAlleles.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
         }
 
         [Test]
@@ -532,8 +532,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameWithSuffix.Phenotype,
                 nullAlleleAsTwoFieldNameNoSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -542,8 +542,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameWithSuffix.Phenotype,
                 nullAlleleAsThreeFieldNameNoSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -553,8 +553,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameWithSuffix.Phenotype,
                 nullAlleleAsTwoFieldNameWithSuffix.DonorId);
 
-            matchGradesForMatchingNullAlleles.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
+            matchGradesForMatchingNullAlleles.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
         }
 
         [Test]
@@ -564,8 +564,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameWithSuffix.Phenotype,
                 nullAlleleAsStringWithExpressingAlleleOfSameGGroup.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -575,8 +575,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameWithSuffix.Phenotype,
                 nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -584,8 +584,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsThreeFieldNameWithSuffix.Phenotype, nullAlleleAsXxCode.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         #endregion
@@ -601,8 +601,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfSameGGroup.Phenotype,
                 expressingAlleleFromSameGGroupAsNullAllele.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
         }
 
         [Test]
@@ -615,8 +615,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
 
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfSameGGroup.Phenotype, donorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
         }
 
         [Test]
@@ -624,8 +624,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfSameGGroup.Phenotype, nullAllele.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -634,8 +634,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfSameGGroup.Phenotype,
                 differentNullAllele.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -644,8 +644,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfSameGGroup.Phenotype,
                 nullAlleleAsStringWithExpressingAlleleOfSameGGroup.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
         }
 
         [Test]
@@ -655,8 +655,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfSameGGroup.Phenotype,
                 nullAlleleAsTwoFieldNameWithSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -666,8 +666,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfSameGGroup.Phenotype,
                 nullAlleleAsTwoFieldNameNoSuffix.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
         }
 
         [Test]
@@ -677,8 +677,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfSameGGroup.Phenotype,
                 nullAlleleAsThreeFieldNameWithSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -688,8 +688,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfSameGGroup.Phenotype,
                 nullAlleleAsThreeFieldNameNoSuffix.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
         }
 
         [Test]
@@ -699,8 +699,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfSameGGroup.Phenotype,
                 nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -710,8 +710,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfSameGGroup.Phenotype,
                 nullAlleleAsXxCode.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
         }
 
         #endregion
@@ -727,8 +727,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.Phenotype,
                 expressingAlleleFromSameGGroupAsNullAllele.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -741,8 +741,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
 
             var result = await FourOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.Phenotype, donorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -751,8 +751,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.Phenotype,
                 nullAllele.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -762,8 +762,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.Phenotype,
                 differentNullAllele.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -773,8 +773,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.Phenotype,
                 nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Exact);
         }
 
         [Test]
@@ -784,8 +784,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.Phenotype,
                 nullAlleleAsTwoFieldNameNoSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -795,8 +795,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.Phenotype,
                 nullAlleleAsThreeFieldNameNoSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -806,8 +806,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.Phenotype,
                 nullAlleleAsTwoFieldNameWithSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -817,8 +817,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.Phenotype,
                 nullAlleleAsThreeFieldNameWithSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -828,8 +828,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.Phenotype,
                 nullAlleleAsStringWithExpressingAlleleOfSameGGroup.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -839,8 +839,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.Phenotype,
                 nullAlleleAsXxCode.DonorId);
 
-            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            matchGradesForExpressingAlleleOfSameGGroups.Should().Contain(result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
         }
 
         #endregion
@@ -852,8 +852,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsXxCode.Phenotype, expressingAlleleFromSameGGroupAsNullAllele.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
         }
 
         [Test]
@@ -865,8 +865,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
 
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsXxCode.Phenotype, donorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
         }
 
         [Test]
@@ -874,8 +874,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsXxCode.Phenotype, nullAllele.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -883,8 +883,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsXxCode.Phenotype, differentNullAllele.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -892,8 +892,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsXxCode.Phenotype, nullAlleleAsXxCode.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
         }
 
         [Test]
@@ -901,8 +901,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsXxCode.Phenotype, nullAlleleAsTwoFieldNameNoSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
         }
 
         [Test]
@@ -910,8 +910,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsXxCode.Phenotype, nullAlleleAsTwoFieldNameWithSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -919,8 +919,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsXxCode.Phenotype, nullAlleleAsThreeFieldNameNoSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
         }
 
         [Test]
@@ -928,8 +928,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
         {
             var result = await FiveOutOfSixSearchWithAllLociScored(nullAlleleAsXxCode.Phenotype, nullAlleleAsThreeFieldNameWithSuffix.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -939,8 +939,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsXxCode.Phenotype,
                 nullAlleleAsStringWithExpressingAlleleOfSameGGroup.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
         }
 
         [Test]
@@ -950,8 +950,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = await SixOutOfSixSearchWithAllLociScored(nullAlleleAsXxCode.Phenotype,
                 nullAlleleAsStringWithExpressingAlleleOfDifferentGGroup.DonorId);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
         }
 
         #endregion
