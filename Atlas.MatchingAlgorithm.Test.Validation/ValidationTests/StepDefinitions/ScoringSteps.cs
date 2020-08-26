@@ -34,22 +34,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                 switch (expectedLocus)
                 {
                     case Locus.A:
-                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.SearchResultsByLocus.A, validMatchGrades);
+                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.ScoringResultsByLocus.A, validMatchGrades);
                         break;
                     case Locus.B:
-                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.SearchResultsByLocus.B, validMatchGrades);
+                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.ScoringResultsByLocus.B, validMatchGrades);
                         break;
                     case Locus.C:
-                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.SearchResultsByLocus.C, validMatchGrades);
+                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.ScoringResultsByLocus.C, validMatchGrades);
                         break;
                     case Locus.Dpb1:
-                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.SearchResultsByLocus.Dpb1, validMatchGrades);
+                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.ScoringResultsByLocus.Dpb1, validMatchGrades);
                         break;
                     case Locus.Dqb1:
-                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.SearchResultsByLocus.Dqb1, validMatchGrades);
+                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.ScoringResultsByLocus.Dqb1, validMatchGrades);
                         break;
                     case Locus.Drb1:
-                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.SearchResultsByLocus.Drb1, validMatchGrades);
+                        AssertMatchGrade(expectedPosition, donorResult.ScoringResult.ScoringResultsByLocus.Drb1, validMatchGrades);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -93,22 +93,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                 switch (expectedLocus)
                 {
                     case Locus.A:
-                        AssertMatchConfidence(expectedPositions, donorResult.ScoringResult.SearchResultsByLocus.A, validMatchConfidence);
+                        AssertMatchConfidence(expectedPositions, donorResult.ScoringResult.ScoringResultsByLocus.A, validMatchConfidence);
                         break;
                     case Locus.B:
-                        AssertMatchConfidence(expectedPositions, donorResult.ScoringResult.SearchResultsByLocus.B, validMatchConfidence);
+                        AssertMatchConfidence(expectedPositions, donorResult.ScoringResult.ScoringResultsByLocus.B, validMatchConfidence);
                         break;
                     case Locus.C:
-                        AssertMatchConfidence(expectedPositions, donorResult.ScoringResult.SearchResultsByLocus.C, validMatchConfidence);
+                        AssertMatchConfidence(expectedPositions, donorResult.ScoringResult.ScoringResultsByLocus.C, validMatchConfidence);
                         break;
                     case Locus.Dpb1:
-                        AssertMatchConfidence(expectedPositions, donorResult.ScoringResult.SearchResultsByLocus.Dpb1, validMatchConfidence);
+                        AssertMatchConfidence(expectedPositions, donorResult.ScoringResult.ScoringResultsByLocus.Dpb1, validMatchConfidence);
                         break;
                     case Locus.Dqb1:
-                        AssertMatchConfidence(expectedPositions, donorResult.ScoringResult.SearchResultsByLocus.Dqb1, validMatchConfidence);
+                        AssertMatchConfidence(expectedPositions, donorResult.ScoringResult.ScoringResultsByLocus.Dqb1, validMatchConfidence);
                         break;
                     case Locus.Drb1:
-                        AssertMatchConfidence(expectedPositions, donorResult.ScoringResult.SearchResultsByLocus.Drb1, validMatchConfidence);
+                        AssertMatchConfidence(expectedPositions, donorResult.ScoringResult.ScoringResultsByLocus.Drb1, validMatchConfidence);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -275,9 +275,9 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                 case "a 4/8 result":
                     return results.Find(r => r.MatchingResult.TotalMatchCount == 4 && NumberOfLociSearched(r) == 4);
                 case "a match at DQB1":
-                    return results.Find(r => r.ScoringResult.SearchResultsByLocus.Dqb1.MatchCount == 2);
+                    return results.Find(r => r.ScoringResult.ScoringResultsByLocus.Dqb1.MatchCount == 2);
                 case "a mismatch at DQB1":
-                    return results.Find(r => r.ScoringResult.SearchResultsByLocus.Dqb1.MatchCount < 2);
+                    return results.Find(r => r.ScoringResult.ScoringResultsByLocus.Dqb1.MatchCount < 2);
                 case "a full gDNA match":
                     return results.Find(r => IsMatchGradeAtMatchedLoci(r, MatchGrade.GDna));
                 case "a full cDNA match":
@@ -316,16 +316,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         {
             var positionResults = new[]
             {
-                result.ScoringResult.SearchResultsByLocus.A,
-                result.ScoringResult.SearchResultsByLocus.A,
-                result.ScoringResult.SearchResultsByLocus.B,
-                result.ScoringResult.SearchResultsByLocus.B,
-                result.ScoringResult.SearchResultsByLocus.C,
-                result.ScoringResult.SearchResultsByLocus.C,
-                result.ScoringResult.SearchResultsByLocus.Dqb1,
-                result.ScoringResult.SearchResultsByLocus.Dqb1,
-                result.ScoringResult.SearchResultsByLocus.Drb1,
-                result.ScoringResult.SearchResultsByLocus.Drb1,
+                result.ScoringResult.ScoringResultsByLocus.A,
+                result.ScoringResult.ScoringResultsByLocus.A,
+                result.ScoringResult.ScoringResultsByLocus.B,
+                result.ScoringResult.ScoringResultsByLocus.B,
+                result.ScoringResult.ScoringResultsByLocus.C,
+                result.ScoringResult.ScoringResultsByLocus.C,
+                result.ScoringResult.ScoringResultsByLocus.Dqb1,
+                result.ScoringResult.ScoringResultsByLocus.Dqb1,
+                result.ScoringResult.ScoringResultsByLocus.Drb1,
+                result.ScoringResult.ScoringResultsByLocus.Drb1,
             };
 
             return positionResults.All(r =>
@@ -340,16 +340,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         {
             var positionResults = new[]
             {
-                result.ScoringResult.SearchResultsByLocus.A,
-                result.ScoringResult.SearchResultsByLocus.A,
-                result.ScoringResult.SearchResultsByLocus.B,
-                result.ScoringResult.SearchResultsByLocus.B,
-                result.ScoringResult.SearchResultsByLocus.C,
-                result.ScoringResult.SearchResultsByLocus.C,
-                result.ScoringResult.SearchResultsByLocus.Dqb1,
-                result.ScoringResult.SearchResultsByLocus.Dqb1,
-                result.ScoringResult.SearchResultsByLocus.Drb1,
-                result.ScoringResult.SearchResultsByLocus.Drb1,
+                result.ScoringResult.ScoringResultsByLocus.A,
+                result.ScoringResult.ScoringResultsByLocus.A,
+                result.ScoringResult.ScoringResultsByLocus.B,
+                result.ScoringResult.ScoringResultsByLocus.B,
+                result.ScoringResult.ScoringResultsByLocus.C,
+                result.ScoringResult.ScoringResultsByLocus.C,
+                result.ScoringResult.ScoringResultsByLocus.Dqb1,
+                result.ScoringResult.ScoringResultsByLocus.Dqb1,
+                result.ScoringResult.ScoringResultsByLocus.Drb1,
+                result.ScoringResult.ScoringResultsByLocus.Drb1,
             };
 
             return positionResults.All(r =>
@@ -364,11 +364,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         {
             var loci = new[]
             {
-                matchingAlgorithmResult.ScoringResult.SearchResultsByLocus.A.IsLocusMatchCountIncludedInTotal,
-                matchingAlgorithmResult.ScoringResult.SearchResultsByLocus.B.IsLocusMatchCountIncludedInTotal,
-                matchingAlgorithmResult.ScoringResult.SearchResultsByLocus.C.IsLocusMatchCountIncludedInTotal,
-                matchingAlgorithmResult.ScoringResult.SearchResultsByLocus.Dqb1.IsLocusMatchCountIncludedInTotal,
-                matchingAlgorithmResult.ScoringResult.SearchResultsByLocus.Drb1.IsLocusMatchCountIncludedInTotal,
+                matchingAlgorithmResult.ScoringResult.ScoringResultsByLocus.A.IsLocusMatchCountIncludedInTotal,
+                matchingAlgorithmResult.ScoringResult.ScoringResultsByLocus.B.IsLocusMatchCountIncludedInTotal,
+                matchingAlgorithmResult.ScoringResult.ScoringResultsByLocus.C.IsLocusMatchCountIncludedInTotal,
+                matchingAlgorithmResult.ScoringResult.ScoringResultsByLocus.Dqb1.IsLocusMatchCountIncludedInTotal,
+                matchingAlgorithmResult.ScoringResult.ScoringResultsByLocus.Drb1.IsLocusMatchCountIncludedInTotal,
             };
             return loci.Count(x => x);
         }

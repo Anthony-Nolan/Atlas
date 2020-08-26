@@ -61,7 +61,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var result = await RunSixOutOfSixSearchWithAllLociScored(defaultPhenotype);
 
-            result.ScoringResult.SearchResultsByLocus.Dpb1.MatchCount.Should().Be(2);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.MatchCount.Should().Be(2);
         }
 
         [Test]
@@ -69,8 +69,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var result = await RunSixOutOfSixSearchWithAllLociScored(defaultPhenotype);
 
-            dpb1MismatchGrades.Should().NotContain(result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchGrade);
-            dpb1MismatchGrades.Should().NotContain(result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchGrade);
+            dpb1MismatchGrades.Should().NotContain(result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchGrade);
+            dpb1MismatchGrades.Should().NotContain(result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchGrade);
         }
 
         [Test]
@@ -78,8 +78,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         {
             var result = await RunSixOutOfSixSearchWithAllLociScored(defaultPhenotype);
 
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -88,7 +88,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
             var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
-            result.ScoringResult.SearchResultsByLocus.Dpb1.MatchCount.Should().Be(0);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.MatchCount.Should().Be(0);
         }
 
         [Test]
@@ -97,8 +97,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
             var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PermissiveMismatch);
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.PermissiveMismatch);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PermissiveMismatch);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.PermissiveMismatch);
         }
 
         [Test]
@@ -107,8 +107,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
             var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -117,7 +117,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
             var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
-            result.ScoringResult.SearchResultsByLocus.Dpb1.MatchCount.Should().Be(0);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.MatchCount.Should().Be(0);
         }
 
         [Test]
@@ -126,8 +126,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithDifferentTceGroup);
             var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.Mismatch);
         }
 
         [Test]
@@ -136,8 +136,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithDifferentTceGroup);
             var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -146,7 +146,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithSameTceGroup);
             var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
-            result.ScoringResult.SearchResultsByLocus.Dpb1.MatchCount.Should().Be(0);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.MatchCount.Should().Be(0);
         }
 
         [Test]
@@ -155,8 +155,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
             var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.Mismatch);
         }
 
         [Test]
@@ -166,8 +166,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var patientPhenotype = GetPhenotypeWithDpb1HlaOf(MismatchedDpb1HlaWithNoTceGroup);
             var result = await RunSixOutOfSixSearchWithAllLociScored(patientPhenotype);
 
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
         }
 
         [Test]

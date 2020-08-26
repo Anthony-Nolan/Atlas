@@ -144,14 +144,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var results = await searchService.Search(searchRequest);
             var result = results.Single(d => d.AtlasDonorId == testDonor.DonorId);
 
-            var scoredLocus = result.ScoringResult.SearchResultsByLocus.Dpb1;
+            var scoredLocus = result.ScoringResult.ScoringResultsByLocus.Dpb1;
             scoredLocus.IsLocusTyped.Should().BeTrue();
             scoredLocus.MatchGradeScore.Should().NotBeNull();
             scoredLocus.MatchConfidenceScore.Should().NotBeNull();
             scoredLocus.ScoreDetailsAtPositionOne.Should().NotBeNull();
             scoredLocus.ScoreDetailsAtPositionTwo.Should().NotBeNull();
 
-            var notScoredLocus = result.ScoringResult.SearchResultsByLocus.A;
+            var notScoredLocus = result.ScoringResult.ScoringResultsByLocus.A;
             notScoredLocus.IsLocusTyped.Should().BeNull();
             notScoredLocus.MatchGradeScore.Should().BeNull();
             notScoredLocus.MatchConfidenceScore.Should().BeNull();
@@ -250,25 +250,25 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             result.ScoringResult.MatchCategory.Should().NotBe(MatchCategory.Mismatch);
 
             // Should be 2/2 at A
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
 
             // Should be 2/2 at B
-            result.ScoringResult.SearchResultsByLocus.B.ScoreDetailsAtPositionOne.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.B.ScoreDetailsAtPositionOne.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.B.ScoreDetailsAtPositionOne.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.B.ScoreDetailsAtPositionOne.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
 
-            result.ScoringResult.SearchResultsByLocus.B.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.B.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.B.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.B.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
 
             // Should be 2/2 at DRB1
-            result.ScoringResult.SearchResultsByLocus.Drb1.ScoreDetailsAtPositionOne.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.Drb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Drb1.ScoreDetailsAtPositionOne.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Drb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
 
-            result.ScoringResult.SearchResultsByLocus.Drb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.Drb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Drb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Drb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -290,25 +290,25 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             result.ScoringResult.MatchCategory.Should().Be(MatchCategory.Mismatch);
 
             // Should be 1/2 at A
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
 
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.A.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
 
             // Should be 2/2 at B
-            result.ScoringResult.SearchResultsByLocus.B.ScoreDetailsAtPositionOne.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.B.ScoreDetailsAtPositionOne.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.B.ScoreDetailsAtPositionOne.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.B.ScoreDetailsAtPositionOne.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
 
-            result.ScoringResult.SearchResultsByLocus.B.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.B.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.B.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.B.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
 
             // Should be 2/2 at DRB1
-            result.ScoringResult.SearchResultsByLocus.Drb1.ScoreDetailsAtPositionOne.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.Drb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Drb1.ScoreDetailsAtPositionOne.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Drb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
 
-            result.ScoringResult.SearchResultsByLocus.Drb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
-            result.ScoringResult.SearchResultsByLocus.Drb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Drb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.ScoringResult.ScoringResultsByLocus.Drb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().NotBe(MatchConfidence.Mismatch);
         }
 
         [Test]
@@ -326,25 +326,25 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             // Should be 2x potential P group matches at C
-            result.ScoringResult.SearchResultsByLocus.C.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PGroup);
-            result.ScoringResult.SearchResultsByLocus.C.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.C.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PGroup);
+            result.ScoringResult.ScoringResultsByLocus.C.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
-            result.ScoringResult.SearchResultsByLocus.C.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.PGroup);
-            result.ScoringResult.SearchResultsByLocus.C.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.C.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.PGroup);
+            result.ScoringResult.ScoringResultsByLocus.C.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
             // Should be 2x potential P group matches at DPB1
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PGroup);
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PGroup);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.PGroup);
-            result.ScoringResult.SearchResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.PGroup);
+            result.ScoringResult.ScoringResultsByLocus.Dpb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
             // Should be 2x potential P group matches at DQB1
-            result.ScoringResult.SearchResultsByLocus.Dqb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PGroup);
-            result.ScoringResult.SearchResultsByLocus.Dqb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.Dqb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.PGroup);
+            result.ScoringResult.ScoringResultsByLocus.Dqb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
-            result.ScoringResult.SearchResultsByLocus.Dqb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.PGroup);
-            result.ScoringResult.SearchResultsByLocus.Dqb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.Dqb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.PGroup);
+            result.ScoringResult.ScoringResultsByLocus.Dqb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
         }
 
         [Test]
@@ -361,25 +361,25 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             // Should be 2x potential G group matches (XX code vs. Allele) at C
-            result.ScoringResult.SearchResultsByLocus.C.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
-            result.ScoringResult.SearchResultsByLocus.C.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.C.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.ScoringResult.ScoringResultsByLocus.C.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
-            result.ScoringResult.SearchResultsByLocus.C.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.GGroup);
-            result.ScoringResult.SearchResultsByLocus.C.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.C.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.ScoringResult.ScoringResultsByLocus.C.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
             // Should be 2x potential G group matches (XX code vs. Allele) at DPB1
-            result.ScoringResult.SearchResultsByLocus.Dqb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
-            result.ScoringResult.SearchResultsByLocus.Dqb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.Dqb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.ScoringResult.ScoringResultsByLocus.Dqb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
-            result.ScoringResult.SearchResultsByLocus.Dqb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.GGroup);
-            result.ScoringResult.SearchResultsByLocus.Dqb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.Dqb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.ScoringResult.ScoringResultsByLocus.Dqb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
             // Should be 2x potential G group matches (XX code vs. Allele) at DQB1
-            result.ScoringResult.SearchResultsByLocus.Dqb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
-            result.ScoringResult.SearchResultsByLocus.Dqb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.Dqb1.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.ScoringResult.ScoringResultsByLocus.Dqb1.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Potential);
 
-            result.ScoringResult.SearchResultsByLocus.Dqb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.GGroup);
-            result.ScoringResult.SearchResultsByLocus.Dqb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
+            result.ScoringResult.ScoringResultsByLocus.Dqb1.ScoreDetailsAtPositionTwo.MatchGrade.Should().Be(MatchGrade.GGroup);
+            result.ScoringResult.ScoringResultsByLocus.Dqb1.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Potential);
         }
 
         #endregion
