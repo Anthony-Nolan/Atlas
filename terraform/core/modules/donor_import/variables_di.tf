@@ -15,6 +15,7 @@ variable "application_insights" {
 
 variable "azure_storage" {
   type = object({
+    id                        = string
     name                      = string
     primary_connection_string = string
   })
