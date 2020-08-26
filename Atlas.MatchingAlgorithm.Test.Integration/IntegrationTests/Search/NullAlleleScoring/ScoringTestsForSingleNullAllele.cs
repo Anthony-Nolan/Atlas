@@ -77,12 +77,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = results.SingleOrDefault(d => d.AtlasDonorId == originalNullAlleleDonorId);
 
             // Position under test
-            matchGradesForMatchingNullAlleles.Should().Contain(result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade);
-            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
+            matchGradesForMatchingNullAlleles.Should().Contain(result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade);
+            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
 
             // Other position at same locus
-            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
-            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
+            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
         }
 
         [Test]
@@ -97,12 +97,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = results.SingleOrDefault(d => d.AtlasDonorId == originalNullAlleleDonorId);
 
             // Position under test
-            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.NullMismatch);
-            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
+            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.NullMismatch);
+            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Definite);
 
             // Other position at same locus
-            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
-            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
+            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
         }
 
         [Test]
@@ -117,12 +117,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = results.SingleOrDefault(d => d.AtlasDonorId == originalNullAlleleDonorId);
 
             // Position under test
-            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
 
             // Other position at same locus
-            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
-            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
+            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
         }
 
         [Test]
@@ -137,12 +137,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
             var result = results.SingleOrDefault(d => d.AtlasDonorId == homozygousLocusDonorId);
 
             // Position under test
-            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
-            result.SearchResultAtLocusA.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
+            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchGrade.Should().Be(MatchGrade.Mismatch);
+            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionOne.MatchConfidence.Should().Be(MatchConfidence.Mismatch);
 
             // Other position at same locus
-            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
-            result.SearchResultAtLocusA.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
+            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionTwo.MatchGrade.Should().NotBe(MatchGrade.Mismatch);
+            result.ScoringResult.SearchResultsByLocus.A.ScoreDetailsAtPositionTwo.MatchConfidence.Should().Be(MatchConfidence.Definite);
         }
 
         private void SetPhenotypes()

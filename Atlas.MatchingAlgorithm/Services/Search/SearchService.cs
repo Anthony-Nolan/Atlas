@@ -143,16 +143,17 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     ConfidenceScore = result.ScoreResult?.AggregateScoreDetails.ConfidenceScore,
                     GradeScore = result.ScoreResult?.AggregateScoreDetails.GradeScore,
                     TypedLociCountAtScoredLoci = result.ScoreResult?.AggregateScoreDetails.TypedLociCount,
+                    PotentialMatchCount = result.PotentialMatchCount,
+                    
+                    SearchResultsByLocus = new LociInfo<LocusSearchResult>(
+                        MapSearchResultToApiLocusSearchResult(result, Locus.A),
+                        MapSearchResultToApiLocusSearchResult(result, Locus.B),
+                        MapSearchResultToApiLocusSearchResult(result, Locus.C),
+                        MapSearchResultToApiLocusSearchResult(result, Locus.Dpb1),
+                        MapSearchResultToApiLocusSearchResult(result, Locus.Dqb1),
+                        MapSearchResultToApiLocusSearchResult(result, Locus.Drb1)
+                        ).ToLociInfoTransfer(),
                 },
-                
-                // combines both matching and scoring results
-                PotentialMatchCount = result.PotentialMatchCount,
-                SearchResultAtLocusA = MapSearchResultToApiLocusSearchResult(result, Locus.A),
-                SearchResultAtLocusB = MapSearchResultToApiLocusSearchResult(result, Locus.B),
-                SearchResultAtLocusC = MapSearchResultToApiLocusSearchResult(result, Locus.C),
-                SearchResultAtLocusDpb1 = MapSearchResultToApiLocusSearchResult(result, Locus.Dpb1),
-                SearchResultAtLocusDqb1 = MapSearchResultToApiLocusSearchResult(result, Locus.Dqb1),
-                SearchResultAtLocusDrb1 = MapSearchResultToApiLocusSearchResult(result, Locus.Drb1),
             };
         }
 

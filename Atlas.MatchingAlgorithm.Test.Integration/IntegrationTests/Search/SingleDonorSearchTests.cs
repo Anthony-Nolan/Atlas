@@ -146,8 +146,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var results = await searchService.Search(searchRequest);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
-            result?.SearchResultAtLocusC.MatchCount.Should().Be(2);
-            result?.SearchResultAtLocusDqb1.MatchCount.Should().Be(2);
+            result?.ScoringResult.SearchResultsByLocus.C.MatchCount.Should().Be(2);
+            result?.ScoringResult.SearchResultsByLocus.Dqb1.MatchCount.Should().Be(2);
         }
 
         [Test]
@@ -177,7 +177,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
             // C is typed but not included in matching
-            result?.SearchResultAtLocusC.IsLocusTyped.Should().BeTrue();
+            result?.ScoringResult.SearchResultsByLocus.C.IsLocusTyped.Should().BeTrue();
         }
 
         [Test]
@@ -192,7 +192,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
             // A is typed and included in search
-            result?.SearchResultAtLocusA.IsLocusTyped.Should().BeTrue();
+            result?.ScoringResult.SearchResultsByLocus.A.IsLocusTyped.Should().BeTrue();
         }
 
         [Test]
@@ -207,7 +207,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
             var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
             // DQB1 is not typed and not included in search
-            result?.SearchResultAtLocusDqb1.IsLocusTyped.Should().BeFalse();
+            result?.ScoringResult.SearchResultsByLocus.Dqb1.IsLocusTyped.Should().BeFalse();
         }
     }
 }
