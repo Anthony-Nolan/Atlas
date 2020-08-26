@@ -76,7 +76,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
             return new NormalisedHaplotypePool(poolId, sourceData.HlaNomenclatureVersion, poolMembers);
         }
 
-        private static decimal LowestFrequency(IReadOnlyCollection<HaplotypeFrequencyFileRecord> haplotypeFrequencies)
+        private static decimal LowestFrequency(IReadOnlyCollection<HaplotypeFrequencyRecord> haplotypeFrequencies)
         {
             return haplotypeFrequencies
                 .OrderBy(s => s.Frequency)
@@ -84,7 +84,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
                 .Frequency;
         }
 
-        private static int CalculateCopyNumber(HaplotypeFrequencyFileRecord next, decimal lowestFrequency)
+        private static int CalculateCopyNumber(HaplotypeFrequencyRecord next, decimal lowestFrequency)
         {
             return (int)decimal.Round(next.Frequency / lowestFrequency);
         }
