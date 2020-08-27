@@ -53,8 +53,7 @@ namespace Atlas.Client.Models.Search.Results.Matching
         ///     The number of loci matched, down to the type.
         ///     Out of a maximum of 10.
         ///     Should some loci be untyped, then this field reflects the potential match count, rather than the actual known match count.
-        ///     This will only count loci specified in the search request.
-        ///     This will only be calculated for loci included in the Scored Loci List <see cref="Search.Requests.ScoringCriteria"/>
+        ///     This will only count loci included in the Scored Loci list of the search request <see cref="Search.Requests.ScoringCriteria"/>
         /// </summary>
         public int TotalMatchCount { get; set; }
         
