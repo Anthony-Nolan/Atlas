@@ -30,7 +30,7 @@ namespace Atlas.DonorImport.Data.Repositories
             await using (var connection = new SqlConnection(connectionString))
             {
                 var sql =
-                    $@"INSERT INTO DonorImportHistory (Filename, UploadTime, FileState, LastUpdated) VALUES ((@FileName), (@UploadTime), (@DonorState), (@Time))";
+                    $@"INSERT INTO DonorImportHistory (Filename, UploadTime, FileState, LastUpdated, ImportBegin) VALUES ((@FileName), (@UploadTime), (@DonorState), (@Time), GETUTCDATE())";
                 await connection.ExecuteAsync(sql,
                     new {FileName = filename, UploadTime = uploadTime, DonorState = DonorImportState.Started.ToString(), Time = DateTime.UtcNow});
             }
@@ -38,10 +38,23 @@ namespace Atlas.DonorImport.Data.Repositories
 
         public async Task UpdateDonorImportState(string filename, DateTime uploadTime, DonorImportState donorState)
         {
+            var updateImportEndSql = $", ImportEnd = GETUTCDATE()";
+            var incrementFailureCountSql = $", FailureCount = FailureCount + 1";
+
+            var additionalUpdateClause = donorState switch
+            {
+                DonorImportState.Started => "",
+                DonorImportState.Completed => updateImportEndSql,
+                DonorImportState.FailedPermanent => incrementFailureCountSql,
+                DonorImportState.FailedUnexpectedly => incrementFailureCountSql,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            
             await using (var connection = new SqlConnection(connectionString))
             {
                 var sql = $@"UPDATE DonorImportHistory
-SET FileState = (@State), LastUpdated = (@Time)
+SET FileState = (@State), LastUpdated = (@Time) 
+{additionalUpdateClause}
 WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
                 await connection.ExecuteAsync(sql,
                     new {FileName = filename, UploadTime = uploadTime, State = donorState.ToString(), Time = DateTime.UtcNow});
