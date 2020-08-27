@@ -55,8 +55,10 @@ namespace Atlas.Client.Models.Search.Results.Matching
         ///     Should some loci be untyped, then this field reflects the potential match count, rather than the actual known match count.
         ///     This will only count loci specified in the search request - so if search criteria were only given for A,B,DRB1 - then any
         ///     matches at C, DQB1, DPB1 will not be recorded here.
+        ///     <see cref="MatchingResult.TotalMatchCount"/> This value is calculated from scoring info, but we expect it to be the same as the result from Matching.
+        ///     If that is not the case, something has gone wrong.
+        ///     This will not be calculated if the locus has not been included in the Scored Loci List, in comparison to the Matching Count which will always be calculated.
         /// </summary>
-        /// <see cref="MatchingResult.TotalMatchCount"/>
         public int TotalMatchCount { get; set; }
         
         /// <summary>
