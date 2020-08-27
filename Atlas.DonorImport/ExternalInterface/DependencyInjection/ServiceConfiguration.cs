@@ -50,7 +50,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
-            services.RegisterAsOptions<DonorImportSettings>("DonorImport");
+            services.RegisterAsOptions<StalledFileSettings>("DonorImport");
         }
 
         private static void RegisterServices(this IServiceCollection services)

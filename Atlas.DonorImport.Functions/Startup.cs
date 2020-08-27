@@ -30,7 +30,7 @@ namespace Atlas.DonorImport.Functions
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
-            services.RegisterAsOptions<DonorImportSettings>("DonorImport");
+            services.RegisterAsOptions<StalledFileSettings>("DonorImport");
         }
     }
 }

@@ -49,6 +49,7 @@ namespace Atlas.DonorImport.Data.Repositories
                 DonorImportState.Completed => updateImportEndSql,
                 DonorImportState.FailedPermanent => incrementFailureCountSql,
                 DonorImportState.FailedUnexpectedly => incrementFailureCountSql,
+                DonorImportState.Stalled => "",
                 _ => throw new ArgumentOutOfRangeException()
             };
             
@@ -78,8 +79,8 @@ WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
             await using (var connection = new SqlConnection(connectionString))
             {
                 var earliestTime = DateTime.UtcNow.Subtract(duration);
-                const string sql = "SELECT * FROM DonorImportHistory WHERE FileState = (@fileState) AND UploadTime < (@uploadTime)";
-                return connection.Query<DonorImportHistoryRecord>(sql, new {fileState = DonorImportState.Started.ToString(), uploadTime = earliestTime}).ToArray();
+                const string sql = "SELECT * FROM DonorImportHistory WHERE FileState = (@fileState) AND ImportBegin < (@timeToCheck)";
+                return connection.Query<DonorImportHistoryRecord>(sql, new {fileState = DonorImportState.Started.ToString(), timeToCheck = earliestTime}).ToArray();
             }
         }
     }
