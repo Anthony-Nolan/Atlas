@@ -63,9 +63,10 @@ namespace Atlas.DonorImport.Services
             var results = await repository.GetLongRunningFiles(durationToCheckForStalledFiles);
             foreach (var record in results)
             {
+                await repository.UpdateDonorImportState(record.Filename, record.UploadTime, DonorImportState.Stalled);
                 await notificationSender.SendAlert(
                     "Long running Donor Import File Found",
-                    $"The file with name {record.Filename} is recorded as Started and was uploaded at {record.UploadTime}. Manual investigation is recommended",
+                    $"The file with name {record.Filename} is recorded as Started and was uploaded at {record.UploadTime}. Manual investigation is recommended. This is likely caused by either a system interruption, or a function timeout.",
                     Priority.Medium,
                     nameof(DonorImportFileHistoryService));
             }

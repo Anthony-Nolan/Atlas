@@ -39,12 +39,12 @@ variable "DONOR_DATABASE_USERNAME" {
 
 variable "DONOR_IMPORT_STALLED_FILE_CHECK_CRONTAB" {
   type = string
-  default = "0 0 10 * * *"
+  default = "0 */30 * * * *"
 }
 
 variable "DONOR_IMPORT_STALLED_FILE_DURATION" {
   type = string
-  default = "24"
+  default = "2"
   description = "How long, in hours, a file must have been in the 'Started' state to be considered stalled"
 }
 
