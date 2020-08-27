@@ -18,7 +18,6 @@ namespace Atlas.DonorImport.Functions.Functions
 
         [FunctionName(nameof(ImportDonorFile))]
         [StorageAccount("AzureStorage:ConnectionString")]
-        [Singleton]
         public async Task ImportDonorFile(
             [ServiceBusTrigger(
                 "%MessagingServiceBus:ImportFileTopic%",
