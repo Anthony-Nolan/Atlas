@@ -37,6 +37,17 @@ variable "DONOR_DATABASE_USERNAME" {
   default = "donors"
 }
 
+variable "DONOR_IMPORT_STALLED_FILE_CHECK_CRONTAB" {
+  type = string
+  default = "0 0 10 * * *"
+}
+
+variable "DONOR_IMPORT_STALLED_FILE_DURATION" {
+  type = string
+  default = "24"
+  description = "How long, in hours, a file must have been in the 'Started' state to be considered stalled"
+}
+
 variable "ENVIRONMENT" {
   type        = string
   description = "Prepended to all ATLAS resources, to indicate which environment of the installation they represent. Some alphanumeric characters must be present, as non-alphanumeric characters will be stripped from the storage account name. Max 8 alphanumeric characters. e.g. DEV/UAT/LIVE"

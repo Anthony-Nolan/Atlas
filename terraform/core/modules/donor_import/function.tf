@@ -21,6 +21,9 @@ resource "azurerm_function_app" "atlas_donor_import_function" {
     "AzureStorage:ConnectionString"       = var.azure_storage.primary_connection_string,
     "AzureStorage:DonorFileBlobContainer" = azurerm_storage_container.donor_blob_storage.name
 
+    "DonorImport:FileCheckCronSchedule"        = var.STALLED_FILE_CHECK_CRONTAB
+    "DonorImport:HoursToCheckStalledFiles"     =  var.STALLED_FILE_DURATION
+
     "FUNCTIONS_WORKER_RUNTIME" : "dotnet"
 
     "MessagingServiceBus:ConnectionString"         = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
