@@ -18,7 +18,17 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
     {
         Task<int> GetDonorCount();
         Task<int> GetDonorCountLessThan(int initialDonorId);
-        Task<List<List<DonorInfo>>> NewOrderedDonorBatchesToImport(int batchSize, int? lastProcessedDonor, bool continueExistingImport);
+        IAsyncEnumerable<List<DonorInfo>> NewOrderedDonorBatchesToImport(int batchSize, int? lastProcessedDonor, bool continueExistingImport);
+
+        /// <summary>
+        /// Unlike <see cref="NewOrderedDonorBatchesToImport"/>, fetches all donors in memory rather than lazily evaluating.
+        /// As such, this should only be used to calculate the overlap in a continued refresh, with a small number of batches.
+        /// </summary>
+        /// <param name="numberOfBatches"></param>
+        /// <param name="batchSize"></param>
+        /// <param name="lastProcessedDonor"></param>
+        /// <returns></returns>
+        Task<List<List<DonorInfo>>> GetOrderedDonorBatches(int numberOfBatches, int batchSize, int lastProcessedDonor);
     }
 
     public class DataRefreshRepository : Repository, IDataRefreshRepository
@@ -45,10 +55,39 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             }
         }
 
-        public async Task<List<List<DonorInfo>>> NewOrderedDonorBatchesToImport(int batchSize, int? lastProcessedDonor, bool continueExistingImport)
+        public async IAsyncEnumerable<List<DonorInfo>> NewOrderedDonorBatchesToImport(
+            int batchSize,
+            int? lastProcessedDonor,
+            bool continueExistingImport)
         {
-            var sql = DetermineAppropriateOrderedSqlQuery(continueExistingImport, lastProcessedDonor);
+            if (continueExistingImport)
+            {
+                lastProcessedDonor = 0;
+            }
 
+            string BuildFetchBatchSql() => lastProcessedDonor == null
+                ? "SELECT top(@batchSize) * FROM Donors ORDER BY DonorId ASC"
+                : "SELECT top(@batchSize) * FROM Donors WHERE DonorId > @lastProcessedDonor ORDER BY DonorId ASC";
+
+            bool hasFoundAllDonors;
+
+            do
+            {
+                await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+                {
+                    var sql = BuildFetchBatchSql();
+                    var orderedDbDonorBatch = await conn.QueryAsync<Donor>(sql, new {batchSize, lastProcessedDonor});
+                    var donorInfoBatch = orderedDbDonorBatch.Select(donor => donor.ToDonorInfo()).ToList();
+                    lastProcessedDonor = donorInfoBatch.LastOrDefault()?.DonorId;
+                    hasFoundAllDonors = !donorInfoBatch.Any();
+                    yield return donorInfoBatch;
+                }
+            } while (!hasFoundAllDonors);
+        }
+
+        public async Task<List<List<DonorInfo>>> GetOrderedDonorBatches(int numberOfBatches, int batchSize, int lastProcessedDonor)
+        {
+            const string sql = "SELECT top(@numberToTake) * FROM Donors WHERE DonorId > @lastProcessedDonor ORDER BY DonorId ASC";
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 // Note 1:
@@ -58,24 +97,18 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                 // Using buffered=true and ".ToList()" aren't really necessary here - those are the default settings and behaviours.
                 // See here: https://stackoverflow.com/a/13026708/1662268
                 // We've specified them, though, so that the code is completely explicit about what's going on.
-                // Note that we *might* want to stream this data! In which case buffered should be set to false, and the .ToList() removed.
-                var orderedQuery = new CommandDefinition(sql, commandTimeout: 3600, flags: CommandFlags.Buffered);
-                var orderedDbDonors = await conn.QueryAsync<Donor>(orderedQuery);
+                var orderedQuery = new CommandDefinition(
+                    sql,
+                    commandTimeout: 3600,
+                    flags: CommandFlags.Buffered,
+                    parameters: new {lastProcessedDonor, numberToTake = numberOfBatches * batchSize}
+                );
+                var orderedDbDonors =
+                    await conn.QueryAsync<Donor>(orderedQuery);
                 var donorInfos = orderedDbDonors.Select(donor => donor.ToDonorInfo());
                 var batches = donorInfos.Batch(batchSize).Select(infosInBatch => infosInBatch.ToList()).ToList();
                 return batches;
             }
-        }
-
-        private static string DetermineAppropriateOrderedSqlQuery(bool continueExistingImport, int? lastProcessedDonor)
-        {
-            const string nonFilteredSqlQuery = "SELECT * FROM Donors ORDER BY DonorId ASC";
-            if (!continueExistingImport || lastProcessedDonor == null)
-            {
-                return nonFilteredSqlQuery;
-            }
-
-            return $@"SELECT * FROM Donors WHERE DonorId > {lastProcessedDonor} ORDER BY DonorId ASC";
         }
     }
 }

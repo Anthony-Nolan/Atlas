@@ -76,7 +76,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         public async Task UpdateDonorHla(
             string hlaNomenclatureVersion,
             Func<int, Task> updateLastSafelyProcessedDonorId,
-            int? lastProcessedDonor, 
+            int? lastProcessedDonor,
             bool continueExistingImport)
         {
             await PerformUpfrontSetup(hlaNomenclatureVersion);
@@ -92,14 +92,22 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             }
         }
 
-        private async Task PerformHlaUpdate(string hlaNomenclatureVersion,
+        private async Task PerformHlaUpdate(
+            string hlaNomenclatureVersion,
             Func<int, Task> updateLastSafelyProcessedDonorId,
             int? lastProcessedDonor,
             bool continueExistingProcessing)
         {
             var totalDonorCount = await dataRefreshRepository.GetDonorCount();
-            var batchedDonors = await dataRefreshRepository.NewOrderedDonorBatchesToImport(BatchSize, lastProcessedDonor, continueExistingProcessing);
-            var (donorsPreviouslyProcessed, lastDonorIdSuspectedOfBeingReprocessed) = await DetermineProgressAndReprocessingBoundaries(batchedDonors, continueExistingProcessing);
+            var batchedDonors = dataRefreshRepository.NewOrderedDonorBatchesToImport(BatchSize, lastProcessedDonor, continueExistingProcessing);
+
+            var overlapBatches = continueExistingProcessing
+                ? await dataRefreshRepository.GetOrderedDonorBatches(NumberOfBatchesOverlapOnRestart, BatchSize, lastProcessedDonor ?? 0)
+                : new List<List<DonorInfo>>();
+
+            var (donorsPreviouslyProcessed, lastDonorIdSuspectedOfBeingReprocessed) = continueExistingProcessing
+                ? await DetermineProgressAndReprocessingBoundaries(overlapBatches)
+                : (0, 0);
             var failedDonors = new List<FailedDonorInfo>();
             var donorsToImport = totalDonorCount - donorsPreviouslyProcessed;
 
@@ -107,20 +115,22 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             {
                 logger.SendTrace($"Hla Processing continuing. {donorsPreviouslyProcessed} donors previously processed. {donorsToImport} remain.");
             }
-            
+
             var progressReports = new LongLoggingSettings
             {
-                ExpectedNumberOfIterations = batchedDonors.Count,
+                ExpectedNumberOfIterations = totalDonorCount / BatchSize,
                 InnerOperationLoggingPeriod = 10, // Note this is every 10 *Batches*
                 ReportPercentageCompletion = true,
                 ReportProjectedCompletionTime = true
             };
-            var summaryReportOnly = new LongLoggingSettings { InnerOperationLoggingPeriod = int.MaxValue, ReportOuterTimerStart = false};
-            var summaryReportWithThreadingCount = new LongLoggingSettings { InnerOperationLoggingPeriod = int.MaxValue, ReportOuterTimerStart = false, ReportThreadCount = true, ReportPerThreadTime = false };
+            var summaryReportOnly = new LongLoggingSettings {InnerOperationLoggingPeriod = int.MaxValue, ReportOuterTimerStart = false};
+            var summaryReportWithThreadingCount = new LongLoggingSettings
+                {InnerOperationLoggingPeriod = int.MaxValue, ReportOuterTimerStart = false, ReportThreadCount = true, ReportPerThreadTime = false};
 
             var timerCollection = new LongStopwatchCollection((text, milliseconds) =>
                 logger.SendTrace(text, props: new Dictionary<string, string> {{"Milliseconds", milliseconds.ToString()}}), summaryReportOnly);
 
+            // @formatter:off
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.BatchProgress_TimerKey, "Hla Batch Overall Processing. Inner Operation is UpdateDonorBatch", null, progressReports)) 
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaExpansion_TimerKey, " * Hla Expansion, during HlaProcessing")) 
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_Overall_TimerKey, " * Ensuring all PGroups exist in the DB, during HlaProcessing (no actual DB writing, just processing)")) 
@@ -137,12 +147,18 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_DeleteExistingRecords_TimerKey, " * * * Delete Existing records, in Hla BulkInsert SETUP, during HlaProcessing") )
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BlockingWait_TimerKey, " * * Time spent in `Task.WhenAll`, JUST waiting on HlaInsert tasks to Complete, during HlaProcessing") )
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_DtWriteExecution_TimerKey, " * * * Total Time spent across all threads, writing BulkInserts during HlaInsert operation, during HlaProcessing", null, summaryReportWithThreadingCount))
+            // @formatter:on
             {
                 // We only store the last Id in each batch so we only need to keep one Id per batch.
                 var completedDonors = new FixedSizedQueue<int>(NumberOfBatchesOverlapOnRestart);
 
-                foreach (var donorBatch in batchedDonors)
+                await foreach (var donorBatch in batchedDonors)
                 {
+                    if (!donorBatch.Any())
+                    {
+                        continue;
+                    }
+
                     // When continuing a donor import there will be some overlap of donors to ensure all donors are processed. 
                     // This ensures we do not end up with duplicate p-groups in the matching hla tables
                     // We do not want to attempt to remove p-groups for all batches as it would be detrimental to performance, so we limit it to the first two batches
@@ -174,31 +190,18 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             }
         }
 
-        private async Task<(int,int)> DetermineProgressAndReprocessingBoundaries(
-            List<List<DonorInfo>> batchedDonors,
-            bool continueExistingImport
-        )
+        private async Task<(int, int)> DetermineProgressAndReprocessingBoundaries(IReadOnlyCollection<List<DonorInfo>> overlapBatches)
         {
-            if (continueExistingImport)
-            {
-                // Only safe because we AREN'T streaming these donors. Revisit this if we change that!
-                var initialDonorToReprocess = batchedDonors.First().First();
+            var initialDonorToReprocess = overlapBatches.First().First();
 
-                // Literally, the following query counts donors that exist in Donors table, < DonorIdX, but since donors
-                // are imported strictly in order, that's equivalent to the number of processed donors already handled.
-                var donorsPreviouslyProcessed = await dataRefreshRepository.GetDonorCountLessThan(initialDonorToReprocess.DonorId);
+            // Literally, the following query counts donors that exist in Donors table, < DonorIdX, but since donors
+            // are imported strictly in order, that's equivalent to the number of processed donors already handled.
+            var donorsPreviouslyProcessed = await dataRefreshRepository.GetDonorCountLessThan(initialDonorToReprocess.DonorId);
 
-                var overlapDonors = batchedDonors.Take(DataRefreshRepository.NumberOfBatchesOverlapOnRestart).ToList();
-                var lastDonorIdInOverlap = overlapDonors.Last().Last().DonorId;
+            var overlapDonors = overlapBatches.Take(DataRefreshRepository.NumberOfBatchesOverlapOnRestart).ToList();
+            var lastDonorIdInOverlap = overlapDonors.Last().Last().DonorId;
 
-                return (donorsPreviouslyProcessed, lastDonorIdInOverlap);
-            }
-            else
-            {
-                var noDonorsWerePreviouslyProcessed = 0;
-                var noDonorsAreBeingReprocessed = 0;
-                return (noDonorsWerePreviouslyProcessed, noDonorsAreBeingReprocessed);
-            }
+            return (donorsPreviouslyProcessed, lastDonorIdInOverlap);
         }
 
         /// <summary>
@@ -218,6 +221,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             {
                 await donorImportRepository.RemovePGroupsForDonorBatch(donorBatch.Select(d => d.DonorId));
             }
+
             var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersion);
 
             var timedInnerOperation = timerCollection.TimeInnerOperation(DataRefreshTimingKeys.HlaExpansion_TimerKey);
@@ -249,7 +253,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         private void EnsureAllPGroupsExist(
             IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHlas,
             LongStopwatchCollection timerCollection
-            )
+        )
         {
             var flatteningTimer = timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewPGroupInsertion_Flattening_TimerKey);
             var allPGroups = donorsWithHlas
