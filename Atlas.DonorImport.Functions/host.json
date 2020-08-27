@@ -6,13 +6,13 @@
       "samplingSettings": {
         "isEnabled": true
       }
-    },
-    "extensions": {
-      "serviceBus": {
-        "messageHandlerOptions": {
-          "maxConcurrentCalls": 2,
-          "maxAutoRenewDuration": "00:55:00"
-        }
+    }
+  },
+  "extensions": {
+    "serviceBus": {
+      "messageHandlerOptions": {
+        "maxConcurrentCalls": 2,
+        "maxAutoRenewDuration": "00:55:00"
       }
     }
   },
