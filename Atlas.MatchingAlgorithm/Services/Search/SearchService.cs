@@ -145,14 +145,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     TypedLociCountAtScoredLoci = result.ScoreResult?.AggregateScoreDetails.TypedLociCount,
                     PotentialMatchCount = result.PotentialMatchCount,
                     
-                    ScoringResultsByLocus = new LociInfo<LocusSearchResult>(
-                        MapSearchResultToApiLocusSearchResult(result, Locus.A),
-                        MapSearchResultToApiLocusSearchResult(result, Locus.B),
-                        MapSearchResultToApiLocusSearchResult(result, Locus.C),
-                        MapSearchResultToApiLocusSearchResult(result, Locus.Dpb1),
-                        MapSearchResultToApiLocusSearchResult(result, Locus.Dqb1),
-                        MapSearchResultToApiLocusSearchResult(result, Locus.Drb1)
-                        ).ToLociInfoTransfer(),
+                    ScoringResultsByLocus = new LociInfo<LocusSearchResult>().Map((l, r) => MapSearchResultToApiLocusSearchResult(result, l)).ToLociInfoTransfer(),
                 },
             };
         }
