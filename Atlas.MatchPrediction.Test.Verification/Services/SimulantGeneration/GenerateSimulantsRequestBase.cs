@@ -1,4 +1,4 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Data.Models;
+﻿using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
 {

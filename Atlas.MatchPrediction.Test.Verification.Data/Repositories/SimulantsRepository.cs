@@ -1,5 +1,6 @@
 ﻿using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using Atlas.MatchPrediction.Test.Verification.Data.Models;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
@@ -14,8 +15,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
         Task BulkInsertSimulants(IReadOnlyCollection<Simulant> simulants);
         Task<IEnumerable<Simulant>> GetGenotypeSimulants(int testHarnessId, string testIndividualCategory);
         
-        /// <returns>Genotypes and phenotypes belonging to all donors within test harness of id, <paramref name="testHarnessId"/>.</returns>
-        Task<IEnumerable<Simulant>> GetDonors(int testHarnessId);
+        /// <returns>Genotypes and phenotypes belonging to all simulants of type <paramref name="testIndividualCategory"/>
+        /// within test harness of id, <paramref name="testHarnessId"/>.</returns>
+        Task<IEnumerable<Simulant>> GetSimulants(int testHarnessId, string testIndividualCategory);
     }
 
     public class SimulantsRepository : ISimulantsRepository
@@ -40,15 +42,15 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<Simulant>> GetDonors(int testHarnessId)
+        public async Task<IEnumerable<Simulant>> GetSimulants(int testHarnessId, string testIndividualCategory)
         {
             var sql = @$"SELECT s.* FROM Simulants s WHERE 
                     s.TestHarness_Id = @{nameof(testHarnessId)} AND
-                    s.TestIndividualCategory = '{TestIndividualCategory.Donor}'";
+                    s.TestIndividualCategory = @{nameof(testIndividualCategory)}";
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                return await conn.QueryAsync<Simulant>(sql, new { testHarnessId });
+                return await conn.QueryAsync<Simulant>(sql, new { testHarnessId, testIndividualCategory });
             }
         }
 

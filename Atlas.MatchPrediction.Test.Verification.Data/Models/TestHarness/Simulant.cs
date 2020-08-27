@@ -1,9 +1,9 @@
-﻿using Atlas.Common.GeneticData.PhenotypeInfo;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Atlas.MatchPrediction.Test.Verification.Data.Models
+namespace Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness
 {
     // ReSharper disable InconsistentNaming
 

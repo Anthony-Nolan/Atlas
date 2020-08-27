@@ -4,14 +4,16 @@ using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
 {
     [DbContext(typeof(MatchPredictionVerificationContext))]
-    partial class MatchPredictionVerificationContextModelSnapshot : ModelSnapshot
+    [Migration("20200828151225_ModifyMatchedDonorTable_AddRepresentedColumns")]
+    partial class ModifyMatchedDonorTable_AddRepresentedColumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -290,6 +292,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Locus")
+                        .IsRequired()
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<int>("MatchedDonor_Id")

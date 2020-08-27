@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
-using Atlas.MatchPrediction.Test.Verification.Data.Models;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using MoreLinq;
 
@@ -62,7 +62,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
 
         private async Task InsertTestDonorsIntoDonorImportRepo(int testHarnessId)
         {
-            var donors = (await simulantsRepository.GetDonors(testHarnessId)).Select(MapToDonorImportModel);
+            var donors = (await simulantsRepository.GetSimulants(testHarnessId, TestIndividualCategory.Donor.ToString()))
+                .Select(MapToDonorImportModel);
             await importRepository.InsertDonorBatch(donors);
         }
 
@@ -75,7 +76,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
                 ExternalDonorCode = simulant.Id.ToString(),
                 UpdateFile = updateFileText,
                 LastUpdated = DateTimeOffset.UtcNow,
-                DonorType = DatabaseDonorType.Adult,
+                DonorType = DatabaseDonorType.Cord,
                 EthnicityCode = null,
                 RegistryCode = null,
                 A_1 = simulant.A_1,
