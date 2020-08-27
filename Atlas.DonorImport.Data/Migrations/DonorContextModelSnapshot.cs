@@ -106,6 +106,9 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.Property<DateTime>("UploadTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("FailureCount")
+                        .HasColumnType("int");
+
                     b.Property<string>("FileStateString")
                         .HasColumnName("FileState")
                         .HasColumnType("nvarchar(max)");
@@ -114,6 +117,12 @@ namespace Atlas.DonorImport.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("ImportBegin")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ImportEnd")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("LastUpdated")
                         .ValueGeneratedOnAddOrUpdate()

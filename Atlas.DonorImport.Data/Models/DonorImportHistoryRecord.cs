@@ -18,13 +18,13 @@ namespace Atlas.DonorImport.Data.Models
         /// </summary>
         [Required]
         public string Filename { get; set; }
-        
+
         /// <summary>
         /// The time a file was uploaded to blob storage
         /// </summary>
         [Required]
         public DateTime UploadTime { get; set; }
-        
+
         [NotMapped]
         public DonorImportState FileState { get; set; }
 
@@ -37,8 +37,25 @@ namespace Atlas.DonorImport.Data.Models
             // ReSharper disable once ValueParameterNotUsed - used by EF
             set => FileState = Enum.Parse<DonorImportState>(FileStateString);
         }
-        
+
         public DateTime LastUpdated { get; set; }
+
+        /// <summary>
+        /// The time that this upload started processing.
+        /// When retrying due to transient failures, this will be the most recent invocation, to give accurate import timing information.
+        /// </summary>
+        public DateTime ImportBegin { get; set; }
+
+        /// <summary>
+        /// The time that this upload successfully finished processing.
+        /// </summary>
+        public DateTime? ImportEnd { get; set; }
+
+        /// <summary>
+        /// The number of times this upload has failed.
+        /// Counts both permanent and transient errors. 
+        /// </summary>
+        public int FailureCount { get; set; }
     }
 
     internal static class DonorImportHistoryModelBuilder
