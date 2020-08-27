@@ -10,17 +10,17 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 {
     public interface IFrequencyJsonReader
     {
-        HaplotypeFrequencyFileRecord GetFrequencies(Stream stream);
+        FrequencySetFileSchema GetFrequencies(Stream stream);
     }
 
     internal class FrequencyJsonReader : IFrequencyJsonReader
     {
-        public HaplotypeFrequencyFileRecord GetFrequencies(Stream stream)
+        public FrequencySetFileSchema GetFrequencies(Stream stream)
         {
             using (var streamReader = new StreamReader(stream))
             using (var reader = new JsonTextReader(streamReader))
             {
-                var haplotypeFrequencyFile = new HaplotypeFrequencyFileRecord();
+                var haplotypeFrequencyFile = new FrequencySetFileSchema();
 
                 var serializer = new JsonSerializer();
 
@@ -33,14 +33,14 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                     {
                         switch (propertyName)
                         {
-                            case nameof(HaplotypeFrequencyFileRecord.RegistryCodes):
+                            case nameof(FrequencySetFileSchema.RegistryCodes):
                                 // Read into property
                                 TryRead(reader);
 
                                 haplotypeFrequencyFile.RegistryCodes = serializer.Deserialize<string[]>(reader);
 
                                 break;
-                            case nameof(HaplotypeFrequencyFileRecord.Ethnicity):
+                            case nameof(FrequencySetFileSchema.Ethnicity):
                                 // Read into property
                                 TryRead(reader);
 
@@ -55,14 +55,14 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                                 haplotypeFrequencyFile.Ethnicity = ethnicity;
 
                                 break;
-                            case nameof(HaplotypeFrequencyFileRecord.PopulationId):
+                            case nameof(FrequencySetFileSchema.PopulationId):
                                 // Read into property
                                 TryRead(reader);
 
                                 haplotypeFrequencyFile.PopulationId = serializer.Deserialize<int>(reader);
 
                                 break;
-                            case nameof(HaplotypeFrequencyFileRecord.NomenclatureVersion):
+                            case nameof(FrequencySetFileSchema.NomenclatureVersion):
                                 // Read into property
                                 TryRead(reader);
 
@@ -76,14 +76,14 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                                 haplotypeFrequencyFile.NomenclatureVersion = nomenclatureVersion;
 
                                 break;
-                            case nameof(HaplotypeFrequencyFileRecord.Frequencies):
+                            case nameof(FrequencySetFileSchema.Frequencies):
                                 TryRead(reader); // Read into property
                                 TryRead(reader); // Read into array. Do not deserialize to collection, as the collection can be very large and requires streaming.
 
                                 // Loops through all donors in array
                                 do
                                 {
-                                    var haplotypeFrequency = serializer.Deserialize<HaplotypeFrequencyRecord>(reader);
+                                    var haplotypeFrequency = serializer.Deserialize<FrequencyRecord>(reader);
 
                                     if (haplotypeFrequency == null)
                                     {

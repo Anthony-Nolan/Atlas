@@ -21,16 +21,16 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
     {
         private readonly IHaplotypeFrequencySetReader setReader;
         private readonly IFrequencySetStreamer setStreamer;
-        private readonly IFrequencyCsvReader csvReader;
+        private readonly IFrequencyJsonReader jsonReader;
 
         public HaplotypeFrequenciesReader(
             IHaplotypeFrequencySetReader setReader,
             IFrequencySetStreamer setStreamer,
-            IFrequencyCsvReader csvReader)
+            IFrequencyJsonReader jsonReader)
         {
             this.setReader = setReader;
             this.setStreamer = setStreamer;
-            this.csvReader = csvReader;
+            this.jsonReader = jsonReader;
         }
 
         public async Task<HaplotypeFrequenciesReaderResult> GetUnalteredActiveGlobalHaplotypeFrequencies()
@@ -43,17 +43,17 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
                 HaplotypeFrequencySetId = set.Id,
 
                 // All frequencies in a set use the same nomenclature version, so we pick an arbitrary value
-                HlaNomenclatureVersion = frequencies.FirstOrDefault()?.HlaNomenclatureVersion,
+                HlaNomenclatureVersion = frequencies.NomenclatureVersion,
 
-                HaplotypeFrequencies = frequencies
+                HaplotypeFrequencies = frequencies.Frequencies
             };
         }
 
-        private async Task<IReadOnlyCollection<HaplotypeFrequencyRecord>> ReadHaplotypeFrequenciesFromFile(HaplotypeFrequencySet set)
+        private async Task<FrequencySetFileSchema> ReadHaplotypeFrequenciesFromFile(HaplotypeFrequencySet set)
         {
             var fileStream = await setStreamer.GetFileContents(set.Name);
 
-            return csvReader.GetFrequencies(fileStream).ToList();
+            return jsonReader.GetFrequencies(fileStream);
         }
     }
 
@@ -61,6 +61,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
     {
         public int? HaplotypeFrequencySetId { get; set; }
         public string HlaNomenclatureVersion { get; set; }
-        public IReadOnlyCollection<HaplotypeFrequencyRecord> HaplotypeFrequencies { get; set; }
+        public IEnumerable<FrequencyRecord> HaplotypeFrequencies { get; set; }
     }
 }

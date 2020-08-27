@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Models
 {
-    public class HaplotypeFrequencyFileRecord
+    public class FrequencySetFileSchema
     {
         // ReSharper disable once StringLiteralTypo
         [JsonProperty(PropertyName = "ethn")]
@@ -19,6 +19,6 @@ namespace Atlas.MatchPrediction.Models
         public int PopulationId { get; set; }
 
         [JsonProperty(PropertyName = "frequencies")]
-        public IEnumerable<HaplotypeFrequencyRecord> Frequencies { get; set; }
+        public IEnumerable<FrequencyRecord> Frequencies { get; set; }
     }
 }
