@@ -151,7 +151,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [Test]
-        public async Task Search_SixOutOfSix_LociExcludedFromMatchingButIncludedInScoring_TotalMatchCountOnlyConsidersMatchingLoci()
+        public async Task Search_SixOutOfSix_LociExcludedFromMatchingButIncludedInScoring_MatchingResultTotalMatchCountOnlyConsidersMatchingLoci()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(donorHlas, nonMatchingHlas)
                 .SixOutOfSix()

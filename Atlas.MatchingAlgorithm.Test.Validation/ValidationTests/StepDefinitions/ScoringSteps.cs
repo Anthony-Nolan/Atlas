@@ -265,15 +265,15 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             switch (resultType)
             {
                 case "an 8/8 result":
-                    return results.Find(r => r.MatchingResult.TotalMatchCount == 8 && NumberOfLociSearched(r) == 4);
+                    return results.Find(r => r.ScoringResult.TotalMatchCount == 8 && NumberOfLociSearched(r) == 4);
                 case "a 7/8 result":
-                    return results.Find(r => r.MatchingResult.TotalMatchCount == 7 && NumberOfLociSearched(r) == 4);
+                    return results.Find(r => r.ScoringResult.TotalMatchCount == 7 && NumberOfLociSearched(r) == 4);
                 case "a 6/8 result":
-                    return results.Find(r => r.MatchingResult.TotalMatchCount == 6 && NumberOfLociSearched(r) == 4);
+                    return results.Find(r => r.ScoringResult.TotalMatchCount == 6 && NumberOfLociSearched(r) == 4);
                 case "a 5/8 result":
-                    return results.Find(r => r.MatchingResult.TotalMatchCount == 5 && NumberOfLociSearched(r) == 4);
+                    return results.Find(r => r.ScoringResult.TotalMatchCount == 5 && NumberOfLociSearched(r) == 4);
                 case "a 4/8 result":
-                    return results.Find(r => r.MatchingResult.TotalMatchCount == 4 && NumberOfLociSearched(r) == 4);
+                    return results.Find(r => r.ScoringResult.TotalMatchCount == 4 && NumberOfLociSearched(r) == 4);
                 case "a match at DQB1":
                     return results.Find(r => r.ScoringResult.ScoringResultsByLocus.Dqb1.MatchCount == 2);
                 case "a mismatch at DQB1":

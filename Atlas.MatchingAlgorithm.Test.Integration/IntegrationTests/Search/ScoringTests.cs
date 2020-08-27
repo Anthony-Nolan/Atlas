@@ -78,7 +78,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
         
         [Test]
-        public async Task Search_ScoreNoLoci_ReturnsTypedLociCount()
+        public async Task Search_ScoreNoLoci_ReturnsMatchingResultTypedLociCount()
         {
             var searchRequest = new SearchRequestFromHlasBuilder(
                     defaultHlaSet.SixLocus_SingleExpressingAlleles,
