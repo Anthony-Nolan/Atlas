@@ -41,7 +41,7 @@ namespace Atlas.Client.Models.Search.Results.Matching
         
         /// <summary>
         ///     The number of loci which are typed for this donor.
-        ///     This will be calculated for all loci, regardless of whether they were excluded from scoring aggregation.
+        ///     This will be calculated for all loci
         /// </summary>
         public int? TypedLociCount { get; set; }
         
@@ -53,11 +53,8 @@ namespace Atlas.Client.Models.Search.Results.Matching
         ///     The number of loci matched, down to the type.
         ///     Out of a maximum of 10.
         ///     Should some loci be untyped, then this field reflects the potential match count, rather than the actual known match count.
-        ///     This will only count loci specified in the search request - so if search criteria were only given for A,B,DRB1 - then any
-        ///     matches at C, DQB1, DPB1 will not be recorded here.
-        ///     <see cref="MatchingResult.TotalMatchCount"/> This value is calculated from scoring info, but we expect it to be the same as the result from Matching.
-        ///     If that is not the case, something has gone wrong.
-        ///     This will not be calculated if the locus has not been included in the Scored Loci List, in comparison to the Matching Count which will always be calculated.
+        ///     This will only count loci specified in the search request.
+        ///     This will only be calculated for loci included in the Scored Loci List <see cref="Search.Requests.ScoringCriteria"/>
         /// </summary>
         public int TotalMatchCount { get; set; }
         
@@ -84,14 +81,13 @@ namespace Atlas.Client.Models.Search.Results.Matching
         
         /// <summary>
         ///     The number of the total potential matches.
-        ///     The TotalMatchCount is a sum of potential and exact matches, so an exact match count can be calculated as the difference of these values.
         ///     This will only count loci specified in the search request
         /// </summary>
         public int PotentialMatchCount { get; set; }
         
         /// <summary>
         ///     The number of the total exact matches.
-        ///     The TotalMatchCount is a sum of potential and exact matches, so an exact match count can be calculated as the difference of these values.
+        ///     The <see cref="TotalMatchCount"/> is a sum of potential and exact matches, so an exact match count can be calculated as the difference of these values.
         /// </summary>
         public int ExactMatchCount => TotalMatchCount - PotentialMatchCount;
         
