@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.DonorImport.Data.Models;
@@ -12,6 +13,7 @@ namespace Atlas.DonorImport.Data.Repositories
         public Task InsertNewDonorImportRecord(string filename, DateTime uploadTime);
         public Task UpdateDonorImportState(string filename, DateTime uploadTime, DonorImportState donorState);
         public Task<DonorImportState?> GetFileStateIfExists(string filename, DateTime uploadTime);
+        public Task<IReadOnlyCollection<DonorImportHistoryRecord>> GetLongRunningFiles(TimeSpan duration);
     }
 
     public class DonorImportHistoryRepository : IDonorImportHistoryRepository
@@ -68,6 +70,16 @@ WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
                 const string sql = "SELECT * FROM DonorImportHistory WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
                 var results = connection.Query<DonorImportHistoryRecord>(sql, new {FileName = filename, UploadTime = uploadTime}).ToArray();
                 return results.SingleOrDefault()?.FileState;
+            }
+        }
+
+        public async Task<IReadOnlyCollection<DonorImportHistoryRecord>> GetLongRunningFiles(TimeSpan duration)
+        {
+            await using (var connection = new SqlConnection(connectionString))
+            {
+                var earliestTime = DateTime.UtcNow.Subtract(duration);
+                const string sql = "SELECT * FROM DonorImportHistory WHERE FileState = (@fileState) AND UploadTime < (@uploadTime)";
+                return connection.Query<DonorImportHistoryRecord>(sql, new {fileState = DonorImportState.Started.ToString(), uploadTime = earliestTime}).ToArray();
             }
         }
     }

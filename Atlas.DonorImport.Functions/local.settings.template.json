@@ -5,6 +5,8 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:DonorFileBlobContainer": "donors",
+    "DonorImport:FileCheckCronSchedule":  "0 0 10 * * *",
+    "DonorImport:HoursToCheckLongRunningFiles": "24",
     "MessagingServiceBus:ConnectionString": "override-this",
     "MessagingServiceBus:ImportFileSubscription": "donor-import",
     "MessagingServiceBus:ImportFileTopic": "donor-import-file-uploads",

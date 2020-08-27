@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Atlas.Common.Notifications;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
@@ -6,21 +8,26 @@ using Atlas.DonorImport.ExternalInterface.Models;
 
 namespace Atlas.DonorImport.Services
 {
-    internal interface IDonorImportFileHistoryService
+    public interface IDonorImportFileHistoryService
     {
         public Task RegisterStartOfDonorImport(DonorImportFile donorFile);
         public Task RegisterSuccessfulDonorImport(DonorImportFile donorFile);
         public Task RegisterFailedDonorImportWithPermanentError(DonorImportFile donorFile);
         public Task RegisterUnexpectedDonorImportError(DonorImportFile donorFile);
+        public Task SendNotificationForStalledImports();
     }
     
-    internal class DonorImportFileHistoryService : IDonorImportFileHistoryService
+    public class DonorImportFileHistoryService : IDonorImportFileHistoryService
     {
         private readonly IDonorImportHistoryRepository repository;
+        private readonly INotificationSender notificationSender;
+        private readonly TimeSpan durationToCheckForStalledFiles;
 
-        public DonorImportFileHistoryService(IDonorImportHistoryRepository repository)
+        public DonorImportFileHistoryService(IDonorImportHistoryRepository repository, INotificationSender notificationSender, int hoursToCheckForStalledFiles)
         {
             this.repository = repository;
+            this.notificationSender = notificationSender;
+            this.durationToCheckForStalledFiles = new TimeSpan(hoursToCheckForStalledFiles, 0, 0);
         }
 
         public async Task RegisterStartOfDonorImport(DonorImportFile donorFile)
@@ -49,6 +56,19 @@ namespace Atlas.DonorImport.Services
         public async Task RegisterFailedDonorImportWithPermanentError(DonorImportFile donorFile)
         {
             await UpdateDonorImportRecord(donorFile, DonorImportState.FailedPermanent);
+        }
+
+        public async Task SendNotificationForStalledImports()
+        {
+            var results = await repository.GetLongRunningFiles(durationToCheckForStalledFiles);
+            foreach (var record in results)
+            {
+                await notificationSender.SendAlert(
+                    "Long running Donor Import File Found",
+                    $"The file with name {record.Filename} is recorded as Started and was uploaded at {record.UploadTime}. Manual investigation is recommended",
+                    Priority.Medium,
+                    nameof(DonorImportFileHistoryService));
+            }
         }
 
         public async Task RegisterUnexpectedDonorImportError(DonorImportFile donorFile)

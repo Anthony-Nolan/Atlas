@@ -6,6 +6,7 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data;
 using Atlas.DonorImport.Data.Repositories;
+using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Models.Mapping;
 using Atlas.DonorImport.Services;
@@ -49,6 +50,7 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
+            services.RegisterAsOptions<DonorImportSettings>("DonorImport");
         }
 
         private static void RegisterServices(this IServiceCollection services)

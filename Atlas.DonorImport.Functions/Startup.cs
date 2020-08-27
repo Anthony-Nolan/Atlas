@@ -1,6 +1,7 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
+using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Functions;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
@@ -29,6 +30,7 @@ namespace Atlas.DonorImport.Functions
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
             services.RegisterAsOptions<MessagingServiceBusSettings>("MessagingServiceBus");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
+            services.RegisterAsOptions<DonorImportSettings>("DonorImport");
         }
     }
 }

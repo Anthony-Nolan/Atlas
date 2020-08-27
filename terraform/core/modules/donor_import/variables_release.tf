@@ -16,3 +16,11 @@ variable "IP_RESTRICTION_SETTINGS" {
   type    = list(string)
   default = []
 }
+
+variable "STALLED_FILE_CHECK_CRONTAB" {
+  type = string
+}
+
+variable "STALLED_FILE_DURATION" {
+  type = string
+}

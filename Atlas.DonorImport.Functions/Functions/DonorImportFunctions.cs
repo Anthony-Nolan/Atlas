@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Atlas.DonorImport.ExternalInterface.Models;
@@ -10,10 +11,12 @@ namespace Atlas.DonorImport.Functions.Functions
     public class DonorImportFunctions
     {
         private readonly IDonorFileImporter donorFileImporter;
+        private readonly IDonorImportFileHistoryService donorHistoryService;
 
-        public DonorImportFunctions(IDonorFileImporter donorFileImporter)
+        public DonorImportFunctions(IDonorFileImporter donorFileImporter, IDonorImportFileHistoryService donorHistoryService)
         {
             this.donorFileImporter = donorFileImporter;
+            this.donorHistoryService = donorHistoryService;
         }
 
         [FunctionName(nameof(ImportDonorFile))]
@@ -29,6 +32,12 @@ namespace Atlas.DonorImport.Functions.Functions
         )
         {
             await donorFileImporter.ImportDonorFile(new DonorImportFile {Contents = blobStream, FileLocation = blobCreatedEvent.Subject, UploadTime = blobCreatedEvent.EventTime});
+        }
+
+        [FunctionName(nameof(CheckForStalledImport))]
+        public async Task CheckForStalledImport([TimerTrigger("%DonorImport:FileCheckCronSchedule%")] TimerInfo timer)
+        {
+            await donorHistoryService.SendNotificationForStalledImports();
         }
     }
 }

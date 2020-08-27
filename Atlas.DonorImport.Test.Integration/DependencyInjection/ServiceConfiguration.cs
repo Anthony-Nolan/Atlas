@@ -9,6 +9,7 @@ using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Context;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
+using Atlas.DonorImport.ExternalInterface.Settings;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
