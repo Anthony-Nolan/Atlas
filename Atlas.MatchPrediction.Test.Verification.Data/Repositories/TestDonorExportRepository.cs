@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.MatchPrediction.Test.Verification.Data.Context;
-using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
@@ -15,6 +15,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
         Task<int> AddRecord(int testHarnessId);
         Task SetExportedDateTime(int id);
         Task UpdateLatestRecordWithDataRefreshDetails(CompletedDataRefresh dataRefresh);
+        Task<TestDonorExportRecord> GetLastExportRecord();
     }
 
     public class TestDonorExportRepository : ITestDonorExportRepository
@@ -62,10 +63,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 
         public async Task UpdateLatestRecordWithDataRefreshDetails(CompletedDataRefresh dataRefresh)
         {
-            var latestRecord = await context.TestDonorExportRecords
-                .AsQueryable()
-                .OrderBy(t => t.Id)
-                .LastOrDefaultAsync();
+            var latestRecord = await GetLastExportRecord();
 
             if (latestRecord == null)
             {
@@ -82,6 +80,14 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             latestRecord.WasDataRefreshSuccessful = dataRefresh.WasSuccessful;
 
             await context.SaveChangesAsync();
+        }
+
+        public async Task<TestDonorExportRecord> GetLastExportRecord()
+        {
+            return await context.TestDonorExportRecords
+                .AsQueryable()
+                .OrderBy(t => t.Id)
+                .LastOrDefaultAsync();
         }
     }
 }

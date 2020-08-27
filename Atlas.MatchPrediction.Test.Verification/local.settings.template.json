@@ -6,7 +6,7 @@
 
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AzureStorage:HaplotypeFrequencySetBlobContainer": "haplotype-frequency-set-import",
-    
+
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
 
     "DataRefresh:RequestUrl": "override-this",
@@ -19,7 +19,11 @@
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
     "MacDictionary:Download:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
 
-    "MessagingServiceBus:ConnectionString": "override-this"
+    "MessagingServiceBus:ConnectionString": "override-this",
+
+    "Search:RequestUrl": "override-this",
+    "Search:ResultsTopic": "search-results-ready",
+    "Search:ResultsTopicSubscription": "override-this"
   },
   "ConnectionStrings": {
     "MatchPredictionVerification:Sql": "Data Source=(local);Initial Catalog=AtlasMatchPredictionVerification;Integrated Security=True;MultipleActiveResultSets=True;",
