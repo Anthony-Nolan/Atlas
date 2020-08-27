@@ -1,4 +1,6 @@
 ﻿using Atlas.MatchPrediction.Test.Verification.Data.Models;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Verification;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Context
@@ -19,6 +21,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Context
             modelBuilder.Entity<ExpandedMac>().SetUpModel();
             modelBuilder.Entity<MaskingRecord>().SetUpModel();
             modelBuilder.Entity<TestDonorExportRecord>().SetUpModel();
+            modelBuilder.Entity<VerificationRun>().SetUpModel();
+            modelBuilder.Entity<SearchRequestRecord>().SetUpModel();
+            modelBuilder.Entity<MatchedDonor>().SetUpModel();
+            modelBuilder.Entity<MatchProbability>().SetUpModel();
             base.OnModelCreating(modelBuilder);
         }
 
@@ -29,5 +35,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Context
         public DbSet<ExpandedMac> ExpandedMacs { get; set; }
         public DbSet<MaskingRecord> MaskingRecords { get; set; }
         public DbSet<TestDonorExportRecord> TestDonorExportRecords { get; set; }
+        public DbSet<VerificationRun> VerificationRuns { get; set; }
+        public DbSet<SearchRequestRecord> SearchRequests { get; set; }
+        public DbSet<MatchedDonor> MatchedDonors { get; set; }
+        public DbSet<MatchProbability> MatchProbabilities { get; set; }
     }
 }
