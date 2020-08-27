@@ -59,17 +59,16 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
             var setIds = (await AddNewInactiveSet(haplotypeFrequencyFile, file.FileName)).Select(hf => hf.Id).ToList();
 
-            var haplotypeFrequency = haplotypeFrequencyFile
-                .Frequencies.Select(f => new HaplotypeFrequency
-                {
-                    A = f.A,
-                    B = f.B,
-                    C = f.C,
-                    DQB1 = f.Dqb1,
-                    DRB1 = f.Drb1,
-                    Frequency = f.Frequency,
-                    TypingCategory = HaplotypeTypingCategory.GGroup
-                }).ToList();
+            var haplotypeFrequency = haplotypeFrequencyFile.Frequencies.Select(f => new HaplotypeFrequency
+            {
+                A = f.A,
+                B = f.B,
+                C = f.C,
+                DQB1 = f.Dqb1,
+                DRB1 = f.Drb1,
+                Frequency = f.Frequency,
+                TypingCategory = HaplotypeTypingCategory.GGroup
+            }).ToList();
 
             await StoreFrequencies(haplotypeFrequency, haplotypeFrequencyFile.NomenclatureVersion, setIds, convertToPGroups);
 
@@ -79,10 +78,9 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             }
         }
 
-
-        private async Task<IEnumerable<HaplotypeFrequencySet>> AddNewInactiveSet(HaplotypeFrequencyFileRecord metadata, string fileName)
+        private async Task<IEnumerable<HaplotypeFrequencySet>> AddNewInactiveSet(FrequencySetFileSchema metadata, string fileName)
         {
-            return await TaskExtensions.WhenEach(metadata.RegistryCodes.Select( registry =>
+            return await TaskExtensions.WhenEach(metadata.RegistryCodes.Select(registry =>
             {
                 var newSet = new HaplotypeFrequencySet
                 {

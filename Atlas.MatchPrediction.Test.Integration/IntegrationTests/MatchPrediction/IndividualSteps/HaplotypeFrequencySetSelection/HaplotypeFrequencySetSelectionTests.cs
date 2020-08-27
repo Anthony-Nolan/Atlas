@@ -210,7 +210,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         private async Task ImportHaplotypeSet(string registry, string ethnicity)
         {
-            using var file = FrequencySetFileBuilder.New(registry, ethnicity).Build();
+            using var file = FrequencySetFileBuilder.New(new[] {registry}, ethnicity).Build();
             await service.ImportFrequencySet(file);
         }
     }
