@@ -8,6 +8,9 @@ using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
+using Atlas.DonorImport.Data.Models;
+using Atlas.DonorImport.Data.Repositories;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData.Edm;
@@ -23,6 +26,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         private IDonorFileImporter donorFileImporter;
         private ILogger mockLogger;
         private INotificationSender mockNotificationSender;
+        private IDonorImportHistoryRepository donorImportHistoryRepository;
 
         private const string DonorLocation = "blobStorage/test.json";
 
@@ -40,6 +44,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
                 donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
                 mockLogger = DependencyInjection.DependencyInjection.Provider.GetService<ILogger>();
                 mockNotificationSender = DependencyInjection.DependencyInjection.Provider.GetService<INotificationSender>();
+                donorImportHistoryRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorImportHistoryRepository>();
             });
         }
 
@@ -98,8 +103,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
             var file = new DonorImportFile {Contents = malformedFile.ToStream(), UploadTime = DateTime.Now, FileLocation = DonorLocation};
 
             await donorFileImporter.ImportDonorFile(file);
+            
+            var result = await donorImportHistoryRepository.GetFileStateIfExists("test.json", file.UploadTime);
 
-            mockLogger.Received().SendTrace($"Donor Import for file '{DonorLocation}' complete. Imported 0 donor(s).");
+            result.Should().Be(DonorImportState.Completed);
         }
 
         [Test]
