@@ -54,7 +54,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         [TestCase("registry", "ethnicity")]
         public async Task Import_ImportsSetAsActive(string registryCode, string ethnicityCode)
         {
-            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode).Build();
+            using var file = FrequencySetFileBuilder.New(new[] {registryCode}, ethnicityCode).Build();
 
             await service.ImportFrequencySet(file);
 
@@ -68,10 +68,10 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         [TestCase("registry", "ethnicity")]
         public async Task Import_DeactivatesPreviouslyActiveSet(string registryCode, string ethnicityCode)
         {
-            using var oldFile = FrequencySetFileBuilder.New(registryCode, ethnicityCode).Build();
+            using var oldFile = FrequencySetFileBuilder.New(new[] {registryCode}, ethnicityCode).Build();
             await service.ImportFrequencySet(oldFile);
 
-            using var newFile = FrequencySetFileBuilder.New(registryCode, ethnicityCode).Build();
+            using var newFile = FrequencySetFileBuilder.New(new[] {registryCode}, ethnicityCode).Build();
             await service.ImportFrequencySet(newFile);
 
             var activeSet = await setRepository.GetActiveSet(registryCode, ethnicityCode);
@@ -86,7 +86,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         [TestCase("registry", "ethnicity")]
         public async Task Import_StoresFrequencies(string registryCode, string ethnicityCode)
         {
-            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode, NomenclatureVersion, 1, 10).Build();
+            using var file = FrequencySetFileBuilder.New(new[] {registryCode}, ethnicityCode, 10).Build();
 
             await service.ImportFrequencySet(file);
 
@@ -101,7 +101,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         [TestCase("registry", "ethnicity")]
         public async Task Import_SendsNotification(string registryCode, string ethnicityCode)
         {
-            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode).Build();
+            using var file = FrequencySetFileBuilder.New(new[] {registryCode}, ethnicityCode).Build();
 
             await service.ImportFrequencySet(file);
 
@@ -278,7 +278,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         [Test]
         public async Task Import_FileWithInvalidCsvFormat_SendsAlert()
         {
-            using var file = FrequencySetFileBuilder.WithInvalidCsvFormat().Build();
+            using var file = FrequencySetFileBuilder.WithInvalidFormat().Build();
 
             await service.ImportFrequencySet(file);
 
@@ -401,52 +401,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 .Build();
 
             await service.ImportFrequencySet(file, false);
-
-            await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
-        }
-
-        [TestCase(100, NomenclatureVersion, "Reg", "Ethn")]
-        [TestCase(1, "Diff-Nomenclature", "Reg", "Ethn")]
-        [TestCase(1, NomenclatureVersion, "Diff-Reg", "Ethn")]
-        [TestCase(1, NomenclatureVersion, "Reg", "Diff-Ethn")]
-        public async Task Import_WhenRowsInFileHaveDifferingMetadata_SendsAlert(
-            int populationId,
-            string nomenclatureVersion,
-            string registry,
-            string ethnicity)
-        {
-            var gGroupsBuilder = new LociInfoBuilder<string>()
-                .WithDataAt(Locus.A, "01:01:01G")
-                .WithDataAt(Locus.B, "13:01:01G")
-                .WithDataAt(Locus.C, "04:01:01G")
-                .WithDataAt(Locus.Dqb1, "06:02:01G")
-                .WithDataAt(Locus.Drb1, "03:02:01G");
-
-            using var file = FrequencySetFileBuilder
-                .New(new List<(HaplotypeFrequency, HaplotypeFrequencySet)>
-                {
-                    (
-                        new HaplotypeFrequency {Hla = gGroupsBuilder.Build(), Frequency = 0.1m}, 
-                        new HaplotypeFrequencySet{
-                            PopulationId = 1,
-                            HlaNomenclatureVersion = NomenclatureVersion,
-                            RegistryCode = "Reg",
-                            EthnicityCode = "Ethn"
-                        }
-                    ),
-                    (
-                        new HaplotypeFrequency {Hla = gGroupsBuilder.WithDataAt(Locus.A, "01:01:02").Build(), Frequency = 0.1m},
-                        new HaplotypeFrequencySet{
-                            PopulationId = populationId,
-                            HlaNomenclatureVersion = nomenclatureVersion,
-                            RegistryCode = registry,
-                            EthnicityCode = ethnicity
-                        }
-                    )
-                })
-                .Build();
-
-            await service.ImportFrequencySet(file);
 
             await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
         }
