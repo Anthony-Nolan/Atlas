@@ -1,8 +1,8 @@
 ﻿using System;
 using Atlas.MatchPrediction.Test.Verification.Data.Context;
-using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {
@@ -12,6 +12,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
         Task AddMaskingRecords(IEnumerable<MaskingRecord> records);
         Task MarkAsCompleted(int id);
         Task<bool> WasTestHarnessCompleted(int id);
+        Task<int> GetHaplotypeFrequencySetIdOfTestHarness(int id);
     }
 
     public class TestHarnessRepository : ITestHarnessRepository
@@ -45,7 +46,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 
         public async Task MarkAsCompleted(int id)
         {
-            var record = await context.TestHarnesses.FindAsync(id);
+            var record = await GetTestHarness(id);
 
             if (record == null)
             {
@@ -58,7 +59,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 
         public async Task<bool> WasTestHarnessCompleted(int id)
         {
-            var record = await context.TestHarnesses.FindAsync(id);
+            var record = await GetTestHarness(id);
 
             if (record == null)
             {
@@ -66,6 +67,18 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             }
 
             return record.WasCompleted;
+        }
+
+        public async Task<int> GetHaplotypeFrequencySetIdOfTestHarness(int id)
+        {
+            var harness = await GetTestHarness(id);
+            var pool = await context.NormalisedPool.FindAsync(harness.NormalisedPool_Id);
+            return pool.HaplotypeFrequencySetId;
+        }
+
+        private async Task<TestHarness> GetTestHarness(int id)
+        {
+            return await context.TestHarnesses.FindAsync(id);
         }
     }
 }

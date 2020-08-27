@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
 
-namespace Atlas.MatchPrediction.Test.Verification.Data.Models
+namespace Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness
 {
     // ReSharper disable InconsistentNaming
 
@@ -43,7 +43,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models
                 .HasDefaultValueSql("GETUTCDATE()");
 
             modelBuilder
-                .HasOne<TestHarness>()
+                .HasOne<Models.TestHarness.TestHarness>()
                 .WithMany()
                 .HasForeignKey(t => t.TestHarness_Id);
         }

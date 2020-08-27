@@ -17,6 +17,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
+using Atlas.MatchPrediction.Test.Verification.Services.Verification;
 
 namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 {
@@ -53,6 +54,7 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
         {
             services.RegisterAsOptions<VerificationAzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<VerificationDataRefreshSettings>("DataRefresh");
+            services.RegisterAsOptions<VerificationSearchSettings>("Search");
         }
 
         private static void RegisterDatabaseServices(this IServiceCollection services, Func<IServiceProvider, string> fetchSqlConnectionString)
@@ -63,10 +65,17 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
                 new NormalisedPoolRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<ISimulantsRepository, SimulantsRepository>(sp =>
                 new SimulantsRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<ISearchRequestsRepository, SearchRequestsRepository>(sp =>
+                new SearchRequestsRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<IMatchedDonorsRepository, MatchedDonorsRepository>(sp =>
+                new MatchedDonorsRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<IMatchProbabilitiesRepository, MatchProbabilitiesRepository>(sp =>
+                new MatchProbabilitiesRepository(fetchSqlConnectionString(sp)));
 
             services.AddScoped(sp => new ContextFactory().Create(fetchSqlConnectionString(sp)));
             services.AddScoped<ITestHarnessRepository, TestHarnessRepository>();
             services.AddScoped<ITestDonorExportRepository, TestDonorExportRepository>();
+            services.AddScoped<IVerificationRunRepository, VerificationRunRepository>();
         }
 
         private static void RegisterServices(
@@ -99,6 +108,10 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
 
             services.AddScoped<IAtlasPreparer, AtlasPreparer>();
             services.AddScoped<ITestDonorExporter, TestDonorExporter>();
+
+            services.AddScoped<IVerificationRunner, VerificationRunner>();
+            services.AddScoped<ISearchResultsFetcher, SearchResultsFetcher>();
+            services.AddScoped<ISearchResultsStreamer, SearchResultsStreamer>();
         }
     }
 }

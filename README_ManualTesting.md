@@ -20,27 +20,48 @@ This code is designed to be run locally; it is not production quality and cannot
 
 ## Verification
 
+- [Glossary](#glossary)
+- [Start Up Guide](#start-up-guide)
+- [Test Harness Generation](#test-harness-generation)
+  * [Pre-Generation Steps](#pre-generation-steps)
+    + [Populate/refresh the Local MAC store](#populate-refresh-the-local-mac-store)
+    + [Upload Haplotype Frequency Set File](#upload-haplotype-frequency-set-file)
+  * [Generating the Test Harness](#generating-the-test-harness)
+- [Prepare Atlas to receive Search Requests](#prepare-atlas-to-receive-search-requests)
+- [Searching](#searching)
+  * [Send Search Requests](#send-search-requests)
+  * [Retrieve Search Results](#retrieve-search-results)
+
+### Glossary
+- Test Harness: a set of simulated patient and donors that will be run through search in order to verify match prediction.
+- Simulant: a simulated individual - either a patient or a donor - and their HLA typing (genotype and phenotype).
+- Normalised Haplotype Pool: data source for genotype simulation; produced by assigning each haplotype within a set a copy number, based on its relative frequency.
+- Masking: the process of converting a high-resolution genotype into a lower resolution phenotype; this may include deleting selected locus typings entirely.
+
 ### Start Up Guide
-- Run Migrations
-  - Run EF Core Migrations for the `Atlas.MatchPrediction.Test.Verification.Data` project.
-  - Instructions for VS PkgMgrCons
-    - Set Default Project (dropdown in PkgMgrConsole window) to be `Atlas.MatchPrediction.Test.Verification.Data`.
-    - Set Startup Project (Context menu of Solution Explorer) to be `Atlas.MatchPrediction.Test.Verification.Data`.
-    - Run `Update-Database` in the console.
-    - Open your local SQL Server and verify the creation of the database: `AtlasMatchPredictionVerification`.
-- Compile and Run Functions app
+- Run Migrations on the Verification database
+  - All data generated for purpose of verification will be stored in the database defined within the app setting: `MatchPredictionVerification:Sql`.
+    - By default, the connection string points to locally to db: `AtlasMatchPredictionVerification`.
+    - This could be changed to point at a remote db, e.g., if you wish to share the data with other users, or archive the data.
+  - Before verification can be performed, EF Core Migrations within the `Atlas.MatchPrediction.Test.Verification.Data` project must be run.
+    - Instructions for VS PkgMgrCons:
+      - Set Default Project (dropdown in PkgMgrConsole window) to be `Atlas.MatchPrediction.Test.Verification.Data`.
+      - Set Startup Project (Context menu of Solution Explorer) to be `Atlas.MatchPrediction.Test.Verification.Data`.
+      - Run `Update-Database` in the console.
+      - Open your local SQL Server and verify the creation of the database: `AtlasMatchPredictionVerification`.
+- Compile and Run the Functions app
   - Set Startup Project to `Atlas.MatchPrediction.Test.Verification`.
   - Compile and Run - a console window will pop-up, and a list of functions will be displayed if everything loads successfully.
   - Load the Swagger UI by copying the `SwaggerUi` function URL from the console into a web browser.
   - Scroll to the `HealthCheck` endpoint, fire it and confirm that you receive an `OK 200` response in under a second.
 - Configure remote connection settings:
-  - The verification framework runs locally, but depends on some deployed resources to generate the test harness, namely:
+  - The verification framework runs locally, but depends on several deployed resources, namely:
       - Match Prediction database and azure storage for global haplotype frequencies;
-      - HLA metadata dictionary (HMD) to generate masked typings - you could use the local storage emulator, but it is easier (and perhaps faster) to
-        use the remote HMD that has already been populated on the remote environment.
+      - HLA metadata dictionary (HMD) to generate masked typings - you could use the local storage emulator, but it is easier 
+        (and perhaps faster) to use the remote HMD that has already been populated on the remote environment.
       - Donor import database and data refresh functionality to populate Atlas donor stores with test donors.
       - Search orchestrator function, to run search requests.
-  - Therefore, the remote environment should have been set up before running the framework.
+  - Therefore, the remote environment should be set up before running the framework locally.
     - Note: it is essential that the remote environment is dedicated to verification, so the framework can safely
       manipulate data as required and make assumptions about the state of various features.
   - Use the project's `local.settings.json` file to override default local values with the remote values:
@@ -54,25 +75,19 @@ This code is designed to be run locally; it is not production quality and cannot
           ...
           "HlaMetadataDictionary:AzureStorageConnectionString": "remote-connection-string"
           ...
-          "MessagingServiceBus:ConnectionString": "remote-connection-string"
+          "MessagingServiceBus:ConnectionString": "remote-connection-string",
+          
+          "Search:RequestUrl": "url-to-search-function",
+          "Search:ResultsTopicSubscription": "subscription-name"
         }
         "ConnectionStrings": {
           "MatchPrediction:Sql": "remote-connection-string",
           "DonorImport:Sql": "remote-connection-string"
-        },
-          TODO: ATLAS-477: extend with further settings
+        }
       }
       ```
-### Glossary
-- Test Harness: a set of simulated patient and donors that will be run through search in order to verify match prediction.
-- Simulant: a simulated individual - either a patient or a donor - and their HLA typing (genotype and phenotype).
-- Normalised Haplotype Pool: data source for genotype simulation; produced by assigning each haplotype within a set a copy number, based on its relative frequency.
-- Masking: the process of converting a high-resolution genotype into a lower resolution phenotype; this may include deleting selected locus typings entirely.
 
 ### Test Harness Generation
-- Note: All generated data will be stored in the verification database defined within the app setting: `MatchPredictionVerification:Sql`.
-    - By default, the connection string points to locally to db: `AtlasMatchPredictionVerification`.
-
 - The test harness generator executes the following steps:
   1. Creates a new test harness entry with a unique ID.
   2. Retrieves the *currently active, global* HF set.
@@ -128,8 +143,10 @@ The following steps must be completed prior to generating the test harness.
   - Further, donor stores should only contain donors from one test harness at any one time.
 - To achieve this, launch the local functions app and call the http function: `PrepareAtlasDonorStores`.
   - This takes in the ID of a completed test harness (see Swagger UI for request model).
-  - Calling this function wipes the remote donor import donor store, re-populates it with donors from the test harness
-    specified in the request, and finally forces a data refresh on the matching algorithm; this can all take several minutes.
+  - The request will take several minutes to complete as it involves the following steps:
+    1. Wipe the remote donor import donor store.
+    2. Re-populate it with donors from the test harness specified in the request.
+    3. Force a data refresh on the matching algorithm.
   - Ensure the following settings have been overriden in `local.settings.json` with values for the remote environment:
       `DataRefresh:RequestUrl`, `DataRefresh:CompletionTopicSubscription`, and `DonorImport:Sql`.
 - As data refresh is a long-running process, a servicebus-triggered function, `HandleDataRefreshCompletion`, is
@@ -149,5 +166,26 @@ The following steps must be completed prior to generating the test harness.
     - If the interrupted data refresh job cannot be continued for some reason, then it is best to manually delete the open
       export record from the local verification database, and start from scratch.
 
-### Running Search Requests using Test Harness
-TODO: ATLAS-477
+### Searching
+
+#### Send Search Requests
+- The last part of verification data generation involves sending search requests to the test environment;
+  one for each test patient within the specified test harness.
+- This involves launching the verification functions app, and invoking the http-triggered function, `SendVerificationSearchRequests`.
+  - This takes in the ID of a completed test harness (see Swagger UI for request model).
+- The following conditions must be met for the request to be accepted:
+  - Donors stores of the test environment should contain the donors of the specified test harness.
+  - The HF set used to generate the specified test harness should be the active, global HF set on the test environment.
+- If the required conditions are met, search requests will be sent via http and logged to the verification db.
+  - Ensure `Search:RequestUrl` has been overriden in `local.settings.json` with the remote environment value.
+  - Check the Debug window for progress.
+
+#### Retrieve Search Results
+- As search is an async process, a second service-bus triggered function, `FetchSearchResults`, is used to retrieve
+  the results when they are ready to download from blob storage.
+- Ensure `Search:ResultsTopicSubscription` has been overriden in `local.settings.json` with the remote environment value.
+- The functions app must be running for the function to listen for new messages.
+  - As it may take several hours for all requests to complete, it is advised to either leave the app running in the
+    background, or only launch it when it seems the majority of requests have completed.
+  - The queries in `\MiscTestingAndDebuggingResources\ManualTesting\MatchPredictionVerification\VerificationRunSQLQueries.sql`
+    help to determine overall results download progress.

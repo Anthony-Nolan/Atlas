@@ -1,6 +1,6 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.MatchPrediction.Test.Verification.Data.Models;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using System.Collections.Generic;
 using System.Linq;
