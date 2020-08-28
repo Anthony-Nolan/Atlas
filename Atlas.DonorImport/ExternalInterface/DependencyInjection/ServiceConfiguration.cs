@@ -21,13 +21,14 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
+            Func<IServiceProvider,StalledFileSettings> fetchStalledFileSettings,
             Func<IServiceProvider, string> fetchSqlConnectionString
         )
         {
             // Perform static Dapper set up that should be performed once before any SQL requests are made.
             Initialise.InitaliseDapper();
             
-            services.RegisterSettings(fetchMessagingServiceBusSettings);
+            services.RegisterSettings(fetchMessagingServiceBusSettings, fetchStalledFileSettings);
             services.RegisterClients(fetchApplicationInsightsSettings, fetchNotificationsServiceBusSettings);
             services.RegisterAtlasLogger(fetchApplicationInsightsSettings);
             services.RegisterServices();
@@ -47,10 +48,12 @@ namespace Atlas.DonorImport.ExternalInterface.DependencyInjection
 
         private static void RegisterSettings(
             this IServiceCollection services,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
+            Func<IServiceProvider,StalledFileSettings> fetchStalledFileSettings)
         {
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
-            services.RegisterAsOptions<StalledFileSettings>("DonorImport");
+            services.MakeSettingsAvailableForUse(fetchStalledFileSettings);
+            
         }
 
         private static void RegisterServices(this IServiceCollection services)

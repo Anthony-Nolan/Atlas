@@ -5,6 +5,7 @@ using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.DonorImport.ExternalInterface.Settings;
 
 namespace Atlas.DonorImport.Services
 {
@@ -23,11 +24,11 @@ namespace Atlas.DonorImport.Services
         private readonly INotificationSender notificationSender;
         private readonly TimeSpan durationToCheckForStalledFiles;
 
-        public DonorImportFileHistoryService(IDonorImportHistoryRepository repository, INotificationSender notificationSender, int hoursToCheckForStalledFiles)
+        public DonorImportFileHistoryService(IDonorImportHistoryRepository repository, INotificationSender notificationSender, StalledFileSettings stalledFileSettings)
         {
             this.repository = repository;
             this.notificationSender = notificationSender;
-            this.durationToCheckForStalledFiles = new TimeSpan(hoursToCheckForStalledFiles, 0, 0);
+            this.durationToCheckForStalledFiles = new TimeSpan(stalledFileSettings.HoursToCheckStalledFiles, 0, 0);
         }
 
         public async Task RegisterStartOfDonorImport(DonorImportFile donorFile)

@@ -42,6 +42,7 @@ namespace Atlas.DonorImport.Test.Integration.DependencyInjection
                 sp => new ApplicationInsightsSettings {LogLevel = "Info"},
                 sp => new MessagingServiceBusSettings(),
                 sp => new NotificationsServiceBusSettings(),
+                sp => new StalledFileSettings { HoursToCheckStalledFiles = 2}, 
                 ConnectionStringReader(DonorStoreSqlConnectionString)
             );
             RegisterIntegrationTestServices(services);
