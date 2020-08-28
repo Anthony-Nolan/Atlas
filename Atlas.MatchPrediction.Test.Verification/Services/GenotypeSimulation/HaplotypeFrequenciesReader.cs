@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
@@ -21,16 +20,16 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
     {
         private readonly IHaplotypeFrequencySetReader setReader;
         private readonly IFrequencySetStreamer setStreamer;
-        private readonly IFrequencyJsonReader jsonReader;
+        private readonly IFrequencyFileParser fileParser;
 
         public HaplotypeFrequenciesReader(
             IHaplotypeFrequencySetReader setReader,
             IFrequencySetStreamer setStreamer,
-            IFrequencyJsonReader jsonReader)
+            IFrequencyFileParser fileParser)
         {
             this.setReader = setReader;
             this.setStreamer = setStreamer;
-            this.jsonReader = jsonReader;
+            this.fileParser = fileParser;
         }
 
         public async Task<HaplotypeFrequenciesReaderResult> GetUnalteredActiveGlobalHaplotypeFrequencies()
@@ -53,7 +52,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
         {
             var fileStream = await setStreamer.GetFileContents(set.Name);
 
-            return jsonReader.GetFrequencies(fileStream);
+            return fileParser.GetFrequencies(fileStream);
         }
     }
 
