@@ -463,7 +463,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
 
         [TestCase("registry1", "registry1")]
         [TestCase("registry1", null)]
-        public async Task Import_SetWithMultipleRegistries_SendsAlert(params string[] registryCode)
+        public async Task Import_SetWithDuplicateRegistries_SendsAlert(params string[] registryCode)
         {
             using var file = FrequencySetFileBuilder.New(registryCode).Build();
             await service.ImportFrequencySet(file);
@@ -472,7 +472,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
-        public async Task Import_SetWithMultipleEthnicityCodes_SendsAlert()
+        public async Task Import_SetWithDuplicateEthnicityCodes_SendsAlert()
         {
             var registryCode = new[] {"registry"};
             var ethnicityCodes = new[] {"ethnicity1", "ethnicity1"};
