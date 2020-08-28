@@ -162,7 +162,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                     // When continuing a donor import there will be some overlap of donors to ensure all donors are processed. 
                     // This ensures we do not end up with duplicate p-groups in the matching hla tables
                     // We do not want to attempt to remove p-groups for all batches as it would be detrimental to performance, so we limit it to the first two batches
-                    var shouldRemovePGroups = donorBatch.First().DonorId <= lastDonorIdSuspectedOfBeingReprocessed;
+                    // TODO: ATLAS-702: Remove this functionality altogether
+                    // TODO: ATLAS-702: Write integration test proving that having duplicate p-groups does not affect search
+                    var shouldRemovePGroups = false;
 
                     using (timerCollection.TimeInnerOperation(DataRefreshTimingKeys.BatchProgress_TimerKey))
                     {
