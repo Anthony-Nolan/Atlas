@@ -5,20 +5,14 @@ namespace Atlas.MatchPrediction.Models
 {
     public class FrequencySetFileSchema
     {
-        // ReSharper disable once StringLiteralTypo
-        [JsonProperty(PropertyName = "ethn")]
-        public string Ethnicity { get; set; }
-
-        [JsonProperty(PropertyName = "donPool")]
-        public string[] RegistryCodes { get; set; }
-
-        [JsonProperty(PropertyName = "nomenclatureVersion")]
         public string NomenclatureVersion { get; set; }
 
-        [JsonProperty(PropertyName = "populationId")]
+        public string[] RegistryCodes { get; set; }
+
+        public string Ethnicity { get; set; }
+
         public int PopulationId { get; set; }
 
-        [JsonProperty(PropertyName = "frequencies")]
         public IEnumerable<FrequencyRecord> Frequencies { get; set; }
     }
 }

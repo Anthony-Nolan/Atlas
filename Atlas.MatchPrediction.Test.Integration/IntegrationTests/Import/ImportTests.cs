@@ -5,7 +5,6 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Notifications;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
-using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
@@ -25,8 +24,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         private IHaplotypeFrequencySetRepository setRepository;
         private IHaplotypeFrequencyInspectionRepository inspectionRepository;
         private INotificationSender notificationSender;
-
-        private const string NomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
