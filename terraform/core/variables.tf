@@ -88,6 +88,12 @@ variable "MATCH_PREDICTION_DATABASE_USERNAME" {
   default = "match_prediction"
 }
 
+variable "MATCHING_DATABASE_TRANSIENT_TIMEOUT" {
+  type        = number
+  default     = 1800
+  description = "The timeout to be used in the connection string for the transient matching database. The default is half an hour - which may not be enough for particularly large ATLAS installations."
+}
+
 variable "MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE" {
   type        = string
   default     = "S4"

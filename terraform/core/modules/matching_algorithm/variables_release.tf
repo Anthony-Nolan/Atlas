@@ -36,6 +36,10 @@ variable "DATABASE_PASSWORD" {
   type = string
 }
 
+variable "DATABASE_TRANSIENT_TIMEOUT" {
+  type = number
+}
+
 variable "DATABASE_USERNAME" {
   type = string
 }
