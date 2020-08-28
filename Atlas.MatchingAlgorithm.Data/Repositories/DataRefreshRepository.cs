@@ -6,8 +6,8 @@ using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
-using Microsoft.Azure.Documents.SystemFunctions;
 using MoreLinq;
+using DonorBatch = System.Collections.Generic.List<Atlas.MatchingAlgorithm.Data.Models.DonorInfo.DonorInfo>;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
 {
@@ -18,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
     {
         Task<int> GetDonorCount();
         Task<int> GetDonorCountLessThan(int initialDonorId);
-        IAsyncEnumerable<List<DonorInfo>> NewOrderedDonorBatchesToImport(int batchSize, int? lastProcessedDonor, bool continueExistingImport);
+        IAsyncEnumerable<DonorBatch> NewOrderedDonorBatchesToImport(int batchSize, int? lastProcessedDonor, bool continueExistingImport);
 
         /// <summary>
         /// Unlike <see cref="NewOrderedDonorBatchesToImport"/>, fetches all donors in memory rather than lazily evaluating.
@@ -28,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         /// <param name="batchSize"></param>
         /// <param name="lastProcessedDonor"></param>
         /// <returns></returns>
-        Task<List<List<DonorInfo>>> GetOrderedDonorBatches(int numberOfBatches, int batchSize, int lastProcessedDonor);
+        Task<List<DonorBatch>> GetOrderedDonorBatches(int numberOfBatches, int batchSize, int lastProcessedDonor);
     }
 
     public class DataRefreshRepository : Repository, IDataRefreshRepository
@@ -55,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             }
         }
 
-        public async IAsyncEnumerable<List<DonorInfo>> NewOrderedDonorBatchesToImport(
+        public async IAsyncEnumerable<DonorBatch> NewOrderedDonorBatchesToImport(
             int batchSize,
             int? lastProcessedDonor,
             bool continueExistingImport)
@@ -85,7 +85,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             } while (!hasFoundAllDonors);
         }
 
-        public async Task<List<List<DonorInfo>>> GetOrderedDonorBatches(int numberOfBatches, int batchSize, int lastProcessedDonor)
+        public async Task<List<DonorBatch>> GetOrderedDonorBatches(int numberOfBatches, int batchSize, int lastProcessedDonor)
         {
             const string sql = "SELECT top(@numberToTake) * FROM Donors WHERE DonorId > @lastProcessedDonor ORDER BY DonorId ASC";
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
