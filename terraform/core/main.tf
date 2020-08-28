@@ -134,7 +134,7 @@ module "donor_import" {
 
   default_servicebus_settings = local.service-bus
 
-  app_service_plan        = azurerm_app_service_plan.atlas-consumption-plan
+  app_service_plan        = azurerm_app_service_plan.atlas-elastic-plan
   application_insights    = azurerm_application_insights.atlas
   azure_storage           = azurerm_storage_account.azure_storage
   shared_function_storage = azurerm_storage_account.function_storage
