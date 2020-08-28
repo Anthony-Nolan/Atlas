@@ -60,11 +60,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             int? lastProcessedDonor,
             bool continueExistingImport)
         {
-            if (continueExistingImport)
-            {
-                lastProcessedDonor = 0;
-            }
-
+            lastProcessedDonor ??= 0;
+            
             string BuildFetchBatchSql() => lastProcessedDonor == null
                 ? "SELECT top(@batchSize) * FROM Donors ORDER BY DonorId ASC"
                 : "SELECT top(@batchSize) * FROM Donors WHERE DonorId > @lastProcessedDonor ORDER BY DonorId ASC";
