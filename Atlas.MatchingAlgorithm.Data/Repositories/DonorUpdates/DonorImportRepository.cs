@@ -144,13 +144,13 @@ END
                         using (timer.TimeInnerOperation())
                         {
                             var pGroupIndexSql = BuildPGroupIndexSqlFor(table);
-                            await conn.ExecuteAsync(pGroupIndexSql, commandTimeout: 7200);
+                            await conn.ExecuteAsync(pGroupIndexSql, commandTimeout: 43200);
                         }
 
                         using (timer.TimeInnerOperation())
                         {
                             var donorIdIndexSql = BuildDonorIdIndexSqlFor(table);
-                            await conn.ExecuteAsync(donorIdIndexSql, commandTimeout: 7200);
+                            await conn.ExecuteAsync(donorIdIndexSql, commandTimeout: 43200);
                         }
                     }
                 }
@@ -211,7 +211,7 @@ WHERE DonorId IN ({string.Join(",", donorIds)});
 
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                await conn.ExecuteAsync(removalSql, commandTimeout: 600);
+                await conn.ExecuteAsync(removalSql, commandTimeout: 7200);
             }
         }
     }
