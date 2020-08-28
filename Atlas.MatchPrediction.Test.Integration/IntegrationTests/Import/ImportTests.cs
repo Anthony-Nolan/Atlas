@@ -78,6 +78,24 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
             activeSetCount.Should().Be(1);
         }
 
+        [TestCase("registry1")]
+        [TestCase("registry1", "registry2")]
+        [TestCase("registry1", "registry2", "registry3")]
+        public async Task Import_SetWithMultipleRegistries(params string[] registryCode)
+        {
+            using var file = FrequencySetFileBuilder.New(registryCode).Build();
+            await service.ImportFrequencySet(file);
+
+            foreach (var registry in registryCode)
+            {
+                var activeSet = await setRepository.GetActiveSet(registry, null);
+                var activeSetCount = await inspectionRepository.ActiveSetCount(registry, null);
+
+                activeSet.Name.Should().Be(file.FileName);
+                activeSetCount.Should().Be(1);
+            }
+        }
+
         [TestCase(null, null)]
         [TestCase("registry", null)]
         [TestCase("registry", "ethnicity")]
