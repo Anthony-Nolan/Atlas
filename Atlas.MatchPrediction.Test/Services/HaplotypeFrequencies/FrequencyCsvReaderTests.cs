@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
@@ -13,12 +14,12 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
         private const string CsvHeader = "a;b;c;drb1;dqb1;population_id;freq;nomenclature_version;population_id;don_pool;ethn";
         private const string CsvFileBodySingleFrequency = "A-HLA;B-HLA;C-HLA;DRB1-HLA;DQBQ-HLA;1;0.00001;3330;1;Reg;Eth";
 
-        private IFrequencyJsonReader reader;
+        private IFrequencyFileParser reader;
 
         [SetUp]
         public void Setup()
         {
-            reader = new FrequencyJsonReader();
+            reader = new FrequencyFileParser();
         }
 
         [Test]
@@ -48,7 +49,7 @@ namespace Atlas.MatchPrediction.Test.Services.HaplotypeFrequencies
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvFile)))
             {
                 var frequencies = reader.GetFrequencies(stream);
-                frequencies.Should().Be(count);
+                frequencies.Frequencies.Count().Should().Be(count);
             }
         }
 

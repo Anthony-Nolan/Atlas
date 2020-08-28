@@ -26,20 +26,20 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
     internal class FrequencySetImporter : IFrequencySetImporter
     {
-        private readonly IFrequencyJsonReader frequencyJsonReader;
+        private readonly IFrequencyFileParser frequencyFileParser;
         private readonly IHaplotypeFrequencySetRepository setRepository;
         private readonly IHaplotypeFrequenciesRepository frequenciesRepository;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly ILogger logger;
 
         public FrequencySetImporter(
-            IFrequencyJsonReader frequencyJsonReader,
+            IFrequencyFileParser frequencyFileParser,
             IHaplotypeFrequencySetRepository setRepository,
             IHaplotypeFrequenciesRepository frequenciesRepository,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             ILogger logger)
         {
-            this.frequencyJsonReader = frequencyJsonReader;
+            this.frequencyFileParser = frequencyFileParser;
             this.setRepository = setRepository;
             this.frequenciesRepository = frequenciesRepository;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
@@ -55,11 +55,11 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
             // Load all frequencies into memory, to perform aggregation by PGroup.
             // Largest known HF set is ~300,000 entries, which is reasonable to load into memory here.
-            var haplotypeFrequencyFile = frequencyJsonReader.GetFrequencies(file.Contents);
+            var frequencySet = frequencyFileParser.GetFrequencies(file.Contents);
 
-            var setIds = (await AddNewInactiveSet(haplotypeFrequencyFile, file.FileName)).Select(hf => hf.Id).ToList();
+            var setIds = await AddNewInactiveSet(frequencySet, file.FileName);
 
-            var haplotypeFrequency = haplotypeFrequencyFile.Frequencies.Select(f => new HaplotypeFrequency
+            var gGroupHaplotypes = frequencySet.Frequencies.Select(f => new HaplotypeFrequency
             {
                 A = f.A,
                 B = f.B,
@@ -68,9 +68,9 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 DRB1 = f.Drb1,
                 Frequency = f.Frequency,
                 TypingCategory = HaplotypeTypingCategory.GGroup
-            }).ToList();
+            }).ToList(); ;
 
-            await StoreFrequencies(haplotypeFrequency, haplotypeFrequencyFile.NomenclatureVersion, setIds, convertToPGroups);
+            await StoreFrequencies(gGroupHaplotypes, frequencySet.NomenclatureVersion, setIds, convertToPGroups);
 
             foreach (var setId in setIds)
             {
@@ -78,9 +78,21 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             }
         }
 
-        private async Task<IEnumerable<HaplotypeFrequencySet>> AddNewInactiveSet(FrequencySetFileSchema metadata, string fileName)
+        private async Task<IReadOnlyCollection<int>> AddNewInactiveSet(FrequencySetFileSchema metadata, string fileName)
         {
-            return await TaskExtensions.WhenEach(metadata.RegistryCodes.Select(registry =>
+            if (!metadata.Ethnicity.IsNullOrEmpty() && metadata.RegistryCodes.IsNullOrEmpty())
+            {
+                throw new MalformedHaplotypeFileException($"Cannot import set: Ethnicity ('{metadata.Ethnicity}') provided but no registry");
+            }
+
+            if (metadata.NomenclatureVersion.IsNullOrEmpty())
+            {
+                throw new MalformedHaplotypeFileException("Cannot import set: Nomenclature version must be set");
+            }
+
+            var registries = metadata.RegistryCodes.IsNullOrEmpty() ? new string[] {null} : metadata.RegistryCodes;
+
+            return (await TaskExtensions.WhenEach(registries.Select(registry =>
             {
                 var newSet = new HaplotypeFrequencySet
                 {
@@ -94,7 +106,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 };
 
                 return setRepository.AddSet(newSet);
-            }));
+            }))).Select(hf => hf.Id).ToList();
         }
 
         private async Task StoreFrequencies(
