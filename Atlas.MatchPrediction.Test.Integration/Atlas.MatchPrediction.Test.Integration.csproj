@@ -34,6 +34,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Resources\HaplotypeFrequencySets\large.csv" />
+        <EmbeddedResource Include="Resources\HaplotypeFrequencySets\large.json" />
     </ItemGroup>
 </Project>

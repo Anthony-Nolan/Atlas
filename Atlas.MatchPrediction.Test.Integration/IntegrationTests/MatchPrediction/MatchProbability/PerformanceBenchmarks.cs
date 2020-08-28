@@ -202,7 +202,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var importer = DependencyInjection.DependencyInjection.Provider.GetService<IHaplotypeFrequencyService>();
 
             // This file is an actual test file, representing frequencies from one of the largest registries. Pop30 = NMDP.
-            var filePath = $"Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.large.csv";
+            var filePath = $"Atlas.MatchPrediction.Test.Integration.Resources.HaplotypeFrequencySets.large.json";
 
             await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(filePath))
             using (var file = FrequencySetFileBuilder.FileWithoutContents()
