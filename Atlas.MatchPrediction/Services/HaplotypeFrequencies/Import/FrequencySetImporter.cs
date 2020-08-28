@@ -31,6 +31,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
         private readonly IHaplotypeFrequencySetRepository setRepository;
         private readonly IHaplotypeFrequenciesRepository frequenciesRepository;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
+        private readonly IFrequencySetValidator frequencySetValidator;
         private readonly ILogger logger;
 
         public FrequencySetImporter(
@@ -38,12 +39,14 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             IHaplotypeFrequencySetRepository setRepository,
             IHaplotypeFrequenciesRepository frequenciesRepository,
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
+            IFrequencySetValidator frequencySetValidator,
             ILogger logger)
         {
             this.frequencyFileParser = frequencyFileParser;
             this.setRepository = setRepository;
             this.frequenciesRepository = frequenciesRepository;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
+            this.frequencySetValidator = frequencySetValidator;
             this.logger = logger;
         }
 
@@ -57,6 +60,8 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             // Load all frequencies into memory, to perform aggregation by PGroup.
             // Largest known HF set is ~300,000 entries, which is reasonable to load into memory here.
             var frequencySet = frequencyFileParser.GetFrequencies(file.Contents);
+
+            frequencySetValidator.Validate(frequencySet);
 
             var setIds = await AddNewInactiveSets(frequencySet, file.FileName);
 
@@ -81,7 +86,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
 
         private async Task<List<int>> AddNewInactiveSets(FrequencySetFileSchema metadata, string fileName)
         {
-            var ethnicityCodes = metadata.EthnicityCodes.IsNullOrEmpty() ? new string[] { null } : metadata.EthnicityCodes;
+            var ethnicityCodes = metadata.EthnicityCodes.IsNullOrEmpty() ? new string[] {null} : metadata.EthnicityCodes;
             var registryCodes = metadata.RegistryCodes.IsNullOrEmpty() ? new string[] {null} : metadata.RegistryCodes;
 
             var setIds = new List<int>();

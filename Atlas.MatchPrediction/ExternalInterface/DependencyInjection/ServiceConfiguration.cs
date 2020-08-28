@@ -80,6 +80,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
         {
             services.AddScoped<IHaplotypeFrequencySetReader, HaplotypeFrequencySetReader>();
             services.AddScoped<IFrequencyFileParser, FrequencyFileParser>();
+            services.AddScoped<IFrequencySetValidator, FrequencySetValidator>();
         }
 
         private static void RegisterClientServices(this IServiceCollection services)
@@ -100,6 +101,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
             
             services.AddScoped<IFrequencySetImporter, FrequencySetImporter>();
             services.AddScoped<IFrequencyFileParser, FrequencyFileParser>();
+            services.AddScoped<IFrequencySetValidator, FrequencySetValidator>();
             services.AddScoped<IHaplotypeFrequencyService, HaplotypeFrequencyService>();
             services.AddScoped<IFrequencyConsolidator, FrequencyConsolidator>();
 
