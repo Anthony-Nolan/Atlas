@@ -21,6 +21,7 @@ namespace Atlas.DonorImport.Functions
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
+                OptionsReaderFor<StalledFileSettings>(),
                 ConnectionStringReader("DonorStoreSql")
             );
         }
