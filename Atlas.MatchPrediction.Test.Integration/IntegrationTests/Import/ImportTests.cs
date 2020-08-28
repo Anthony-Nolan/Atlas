@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
@@ -47,42 +48,64 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
         }
 
         [TestCase(null, null)]
-        [TestCase("registry", null)]
-        [TestCase("registry", "ethnicity")]
-        public async Task Import_ImportsSetAsActive(string registryCode, string ethnicityCode)
+        [TestCase(new[] {"registry"}, null)]
+        [TestCase(new[] {"registry"}, new[] {"ethnicity"})]
+        public async Task Import_ImportsSetAsActive(string[] registryCode, string[] ethnicityCode)
         {
-            using var file = FrequencySetFileBuilder.New(new[] {registryCode}, ethnicityCode).Build();
+            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode).Build();
 
             await service.ImportFrequencySet(file);
 
-            var activeSet = await setRepository.GetActiveSet(registryCode, ethnicityCode);
+            var activeSet = await setRepository.GetActiveSet(registryCode?.First(), ethnicityCode?.First());
 
             activeSet.Name.Should().Be(file.FileName);
         }
 
         [TestCase(null, null)]
-        [TestCase("registry", null)]
-        [TestCase("registry", "ethnicity")]
-        public async Task Import_DeactivatesPreviouslyActiveSet(string registryCode, string ethnicityCode)
+        [TestCase(new[] {"registry"}, null)]
+        [TestCase(new[] {"registry"}, new[] {"ethnicity"})]
+        public async Task Import_DeactivatesPreviouslyActiveSet(string[] registryCode, string[] ethnicityCode)
         {
-            using var oldFile = FrequencySetFileBuilder.New(new[] {registryCode}, ethnicityCode).Build();
+            using var oldFile = FrequencySetFileBuilder.New(registryCode, ethnicityCode).Build();
             await service.ImportFrequencySet(oldFile);
 
-            using var newFile = FrequencySetFileBuilder.New(new[] {registryCode}, ethnicityCode).Build();
+            using var newFile = FrequencySetFileBuilder.New(registryCode, ethnicityCode).Build();
             await service.ImportFrequencySet(newFile);
 
-            var activeSet = await setRepository.GetActiveSet(registryCode, ethnicityCode);
-            var activeSetCount = await inspectionRepository.ActiveSetCount(registryCode, ethnicityCode);
+            var activeSet = await setRepository.GetActiveSet(registryCode?.First(), ethnicityCode?.First());
+            var activeSetCount = await inspectionRepository.ActiveSetCount(registryCode?.First(), ethnicityCode?.First());
 
             activeSet.Name.Should().Be(newFile.FileName);
             activeSetCount.Should().Be(1);
         }
 
-        [TestCase("registry1")]
-        [TestCase("registry1", "registry2")]
-        [TestCase("registry1", "registry2", "registry3")]
-        public async Task Import_SetWithMultipleRegistries(params string[] registryCode)
+        [Test]
+        public async Task Import_SetWithMultipleRegistriesAndEthnicityCodes_ImportsOneSetPerRegistryAndEthnicity()
         {
+            var registryCodes = new[] {"registry1", "registry2", "registry3"};
+            var ethnicityCodes = new[] {"ethnicity1", "ethnicity2", "ethnicity3"};
+
+            using var file = FrequencySetFileBuilder.New(registryCodes, ethnicityCodes).Build();
+            await service.ImportFrequencySet(file);
+
+            foreach (var registry in registryCodes)
+            {
+                foreach (var ethnicity in ethnicityCodes)
+                {
+                    var activeSet = await setRepository.GetActiveSet(registry, ethnicity);
+                    var activeSetCount = await inspectionRepository.ActiveSetCount(registry, ethnicity);
+
+                    activeSet.Name.Should().Be(file.FileName);
+                    activeSetCount.Should().Be(1);
+                }
+            }
+        }
+
+        [Test]
+        public async Task Import_SetWithMultipleRegistries_ImportsOneSetPerRegistry()
+        {
+            var registryCode = new[] {"registry1", "registry2", "registry3"};
+
             using var file = FrequencySetFileBuilder.New(registryCode).Build();
             await service.ImportFrequencySet(file);
 
@@ -96,27 +119,47 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
             }
         }
 
-        [TestCase(null, null)]
-        [TestCase("registry", null)]
-        [TestCase("registry", "ethnicity")]
-        public async Task Import_StoresFrequencies(string registryCode, string ethnicityCode)
+        [TestCase("ethnicity1", null)]
+        [TestCase("ethnicity1", "ethnicity2")]
+        [TestCase("ethnicity1", "ethnicity2", "ethnicity3")]
+        public async Task Import_SetWithMultipleEthnicityCodes_ImportsOneSetPerEthnicityCode(params string[] ethnicityCodes)
         {
-            using var file = FrequencySetFileBuilder.New(new[] {registryCode}, ethnicityCode, 10).Build();
+            var registryCode = new[] {"registry"};
+
+            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCodes).Build();
+            await service.ImportFrequencySet(file);
+
+            foreach (var ethnicity in ethnicityCodes)
+            {
+                var activeSet = await setRepository.GetActiveSet(registryCode?.First(), ethnicity);
+                var activeSetCount = await inspectionRepository.ActiveSetCount(registryCode?.First(), ethnicity);
+
+                activeSet.Name.Should().Be(file.FileName);
+                activeSetCount.Should().Be(1);
+            }
+        }
+
+        [TestCase(null, null)]
+        [TestCase(new[] {"registry"}, null)]
+        [TestCase(new[] {"registry"}, new[] {"ethnicity"})]
+        public async Task Import_StoresFrequencies(string[] registryCode, string[] ethnicityCode)
+        {
+            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode, 10).Build();
 
             await service.ImportFrequencySet(file);
 
-            var activeSet = await setRepository.GetActiveSet(registryCode, ethnicityCode);
+            var activeSet = await setRepository.GetActiveSet(registryCode?.First(), ethnicityCode?.First());
             var count = await inspectionRepository.HaplotypeFrequencyCount(activeSet.Id);
 
             count.Should().BeGreaterThan(0);
         }
 
         [TestCase(null, null)]
-        [TestCase("registry", null)]
-        [TestCase("registry", "ethnicity")]
-        public async Task Import_SendsNotification(string registryCode, string ethnicityCode)
+        [TestCase(new[] {"registry"}, null)]
+        [TestCase(new[] {"registry"}, new[] {"ethnicity"})]
+        public async Task Import_SendsNotification(string[] registryCode, string[] ethnicityCode)
         {
-            using var file = FrequencySetFileBuilder.New(new[] {registryCode}, ethnicityCode).Build();
+            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCode).Build();
 
             await service.ImportFrequencySet(file);
 
@@ -366,7 +409,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
             
         }
 
-        [TestCase(null)]
         [TestCase("01:XX")]
         // A single allele can be a valid G-Group, if it doesn't share a G group with any other alleles.
         // In this case we are using one that does so it should be an invalid G group.
@@ -395,7 +437,6 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
             await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
         }
 
-        [TestCase(null)]
         [TestCase("01:XX")]
         [TestCase("01:01")]
         public async Task Import_WhenHlaIsNotOfTypeGGroupAndDoesNotConvertToPGroup_SendsAlert(string invalidHla)
@@ -416,6 +457,28 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
                 .Build();
 
             await service.ImportFrequencySet(file, false);
+
+            await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
+        }
+
+        [TestCase("registry1", "registry1")]
+        [TestCase("registry1", null)]
+        public async Task Import_SetWithMultipleRegistries_SendsAlert(params string[] registryCode)
+        {
+            using var file = FrequencySetFileBuilder.New(registryCode).Build();
+            await service.ImportFrequencySet(file);
+
+            await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
+        }
+
+        [Test]
+        public async Task Import_SetWithMultipleEthnicityCodes_SendsAlert()
+        {
+            var registryCode = new[] {"registry"};
+            var ethnicityCodes = new[] {"ethnicity1", "ethnicity1"};
+
+            using var file = FrequencySetFileBuilder.New(registryCode, ethnicityCodes).Build();
+            await service.ImportFrequencySet(file);
 
             await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
         }

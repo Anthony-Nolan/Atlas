@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Models.FileSchema;
 
 namespace Atlas.MatchPrediction.Test.Verification.Models
 {

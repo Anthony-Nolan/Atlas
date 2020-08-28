@@ -25,9 +25,9 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
                 .With(t => t.UploadedDateTime, DateTime.Now);
         }
 
-        internal static Builder New(string[] registries = null, string ethnicity = null, int haplotypeCount = 1, decimal frequencyValue = 0.00001m)
+        internal static Builder New(string[] registries = null, string[] ethnicity = null, int haplotypeCount = 1, decimal frequencyValue = 0.00001m)
         {
-            var frequencySetFile = FrequencySetFileContentsBuilder.New(ethnicity, registries, haplotypeCount, frequencyValue).Build();
+            var frequencySetFile = FrequencySetFileContentsBuilder.NewWithFrequencyCount(ethnicity, registries, haplotypeCount, frequencyValue).Build();
 
             return FileWithoutContents().With(x => x.Contents, GetStream(frequencySetFile));
         }
@@ -35,11 +35,11 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
         internal static Builder New(
             IEnumerable<HaplotypeFrequency> haplotypeFrequencies,
             string[] registries = null,
-            string ethnicity = null,
+            string[] ethnicity = null,
             string nomenclatureVersion = HlaNomenclatureVersion)
         {
             var frequencySetFile = FrequencySetFileContentsBuilder
-                .New(haplotypeFrequencies, ethnicity, registries)
+                .NewWithFrequencies(haplotypeFrequencies, ethnicity, registries)
                 .With(f => f.nomenclatureVersion, nomenclatureVersion).Build();
 
             return FileWithoutContents().With(x => x.Contents, GetStream(frequencySetFile));
@@ -52,7 +52,7 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
 
         internal static Builder WithInvalidFormat()
         {
-            var frequencySetFile = FrequencySetFileContentsBuilder.New().Build();
+            var frequencySetFile = FrequencySetFileContentsBuilder.NewWithFrequencyCount().Build();
 
             return FileWithoutContents().With(x => x.Contents, GetInvalidJsonStream(frequencySetFile));
         }

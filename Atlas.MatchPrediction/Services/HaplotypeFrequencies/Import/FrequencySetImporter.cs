@@ -13,6 +13,7 @@ using Atlas.MatchPrediction.Config;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.Data.Repositories;
 using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using Atlas.MatchPrediction.Utils;
 using TaskExtensions = Atlas.Common.Utils.Tasks.TaskExtensions;
@@ -57,7 +58,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             // Largest known HF set is ~300,000 entries, which is reasonable to load into memory here.
             var frequencySet = frequencyFileParser.GetFrequencies(file.Contents);
 
-            var setIds = await AddNewInactiveSet(frequencySet, file.FileName);
+            var setIds = await AddNewInactiveSets(frequencySet, file.FileName);
 
             var gGroupHaplotypes = frequencySet.Frequencies.Select(f => new HaplotypeFrequency
             {
@@ -68,9 +69,9 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 DRB1 = f.Drb1,
                 Frequency = f.Frequency,
                 TypingCategory = HaplotypeTypingCategory.GGroup
-            }).ToList(); ;
+            }).ToList();
 
-            await StoreFrequencies(gGroupHaplotypes, frequencySet.NomenclatureVersion, setIds, convertToPGroups);
+            await StoreFrequencies(gGroupHaplotypes, frequencySet.HlaNomenclatureVersion, setIds, convertToPGroups);
 
             foreach (var setId in setIds)
             {
@@ -78,35 +79,34 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             }
         }
 
-        private async Task<IReadOnlyCollection<int>> AddNewInactiveSet(FrequencySetFileSchema metadata, string fileName)
+        private async Task<List<int>> AddNewInactiveSets(FrequencySetFileSchema metadata, string fileName)
         {
-            if (!metadata.Ethnicity.IsNullOrEmpty() && metadata.RegistryCodes.IsNullOrEmpty())
-            {
-                throw new MalformedHaplotypeFileException($"Cannot import set: Ethnicity ('{metadata.Ethnicity}') provided but no registry");
-            }
+            var ethnicityCodes = metadata.EthnicityCodes.IsNullOrEmpty() ? new string[] { null } : metadata.EthnicityCodes;
+            var registryCodes = metadata.RegistryCodes.IsNullOrEmpty() ? new string[] {null} : metadata.RegistryCodes;
 
-            if (metadata.NomenclatureVersion.IsNullOrEmpty())
-            {
-                throw new MalformedHaplotypeFileException("Cannot import set: Nomenclature version must be set");
-            }
+            var setIds = new List<int>();
 
-            var registries = metadata.RegistryCodes.IsNullOrEmpty() ? new string[] {null} : metadata.RegistryCodes;
-
-            return (await TaskExtensions.WhenEach(registries.Select(registry =>
+            foreach (var registry in registryCodes)
             {
-                var newSet = new HaplotypeFrequencySet
+                foreach (var ethnicity in ethnicityCodes)
                 {
-                    RegistryCode = registry,
-                    EthnicityCode = metadata.Ethnicity,
-                    HlaNomenclatureVersion = metadata.NomenclatureVersion,
-                    PopulationId = metadata.PopulationId,
-                    Active = false,
-                    Name = fileName,
-                    DateTimeAdded = DateTimeOffset.Now
-                };
+                    var newSet = new HaplotypeFrequencySet
+                    {
+                        RegistryCode = registry,
+                        EthnicityCode = ethnicity,
+                        HlaNomenclatureVersion = metadata.HlaNomenclatureVersion,
+                        PopulationId = metadata.PopulationId,
+                        Active = false,
+                        Name = fileName,
+                        DateTimeAdded = DateTimeOffset.Now
+                    };
 
-                return setRepository.AddSet(newSet);
-            }))).Select(hf => hf.Id).ToList();
+                    var set = await setRepository.AddSet(newSet);
+                    setIds.Add(set.Id);
+                }
+            }
+
+            return setIds;
         }
 
         private async Task StoreFrequencies(

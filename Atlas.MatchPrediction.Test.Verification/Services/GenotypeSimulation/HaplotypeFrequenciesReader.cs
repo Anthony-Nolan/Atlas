@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
-using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
@@ -42,7 +42,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
                 HaplotypeFrequencySetId = set.Id,
 
                 // All frequencies in a set use the same nomenclature version, so we pick an arbitrary value
-                HlaNomenclatureVersion = frequencies.NomenclatureVersion,
+                HlaNomenclatureVersion = frequencies.HlaNomenclatureVersion,
 
                 HaplotypeFrequencies = frequencies.Frequencies
             };
