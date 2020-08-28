@@ -3,7 +3,7 @@ using System.Linq;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Data.Models;
-using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype;
 using Atlas.MatchPrediction.Test.Integration.Resources.Alleles;
 using LochNessBuilder;
@@ -17,22 +17,22 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
         private const int DefaultPopulationId = 1;
         private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.NewerTestsHlaVersion;
 
-        internal static Builder SetMetadata => Builder.New
+        internal static Builder Default => Builder.New
                 .With(f => f.nomenclatureVersion, HlaNomenclatureVersion)
                 .With(f => f.populationId, DefaultPopulationId);
 
 
-        internal static Builder New(string ethnicity = null, string[] registries = null, int haplotypeCount = 1, decimal frequencyValue = 0.00001m)
+        internal static Builder NewWithFrequencyCount(string[] ethnicity = null, string[] registries = null, int haplotypeCount = 1, decimal frequencyValue = 0.00001m)
         {
-            return SetMetadata
+            return Default
                 .With(f => f.ethn, ethnicity)
                 .With(f => f.donPool, registries)
                 .With(x => x.frequencies, CreateFrequencyRecords(haplotypeCount, frequencyValue));
         }
 
-        internal static Builder New(IEnumerable<HaplotypeFrequency> haplotypeFrequencies, string ethnicity = null, string[] registries = null)
+        internal static Builder NewWithFrequencies(IEnumerable<HaplotypeFrequency> haplotypeFrequencies, string[] ethnicity = null, string[] registries = null)
         {
-            return SetMetadata
+            return Default
                 .With(f => f.ethn, ethnicity)
                 .With(f => f.donPool, registries)
                 .With(x => x.frequencies, CreateFrequencyRecords(haplotypeFrequencies));

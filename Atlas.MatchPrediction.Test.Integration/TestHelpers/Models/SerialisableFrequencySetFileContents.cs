@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Atlas.MatchPrediction.Models;
+using Atlas.MatchPrediction.Models.FileSchema;
 using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Models
@@ -18,7 +18,7 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Models
         public string[] donPool { get; set; }
 
         [JsonProperty(Order = 3)]
-        public string ethn { get; set; }
+        public string[] ethn { get; set; }
 
         [JsonProperty(Order = 4)]
         public int populationId { get; set; }

@@ -1,7 +1,7 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Atlas.MatchPrediction.Models;
+using Atlas.Common.Utils.Extensions;
+using Atlas.MatchPrediction.Models.FileSchema;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using Newtonsoft.Json;
 
@@ -20,75 +20,62 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
             using (var reader = new JsonTextReader(streamReader))
             {
                 var serializer = new JsonSerializer();
-                var frequencySetFile = new FrequencySetFileSchema();
 
-                while (TryRead(reader))
+                FrequencySetFileSchema frequencySetFile;
+
+                try
                 {
-                    if (reader.TokenType != JsonToken.PropertyName)
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        frequencySetFile = DeserializeProperty(frequencySetFile, serializer, reader, reader.Value?.ToString());
-                    }
-                    catch (JsonSerializationException e)
-                    {
-                        throw new HaplotypeFormatException(e);
-                    }
+                    frequencySetFile = serializer.Deserialize<FrequencySetFileSchema>(reader);
                 }
+                catch (JsonSerializationException e)
+                {
+                    throw new HaplotypeFormatException(e);
+                }
+
+                ValidateFrequencySetFile(frequencySetFile);
 
                 return frequencySetFile;
             }
         }
 
-        private static FrequencySetFileSchema DeserializeProperty(
-            FrequencySetFileSchema frequencySetFile,
-            JsonSerializer serializer,
-            JsonReader reader,
-            string propertyName)
+        private static void ValidateFrequencySetFile(FrequencySetFileSchema frequencySetFile)
         {
-            switch (propertyName)
+            if (!frequencySetFile.EthnicityCodes.IsNullOrEmpty())
             {
-                case "nomenclatureVersion":
-                    TryRead(reader); // Read into property
-                    frequencySetFile.NomenclatureVersion = serializer.Deserialize<string>(reader);
-                    break;
-                case "donPool":
-                    TryRead(reader); // Read into property
-                    frequencySetFile.RegistryCodes = serializer.Deserialize<string[]>(reader);
-                    break;
-                // ReSharper disable once StringLiteralTypo
-                case "ethn":
-                    TryRead(reader);
-                    frequencySetFile.Ethnicity = serializer.Deserialize<string>(reader);
-                    break;
-                case "populationId":
-                    TryRead(reader); // Read into property
-                    frequencySetFile.PopulationId = serializer.Deserialize<int>(reader);
-                    break;
-                case "frequencies":
-                    TryRead(reader); // Read into property
-                    TryRead(reader); // Read into array
-                    frequencySetFile.Frequencies = DeserializeFrequencies(serializer, reader).ToList();
-                    break;
-                default:
-                    throw new MalformedHaplotypeFileException($"Unrecognised property: {propertyName} encountered in haplotype frequency file.");
+                if (frequencySetFile.RegistryCodes.IsNullOrEmpty())
+                {
+                    throw new MalformedHaplotypeFileException($"Cannot import set: Ethnicity codes ('{frequencySetFile.EthnicityCodes}') provided but no registry");
+                }
+
+                if (frequencySetFile.EthnicityCodes.Length != frequencySetFile.EthnicityCodes.ToHashSet().Count)
+                {
+                    throw new MalformedHaplotypeFileException($"Cannot import set: Cannot import duplicate registry codes");
+                }
             }
 
-            return frequencySetFile;
-        }
-
-        private static IEnumerable<FrequencyRecord> DeserializeFrequencies(JsonSerializer serializer, JsonReader reader)
-        {
-            do
+            if (!frequencySetFile.RegistryCodes.IsNullOrEmpty())
             {
-                var frequencyRecord = serializer.Deserialize<FrequencyRecord>(reader);
+                if (frequencySetFile.RegistryCodes.Contains(null))
+                {
+                    throw new MalformedHaplotypeFileException("Cannot import set: Invalid registry codes");
+                }
 
+                if (frequencySetFile.RegistryCodes.Length != frequencySetFile.RegistryCodes.ToHashSet().Count)
+                {
+                    throw new MalformedHaplotypeFileException($"Cannot import set: Cannot import duplicate registry codes");
+                }
+            }
+
+            if (frequencySetFile.HlaNomenclatureVersion.IsNullOrEmpty())
+            {
+                throw new MalformedHaplotypeFileException("Cannot import set: Nomenclature version must be set");
+            }
+
+            foreach (var frequencyRecord in frequencySetFile.Frequencies)
+            {
                 if (frequencyRecord == null)
                 {
-                    throw new MalformedHaplotypeFileException("Haplotype frequency in input file could not be parsed.");
+                    throw new MalformedHaplotypeFileException("Set does not contain any frequencies");
                 }
 
                 if (frequencyRecord.Frequency == 0m)
@@ -104,20 +91,6 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 {
                     throw new MalformedHaplotypeFileException($"Haplotype frequency loci cannot be null.");
                 }
-
-                yield return frequencyRecord;
-            } while (TryRead(reader) && reader.TokenType != JsonToken.EndArray);
-        }
-
-        private static bool TryRead(JsonReader reader)
-        {
-            try
-            {
-                return reader.Read();
-            }
-            catch (JsonException e)
-            {
-                throw new MalformedHaplotypeFileException($"Invalid JSON was encountered: {e.Message}");
             }
         }
     }

@@ -203,7 +203,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             string registryCode,
             string ethnicityCode)
         {
-            using var file = FrequencySetFileBuilder.New(haplotypes, new[] {registryCode}, ethnicityCode)
+            using var file = FrequencySetFileBuilder.New(haplotypes, new[] {registryCode}, new[] {ethnicityCode})
                 .Build();
             await importService.ImportFrequencySet(file, false);
 
