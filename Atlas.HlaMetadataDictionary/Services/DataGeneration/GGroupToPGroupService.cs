@@ -64,7 +64,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
                 throw new HlaMetadataDictionaryException(gGroup.Locus, gGroup.LookupName, errorMessage);
             }
 
-            return new GGroupToPGroupMetadata(gGroup.Locus, gGroup.LookupName, pGroup.FirstOrDefault());
+            return new GGroupToPGroupMetadata(gGroup.Locus, gGroup.LookupName, pGroup.SingleOrDefault() ?? string.Empty);
         }
 
         private static IAlleleGroupMetadata GetMetadataFromAlleleGroup(IWmdaAlleleGroup alleleGroup)
