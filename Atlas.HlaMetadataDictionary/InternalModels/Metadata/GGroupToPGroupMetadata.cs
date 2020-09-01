@@ -6,18 +6,23 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.Metadata
 {
     internal interface IGGroupToPGroupMetadata : ISerialisableHlaMetadata
     {
-        public string PGroup { get; }
+        SerialisedPGroup Serialised { get; }
+    }
+
+    public class SerialisedPGroup
+    {
+        public string PGroup { get; set; }
     }
 
     internal class GGroupToPGroupMetadata : SerialisableHlaMetadata, IGGroupToPGroupMetadata
     {
-        public string PGroup { get; }
-        public override object HlaInfoToSerialise => PGroup;
+        public SerialisedPGroup Serialised { get; }
+        public override object HlaInfoToSerialise => Serialised;
 
         public GGroupToPGroupMetadata(Locus locus, string lookupName, string pGroup)
             : base(locus, lookupName, TypingMethod.Molecular)
         {
-            PGroup = pGroup;
+            Serialised = new SerialisedPGroup {PGroup = pGroup};
         }
     }
 }
