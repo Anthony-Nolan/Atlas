@@ -139,12 +139,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 ScoringResult = new ScoringResult
                 {
+                    TotalMatchCount = result.ScoreResult.AggregateScoreDetails.MatchCount,
                     MatchCategory = result.ScoreResult?.AggregateScoreDetails.MatchCategory,
                     ConfidenceScore = result.ScoreResult?.AggregateScoreDetails.ConfidenceScore,
                     GradeScore = result.ScoreResult?.AggregateScoreDetails.GradeScore,
                     TypedLociCountAtScoredLoci = result.ScoreResult?.AggregateScoreDetails.TypedLociCount,
                     PotentialMatchCount = result.PotentialMatchCount,
-                    
                     ScoringResultsByLocus = new LociInfo<LocusSearchResult>().Map((l, _) => MapSearchResultToApiLocusSearchResult(result, l)).ToLociInfoTransfer(),
                 },
             };
