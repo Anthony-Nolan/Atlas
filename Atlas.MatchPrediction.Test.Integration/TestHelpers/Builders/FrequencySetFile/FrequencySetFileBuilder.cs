@@ -18,7 +18,7 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers.Builders.FrequencyS
 
         internal static Builder FileWithoutContents()
         {
-            var uniqueFileName = $"file-{DateTime.Now:HHmmssffff}.json";
+            var uniqueFileName = $"file-{DateTime.Now:HHmmssffff}.csv";
 
             return Builder.New
                 .With(x => x.FileName, uniqueFileName)
