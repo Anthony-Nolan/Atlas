@@ -1,21 +1,13 @@
 {
-  "SearchType": "Adult",
+  "SearchDonorType": "Adult",
   "MatchCriteria": {
     "DonorMismatchCount": 0,
-    "LocusMismatchA": {
-      "MismatchCount": 0
-    },
-    "LocusMismatchB": {
-      "MismatchCount": 0
-    },
-    "LocusMismatchC": {
-      "MismatchCount": 0
-    },
-    "LocusMismatchDqb1": {
-      "MismatchCount": 0
-    },
-    "LocusMismatchDrb1": {
-      "MismatchCount": 0
+    "LocusMismatchCriteria": {
+      "A": 0,
+      "B": 0,
+      "C": 0,
+      "Dqb1": 0,
+      "Drb1": 0
     }
   },
   "ScoringCriteria": {
@@ -23,29 +15,29 @@
     "LociToExcludeFromAggregateScore": []
   },
   "SearchHlaData": {
-    "LocusSearchHlaA": {
-      "SearchHla1": "*24:02:13",
-      "SearchHla2": "*02:11:01"
+    "A": {
+      "Position1": "*24:02:13",
+      "Position2": "*02:11:01"
     },
-    "LocusSearchHlaB": {
-      "SearchHla1": "*15:02:01",
-      "SearchHla2": "*35:03:01:01"
+    "B": {
+      "Position1": "*15:02:01",
+      "Position2": "*35:03:01:01"
     },
-    "LocusSearchHlaC": {
-      "SearchHla1": "*05:01:01:01",
-      "SearchHla2": "*07:18"
+    "C": {
+      "Position1": "*05:01:01:01",
+      "Position2": "*07:18"
     },
-    "LocusSearchHlaDpb1": {
-      "SearchHla1": "*01:01",
-      "SearchHla2": "*01:01:02"
+    "Dpb1": {
+      "Position1": "*01:01",
+      "Position2": "*01:01:02"
     },
-    "LocusSearchHlaDqb1": {
-      "SearchHla1": "*06:39",
-      "SearchHla2": "*02:01:01"
+    "Dqb1": {
+      "Position1": "*06:39",
+      "Position2": "*02:01:01"
     },
-    "LocusSearchHlaDrb1": {
-      "SearchHla1": "*01:02:01",
-      "SearchHla2": "*15:03:01:01"
+    "Drb1": {
+      "Position1": "*01:02:01",
+      "Position2": "*15:03:01:01"
     }
   }
 }

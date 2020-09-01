@@ -1,7 +1,7 @@
 var fs = require('fs');
 
 const config = {
-    fileName: "search-request",
+    fileName: "new-format-file",
     searchType: "Adult",
     totalMismatches: 0,
     mismatchesA: 0,
@@ -18,33 +18,35 @@ const config = {
 // The easiest way to use is to copy these columns directly from a `SELECT * FROM DONORS` query of the matching donor store, then edit loci as appropriate 
 // The output is the JSON upload to the donor import component.
 const fileContent = generateSearchRequest(
-    "*01:01:01:01	*02:01:11	*15:146	*08:182	*04:82	*03:04:02	*01:01:02	*09:01:01	*03:19:01	*03:03:02:01	*15:03:01:01	*13:01:01:01",
+    "*01:01:01:01	*02:01:11	*15:146	*08:182	*04:82	*03:04:02	*01:01:02	*09:01:01	*03:19:01	*03:03:02:01	*15:03:01:01	*13:01:01:01"
 );
 
 function generateSearchRequest(patientHlaData) {
     const rawData = patientHlaData.split(/\s/);
     return `
         {
-    "SearchType": "${config.searchType}",
+    "SearchDonorType": "${config.searchType}",
     "MatchCriteria": {
         "DonorMismatchCount": ${config.totalMismatches},
-        "LocusMismatchA": ${buildLocusPreferences(config.mismatchesA)},
-        "LocusMismatchB": ${buildLocusPreferences(config.mismatchesB)},
-        "LocusMismatchC": ${buildLocusPreferences(config.mismatchesC)},
-        "LocusMismatchDqb1": ${buildLocusPreferences(config.mismatchesDqb1)},
-        "LocusMismatchDrb1": ${buildLocusPreferences(config.mismatchesDrb1)}
+        "LocusMismatchCriteria": {
+            "A": ${config.mismatchesA},
+            "B": ${config.mismatchesB},
+            "C": ${config.mismatchesC},
+            "Dqb1": ${config.mismatchesDqb1},
+            "Drb1": ${config.mismatchesDrb1}
+        }
     },
     "ScoringCriteria": {
         "LociToScore": [],
         "LociToExcludeFromAggregateScore": []
     },
     "SearchHlaData":{
-        "LocusSearchHlaA": ${buildHlaLocus(rawData[0], rawData[1])},
-        "LocusSearchHlaB": ${buildHlaLocus(rawData[2], rawData[3])},
-        "LocusSearchHlaC": ${buildHlaLocus(rawData[4], rawData[5])},
-        "LocusSearchHlaDPB1": ${buildHlaLocus(rawData[6], rawData[7])},
-        "LocusSearchHlaDQB1": ${buildHlaLocus(rawData[8], rawData[9])},
-        "LocusSearchHlaDRB1": ${buildHlaLocus(rawData[10], rawData[11])},
+        "A": ${buildHlaLocus(rawData[0], rawData[1])},
+        "B": ${buildHlaLocus(rawData[2], rawData[3])},
+        "C": ${buildHlaLocus(rawData[4], rawData[5])},
+        "Dpb1": ${buildHlaLocus(rawData[6], rawData[7])},
+        "Dqb1": ${buildHlaLocus(rawData[8], rawData[9])},
+        "Drb1": ${buildHlaLocus(rawData[10], rawData[11])},
     }
 }
     `;
@@ -52,13 +54,9 @@ function generateSearchRequest(patientHlaData) {
 
 function buildHlaLocus(hla1, hla2) {
     return `{
-            "SearchHla1": "${hla1}",
-            "SearchHla2": "${hla2}"
+            "Position1": "${hla1}",
+            "Position2": "${hla2}"
     }`
-}
-
-function buildLocusPreferences(mismatchCount) {
-    return mismatchCount != null ? `{"MismatchCount": ${mismatchCount}}` : "";
 }
 
 fs.writeFile(`${config.fileName}.json`, fileContent, () => {
