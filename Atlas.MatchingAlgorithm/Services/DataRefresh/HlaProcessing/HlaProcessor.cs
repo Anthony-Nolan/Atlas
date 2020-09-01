@@ -99,7 +99,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             bool continueExistingProcessing)
         {
             var totalDonorCount = await dataRefreshRepository.GetDonorCount();
-            var batchedDonors = dataRefreshRepository.NewOrderedDonorBatchesToImport(BatchSize, lastProcessedDonor, continueExistingProcessing);
+            var batchedDonors = dataRefreshRepository.NewOrderedDonorBatchesToImport(BatchSize, lastProcessedDonor);
 
             var overlapBatches = continueExistingProcessing
                 ? await dataRefreshRepository.GetOrderedDonorBatches(NumberOfBatchesOverlapOnRestart, BatchSize, lastProcessedDonor ?? 0)

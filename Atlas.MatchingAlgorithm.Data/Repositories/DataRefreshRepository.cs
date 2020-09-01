@@ -18,7 +18,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
     {
         Task<int> GetDonorCount();
         Task<int> GetDonorCountLessThan(int initialDonorId);
-        IAsyncEnumerable<DonorBatch> NewOrderedDonorBatchesToImport(int batchSize, int? lastProcessedDonor, bool continueExistingImport);
+        IAsyncEnumerable<DonorBatch> NewOrderedDonorBatchesToImport(int batchSize, int? lastProcessedDonor);
 
         /// <summary>
         /// Unlike <see cref="NewOrderedDonorBatchesToImport"/>, fetches all donors in memory rather than lazily evaluating.
@@ -57,22 +57,16 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
         public async IAsyncEnumerable<DonorBatch> NewOrderedDonorBatchesToImport(
             int batchSize,
-            int? lastProcessedDonor,
-            bool continueExistingImport)
+            int? lastProcessedDonor)
         {
+            const string sql = "SELECT top(@batchSize) * FROM Donors WHERE DonorId > @lastProcessedDonor ORDER BY DonorId ASC";
             lastProcessedDonor ??= 0;
-            
-            string BuildFetchBatchSql() => lastProcessedDonor == null
-                ? "SELECT top(@batchSize) * FROM Donors ORDER BY DonorId ASC"
-                : "SELECT top(@batchSize) * FROM Donors WHERE DonorId > @lastProcessedDonor ORDER BY DonorId ASC";
-
             bool hasFoundAllDonors;
 
             do
             {
                 await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
                 {
-                    var sql = BuildFetchBatchSql();
                     var orderedDbDonorBatch = await conn.QueryAsync<Donor>(sql, new {batchSize, lastProcessedDonor});
                     var donorInfoBatch = orderedDbDonorBatch.Select(donor => donor.ToDonorInfo()).ToList();
                     lastProcessedDonor = donorInfoBatch.LastOrDefault()?.DonorId;
