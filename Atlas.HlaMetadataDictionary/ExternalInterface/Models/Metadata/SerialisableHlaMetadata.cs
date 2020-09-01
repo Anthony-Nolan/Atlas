@@ -10,7 +10,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata
         public string LookupName { get; }
         public TypingMethod TypingMethod { get; }
         public abstract object HlaInfoToSerialise { get; }
-        public string SerialisedHlaInfoType => HlaInfoToSerialise?.GetType().GetNeatCSharpName();
+        public string SerialisedHlaInfoType => HlaInfoToSerialise.GetType().GetNeatCSharpName();
 
         protected SerialisableHlaMetadata(
             Locus locus,
