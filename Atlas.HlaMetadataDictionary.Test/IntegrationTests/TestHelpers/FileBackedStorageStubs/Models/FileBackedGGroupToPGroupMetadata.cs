@@ -23,15 +23,15 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         /// i.e. `all_hla_metadata.json`.
         /// ********************* WARNING! *********************
         /// </remarks>
-        public FileBackedGGroupToPGroupMetadata(         //*******************
-            Locus locus,                                 //****  warning  ****
-            string lookupName,                           //****    See    ***
-            SerialisedPGroup serialised,                 //****   above   ****
-            string serialisedHlaInfoType)                //*******************
+        public FileBackedGGroupToPGroupMetadata(        //*******************
+            SerialisedPGroup serialisedPGroup,          //****  warning  ****
+            Locus locus,                                //****    See    ****
+            string lookupName,                          //****   above   ****
+            string serialisedHlaInfoType)               //*******************
         {
             Locus = locus;
             LookupName = lookupName;
-            SerialisedPGroup = serialised;
+            SerialisedPGroup = serialisedPGroup;
             SerialisedHlaInfoType = serialisedHlaInfoType;
         }
     }
