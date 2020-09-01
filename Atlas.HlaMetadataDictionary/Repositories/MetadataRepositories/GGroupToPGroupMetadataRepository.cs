@@ -33,7 +33,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 
             return row == null
                 ? null
-                : new GGroupToPGroupMetadata(row.Locus, row.LookupName, row.SerialisedHlaInfo);
+                : new GGroupToPGroupMetadata(row.Locus, row.LookupName, row.GetHlaInfo<string>());
         }
     }
 }
