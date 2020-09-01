@@ -10,10 +10,10 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         public Locus Locus { get; }
         public string LookupName { get; }
         public TypingMethod TypingMethod => TypingMethod.Molecular;
-        public SerialisedPGroup Serialised { get; }
+        public SerialisedPGroup SerialisedPGroup { get; }
         public string SerialisedHlaInfoType { get; }
         [JsonIgnore] // This property isn't actually used anywhere for the FileBacked objects, but it's on the interface. But we don't want to write these to file when we regenerate the FileBacked HMD's file.
-        public object HlaInfoToSerialise => Serialised;
+        public object HlaInfoToSerialise => SerialisedPGroup;
 
         /// <remarks>
         /// ********************* WARNING! *********************
@@ -31,7 +31,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         {
             Locus = locus;
             LookupName = lookupName;
-            Serialised = serialised;
+            SerialisedPGroup = serialised;
             SerialisedHlaInfoType = serialisedHlaInfoType;
         }
     }

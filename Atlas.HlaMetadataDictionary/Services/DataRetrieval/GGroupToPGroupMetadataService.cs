@@ -43,7 +43,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 throw new HlaMetadataDictionaryException(locus, lookupName, "GGroup not recognised, could not be converted to PGroup.");
             }
 
-            return pGroupMetadata.Serialised.PGroup;
+            return pGroupMetadata.SerialisedPGroup.PGroup;
         }
 
         public async Task<string> ConvertGGroupToPGroup(Locus locus, string gGroupLookupName, string hlaNomenclatureVersion)
