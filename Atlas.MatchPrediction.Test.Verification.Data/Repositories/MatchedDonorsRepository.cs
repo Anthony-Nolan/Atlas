@@ -82,6 +82,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
                     donor.SearchRequestRecord_Id,
                     donor.MatchedDonorSimulant_Id,
                     donor.TotalMatchCount,
+                    donor.TypedLociCount,
                     donor.WasPatientRepresented,
                     donor.WasDonorRepresented,
                     donor.SearchResult);
