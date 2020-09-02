@@ -42,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         );
 
         [OneTimeSetUp]
-        public void ImportTestDonor()
+        public void OneTimeSetUp()
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
@@ -64,7 +64,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [SetUp]
-        public void ResolveSearchService()
+        public void SetUp()
         {
             searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
         }
