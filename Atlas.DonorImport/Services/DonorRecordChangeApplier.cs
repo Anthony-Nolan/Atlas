@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Repositories;
@@ -27,23 +26,17 @@ namespace Atlas.DonorImport.Services
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDonorReadRepository donorInspectionRepository;
         private readonly IImportedLocusInterpreter locusInterpreter;
-        private readonly IDonorImportLogRepository donorImportLogRepository;
-        private readonly ILogger logger;
 
         public DonorRecordChangeApplier(
             IMessagingServiceBusClient messagingServiceBusClient,
             IDonorImportRepository donorImportRepository,
             IDonorReadRepository donorInspectionRepository,
-            IImportedLocusInterpreter locusInterpreter,
-            IDonorImportLogRepository donorImportLogRepository,
-            ILogger logger)
+            IImportedLocusInterpreter locusInterpreter)
         {
             this.donorImportRepository = donorImportRepository;
             this.messagingServiceBusClient = messagingServiceBusClient;
             this.donorInspectionRepository = donorInspectionRepository;
             this.locusInterpreter = locusInterpreter;
-            this.donorImportLogRepository = donorImportLogRepository;
-            this.logger = logger;
         }
 
         public async Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, DonorImportFile file)

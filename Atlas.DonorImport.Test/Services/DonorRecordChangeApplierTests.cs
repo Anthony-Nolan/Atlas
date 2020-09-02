@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Repositories;
@@ -49,7 +48,7 @@ namespace Atlas.DonorImport.Test.Services
 
             donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>());
 
-            donorOperationApplier = new DonorRecordChangeApplier(messagingServiceBusClient, donorImportRepository, donorInspectionRepository, naiveDnaLocusInterpreter, donorImportLogRepository, Substitute.For<ILogger>());
+            donorOperationApplier = new DonorRecordChangeApplier(messagingServiceBusClient, donorImportRepository, donorInspectionRepository, naiveDnaLocusInterpreter);
         }
 
         [Test]
