@@ -1,11 +1,15 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
+using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Services;
+using Atlas.DonorImport.Test.Integration.DependencyInjection;
 using Atlas.DonorImport.Test.TestHelpers.Builders;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using FluentAssertions;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
@@ -40,6 +44,32 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var donorEditFile = DonorImportFileBuilder.NewWithoutContents.WithDonors(donorEdit);
 
             await donorFileImporter.Invoking(i => i.ImportDonorFile(donorEditFile)).Should().NotThrowAsync();
+        }
+
+        [Test]
+        public async Task ImportDonors_WhenLastDonorInFileFails_DoesNotSendNotificationForEarlierDonor()
+        {
+            var mockClient = Substitute.For<IMessagingServiceBusClient>();
+            
+            var services = ServiceConfiguration.BuildServiceCollection();
+            services.AddScoped(sp => mockClient);
+            DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
+            
+            var donorUpdate = DonorUpdateBuilder.New.Build();
+            var donorEditFile = DonorImportFileBuilder.NewWithoutContents.WithDonors(donorUpdate, donorUpdate);
+
+            try
+            {
+                await donorFileImporter.ImportDonorFile(donorEditFile);
+            }
+            catch (SqlException)
+            {
+                
+            }
+            finally
+            {
+                await mockClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
+            }
         }
     }
 }

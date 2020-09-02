@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Utils;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
@@ -26,48 +27,89 @@ namespace Atlas.DonorImport.Services
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDonorReadRepository donorInspectionRepository;
         private readonly IImportedLocusInterpreter locusInterpreter;
+        private readonly IDonorImportLogService donorImportLogService;
 
         public DonorRecordChangeApplier(
             IMessagingServiceBusClient messagingServiceBusClient,
             IDonorImportRepository donorImportRepository,
             IDonorReadRepository donorInspectionRepository,
-            IImportedLocusInterpreter locusInterpreter)
+            IImportedLocusInterpreter locusInterpreter,
+            IDonorImportLogService donorImportLogService)
         {
             this.donorImportRepository = donorImportRepository;
             this.messagingServiceBusClient = messagingServiceBusClient;
             this.donorInspectionRepository = donorInspectionRepository;
             this.locusInterpreter = locusInterpreter;
+            this.donorImportLogService = donorImportLogService;
         }
 
         public async Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, DonorImportFile file)
         {
+            List<List<SearchableDonorUpdate>> matchingMessages;
+            using (var transactionScope = new AsyncTransactionScope())
+            {
+                matchingMessages = await ApplyUpdatesToDonorStore(donorUpdates, file);
+                await donorImportLogService.SetLastUpdated(donorUpdates, file.UploadTime);
+                transactionScope.Complete();
+            }
+
+            await SendUpdatesForMatchingAlgorithm(matchingMessages);
+        }
+
+        private async Task<List<List<SearchableDonorUpdate>>> ApplyUpdatesToDonorStore(
+            IReadOnlyCollection<DonorUpdate> donorUpdates,
+            DonorImportFile file)
+        {
             var updateMode = DetermineUpdateMode(donorUpdates);
 
             var updatesByType = donorUpdates.GroupBy(du => du.ChangeType);
+
+            var matchingComponentUpdateMessages = new List<List<SearchableDonorUpdate>>();
+
             foreach (var updatesOfSameOperationType in updatesByType)
             {
                 var externalCodes = updatesOfSameOperationType.Select(update => update.RecordId).ToList();
                 switch (updatesOfSameOperationType.Key)
                 {
                     case ImportDonorChangeType.Create:
-                        await ProcessDonorCreations(updatesOfSameOperationType.ToList(), externalCodes, file.FileLocation, updateMode);
+                        var creationMessages = await ProcessDonorCreations(
+                            updatesOfSameOperationType.ToList(),
+                            externalCodes,
+                            file.FileLocation,
+                            updateMode
+                        );
+                        matchingComponentUpdateMessages.Add(creationMessages);
                         break;
 
                     case ImportDonorChangeType.Edit:
-                        await ProcessDonorEdits(updatesOfSameOperationType.ToList(), externalCodes, file);
+                        var editMessages = await ProcessDonorEdits(updatesOfSameOperationType.ToList(), externalCodes, file);
+                        matchingComponentUpdateMessages.Add(editMessages);
                         break;
 
                     case ImportDonorChangeType.Delete:
-                        await ProcessDonorDeletions(externalCodes);
+                        var deleteMessages = await ProcessDonorDeletions(externalCodes);
+                        matchingComponentUpdateMessages.Add(deleteMessages);
                         break;
 
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
+
+            return matchingComponentUpdateMessages;
         }
 
-        private async Task ProcessDonorCreations(
+        private async Task SendUpdatesForMatchingAlgorithm(List<List<SearchableDonorUpdate>> donorUpdates)
+        {
+            // Batched by update mode, to make testing of combined files easier
+            foreach (var donorUpdateBatch in donorUpdates.Where(donorUpdateBatch => donorUpdateBatch.Any()))
+            {
+                await messagingServiceBusClient.PublishDonorUpdateMessages(donorUpdateBatch);
+            }
+        }
+
+        /// <returns>A collection of donor updates to be published for import into the matching component's data store.</returns>
+        private async Task<List<SearchableDonorUpdate>> ProcessDonorCreations(
             List<DonorUpdate> creationUpdates,
             List<string> externalCodes,
             string fileLocation,
@@ -80,24 +122,22 @@ namespace Atlas.DonorImport.Services
             {
                 // The process of publishing and consuming update messages for the matching algorithm is very slow. 
                 // For an initial load, donors will be imported in bulk to the matching algorithm, via a manually triggered process 
-                return;
+                return new List<SearchableDonorUpdate>();
             }
 
             var newAtlasDonorIds = await donorInspectionRepository.GetDonorIdsByExternalDonorCodes(externalCodes);
 
-            foreach (var creation in creationsWithoutAtlasIds)
+            return creationsWithoutAtlasIds.Select(creation =>
             {
                 creation.AtlasId = GetAtlasIdFromCode(creation.ExternalDonorCode, newAtlasDonorIds);
-                var updateMessage = MapToMatchingUpdateMessage(creation);
-                await messagingServiceBusClient.PublishDonorUpdateMessage(updateMessage);
-            }
+                return MapToMatchingUpdateMessage(creation);
+            }).ToList();
         }
 
-        private async Task ProcessDonorEdits(
+        private async Task<List<SearchableDonorUpdate>> ProcessDonorEdits(
             List<DonorUpdate> editUpdates,
-            List<string> externalCodes,
+            ICollection<string> externalCodes,
             DonorImportFile file)
-
         {
             var existingAtlasDonors = await donorInspectionRepository.GetDonorsByExternalDonorCodes(externalCodes);
             var existingAtlasDonorIds = existingAtlasDonors.ToDictionary(d => d.Key, d => d.Value.AtlasId);
@@ -108,27 +148,26 @@ namespace Atlas.DonorImport.Services
                 var dbDonor = MapToDatabaseDonor(edit, file.FileLocation);
                 dbDonor.AtlasId = GetAtlasIdFromCode(edit.RecordId, existingAtlasDonorIds);
                 return dbDonor;
-            }).Where(d => !existingAtlasDonorHashes.Contains(d.Hash)).ToList(); ;
+            }).Where(d => !existingAtlasDonorHashes.Contains(d.Hash)).ToList();
 
             if (editedDonors.Count > 0)
             {
                 await donorImportRepository.UpdateDonorBatch(editedDonors, file.UploadTime);
-                var donorEditMessages = editedDonors.Select(MapToMatchingUpdateMessage).ToList();
-                await messagingServiceBusClient.PublishDonorUpdateMessages(donorEditMessages);
             }
+
+            return editedDonors.Select(MapToMatchingUpdateMessage).ToList();
         }
 
-        private async Task ProcessDonorDeletions(List<string> deletedExternalCodes)
+        private async Task<List<SearchableDonorUpdate>> ProcessDonorDeletions(List<string> deletedExternalCodes)
         {
             var deletedAtlasDonorIds = await donorInspectionRepository.GetDonorIdsByExternalDonorCodes(deletedExternalCodes);
 
             await donorImportRepository.DeleteDonorBatch(deletedAtlasDonorIds.Values.ToList());
 
-            var deletionUpdates = deletedAtlasDonorIds.Values.Select(MapToDeletionUpdateMessage).ToList();
-            await messagingServiceBusClient.PublishDonorUpdateMessages(deletionUpdates);
+            return deletedAtlasDonorIds.Values.Select(MapToDeletionUpdateMessage).ToList();
         }
 
-        private int GetAtlasIdFromCode(string donorCode, Dictionary<string, int> codesToIdsDictionary)
+        private static int GetAtlasIdFromCode(string donorCode, Dictionary<string, int> codesToIdsDictionary)
         {
             if (!codesToIdsDictionary.TryGetValue(donorCode, out var atlasDonorId))
             {
@@ -138,7 +177,7 @@ namespace Atlas.DonorImport.Services
             return atlasDonorId;
         }
 
-        private UpdateMode DetermineUpdateMode(IReadOnlyCollection<DonorUpdate> donorUpdates)
+        private static UpdateMode DetermineUpdateMode(IReadOnlyCollection<DonorUpdate> donorUpdates)
         {
             if (donorUpdates.Select(u => u.UpdateMode).Distinct().Count() > 1)
             {
@@ -166,9 +205,9 @@ namespace Atlas.DonorImport.Services
             var interpretedDpb1 = locusInterpreter.Interpret(fileUpdate.Hla.DPB1, CreateLogContext(Locus.Dpb1));
             var interpretedDqb1 = locusInterpreter.Interpret(fileUpdate.Hla.DQB1, CreateLogContext(Locus.Dqb1));
             var interpretedDrb1 = locusInterpreter.Interpret(fileUpdate.Hla.DRB1, CreateLogContext(Locus.Drb1));
-            
+
             var storedFileLocation = LeftTruncateTo256(fileLocation);
-            
+
             var donor = new Donor
             {
                 ExternalDonorCode = fileUpdate.RecordId,
@@ -201,7 +240,7 @@ namespace Atlas.DonorImport.Services
         /// In that case the *end* of the path is far more interesting than the start of it.
         /// So we should truncate from the left, rather than the right.
         /// </summary>
-        private string LeftTruncateTo256(string fileLocation)
+        private static string LeftTruncateTo256(string fileLocation)
         {
             if (fileLocation.Length > 256)
             {
@@ -211,7 +250,7 @@ namespace Atlas.DonorImport.Services
             return fileLocation;
         }
 
-        private SearchableDonorUpdate MapToDeletionUpdateMessage(int deletedDonorId)
+        private static SearchableDonorUpdate MapToDeletionUpdateMessage(int deletedDonorId)
         {
             return new SearchableDonorUpdate
             {

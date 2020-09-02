@@ -138,7 +138,6 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             unchangedDonorAtInsertion.Should().BeEquivalentTo(updatedDonor);
 
             await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
-            await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessage(default);
         }
 
         [Test]
@@ -194,7 +193,6 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             var updatedDonor1 = await donorRepository.GetDonor(donorEdit[0].RecordId);
             var updatedDonor2 = await donorRepository.GetDonor(donorEdit[1].RecordId);
-            await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessage(default);
             capturedUpdates.Should().ContainSingle(message => (message.DonorId == updatedDonor1.AtlasId && message.SearchableDonorInformation.A_1 == hla3));
             capturedUpdates.Should().ContainSingle(message => (message.DonorId == updatedDonor2.AtlasId && message.SearchableDonorInformation.A_2 == hla1));
         }
@@ -218,7 +216,6 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var unchangedDonors = donorRepository.StreamAllDonors().ToList();
             unchangedDonors.Should().BeEquivalentTo(InitialDonors);
             await mockServiceBusClient.DidNotReceive().PublishDonorUpdateMessages(Arg.Is<ICollection<SearchableDonorUpdate>>(collection => collection.Any()));
-            await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessage(default);
         }
 
         [Test]
@@ -242,7 +239,6 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var unchangedDonors = donorRepository.StreamAllDonors().ToList();
             unchangedDonors.Should().BeEquivalentTo(InitialDonors);
             await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
-            await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessage(default);
 
         }
 

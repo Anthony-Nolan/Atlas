@@ -2,15 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Dasync.Collections;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
-using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Exceptions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Validators;
+using Dasync.Collections;
 
 // ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
 
@@ -47,7 +46,6 @@ namespace Atlas.DonorImport.Services
             this.donorLogService = donorLogService;
             this.logger = logger;
             searchableDonorValidator = new SearchableDonorValidator();
-            
         }
 
         public async Task ImportDonorFile(DonorImportFile file)
@@ -67,19 +65,12 @@ namespace Atlas.DonorImport.Services
                 await foreach (var donorUpdateBatch in donorUpdatesToApply.Batch(BatchSize))
                 {
                     var reifiedDonorBatch = donorUpdateBatch.ToList();
-                    using (var transactionScope = new AsyncTransactionScope())
-                    {
-                        await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file);
-                        await donorLogService.SetLastUpdated(reifiedDonorBatch, file.UploadTime);
-
-                        transactionScope.Complete();
-
-                        importedDonorCount += reifiedDonorBatch.Count;
-                    }
-
+                    await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file);
+                    importedDonorCount += reifiedDonorBatch.Count;
                 }
+
                 await donorImportFileHistoryService.RegisterSuccessfulDonorImport(file);
-                
+
                 var unsearchableDonorIds = string.Join(", ", invalidDonorIds);
 
                 logger.SendTrace(@$"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).

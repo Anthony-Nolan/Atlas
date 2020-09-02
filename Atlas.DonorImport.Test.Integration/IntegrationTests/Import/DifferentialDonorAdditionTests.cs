@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Notifications;
@@ -25,7 +26,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
     {
         private IMessagingServiceBusClient mockServiceBusClient;
         private INotificationSender mockNotificationsSender;
-        
+
         private IDonorInspectionRepository donorRepository;
         private IDonorFileImporter donorFileImporter;
         private readonly Builder<DonorImportFile> fileBuilder = DonorImportFileBuilder.NewWithoutContents;
@@ -124,8 +125,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             //ACT
             await donorFileImporter.ImportDonorFile(donorUpdateFile);
 
-            await mockServiceBusClient.Received(creationCount).PublishDonorUpdateMessage(Arg.Any<SearchableDonorUpdate>());
-            await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
+            await mockServiceBusClient
+                .Received(1)
+                .PublishDonorUpdateMessages(Arg.Is<List<SearchableDonorUpdate>>(messages => messages.Count == creationCount));
         }
 
         [Test]
@@ -143,11 +145,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var donor2 = await donorRepository.GetDonor(donorUpdates[1].RecordId);
 
             donor1.AtlasId.Should().NotBe(donor2.AtlasId);
-            await mockServiceBusClient.Received().PublishDonorUpdateMessage(Arg.Is<SearchableDonorUpdate>(u =>
-                u.DonorId == donor1.AtlasId && u.SearchableDonorInformation.DonorId == donor1.AtlasId)
-            );
-            await mockServiceBusClient.Received().PublishDonorUpdateMessage(Arg.Is<SearchableDonorUpdate>(u =>
-                u.DonorId == donor2.AtlasId && u.SearchableDonorInformation.DonorId == donor2.AtlasId)
+            await mockServiceBusClient.Received().PublishDonorUpdateMessages(Arg.Is<List<SearchableDonorUpdate>>(messages =>
+                messages.Any(u => u.DonorId == donor1.AtlasId && u.SearchableDonorInformation.DonorId == donor1.AtlasId)
+                && messages.Any(u => u.DonorId == donor2.AtlasId && u.SearchableDonorInformation.DonorId == donor2.AtlasId))
             );
         }
 
@@ -166,7 +166,6 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             donorRepository.StreamAllDonors().Where(donor => donor.ExternalDonorCode.StartsWith(donorCodePrefix)).Should().HaveCount(4);
             await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
-            await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessage(default);
         }
 
         [Test]
@@ -189,10 +188,9 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             await donorFileImporter.ImportDonorFile(donorUpdateFile_DonorSets1And2);
 
             await mockNotificationsSender.ReceivedWithAnyArgs(1).SendAlert(default, default, default, default);
-            
+
             donorRepository.StreamAllDonors().Where(donor => donor.ExternalDonorCode.StartsWith(donorCodePrefix)).Should().HaveCount(4);
             await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
-            await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessage(default);
         }
 
         [Test]
