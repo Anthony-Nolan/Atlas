@@ -143,7 +143,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_DeleteExistingRecords_TimerKey, " * * * Delete Existing records, in Hla BulkInsert SETUP, during HlaProcessing") )
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BlockingWait_TimerKey, " * * Time spent in `Task.WhenAll`, JUST waiting on HlaInsert tasks to Complete, during HlaProcessing") )
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_DtWriteExecution_TimerKey, " * * * Total Time spent across all threads, writing BulkInserts during HlaInsert operation, during HlaProcessing", null, summaryReportWithThreadingCount))
-            // @formatter:on
+                // @formatter:on
             {
                 // We only store the last Id in each batch so we only need to keep one Id per batch.
                 var completedDonors = new FixedSizedQueue<int>(NumberOfBatchesOverlapOnRestart);
@@ -156,18 +156,15 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                     }
 
                     // When continuing a donor import there will be some overlap of donors to ensure all donors are processed. 
-                    // This ensures we do not end up with duplicate p-groups in the matching hla tables
-                    // We do not want to attempt to remove p-groups for all batches as it would be detrimental to performance, so we limit it to the first two batches
-                    // TODO: ATLAS-702: Remove this functionality altogether
-                    // TODO: ATLAS-702: Write integration test proving that having duplicate p-groups does not affect search
-                    var shouldRemovePGroups = false;
-
+                    // In this case, we will end up with duplicate p-groups in the matching hla tables.
+                    // Deleting p-groups is not suitably performant (as it involves deleting from an un-indexed table with potentially billions of rows)
+                    // The only downside to allowing duplicate p-groups is that the table has some redundant data and is slightly larger than necessary - 
+                    // But this is insignificant compared to the full size of this table regardless.
                     using (timerCollection.TimeInnerOperation(DataRefreshTimingKeys.BatchProgress_TimerKey))
                     {
                         var failedDonorsFromBatch = await UpdateDonorBatch(
                             donorBatch,
                             hlaNomenclatureVersion,
-                            shouldRemovePGroups,
                             timerCollection
                         );
                         failedDonors.AddRange(failedDonorsFromBatch);
@@ -207,19 +204,13 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         /// </summary>
         /// <param name="donorBatch">The collection of donors to update</param>
         /// <param name="hlaNomenclatureVersion">The version of the HLA Nomenclature to use to fetch expanded HLA information</param>
-        /// <param name="shouldRemovePGroups">If set, existing p-groups will be removed before adding new ones.</param>
+        /// <param name="timerCollection"></param>
         /// <returns>A collection of donors that failed the import process.</returns>
         private async Task<IEnumerable<FailedDonorInfo>> UpdateDonorBatch(
             List<DonorInfo> donorBatch,
             string hlaNomenclatureVersion,
-            bool shouldRemovePGroups,
             LongStopwatchCollection timerCollection)
         {
-            if (shouldRemovePGroups)
-            {
-                await donorImportRepository.RemovePGroupsForDonorBatch(donorBatch.Select(d => d.DonorId));
-            }
-
             var donorHlaExpander = donorHlaExpanderFactory.BuildForSpecifiedHlaNomenclatureVersion(hlaNomenclatureVersion);
 
             var timedInnerOperation = timerCollection.TimeInnerOperation(DataRefreshTimingKeys.HlaExpansion_TimerKey);
