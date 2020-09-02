@@ -8,6 +8,7 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
+using MoreLinq.Extensions;
 
 namespace Atlas.DonorImport.Data.Repositories
 {
@@ -20,6 +21,8 @@ namespace Atlas.DonorImport.Data.Repositories
 
     public class DonorImportRepository : DonorRepositoryBase, IDonorImportRepository
     {
+        private const int DonorImportBatchSize = 2000;
+
         /// <inheritdoc />
         public DonorImportRepository(string connectionString) : base(connectionString)
         {
@@ -81,7 +84,10 @@ namespace Atlas.DonorImport.Data.Repositories
 
             await using (var connection = NewConnection())
             {
-                await connection.ExecuteAsync(sql, new { Ids = deletedAtlasDonorIds.ToList() });
+                foreach (var atlasIds in deletedAtlasDonorIds.Batch(DonorImportBatchSize))
+                {
+                    await connection.ExecuteAsync(sql, new { Ids = atlasIds.ToList() });
+                }
             }
         }
 
