@@ -7,5 +7,14 @@
         "isEnabled": true
       }
     }
-  }
+  },
+  "extensions": {
+    "serviceBus": {
+      "messageHandlerOptions": {
+        "maxConcurrentCalls": 2,
+        "maxAutoRenewDuration": "00:55:00"
+      }
+    }
+  },
+  "functionTimeout": "02:00:00"
 }
