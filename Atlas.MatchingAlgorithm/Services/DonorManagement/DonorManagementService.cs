@@ -71,7 +71,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
 
         private async Task<List<DonorAvailabilityUpdate>> FilterUpdates(IReadOnlyCollection<DonorAvailabilityUpdate> updates, TransientDatabase targetDatabase)
         {
-            //TODO: ATLAS-95 Consider alternate approach:
+            //TODO: ATLAS-716 Consider alternate approach:
             // Run through list of updates, building a dict of updates to apply, keyed by Id.
             // loop TryAdd.
             //  If record exists: compare and either replace the record, or don't
@@ -108,7 +108,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
             var logRepository = repositoryFactory.GetDonorManagementLogRepositoryForDatabase(targetDatabase);
             var existingLogs = await logRepository.GetDonorManagementLogBatch(allUpdates.Select(u => u.DonorId));
 
-            // TODO: ATLAS-95 benchmark this approach, vs. pulling DonorId + last update date out of DB and doing join in memory.
+            // TODO: ATLAS-716 benchmark this approach, vs. pulling DonorId + last update date out of DB and doing join in memory.
             // GroupJoin is equivalent to a LEFT OUTER JOIN
             var updatesWithLogs = allUpdates
                 .GroupJoin(existingLogs,
