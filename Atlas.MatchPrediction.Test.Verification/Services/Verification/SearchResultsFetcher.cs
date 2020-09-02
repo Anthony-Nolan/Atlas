@@ -106,6 +106,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
                 SearchRequestRecord_Id = recordId,
                 MatchedDonorSimulant_Id = int.Parse(result.DonorCode),
                 TotalMatchCount = result.MatchingResult.MatchingResult.TotalMatchCount,
+                TypedLociCount = result.MatchingResult.MatchingResult.TypedLociCount ?? 0,
                 WasPatientRepresented = !result.MatchPredictionResult.IsPatientPhenotypeUnrepresented,
                 WasDonorRepresented = !result.MatchPredictionResult.IsDonorPhenotypeUnrepresented,
                 SearchResult = JsonConvert.SerializeObject(result)

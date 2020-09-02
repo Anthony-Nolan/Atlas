@@ -14,6 +14,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Verification
         public int SearchRequestRecord_Id { get; set; }
         public int MatchedDonorSimulant_Id { get; set; }
         public int TotalMatchCount { get; set; }
+        public int TypedLociCount { get; set; }
         public bool WasPatientRepresented { get; set; }
         public bool WasDonorRepresented { get; set; }
 
