@@ -139,7 +139,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 ScoringResult = new ScoringResult
                 {
-                    TotalMatchCount = result.ScoreResult.AggregateScoreDetails.MatchCount,
+                    TotalMatchCount = result.ScoreResult?.AggregateScoreDetails.MatchCount ?? 0,
                     MatchCategory = result.ScoreResult?.AggregateScoreDetails.MatchCategory,
                     ConfidenceScore = result.ScoreResult?.AggregateScoreDetails.ConfidenceScore,
                     GradeScore = result.ScoreResult?.AggregateScoreDetails.GradeScore,
