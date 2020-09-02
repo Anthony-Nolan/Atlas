@@ -8,6 +8,7 @@ using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
+using MoreLinq;
 
 namespace Atlas.DonorImport.Data.Repositories
 {
@@ -28,6 +29,8 @@ namespace Atlas.DonorImport.Data.Repositories
 
         private const string ExternalDonorCodeColumnName = "ExternalDonorCode";
         private const string LastUpdatedColumnName = "LastUpdateFileUploadTime";
+
+        private const int DonorImportBatchSize = 2000;
 
         public DonorImportLogRepository(string connectionString)
         {
@@ -71,9 +74,14 @@ namespace Atlas.DonorImport.Data.Repositories
         {
             await using (var connection = new SqlConnection(ConnectionString))
             {
+                var sql = $"DELETE FROM {DonorLogTableName} WHERE {ExternalDonorCodeColumnName} IN @externalDonorCodesBatch";
                 connection.Open();
-                var sql = $"DELETE FROM {DonorLogTableName} WHERE {ExternalDonorCodeColumnName} IN @externalDonorCodes";
-                await connection.ExecuteAsync(sql, new {externalDonorCodes});
+
+                foreach (var externalDonorCodesBatch in externalDonorCodes.Batch(DonorImportBatchSize))
+                {
+                    await connection.ExecuteAsync(sql, new { externalDonorCodesBatch });
+                }
+
                 connection.Close();
             }
         }
@@ -101,7 +109,11 @@ namespace Atlas.DonorImport.Data.Repositories
         {
             var sql =
                 $"UPDATE {DonorLogTableName} SET {LastUpdatedColumnName} = (@lastUpdateTime) WHERE {ExternalDonorCodeColumnName} IN @externalDonorCodes";
-            await connection.ExecuteAsync(sql, new {lastUpdateTime, externalDonorCodes = donorCodes});
+
+            foreach (var codes in donorCodes.Batch(DonorImportBatchSize))
+            {
+                await connection.ExecuteAsync(sql, new {lastUpdateTime, externalDonorCodes = codes});
+            }
         }
     }
 }
