@@ -9,6 +9,9 @@
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
+    "MessagingServiceBus:ConnectionString": "override-this",
+    "MessagingServiceBus:ImportFileSubscription": "haplotype-frequency-import",
+    "MessagingServiceBus:ImportFileTopic": "haplotype-frequency-file-uploads",
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications"
