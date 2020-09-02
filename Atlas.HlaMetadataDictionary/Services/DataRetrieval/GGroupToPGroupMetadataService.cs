@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Atlas.Common.Caching;
 using Atlas.Common.GeneticData;
+using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 
@@ -43,7 +44,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 throw new HlaMetadataDictionaryException(locus, lookupName, "GGroup not recognised, could not be converted to PGroup.");
             }
 
-            return pGroupMetadata.PGroup;
+            return pGroupMetadata.PGroup.IsNullOrEmpty() ? null : pGroupMetadata.PGroup;
         }
 
         public async Task<string> ConvertGGroupToPGroup(Locus locus, string gGroupLookupName, string hlaNomenclatureVersion)
