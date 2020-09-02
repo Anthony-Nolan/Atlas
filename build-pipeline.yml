@@ -228,35 +228,3 @@ jobs:
         inputs:
           PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform/core'
           ArtifactName: 'terraform-atlas-core'
-  - job: Terraform_Webhooks
-    pool: Hosted Ubuntu 1604
-    steps:
-      - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
-        displayName: 'Use Terraform 0.12.24'
-        inputs:
-          terraformVersion: '0.12.24'
-      - script: 'terraform init -reconfigure -backend-config="storage_account_name=$(BACKEND_STORAGE_ACCOUNT_NAME)" -backend-config="container_name=$(BACKEND_STORAGE_CONTAINER_NAME)" -backend-config="resource_group_name=$(BACKEND_RESOURCE_GROUP_NAME)"'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/webhooks'
-        displayName: 'terraform init'
-        env:
-          ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
-      - script: |
-          echo Validating the syntax
-
-          terraform validate
-        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/webhooks'
-        displayName: 'terraform validate'
-        env:
-          ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
-          ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-      - bash: |
-          echo Remove the .terraform directory before pushing
-
-          rm -rf .terraform/
-        workingDirectory: '$(System.DefaultWorkingDirectory)/terraform/webhooks'
-        displayName: 'rm -rf .terraform/'
-      - task: PublishBuildArtifacts@1
-        displayName: 'Publish Artifact: terraform-atlas-webhooks'
-        inputs:
-          PathtoPublish: '$(System.DefaultWorkingDirectory)/terraform/webhooks'
-          ArtifactName: 'terraform-atlas-webhooks'
