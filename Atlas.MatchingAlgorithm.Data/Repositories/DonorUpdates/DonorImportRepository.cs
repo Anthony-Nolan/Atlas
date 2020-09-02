@@ -56,8 +56,6 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             IEnumerable<DonorInfoWithExpandedHla> donors,
             bool runAllHlaInsertionsInASingleTransactionScope,
             LongStopwatchCollection timerCollection = null);
-
-        Task RemovePGroupsForDonorBatch(IEnumerable<int> donorIds);
     }
 
     public class DonorImportRepository : DonorUpdateRepositoryBase, IDonorImportRepository
@@ -187,31 +185,6 @@ END
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 await conn.ExecuteAsync(BuildDropAllPreProcessedDonorHlaSql(), commandTimeout: 300);
-            }
-        }
-
-        public async Task RemovePGroupsForDonorBatch(IEnumerable<int> donorIds)
-        {
-            using (logger.RunTimed("Delete existing PGroups"))
-            {
-                donorIds = donorIds.ToList();
-                foreach (var hlaTable in HlaTables)
-                {
-                    await RemovePGroupsForDonorBatchAtLocus(donorIds, hlaTable);
-                }
-            }
-        }
-
-        private async Task RemovePGroupsForDonorBatchAtLocus(IEnumerable<int> donorIds, string locusTableName)
-        {
-            var removalSql = $@"
-DELETE FROM {locusTableName}
-WHERE DonorId IN ({string.Join(",", donorIds)});
-";
-
-            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
-            {
-                await conn.ExecuteAsync(removalSql, commandTimeout: 7200);
             }
         }
     }
