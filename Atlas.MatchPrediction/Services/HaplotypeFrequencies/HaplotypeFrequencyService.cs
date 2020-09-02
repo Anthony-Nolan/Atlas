@@ -12,19 +12,30 @@ using LazyCache;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
+using CsvHelper;
+using CsvHelper.Configuration;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 using HaplotypeHla = Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>;
+// ReSharper disable InconsistentNaming
 
 namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 {
     public interface IHaplotypeFrequencyService
     {
+        /// <summary>
+        /// Converts the CSV haplotype files to JSON
+        /// </summary>
+        /// <param name="filePath">Csv file that is being converted to json</param>
+        /// <returns></returns>
+        public SerializableFrequencyFile ConvertToJson(string filePath);
+
         /// <summary>
         /// Imports all haplotype frequencies from a given frequency set file.
         /// </summary>
@@ -60,6 +71,25 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         // ReSharper disable once ParameterTypeCanBeEnumerable.Global
         Task<decimal> GetFrequencyForHla(int setId, HaplotypeHla hla, ISet<Locus> excludedLoci);
     }
+    
+    public class SerializableRecord
+    {
+        public string a { get; set; }
+        public string b { get; set; }
+        public string c { get; set; }
+        public string dqb1 { get; set; }
+        public string drb1 { get; set; }
+        public decimal frequency { get; set; }
+    }
+
+    public class SerializableFrequencyFile
+    {
+        public string nomenclatureVersion { get; set; }
+        public string[] donPool { get; set; }
+        public string[] ethn { get; set; }
+        public int populationId { get; set; }
+        public List<SerializableRecord> frequencies { get; set; }
+    }
 
     internal class HaplotypeFrequencyService : IHaplotypeFrequencyService
     {
@@ -92,6 +122,26 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             this.frequencySetRepository = frequencySetRepository;
             this.frequencyRepository = frequencyRepository;
             cache = persistentCacheProvider.Cache;
+        }
+        public SerializableFrequencyFile ConvertToJson(string filePath)
+        {
+            if (filePath == null)
+            {
+                throw new EmptyHaplotypeFileException();
+            }
+
+            // Load all frequencies into memory, to perform aggregation by PGroup.
+            // Largest known HF set is ~300,000 entries, which is reasonable to load into memory here.
+            var haplotypeFrequencyFile = GetFrequencies(filePath).ToList();
+
+            return new SerializableFrequencyFile
+            {
+                nomenclatureVersion = "[OVERRIDE]",
+                donPool = null,
+                ethn = null,
+                populationId = 0,
+                frequencies = haplotypeFrequencyFile
+            };
         }
 
         public async Task ImportFrequencySet(FrequencySetFile file, bool convertToPGroups)
@@ -275,6 +325,83 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 + "Full exception info has been logged to Application Insights.",
                 Priority.High,
                 NotificationConstants.OriginatorName);
+        }
+
+        private static IEnumerable<SerializableRecord> GetFrequencies(string filePath)
+        {
+            using (var reader = new StreamReader(filePath))
+            using (var csv = new CsvReader(reader))
+            {
+                ConfigureCsvReader(csv);
+                while (TryRead(csv))
+                {
+                    SerializableRecord haplotypeFrequency = null;
+
+                    try
+                    {
+                        haplotypeFrequency = csv.GetRecord<SerializableRecord>();
+                    }
+                    catch (CsvHelperException e)
+                    {
+                        throw new HaplotypeFormatException(e);
+                    }
+
+                    if (haplotypeFrequency == null)
+                    {
+                        throw new MalformedHaplotypeFileException("Haplotype in input file could not be parsed.");
+                    }
+
+                    if (haplotypeFrequency.frequency == 0m)
+                    {
+                        throw new MalformedHaplotypeFileException($"Haplotype property frequency cannot be 0.");
+                    }
+
+                    if (haplotypeFrequency.a == null ||
+                        haplotypeFrequency.b == null ||
+                        haplotypeFrequency.c == null ||
+                        haplotypeFrequency.dqb1 == null ||
+                        haplotypeFrequency.drb1 == null)
+                    {
+                        throw new MalformedHaplotypeFileException($"Haplotype loci cannot be null.");
+                    }
+
+                    yield return haplotypeFrequency;
+                }
+            }
+        }
+
+        private static void ConfigureCsvReader(IReaderRow csvReader)
+        {
+            csvReader.Configuration.Delimiter = ";";
+            csvReader.Configuration.TypeConverterOptionsCache.GetOptions<string>().NullValues.Add("");
+            csvReader.Configuration.PrepareHeaderForMatch = (header, index) => header.ToUpper();
+            csvReader.Configuration.RegisterClassMap<HaplotypeFrequencyMap>();
+        }
+
+        // ReSharper disable once ClassNeverInstantiated.Local
+        private sealed class HaplotypeFrequencyMap : ClassMap<SerializableRecord>
+        {
+            public HaplotypeFrequencyMap()
+            {
+                Map(m => m.a);
+                Map(m => m.b);
+                Map(m => m.c);
+                Map(m => m.dqb1);
+                Map(m => m.drb1);
+                Map(m => m.frequency).Name("freq");
+            }
+        }
+
+        private static bool TryRead(CsvReader reader)
+        {
+            try
+            {
+                return reader.Read();
+            }
+            catch (BadDataException e)
+            {
+                throw new MalformedHaplotypeFileException($"Invalid CSV was encountered: {e.Message}");
+            }
         }
     }
 }

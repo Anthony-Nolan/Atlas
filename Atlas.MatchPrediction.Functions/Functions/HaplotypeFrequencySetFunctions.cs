@@ -13,6 +13,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Functions.Functions
 {
@@ -25,11 +26,35 @@ namespace Atlas.MatchPrediction.Functions.Functions
         private const string DonorRegistryQueryParam = "donorRegistry";
         private const string PatientEthnicityQueryParam = "patientEthnicity";
 
+        private const string FilePathParam = "filePath";
+        private const string OutputParam = "outputPath";
+
         public HaplotypeFrequencySetFunctions(IHaplotypeFrequencyService haplotypeFrequencyService,
             IMatchPredictionAlgorithm matchPredictionAlgorithm)
         {
             this.haplotypeFrequencyService = haplotypeFrequencyService;
             this.matchPredictionAlgorithm = matchPredictionAlgorithm;
+        }
+
+        [QueryStringParameter(FilePathParam, "Path of csv file that will be converted to JSON", DataType = typeof(string))]
+        [QueryStringParameter(OutputParam, "Where the new json file will be saved to", DataType = typeof(string))]
+        [FunctionName(nameof(ConvertToJson))]
+        [StorageAccount("AzureStorage:ConnectionString")]
+        public async Task<IActionResult> ConvertToJson(
+            [HttpTrigger(AuthorizationLevel.Function, "get")]
+            HttpRequest request)
+        {
+            var outputPath = request.Query[OutputParam];
+            var filePath = request.Query[FilePathParam];
+
+            var haplotypeFrequencyFile = haplotypeFrequencyService.ConvertToJson(filePath);
+
+            if (!string.IsNullOrWhiteSpace(outputPath))
+            {
+                await File.WriteAllTextAsync(outputPath, JsonConvert.SerializeObject(haplotypeFrequencyFile));
+            }
+
+            return new JsonResult(haplotypeFrequencyFile);
         }
 
         /// IMPORTANT: Do not rename this function without careful consideration. This function is called by event grid, which has the function name set by terraform.
