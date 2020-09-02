@@ -11,7 +11,6 @@ using Atlas.MatchingAlgorithm.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
-using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Models;
@@ -45,7 +44,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         private readonly IDonorHlaExpanderFactory donorHlaExpanderFactory;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly IFailedDonorsNotificationSender failedDonorsNotificationSender;
-        private readonly IDataRefreshHistoryRepository dataRefreshHistoryRepository;
         private readonly DataRefreshSettings settings;
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDataRefreshRepository dataRefreshRepository;
@@ -59,14 +57,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
             IFailedDonorsNotificationSender failedDonorsNotificationSender,
             IDormantRepositoryFactory repositoryFactory,
-            IDataRefreshHistoryRepository dataRefreshHistoryRepository,
             DataRefreshSettings settings)
         {
             this.logger = logger;
             this.donorHlaExpanderFactory = donorHlaExpanderFactory;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
             this.failedDonorsNotificationSender = failedDonorsNotificationSender;
-            this.dataRefreshHistoryRepository = dataRefreshHistoryRepository;
             this.settings = settings;
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();

@@ -22,6 +22,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories
         public Task<int?> GetLastSuccessfullyInsertedDonor(int recordId);
 
         public Task RemoveAllDataRefreshRecords();
+
+        public Task SwitchDormantDatabase();
     }
 
     internal class TestDataRefreshHistoryRepository : DataRefreshHistoryRepository, ITestDataRefreshHistoryRepository
@@ -66,6 +68,23 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories
         {
             var allRecords = Context.DataRefreshRecords.ToList();
             Context.DataRefreshRecords.RemoveRange(allRecords);
+            await Context.SaveChangesAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task SwitchDormantDatabase()
+        {
+            var latest = GetLastSuccessfulRecord();
+            var active = GetActiveDatabase() ?? TransientDatabase.DatabaseA;
+            var dataRefreshRecord = new DataRefreshRecord
+            {
+                Database = active.Other().ToString(),
+                WasSuccessful = true,
+                HlaNomenclatureVersion = latest.HlaNomenclatureVersion,
+                RefreshBeginUtc = DateTime.UtcNow,
+                RefreshEndUtc = DateTime.UtcNow
+            };
+            await Context.DataRefreshRecords.AddAsync(dataRefreshRecord);
             await Context.SaveChangesAsync();
         }
 

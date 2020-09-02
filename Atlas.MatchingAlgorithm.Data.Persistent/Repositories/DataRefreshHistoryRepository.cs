@@ -120,7 +120,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
             return record.LastSafelyProcessedDonor;
         }
 
-        private DataRefreshRecord GetLastSuccessfulRecord()
+        protected DataRefreshRecord GetLastSuccessfulRecord()
         {
             return Context.DataRefreshRecords
                 .Where(r => r.RefreshEndUtc != null && r.WasSuccessful == true)
