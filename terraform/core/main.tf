@@ -96,14 +96,15 @@ module "match_prediction" {
     location    = local.location
     common_tags = local.common_tags
   }
+  default_servicebus_settings = local.service-bus
 
-  app_service_plan        = azurerm_app_service_plan.atlas-consumption-plan
-  sql_server              = azurerm_sql_server.atlas_sql_server
-  shared_function_storage = azurerm_storage_account.function_storage
-  mac_import_table        = module.multiple_allele_code_lookup.storage_table
-  azure_storage           = azurerm_storage_account.azure_storage
   application_insights    = azurerm_application_insights.atlas
-
+  app_service_plan        = azurerm_app_service_plan.atlas-consumption-plan
+  azure_storage           = azurerm_storage_account.azure_storage
+  servicebus_namespace    = azurerm_servicebus_namespace.general
+  shared_function_storage = azurerm_storage_account.function_storage
+  sql_server              = azurerm_sql_server.atlas_sql_server
+  mac_import_table        = module.multiple_allele_code_lookup.storage_table
 
   servicebus_namespace_authorization_rules = {
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write

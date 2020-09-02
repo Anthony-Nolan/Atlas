@@ -37,7 +37,11 @@ namespace Atlas.MatchPrediction.Functions.Functions
         [FunctionName(nameof(ImportHaplotypeFrequencySet))]
         [StorageAccount("AzureStorage:ConnectionString")]
         public async Task ImportHaplotypeFrequencySet(
-            [EventGridTrigger] EventGridEvent blobCreatedEvent,
+            [ServiceBusTrigger(
+                "%MessagingServiceBus:ImportFileTopic%",
+                "%MessagingServiceBus:ImportFileSubscription%",
+                Connection = "MessagingServiceBus:ConnectionString"
+            )] EventGridEvent blobCreatedEvent,
             [Blob("{data.url}", FileAccess.Read)] Stream blobStream
         )
         {
