@@ -119,7 +119,6 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             remainingDonors.Should().HaveCount(InitialCount);
             await mockServiceBusClient.DidNotReceive()
                 .PublishDonorUpdateMessages(Arg.Is<ICollection<SearchableDonorUpdate>>(collection => collection.Any()));
-            await mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessage(default);
         }
 
         [Test]

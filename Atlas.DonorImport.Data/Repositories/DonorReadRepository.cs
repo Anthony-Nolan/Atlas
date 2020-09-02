@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -89,11 +90,16 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
 ";
             await using (var connection = NewConnection())
             {
-                var donors = await externalDonorCodes.ProcessInBatchesAsync(
+                var donors = (await externalDonorCodes.ProcessInBatchesAsync(
                     DonorReadBatchSize,
-                    async codes => await connection.QueryAsync<(int, string)>(sql, new {codes})
-                );
-                return donors.ToDictionary(d => d.Item2, d => d.Item1);
+                    async codes => await connection.QueryAsync<(int?, string)>(sql, new {codes})
+                )).ToList();
+                if (donors.Any(d => d.Item1 == null))
+                {
+                    var notFoundDonors = donors.Where(d => d.Item1 == null).Select(d => d.Item2);
+                    throw new Exception($"External Donor Codes {notFoundDonors.StringJoin(",")} not found in database.");
+                }
+                return donors.ToDictionary(d => d.Item2, d => d.Item1.Value);
             }
         }
     }

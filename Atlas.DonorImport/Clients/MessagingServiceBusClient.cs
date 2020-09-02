@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using System.Transactions;
 using Atlas.Common.ServiceBus;
-using Atlas.Common.Utils;
 using Atlas.DonorImport.ExternalInterface.Settings.ServiceBus;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Microsoft.Azure.ServiceBus;
@@ -13,7 +11,6 @@ namespace Atlas.DonorImport.Clients
 {
     internal interface IMessagingServiceBusClient
     {
-        Task PublishDonorUpdateMessage(SearchableDonorUpdate donorUpdate);
         Task PublishDonorUpdateMessages(ICollection<SearchableDonorUpdate> donorUpdates);
     }
 
@@ -37,15 +34,12 @@ namespace Atlas.DonorImport.Clients
             }
         }
 
-        public async Task PublishDonorUpdateMessage(SearchableDonorUpdate donorUpdate)
+        private async Task PublishDonorUpdateMessage(SearchableDonorUpdate donorUpdate)
         {
             var json = JsonConvert.SerializeObject(donorUpdate);
             var message = new Message(Encoding.UTF8.GetBytes(json));
 
-            using (new AsyncTransactionScope(TransactionScopeOption.Suppress))
-            {
-                await donorUpdateTopicClient.SendAsync(message);
-            }
+            await donorUpdateTopicClient.SendAsync(message);
         }
     }
 }
