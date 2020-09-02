@@ -22,7 +22,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Verification
         /// <summary>
         /// Nullable for when patient and/or donor were non-represented.
         /// </summary>
-        [Column(TypeName = "decimal(5,5)")]
+        [Column(TypeName = "decimal(6,5)")]
         public decimal? Probability { get; set; }
     }
 

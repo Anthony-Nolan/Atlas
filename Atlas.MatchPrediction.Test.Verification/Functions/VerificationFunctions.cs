@@ -8,6 +8,7 @@ using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Newtonsoft.Json;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
@@ -50,7 +51,15 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
             var serialisedData = Encoding.UTF8.GetString(message.Body);
             var notification = JsonConvert.DeserializeObject<SearchResultsNotification>(serialisedData);
 
-            await searchResultsFetcher.FetchSearchResults(notification);
+            try
+            {
+                await searchResultsFetcher.FetchSearchResults(notification);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.WriteLine($"Error while downloading results for {notification.SearchRequestId}: {ex.GetBaseException()}");
+                throw;
+            }
         }
     }
 }
