@@ -181,7 +181,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 
             if (failedDonors.Any())
             {
-                await failedDonorsNotificationSender.SendFailedDonorsAlert(failedDonors, HlaFailureEventName, Priority.Low);
+                await failedDonorsNotificationSender.SendFailedDonorsAlert(failedDonors, HlaFailureEventName, Priority.Medium);
             }
         }
 
