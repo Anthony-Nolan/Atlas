@@ -154,8 +154,9 @@ The following steps must be completed prior to generating the test harness.
   - The local verification functions app should be left running to allow the triggering of `HandleDataRefreshCompletion`.
   - On receipt of a new job completion message, the record for the last export attempt is updated with data refresh details,
     including whether the job succeeded or failed - a failure should prompt further investigation before re-attempting export.
-  - If data refresh job is interrupted before it completes, manually invoke the `ContinueDataRefresh` function
-    on the remote Matching Algorithm functions app.
+- Make sure to check support alerts and AI logs for info on single donor processing failures.
+- If the data refresh job is interrupted before it completes, manually invoke the `ContinueDataRefresh` function
+  on the remote Matching Algorithm functions app.
 - At present, it is not possible to tie an export attempt to a data refresh request *before* the refresh job has completed;
   some checks have been added to ensure only one export is attempted at a time.
   - If the `PrepareAtlasDonorStores` function complains about incomplete test donor export records, try the following:
@@ -183,9 +184,12 @@ The following steps must be completed prior to generating the test harness.
 #### Retrieve Search Results
 - As search is an async process, a second service-bus triggered function, `FetchSearchResults`, is used to retrieve
   the results when they are ready to download from blob storage.
-- Ensure `Search:ResultsTopicSubscription` has been overriden in `local.settings.json` with the remote environment value.
+  - Ensure `Search:ResultsTopicSubscription` has been overriden in `local.settings.json` with the remote environment value.
 - The functions app must be running for the function to listen for new messages.
   - As it may take several hours for all requests to complete, it is advised to either leave the app running in the
     background, or only launch it when it seems the majority of requests have completed.
   - The queries in `\MiscTestingAndDebuggingResources\ManualTesting\MatchPredictionVerification\VerificationRunSQLQueries.sql`
     help to determine overall results download progress.
+- Make sure to check search servicebus topics/queues for dead-lettered messages, both requests and results-related.
+  - Dead-letters are safe to replay; downloaded search results will overwrite any existing results mapped to the same request.
+  - Check AI logs/Debug window for further info if messages repeatedly dead-letter.
