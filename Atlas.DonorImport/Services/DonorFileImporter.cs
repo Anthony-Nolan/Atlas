@@ -102,7 +102,11 @@ namespace Atlas.DonorImport.Services
             {
                 await LogFileErrorAndSendAlert(file, e.Message, e.InnerException?.Message);
             }
-            catch (DuplicateDonorImportException e)
+            catch (DuplicateDonorFileImportException e)
+            {
+                await LogFileErrorAndSendAlert(file, e.Message, e.InnerException?.Message);
+            }
+            catch (DuplicateDonorException e)
             {
                 await LogFileErrorAndSendAlert(file, e.Message, e.InnerException?.Message);
             }
