@@ -73,15 +73,5 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         {
             await dataRefreshCleanupService.RunDataRefreshCleanup();
         }
-
-        /// <summary>
-        /// On start-up, checks for in-progress jobs - if any are present, implies teardown was not completed - so notifies the support team.
-        /// </summary>
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(CheckIfCleanupNecessary))]
-        public async Task CheckIfCleanupNecessary([TimerTrigger("00 00 11 01 06 *", RunOnStartup = true)] TimerInfo timerInfo)
-        {
-            await dataRefreshCleanupService.SendCleanupRecommendation();
-        }
     }
 }

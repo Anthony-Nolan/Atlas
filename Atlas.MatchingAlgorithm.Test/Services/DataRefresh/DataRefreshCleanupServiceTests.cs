@@ -117,26 +117,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             await notificationSender.Received().SendRequestManualTeardownNotification();
         }
 
-        [Test]
-        public async Task SendCleanupRecommendation_WhenJobsInProgress_SendsAlert()
-        {
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
-
-            await dataRefreshCleanupService.SendCleanupRecommendation();
-
-            await notificationSender.Received().SendRecommendManualCleanupAlert();
-        }
-
-        [Test]
-        public async Task SendCleanupRecommendation_WhenNoJobsInProgress_DoesNotSendAlert()
-        {
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord>());
-
-            await dataRefreshCleanupService.SendCleanupRecommendation();
-
-            await notificationSender.DidNotReceive().SendRecommendManualCleanupAlert();
-        }
-
         private DataRefreshCleanupService BuildDataRefreshCleanupService(DataRefreshSettings dataRefreshSettings = null)
         {
             var settings = dataRefreshSettings ?? new DataRefreshSettings {DormantDatabaseSize = "S0"};
