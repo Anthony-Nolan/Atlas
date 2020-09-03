@@ -40,8 +40,7 @@ namespace Atlas.DonorImport.Services
                     var donorExists = updateDates.ContainsKey(externalDonorCode);
                     if (donorExists && update.ChangeType == ImportDonorChangeType.Create)
                     {
-                        throw new DuplicateDonorImportException(
-                            $"Attempted to create a donor that already existed. External Donor Code: {externalDonorCode}");
+                        throw new DuplicateDonorException($"Attempted to create a donor that already existed. External Donor Code: {externalDonorCode}");
                     }
 
                     if (updateDates.TryGetValue(externalDonorCode, out var lastUpdateTime))
