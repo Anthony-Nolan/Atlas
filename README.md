@@ -33,7 +33,7 @@ Infrastructure:
 - 3x SQL Databases for storing pre-processed donor state
 - 2x Functions Apps, for running searches, and maintaining data store
 - Azure blob storage used for search results
-- Azure service bus used for results notifications
+- Azure service bus used for request queuing and results notifications
 
 ###[Match Prediction Algorithm](README_MatchPredictionAlgorithm.md)
 
@@ -58,6 +58,12 @@ Infrastructure:
 Contains code that can be shared between multiple Atlas components. E.g. Utility methods, genetic data models. 
 
 #### Atlas.Functions
+
+Top level functions app, responsible for: 
+- Running MAC import 
+- Orchestrating match prediction for finished matching results
+
+#### Atlas.Functions.PublicApi
 
 Top level functions app, exposing public API of the Atlas system.
 
@@ -139,7 +145,9 @@ comprehensive list:
 
 - [Core README (You Are Here)](README.md)
 - [Development Start Up Guide ("Zero To Hero")](README_DevelopmentStartUpGuide.md)
-- [Deployment](README_Deployment.md)
+- Guide for Installation and usage of the ATLAS system 
+    - [Deployment](README_Deployment.md)
+    - [Integration](README_Integration.md)
 - Components 
     - [Donor Import](README_DonorImport.md) 
     - [HLA Metadata Dictionary](README_HlaMetadataDictionary.md) 
