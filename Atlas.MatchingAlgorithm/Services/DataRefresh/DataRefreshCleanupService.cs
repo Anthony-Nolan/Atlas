@@ -19,15 +19,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// This should only ever be run manually, and only if the server dies in the middle of data-refresh, as the normal teardown will not have run.
         /// </summary>
         Task RunDataRefreshCleanup();
-
-        /// <summary>
-        /// Will decide whether we think clean up needs to be run, and if so send a notification for the support team.
-        /// This is only accurate if the following are true:
-        /// - This class is called from the same service as runs the data refresh
-        /// - That service is a single instance, always-on application
-        /// - This is only called on startup of the service
-        /// </summary>
-        Task SendCleanupRecommendation();
     }
 
     public class DataRefreshCleanupService : IDataRefreshCleanupService
@@ -72,14 +63,6 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             else
             {
                 logger.SendTrace("Data Refresh cleanup triggered, but no in progress jobs detected. Cleanup is not necessary.");
-            }
-        }
-
-        public async Task SendCleanupRecommendation()
-        {
-            if (IsCleanupNecessary())
-            {
-                await notificationSender.SendRecommendManualCleanupAlert();
             }
         }
 
