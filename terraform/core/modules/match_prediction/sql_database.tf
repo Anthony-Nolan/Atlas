@@ -5,7 +5,7 @@ locals {
 resource "azurerm_sql_database" "atlas-match-prediction" {
   edition                          = "Standard"
   location                         = var.general.location
-  max_size_gb                      = "30"
+  max_size_bytes                   = "32212254720"
   name                             = lower("${var.general.environment}-ATLAS-MATCH-PREDICTION")
   requested_service_objective_name = "S0"
   resource_group_name              = var.app_service_plan.resource_group_name
