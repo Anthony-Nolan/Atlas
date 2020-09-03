@@ -3,6 +3,7 @@ locals {
 }
 
 resource "azurerm_sql_database" "atlas-match-prediction" {
+  edition                          = "Standard"
   location                         = var.general.location
   name                             = lower("${var.general.environment}-ATLAS-MATCH-PREDICTION")
   requested_service_objective_name = "S0"

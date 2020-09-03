@@ -5,6 +5,7 @@ locals {
 }
 
 resource "azurerm_sql_database" "atlas-matching-transient-a" {
+  edition                          = "Standard"
   location                         = var.general.location
   name                             = lower("${var.general.environment}-ATLAS-MATCHING-A")
   requested_service_objective_name = "S0"
@@ -14,6 +15,7 @@ resource "azurerm_sql_database" "atlas-matching-transient-a" {
 }
 
 resource "azurerm_sql_database" "atlas-matching-transient-b" {
+  edition                          = "Standard"
   location                         = var.general.location
   name                             = lower("${var.general.environment}-ATLAS-MATCHING-B")
   requested_service_objective_name = "S0"
@@ -23,6 +25,7 @@ resource "azurerm_sql_database" "atlas-matching-transient-b" {
 }
 
 resource "azurerm_sql_database" "atlas-persistent" {
+  edition                          = "Standard"
   location                         = var.general.location
   name                             = lower("${var.general.environment}-ATLAS-MATCHING-PERSISTENT")
   requested_service_objective_name = "S0"

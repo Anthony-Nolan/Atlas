@@ -3,6 +3,7 @@ locals {
 }
 
 resource "azurerm_sql_database" "atlas-donor-import" {
+  edition                          = "Standard"
   location                         = var.general.location
   name                             = lower("${var.general.environment}-ATLAS-DONORS")
   requested_service_objective_name = "S0"
