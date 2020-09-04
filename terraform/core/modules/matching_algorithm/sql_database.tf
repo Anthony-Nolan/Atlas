@@ -7,7 +7,7 @@ locals {
 resource "azurerm_sql_database" "atlas-matching-transient-a" {
   edition                          = "Standard"
   location                         = var.general.location
-  max_size_bytes                   = "32212254720"
+  max_size_bytes                   = "268435456000"
   name                             = lower("${var.general.environment}-ATLAS-MATCHING-A")
   requested_service_objective_name = "S0"
   resource_group_name              = var.app_service_plan.resource_group_name
@@ -29,7 +29,7 @@ resource "azurerm_sql_database" "atlas-matching-transient-b" {
 resource "azurerm_sql_database" "atlas-persistent" {
   edition                          = "Standard"
   location                         = var.general.location
-  max_size_bytes                   = "268435456000"
+  max_size_bytes                   = "32212254720"
   name                             = lower("${var.general.environment}-ATLAS-MATCHING-PERSISTENT")
   requested_service_objective_name = "S0"
   resource_group_name              = var.app_service_plan.resource_group_name
