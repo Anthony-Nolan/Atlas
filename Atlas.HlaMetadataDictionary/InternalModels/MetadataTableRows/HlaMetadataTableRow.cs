@@ -20,7 +20,9 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows
         public string SerialisedHlaInfoType { get; set; }
         public string SerialisedHlaInfo { get; set; }
 
-        public HlaMetadataTableRow() { }
+        public HlaMetadataTableRow()
+        {
+        }
 
         public HlaMetadataTableRow(ISerialisableHlaMetadata metadata)
             : base(HlaMetadataTableKeyManager.GetPartitionKey(metadata.Locus),
@@ -43,10 +45,15 @@ namespace Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows
             // Alas "nameof(T)", which would be compile-time constant, and thus compatible with a switch, doesn't give values that always match with typeof(T).Name
             // So we have to calculate these ourselves. `.Name` doesn't qualify Generic Types, and `.FullName` is incredibly verbose for Generic Types, hence using this helper.
             var typeName = typeof(T).GetNeatCSharpName();
-            if (typeName != SerialisedHlaInfoType)
+            if (typeName != SerialisedHlaInfoType
+                // If the serialised value is null, no type will be stored. In this case we do not want to prevent deserialisation to a null
+                && SerialisedHlaInfoType != null
+            )
             {
-                throw new InvalidOperationException($"Expected to find '{typeName}' data to be deserialised. But actually the data is labeled as '{SerialisedHlaInfoType}'. Unable to proceed.");
+                throw new InvalidOperationException(
+                    $"Expected to find '{typeName}' data to be deserialised. But actually the data is labeled as '{SerialisedHlaInfoType}'. Unable to proceed.");
             }
+
             return JsonConvert.DeserializeObject<T>(SerialisedHlaInfo);
         }
     }
