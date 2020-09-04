@@ -13,6 +13,7 @@ using Atlas.Functions.Services;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Polly;
 
 namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 {
@@ -23,12 +24,27 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
     /// Any expensive or non-deterministic code should be called from an Activity function.
     /// </summary>
     // ReSharper disable once MemberCanBeInternal
-    public static class SearchOrchestrationFunctions
+    public class SearchOrchestrationFunctions
     {
         private static readonly RetryOptions RetryOptions = new RetryOptions(TimeSpan.FromSeconds(5), 5) {BackoffCoefficient = 2};
 
+
+        private readonly IResultsUploader searchResultsBlobUploader;
+        private readonly IResultsCombiner resultsCombiner;
+        private readonly ISearchCompletionMessageSender searchCompletionMessageSender;
+
+        public SearchOrchestrationFunctions(
+            IResultsCombiner resultsCombiner,
+            IResultsUploader searchResultsBlobUploader,
+            ISearchCompletionMessageSender searchCompletionMessageSender)
+        {
+            this.resultsCombiner = resultsCombiner;
+            this.searchResultsBlobUploader = searchResultsBlobUploader;
+            this.searchCompletionMessageSender = searchCompletionMessageSender;
+        }
+
         [FunctionName(nameof(SearchOrchestrator))]
-        public static async Task<SearchOrchestrationOutput> SearchOrchestrator(
+        public async Task<SearchOrchestrationOutput> SearchOrchestrator(
             [OrchestrationTrigger] IDurableOrchestrationContext context
         )
         {
@@ -190,27 +206,44 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             );
         }
 
-        private static async Task PersistSearchResults(
+        private async Task PersistSearchResults(
             IDurableOrchestrationContext context,
             TimedResultSet<MatchingAlgorithmResultSet> searchResults,
             TimedResultSet<Dictionary<int, MatchProbabilityResponse>> matchPredictionResults,
             Dictionary<int, Donor> donorInformation,
             DateTime searchInitiated)
         {
-            // Note that this serializes the match prediction results, using default settings - which rounds any decimals to 15dp.
-            await RunStageAndHandleFailures(async () => await context.CallActivityWithRetryAsync(
-                    nameof(SearchActivityFunctions.PersistSearchResults),
-                    RetryOptions,
-                    new SearchActivityFunctions.PersistSearchResultsParameters
-                    {
-                        DonorInformation = donorInformation,
-                        MatchPredictionResults = matchPredictionResults,
-                        MatchingAlgorithmResultSet = searchResults,
-                        SearchInitiated = searchInitiated
-                    }
-                ),
+            await RunStageAndHandleFailures(async () =>
+                {
+                    // The general recommendation is durable functions is to perform most actions via activity functions
+                    // In this case we have found that uploading results via an activity causes a very large message payload to be created,
+                    // zipped, stored in durable functions blob storage - with a delay of up to 10 minutes for large searches. 
+                    // As we only want to upload to blob storage ourselves, we can shave off that delay by uploading directly from the orchestrator.
+                    //
+                    // The core downsides of this approach are: 
+                    //    - We do not get the activity function retry handling, and instead need to handle this ourselves
+                    //    - There is a risk of the upload process being triggered twice 
+                    await Policy
+                        .Handle<Exception>()
+                        .RetryAsync(5)
+                        .ExecuteAsync(async () =>
+                        {
+                            var parameters = new SearchActivityFunctions.PersistSearchResultsParameters
+                            {
+                                DonorInformation = donorInformation,
+                                MatchPredictionResults = matchPredictionResults,
+                                MatchingAlgorithmResultSet = searchResults,
+                                SearchInitiated = searchInitiated
+                            };
+
+                            var resultSet = resultsCombiner.CombineResults(parameters);
+                            await searchResultsBlobUploader.UploadResults(resultSet);
+                            await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated);
+                        });
+                },
                 context,
-                nameof(PersistSearchResults));
+                nameof(PersistSearchResults)
+            );
 
             context.SetCustomStatus(new OrchestrationStatus
             {

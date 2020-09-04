@@ -90,7 +90,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         public async Task<TimedResultSet<IDictionary<int, Donor>>> FetchDonorInformation(
             [ActivityTrigger] Tuple<string, IEnumerable<int>> searchAndDonorIds)
         {
-            var (searchId, donorIds) = searchAndDonorIds;
+            var (_, donorIds) = searchAndDonorIds;
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -117,14 +117,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             [ActivityTrigger] MultipleDonorMatchProbabilityInput matchProbabilityInput)
         {
             return await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(matchProbabilityInput);
-        }
-
-        [FunctionName(nameof(PersistSearchResults))]
-        public async Task PersistSearchResults([ActivityTrigger] PersistSearchResultsParameters parameters)
-        {
-            var resultSet = resultsCombiner.CombineResults(parameters);
-            await searchResultsBlobUploader.UploadResults(resultSet);
-            await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated);
         }
 
         [FunctionName(nameof(SendFailureNotification))]
