@@ -99,7 +99,7 @@ module "match_prediction" {
   default_servicebus_settings = local.service-bus
 
   application_insights    = azurerm_application_insights.atlas
-  app_service_plan        = azurerm_app_service_plan.atlas-consumption-plan
+  app_service_plan        = azurerm_app_service_plan.atlas-elastic-plan
   azure_storage           = azurerm_storage_account.azure_storage
   servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage
