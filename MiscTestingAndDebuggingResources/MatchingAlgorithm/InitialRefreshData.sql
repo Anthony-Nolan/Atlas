@@ -1,6 +1,3 @@
-USE [AtlasMatchingPersistent]
-GO
-
 INSERT INTO DataRefreshHistory (
             RefreshBeginUtc, RefreshEndUtc,
             [Database],
