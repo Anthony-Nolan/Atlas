@@ -67,11 +67,18 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
       - Create a `MessagingServiceBus.ConnectionString` setting using the `read-write` SAP.
       - Create a `NotificationsServiceBus.ConnectionString` setting using the `write-only` SAP.
         - *Note these keys aren't part of the `Client` block of the settings object!*
-// TODO: ATLAS-719: Ensure Zero To Hero is up to date  
+
 - Set up sensible initial data.
-  - Upload the json file `<gitRoot>/MiscTestingAndDebuggingResources/DonorImport/initial-data.json` to your Azure Storage Emulator, in a `donors` container 
-  - In SSMS, open and run the SQL script `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\InitialRefreshData.sql"`.
-    - This should take < 1 second to run.
+  - Importing Donors.
+    - In Storage Explorer, open your local emulator and create a new blob storage container called `donors`.
+    - Upload the json file `<gitRoot>/MiscTestingAndDebuggingResources/DonorImport/initial-donors.json` to your `donors` container.
+      - This should take < 1 second to run.
+    - Open up Service Bus Explorer and connect to your local Service Bus. (Make sure your local settings are set up accordingly)
+      - *Note if you don't have a local service bus you can set one up in Azure Portal*
+    - Right click on the `donor-import-file-uploads` topic and select `Send Message`.
+      - Copy the content of the json file `<gitRoot>/MiscTestingAndDebuggingResources/DonorImport/initial-donors-data.json` into the `Message Text` text box and click `Start`.
+    - When you now run `DonorImport.Functions` your local Donors table should now be populated.
+      - This should take < 1 minute to run.
   - In the Swagger UI, trigger the `HlaMetadataDictionary > recreate-active-version` endpoint.
     - This can take several minutes to run.
   - In the Swagger UI, trigger the `Data Refresh > trigger-donor-import` endpoint.
