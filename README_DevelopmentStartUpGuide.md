@@ -69,25 +69,34 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
         - *Note these keys aren't part of the `Client` block of the settings object!*
 
 - Set up sensible initial data.
-  - Running Initial Data Refresh.
-    - In SSMS, open and run teh SQL script `<gitRoot>/MiscTestingAndDebuggingResources/MatchingAlgorithm/InitialDataRefresh.sql`.
-      - This should take < 1 minute to run.
   - Importing Donors.
     - In Storage Explorer, open your local emulator and create a new blob storage container called `donors`.
     - Upload the json file `<gitRoot>/MiscTestingAndDebuggingResources/DonorImport/initial-donors.json` to your `donors` container.
       - This should take < 1 second to run.
     - Open up Service Bus Explorer and connect to your development Service Bus. (Make sure your local settings are set up accordingly)
-      - *Note if you don't have a development Service Bus you can set one up in Azure Portal*
-      - There is no emulator for azure service bus, so a new bus will need to be manually set up in terraform for use when developing locally.
+      - There is no emulator for azure service bus, so a new bus will need to be manually set up in Azure for use when developing locally.
     - Right click on the `donor-import-file-uploads` topic and select `Send Message`.
       - Copy the content of the json file `<gitRoot>/MiscTestingAndDebuggingResources/DonorImport/initial-donors-data.json` into the `Message Text` text box and click `Start`.
     - When you now run `DonorImport.Functions` your local Donors table should now be populated.
       - This should take < 5 minute to run.
     - Once that's been run you should now run `MatchingAlgorithm.Functions.DonorManagement` to allow the active transient database to be populated.
       - This should take < 1 minute to run.
+  - Running Initial Data Refresh.
+    - Run `MatchingAlgorithm.Functions` and in Swagger UI (or any other API development environment) trigger the `ForceDataRefresh` endpoint.
+      - This should take < 15 minute to run.
   - Creating Hla Metadata Dictionary.
-    - In the Swagger UI, trigger the `HlaMetadataDictionary > recreate-active-version` endpoint.
+    - Run `MatchingAlgorithm.Functions` and in Swagger UI (or any other API development environment) trigger the `RefreshHlaMetadataDictionary` endpoint.
       - This can take several minutes to run.
+  - Importing Haplotype Frequency Sets.
+    - In Storage Explorer, open your local emulator and create a new blob storage container called `haplotype-frequency-set-import`
+    - Edit the `<gitRoot>/MiscTestingAndDebuggingResources/MatchPrediction/initial-hf-set.json` file so `nomenclatureVersion` is set to the nomenclature version that was used in the data refresh.
+    - Upload the json file `initial-hf-set.json` to your `haplotype-frequency-set-import` container.
+      - This should take < 1 second to run.
+    - Open up Service Bus Explorer and connect to your development Service Bus.
+    - Right click on the `haplotype-frequency-set-import` topic and select `Send Message`.
+      - Copy the content of the json file `<gitRoot>/MiscTestingAndDebuggingResources/DonorImport/initial-donors-hf-set-data.json` into the `Message Text` text box and click `Start`.
+    - When you now run `MatchPrediction.Functions` your local HaplotypeFrequencies and HaplotypeFrequencySets tables should now be populated.
+      - This should take < 5 minute to run.
 - Run a search (avoiding MAC lookups).
   - Restart the API project, and use Swagger to POST the JSON in `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\ZeroResultsSearch.json` to the  `/search` endpoint.
   - You should get a 200 Success response, with 0 results.
