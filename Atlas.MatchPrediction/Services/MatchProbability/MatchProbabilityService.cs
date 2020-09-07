@@ -167,11 +167,10 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             // TODO: ATLAS-566: Currently for patient/donor pairs the threshold is about twenty million before the request starts taking >2 minutes
             if (donorGenotypes.Count * patientGenotypes.Count > 20_000_000)
             {
-                throw new NotImplementedException(
-                    "Calculating the MatchCounts of provided donor patient pairs would take upwards of 2 minutes." +
-                    " This code path is not currently supported for such a large data set." +
+                logger.SendTrace(
+                    $"{LoggingPrefix} Calculating the MatchCounts of provided donor patient pairs is expected to take upwards of 2 minutes." +
                     $"[{donorGenotypes.Count * patientGenotypes.Count} pairs to calculate.]"
-                );
+                    , LogLevel.Warn);
             }
 
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
