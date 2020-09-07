@@ -5,42 +5,40 @@ locals {
 }
 
 resource "azurerm_sql_database" "atlas-matching-transient-a" {
+  location            = var.general.location
+  name                = lower("${var.general.environment}-ATLAS-MATCHING-A")
+  resource_group_name = var.app_service_plan.resource_group_name
+  server_name         = var.sql_server.name
+
   edition                          = "Standard"
-  location                         = var.general.location
   max_size_bytes                   = "268435456000"
-  name                             = lower("${var.general.environment}-ATLAS-MATCHING-A")
   requested_service_objective_name = "S0"
-  resource_group_name              = var.app_service_plan.resource_group_name
-  server_name                      = var.sql_server.name
-  tags                             = var.general.common_tags
+
+  tags = var.general.common_tags
 }
 
 resource "azurerm_sql_database" "atlas-matching-transient-b" {
+  location            = var.general.location
+  name                = lower("${var.general.environment}-ATLAS-MATCHING-B")
+  resource_group_name = var.app_service_plan.resource_group_name
+  server_name         = var.sql_server.name
+
   edition                          = "Standard"
-  location                         = var.general.location
   max_size_bytes                   = "268435456000"
-  name                             = lower("${var.general.environment}-ATLAS-MATCHING-B")
   requested_service_objective_name = "S0"
-  resource_group_name              = var.app_service_plan.resource_group_name
-  server_name                      = var.sql_server.name
-  tags                             = var.general.common_tags
+
+  tags = var.general.common_tags
 }
 
 resource "azurerm_sql_database" "atlas-persistent" {
+  location            = var.general.location
+  name                = lower("${var.general.environment}-ATLAS-MATCHING-PERSISTENT")
+  resource_group_name = var.app_service_plan.resource_group_name
+  server_name         = var.sql_server.name
+
   edition                          = "Standard"
-  location                         = var.general.location
   max_size_bytes                   = "32212254720"
-  name                             = lower("${var.general.environment}-ATLAS-MATCHING-PERSISTENT")
   requested_service_objective_name = "S0"
-  resource_group_name              = var.app_service_plan.resource_group_name
-  server_name                      = var.sql_server.name
-  tags                             = var.general.common_tags
-}
 
-output "atlas-matching-transient-a-name" {
-  value = lower("${var.general.environment}-ATLAS-MATCHING-A")
-}
-
-output "atlas-matching-transient-a-address" {
-  value = var.sql_server.fully_qualified_domain_name
+  tags = var.general.common_tags
 }

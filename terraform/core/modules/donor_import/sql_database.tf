@@ -3,12 +3,14 @@ locals {
 }
 
 resource "azurerm_sql_database" "atlas-donor-import" {
+  location            = var.general.location
+  name                = lower("${var.general.environment}-ATLAS-DONORS")
+  resource_group_name = var.app_service_plan.resource_group_name
+  server_name         = var.sql_server.name
+
   edition                          = "Standard"
-  location                         = var.general.location
   max_size_bytes                   = "32212254720"
-  name                             = lower("${var.general.environment}-ATLAS-DONORS")
   requested_service_objective_name = "S0"
-  resource_group_name              = var.app_service_plan.resource_group_name
-  server_name                      = var.sql_server.name
-  tags                             = var.general.common_tags
+
+  tags = var.general.common_tags
 }
