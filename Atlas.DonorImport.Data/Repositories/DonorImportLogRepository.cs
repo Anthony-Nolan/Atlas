@@ -42,7 +42,7 @@ namespace Atlas.DonorImport.Data.Repositories
             await using (var connection = new SqlConnection(ConnectionString))
             {
                 var sql = $"SELECT {ExternalDonorCodeColumnName}, {LastUpdatedColumnName} FROM {DonorLogTableName} WHERE {ExternalDonorCodeColumnName} IN @externalDonorCodes";
-                var donorLogs = await connection.QueryAsync<DonorLog>(sql, new {externalDonorCodes});
+                var donorLogs = await connection.QueryAsync<DonorLog>(sql, new {externalDonorCodes}, commandTimeout: 600);
                 return donorLogs.ToDictionary(d => d.ExternalDonorCode, d => d.LastUpdateFileUploadTime);
             }
         }
