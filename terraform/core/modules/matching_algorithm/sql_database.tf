@@ -10,9 +10,8 @@ resource "azurerm_sql_database" "atlas-matching-transient-a" {
   resource_group_name = var.app_service_plan.resource_group_name
   server_name         = var.sql_server.name
 
-  edition                          = "Standard"
-  max_size_bytes                   = "268435456000"
-  requested_service_objective_name = "S0"
+  // DO NOT SET THE PRICING TIER IN TERRAFORM - this is dynamically scaled as part of the data refresh, and specifying any values in terraform will cause releases to override said scaling
+  max_size_bytes = "268435456000"
 
   tags = var.general.common_tags
 }
@@ -23,9 +22,8 @@ resource "azurerm_sql_database" "atlas-matching-transient-b" {
   resource_group_name = var.app_service_plan.resource_group_name
   server_name         = var.sql_server.name
 
-  edition                          = "Standard"
-  max_size_bytes                   = "268435456000"
-  requested_service_objective_name = "S0"
+  // DO NOT SET THE PRICING TIER IN TERRAFORM - this is dynamically scaled as part of the data refresh, and specifying any values in terraform will cause releases to override said scaling
+  max_size_bytes = "268435456000"
 
   tags = var.general.common_tags
 }
