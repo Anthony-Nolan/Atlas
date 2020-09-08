@@ -18,7 +18,7 @@ resource "azurerm_app_service_plan" "atlas-elastic-plan" {
 
   sku {
     tier = "ElasticPremium"
-    size = "EP1"
+    size = var.ELASTIC_SERVICE_PLAN_SKU_SIZE
   }
 }
 
