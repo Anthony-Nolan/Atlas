@@ -1,10 +1,10 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
 {

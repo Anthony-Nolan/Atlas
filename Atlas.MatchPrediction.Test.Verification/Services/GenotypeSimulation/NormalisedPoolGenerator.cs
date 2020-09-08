@@ -4,13 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Models.FileSchema;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation
 {
-    public interface INormalisedPoolGenerator
+    internal interface INormalisedPoolGenerator
     {
         /// <summary>
         /// Generates the normalised haplotype frequency pool.

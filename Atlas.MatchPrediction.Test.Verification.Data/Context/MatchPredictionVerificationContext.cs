@@ -1,6 +1,7 @@
 ﻿using Atlas.MatchPrediction.Test.Verification.Data.Models;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Verification;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Context

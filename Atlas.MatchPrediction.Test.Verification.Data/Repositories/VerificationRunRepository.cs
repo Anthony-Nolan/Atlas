@@ -1,6 +1,6 @@
 ﻿using Atlas.MatchPrediction.Test.Verification.Data.Context;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Verification;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Test.SharedTestHelpers.Builders;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;

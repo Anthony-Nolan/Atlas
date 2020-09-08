@@ -1,5 +1,4 @@
 ﻿using Atlas.Common.GeneticData.Hla.Services;
-using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using Atlas.MultipleAlleleCodeDictionary.Services.MacImport;
@@ -8,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services
 {

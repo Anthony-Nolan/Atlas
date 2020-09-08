@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Atlas.MatchPrediction.Test.Verification.Data.Models
+namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities
 {
     public class ExpandedMac : IModel
     {
