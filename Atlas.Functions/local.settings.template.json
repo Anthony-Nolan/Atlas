@@ -2,35 +2,35 @@
   "IsEncrypted": false,
   "Values": {
     "ApplicationInsights:LogLevel": "Info",
-    
+
     "AtlasFunction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "AtlasFunction:AzureStorage:MatchingResultsBlobContainer": "matching-algorithm-results",
     "AtlasFunction:AzureStorage:SearchResultsBlobContainer": "atlas-search-results",
-    
+
     "AtlasFunction:MessagingServiceBus:ConnectionString": "override-this",
-    "AtlasFunction:MessagingServiceBus:MatchingResultsSubscription": "match-prediction",
+    "AtlasFunction:MessagingServiceBus:MatchingResultsSubscription": "match-prediction-orchestration",
     "AtlasFunction:MessagingServiceBus:MatchingResultsTopic": "matching-results-ready",
     "AtlasFunction:MessagingServiceBus:SearchResultsTopic": "search-results-ready",
-    
+
     "AtlasFunction:Orchestration:MatchPredictionBatchSize": 100,
-    
+
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    
+
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",
-    
+
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:Import:CronSchedule": "0 0 2 * * *",
     "MacDictionary:Download:MacSourceUrl": "https://bioinformatics.bethematchclinical.org/HLA/alpha.v3.zip",
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
-    
+
     "Matching:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
     "Matching:AzureStorage:SearchResultsBlobContainer": "search-algorithm-results",
     "Matching:MessagingServiceBus:ConnectionString": "override-this",
     "Matching:MessagingServiceBus:SearchRequestsQueue": "matching-requests",
     "Matching:MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
-    
+
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications"
