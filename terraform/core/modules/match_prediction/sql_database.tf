@@ -9,8 +9,8 @@ resource "azurerm_sql_database" "atlas-match-prediction" {
   server_name         = var.sql_server.name
 
   edition                          = "Standard"
-  max_size_bytes                   = "32212254720"
-  requested_service_objective_name = "S0"
+  max_size_bytes                   = var.DATABASE_MAX_SIZE
+  requested_service_objective_name = var.DATABASE_SKU_SIZE
 
   tags = var.general.common_tags
 }

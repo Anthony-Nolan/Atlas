@@ -99,6 +99,17 @@ variable "MATCH_PREDICTION_DATABASE_USERNAME" {
   default = "match_prediction"
 }
 
+variable "MATCH_PREDICTION_DATABASE_SKU_SIZE" {
+  size    = string
+  default = "S2"
+}
+
+variable "MATCH_PREDICTION_DATABASE_MAX_SIZE" {
+  size        = string
+  default     = "32212254720"
+  description = "Maximum size in bytes, check azure docoments for size that is supported"
+}
+
 variable "MATCH_PREDICTION_SKU" {
   type = object({
     tier = string,
