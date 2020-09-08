@@ -482,5 +482,16 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.Import
 
             await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
         }
+
+        [Test]
+        public async Task Import_SetWithEthnicityCodeAndNoRegistryCode_SendsAlert()
+        {
+            var ethnicityCodes = new[] {"ethnicity1", "ethnicity2"};
+
+            using var file = FrequencySetFileBuilder.New((string[]) null, ethnicityCodes).Build();
+            await service.ImportFrequencySet(file);
+
+            await notificationSender.ReceivedWithAnyArgs().SendAlert(default, default, Priority.Medium, default);
+        }
     }
 }
