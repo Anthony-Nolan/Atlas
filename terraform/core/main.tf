@@ -86,7 +86,7 @@ module "matching_algorithm" {
   IP_RESTRICTION_SETTINGS                          = var.IP_RESTRICTION_SETTINGS
   MESSAGING_BUS_DONOR_BATCH_SIZE                   = var.MATCHING_MESSAGING_BUS_DONOR_BATCH_SIZE
   MESSAGING_BUS_DONOR_CRON_SCHEDULE                = var.MATCHING_MESSAGING_BUS_DONOR_CRON_SCHEDULE
-  SERVICE_PLAN_SDK_SIZE                            = var.MATCHING_SERVICE_PLAN_SDK_SIZE
+  SERVICE_PLAN_SKU_SIZE                            = var.MATCHING_SERVICE_PLAN_SKU_SIZE
   WEBSITE_RUN_FROM_PACKAGE                         = var.WEBSITE_RUN_FROM_PACKAGE
   WMDA_FILE_URL                                    = var.WMDA_FILE_URL
 }
