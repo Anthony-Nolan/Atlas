@@ -71,12 +71,13 @@ namespace Atlas.DonorImport.Services
 
                 await donorImportFileHistoryService.RegisterSuccessfulDonorImport(file);
 
-                var unsearchableDonorIds = string.Join(", ", invalidDonorIds);
+                logger.SendTrace(
+                    $"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s). Failed to import {invalidDonorIds.Count} donor(s).",
+                    LogLevel.Info,
+                    invalidDonorIds.Count == 0 ? null : new Dictionary<string, string> {{"FailedDonorIds", $"[{invalidDonorIds.StringJoin(", ")}]"}});
 
-                logger.SendTrace(@$"Donor Import for file '{file.FileLocation}' complete. Imported {importedDonorCount} donor(s).
-                    {invalidDonorIds.Count} Were not imported due to being unsearchable. The codes for these are: {unsearchableDonorIds}");
                 await notificationSender.SendNotification($"Donor Import Successful: {file.FileLocation}",
-                    $"Imported {importedDonorCount} donor(s) from file {file.FileLocation}",
+                    $"Imported {importedDonorCount} donor(s). Failed to import {invalidDonorIds.Count} donor(s).",
                     nameof(ImportDonorFile)
                 );
             }
