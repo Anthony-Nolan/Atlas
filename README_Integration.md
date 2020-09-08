@@ -120,3 +120,57 @@ The process is expected to take several hours - and will increase with both the 
 For Anthony Nolan's dataset (~2 million donors), the process takes 3-4 hours.
 
  
+## Running Searches
+ 
+ Once all the data described above has been imported, Atlas will be ready to perform searches!
+ 
+### Initiating a search
+ 
+ > Search is triggered via a POST request to the `Search` function in the `ATLAS-PUBLIC-API-FUNCTION` function app
+
+The search request should follow the format described [in this model](Atlas.Client.Models/Search/Requests/SearchRequest.cs) 
+
+The properties of the search request are documented via XML doc-comments in this model, so will not be duplicated here.
+
+
+This endpoint will: 
+- (a) Validate the input of your search request, returning a 400 HTTP response code if the request is invalid
+- (b) Trigger an asynchronous search process
+- (c) Synchronously return a unique search identifier, which you should store, to cross reference search results to when they complete.
+
+
+### Receiving search results
+
+When a search is complete, a message will be sent to the `search-results-ready` subscription on the ATLAS service bus.
+
+Consumers of ATLAS should set up a subscription for their application, and a listener for messages on said subscription.
+
+The message contains the search ID for identification, some metadata about the search request - i.e. how many donors were matched, how long the search took - as well as a blob storage 
+container and filename at which the results can be found. 
+
+The results can then be downloaded from this blob storage container. They will be stored as JSON objects, [in the format described in this model](Atlas.Client.Models/Search/Results/SearchResultSet.cs)
+
+**A consumer of ATLAS results notifications will need to be granted access to the following:**
+
+- Read access to the appropriate service bus 
+- Read access to the blob storage account
+
+
+#### Receiving matching results early
+
+As match prediction can take significantly longer to run than the matching algorithm, it is possible to retrieve results from just the matching algorithm (which includes "scoring" information, if requested) 
+as soon as it's complete. 
+
+This could be useful for e.g. showing users how many results are expected as soon as we know, so they are not surprised when a large result set takes a long time to fully complete.
+
+These results follow the same pattern as the full search result sets. The service bus topic used is `matching-results-ready`, and the [following format is used](Atlas.Client.Models/Search/Results/Matching/MatchingAlgorithmResultSet.cs) 
+
+
+## Running results analysis only
+
+ATLAS' primary purpose is to run as a full matching engine - i.e. matching donors for a search request, and analysing the results.
+
+It is possible to run each of the results categorisation processes - "Scoring" (non-statistical) and "Match Prediction" (statistical, requires haplotype frequency sets) - independently,
+on a per-donor basis.
+
+These routes are not officially supported, so have not been rigorously load tested / documented - but the option is available.
