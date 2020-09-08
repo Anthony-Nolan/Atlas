@@ -20,11 +20,16 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
     {
         private readonly IVerificationRunner verificationRunner;
         private readonly ISearchResultsFetcher searchResultsFetcher;
+        private readonly IVerificationResultsWriter resultsWriter;
 
-        public VerificationFunctions(IVerificationRunner verificationRunner, ISearchResultsFetcher searchResultsFetcher)
+        public VerificationFunctions(
+            IVerificationRunner verificationRunner,
+            ISearchResultsFetcher searchResultsFetcher,
+            IVerificationResultsWriter resultsWriter)
         {
             this.verificationRunner = verificationRunner;
             this.searchResultsFetcher = searchResultsFetcher;
+            this.resultsWriter = resultsWriter;
         }
 
         [FunctionName(nameof(SendVerificationSearchRequests))]
@@ -60,6 +65,18 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
                 Debug.WriteLine($"Error while downloading results for {notification.SearchRequestId}: {ex.GetBaseException()}");
                 throw;
             }
+        }
+
+        [FunctionName(nameof(WriteVerificationResultsToFile))]
+        public async Task WriteVerificationResultsToFile(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(VerificationResultsRequest), nameof(VerificationResultsRequest))]
+            HttpRequest request)
+        {
+            var resultsRequest = JsonConvert.DeserializeObject<VerificationResultsRequest>(
+                await new StreamReader(request.Body).ReadToEndAsync());
+
+            await resultsWriter.WriteVerificationResultsToFile(resultsRequest);
         }
     }
 }
