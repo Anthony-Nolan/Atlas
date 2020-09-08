@@ -12,6 +12,7 @@ resource "azurerm_sql_database" "atlas-donor-import" {
   server_name         = azurerm_sql_server.atlas_sql_server.name
 
   edition                          = "Standard"
+  max_size_bytes                   = "32212254720"
   requested_service_objective_name = "S0"
 
   tags = local.common_tags
@@ -24,6 +25,7 @@ resource "azurerm_sql_database" "atlas-matching" {
   server_name         = azurerm_sql_server.atlas_sql_server.name
 
   edition                          = "Standard"
+  max_size_bytes                   = "32212254720"
   requested_service_objective_name = "S0"
 
   tags = local.common_tags
@@ -36,6 +38,7 @@ resource "azurerm_sql_database" "atlas-match-prediction" {
   server_name         = azurerm_sql_server.atlas_sql_server.name
 
   edition                          = "Standard"
+  max_size_bytes                   = "32212254720"
   requested_service_objective_name = "S0"
 
   tags = local.common_tags
@@ -48,6 +51,7 @@ resource "azurerm_sql_database" "atlas-matching-validation" {
   server_name         = azurerm_sql_server.atlas_sql_server.name
 
   edition                          = "Standard"
+  max_size_bytes                   = "32212254720"
   requested_service_objective_name = "S0"
 
   tags = local.common_tags
