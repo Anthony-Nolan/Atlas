@@ -28,6 +28,10 @@ variable "DATA_REFRESH_CRONTAB" {
   type = string
 }
 
+variable "DATABASE_MAX_SIZE" {
+  type = string
+}
+
 variable "DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS" {
   type = string
 }

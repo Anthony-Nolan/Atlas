@@ -28,13 +28,14 @@ variable "DATABASE_SERVER_ADMIN_LOGIN_PASSWORD" {
   type = string
 }
 
-variable "DONOR_DATABASE_PASSWORD" {
-  type = string
+variable "DONOR_DATABASE_MAX_SIZE" {
+  size        = string
+  default     = "32212254720"
+  description = "Maximum size in bytes, check azure docoments for size that is supported"
 }
 
-variable "DONOR_DATABASE_USERNAME" {
-  type    = string
-  default = "donors"
+variable "DONOR_DATABASE_PASSWORD" {
+  type = string
 }
 
 variable "DONOR_DATABASE_SKU_SIZE" {
@@ -42,10 +43,9 @@ variable "DONOR_DATABASE_SKU_SIZE" {
   default = "S2"
 }
 
-variable "DONOR_DATABASE_MAX_SIZE" {
-  size        = string
-  default     = "32212254720"
-  description = "Maximum size in bytes, check azure docoments for size that is supported"
+variable "DONOR_DATABASE_USERNAME" {
+  type    = string
+  default = "donors"
 }
 
 variable "DONOR_IMPORT_STALLED_FILE_CHECK_CRONTAB" {
@@ -90,13 +90,15 @@ variable "MAC_SOURCE" {
   description = "The source of our Multiple Allele Codes"
 }
 
-variable "MATCH_PREDICTION_DATABASE_PASSWORD" {
-  type = string
+
+variable "MATCH_PREDICTION_DATABASE_MAX_SIZE" {
+  size        = string
+  default     = "32212254720"
+  description = "Maximum size in bytes, check azure docoments for size that is supported"
 }
 
-variable "MATCH_PREDICTION_DATABASE_USERNAME" {
-  type    = string
-  default = "match_prediction"
+variable "MATCH_PREDICTION_DATABASE_PASSWORD" {
+  type = string
 }
 
 variable "MATCH_PREDICTION_DATABASE_SKU_SIZE" {
@@ -104,10 +106,9 @@ variable "MATCH_PREDICTION_DATABASE_SKU_SIZE" {
   default = "S2"
 }
 
-variable "MATCH_PREDICTION_DATABASE_MAX_SIZE" {
-  size        = string
-  default     = "32212254720"
-  description = "Maximum size in bytes, check azure docoments for size that is supported"
+variable "MATCH_PREDICTION_DATABASE_USERNAME" {
+  type    = string
+  default = "match_prediction"
 }
 
 variable "MATCH_PREDICTION_SKU" {
@@ -149,6 +150,12 @@ variable "MATCHING_DATA_REFRESH_CRONTAB" {
   type        = string
   default     = "0 0 0 * * Monday"
   description = "A crontab determining when the matching data refresh will be auto-attempted. It will only run to completion if new HLA nomenclature is detected."
+}
+
+variable "MATCHING_DATABASE_MAX_SIZE" {
+  size        = string
+  default     = "268435456000"
+  description = "Maximum size in bytes, check azure docoments for size that is supported"
 }
 
 variable "MATCHING_DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS" {
