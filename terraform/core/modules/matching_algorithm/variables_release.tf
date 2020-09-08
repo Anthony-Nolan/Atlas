@@ -85,6 +85,10 @@ variable "MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
   type = string
 }
 
+variable "SERVICE_PLAN_SDK_SIZE" {
+  type = string
+}
+
 variable "WEBSITE_RUN_FROM_PACKAGE" {
   type = string
 }

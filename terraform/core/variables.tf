@@ -198,6 +198,12 @@ variable "MATCHING_PASSWORD_FOR_DONOR_IMPORT_DATABASE" {
   type = string
 }
 
+variable "MATCHING_SERVICE_PLAN_SDK_SIZE" {
+  type        = string
+  default     = "matching"
+  description = "This database will be on the Elastic Premium tier, so only elastic premium sku sizes are appropriate e.g. EP1, EP2, Ep3."
+}
+
 variable "MATCHING_USERNAME_FOR_DONOR_IMPORT_DATABASE" {
   type    = string
   default = "matching"
