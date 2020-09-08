@@ -259,8 +259,10 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
         private async Task LogErrorAndSendAlert(FrequencySetFile file, string message, string description)
         {
-            logger.SendTrace(message, LogLevel.Warn);
-            await notificationSender.SendAlert(message, description, Priority.Medium, NotificationConstants.OriginatorName);
+            var messageWithName = $"Import of file '{file.FileName}': {message}";
+
+            logger.SendTrace(messageWithName, LogLevel.Warn);
+            await notificationSender.SendAlert(messageWithName, description, Priority.Medium, NotificationConstants.OriginatorName);
         }
 
         private async Task SendErrorAlert(FrequencySetFile file, Exception ex)
