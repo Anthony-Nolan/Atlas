@@ -31,7 +31,7 @@ variable "DATABASE_SERVER_ADMIN_LOGIN_PASSWORD" {
 variable "DONOR_DATABASE_MAX_SIZE" {
   size        = string
   default     = "32212254720"
-  description = "Maximum size in bytes, check azure docoments for size that is supported"
+  description = "Maximum size in bytes, refer to Azure documentation for supported sizes."
 }
 
 variable "DONOR_DATABASE_PASSWORD" {
@@ -41,6 +41,7 @@ variable "DONOR_DATABASE_PASSWORD" {
 variable "DONOR_DATABASE_SKU_SIZE" {
   size    = string
   default = "S2"
+  description = "This database will be on the Standard tier, so only standard sku sizes are appropriate e.g. S0, S2, S3."
 }
 
 variable "DONOR_DATABASE_USERNAME" {
@@ -94,7 +95,7 @@ variable "MAC_SOURCE" {
 variable "MATCH_PREDICTION_DATABASE_MAX_SIZE" {
   size        = string
   default     = "32212254720"
-  description = "Maximum size in bytes, check azure docoments for size that is supported"
+  description = "Maximum size in bytes, refer to Azure documentation for supported sizes"
 }
 
 variable "MATCH_PREDICTION_DATABASE_PASSWORD" {
@@ -104,22 +105,12 @@ variable "MATCH_PREDICTION_DATABASE_PASSWORD" {
 variable "MATCH_PREDICTION_DATABASE_SKU_SIZE" {
   size    = string
   default = "S2"
+  description = "This database will be on the Standard tier, so only standard sku sizes are appropriate e.g. S0, S2, S3."
 }
 
 variable "MATCH_PREDICTION_DATABASE_USERNAME" {
   type    = string
   default = "match_prediction"
-}
-
-variable "MATCH_PREDICTION_SKU" {
-  type = object({
-    tier = string,
-    size = string
-  })
-  default = {
-    tier = "Standard"
-    size = "S1"
-  }
 }
 
 variable "MATCHING_DATABASE_TRANSIENT_TIMEOUT" {
@@ -155,7 +146,7 @@ variable "MATCHING_DATA_REFRESH_CRONTAB" {
 variable "MATCHING_DATABASE_MAX_SIZE" {
   size        = string
   default     = "268435456000"
-  description = "Maximum size in bytes, check azure docoments for size that is supported"
+  description = "Maximum size in bytes, refer to Azure documentation for supported sizes"
 }
 
 variable "MATCHING_DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS" {
