@@ -71,6 +71,8 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
                 new MatchedDonorsRepository(fetchSqlConnectionString(sp)));
             services.AddScoped<IMatchProbabilitiesRepository, MatchProbabilitiesRepository>(sp =>
                 new MatchProbabilitiesRepository(fetchSqlConnectionString(sp)));
+            services.AddScoped<IVerificationResultsRepository, VerificationResultsRepository>(sp =>
+                new VerificationResultsRepository(fetchSqlConnectionString(sp)));
 
             services.AddScoped(sp => new ContextFactory().Create(fetchSqlConnectionString(sp)));
             services.AddScoped<ITestHarnessRepository, TestHarnessRepository>();
@@ -112,6 +114,8 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             services.AddScoped<IVerificationRunner, VerificationRunner>();
             services.AddScoped<ISearchResultsFetcher, SearchResultsFetcher>();
             services.AddScoped<ISearchResultsStreamer, SearchResultsStreamer>();
+            services.AddScoped<IVerificationResultsWriter, VerificationResultsWriter>();
+            services.AddScoped<IVerificationResultsCompiler, VerificationResultsCompiler>();
         }
     }
 }

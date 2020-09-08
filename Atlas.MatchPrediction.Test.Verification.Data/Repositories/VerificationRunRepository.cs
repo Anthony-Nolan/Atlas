@@ -1,4 +1,5 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Data.Context;
+﻿using System;
+using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 
@@ -8,6 +9,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
     {
         Task<int> AddVerificationRun(VerificationRun run);
         Task MarkSearchRequestsAsSubmitted(int verificationRunId);
+        Task<int> GetSearchLociCount(int verificationRunId);
     }
 
     public class VerificationRunRepository : IVerificationRunRepository
@@ -29,9 +31,27 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 
         public async Task MarkSearchRequestsAsSubmitted(int verificationRunId)
         {
-            var run = await context.VerificationRuns.FindAsync(verificationRunId);
+            var run = await FindVerificationRun(verificationRunId);
             run.SearchRequestsSubmitted = true;
             await context.SaveChangesAsync();
+        }
+
+        public async Task<int> GetSearchLociCount(int verificationRunId)
+        {
+            var run = await FindVerificationRun(verificationRunId);
+            return run.SearchLociCount;
+        }
+
+        private async Task<VerificationRun> FindVerificationRun(int verificationRunId)
+        {
+            var run = await context.VerificationRuns.FindAsync(verificationRunId);
+
+            if (run == null)
+            {
+                throw new Exception($"Could not find verification run with id {verificationRunId}.");
+            }
+
+            return run;
         }
     }
 }
