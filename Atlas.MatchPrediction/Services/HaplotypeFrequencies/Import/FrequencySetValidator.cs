@@ -19,7 +19,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import
                 if (frequencySetFile.RegistryCodes.IsNullOrEmpty())
                 {
                     throw new MalformedHaplotypeFileException(
-                        $"Cannot import set: Ethnicity codes ('{frequencySetFile.EthnicityCodes}') provided but no registry");
+                        $"Cannot import set: Ethnicity codes ([{frequencySetFile.EthnicityCodes.StringJoin(", ")}]) provided but no registry");
                 }
 
                 if (frequencySetFile.EthnicityCodes.Length != frequencySetFile.EthnicityCodes.ToHashSet().Count)
