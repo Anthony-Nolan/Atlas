@@ -6,33 +6,49 @@ locals {
 }
 
 resource "azurerm_sql_database" "atlas-donor-import" {
+  location            = local.location
   name                = "atlas-test-donor-import"
   resource_group_name = azurerm_resource_group.atlas_system_tests_resource_group.name
-  location            = local.location
   server_name         = azurerm_sql_server.atlas_sql_server.name
-  tags                = local.common_tags
+
+  edition                          = "Standard"
+  requested_service_objective_name = "S0"
+
+  tags = local.common_tags
 }
 
 resource "azurerm_sql_database" "atlas-matching" {
+  location            = local.location
   name                = "atlas-test-matching-algorithm"
   resource_group_name = azurerm_resource_group.atlas_system_tests_resource_group.name
-  location            = local.location
   server_name         = azurerm_sql_server.atlas_sql_server.name
-  tags                = local.common_tags
+
+  edition                          = "Standard"
+  requested_service_objective_name = "S0"
+
+  tags = local.common_tags
 }
 
 resource "azurerm_sql_database" "atlas-match-prediction" {
+  location            = local.location
   name                = "atlas-test-match-prediction"
   resource_group_name = azurerm_resource_group.atlas_system_tests_resource_group.name
-  location            = local.location
   server_name         = azurerm_sql_server.atlas_sql_server.name
-  tags                = local.common_tags
+
+  edition                          = "Standard"
+  requested_service_objective_name = "S0"
+
+  tags = local.common_tags
 }
 
 resource "azurerm_sql_database" "atlas-matching-validation" {
+  location            = local.location
   name                = "atlas-test-matching-algorithm-validation"
   resource_group_name = azurerm_resource_group.atlas_system_tests_resource_group.name
-  location            = local.location
   server_name         = azurerm_sql_server.atlas_sql_server.name
-  tags                = local.common_tags
+
+  edition                          = "Standard"
+  requested_service_objective_name = "S0"
+
+  tags = local.common_tags
 }
