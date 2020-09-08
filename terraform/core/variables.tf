@@ -198,10 +198,10 @@ variable "MATCHING_PASSWORD_FOR_DONOR_IMPORT_DATABASE" {
   type = string
 }
 
-variable "MATCHING_SERVICE_PLAN_SDK_SIZE" {
+variable "MATCHING_SERVICE_PLAN_SKU_SIZE" {
   type        = string
-  default     = "matching"
-  description = "This database will be on the Elastic Premium tier, so only elastic premium sku sizes are appropriate e.g. EP1, EP2, Ep3."
+  default     = "EP1"
+  description = "This database will be on the Elastic Premium tier, so only elastic premium sku sizes are appropriate e.g. EP1, EP2, EP3. Each tier represents a double in service plan price, and a corresponding halving of algorithm time."
 }
 
 variable "MATCHING_USERNAME_FOR_DONOR_IMPORT_DATABASE" {
@@ -223,6 +223,12 @@ variable "SERVICE_PLAN_SKU" {
     tier = "Standard"
     size = "S1"
   }
+}
+
+variable "ELASTIC_SERVICE_PLAN_SKU_SIZE" {
+  type        = string
+  default     = "EP1"
+  description = "This database will be on the Elastic Premium tier, so only elastic premium sku sizes are appropriate e.g. EP1, EP2, EP3. Each tier represents a double in service plan price, and a corresponding halving of algorithm time."
 }
 
 variable "TERRAFORM_RESOURCE_GROUP_NAME" {

@@ -12,6 +12,6 @@ resource "azurerm_app_service_plan" "atlas-matching-algorithm-elastic-plan" {
 
   sku {
     tier = "ElasticPremium"
-    size = var.SERVICE_PLAN_SDK_SIZE
+    size = var.SERVICE_PLAN_SKU_SIZE
   }
 }

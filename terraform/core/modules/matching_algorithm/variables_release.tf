@@ -85,7 +85,7 @@ variable "MESSAGING_BUS_DONOR_CRON_SCHEDULE" {
   type = string
 }
 
-variable "SERVICE_PLAN_SDK_SIZE" {
+variable "SERVICE_PLAN_SKU_SIZE" {
   type = string
 }
 
