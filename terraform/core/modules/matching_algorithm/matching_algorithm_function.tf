@@ -52,7 +52,11 @@ locals {
 
     "Wmda:WmdaFileUri" = var.WMDA_FILE_URL
 
-    "WEBSITE_RUN_FROM_PACKAGE" = var.WEBSITE_RUN_FROM_PACKAGE
+    // maximum running instances of the algorithm = maximum_worker_count * maxConcurrentCalls (in host.json).
+    // together these must ensure that the number of allowed concurrent SQL connections to the matching SQL DB is not exceeded.
+    // Note that this is 200 workers for an S3 plan, and that each algorithm invocation can open up to 4 concurrent connections.
+    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "10"
+    "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
   }
   matching_algorithm_function_app_name = "${var.general.environment}-ATLAS-MATCHING-ALGORITHM-FUNCTIONS"
 }
@@ -61,7 +65,7 @@ resource "azurerm_function_app" "atlas_matching_algorithm_function" {
   name                       = local.matching_algorithm_function_app_name
   resource_group_name        = var.app_service_plan.resource_group_name
   location                   = var.general.location
-  app_service_plan_id        = azurerm_app_service_plan.atlas-matching-algorithm-elastic-plan.id
+  app_service_plan_id        = var.elastic_app_service_plan.id
   https_only                 = true
   version                    = "~3"
   storage_account_access_key = azurerm_storage_account.matching_function_storage.primary_access_key
