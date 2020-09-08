@@ -11,7 +11,7 @@ resource "azurerm_sql_database" "atlas-matching-transient-a" {
   server_name         = var.sql_server.name
 
   // DO NOT SET THE PRICING TIER IN TERRAFORM - this is dynamically scaled as part of the data refresh, and specifying any values in terraform will cause releases to override said scaling
-  max_size_bytes = "268435456000"
+  max_size_bytes = var.DATABASE_MAX_SIZE
 
   tags = var.general.common_tags
 }
@@ -23,7 +23,7 @@ resource "azurerm_sql_database" "atlas-matching-transient-b" {
   server_name         = var.sql_server.name
 
   // DO NOT SET THE PRICING TIER IN TERRAFORM - this is dynamically scaled as part of the data refresh, and specifying any values in terraform will cause releases to override said scaling
-  max_size_bytes = "268435456000"
+  max_size_bytes = var.DATABASE_MAX_SIZE
 
   tags = var.general.common_tags
 }

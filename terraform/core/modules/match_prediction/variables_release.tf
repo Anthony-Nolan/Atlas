@@ -4,11 +4,11 @@ variable "APPLICATION_INSIGHTS_LOG_LEVEL" {
   type = string
 }
 
-variable "DATABASE_PASSWORD" {
+variable "DATABASE_MAX_SIZE" {
   type = string
 }
 
-variable "DATABASE_USERNAME" {
+variable "DATABASE_PASSWORD" {
   type = string
 }
 
@@ -16,7 +16,7 @@ variable "DATABASE_SKU_SIZE" {
   type = string
 }
 
-variable "DATABASE_MAX_SIZE" {
+variable "DATABASE_USERNAME" {
   type = string
 }
 
