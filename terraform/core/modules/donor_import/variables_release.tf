@@ -12,6 +12,14 @@ variable "DATABASE_USERNAME" {
   type = string
 }
 
+variable "DATABASE_SKU_SIZE" {
+  type = string
+}
+
+variable "DATABASE_MAX_SIZE" {
+  type = string
+}
+
 variable "IP_RESTRICTION_SETTINGS" {
   type    = list(string)
   default = []

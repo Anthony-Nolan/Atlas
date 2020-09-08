@@ -62,5 +62,3 @@ variable "sql_server" {
     fully_qualified_domain_name = string
   })
 }
-
-
