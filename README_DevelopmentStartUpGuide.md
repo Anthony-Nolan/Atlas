@@ -84,12 +84,10 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
   - Running Initial Data Refresh.
     - Run `MatchingAlgorithm.Functions` and in Swagger UI (or any other API development environment) trigger the `ForceDataRefresh` endpoint.
       - This should take < 15 minute to run.
-  - Creating Hla Metadata Dictionary.
-    - Run `MatchingAlgorithm.Functions` and in Swagger UI (or any other API development environment) trigger the `RefreshHlaMetadataDictionary` endpoint.
-      - This can take several minutes to run.
   - Importing Haplotype Frequency Sets.
     - In Storage Explorer, open your local emulator and create a new blob storage container called `haplotype-frequency-set-import`
     - Edit the `<gitRoot>/MiscTestingAndDebuggingResources/MatchPrediction/initial-hf-set.json` file so `nomenclatureVersion` is set to the nomenclature version that was used in the data refresh.
+      - The nomenclature version that was used in the data refresh can be found in SQL Server - `AtlasMatchingPersistent` -> `dbo.DataRefreshHistory` and then the `HlaNomenclatureVersion` for the active database.
     - Upload the json file `initial-hf-set.json` to your `haplotype-frequency-set-import` container.
       - This should take < 1 second to run.
     - Open up Service Bus Explorer and connect to your development Service Bus.
@@ -98,14 +96,15 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
     - When you now run `MatchPrediction.Functions` your local HaplotypeFrequencies and HaplotypeFrequencySets tables should now be populated.
       - This should take < 5 minute to run.
 - Run a search (avoiding MAC lookups).
-  - Restart the API project, and use Swagger to POST the JSON in `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\ZeroResultsSearch.json` to the  `/search` endpoint.
-  - You should get a 200 Success response, with 0 results.
+  - In Storage Explorer, open your local emulator and create two new blob storage containers called `atlas-search-results` and `matching-algorithm-results`.
+  - Run `Atlas.Functions.PublicApi`, `Atlas.Functions`, and `Atlas.MatchingAlgorithm.Functions` all in parallel.
+    - To do this in VisualStudio first set your default project to `Atlas.Functions.PublicApi` and then run it.
+    - Then in solution explorer right click on both `Atlas.Functions`, and `Atlas.MatchingAlgorithm.Functions` and select `Debug -> Start New Instance`.
+    - Alternatively you can right click on your solution in Solution Explorer go to properties and under multiple start up projects select the three functions.
+    - *You will want to make sure all the local settings for these functions are up to date*
+  - Then hit the `Search` endpoint within `Atlas.Functions.PublicApi` with the content of `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\initial-search.json` as the requests body.
+  - You should get a 200 Success response. In the `atlas-search-results` blob storage you have created you should have a file containing the search results.
   - The first search should take 20-60 seconds.
-  - Subsequent searches should take < 1 second.
-- Run a search that uses the NMDP Code lookup API.
-  - Restart the API project, and POST the JSON in `<gitRoot>\MiscTestingAndDebuggingResources\MatchingAlgorithm\EightResultsSearch.json` to the  `/search` endpoint.
-  - You should get a 200 Success response, with 8 results.
-  - The first search should take 40-90 seconds.
   - Subsequent searches should take < 1 second.
 
 ### Validation Tests
