@@ -80,7 +80,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 {
                     SearchRequest = identifiedSearchRequest.SearchRequest,
                     SearchRequestId = searchRequestId,
-                    SearchAlgorithmServiceVersion = searchAlgorithmServiceVersion,
+                    MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
                     WasSuccessful = true,
                     NumberOfResults = results.Count,
@@ -98,7 +98,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 {
                     WasSuccessful = false,
                     SearchRequestId = searchRequestId,
-                    SearchAlgorithmServiceVersion = searchAlgorithmServiceVersion,
+                    MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
                     HlaNomenclatureVersion = hlaNomenclatureVersion
                 };
                 await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
