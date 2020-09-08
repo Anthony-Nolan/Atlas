@@ -29,7 +29,7 @@ variable "DATABASE_SERVER_ADMIN_LOGIN_PASSWORD" {
 }
 
 variable "DONOR_DATABASE_MAX_SIZE" {
-  size        = string
+  type        = string
   default     = "32212254720"
   description = "Maximum size in bytes, refer to Azure documentation for supported sizes."
 }
@@ -39,8 +39,8 @@ variable "DONOR_DATABASE_PASSWORD" {
 }
 
 variable "DONOR_DATABASE_SKU_SIZE" {
-  size    = string
-  default = "S2"
+  type        = string
+  default     = "S2"
   description = "This database will be on the Standard tier, so only standard sku sizes are appropriate e.g. S0, S2, S3."
 }
 
@@ -55,8 +55,8 @@ variable "DONOR_IMPORT_STALLED_FILE_CHECK_CRONTAB" {
 }
 
 variable "DONOR_IMPORT_STALLED_FILE_DURATION" {
-  type = string
-  default = "2"
+  type        = string
+  default     = "2"
   description = "How long, in hours, a file must have been in the 'Started' state to be considered stalled"
 }
 
@@ -93,7 +93,7 @@ variable "MAC_SOURCE" {
 
 
 variable "MATCH_PREDICTION_DATABASE_MAX_SIZE" {
-  size        = string
+  type        = string
   default     = "32212254720"
   description = "Maximum size in bytes, refer to Azure documentation for supported sizes"
 }
@@ -103,8 +103,8 @@ variable "MATCH_PREDICTION_DATABASE_PASSWORD" {
 }
 
 variable "MATCH_PREDICTION_DATABASE_SKU_SIZE" {
-  size    = string
-  default = "S2"
+  type        = string
+  default     = "S2"
   description = "This database will be on the Standard tier, so only standard sku sizes are appropriate e.g. S0, S2, S3."
 }
 
@@ -144,7 +144,7 @@ variable "MATCHING_DATA_REFRESH_CRONTAB" {
 }
 
 variable "MATCHING_DATABASE_MAX_SIZE" {
-  size        = string
+  type        = string
   default     = "268435456000"
   description = "Maximum size in bytes, refer to Azure documentation for supported sizes"
 }
