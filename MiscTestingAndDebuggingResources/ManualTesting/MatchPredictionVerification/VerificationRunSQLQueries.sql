@@ -25,3 +25,13 @@ FROM VerificationRuns v
 JOIN SearchRequests r
 ON v.Id = r.VerificationRun_Id
 WHERE v.TestHarness_Id = @testHarnessId AND r.SearchResultsRetrieved = 0
+
+/*
+ *	FAILED SEARCH REQUESTS
+ */
+
+SELECT r.*
+FROM VerificationRuns v
+JOIN SearchRequests r
+ON v.Id = r.VerificationRun_Id
+WHERE v.TestHarness_Id = @testHarnessId AND r.SearchResultsRetrieved = 1 AND r.WasSuccessful = 0
