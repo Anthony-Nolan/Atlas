@@ -113,8 +113,7 @@ The following steps must be completed prior to generating the test harness.
 ##### Upload Haplotype Frequency Set File
 - A haplotype frequency (HF) set file must be uploaded to the remote environment where search requests will eventually be run.
   - This file will serve as the data source when calculating MPA match predictions, and will also be referenced during test harness generation.
-  - The file should be uploaded to the remote environment as the *global* set; instructions here:
-    - TODO: ATLAS-627 - link to HF file upload README
+  - The file should be uploaded to the remote environment as the *global* set; [instructions in integration readme](README_Integration.md)
 - It is critical that the file be left in remote azure storage; *DO NOT* delete, modify, or overwrite the file once it has been uploaded.
 - If the active, global HF set needs to be changed, upload a new file (ideally, with a unique name), and regenerate the test harness prior to running verification.
 
