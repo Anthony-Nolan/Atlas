@@ -4,7 +4,7 @@ using System.Linq;
 using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories

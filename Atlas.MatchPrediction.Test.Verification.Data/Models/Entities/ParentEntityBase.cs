@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Atlas.MatchPrediction.Test.Verification.Data.Models
+namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities
 {
     /// <summary>
     /// Term "Parent" in <see cref="ParentEntityBase"/> refers to foreign key relationships,

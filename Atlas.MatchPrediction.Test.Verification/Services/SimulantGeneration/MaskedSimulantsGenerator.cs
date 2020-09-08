@@ -1,7 +1,6 @@
 ﻿using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.HlaMaskers;
@@ -11,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using MaskedHla =
     Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<
         System.Collections.Generic.IReadOnlyCollection<Atlas.MatchPrediction.Test.Verification.Models.SimulantLocusHla>>;

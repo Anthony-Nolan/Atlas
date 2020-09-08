@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Atlas.Common.GeneticData;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness
+namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness
 {
     // ReSharper disable InconsistentNaming
 

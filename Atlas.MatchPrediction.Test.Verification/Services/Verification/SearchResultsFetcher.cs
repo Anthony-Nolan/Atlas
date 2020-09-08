@@ -9,7 +9,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Verification;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Newtonsoft.Json;
 using DonorIds = System.Collections.Generic.IDictionary<int,int>;

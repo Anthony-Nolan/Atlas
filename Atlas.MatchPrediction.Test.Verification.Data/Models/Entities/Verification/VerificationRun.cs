@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Verification
+namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification
 {
     /// <summary>
     /// Parent entity tying together all search requests and results generated from a single

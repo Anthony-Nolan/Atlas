@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Atlas.MatchPrediction.Test.Verification.Data.Models
+namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities
 {
     internal interface IModel
     {

@@ -2,7 +2,7 @@
 using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {

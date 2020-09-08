@@ -1,10 +1,10 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
-using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
+﻿using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.GenotypeSimulation;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
 {

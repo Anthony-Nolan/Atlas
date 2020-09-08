@@ -1,8 +1,8 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
+﻿using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.SimulantGeneration
 {
-    public class GenerateSimulantsRequest
+    internal class GenerateSimulantsRequest
     {
         public int TestHarnessId { get; set; }
         public TestIndividualCategory TestIndividualCategory { get; set; }

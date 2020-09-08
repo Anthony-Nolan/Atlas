@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Verification
+namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification
 {
     // ReSharper disable InconsistentNaming
 

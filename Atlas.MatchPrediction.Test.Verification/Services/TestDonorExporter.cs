@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using MoreLinq;
 

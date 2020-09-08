@@ -1,11 +1,12 @@
 ﻿using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using Atlas.MatchPrediction.Test.Verification.Data.Models;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Verification;
 using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Dapper;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories

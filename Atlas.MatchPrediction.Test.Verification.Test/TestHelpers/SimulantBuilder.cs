@@ -1,5 +1,5 @@
 ﻿using Atlas.Common.Test.SharedTestHelpers;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.TestHarness;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using LochNessBuilder;
 
 namespace Atlas.MatchPrediction.Test.Verification.Test.TestHelpers
