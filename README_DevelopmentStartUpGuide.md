@@ -87,7 +87,7 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
   - Importing Haplotype Frequency Sets.
     - In Storage Explorer, open your local emulator and create a new blob storage container called `haplotype-frequency-set-import`
     - Edit the `<gitRoot>/MiscTestingAndDebuggingResources/MatchPrediction/initial-hf-set.json` file so `nomenclatureVersion` is set to the nomenclature version that was used in the data refresh.
-      - The nomenclature version that was used in the data refresh can be found in SQL Server - `AtlasMatchingPersistent` -> `dbo.DataRefreshHistory` and then the `HlaNomenclatureVersion` for the active database.
+      - The nomenclature version that was used in the data refresh can be found in SQL Server - `AtlasMatchingPersistent` -> `MatchingAlgorithmPersistent.DataRefreshHistory` and then the `HlaNomenclatureVersion` for the active database.
     - Upload the json file `initial-hf-set.json` to your `haplotype-frequency-set-import` container.
       - This should take < 1 second to run.
     - Open up Service Bus Explorer and connect to your development Service Bus.

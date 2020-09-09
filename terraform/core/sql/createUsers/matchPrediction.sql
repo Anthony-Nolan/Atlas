@@ -1,6 +1,6 @@
 IF USER_ID('$(matchPredictionUsername)') IS NULL
     BEGIN
-        CREATE USER $(matchPredictionUsername) WITH PASSWORD = '$(matchPredictionPassword)'
+        CREATE USER $(matchPredictionUsername) WITH PASSWORD = '$(matchPredictionPassword)', DEFAULT_SCHEMA = $(matchPredictionSchema)
         ALTER ROLE db_datareader ADD MEMBER $(matchPredictionUsername)
         ALTER ROLE db_datawriter ADD MEMBER $(matchPredictionUsername)
     END
@@ -8,7 +8,7 @@ IF USER_ID('$(matchPredictionUsername)') IS NULL
 ELSE
 
     BEGIN
-        ALTER USER $(matchPredictionUsername) WITH PASSWORD = '$(matchPredictionPassword)'
+        ALTER USER $(matchPredictionUsername) WITH PASSWORD = '$(matchPredictionPassword)', DEFAULT_SCHEMA = $(matchPredictionSchema)
         ALTER ROLE db_datareader ADD MEMBER $(matchPredictionUsername)
         ALTER ROLE db_datawriter ADD MEMBER $(matchPredictionUsername)
     END

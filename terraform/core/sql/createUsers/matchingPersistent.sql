@@ -1,6 +1,6 @@
 IF USER_ID('$(matchingUsername)') IS NULL
     BEGIN
-        CREATE USER $(matchingUsername) WITH PASSWORD = '$(matchingPassword)'
+        CREATE USER $(matchingUsername) WITH PASSWORD = '$(matchingPassword)', DEFAULT_SCHEMA = $(matchingPersistentSchema)
         ALTER ROLE db_datareader ADD MEMBER $(matchingUsername)
         ALTER ROLE db_datawriter ADD MEMBER $(matchingUsername)
         ALTER ROLE db_owner ADD MEMBER $(matchingUsername)
@@ -9,7 +9,7 @@ IF USER_ID('$(matchingUsername)') IS NULL
 ELSE
 
     BEGIN
-        ALTER USER $(matchingUsername) WITH PASSWORD = '$(matchingPassword)'
+        ALTER USER $(matchingUsername) WITH PASSWORD = '$(matchingPassword)', DEFAULT_SCHEMA = $(matchingPersistentSchema)
         ALTER ROLE db_datareader ADD MEMBER $(matchingUsername)
         ALTER ROLE db_datawriter ADD MEMBER $(matchingUsername)
         ALTER ROLE db_owner ADD MEMBER $(matchingUsername)
