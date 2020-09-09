@@ -39,7 +39,11 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Context
 
             var optionsBuilder = new DbContextOptionsBuilder<SearchAlgorithmPersistentContext>();
 
-            optionsBuilder.UseSqlServer(connectionString, builder => { builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null); });
+            optionsBuilder.UseSqlServer(connectionString, builder =>
+            {
+                builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null);
+                builder.MigrationsHistoryTable("_EFMigrationsHistory", SearchAlgorithmPersistentContext.Schema);
+            });
 
             return new SearchAlgorithmPersistentContext(optionsBuilder.Options);
         }

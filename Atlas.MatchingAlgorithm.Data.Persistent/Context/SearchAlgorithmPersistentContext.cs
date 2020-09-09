@@ -10,6 +10,8 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Context
 {
     public class SearchAlgorithmPersistentContext : DbContext
     {
+        internal const string Schema = "MatchingAlgorithmPersistent";
+        
         // ReSharper disable once SuggestBaseTypeForParameter
         public SearchAlgorithmPersistentContext(DbContextOptions<SearchAlgorithmPersistentContext> options) : base(options)
         {
@@ -19,6 +21,8 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.HasDefaultSchema(Schema);
+            
             foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
             {
                 relationship.DeleteBehavior = DeleteBehavior.Restrict;
