@@ -125,6 +125,9 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.Property<DateTime?>("ImportEnd")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("ImportedBatchCount")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("LastUpdated")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2");

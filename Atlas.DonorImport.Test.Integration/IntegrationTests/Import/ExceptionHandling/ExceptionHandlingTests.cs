@@ -104,7 +104,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
 
             await donorFileImporter.ImportDonorFile(file);
             
-            var result = await donorImportHistoryRepository.GetFileStateIfExists("test.json", file.UploadTime);
+            var result = await donorImportHistoryRepository.GetFileIfExists("test.json", file.UploadTime);
 
             result.Should().Be(DonorImportState.Completed);
         }

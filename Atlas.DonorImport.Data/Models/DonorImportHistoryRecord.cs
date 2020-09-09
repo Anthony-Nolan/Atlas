@@ -56,6 +56,12 @@ namespace Atlas.DonorImport.Data.Models
         /// Counts both permanent and transient errors. 
         /// </summary>
         public int FailureCount { get; set; }
+
+        /// <summary>
+        /// The number of batches that have already been been imported.
+        /// When retrying due to transient failures, it shows what updates have already been applied and at what point in the file to start retrying from.
+        /// </summary>
+        public int ImportedBatchCount { get; set; }
     }
 
     internal static class DonorImportHistoryModelBuilder
