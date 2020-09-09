@@ -10,7 +10,6 @@ using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Validators;
 using Dasync.Collections;
-using Microsoft.Azure.Documents.SystemFunctions;
 using MoreLinq;
 
 // ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
@@ -57,7 +56,7 @@ namespace Atlas.DonorImport.Services
 
             var importedDonorCount = 0;
             var invalidDonorIds = new List<string>();
-            var donorUpdatesToSkip = importRecord?.ImportedBatchCount * BatchSize ?? 0;
+            var donorUpdatesToSkip = importRecord?.ImportedDonorsCount ?? 0;
 
             var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents);
 
@@ -67,11 +66,17 @@ namespace Atlas.DonorImport.Services
 
                 foreach (var donorUpdateBatch in donorUpdates.Skip(donorUpdatesToSkip).Batch(BatchSize))
                 {
-                    var validDonors = donorUpdateBatch.FilterAndCallbackIfFiltered(ValidateDonorIsSearchable, du => invalidDonorIds.Add(du.RecordId));
+                    var skippedDonorCount = 0;
+                    var validDonors = 
+                        donorUpdateBatch.FilterAndCallbackIfFiltered(ValidateDonorIsSearchable, du =>
+                        {
+                            skippedDonorCount += 1;
+                            invalidDonorIds.Add(du.RecordId);
+                        });
                     var donorUpdatesToApply = donorLogService.FilterDonorUpdatesBasedOnUpdateTime(validDonors, file.UploadTime);
 
                     var reifiedDonorBatch = await donorUpdatesToApply.ToListAsync();
-                    await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file);
+                    await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file, skippedDonorCount);
 
                     importedDonorCount += reifiedDonorBatch.Count;
                 }

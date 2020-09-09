@@ -2,12 +2,12 @@
 
 namespace Atlas.DonorImport.Data.Migrations
 {
-    public partial class AddImportedBatchCountToDonorImportHistoryTable : Migration
+    public partial class AddImportedDonorsCountToDonorImportHistoryTable : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<int>(
-                name: "ImportedBatchCount",
+                name: "ImportedDonorsCount",
                 table: "DonorImportHistory",
                 nullable: false,
                 defaultValue: 0);
@@ -16,7 +16,7 @@ namespace Atlas.DonorImport.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "ImportedBatchCount",
+                name: "ImportedDonorsCount",
                 table: "DonorImportHistory");
         }
     }
