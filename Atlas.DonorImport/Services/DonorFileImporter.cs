@@ -65,7 +65,7 @@ namespace Atlas.DonorImport.Services
             {
                 var donorUpdates = lazyFile.ReadLazyDonorUpdates();
 
-                foreach (var donorUpdateBatch in donorUpdates.Batch(BatchSize).Skip(donorUpdatesToSkip))
+                foreach (var donorUpdateBatch in donorUpdates.Skip(donorUpdatesToSkip).Batch(BatchSize))
                 {
                     var validDonors = donorUpdateBatch.FilterAndCallbackIfFiltered(ValidateDonorIsSearchable, du => invalidDonorIds.Add(du.RecordId));
                     var donorUpdatesToApply = donorLogService.FilterDonorUpdatesBasedOnUpdateTime(validDonors, file.UploadTime);
