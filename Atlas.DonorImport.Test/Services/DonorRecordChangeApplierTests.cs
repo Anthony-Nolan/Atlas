@@ -26,6 +26,7 @@ namespace Atlas.DonorImport.Test.Services
         private IDonorImportRepository donorImportRepository;
         private IDonorReadRepository donorInspectionRepository;
         private IDonorImportLogService donorImportLogService;
+        private IDonorImportFileHistoryService donorImportHistoryService;
 
         private IDonorRecordChangeApplier donorOperationApplier;
         private IImportedLocusInterpreter naiveDnaLocusInterpreter;
@@ -39,6 +40,7 @@ namespace Atlas.DonorImport.Test.Services
             donorImportRepository = Substitute.For<IDonorImportRepository>();
             donorInspectionRepository = Substitute.For<IDonorReadRepository>();
             donorImportLogService = Substitute.For<IDonorImportLogService>();
+            donorImportHistoryService = Substitute.For<IDonorImportFileHistoryService>();
             naiveDnaLocusInterpreter = Substitute.For<IImportedLocusInterpreter>();
             naiveDnaLocusInterpreter.Interpret(default, default).ReturnsForAnyArgs((call) =>
             {
@@ -53,7 +55,8 @@ namespace Atlas.DonorImport.Test.Services
                 donorImportRepository,
                 donorInspectionRepository,
                 naiveDnaLocusInterpreter,
-                donorImportLogService
+                donorImportLogService,
+                donorImportHistoryService
             );
         }
 
