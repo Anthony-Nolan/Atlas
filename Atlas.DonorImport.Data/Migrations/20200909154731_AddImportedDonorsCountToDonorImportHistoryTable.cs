@@ -8,6 +8,7 @@ namespace Atlas.DonorImport.Data.Migrations
         {
             migrationBuilder.AddColumn<int>(
                 name: "ImportedDonorsCount",
+                schema: "Donors",
                 table: "DonorImportHistory",
                 nullable: false,
                 defaultValue: 0);
@@ -17,6 +18,7 @@ namespace Atlas.DonorImport.Data.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "ImportedDonorsCount",
+                schema: "Donors",
                 table: "DonorImportHistory");
         }
     }
