@@ -66,18 +66,15 @@ namespace Atlas.DonorImport.Services
 
                 foreach (var donorUpdateBatch in donorUpdates.Skip(donorUpdatesToSkip).Batch(BatchSize))
                 {
-                    var skippedDonorCount = 0;
+                    var invalidDonorIdsInBatch = new List<string>();
                     var validDonors = 
-                        donorUpdateBatch.FilterAndCallbackIfFiltered(ValidateDonorIsSearchable, du =>
-                        {
-                            skippedDonorCount += 1;
-                            invalidDonorIds.Add(du.RecordId);
-                        });
+                        donorUpdateBatch.FilterAndCallbackIfFiltered(ValidateDonorIsSearchable, du => invalidDonorIdsInBatch.Add(du.RecordId));
                     var donorUpdatesToApply = donorLogService.FilterDonorUpdatesBasedOnUpdateTime(validDonors, file.UploadTime);
 
                     var reifiedDonorBatch = await donorUpdatesToApply.ToListAsync();
-                    await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file, skippedDonorCount);
+                    await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file, invalidDonorIdsInBatch.Count);
 
+                    invalidDonorIds = invalidDonorIds.Concat(invalidDonorIdsInBatch).ToList();
                     importedDonorCount += reifiedDonorBatch.Count;
                 }
 
