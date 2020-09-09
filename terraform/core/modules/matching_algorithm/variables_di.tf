@@ -86,6 +86,12 @@ variable "servicebus_topics" {
   })
 }
 
+variable "sql_database_shared" {
+  type = object({
+    name = string
+  })
+}
+
 variable "sql_server" {
   type = object({
     name                        = string

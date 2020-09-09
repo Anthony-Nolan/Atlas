@@ -23,7 +23,6 @@ output "service_bus" {
 output "sql_database" {
   value = {
     sql_server                             = var.sql_server.fully_qualified_domain_name
-    persistent_database_name               = azurerm_sql_database.atlas-persistent.name
     persistent_database_connection_string  = local.matching_persistent_database_connection_string
     transient_a_database_name              = azurerm_sql_database.atlas-matching-transient-a.name
     transient_a_database_connection_string = local.matching_transient_database_a_connection_string

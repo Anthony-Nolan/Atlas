@@ -6,7 +6,7 @@ output "donor-database-username" {
 }
 
 output "donor-import-database-name" {
-  value = module.donor_import.sql_database.name
+  value = azurerm_sql_database.atlas-database-shared.name
 }
 
 output "donor-import-function-name" {
@@ -22,7 +22,7 @@ output "function-app-name" {
 }
 
 output "match-prediction-database-name" {
-  value = module.match_prediction.sql_database.name
+  value = azurerm_sql_database.atlas-database-shared.name
 }
 
 output "match-prediction-function-name" {
@@ -34,7 +34,7 @@ output "match-prediction-database-username" {
 }
 
 output "matching-algorithm-database-persistent-name" {
-  value = module.matching_algorithm.sql_database.persistent_database_name
+  value = azurerm_sql_database.atlas-database-shared.name
 }
 
 output "matching-algorithm-database-transient-a-name" {

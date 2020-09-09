@@ -28,20 +28,20 @@ variable "DATABASE_SERVER_ADMIN_LOGIN_PASSWORD" {
   type = string
 }
 
-variable "DONOR_DATABASE_MAX_SIZE" {
+variable "DATABASE_SHARED_MAX_SIZE" {
   type        = string
   default     = "32212254720"
   description = "Maximum size in bytes, refer to Azure documentation for supported sizes."
 }
 
-variable "DONOR_DATABASE_PASSWORD" {
-  type = string
-}
-
-variable "DONOR_DATABASE_SKU_SIZE" {
+variable "DATABASE_SHARED_SKU_SIZE" {
   type        = string
   default     = "S2"
   description = "This database will be on the Standard tier, so only standard sku sizes are appropriate e.g. S0, S2, S3."
+}
+
+variable "DONOR_DATABASE_PASSWORD" {
+  type = string
 }
 
 variable "DONOR_DATABASE_USERNAME" {
@@ -50,7 +50,7 @@ variable "DONOR_DATABASE_USERNAME" {
 }
 
 variable "DONOR_IMPORT_STALLED_FILE_CHECK_CRONTAB" {
-  type = string
+  type    = string
   default = "0 */30 * * * *"
 }
 
@@ -91,21 +91,8 @@ variable "MAC_SOURCE" {
   description = "The source of our Multiple Allele Codes"
 }
 
-
-variable "MATCH_PREDICTION_DATABASE_MAX_SIZE" {
-  type        = string
-  default     = "32212254720"
-  description = "Maximum size in bytes, refer to Azure documentation for supported sizes"
-}
-
 variable "MATCH_PREDICTION_DATABASE_PASSWORD" {
   type = string
-}
-
-variable "MATCH_PREDICTION_DATABASE_SKU_SIZE" {
-  type        = string
-  default     = "S2"
-  description = "This database will be on the Standard tier, so only standard sku sizes are appropriate e.g. S0, S2, S3."
 }
 
 variable "MATCH_PREDICTION_DATABASE_USERNAME" {
@@ -217,6 +204,7 @@ variable "SERVICE_PLAN_SKU" {
     tier = "Standard"
     size = "S1"
   }
+  description = "The SKU size for the *non-elastic* service plan. This only hosts the donor import functions, all other services live on the elastic plan."
 }
 
 variable "ELASTIC_SERVICE_PLAN_SKU_SIZE" {
