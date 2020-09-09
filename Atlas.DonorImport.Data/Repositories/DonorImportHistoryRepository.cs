@@ -12,7 +12,8 @@ namespace Atlas.DonorImport.Data.Repositories
     {
         public Task InsertNewDonorImportRecord(string filename, DateTime uploadTime);
         public Task UpdateDonorImportState(string filename, DateTime uploadTime, DonorImportState donorState);
-        public Task<DonorImportState?> GetFileStateIfExists(string filename, DateTime uploadTime);
+        public Task UpdateDonorImportBatchCount(string filename, DateTime uploadTime);
+        public Task<DonorImportHistoryRecord> GetFileIfExists(string filename, DateTime uploadTime);
         public Task<IReadOnlyCollection<DonorImportHistoryRecord>> GetLongRunningFiles(TimeSpan duration);
     }
 
@@ -64,13 +65,24 @@ WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
             }
         }
 
-        public async Task<DonorImportState?> GetFileStateIfExists(string filename, DateTime uploadTime)
+        public async Task UpdateDonorImportBatchCount(string filename, DateTime uploadTime)
+        {
+            await using (var connection = new SqlConnection(connectionString))
+            {
+                var sql = $@"UPDATE DonorImportHistory
+SET ImportedBatchCount = ImportedBatchCount + 1
+WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
+                await connection.ExecuteAsync(sql, new {FileName = filename, UploadTime = uploadTime});
+            }
+        }
+
+        public async Task<DonorImportHistoryRecord> GetFileIfExists(string filename, DateTime uploadTime)
         {
             await using (var connection = new SqlConnection(connectionString))
             {
                 const string sql = "SELECT * FROM DonorImportHistory WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
                 var results = connection.Query<DonorImportHistoryRecord>(sql, new {FileName = filename, UploadTime = uploadTime}).ToArray();
-                return results.SingleOrDefault()?.FileState;
+                return results.SingleOrDefault();
             }
         }
 

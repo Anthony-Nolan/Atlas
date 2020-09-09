@@ -11,8 +11,9 @@ namespace Atlas.DonorImport.Services
 {
     public interface IDonorImportFileHistoryService
     {
-        public Task RegisterStartOfDonorImport(DonorImportFile donorFile);
+        public Task<DonorImportHistoryRecord> RegisterStartOfDonorImport(DonorImportFile donorFile);
         public Task RegisterSuccessfulDonorImport(DonorImportFile donorFile);
+        public Task RegisterSuccessfulBatchImport(DonorImportFile donorFile);
         public Task RegisterFailedDonorImportWithPermanentError(DonorImportFile donorFile);
         public Task RegisterUnexpectedDonorImportError(DonorImportFile donorFile);
         public Task SendNotificationForStalledImports();
@@ -31,12 +32,12 @@ namespace Atlas.DonorImport.Services
             this.durationToCheckForStalledFiles = new TimeSpan(stalledFileSettings.HoursToCheckStalledFiles, 0, 0);
         }
 
-        public async Task RegisterStartOfDonorImport(DonorImportFile donorFile)
+        public async Task<DonorImportHistoryRecord> RegisterStartOfDonorImport(DonorImportFile donorFile)
         {
             var filename = GetFileNameFromLocation(donorFile.FileLocation);
-            var state = await repository.GetFileStateIfExists(filename, donorFile.UploadTime);
+            var importRecord = await repository.GetFileIfExists(filename, donorFile.UploadTime);
             // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
-            switch (state)
+            switch (importRecord?.FileState)
             {
                 case null:
                     await repository.InsertNewDonorImportRecord(filename, donorFile.UploadTime);
@@ -45,13 +46,21 @@ namespace Atlas.DonorImport.Services
                     await UpdateDonorImportRecord(donorFile, DonorImportState.Started);
                     break;
                 default:
-                    throw new DuplicateDonorFileImportException($"Duplicate Donor File Import Attempt. File: {donorFile.FileLocation} was started but already had an entry of state: {state.ToString()}");
+                    throw new DuplicateDonorFileImportException($"Duplicate Donor File Import Attempt. File: {donorFile.FileLocation} was started but already had an entry of state: {importRecord.FileState.ToString()}");
             }
+
+            return importRecord;
         }
 
         public async Task RegisterSuccessfulDonorImport(DonorImportFile donorFile)
         {
             await UpdateDonorImportRecord(donorFile, DonorImportState.Completed);
+        }
+
+        public async Task RegisterSuccessfulBatchImport(DonorImportFile donorFile)
+        {
+            var filename = GetFileNameFromLocation(donorFile.FileLocation);
+            await repository.UpdateDonorImportBatchCount(filename, donorFile.UploadTime);
         }
 
         public async Task RegisterFailedDonorImportWithPermanentError(DonorImportFile donorFile)

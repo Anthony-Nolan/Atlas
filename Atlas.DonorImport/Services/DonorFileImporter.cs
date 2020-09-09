@@ -10,6 +10,8 @@ using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Models.FileSchema;
 using Atlas.DonorImport.Validators;
 using Dasync.Collections;
+using Microsoft.Azure.Documents.SystemFunctions;
+using MoreLinq;
 
 // ReSharper disable SwitchStatementMissingSomeEnumCasesNoDefault
 
@@ -51,21 +53,26 @@ namespace Atlas.DonorImport.Services
         public async Task ImportDonorFile(DonorImportFile file)
         {
             logger.SendTrace($"Beginning Donor Import for file '{file.FileLocation}'.");
-            await donorImportFileHistoryService.RegisterStartOfDonorImport(file);
+            var importRecord = await donorImportFileHistoryService.RegisterStartOfDonorImport(file);
 
             var importedDonorCount = 0;
+            var invalidDonorIds = new List<string>();
+            var donorUpdatesToSkip = importRecord?.ImportedBatchCount * BatchSize ?? 0;
+
             var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents);
 
             try
             {
-                var invalidDonorIds = new List<string>();
                 var donorUpdates = lazyFile.ReadLazyDonorUpdates();
-                var validDonors = donorUpdates.FilterAndCallbackIfFiltered(ValidateDonorIsSearchable, du => invalidDonorIds.Add(du.RecordId));
-                var donorUpdatesToApply = donorLogService.FilterDonorUpdatesBasedOnUpdateTime(validDonors, file.UploadTime);
-                await foreach (var donorUpdateBatch in donorUpdatesToApply.Batch(BatchSize))
+
+                foreach (var donorUpdateBatch in donorUpdates.Batch(BatchSize).Skip(donorUpdatesToSkip))
                 {
-                    var reifiedDonorBatch = donorUpdateBatch.ToList();
+                    var validDonors = donorUpdateBatch.FilterAndCallbackIfFiltered(ValidateDonorIsSearchable, du => invalidDonorIds.Add(du.RecordId));
+                    var donorUpdatesToApply = donorLogService.FilterDonorUpdatesBasedOnUpdateTime(validDonors, file.UploadTime);
+
+                    var reifiedDonorBatch = await donorUpdatesToApply.ToListAsync();
                     await donorRecordChangeApplier.ApplyDonorRecordChangeBatch(reifiedDonorBatch, file);
+
                     importedDonorCount += reifiedDonorBatch.Count;
                 }
 

@@ -28,28 +28,38 @@ namespace Atlas.DonorImport.Services
         private readonly IDonorReadRepository donorInspectionRepository;
         private readonly IImportedLocusInterpreter locusInterpreter;
         private readonly IDonorImportLogService donorImportLogService;
+        private readonly IDonorImportFileHistoryService donorImportHistoryService;
 
         public DonorRecordChangeApplier(
             IMessagingServiceBusClient messagingServiceBusClient,
             IDonorImportRepository donorImportRepository,
             IDonorReadRepository donorInspectionRepository,
             IImportedLocusInterpreter locusInterpreter,
-            IDonorImportLogService donorImportLogService)
+            IDonorImportLogService donorImportLogService,
+            IDonorImportFileHistoryService donorImportHistoryService)
         {
             this.donorImportRepository = donorImportRepository;
             this.messagingServiceBusClient = messagingServiceBusClient;
             this.donorInspectionRepository = donorInspectionRepository;
             this.locusInterpreter = locusInterpreter;
             this.donorImportLogService = donorImportLogService;
+            this.donorImportHistoryService = donorImportHistoryService;
         }
 
         public async Task ApplyDonorRecordChangeBatch(IReadOnlyCollection<DonorUpdate> donorUpdates, DonorImportFile file)
         {
+            if (!donorUpdates.Any())
+            {
+                await donorImportHistoryService.RegisterSuccessfulBatchImport(file);
+                return;
+            }
+
             List<List<SearchableDonorUpdate>> matchingMessages;
             using (var transactionScope = new AsyncTransactionScope())
             {
                 matchingMessages = await ApplyUpdatesToDonorStore(donorUpdates, file);
                 await donorImportLogService.SetLastUpdated(donorUpdates, file.UploadTime);
+                await donorImportHistoryService.RegisterSuccessfulBatchImport(file);
                 transactionScope.Complete();
             }
 
