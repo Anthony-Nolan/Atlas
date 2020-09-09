@@ -61,6 +61,7 @@ module "matching_algorithm" {
     read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
     write-only = azurerm_servicebus_namespace_authorization_rule.write-only
   }
+
   servicebus_topics = {
     updated-searchable-donors = module.donor_import.service_bus.updated_searchable_donors_topic
     alerts                    = module.support.general.alerts_servicebus_topic
