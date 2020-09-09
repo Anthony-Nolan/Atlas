@@ -4,6 +4,15 @@ This README should cover the necessary steps to integrate ATLAS into another sys
 
 For a deployment guide, see [the relevant README](README_Deployment.md).
 
+> On function invocation: All HTTP functions can be triggered via HTTP, and are authenticated via functions keys. These can be found and managed in Azure Portal.
+> By default, two keys will exist per function - one named `master`, which has admin access to function endpoints, and one called `default` which just has functions
+> access.
+>
+> For systems/developers, either teh default key can be used, or specific ones can be generated manually.
+> 
+> To authenticate an HTTP request, set the appropriate function key as either a query param or header, as described in the [Azure documentation](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook-trigger?tabs=csharp)
+> (query param = `code`, header = `x-functions-key`)
+
 ## Notifications 
 
 Several of the import process steps of ATLAS have some built in notification functionality. Two service bus topics will be created by terraform: 
