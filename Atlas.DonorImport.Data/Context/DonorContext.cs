@@ -5,6 +5,8 @@ namespace Atlas.DonorImport.Data.Context
 {
     public class DonorContext : DbContext
     {
+        internal const string Schema = "Donors";
+        
         // ReSharper disable once SuggestBaseTypeForParameter
         public DonorContext(DbContextOptions<DonorContext> options) : base(options)
         {       
@@ -15,6 +17,7 @@ namespace Atlas.DonorImport.Data.Context
             modelBuilder.Entity<Donor>().SetUpDonorModel();
             modelBuilder.Entity<DonorImportHistoryRecord>().SetUpDonorImportHistory();
             modelBuilder.Entity<DonorLog>().SetUpDonorLogModel();
+            modelBuilder.HasDefaultSchema("Donors");
         }
 
         public DbSet<Donor> Donors { get; set; }
