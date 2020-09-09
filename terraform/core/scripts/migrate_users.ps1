@@ -1,12 +1,17 @@
+# Schema names are hardcoded in the EF context of each database - if changed, they will need to be changed in both places
+
 $variablesArray = 
 "matchingUsername=$env:matchingUser",
-"matchingPassword=$env:matchingPassword",
+"matchingPassword=$env:matchingPassword", 
+"matchingPersistentSchema=MatchingAlgorithmPersistent",
 "matchPredictionUsername=$env:matchPredictionUser",
-"matchPredictionPassword=$env:matchPredictionPassword",
+"matchPredictionPassword=$env:matchPredictionPassword", 
+"matchPredictionSchema=MatchPrediction",
 "donorImportUsername=$env:donorImportUser",
-"donorImportPassword=$env:donorImportPassword",
+"donorImportPassword=$env:donorImportPassword", 
+"donorImportSchema=Donors",
 "matchingUsernameForDonorDB=$env:matchingUsernameForDonorDB",
-"matchingPasswordForDonorDB=$env:matchingPasswordForDonorDB"
+"matchingPasswordForDonorDB=$env:matchingPasswordForDonorDB" 
 
 Write-Host $variablesArray
 
