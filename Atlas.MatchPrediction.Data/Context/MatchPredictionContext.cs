@@ -5,6 +5,8 @@ namespace Atlas.MatchPrediction.Data.Context
 {
     public class MatchPredictionContext : DbContext
     {
+        internal const string Schema = "MatchPrediction";
+        
         // ReSharper disable once SuggestBaseTypeForParameter
         public MatchPredictionContext(DbContextOptions<MatchPredictionContext> options) : base(options)
         {
@@ -12,6 +14,8 @@ namespace Atlas.MatchPrediction.Data.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.HasDefaultSchema(Schema);
+            
             modelBuilder.Entity<HaplotypeFrequencySet>().SetUpModel();
             modelBuilder.Entity<HaplotypeFrequency>().SetUpModel();
             base.OnModelCreating(modelBuilder);
