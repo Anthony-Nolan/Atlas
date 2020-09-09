@@ -27,19 +27,19 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
         public async Task<IEnumerable<VerificationResult>> CompileVerificationResults(VerificationResultsRequest request)
         {
-            var defaultResults = BuildDefaultVerificationResults();
-            var actualResults = await GetActualVerificationResults(request);
+            var defaultResults = BuildDefaultResults();
+            var verificationResults = await GetVerificationResults(request);
 
             // ensure that every probability value between 0-100% has a result
             return
                 from defaultResult in defaultResults
-                join actualResult in actualResults
-                    on defaultResult.Probability equals actualResult.Probability into gj
+                join verificationResult in verificationResults
+                    on defaultResult.Probability equals verificationResult.Probability into gj
                 from result in gj.DefaultIfEmpty()
                 select result ?? defaultResult;
         }
 
-        private static IEnumerable<VerificationResult> BuildDefaultVerificationResults()
+        private static IEnumerable<VerificationResult> BuildDefaultResults()
         {
             const int minProbabilityValue = 0;
             return Enumerable.Range(minProbabilityValue, 101)
@@ -51,7 +51,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
                 });
         }
 
-        private async Task<IReadOnlyCollection<VerificationResult>> GetActualVerificationResults(VerificationResultsRequest request)
+        private async Task<IReadOnlyCollection<VerificationResult>> GetVerificationResults(VerificationResultsRequest request)
         {
             var actualMatchStatuses = await GetActualMatchStatusOfPdps(request);
 
