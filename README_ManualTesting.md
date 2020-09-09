@@ -173,6 +173,7 @@ The following steps must be completed prior to generating the test harness.
   one for each test patient within the specified test harness.
 - This involves launching the verification functions app, and invoking the http-triggered function, `SendVerificationSearchRequests`.
   - This takes in the ID of a completed test harness (see Swagger UI for request model).
+  - It will return a verification run ID.
 - The following conditions must be met for the request to be accepted:
   - Donors stores of the test environment should contain the donors of the specified test harness.
   - The HF set used to generate the specified test harness should be the active, global HF set on the test environment.

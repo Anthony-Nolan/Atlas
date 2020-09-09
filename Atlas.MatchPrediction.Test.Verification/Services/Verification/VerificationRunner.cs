@@ -19,7 +19,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 {
     public interface IVerificationRunner
     {
-        Task SendVerificationSearchRequests(int testHarnessId);
+        /// <returns>Id for Verification Run</returns>
+        Task<int> SendVerificationSearchRequests(int testHarnessId);
     }
 
     internal class VerificationRunner : IVerificationRunner
@@ -52,7 +53,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
             searchRequestUrl = settings.Value.RequestUrl;
         }
 
-        public async Task SendVerificationSearchRequests(int testHarnessId)
+        public async Task<int> SendVerificationSearchRequests(int testHarnessId)
         {
             if (await TestHarnessDonorsNotOnAtlasDonorStores(testHarnessId))
             {
@@ -70,9 +71,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
             Debug.WriteLine($"Start submitting search requests for test harness {testHarnessId}...");
 
-            await SubmitSearchRequests(testHarnessId);
+            var verificationRunId = await SubmitSearchRequests(testHarnessId);
 
             Debug.WriteLine("Completed submitting search requests.");
+
+            return verificationRunId;
         }
 
         private async Task<bool> TestHarnessDonorsNotOnAtlasDonorStores(int testHarnessId)
@@ -90,10 +93,10 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
             return activeSet == null || setId != activeSet.Id;
         }
 
-        private async Task SubmitSearchRequests(int testHarnessId)
+        private async Task<int> SubmitSearchRequests(int testHarnessId)
         {
             const int searchLociCount = 5;
-            var verificationId = await AddVerificationRun(testHarnessId, searchLociCount, BuildFiveLocusMismatchSearchRequest(null));
+            var verificationRunId = await AddVerificationRun(testHarnessId, searchLociCount, BuildFiveLocusMismatchSearchRequest(null));
             var patients = await simulantsRepository.GetSimulants(testHarnessId, TestIndividualCategory.Patient.ToString());
 
             foreach (var patient in patients)
@@ -101,13 +104,15 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
                 var atlasId = await SubmitSingleSearch(patient);
                 await searchRequestsRepository.AddSearchRequest(new SearchRequestRecord
                 {
-                    VerificationRun_Id = verificationId,
+                    VerificationRun_Id = verificationRunId,
                     PatientSimulant_Id = patient.Id,
                     AtlasSearchIdentifier = atlasId
                 });
             }
 
-            await verificationRunRepository.MarkSearchRequestsAsSubmitted(verificationId);
+            await verificationRunRepository.MarkSearchRequestsAsSubmitted(verificationRunId);
+
+            return verificationRunId;
         }
 
         private async Task<int> AddVerificationRun(int testHarnessId, int searchLociCount, SearchRequest searchRequest)
