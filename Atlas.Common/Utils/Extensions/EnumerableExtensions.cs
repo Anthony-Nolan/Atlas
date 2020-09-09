@@ -79,8 +79,10 @@ namespace Atlas.Common.Utils.Extensions
                 {
                     yield return obj;
                 }
-
-                callback(obj);
+                else
+                {
+                    callback(obj);
+                }
             }
         }
 
