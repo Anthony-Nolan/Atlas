@@ -4,6 +4,7 @@ using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.Verification;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -33,7 +34,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
         }
 
         [FunctionName(nameof(SendVerificationSearchRequests))]
-        public async Task SendVerificationSearchRequests(
+        public async Task<IActionResult> SendVerificationSearchRequests(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
             [RequestBodyType(typeof(TestHarnessDetails), nameof(TestHarnessDetails))]
             HttpRequest request)
@@ -41,7 +42,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
             var testHarnessDetails = JsonConvert.DeserializeObject<TestHarnessDetails>(
                     await new StreamReader(request.Body).ReadToEndAsync());
 
-            await verificationRunner.SendVerificationSearchRequests(testHarnessDetails.TestHarnessId);
+            var verificationRunId = await verificationRunner.SendVerificationSearchRequests(testHarnessDetails.TestHarnessId);
+
+            return new JsonResult(verificationRunId);
         }
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
