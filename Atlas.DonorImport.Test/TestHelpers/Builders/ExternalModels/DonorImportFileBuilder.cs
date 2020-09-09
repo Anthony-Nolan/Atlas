@@ -17,6 +17,13 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels
         public static Builder<DonorImportFile> NewWithDefaultContents => NewWithoutContents
             .With(f => f.Contents, DonorImportFileContentsBuilder.New.Build().ToStream());
 
+        public static Builder<DonorImportFile> NewWithMetadata(string fileName, DateTime uploadTime)
+        {
+            return Builder<DonorImportFile>.New
+                .With(t => t.FileLocation, fileName)
+                .With(t => t.UploadTime, uploadTime);
+        }
+
         public static Builder<DonorImportFile> WithContents(
             this Builder<DonorImportFile> builder,
             Builder<SerialisableDonorImportFileContents> contentsBuilder)

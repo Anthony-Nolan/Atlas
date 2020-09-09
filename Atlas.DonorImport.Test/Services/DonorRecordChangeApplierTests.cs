@@ -31,6 +31,7 @@ namespace Atlas.DonorImport.Test.Services
         private IDonorRecordChangeApplier donorOperationApplier;
         private IImportedLocusInterpreter naiveDnaLocusInterpreter;
 
+        private const int BatchSize = 10000;
         private readonly DonorImportFile defaultFile = new DonorImportFile {FileLocation = "file", UploadTime = DateTime.Now};
 
         [SetUp]
@@ -74,7 +75,7 @@ namespace Atlas.DonorImport.Test.Services
                 {donorUpdates[1].RecordId, 2},
             });
 
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile);
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, BatchSize);
 
             await donorImportRepository.Received().InsertDonorBatch(Arg.Is<IEnumerable<Donor>>(storedDonors =>
                 storedDonors.Count() == donorUpdates.Count)
@@ -92,7 +93,7 @@ namespace Atlas.DonorImport.Test.Services
             donorInspectionRepository.GetDonorIdsByExternalDonorCodes(null)
                 .ReturnsForAnyArgs(donorUpdates.ToDictionary(d => d.RecordId, d => 0));
 
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile);
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, BatchSize);
 
             await messagingServiceBusClient
                 .Received(1)
@@ -124,7 +125,7 @@ namespace Atlas.DonorImport.Test.Services
 
 
             //ACT
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile);
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, BatchSize);
 
             //ASSERT
             //Should be batched up in 3 sets of 7. Each of which maps to one ChangeType. IsAvailableForSearch is the closest surrogate we have to ChangeType.
@@ -148,7 +149,7 @@ namespace Atlas.DonorImport.Test.Services
                 donorUpdates.ToDictionary(d => d.RecordId, d => atlasId)
             );
 
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile);
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, BatchSize);
 
             await messagingServiceBusClient.Received(1).PublishDonorUpdateMessages(Arg.Is<List<SearchableDonorUpdate>>(messages =>
                 messages.All(u => u.DonorId == atlasId)
@@ -163,7 +164,7 @@ namespace Atlas.DonorImport.Test.Services
                 DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Full).Build(),
             };
 
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile);
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, BatchSize);
 
             await donorInspectionRepository.DidNotReceiveWithAnyArgs().GetDonorsByExternalDonorCodes(null);
         }
@@ -182,7 +183,7 @@ namespace Atlas.DonorImport.Test.Services
                 {donorUpdates[1].RecordId, new Donor {AtlasId = 2, ExternalDonorCode = donorUpdates[1].RegistryCode}},
             });
 
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile);
+            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, BatchSize);
 
             await messagingServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
         }

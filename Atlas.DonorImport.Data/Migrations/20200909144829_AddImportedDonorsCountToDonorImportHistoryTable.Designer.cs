@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.DonorImport.Data.Migrations
 {
     [DbContext(typeof(DonorContext))]
-    [Migration("20200909111234_AddImportedBatchCountToDonorImportHistoryTable")]
-    partial class AddImportedBatchCountToDonorImportHistoryTable
+    [Migration("20200909144829_AddImportedDonorsCountToDonorImportHistoryTable")]
+    partial class AddImportedDonorsCountToDonorImportHistoryTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -126,7 +126,7 @@ namespace Atlas.DonorImport.Data.Migrations
                     b.Property<DateTime?>("ImportEnd")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("ImportedBatchCount")
+                    b.Property<int>("ImportedDonorsCount")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("LastUpdated")
