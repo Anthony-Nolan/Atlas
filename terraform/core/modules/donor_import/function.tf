@@ -35,7 +35,7 @@ resource "azurerm_function_app" "atlas_donor_import_function" {
     "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:NotificationsTopic" = var.servicebus_topics.notifications.name
 
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "5"
+    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = var.MAX_INSTANCES
     "WEBSITE_RUN_FROM_PACKAGE"                  = "1"
   }
 

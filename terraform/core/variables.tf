@@ -49,6 +49,12 @@ variable "DONOR_DATABASE_USERNAME" {
   default = "donors"
 }
 
+variable "DONOR_IMPORT_MAX_INSTANCES" {
+  type        = number
+  default     = 2
+  description = "Determines the number of instances of the donor import that can exist in parallel. Combined with the per-instance service bus concurrency settings in host.json, defines the maximum number of concurrent instances of the donor import. Can be larger with a larger database."
+}
+
 variable "DONOR_IMPORT_STALLED_FILE_CHECK_CRONTAB" {
   type    = string
   default = "0 */30 * * * *"

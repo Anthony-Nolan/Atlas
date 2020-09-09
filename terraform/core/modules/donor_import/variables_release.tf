@@ -17,6 +17,10 @@ variable "IP_RESTRICTION_SETTINGS" {
   default = []
 }
 
+variable "MAX_INSTANCES" {
+  type = number
+}
+
 variable "STALLED_FILE_CHECK_CRONTAB" {
   type = string
 }
