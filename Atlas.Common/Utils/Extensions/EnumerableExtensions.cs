@@ -92,5 +92,23 @@ namespace Atlas.Common.Utils.Extensions
         /// explanation on why this is recommended
         /// </summary>
         public static decimal SumDecimals(this IEnumerable<decimal> decimals) => decimals.OrderBy(x => x).Sum();
+
+        /// <summary>
+        /// Replicates the contents of the enumerable to the requested quantity.
+        /// Each replicated sequence is appended to the end of growing collection; no special ordering is applied.
+        /// E.g. [a, b] replicated with a quantity of 3 returns [a, b, a, b, a, b].
+        /// </summary>
+        public static IEnumerable<T> Replicate<T>(this IEnumerable<T> source, int quantity)
+        {
+            source = source.ToList();
+
+            var newCollection = new List<T>();
+            for (var i = 0; i < quantity; i++)
+            {
+                newCollection.AddRange(source);
+            }
+
+            return newCollection;
+        }
     }
 }
