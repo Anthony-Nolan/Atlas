@@ -2,7 +2,7 @@ output "function_app" {
   value = {
     hostname = azurerm_function_app.atlas_donor_import_function.default_hostname
     app_name = local.donor_import_function_name
-    id = azurerm_function_app.atlas_donor_import_function.id
+    id       = azurerm_function_app.atlas_donor_import_function.id
   }
 }
 
@@ -20,7 +20,6 @@ output "storage" {
 
 output "sql_database" {
   value = {
-    name              = azurerm_sql_database.atlas-donor-import.name
     connection_string = local.donor_import_connection_string
   }
 }

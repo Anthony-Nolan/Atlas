@@ -2,7 +2,7 @@ output "function_app" {
   value = {
     hostname = azurerm_function_app.atlas_match_prediction_function.default_hostname
     app_name = local.atlas_match_prediction_function_name
-    id = azurerm_function_app.atlas_match_prediction_function.id
+    id       = azurerm_function_app.atlas_match_prediction_function.id
   }
 }
 
@@ -15,6 +15,5 @@ output "storage" {
 output "sql_database" {
   value = {
     connection_string = local.match_prediction_database_connection_string
-    name              = azurerm_sql_database.atlas-match-prediction.name
   }
 }

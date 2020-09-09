@@ -43,29 +43,31 @@ module "matching_algorithm" {
 
   default_servicebus_settings = local.service-bus
 
+  // DI variables
   app_service_plan          = azurerm_app_service_plan.atlas
-  donor_import_sql_database = module.donor_import.sql_database
+  application_insights      = azurerm_application_insights.atlas
+  azure_storage             = azurerm_storage_account.azure_storage
+  donor_import_sql_database = azurerm_sql_database.atlas-database-shared
   elastic_app_service_plan  = azurerm_app_service_plan.atlas-elastic-plan
   mac_import_table          = module.multiple_allele_code_lookup.storage_table
-  sql_server                = azurerm_sql_server.atlas_sql_server
-  shared_function_storage   = azurerm_storage_account.function_storage
-  azure_storage             = azurerm_storage_account.azure_storage
-  application_insights      = azurerm_application_insights.atlas
   resource_group            = azurerm_resource_group.atlas_resource_group
   servicebus_namespace      = azurerm_servicebus_namespace.general
+  shared_function_storage   = azurerm_storage_account.function_storage
+  sql_database_shared       = azurerm_sql_database.atlas-database-shared
+  sql_server                = azurerm_sql_server.atlas_sql_server
 
   servicebus_namespace_authorization_rules = {
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
     read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
     write-only = azurerm_servicebus_namespace_authorization_rule.write-only
   }
-
   servicebus_topics = {
     updated-searchable-donors = module.donor_import.service_bus.updated_searchable_donors_topic
     alerts                    = module.support.general.alerts_servicebus_topic
     notifications             = module.support.general.notifications_servicebus_topic
   }
 
+  // Release variables
   APPLICATION_INSIGHTS_LOG_LEVEL                   = var.APPLICATION_INSIGHTS_LOG_LEVEL
   AZURE_CLIENT_ID                                  = var.AZURE_CLIENT_ID
   AZURE_CLIENT_SECRET                              = var.AZURE_CLIENT_SECRET
@@ -100,12 +102,14 @@ module "match_prediction" {
   }
   default_servicebus_settings = local.service-bus
 
+  // DI Variables
   application_insights    = azurerm_application_insights.atlas
   app_service_plan        = azurerm_app_service_plan.atlas-elastic-plan
   azure_storage           = azurerm_storage_account.azure_storage
   servicebus_namespace    = azurerm_servicebus_namespace.general
   shared_function_storage = azurerm_storage_account.function_storage
   sql_server              = azurerm_sql_server.atlas_sql_server
+  sql_database            = azurerm_sql_database.atlas-database-shared
   mac_import_table        = module.multiple_allele_code_lookup.storage_table
 
   servicebus_namespace_authorization_rules = {
@@ -119,10 +123,9 @@ module "match_prediction" {
     notifications = module.support.general.notifications_servicebus_topic
   }
 
+  // Release variables
   APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
-  DATABASE_MAX_SIZE              = var.MATCH_PREDICTION_DATABASE_MAX_SIZE
   DATABASE_PASSWORD              = var.MATCH_PREDICTION_DATABASE_PASSWORD
-  DATABASE_SKU_SIZE              = var.MATCH_PREDICTION_DATABASE_SKU_SIZE
   DATABASE_USERNAME              = var.MATCH_PREDICTION_DATABASE_USERNAME
   IP_RESTRICTION_SETTINGS        = var.IP_RESTRICTION_SETTINGS
   MAC_SOURCE                     = var.MAC_SOURCE
@@ -140,11 +143,13 @@ module "donor_import" {
 
   default_servicebus_settings = local.service-bus
 
+  // DI Variables 
   app_service_plan        = azurerm_app_service_plan.atlas-elastic-plan
   application_insights    = azurerm_application_insights.atlas
   azure_storage           = azurerm_storage_account.azure_storage
-  shared_function_storage = azurerm_storage_account.function_storage
   servicebus_namespace    = azurerm_servicebus_namespace.general
+  shared_function_storage = azurerm_storage_account.function_storage
+  sql_database            = azurerm_sql_database.atlas-database-shared
   sql_server              = azurerm_sql_server.atlas_sql_server
 
   servicebus_namespace_authorization_rules = {
@@ -157,10 +162,9 @@ module "donor_import" {
     notifications = module.support.general.notifications_servicebus_topic
   }
 
+  // Release variables
   APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
-  DATABASE_MAX_SIZE              = var.DONOR_DATABASE_MAX_SIZE
   DATABASE_PASSWORD              = var.DONOR_DATABASE_PASSWORD
-  DATABASE_SKU_SIZE              = var.DONOR_DATABASE_SKU_SIZE
   DATABASE_USERNAME              = var.DONOR_DATABASE_USERNAME
   IP_RESTRICTION_SETTINGS        = var.IP_RESTRICTION_SETTINGS
   STALLED_FILE_CHECK_CRONTAB     = var.DONOR_IMPORT_STALLED_FILE_CHECK_CRONTAB
