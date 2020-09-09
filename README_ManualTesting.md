@@ -167,6 +167,8 @@ The following steps must be completed prior to generating the test harness.
       export record from the local verification database, and start from scratch.
 
 ### Searching
+Note: at present, the framework is hard-coded to only run five locus (A,B,C,DQB1,DRB1) search requests,
+  allowing up to 2 mismatches at any position in the donor's HLA. No scoring is requested.
 
 #### Send Search Requests
 - The last part of verification data generation involves sending search requests to the test environment;
@@ -193,3 +195,29 @@ The following steps must be completed prior to generating the test harness.
 - Make sure to check search servicebus topics/queues for dead-lettered messages, both requests and results-related.
   - Dead-letters are safe to replay; downloaded search results will overwrite any existing results mapped to the same request.
   - Check AI logs/Debug window for further info if messages repeatedly dead-letter.
+
+### Verification Results
+Verification results are displayed using an Actual vs. Potential (AvP) plot
+
+Recommended reading for how AvE plots and their metrics should be used and intepreted:
+Madbouly, A., at al, (2014); Validation of statistical imputation of allele-level multilocus phased genotypes from 
+ambiguous HLA assignments; Tissue Antigens, 84(3):285-92.
+
+To generate the AvE plot:
+1. Launch the verification functions app, and invoke the http-triggered function, `WriteVerificationResultsToFile`; it requires:
+  - Verification run ID;
+  - Mismatch count, e.g., submit `1` if you want to verify P(1 mismatch);
+    - Note: the framework does not currently write out individual locus predictions, only cross-loci predictions.
+  - Directory where results CSV file should be written out to.
+    - The filename will be auto-generated to contain the verification run ID and the mismatch count.
+    - Any existing file in the specified directory with the same name will be overwritten without warning.
+    - Reminder: any backslashes in the path should be escaped, i.e., `C:\\dir\\subdir`.
+  - See Swagger UI for exact request model.
+2. Open the generated results file, and copy the two columns labeled: `ActuallyMatchedPdpCount` and	`TotalPdpCount`.
+3. Open the template file, `AvE_Plot_Template.xlsx`, located in `\MiscTestingAndDebuggingResources\ManualTesting\MatchPredictionVerification`.
+  - Navigate to the tab, labelled: `ENTER DATA HERE`, and paste the copied data into the columns of the same name.
+  - Save a copy of the file to the location of your choice.
+4. Navigate to tab, `AvE Plot`, to see the AvE plot, as well as other metrics:
+  - `n`: total number of PDP pairs
+  - `WCBD`: Weighted City Block Distance
+  - `Weighted R2`: R2 value calculated using the weighted mean of each match probability bin.
