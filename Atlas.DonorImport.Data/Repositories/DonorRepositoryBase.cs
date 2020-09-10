@@ -9,7 +9,7 @@ namespace Atlas.DonorImport.Data.Repositories
 
         protected DonorRepositoryBase(string connectionString)
         {
-            this.ConnectionString = connectionString;
+            ConnectionString = connectionString;
         }
     }
 }

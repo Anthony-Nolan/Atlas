@@ -1,28 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.0.35" />
-    <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.Design" Version="1.1.6" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.4" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.4" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Dapper" Version="2.0.35"/>
+        <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.4"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.4"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.4"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.Design" Version="1.1.6"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.4"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.4"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="Atlas.MatchPrediction.Test.Verification" />
-  </ItemGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="Atlas.MatchPrediction.Test.Verification"/>
+        <InternalsVisibleTo Include="Atlas.DonorImport.Test.Integration"/>
+    </ItemGroup>
 </Project>

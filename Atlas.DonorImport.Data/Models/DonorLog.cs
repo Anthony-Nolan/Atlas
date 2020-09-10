@@ -1,13 +1,17 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Atlas.DonorImport.Data.Context;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.DonorImport.Data.Models
 {
-    [Table("DonorLogs")]
+    [Table(TableName)]
     public class DonorLog
     {
+        internal const string TableName = "DonorLogs";
+        internal static readonly string QualifiedTableName = $"{DonorContext.Schema}.{TableName}";
+        
         [Required]
         public string ExternalDonorCode { get; set; }
         [Required]

@@ -28,7 +28,7 @@ namespace Atlas.DonorImport.Data.Repositories
 
         public IEnumerable<Donor> StreamAllDonors()
         {
-            var sql = $"SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM Donors";
+            var sql = $"SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM {Donor.QualifiedTableName}";
             using (var connection = NewConnection())
             {
                 // With "buffered: false" this should avoid loading all donors into memory before returning.
@@ -50,7 +50,7 @@ namespace Atlas.DonorImport.Data.Repositories
         public async Task<Dictionary<string, Donor>> GetDonorsByExternalDonorCodes(ICollection<string> externalDonorCodes)
         {
             var sql = @$"
-SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM Donors
+SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM {Donor.QualifiedTableName}
 WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
 ";
 
@@ -68,7 +68,7 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
         public async Task<Dictionary<int, Donor>> GetDonorsByIds(ICollection<int> donorIds)
         {
             var sql = @$"
-SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM Donors
+SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM {Donor.QualifiedTableName}
 WHERE {nameof(Donor.AtlasId)} IN @ids
 ";
 
@@ -85,7 +85,7 @@ WHERE {nameof(Donor.AtlasId)} IN @ids
         public async Task<Dictionary<string, int>> GetDonorIdsByExternalDonorCodes(ICollection<string> externalDonorCodes)
         {
             var sql = @$"
-SELECT {nameof(Donor.AtlasId)}, {nameof(Donor.ExternalDonorCode)} FROM Donors
+SELECT {nameof(Donor.AtlasId)}, {nameof(Donor.ExternalDonorCode)} FROM {Donor.QualifiedTableName}
 WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
 ";
             await using (var connection = NewConnection())

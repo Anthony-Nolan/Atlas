@@ -3,15 +3,20 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Atlas.Common.Utils.Extensions;
+using Atlas.DonorImport.Data.Context;
+using Atlas.DonorImport.Data.Repositories;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 // ReSharper disable InconsistentNaming
 
 namespace Atlas.DonorImport.Data.Models
 {
-    [Table("Donors")]
+    [Table(TableName)]
     public class Donor
     {
+        public const string TableName = "Donors";
+        internal static readonly string QualifiedTableName = $"{DonorContext.Schema}.{TableName}";
+
         /// <remarks>
         /// These must remain in sync with the fields added to the rows of the
         /// data-table in <see cref="DonorImportRepository.BuildDonorInsertDataTable"/>

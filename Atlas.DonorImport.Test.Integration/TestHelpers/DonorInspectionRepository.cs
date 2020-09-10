@@ -23,7 +23,7 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
             await using (var conn = NewConnection())
             {
                 return await conn.QuerySingleOrDefaultAsync<Donor>(
-                    "SELECT * FROM Donors WHERE ExternalDonorCode = @externalDonorCode",
+                    $"SELECT * FROM {Donor.QualifiedTableName} WHERE ExternalDonorCode = @externalDonorCode",
                     new { externalDonorCode },
                     commandTimeout: 300);
             }
@@ -33,7 +33,7 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
         {
             await using (var conn = NewConnection())
             {
-                return await conn.QuerySingleOrDefaultAsync<int>("SELECT COUNT(*) FROM Donors", commandTimeout: 300);
+                return await conn.QuerySingleOrDefaultAsync<int>($"SELECT COUNT(*) FROM {Donor.QualifiedTableName}", commandTimeout: 300);
             }
         }
     }

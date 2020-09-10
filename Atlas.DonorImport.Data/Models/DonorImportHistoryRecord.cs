@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Atlas.DonorImport.Data.Context;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 // ReSharper disable MemberCanBeInternal
 // ReSharper disable MemberCanBePrivate.Global
@@ -8,10 +9,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.DonorImport.Data.Models
 {
-    [Table("DonorImportHistory")]
+    [Table(TableName)]
     // ReSharper disable once ClassNeverInstantiated.Global
     public class DonorImportHistoryRecord
     {
+        internal const string TableName = "DonorImportHistory";
+        internal static readonly string QualifiedTableName = $"{DonorContext.Schema}.{TableName}";
+        
         public int Id { get; set; }
         /// <summary>
         ///  The filename of a donor import file

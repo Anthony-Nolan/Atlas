@@ -1,16 +1,17 @@
 using System;
 using Atlas.DonorImport.Data.Context;
+using Atlas.DonorImport.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Atlas.DonorImport.Test.Integration.TestHelpers
 {
-    public static class DatabaseManager
+    internal static class DatabaseManager
     {
         /// <summary>
         /// Creates if necessary, and runs migrations on both a transient and persistent database
         /// </summary>
-        public static void SetupDatabase()
+        internal static void SetupDatabase()
         {
             var context = DependencyInjection.DependencyInjection.Provider.GetService<DonorContext>();
 
@@ -21,16 +22,16 @@ namespace Atlas.DonorImport.Test.Integration.TestHelpers
 
             context.Database.Migrate();
         }
-        
+
         /// <summary>
         /// Clears the test database of data. Can be accessed by fixtures to run after each fixture, but not after each test.
         /// </summary>
-        public static void ClearDatabases()
+        internal static void ClearDatabases()
         {
             var context = DependencyInjection.DependencyInjection.Provider.GetService<DonorContext>();
-            context?.Database.ExecuteSqlRaw("TRUNCATE TABLE [Donors]");
-            context?.Database.ExecuteSqlRaw("TRUNCATE TABLE [DonorImportHistory]");
-            context?.Database.ExecuteSqlRaw("TRUNCATE TABLE [DonorLogs]");
+            context?.Database.ExecuteSqlRaw($"TRUNCATE TABLE {Donor.QualifiedTableName}");
+            context?.Database.ExecuteSqlRaw($"TRUNCATE TABLE {DonorImportHistoryRecord.QualifiedTableName}");
+            context?.Database.ExecuteSqlRaw($"TRUNCATE TABLE {DonorLog.QualifiedTableName}");
         }
     }
 }

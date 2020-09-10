@@ -53,7 +53,7 @@ namespace Atlas.DonorImport.Data.Repositories
                     .StringJoin("," + Environment.NewLine);
 
             var sql = $@"
-                UPDATE Donors
+                UPDATE {Donor.QualifiedTableName}
                 SET
                     {columnUpdateStrings}
                 WHERE {nameof(Donor.AtlasId)} = @{nameof(Donor.AtlasId)}
@@ -68,6 +68,7 @@ namespace Atlas.DonorImport.Data.Repositories
                     {
                         await conn.ExecuteAsync(sql, donorEdit, commandTimeout: 600);
                     }
+
                     transaction.Complete();
                     conn.Close();
                 }
@@ -78,7 +79,7 @@ namespace Atlas.DonorImport.Data.Repositories
         public async Task DeleteDonorBatch(List<int> deletedAtlasDonorIds)
         {
             var sql = @$"
-                DELETE FROM Donors
+                DELETE FROM {Donor.QualifiedTableName}
                 WHERE {nameof(Donor.AtlasId)} IN @Ids
                 ";
 
@@ -86,14 +87,15 @@ namespace Atlas.DonorImport.Data.Repositories
             {
                 foreach (var atlasIds in deletedAtlasDonorIds.Batch(DonorImportBatchSize))
                 {
-                    await connection.ExecuteAsync(sql, new { Ids = atlasIds.ToList() });
+                    await connection.ExecuteAsync(sql, new {Ids = atlasIds.ToList()});
                 }
             }
         }
 
         private SqlBulkCopy BuildDonorSqlBulkCopy()
         {
-            var sqlBulk = new SqlBulkCopy(ConnectionString) {BulkCopyTimeout = 3600, BatchSize = 10000, DestinationTableName = "Donors"};
+            var sqlBulk = new SqlBulkCopy(ConnectionString)
+                {BulkCopyTimeout = 3600, BatchSize = 10000, DestinationTableName = Donor.QualifiedTableName};
 
             foreach (var columnName in Donor.DataTableColumnNamesForInsertion)
             {
@@ -103,7 +105,7 @@ namespace Atlas.DonorImport.Data.Repositories
 
             return sqlBulk;
         }
-        
+
         private DataTable BuildDonorInsertDataTable(IEnumerable<Donor> donors)
         {
             var dataTable = new DataTable();

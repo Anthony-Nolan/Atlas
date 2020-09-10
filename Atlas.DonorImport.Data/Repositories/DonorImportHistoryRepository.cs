@@ -24,7 +24,7 @@ namespace Atlas.DonorImport.Data.Repositories
         public DonorImportHistoryRepository(string connectionString)
         {
             this.connectionString = connectionString;
-            // Without setting up this type map 
+            // Without setting up this type map, datetimes are stored to the wrong level of precision, and cannot be used as primary keys
             SqlMapper.AddTypeMap(typeof(DateTime), System.Data.DbType.DateTime2);
         }
 
@@ -33,7 +33,7 @@ namespace Atlas.DonorImport.Data.Repositories
             await using (var connection = new SqlConnection(connectionString))
             {
                 var sql =
-                    $@"INSERT INTO DonorImportHistory (Filename, UploadTime, FileState, LastUpdated, ImportBegin) VALUES ((@FileName), (@UploadTime), (@DonorState), (@Time), GETUTCDATE())";
+                    $@"INSERT INTO {DonorImportHistoryRecord.QualifiedTableName} (Filename, UploadTime, FileState, LastUpdated, ImportBegin) VALUES ((@FileName), (@UploadTime), (@DonorState), (@Time), GETUTCDATE())";
                 await connection.ExecuteAsync(sql,
                     new {FileName = filename, UploadTime = uploadTime, DonorState = DonorImportState.Started.ToString(), Time = DateTime.UtcNow});
             }
@@ -56,7 +56,7 @@ namespace Atlas.DonorImport.Data.Repositories
             
             await using (var connection = new SqlConnection(connectionString))
             {
-                var sql = $@"UPDATE DonorImportHistory
+                var sql = $@"UPDATE {DonorImportHistoryRecord.QualifiedTableName}
 SET FileState = (@State), LastUpdated = (@Time) 
 {additionalUpdateClause}
 WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
@@ -69,8 +69,8 @@ WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
         {
             await using (var connection = new SqlConnection(connectionString))
             {
-                var sql = $@"UPDATE DonorImportHistory
-SET ImportedBatchCount = ImportedBatchCount + (@Count)
+                var sql = $@"UPDATE {DonorImportHistoryRecord.QualifiedTableName}
+SET ImportedDonorsCount = ImportedDonorsCount + (@Count)
 WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
                 await connection.ExecuteAsync(sql, new {FileName = filename, UploadTime = uploadTime, Count = count});
             }
@@ -80,7 +80,7 @@ WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
         {
             await using (var connection = new SqlConnection(connectionString))
             {
-                const string sql = "SELECT * FROM DonorImportHistory WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
+                var sql = $"SELECT * FROM {DonorImportHistoryRecord.QualifiedTableName} WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
                 var results = connection.Query<DonorImportHistoryRecord>(sql, new {FileName = filename, UploadTime = uploadTime}).ToArray();
                 return results.SingleOrDefault();
             }
@@ -91,7 +91,7 @@ WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
             await using (var connection = new SqlConnection(connectionString))
             {
                 var earliestTime = DateTime.UtcNow.Subtract(duration);
-                const string sql = "SELECT * FROM DonorImportHistory WHERE FileState = (@fileState) AND ImportBegin < (@timeToCheck)";
+                var sql = $"SELECT * FROM {DonorImportHistoryRecord.QualifiedTableName} WHERE FileState = (@fileState) AND ImportBegin < (@timeToCheck)";
                 return connection.Query<DonorImportHistoryRecord>(sql, new {fileState = DonorImportState.Started.ToString(), timeToCheck = earliestTime}).ToArray();
             }
         }

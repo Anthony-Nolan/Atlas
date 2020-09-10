@@ -25,8 +25,6 @@ namespace Atlas.DonorImport.Data.Repositories
     {
         private string ConnectionString { get; }
 
-        private const string DonorLogTableName = "DonorLogs";
-
         private const string ExternalDonorCodeColumnName = "ExternalDonorCode";
         private const string LastUpdatedColumnName = "LastUpdateFileUploadTime";
 
@@ -41,7 +39,8 @@ namespace Atlas.DonorImport.Data.Repositories
         {
             await using (var connection = new SqlConnection(ConnectionString))
             {
-                var sql = $"SELECT {ExternalDonorCodeColumnName}, {LastUpdatedColumnName} FROM {DonorLogTableName} WHERE {ExternalDonorCodeColumnName} IN @externalDonorCodes";
+                var sql =
+                    $"SELECT {ExternalDonorCodeColumnName}, {LastUpdatedColumnName} FROM {DonorLog.QualifiedTableName} WHERE {ExternalDonorCodeColumnName} IN @externalDonorCodes";
                 var donorLogs = await connection.QueryAsync<DonorLog>(sql, new {externalDonorCodes}, commandTimeout: 600);
                 return donorLogs.ToDictionary(d => d.ExternalDonorCode, d => d.LastUpdateFileUploadTime);
             }
@@ -54,7 +53,8 @@ namespace Atlas.DonorImport.Data.Repositories
                 var donorCodes = externalDonorCodes.ToList();
 
                 connection.Open();
-                var sql = $@"SELECT {ExternalDonorCodeColumnName} FROM {DonorLogTableName} WHERE {ExternalDonorCodeColumnName} IN @ExternalDonorCodes";
+                var sql =
+                    $@"SELECT {ExternalDonorCodeColumnName} FROM {DonorLog.QualifiedTableName} WHERE {ExternalDonorCodeColumnName} IN @ExternalDonorCodes";
 
                 var existingRecords = await donorCodes.ProcessInBatchesAsync(
                     2000,
@@ -74,12 +74,12 @@ namespace Atlas.DonorImport.Data.Repositories
         {
             await using (var connection = new SqlConnection(ConnectionString))
             {
-                var sql = $"DELETE FROM {DonorLogTableName} WHERE {ExternalDonorCodeColumnName} IN @externalDonorCodesBatch";
+                var sql = $"DELETE FROM {DonorLog.QualifiedTableName} WHERE {ExternalDonorCodeColumnName} IN @externalDonorCodesBatch";
                 connection.Open();
 
                 foreach (var externalDonorCodesBatch in externalDonorCodes.Batch(DonorImportBatchSize))
                 {
-                    await connection.ExecuteAsync(sql, new { externalDonorCodesBatch });
+                    await connection.ExecuteAsync(sql, new {externalDonorCodesBatch});
                 }
 
                 connection.Close();
@@ -96,7 +96,8 @@ namespace Atlas.DonorImport.Data.Repositories
                 dataTable.Rows.Add(donorCode, lastUpdateTime);
             }
 
-            using (var sqlBulk = new SqlBulkCopy(connection) {BulkCopyTimeout = 3600, BatchSize = 10000, DestinationTableName = "DonorLogs"})
+            using (var sqlBulk = new SqlBulkCopy(connection)
+                {BulkCopyTimeout = 3600, BatchSize = 10000, DestinationTableName = DonorLog.QualifiedTableName})
             {
                 sqlBulk.ColumnMappings.Add(ExternalDonorCodeColumnName, ExternalDonorCodeColumnName);
                 sqlBulk.ColumnMappings.Add(LastUpdatedColumnName, LastUpdatedColumnName);
@@ -108,7 +109,7 @@ namespace Atlas.DonorImport.Data.Repositories
         private static async Task UpdateDonorBatch(SqlConnection connection, IReadOnlyCollection<string> donorCodes, DateTime lastUpdateTime)
         {
             var sql =
-                $"UPDATE {DonorLogTableName} SET {LastUpdatedColumnName} = (@lastUpdateTime) WHERE {ExternalDonorCodeColumnName} IN @externalDonorCodes";
+                $"UPDATE {DonorLog.QualifiedTableName} SET {LastUpdatedColumnName} = (@lastUpdateTime) WHERE {ExternalDonorCodeColumnName} IN @externalDonorCodes";
 
             foreach (var codes in donorCodes.Batch(DonorImportBatchSize))
             {
