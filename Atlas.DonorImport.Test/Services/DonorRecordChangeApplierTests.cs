@@ -156,19 +156,6 @@ namespace Atlas.DonorImport.Test.Services
         }
 
         [Test]
-        public async Task ApplyDonorOperationBatch_ForFullUpdate_DoesNotFetchNewlyAssignedAtlasIds()
-        {
-            var donorUpdates = new List<DonorUpdate>
-            {
-                DonorUpdateBuilder.New.With(d => d.UpdateMode, UpdateMode.Full).Build(),
-            };
-
-            await donorOperationApplier.ApplyDonorRecordChangeBatch(donorUpdates, defaultFile, 0);
-
-            await donorInspectionRepository.DidNotReceiveWithAnyArgs().GetDonorsByExternalDonorCodes(null);
-        }
-
-        [Test]
         public async Task ApplyDonorOperationBatch_ForFullUpdate_DoesNotPostMatchingUpdates()
         {
             var donorUpdates = DonorUpdateBuilder.New
@@ -176,7 +163,9 @@ namespace Atlas.DonorImport.Test.Services
                 .Build(2)
                 .ToList();
 
-            donorInspectionRepository.GetDonorsByExternalDonorCodes(null).ReturnsForAnyArgs(new Dictionary<string, Donor>
+            donorInspectionRepository.GetDonorIdsByExternalDonorCodes(default).ReturnsForAnyArgs(new Dictionary<string, int>());
+            
+            donorInspectionRepository.GetDonorsByExternalDonorCodes(default).ReturnsForAnyArgs(new Dictionary<string, Donor>
             {
                 {donorUpdates[0].RecordId, new Donor {AtlasId = 1, ExternalDonorCode = donorUpdates[0].RegistryCode}},
                 {donorUpdates[1].RecordId, new Donor {AtlasId = 2, ExternalDonorCode = donorUpdates[1].RegistryCode}},
