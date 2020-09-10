@@ -19,6 +19,7 @@ namespace Atlas.DonorImport.Data.Models
         public int Id { get; set; }
 
         [Required]
+        [MaxLength(256)]
         public string ServiceBusMessageId { get; set; }
 
         /// <summary>

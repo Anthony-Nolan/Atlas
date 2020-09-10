@@ -53,12 +53,15 @@ namespace Atlas.DonorImport.Services
                 case DonorImportState.FailedUnexpectedly:
                     await UpdateDonorImportRecord(donorFile, DonorImportState.Started);
                     break;
-                default:
+                case DonorImportState.Stalled:
+                case DonorImportState.Started:
                     if (importRecord.ServiceBusMessageId == donorFile.MessageId)
                     {
                         logger.SendTrace($"Retrying stalled Donor Import for file '{filename}'.");
                         break;
                     }
+                    throw new DuplicateDonorFileImportException(filename, importRecord.FileState.ToString());
+                default:
                     throw new DuplicateDonorFileImportException(filename, importRecord.FileState.ToString());
             }
 
