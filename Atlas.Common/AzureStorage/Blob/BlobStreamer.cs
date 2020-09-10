@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Azure.Storage.Blob;
 
 namespace Atlas.Common.AzureStorage.Blob
 {
