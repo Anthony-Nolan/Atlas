@@ -58,6 +58,15 @@ namespace Atlas.DonorImport.Services
             var invalidDonorIds = new List<string>();
             var donorUpdatesToSkip = importRecord?.ImportedDonorsCount ?? 0;
 
+            if (donorUpdatesToSkip > 0)
+            {
+                logger.SendTrace($"Donor Import: {donorUpdatesToSkip} donors have already been imported from this file and will be skipped.",
+                    props: new Dictionary<string, string>
+                    {
+                        {"FileLocation", file.FileLocation}
+                    });
+            }
+
             var lazyFile = fileParser.PrepareToLazilyParseDonorUpdates(file.Contents);
 
             try
@@ -67,7 +76,7 @@ namespace Atlas.DonorImport.Services
                 foreach (var donorUpdateBatch in donorUpdates.Skip(donorUpdatesToSkip).Batch(BatchSize))
                 {
                     var invalidDonorIdsInBatch = new List<string>();
-                    var validDonors = 
+                    var validDonors =
                         donorUpdateBatch.FilterAndCallbackIfFiltered(ValidateDonorIsSearchable, du => invalidDonorIdsInBatch.Add(du.RecordId));
                     var donorUpdatesToApply = donorLogService.FilterDonorUpdatesBasedOnUpdateTime(validDonors, file.UploadTime);
 
