@@ -27,4 +27,8 @@
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Client.Models\Atlas.MatchingAlgorithm.Client.Models.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="Atlas.MatchingAlgorithm.Test.Integration" />
+    </ItemGroup>
+
 </Project>

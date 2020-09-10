@@ -87,7 +87,7 @@ DELETE FROM [PGroupNames];");
 
         private static Task ClearPersistentDatabase(SearchAlgorithmPersistentContext context)
         {
-            return context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE [DataRefreshHistory]");
+            return context.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE {DataRefreshRecord.QualifiedTableName}");
         }
     }
 }

@@ -1,16 +1,20 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 
 // ReSharper disable MemberCanBePrivate.Global - Properties need to be visible to EF 
 
 namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
 {
-    [Table("DataRefreshHistory")]
+    [Table(TableName)]
     // SQL Column order for this entity is determined by the manual arrangement of steps in the initial migration.
     // These columns can not be re-ordered once this migration has run - see https://github.com/dotnet/efcore/issues/10059
     public class DataRefreshRecord
     {
+        internal const string TableName = "DataRefreshHistory";
+        internal static readonly string QualifiedTableName = $"{SearchAlgorithmPersistentContext.Schema}.{TableName}";
+        
         public int Id { get; set; }
         public DateTime RefreshBeginUtc { get; set; }
         public DateTime? RefreshEndUtc { get; set; }
