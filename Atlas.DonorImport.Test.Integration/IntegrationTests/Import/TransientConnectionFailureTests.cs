@@ -49,14 +49,15 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         public async Task ImportDonors_WhenRetryingImportOfFile_DoesNotThrow()
         {
             const string fileName = "Donor-File";
+            const string messageId = "Message-Id";
             var uploadTime = DateTime.Now;
 
             // Set up initial failed import with single successful batch 
-            var donorFile = DonorImportFileBuilder.NewWithMetadata(fileName, uploadTime).WithDonorCount(10_000).Build();
+            var donorFile = DonorImportFileBuilder.NewWithMetadata(fileName, messageId, uploadTime).WithDonorCount(10_000).Build();
             await donorFileImporter.ImportDonorFile(donorFile);
             await donorImportFileHistoryService.RegisterUnexpectedDonorImportError(donorFile);
 
-            var donorFileRetry = DonorImportFileBuilder.NewWithMetadata(fileName, uploadTime).WithDonorCount(10_001).Build();
+            var donorFileRetry = DonorImportFileBuilder.NewWithMetadata(fileName, messageId, uploadTime).WithDonorCount(10_001).Build();
             await donorFileImporter.ImportDonorFile(donorFileRetry);
 
             donorRepository.StreamAllDonors().Count().Should().Be(10_001);
