@@ -12,15 +12,17 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels
     {
         public static Builder<DonorImportFile> NewWithoutContents => Builder<DonorImportFile>.New
             .WithFileLocation("file-location-")
+            .WithMessageId("message-id-")
             .With(t => t.UploadTime, DateTime.Now);
 
         public static Builder<DonorImportFile> NewWithDefaultContents => NewWithoutContents
             .With(f => f.Contents, DonorImportFileContentsBuilder.New.Build().ToStream());
 
-        public static Builder<DonorImportFile> NewWithMetadata(string fileName, DateTime uploadTime)
+        public static Builder<DonorImportFile> NewWithMetadata(string fileName, string messageId, DateTime uploadTime)
         {
             return Builder<DonorImportFile>.New
                 .With(t => t.FileLocation, fileName)
+                .With(t => t.MessageId, messageId)
                 .With(t => t.UploadTime, uploadTime);
         }
 
@@ -61,6 +63,11 @@ namespace Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels
         private static Builder<DonorImportFile> WithFileLocation(this Builder<DonorImportFile> builder, string recordIdPrefix)
         {
             return builder.WithFactory(d => d.FileLocation, IncrementingIdGenerator.NextStringIdFactory(recordIdPrefix));
+        }
+
+        private static Builder<DonorImportFile> WithMessageId(this Builder<DonorImportFile> builder, string messageIdPrefix)
+        {
+            return builder.WithFactory(d => d.MessageId, IncrementingIdGenerator.NextStringIdFactory(messageIdPrefix));
         }
     }
 }

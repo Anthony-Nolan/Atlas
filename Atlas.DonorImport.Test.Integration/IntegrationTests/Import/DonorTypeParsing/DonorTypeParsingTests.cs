@@ -110,7 +110,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.DonorTypePa
             var donorTestFilePath = $"{typeof(DonorTypeParsingTests).Namespace}.{fileName}";
             await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFilePath))
             {
-                await donorFileImporter.ImportDonorFile(new DonorImportFile {Contents = stream, FileLocation = donorTestFilePath, UploadTime = DateTime.Now});
+                await donorFileImporter.ImportDonorFile(
+                    new DonorImportFile {Contents = stream, FileLocation = donorTestFilePath, UploadTime = DateTime.Now, MessageId = "message-id"});
             }
         }
     }
