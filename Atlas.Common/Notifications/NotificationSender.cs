@@ -35,6 +35,7 @@ namespace Atlas.Common.Notifications
 
         public async Task SendNotification(string summary, string description, string source)
         {
+            description ??= "";
             var notification = new Notification(summary, description, source);
 
             try
@@ -50,6 +51,7 @@ namespace Atlas.Common.Notifications
 
         public async Task SendAlert(string summary, string description, Priority priority, string source)
         {
+            description ??= "";
             var alert = new Alert(summary, description, priority, source);
 
             try
