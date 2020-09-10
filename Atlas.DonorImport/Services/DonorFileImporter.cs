@@ -83,6 +83,7 @@ namespace Atlas.DonorImport.Services
 
                     invalidDonorIds = invalidDonorIds.Concat(invalidDonors.Select(d => d.RecordId)).ToList();
                     importedDonorCount += reifiedDonorBatch.Count;
+                    logger.SendTrace($"Batch complete - imported {reifiedDonorBatch.Count} donors this batch. Cumulatively {importedDonorCount} donors. ");
                 }
 
                 await donorImportFileHistoryService.RegisterSuccessfulDonorImport(file);
