@@ -1,5 +1,4 @@
-﻿using Microsoft.WindowsAzure.Storage.Blob;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 
 namespace Atlas.Common.AzureStorage.Blob
