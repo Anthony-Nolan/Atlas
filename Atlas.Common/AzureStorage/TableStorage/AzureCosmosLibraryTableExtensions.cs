@@ -10,26 +10,6 @@ using MoreLinq;
 
 namespace Atlas.Common.AzureStorage.TableStorage
 {
-    /// <summary>
-    /// Microsoft has 2 No-Sql cloud storage offerings: Azure Cosmos Storage ("ACS") and Azure Table Storage ("ATS").
-    /// These two services are very similar, and have almost identical logical models, but are subtly different.
-    /// 
-    /// For reasons best not dwelt upon, Microsoft have migrated the actively supported code for managing "ATS" from
-    /// the `Microsoft.WindowsAzure.Storage` library / nuget package ("M.WA.S"), and combined it into
-    /// the `Microsoft.Azure.Cosmos` library / nuget package ("M.A.C").
-    ///
-    /// The "M.A.C" library now contains code to manage *both* "ACS" *and* "ATS".
-    /// The "M.WA.S" library is deprecated but still (currently) available.
-    /// 
-    /// We are ONLY using the ATS service, but (regrettably) have a mix of of the two libraries/packages.
-    /// The M.A.C library, *does* entirely support ATS, and as far as we know the 2 libraries can be used side-by-side on the same tables and objects.
-    /// However, since the 2 libraries don't share any types or interfaces, the classes & methods don't interoperate.
-    ///
-    /// We have some code that was originally written using the M.WA.S library, and hasn't been updated.
-    /// And we have some newer code that has been written using the M.A.C library.
-    /// We hope in due course to migrate everything to using the M.A.C library (but to continue using the ATS service) (TODO: ATLAS-484)
-    /// For the moment, we just try to keep these extension methods in sync where necessary.
-    /// </summary>
     public static class AzureCosmosLibraryTableExtensions
     {
         public static async Task<IList<T>> ExecuteQueryAsync<T>(
