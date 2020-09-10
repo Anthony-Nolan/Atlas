@@ -39,8 +39,8 @@
       <EmbeddedResource Include="IntegrationTests\Import\DonorTypeParsing\invalidDonorType.json" />
       <EmbeddedResource Include="IntegrationTests\Import\DonorTypeParsing\validDonorTypes.json" />
       <EmbeddedResource Include="IntegrationTests\Import\DonorTypeParsing\serologyTypedDonor.json" />
-      <EmbeddedResource Include="IntegrationTests\Import\InitialDataLoad\1000-initial-donors.json" />
       <EmbeddedResource Include="IntegrationTests\Import\ExceptionHandling\MalformedImport.json" />
+      <EmbeddedResource Include="IntegrationTests\Import\InitialDataLoad\FileBackedTest\1000-initial-donors.json" />
     </ItemGroup>
 
 </Project>
