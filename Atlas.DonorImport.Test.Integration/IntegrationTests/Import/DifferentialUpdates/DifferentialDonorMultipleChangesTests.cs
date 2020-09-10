@@ -11,9 +11,8 @@ using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using Donor = Atlas.DonorImport.Data.Models.Donor;
 
-namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
+namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.DifferentialUpdates
 {
     /* ===============================================================
      * ===============================================================

@@ -4,14 +4,16 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Utils.Extensions;
+using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using NUnit.Framework;
 
-namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialDataLoad
+namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialDataLoad.FileBackedTest
 {
     /// <summary>
     /// While most of the other tests in this suite can use memory streams of files built by the test themselves, this test runs on a real input file.
@@ -23,12 +25,18 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
         private IDonorInspectionRepository donorRepository;
 
         private IDonorFileImporter donorFileImporter;
+        private IMessagingServiceBusClient mockServiceBusClient;
 
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
         {
             await TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage_Async(async () =>
             {
+                mockServiceBusClient = Substitute.For<IMessagingServiceBusClient>();
+                var services = DependencyInjection.ServiceConfiguration.BuildServiceCollection();
+                services.AddScoped(sp => mockServiceBusClient);
+                DependencyInjection.DependencyInjection.BackingProvider = services.BuildServiceProvider();
+                
                 donorRepository = DependencyInjection.DependencyInjection.Provider.GetService<IDonorInspectionRepository>();
                 donorFileImporter = DependencyInjection.DependencyInjection.Provider.GetService<IDonorFileImporter>();
                 // Run operation under test once for this fixture, to (a) improve performance (b) remove the need to clean up duplicate ids between runs
@@ -39,7 +47,12 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(DatabaseManager.ClearDatabases);
+            TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
+            {
+                // Ensure any mocks set up for this test do not stick around.
+                DependencyInjection.DependencyInjection.BackingProvider = DependencyInjection.ServiceConfiguration.CreateProvider();
+                DatabaseManager.ClearDatabases();
+            });
         }
 
         [Test]
@@ -78,6 +91,12 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.InitialData
 
             var actualCombinedCalculatedHash = actualDonors.ToList().Select(donor => donor.CalculateHash()).StringJoin("#").ToMd5Hash();
             actualCombinedCalculatedHash.Should().Be(expectedDonorHash);
+        }
+
+        [Test]
+        public void ImportDonors_DoesNotSendNotificationsForMatchingAlgorithm()
+        {
+            mockServiceBusClient.DidNotReceiveWithAnyArgs().PublishDonorUpdateMessages(default);
         }
 
         private async Task ImportFile()
