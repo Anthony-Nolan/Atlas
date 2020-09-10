@@ -132,6 +132,10 @@ namespace Atlas.DonorImport.Data.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ServiceBusMessageId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Filename", "UploadTime");
 
                     b.ToTable("DonorImportHistory");
