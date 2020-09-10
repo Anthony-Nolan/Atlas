@@ -193,7 +193,7 @@ variable "MATCHING_PASSWORD_FOR_DONOR_IMPORT_DATABASE" {
 
 variable "MATCHING_USERNAME_FOR_DONOR_IMPORT_DATABASE" {
   type    = string
-  default = "matching-for-donors"
+  default = "matchingForDonorSchema"
 }
 
 variable "ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE" {
