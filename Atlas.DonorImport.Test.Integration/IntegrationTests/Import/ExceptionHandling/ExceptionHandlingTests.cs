@@ -11,10 +11,7 @@ using Atlas.Common.Notifications;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OData.Edm;
-using Microsoft.VisualBasic.FileIO;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -76,7 +73,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         public async Task ImportDonors_WithUnexpectedColumns_SwallowsErrorAndCompletesSuccessfully()
         {
             var malformedDonorFile = DonorImportFileWithMissingFieldBuilder.New.Build();
-            var file = new DonorImportFile {Contents = malformedDonorFile.ToStream(), UploadTime = DateTime.Now, FileLocation = DonorLocation};
+            var file = new DonorImportFile
+            {
+                Contents = malformedDonorFile.ToStream(), MessageId = "message-id", UploadTime = DateTime.Now, FileLocation = DonorLocation
+            };
 
             await donorFileImporter.ImportDonorFile(file);
 
@@ -88,7 +88,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         public async Task ImportDonors_WithoutUpdateColumn_SwallowsErrorAndCompletesSuccessfully()
         {
             var malformedFile = DonorImportFileWithNoUpdateBuilder.New.Build();
-            var file = new DonorImportFile {Contents = malformedFile.ToStream(), UploadTime = DateTime.Now, FileLocation = DonorLocation};
+            var file = new DonorImportFile
+            {
+                Contents = malformedFile.ToStream(), MessageId = "message-id", UploadTime = DateTime.Now, FileLocation = DonorLocation
+            };
 
             await donorFileImporter.ImportDonorFile(file);
 
@@ -100,7 +103,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         public async Task ImportDonors_WithoutDonorsColumn_CompletesSuccessfully()
         {
             var malformedFile = DonorImportFileWithNoDonorsBuilder.New.Build();
-            var file = new DonorImportFile {Contents = malformedFile.ToStream(), UploadTime = DateTime.Now, FileLocation = DonorLocation};
+            var file = new DonorImportFile
+            {
+                Contents = malformedFile.ToStream(), MessageId = "message-id", UploadTime = DateTime.Now, FileLocation = DonorLocation
+            };
 
             await donorFileImporter.ImportDonorFile(file);
             
@@ -114,7 +120,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         {
             const int numberOfDonors = 5;
             var malformedFile = DonorImportFileWithMissingFieldBuilder.New.WithDonorCount(numberOfDonors).Build();
-            var file = new DonorImportFile {Contents = malformedFile.ToStream(), FileLocation = "file-location", UploadTime = DateTime.Now};
+            var file = new DonorImportFile
+            {
+                Contents = malformedFile.ToStream(), FileLocation = "file-location", MessageId = "message-id", UploadTime = DateTime.Now
+            };
 
             await donorFileImporter.ImportDonorFile(file);
             await mockNotificationSender.Received()
@@ -125,7 +134,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         public async Task ImportDonors_WithInvalidEnumAtUpdateInFile_SwallowsErrorAndCompletesSuccessfully()
         {
             var malformedFile = DonorImportFileWithInvalidEnumBuilder.New.Build();
-            var file = new DonorImportFile {Contents = malformedFile.ToStream(), FileLocation = "file-location", UploadTime = DateTime.Now};
+            var file = new DonorImportFile
+            {
+                Contents = malformedFile.ToStream(), FileLocation = "file-location", MessageId = "message-id", UploadTime = DateTime.Now
+            };
 
             await donorFileImporter.ImportDonorFile(file);
             await mockNotificationSender.Received()
@@ -136,7 +148,10 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
         public async Task ImportDonors_WithInvalidEnumAtDonorUpdate_SwallowsErrorAndCompletesSuccessfully()
         {
             var malformedFile = DonorImportFileWithInvalidEnumBuilder.New.WithInvalidEnumDonor().Build();
-            var file = new DonorImportFile {Contents = malformedFile.ToStream(), FileLocation = "file-location", UploadTime = DateTime.Now};
+            var file = new DonorImportFile
+            {
+                Contents = malformedFile.ToStream(), FileLocation = "file-location", MessageId = "message-id", UploadTime = DateTime.Now
+            };
 
             await donorFileImporter.ImportDonorFile(file);
             await mockNotificationSender.Received()
@@ -150,7 +165,7 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import.ExceptionHa
             await using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(donorTestFilePath))
             {
                 await donorFileImporter.ImportDonorFile(new DonorImportFile
-                    {Contents = stream, FileLocation = donorTestFilePath, UploadTime = DateTime.Now});
+                    {Contents = stream, FileLocation = donorTestFilePath, MessageId = "message-id", UploadTime = DateTime.Now});
             }
 
             await mockNotificationSender.Received()
