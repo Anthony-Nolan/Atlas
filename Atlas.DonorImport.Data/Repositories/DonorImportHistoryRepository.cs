@@ -10,7 +10,7 @@ namespace Atlas.DonorImport.Data.Repositories
 {
     public interface IDonorImportHistoryRepository
     {
-        public Task InsertNewDonorImportRecord(string filename, DateTime uploadTime);
+        public Task InsertNewDonorImportRecord(string filename, string messageId, DateTime uploadTime);
         public Task UpdateDonorImportState(string filename, DateTime uploadTime, DonorImportState donorState);
         public Task IncrementImportedDonorCount(string filename, DateTime uploadTime, int numberToAdd);
         public Task<DonorImportHistoryRecord> GetFileIfExists(string filename, DateTime uploadTime);
@@ -28,14 +28,24 @@ namespace Atlas.DonorImport.Data.Repositories
             SqlMapper.AddTypeMap(typeof(DateTime), System.Data.DbType.DateTime2);
         }
 
-        public async Task InsertNewDonorImportRecord(string filename, DateTime uploadTime)
+        public async Task InsertNewDonorImportRecord(string filename, string messageId, DateTime uploadTime)
         {
             await using (var connection = new SqlConnection(connectionString))
             {
                 var sql =
-                    $@"INSERT INTO {DonorImportHistoryRecord.QualifiedTableName} (Filename, UploadTime, FileState, LastUpdated, ImportBegin) VALUES ((@FileName), (@UploadTime), (@DonorState), (@Time), GETUTCDATE())";
-                await connection.ExecuteAsync(sql,
-                    new {FileName = filename, UploadTime = uploadTime, DonorState = DonorImportState.Started.ToString(), Time = DateTime.UtcNow});
+                    $@"INSERT INTO {DonorImportHistoryRecord.QualifiedTableName} 
+(Filename, ServiceBusMessageId, UploadTime, FileState, LastUpdated, ImportBegin) 
+VALUES ((@FileName), (@MessageId), (@UploadTime), (@DonorState), (@Time), GETUTCDATE())";
+                await connection.ExecuteAsync(
+                    sql,
+                    new
+                    {
+                        FileName = filename,
+                        MessageId = messageId,
+                        UploadTime = uploadTime,
+                        DonorState = DonorImportState.Started.ToString(),
+                        Time = DateTime.UtcNow
+                    });
             }
         }
 

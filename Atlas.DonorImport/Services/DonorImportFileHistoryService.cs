@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
@@ -24,29 +25,41 @@ namespace Atlas.DonorImport.Services
         private readonly IDonorImportHistoryRepository repository;
         private readonly INotificationSender notificationSender;
         private readonly TimeSpan durationToCheckForStalledFiles;
+        private readonly ILogger logger;
 
-        public DonorImportFileHistoryService(IDonorImportHistoryRepository repository, INotificationSender notificationSender, StalledFileSettings stalledFileSettings)
+        public DonorImportFileHistoryService(
+            IDonorImportHistoryRepository repository,
+            INotificationSender notificationSender,
+            StalledFileSettings stalledFileSettings,
+            ILogger logger)
         {
             this.repository = repository;
             this.notificationSender = notificationSender;
             this.durationToCheckForStalledFiles = new TimeSpan(stalledFileSettings.HoursToCheckStalledFiles, 0, 0);
+            this.logger = logger;
         }
 
         public async Task<DonorImportHistoryRecord> RegisterStartOfDonorImport(DonorImportFile donorFile)
         {
             var filename = GetFileNameFromLocation(donorFile.FileLocation);
             var importRecord = await repository.GetFileIfExists(filename, donorFile.UploadTime);
+
             // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
             switch (importRecord?.FileState)
             {
                 case null:
-                    await repository.InsertNewDonorImportRecord(filename, donorFile.UploadTime);
+                    await repository.InsertNewDonorImportRecord(filename, donorFile.MessageId, donorFile.UploadTime);
                     break;
                 case DonorImportState.FailedUnexpectedly:
                     await UpdateDonorImportRecord(donorFile, DonorImportState.Started);
                     break;
                 default:
-                    throw new DuplicateDonorFileImportException($"Duplicate Donor File Import Attempt. File: {donorFile.FileLocation} was started but already had an entry of state: {importRecord.FileState.ToString()}");
+                    if (importRecord.ServiceBusMessageId == donorFile.MessageId)
+                    {
+                        logger.SendTrace($"Retrying stalled Donor Import for file '{filename}'.");
+                        break;
+                    }
+                    throw new DuplicateDonorFileImportException(filename, importRecord.FileState.ToString());
             }
 
             return importRecord;
