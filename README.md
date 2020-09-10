@@ -148,6 +148,7 @@ comprehensive list:
 - Guide for Installation and usage of the ATLAS system 
     - [Deployment](README_Deployment.md)
     - [Integration](README_Integration.md)
+    - [Support](README_Support.md)
 - Components 
     - [Donor Import](README_DonorImport.md) 
     - [HLA Metadata Dictionary](README_HlaMetadataDictionary.md) 
