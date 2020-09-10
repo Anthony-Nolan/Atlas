@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Utils;
+using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Clients;
 using Atlas.DonorImport.Data.Repositories;
 using Atlas.DonorImport.Exceptions;
@@ -84,9 +85,16 @@ namespace Atlas.DonorImport.Services
             foreach (var updatesOfSameOperationType in updatesByType)
             {
                 var externalCodes = updatesOfSameOperationType.Select(update => update.RecordId).ToList();
-                switch (updatesOfSameOperationType.Key)
+                switch (updatesOfSameOperationType.Key, updateMode)
                 {
-                    case ImportDonorChangeType.Create:
+                    case (ImportDonorChangeType.Create, UpdateMode.Full):
+                        var upsertMessages = await ProcessDonorUpserts(updatesOfSameOperationType.ToList(), externalCodes, file, updateMode);
+                        matchingComponentUpdateMessages.Add(upsertMessages);
+                        break;
+                    case (_, UpdateMode.Full):
+                        throw new NotImplementedException(
+                            "Full donor imports must only consist of donor creations. Updates and Deletions not supported (creates will be treated as upserts, deletions must be performed manually)");
+                    case (ImportDonorChangeType.Create, _):
                         var creationMessages = await ProcessDonorCreations(
                             updatesOfSameOperationType.ToList(),
                             externalCodes,
@@ -96,12 +104,12 @@ namespace Atlas.DonorImport.Services
                         matchingComponentUpdateMessages.Add(creationMessages);
                         break;
 
-                    case ImportDonorChangeType.Edit:
+                    case (ImportDonorChangeType.Edit, _):
                         var editMessages = await ProcessDonorEdits(updatesOfSameOperationType.ToList(), externalCodes, file);
                         matchingComponentUpdateMessages.Add(editMessages);
                         break;
 
-                    case ImportDonorChangeType.Delete:
+                    case (ImportDonorChangeType.Delete, _):
                         var deleteMessages = await ProcessDonorDeletions(externalCodes);
                         matchingComponentUpdateMessages.Add(deleteMessages);
                         break;
@@ -121,6 +129,25 @@ namespace Atlas.DonorImport.Services
             {
                 await messagingServiceBusClient.PublishDonorUpdateMessages(donorUpdateBatch);
             }
+        }
+
+        /// <summary>
+        /// Processes a collection of donor updates as UPSERTS - i.e. if the donor already exists, update it - if not, create it.
+        /// </summary>
+        /// <returns>A collection of donor updates to be published for import into the matching component's data store.</returns>
+        private async Task<List<SearchableDonorUpdate>> ProcessDonorUpserts(
+            IEnumerable<DonorUpdate> updates,
+            List<string> externalCodes,
+            DonorImportFile file,
+            UpdateMode updateMode)
+        {
+            var existingDonors = await donorInspectionRepository.GetDonorIdsByExternalDonorCodes(externalCodes);
+            var (edits, creates) = updates.ReifyAndSplit(du => existingDonors.ContainsKey(du.RecordId));
+
+            var editMessages = await ProcessDonorEdits(edits, externalCodes, file);
+            var createMessages = await ProcessDonorCreations(creates, externalCodes, file.FileLocation, updateMode);
+
+            return createMessages.Concat(editMessages).ToList();
         }
 
         /// <returns>A collection of donor updates to be published for import into the matching component's data store.</returns>
@@ -149,6 +176,7 @@ namespace Atlas.DonorImport.Services
             }).ToList();
         }
 
+        /// <returns>A collection of donor updates to be published for import into the matching component's data store.</returns>
         private async Task<List<SearchableDonorUpdate>> ProcessDonorEdits(
             List<DonorUpdate> editUpdates,
             ICollection<string> externalCodes,
@@ -173,6 +201,7 @@ namespace Atlas.DonorImport.Services
             return editedDonors.Select(MapToMatchingUpdateMessage).ToList();
         }
 
+        /// <returns>A collection of donor updates to be published for import into the matching component's data store.</returns>
         private async Task<List<SearchableDonorUpdate>> ProcessDonorDeletions(List<string> deletedExternalCodes)
         {
             var deletedAtlasDonorIds = await donorInspectionRepository.GetDonorIdsByExternalDonorCodes(deletedExternalCodes);
