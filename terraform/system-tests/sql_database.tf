@@ -13,7 +13,7 @@ resource "azurerm_sql_database" "atlas-system-tests-shared" {
 
   edition                          = "Standard"
   max_size_bytes                   = "32212254720"
-  requested_service_objective_name = "S0"
+  requested_service_objective_name = "S1"
 }
 
 resource "azurerm_sql_database" "atlas-matching" {
