@@ -60,7 +60,7 @@ namespace Atlas.DonorImport.Services
         public async Task RegisterSuccessfulBatchImport(DonorImportFile donorFile, int count)
         {
             var filename = GetFileNameFromLocation(donorFile.FileLocation);
-            await repository.UpdateDonorImportBatchCount(filename, donorFile.UploadTime, count);
+            await repository.IncrementImportedDonorCount(filename, donorFile.UploadTime, count);
         }
 
         public async Task RegisterFailedDonorImportWithPermanentError(DonorImportFile donorFile)

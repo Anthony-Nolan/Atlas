@@ -12,7 +12,7 @@ namespace Atlas.DonorImport.Data.Repositories
     {
         public Task InsertNewDonorImportRecord(string filename, DateTime uploadTime);
         public Task UpdateDonorImportState(string filename, DateTime uploadTime, DonorImportState donorState);
-        public Task UpdateDonorImportBatchCount(string filename, DateTime uploadTime, int count);
+        public Task IncrementImportedDonorCount(string filename, DateTime uploadTime, int numberToAdd);
         public Task<DonorImportHistoryRecord> GetFileIfExists(string filename, DateTime uploadTime);
         public Task<IReadOnlyCollection<DonorImportHistoryRecord>> GetLongRunningFiles(TimeSpan duration);
     }
@@ -65,14 +65,14 @@ WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
             }
         }
 
-        public async Task UpdateDonorImportBatchCount(string filename, DateTime uploadTime, int count)
+        public async Task IncrementImportedDonorCount(string filename, DateTime uploadTime, int numberToAdd)
         {
             await using (var connection = new SqlConnection(connectionString))
             {
                 var sql = $@"UPDATE {DonorImportHistoryRecord.QualifiedTableName}
 SET ImportedDonorsCount = ImportedDonorsCount + (@Count)
 WHERE Filename = (@Filename) AND UploadTime = (@UploadTime)";
-                await connection.ExecuteAsync(sql, new {FileName = filename, UploadTime = uploadTime, Count = count});
+                await connection.ExecuteAsync(sql, new {FileName = filename, UploadTime = uploadTime, Count = numberToAdd});
             }
         }
 
