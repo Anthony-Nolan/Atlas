@@ -11,8 +11,7 @@ using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.MetadataTableRows;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
 using LazyCache;
-using LoggingStopwatch;
-using Microsoft.WindowsAzure.Storage.Table;
+using Microsoft.Azure.Cosmos.Table;
 
 namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 {
@@ -156,7 +155,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         private async Task<TTableRow> FetchRowFromSourceTable(string partition, string rowKey, string hlaNomenclatureVersion)
         {
             var table = await GetVersionedDataTable(hlaNomenclatureVersion);
-            return await table.GetRowByPartitionAndRowKey<TTableRow>(partition, rowKey);
+            return await table.GetByPartitionAndRowKey<TTableRow>(partition, rowKey);
         }
 
         private async Task<CloudTable> CreateNewDataTable(string tablePrefix)

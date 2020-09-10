@@ -10,7 +10,6 @@ using Atlas.MultipleAlleleCodeDictionary.Services;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Cosmos.Table;
 using Polly;
-using QueryComparisons = Microsoft.WindowsAzure.Storage.Table.QueryComparisons;
 
 namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
 {

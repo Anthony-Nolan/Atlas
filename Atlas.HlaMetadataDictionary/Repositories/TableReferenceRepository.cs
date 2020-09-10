@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Atlas.Common.AzureStorage.TableStorage;
 using Atlas.HlaMetadataDictionary.InternalModels;
 using Atlas.HlaMetadataDictionary.Repositories.AzureStorage;
-using Microsoft.WindowsAzure.Storage.Table;
+using Microsoft.Azure.Cosmos.Table;
 
 namespace Atlas.HlaMetadataDictionary.Repositories
 {
@@ -62,7 +62,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories
         {
             var partition = TableReferenceRow.GetPartition();
             var rowKey = tablePrefix;
-            var row = await (await GetTable()).GetRowByPartitionAndRowKey<TableReferenceRow>(partition, rowKey);
+            var row = await (await GetTable()).GetByPartitionAndRowKey<TableReferenceRow>(partition, rowKey);
             return row;
         }
 
