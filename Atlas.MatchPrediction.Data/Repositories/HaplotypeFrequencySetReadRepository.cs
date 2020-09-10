@@ -22,7 +22,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
 
         public async Task<HaplotypeFrequencySet> GetActiveHaplotypeFrequencySet(string registryCode, string ethnicityCode)
         {
-            var sql = @$"SELECT s.* FROM HaplotypeFrequencySets s WHERE
+            var sql = @$"SELECT s.* FROM {HaplotypeFrequencySet.QualifiedTableName} s WHERE
                     s.Active = 1 AND
                     ISNULL(s.RegistryCode,'') = ISNULL(@{nameof(registryCode)},'') AND
                     ISNULL(s.ethnicityCode,'') = ISNULL(@{nameof(ethnicityCode)},'')";

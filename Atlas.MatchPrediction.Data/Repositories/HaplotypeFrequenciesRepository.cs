@@ -44,7 +44,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
         private SqlBulkCopy BuildFrequencySqlBulkCopy()
         {
             var sqlBulk = new SqlBulkCopy(connectionString)
-                {BulkCopyTimeout = 3600, BatchSize = 10000, DestinationTableName = "HaplotypeFrequencies"};
+                {BulkCopyTimeout = 3600, BatchSize = 10000, DestinationTableName = HaplotypeFrequency.QualifiedTableName};
 
             sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.Id), nameof(HaplotypeFrequency.Id));
             sqlBulk.ColumnMappings.Add(nameof(HaplotypeFrequency.Frequency), nameof(HaplotypeFrequency.Frequency));
@@ -93,7 +93,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
         /// <inheritdoc />
         public async Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId)
         {
-            const string sql = "SELECT * FROM HaplotypeFrequencies WHERE Set_Id = @setId";
+            var sql = $"SELECT * FROM {HaplotypeFrequency.QualifiedTableName} WHERE Set_Id = @setId";
 
             return await RetryConfig.AsyncRetryPolicy.ExecuteAsync(async () =>
             {

@@ -1,12 +1,17 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Atlas.MatchPrediction.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.MatchPrediction.Data.Models
 {
+    [Table(TableName)]
     public class HaplotypeFrequencySet
     {
+        internal const string TableName = "HaplotypeFrequencySets";
+        internal static readonly string QualifiedTableName = $"{MatchPredictionContext.Schema}.{TableName}";
         public int Id { get; set; }
 
         [MaxLength(256)]

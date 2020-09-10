@@ -28,7 +28,7 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers
 
         public async Task<int> ActiveSetCount(string registryCode, string ethnicityCode)
         {
-            var sqlBuilder = new StringBuilder("SELECT COUNT(*) FROM HaplotypeFrequencySets WHERE Active = 1 AND ");
+            var sqlBuilder = new StringBuilder($"SELECT COUNT(*) FROM {HaplotypeFrequencySet.QualifiedTableName} WHERE Active = 1 AND ");
             sqlBuilder.Append(registryCode.IsNullOrEmpty() ? "RegistryCode IS NULL" : "RegistryCode = @RegistryCode");
             sqlBuilder.Append(" AND ");
             sqlBuilder.Append(ethnicityCode.IsNullOrEmpty() ? "EthnicityCode IS NULL" : "EthnicityCode = @EthnicityCode");
@@ -37,33 +37,33 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers
             {
                 return await conn.QuerySingleOrDefaultAsync<int>(
                     sqlBuilder.ToString(),
-                    param: new { RegistryCode = registryCode, EthnicityCode = ethnicityCode },
+                    param: new {RegistryCode = registryCode, EthnicityCode = ethnicityCode},
                     commandTimeout: 300);
             }
         }
 
         public async Task<int> HaplotypeFrequencyCount(int setId)
         {
-            const string sql = "SELECT COUNT(*) FROM HaplotypeFrequencies WHERE Set_Id = @SetId";
+            var sql = $"SELECT COUNT(*) FROM {HaplotypeFrequency.QualifiedTableName} WHERE Set_Id = @SetId";
 
             await using (var conn = new SqlConnection(connectionString))
             {
                 return await conn.QuerySingleOrDefaultAsync<int>(
                     sql,
-                    param: new { SetId = setId },
+                    param: new {SetId = setId},
                     commandTimeout: 300);
             }
         }
 
         public async Task<HaplotypeFrequency> GetFirstHaplotypeFrequency(int setId)
         {
-            const string sql = "SELECT TOP 1 * FROM HaplotypeFrequencies WHERE Set_Id = @SetId";
+            var sql = $"SELECT TOP 1 * FROM {HaplotypeFrequency.QualifiedTableName} WHERE Set_Id = @SetId";
 
             await using (var conn = new SqlConnection(connectionString))
             {
                 return await conn.QuerySingleOrDefaultAsync<HaplotypeFrequency>(
                     sql,
-                    param: new { SetId = setId },
+                    param: new {SetId = setId},
                     commandTimeout: 300);
             }
         }

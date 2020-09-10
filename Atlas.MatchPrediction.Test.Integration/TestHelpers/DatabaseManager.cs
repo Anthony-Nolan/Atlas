@@ -2,6 +2,7 @@ using Atlas.MatchPrediction.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Atlas.MatchPrediction.Data.Models;
 
 namespace Atlas.MatchPrediction.Test.Integration.TestHelpers
 {
@@ -29,8 +30,8 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers
         {
             var context = DependencyInjection.DependencyInjection.Provider.GetService<MatchPredictionContext>();
 
-            context?.Database.ExecuteSqlRaw($"TRUNCATE TABLE [{nameof(context.HaplotypeFrequencies)}]");
-            context?.Database.ExecuteSqlRaw($"DELETE FROM [{nameof(context.HaplotypeFrequencySets)}]");
+            context?.Database.ExecuteSqlRaw($"TRUNCATE TABLE {HaplotypeFrequency.QualifiedTableName}");
+            context?.Database.ExecuteSqlRaw($"DELETE FROM {HaplotypeFrequencySet.QualifiedTableName}");
         }
     }
 }

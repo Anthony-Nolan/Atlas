@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.MatchPrediction.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,8 +10,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.MatchPrediction.Data.Models
 {
+    [Table(TableName)]
     public class HaplotypeFrequency
     {
+        internal const string TableName = "HaplotypeFrequencies";
+        internal static readonly string QualifiedTableName = $"{MatchPredictionContext.Schema}.{TableName}";
+
         public long Id { get; set; }
 
         [Column(TypeName = "decimal(20,20)")]
