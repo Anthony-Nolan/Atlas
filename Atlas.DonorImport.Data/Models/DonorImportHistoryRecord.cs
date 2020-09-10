@@ -17,6 +17,10 @@ namespace Atlas.DonorImport.Data.Models
         internal static readonly string QualifiedTableName = $"{DonorContext.Schema}.{TableName}";
         
         public int Id { get; set; }
+
+        [Required]
+        public string ServiceBusMessageId { get; set; }
+
         /// <summary>
         ///  The filename of a donor import file
         /// </summary>
