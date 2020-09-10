@@ -10,6 +10,7 @@ namespace Atlas.DonorImport.Data.Migrations
                 name: "ServiceBusMessageId",
                 schema: "Donors",
                 table: "DonorImportHistory",
+                maxLength: 256,
                 nullable: false,
                 defaultValue: "");
         }

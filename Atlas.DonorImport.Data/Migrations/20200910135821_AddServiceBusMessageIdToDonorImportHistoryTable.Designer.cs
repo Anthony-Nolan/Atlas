@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Atlas.DonorImport.Data.Migrations
 {
     [DbContext(typeof(DonorContext))]
-    [Migration("20200910105232_AddServiceBusMessageIdToDonorImportHistoryTable")]
+    [Migration("20200910135821_AddServiceBusMessageIdToDonorImportHistoryTable")]
     partial class AddServiceBusMessageIdToDonorImportHistoryTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -136,7 +136,8 @@ namespace Atlas.DonorImport.Data.Migrations
 
                     b.Property<string>("ServiceBusMessageId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(256)")
+                        .HasMaxLength(256);
 
                     b.HasKey("Filename", "UploadTime");
 

@@ -134,7 +134,8 @@ namespace Atlas.DonorImport.Data.Migrations
 
                     b.Property<string>("ServiceBusMessageId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(256)")
+                        .HasMaxLength(256);
 
                     b.HasKey("Filename", "UploadTime");
 

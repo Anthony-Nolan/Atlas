@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.DonorImport.Exceptions;
+using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.DonorImport.Services;
 using Atlas.DonorImport.Test.Integration.TestHelpers;
 using Atlas.DonorImport.Test.TestHelpers.Builders.ExternalModels;
@@ -50,17 +51,17 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         {
             const string fileName = "Donor-File";
             const string messageId = "Message-Id";
+            const int donorCount = 10;
             var uploadTime = DateTime.Now;
 
             // Set up initial stalled import
-            var donorFile = DonorImportFileBuilder.NewWithMetadata(fileName, messageId, uploadTime).WithDonorCount(0).Build();
-            await donorFileImporter.ImportDonorFile(donorFile);
+            var donorFile = BuildDonorFile(fileName, messageId, uploadTime);
             await donorImportFileHistoryService.RegisterStartOfDonorImport(donorFile);
 
-            var donorFileRetry = DonorImportFileBuilder.NewWithMetadata(fileName, messageId, uploadTime).WithDonorCount(10).Build();
+            var donorFileRetry = BuildDonorFile(fileName, messageId, uploadTime, donorCount);
             await donorFileImporter.ImportDonorFile(donorFileRetry);
 
-            donorRepository.StreamAllDonors().Count().Should().Be(10);
+            donorRepository.StreamAllDonors().Count().Should().Be(donorCount);
         }
 
         [Test]
@@ -71,13 +72,15 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
             var uploadTime = DateTime.Now;
 
             // Set up initial stalled import
-            var donorFile = DonorImportFileBuilder.NewWithMetadata(fileName, messageId, uploadTime).WithDonorCount(0).Build();
-            await donorFileImporter.ImportDonorFile(donorFile);
+            var donorFile = BuildDonorFile(fileName, messageId, uploadTime);
             await donorImportFileHistoryService.RegisterStartOfDonorImport(donorFile);
 
-            var donorFileRetry = DonorImportFileBuilder.NewWithMetadata(fileName, "Different-Message-Id", uploadTime).WithDonorCount(10).Build();
+            var donorFileRetry = BuildDonorFile(fileName, "Different-Message-Id", uploadTime, 10);
 
             await donorFileImporter.Invoking(i => i.ImportDonorFile(donorFileRetry)).Should().ThrowAsync<DuplicateDonorFileImportException>();
         }
+
+        private static DonorImportFile BuildDonorFile(string fileName, string messageId, DateTime uploadTime, int donorCount = 0) => 
+            DonorImportFileBuilder.NewWithMetadata(fileName, messageId, uploadTime).WithDonorCount(donorCount).Build();
     }
 }
