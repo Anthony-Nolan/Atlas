@@ -126,18 +126,17 @@ namespace Atlas.DonorImport.Services
             catch (Exception e)
             {
                 await donorImportFileHistoryService.RegisterUnexpectedDonorImportError(file);
-                var summary = $"Donor Import Failed: {file.FileLocation}";
-                var description = @$"Importing donors for file: {file.FileLocation} has failed. With exception {e.Message}.
+                    
+                var message = @$"Donor Import Failed: {file.FileLocation}. Detail: Importing donors for file: {file.FileLocation} has failed. With exception {e.Message}.
 {importedDonorCount} Donors were successfully imported prior to this error and have already been stored in the Database. Any remaining donors in the file have not been stored.
 The first {lazyFile?.ParsedDonorCount} Donors were able to be parsed from the file. The last Donor to be *successfully* parsed had DonorCode '{lazyFile?.LastSuccessfullyParsedDonorCode}'.
 Manual investigation is recommended; see Application Insights for more information.";
 
-                await notificationSender.SendAlert(summary, description, Priority.Medium, nameof(ImportDonorFile));
+                logger.SendTrace(message, LogLevel.Warn);
 
                 throw;
             }
         }
-
 
         private async Task LogFileErrorAndSendAlert(DonorImportFile file, string message, string description)
         {
