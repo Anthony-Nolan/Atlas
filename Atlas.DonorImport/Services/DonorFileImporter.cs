@@ -128,7 +128,7 @@ namespace Atlas.DonorImport.Services
             {
                 await donorImportFileHistoryService.RegisterUnexpectedDonorImportError(file);
 
-                var donorImportEventModel = new DonorImportEventModel(file, e.Message, importedDonorCount, lazyFile);
+                var donorImportEventModel = new DonorImportFailureEventModel(file, e, importedDonorCount, lazyFile);
 
                 logger.SendEvent(donorImportEventModel);
 
