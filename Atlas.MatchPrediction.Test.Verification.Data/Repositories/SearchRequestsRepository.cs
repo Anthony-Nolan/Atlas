@@ -76,9 +76,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
                 SearchResultsRetrieved = 1,
                 WasSuccessful = 1,
                 MatchedDonorCount = @{nameof(info.MatchedDonorCount)},
-                MatchingAlgorithmTime = @{nameof(info.MatchingAlgorithmTime)},
-                MatchPredictionTime = @{nameof(info.MatchPredictionTime)},
-                OverallSearchTime = @{nameof(info.OverallSearchTime)}
+                MatchingAlgorithmTimeInMs = @{nameof(info.MatchingAlgorithmTimeInMs)},
+                MatchPredictionTimeInMs = @{nameof(info.MatchPredictionTimeInMs)},
+                OverallSearchTimeInMs = @{nameof(info.OverallSearchTimeInMs)}
                 WHERE Id = @{nameof(info.SearchRequestRecordId)}";
 
             await using (var connection = new SqlConnection(connectionString))
@@ -86,9 +86,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
                 await connection.ExecuteAsync(sql, new
                 {
                     info.MatchedDonorCount,
-                    info.MatchingAlgorithmTime,
-                    info.MatchPredictionTime,
-                    info.OverallSearchTime,
+                    info.MatchingAlgorithmTimeInMs,
+                    info.MatchPredictionTimeInMs,
+                    info.OverallSearchTimeInMs,
                     info.SearchRequestRecordId
                 });
             }

@@ -191,9 +191,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
             {
                 SearchRequestRecordId = searchRequestRecordId,
                 MatchedDonorCount = notification.NumberOfResults,
-                MatchingAlgorithmTime = notification.MatchingAlgorithmTime,
-                MatchPredictionTime = notification.MatchPredictionTime,
-                OverallSearchTime = notification.OverallSearchTime
+                MatchingAlgorithmTimeInMs = notification.MatchingAlgorithmTime.TotalMilliseconds,
+                MatchPredictionTimeInMs = notification.MatchPredictionTime.TotalMilliseconds,
+                OverallSearchTimeInMs = notification.OverallSearchTime.TotalMilliseconds
             };
         }
     }
