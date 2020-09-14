@@ -6,8 +6,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models
     {
         public int SearchRequestRecordId { get; set; }
         public int? MatchedDonorCount { get; set; }
-        public TimeSpan MatchingAlgorithmTime { get; set; }
-        public TimeSpan MatchPredictionTime { get; set; }
-        public TimeSpan OverallSearchTime { get; set; }
+        public double MatchingAlgorithmTimeInMs { get; set; }
+        public double MatchPredictionTimeInMs { get; set; }
+        public double OverallSearchTimeInMs { get; set; }
     }
 }
