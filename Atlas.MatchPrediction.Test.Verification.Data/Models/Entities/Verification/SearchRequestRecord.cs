@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Microsoft.EntityFrameworkCore;
@@ -19,8 +20,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
         public string AtlasSearchIdentifier { get; set; }
         
         public bool SearchResultsRetrieved { get; set; }
-        public int? MatchedDonorCount { get; set; }
         public bool? WasSuccessful { get; set; }
+        public int? MatchedDonorCount { get; set; }
+
+        public TimeSpan? MatchingAlgorithmTime { get; set; }
+        public TimeSpan? MatchPredictionTime { get; set; }
+        public TimeSpan? OverallSearchTime { get; set; }
     }
 
     internal static class SearchRequestRecordBuilder

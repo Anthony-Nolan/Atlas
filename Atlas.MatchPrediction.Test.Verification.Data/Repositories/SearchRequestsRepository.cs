@@ -1,9 +1,7 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Data.Context;
-using Microsoft.Data.SqlClient;
-using System.Collections.Generic;
-using System.Data;
+﻿using Microsoft.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Dapper;
 
@@ -13,7 +11,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
     {
         Task AddSearchRequest(SearchRequestRecord request);
         Task<int> GetRecordIdByAtlasSearchId(string atlasSearchId);
-        Task MarkSearchResultsAsRetrieved(int searchRequestRecordId, int? matchedDonorCount, bool wasSuccessful);
+        Task MarkSearchResultsAsFailed(int searchRequestRecordId);
+        Task MarkSearchResultsAsSuccessful(SuccessfulSearchRequestInfo info);
     }
 
     public class SearchRequestsRepository : ISearchRequestsRepository
@@ -58,55 +57,41 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             }
         }
 
-        public async Task MarkSearchResultsAsRetrieved(int searchRequestRecordId, int? matchedDonorCount, bool wasSuccessful)
+        public async Task MarkSearchResultsAsFailed(int searchRequestRecordId)
         {
             var sql = $@"UPDATE SearchRequests SET 
                 SearchResultsRetrieved = 1,
-                MatchedDonorCount = @{nameof(matchedDonorCount)},
-                WasSuccessful = @{nameof(wasSuccessful)}
+                WasSuccessful = 0
                 WHERE Id = @{nameof(searchRequestRecordId)}";
 
             await using (var connection = new SqlConnection(connectionString))
             {
-                await connection.ExecuteAsync(sql, new { matchedDonorCount, wasSuccessful, searchRequestRecordId });
+                await connection.ExecuteAsync(sql, new { searchRequestRecordId });
             }
         }
 
-        private static DataTable BuildDataTable(IReadOnlyCollection<SearchRequestRecord> records, IEnumerable<string> columnNames)
+        public async Task MarkSearchResultsAsSuccessful(SuccessfulSearchRequestInfo info)
         {
-            var dataTable = new DataTable();
-            foreach (var columnName in columnNames)
+            var sql = $@"UPDATE SearchRequests SET 
+                SearchResultsRetrieved = 1,
+                WasSuccessful = 1,
+                MatchedDonorCount = @{nameof(info.MatchedDonorCount)},
+                MatchingAlgorithmTime = @{nameof(info.MatchingAlgorithmTime)},
+                MatchPredictionTime = @{nameof(info.MatchPredictionTime)},
+                OverallSearchTime = @{nameof(info.OverallSearchTime)}
+                WHERE Id = @{nameof(info.SearchRequestRecordId)}";
+
+            await using (var connection = new SqlConnection(connectionString))
             {
-                dataTable.Columns.Add(columnName);
+                await connection.ExecuteAsync(sql, new
+                {
+                    info.MatchedDonorCount,
+                    info.MatchingAlgorithmTime,
+                    info.MatchPredictionTime,
+                    info.OverallSearchTime,
+                    info.SearchRequestRecordId
+                });
             }
-
-            foreach (var record in records)
-            {
-                dataTable.Rows.Add(
-                    record.VerificationRun_Id,
-                    record.PatientSimulant_Id,
-                    record.AtlasSearchIdentifier);
-            }
-
-            return dataTable;
-        }
-
-        private SqlBulkCopy BuildSqlBulkCopy(IEnumerable<string> columnNames)
-        {
-            var sqlBulk = new SqlBulkCopy(connectionString)
-            {
-                BulkCopyTimeout = 3600,
-                BatchSize = 10000,
-                DestinationTableName = nameof(MatchPredictionVerificationContext.SearchRequests)
-            };
-
-            foreach (var columnName in columnNames)
-            {
-                // Relies on setting up the data table with column names matching the database columns.
-                sqlBulk.ColumnMappings.Add(columnName, columnName);
-            }
-
-            return sqlBulk;
         }
     }
 }

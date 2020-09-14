@@ -9,6 +9,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface;
+using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Newtonsoft.Json;
@@ -52,7 +53,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
             if (!notification.WasSuccessful)
             {
-                await searchRequestsRepository.MarkSearchResultsAsRetrieved(recordId, null, false);
+                await searchRequestsRepository.MarkSearchResultsAsFailed(recordId);
                 Debug.WriteLine($"Search request {recordId} was not successful - record updated.");
                 return;
             }
@@ -67,7 +68,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
             var donorIds = await StoreMatchedDonors(recordId, resultSet);
             await StoreMatchProbabilities(donorIds, resultSet);
             
-            await searchRequestsRepository.MarkSearchResultsAsRetrieved(recordId, resultSet.TotalResults, true);
+            await searchRequestsRepository.MarkSearchResultsAsSuccessful(GetSuccessInfo(recordId, notification));
             Debug.WriteLine($"Search request {recordId} was successful - {resultSet.TotalResults} matched donors found.");
         }
 
@@ -182,6 +183,18 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
             return MatchPredictionStaticData.MatchPredictionLoci
                 .SelectMany(l => BuildMatchProbabilities(matchedDonorId, l, lociInfo.GetLocus(l).MatchProbabilities))
                 .ToList();
+        }
+
+        private static SuccessfulSearchRequestInfo GetSuccessInfo(int searchRequestRecordId, SearchResultsNotification notification)
+        {
+            return new SuccessfulSearchRequestInfo
+            {
+                SearchRequestRecordId = searchRequestRecordId,
+                MatchedDonorCount = notification.NumberOfResults,
+                MatchingAlgorithmTime = notification.MatchingAlgorithmTime,
+                MatchPredictionTime = notification.MatchPredictionTime,
+                OverallSearchTime = notification.OverallSearchTime
+            };
         }
     }
 }
