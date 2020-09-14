@@ -197,7 +197,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
         public async Task ImportDonors_WhenOptionalHlaIncluded_AndOnlyPosition1IsPresent_AddsToDatabaseAsHomozygous()
         {
             var donorUpdate = DonorCreationBuilder.Build();
-            donorUpdate.Hla.DQB1 = new ImportedLocus {Dna = new TwoFieldStringData {Field1 = "01:01", Field2 = ""}};
+            const string hla = "*01:01";
+            donorUpdate.Hla.DQB1 = new ImportedLocus {Dna = new TwoFieldStringData {Field1 = hla, Field2 = ""}};
 
             var file = fileBuilder.WithDonors(donorUpdate).Build();
 
@@ -205,8 +206,8 @@ namespace Atlas.DonorImport.Test.Integration.IntegrationTests.Import
 
             var result = await donorRepository.GetDonor(donorUpdate.RecordId);
             result.Should().NotBeNull();
-            result.DQB1_2.Should().Be(result.DQB1_1);
-            result.DQB1_2.Should().NotBeNullOrEmpty();
+            result.DQB1_1.Should().Be(hla);
+            result.DQB1_2.Should().Be(hla);
         }
 
         [Test]
