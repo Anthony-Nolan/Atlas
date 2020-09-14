@@ -25,8 +25,8 @@ The haplotype frequency import process involves validating and converting the pr
 
 > Is lookup failing for the first allele in the file?
 
-If the failed lookup is a very common allele e.g. `01:01:01G` - and is the first one in the uploaded file - it is likely that th **HLA Metadata Dictionary** has not been generated for
-the given nomenclature version. Check the version used in teh file, and trigger a Metadata refresh.
+If the failed lookup is a very common allele e.g. `01:01:01G` - and is the first one in the uploaded file - it is likely that the **HLA Metadata Dictionary** has not been generated for
+the given nomenclature version. Check the version used in the file, and trigger a Metadata refresh.
 
 Both algorithms have an in-memory cache of the metadata dictionary, which lasts ~24 hours. To ensure the new version of the HMD is used, the algorithm functions apps will need restarting.
 
@@ -63,9 +63,9 @@ It may be desirable to manually delete older sets, to free up database space and
 
 The data refresh function is set up such that if it *fails* for any reason, the algorithm/infrastructure will be left in a reasonable state.
 
-If, however, the server were to stop mid-job, automatic teardown would not be applied - in particular, the database would be left at a more expensive tier than is required.
+If, however, the server were to stop mid-job, automatic teardown would not be applied - in particular, the database would be left at a more expensive tier than is required. We can describe such a refresh as "stalled"
 
-(The reasons for this include: a release of ATLAS, a manual restart of the service running the refresh, Azure dropping the worker running the refresh e.g. due to a power failure, or unavoidable maintainence.)
+(The reasons for this include: a release of ATLAS, a manual restart of the service running the refresh, Azure dropping the worker running the refresh e.g. due to a power failure, or unavoidable maintenance.)
 
 In this case there are two options:
 
@@ -78,7 +78,7 @@ Calling the `ContinueDataRefresh` will, if there is exactly one in-progress data
 If you prefer not to continue a refresh, teardown must be performed.
 This can either be done entirely manually, or the `RunDataRefreshCleanup` function can be run, which performs the described steps.
  
-If this happens locally, you can likely ignore the infrastructure part of this checklist. (We do not expect this to ever occur in a deployed environment)
+If a refresh stalls locally, you can likely ignore the infrastructure part of this checklist.
 
 - Azure Infrastructure
   - **URGENT** - if the database was scaled up to the refresh level, it will need to be manually scaled back down. This should be done as soon as possible, as the refresh size is likely to have very high operating costs
