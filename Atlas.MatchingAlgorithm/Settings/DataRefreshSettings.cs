@@ -18,6 +18,11 @@ namespace Atlas.MatchingAlgorithm.Settings
         public bool DataRefreshDonorUpdatesShouldBeFullyTransactional { get; set; }
 
         /// <summary>
+        /// Name of topic where validated data refresh requests will be sent.
+        /// </summary>
+        public string RequestsTopic { get; set; }
+
+        /// <summary>
         /// Name of topic where notifications of job completion (both success and failure) should be sent,
         /// in order to permit the automation of downstream tasks.
         /// Note: This is distinct from the support topics. Messages sent to <see cref="CompletionTopic"/> are designed
