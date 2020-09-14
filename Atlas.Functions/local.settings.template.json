@@ -36,12 +36,12 @@
     "NotificationsServiceBus:NotificationsTopic": "notifications"
   },
   "ConnectionStrings": {
-    "DonorImport:Sql": "Data Source=(local);Initial Catalog=AtlasDonorImport;Integrated Security=True;MultipleActiveResultSets=True;",
+    "DonorImport:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
 
-    "Matching:Sql:Persistent": "Data Source=(local);Initial Catalog=AtlasMatchingPersistent;Integrated Security=True;MultipleActiveResultSets=True;",
+    "Matching:Sql:Persistent": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
     "Matching:Sql:A": "Data Source=(local);Initial Catalog=AtlasMatchingA;Integrated Security=True;MultipleActiveResultSets=True;",
     "Matching:Sql:B": "Data Source=(local);Initial Catalog=AtlasMatchingB;Integrated Security=True;MultipleActiveResultSets=True;",
 
-    "MatchPrediction:Sql": "Data Source=(local);Initial Catalog=AtlasMatchPrediction;Integrated Security=True;MultipleActiveResultSets=True;"
+    "MatchPrediction:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;"
   }
 }

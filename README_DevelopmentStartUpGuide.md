@@ -37,7 +37,7 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
     - "Run Migrations for `Atlas.MatchingAlgorithm.Data`".
     - Open `Atlas.MatchingAlgorithm.Data\appsettings.json`, and modify the `ConnectionStrings.Sql` value to reference `Initial Catalog=AtlasMatchingB`.
     - "Run Migrations for `Atlas.MatchingAlgorithm.Data`". *(again)*
-    - Open your local SQL Server and verify that you now have 3 databases: `AtlasMatchingPersistent`, `AtlasMatchingA` and `AtlasMatchingB`.
+    - Open your local SQL Server and verify that you now have 3 databases: `Atlas`, `AtlasMatchingA` and `AtlasMatchingB`.
 - Compile and Run API
   - Set Startup Project to `Atlas.MatchingAlgorithm.Api`.
   - Compile and Run.
@@ -87,7 +87,7 @@ It's highly recommended that you read the sections outside ZtH in parallel with 
   - Importing Haplotype Frequency Sets.
     - In Storage Explorer, open your local emulator and create a new blob storage container called `haplotype-frequency-set-import`
     - Edit the `<gitRoot>/MiscTestingAndDebuggingResources/MatchPrediction/initial-hf-set.json` file so `nomenclatureVersion` is set to the nomenclature version that was used in the data refresh.
-      - The nomenclature version that was used in the data refresh can be found in SQL Server - `AtlasMatchingPersistent` -> `MatchingAlgorithmPersistent.DataRefreshHistory` and then the `HlaNomenclatureVersion` for the active database.
+      - The nomenclature version that was used in the data refresh can be found in SQL Server - `Atlas` -> `MatchingAlgorithmPersistent.DataRefreshHistory` and then the `HlaNomenclatureVersion` for the active database.
     - Upload the json file `initial-hf-set.json` to your `haplotype-frequency-set-import` container.
       - This should take < 1 second to run.
     - Open up Service Bus Explorer and connect to your development Service Bus.
