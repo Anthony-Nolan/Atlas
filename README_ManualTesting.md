@@ -40,9 +40,10 @@ This code is designed to be run locally; it is not production quality and cannot
 
 ### Start Up Guide
 - Run Migrations on the Verification database
-  - All data generated for purpose of verification will be stored in the database defined within the app setting: `MatchPredictionVerification:Sql`.
-    - By default, the connection string points to locally to db: `AtlasMatchPredictionVerification`.
-    - This could be changed to point at a remote db, e.g., if you wish to share the data with other users, or archive the data.
+  - All data generated for purpose of verification will be stored in the database defined within the Functions app setting: `MatchPredictionVerification:Sql`.
+    - The target of EF Core Migrations is set by a second connection string, `Sql`, in the `appsettings.json` of the `.Data` project.
+    - By default, both connection strings point locally to db: `AtlasMatchPredictionVerification`.
+    - The connection strings could be changed to point at a remote db, e.g., if you wish to share or archive the data.
   - Before verification can be performed, EF Core Migrations within the `Atlas.MatchPrediction.Test.Verification.Data` project must be run.
     - Instructions for VS PkgMgrCons:
       - Set Default Project (dropdown in PkgMgrConsole window) to be `Atlas.MatchPrediction.Test.Verification.Data`.
