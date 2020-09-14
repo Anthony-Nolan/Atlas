@@ -27,7 +27,7 @@
   },
   "ConnectionStrings": {
     "MatchPredictionVerification:Sql": "Data Source=(local);Initial Catalog=AtlasMatchPredictionVerification;Integrated Security=True;MultipleActiveResultSets=True;",
-    "MatchPrediction:Sql": "Data Source=(local);Initial Catalog=AtlasMatchPrediction;Integrated Security=True;MultipleActiveResultSets=True;",
-    "DonorImport:Sql": "Data Source=(local);Initial Catalog=AtlasDonorImport;Integrated Security=True;MultipleActiveResultSets=True;"
+    "MatchPrediction:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
+    "DonorImport:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;"
   }
 }
