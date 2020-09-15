@@ -184,7 +184,7 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         }
 
         [Test]
-        [IgnoreExceptOnCiPerfTest("10M pairs runs in 23s")]
+        [IgnoreExceptOnCiPerfTest("10M pairs runs in 15s")]
         public void PerformanceTest()
         {
             var matchingPairs = GenotypeMatchDetailsBuilder.New
