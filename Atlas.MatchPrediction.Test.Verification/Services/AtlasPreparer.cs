@@ -90,10 +90,14 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
             // need sufficient time for request to return - this is not equivalent to how long data refresh takes to complete.
             HttpRequestClient.Timeout = TimeSpan.FromMinutes(5);
 
-            // do not check response as data refresh requests often timeout even if the job itself completes successfully
-            await HttpRequestClient.PostAsync(dataRefreshRequestUrl, new StringContent("{}"));
+            var response = await HttpRequestClient.PostAsync(dataRefreshRequestUrl, new StringContent("{}"));
 
-            Debug.WriteLine("Data refresh request submitted - check relevant AI logs for detailed progress messages.");
+            // do not throw on response failure as data refresh requests often timeout even if the job itself completes successfully
+            var debugMessage = response.IsSuccessStatusCode
+                ? "Data refresh request submitted - check relevant AI logs for detailed progress messages."
+                : $"Data refresh request failed: {response.StatusCode} - {response.ReasonPhrase}";
+
+            Debug.WriteLine(debugMessage);
         }
     }
 }
