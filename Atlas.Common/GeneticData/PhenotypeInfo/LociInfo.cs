@@ -53,10 +53,19 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         public T Drb1 { get; }
 
         /// <summary>
+        /// Pre-compute hash, so that if this object is used for multiple dictionary lookups, we do not need to calculate the hash multiple times.
+        /// This is only safe because this class in immutable, and all properties included in the hash cannot change after construction.
+        /// </summary>
+        private int? PreComputedHash { get; }
+        
+        #region Constructors
+        
+        /// <summary>
         /// Creates a new LociInfo with no inner values set.
         /// </summary>
         public LociInfo()
         {
+            PreComputedHash = CalculateHashCode();
         }
 
         /// <summary>
@@ -71,6 +80,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             Dpb1 = initialValue;
             Dqb1 = initialValue;
             Drb1 = initialValue;
+            PreComputedHash = CalculateHashCode();
         }
 
         public LociInfo(
@@ -88,8 +98,11 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             Dpb1 = valueDpb1;
             Dqb1 = valueDqb1;
             Drb1 = valueDrb1;
+            PreComputedHash = CalculateHashCode();
         }
 
+        #endregion
+        
         private static ISet<Locus> SupportedLoci => EnumExtensions.EnumerateValues<Locus>().ToHashSet();
 
         public LociInfo<R> Map<R>(Func<Locus, T, R> mapping)
@@ -299,7 +312,9 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                    EqualityComparer<T>.Default.Equals(Drb1, other.Drb1);
         }
 
-        public override int GetHashCode()
+        public override int GetHashCode() => PreComputedHash ?? CalculateHashCode();
+
+        private int CalculateHashCode()
         {
             unchecked
             {

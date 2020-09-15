@@ -21,8 +21,6 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         "A: {A.Position1}, {A.Position2}; B: {B.Position1}, {B.Position2}; C: {C.Position1}, {C.Position2}; DPB1: {Dpb1.Position1}, {Dpb1.Position2}; DQB1: {Dqb1.Position1}, {Dqb1.Position2}; DRB1: {Drb1.Position1}, {Drb1.Position2};")]
     public class PhenotypeInfo<T> : LociInfo<LocusInfo<T>>, IEquatable<PhenotypeInfo<T>>
     {
-        private const string LocusInfoNullExceptionMessage = "LocusInfo<T> cannot be null in a PhenotypeInfo<T>. Set nested values to null instead.";
-
         #region Constructors
 
         /// <summary>
@@ -341,10 +339,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         }
 
         /// <inheritdoc />
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
+        public override int GetHashCode() => base.GetHashCode();
 
         #endregion
     }

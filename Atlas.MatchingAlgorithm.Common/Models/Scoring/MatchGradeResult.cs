@@ -49,7 +49,7 @@ namespace Atlas.MatchingAlgorithm.Common.Models.Scoring
         {
             unchecked
             {
-                return ((int) GradeResult * 397) ^ Orientations.GetHashCode();
+                return ((int) GradeResult * 397) ^ (Orientations?.GetHashCode() ?? 0);
             }
         }
     }
