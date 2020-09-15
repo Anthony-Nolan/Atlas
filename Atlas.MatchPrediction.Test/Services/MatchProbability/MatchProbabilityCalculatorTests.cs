@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.MatchProbability;
@@ -179,6 +181,26 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
             );
 
             actualProbability.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(0.1428571428571428571428571429m);
+        }
+
+        [Test]
+        [IgnoreExceptOnCiPerfTest("10M pairs runs in 23s")]
+        public void PerformanceTest()
+        {
+            var matchingPairs = GenotypeMatchDetailsBuilder.New
+                .WithGenotypes(defaultDonorHla1, defaultPatientHla1)
+                .WithMatchCounts(new MatchCountsBuilder().TenOutOfTen().Build())
+                .WithAvailableLoci(AllowedLoci)
+                .Build(10_000_000).ToHashSet();
+            
+            var likelihoods = DictionaryWithCommonValue(0.5m, defaultDonorHla1, defaultDonorHla2, defaultPatientHla1, defaultPatientHla2);
+
+            matchProbabilityCalculator.CalculateMatchProbability(
+                SubjectCalculatorInputsBuilder.New.WithLikelihoods(likelihoods).WithGenotypes(defaultPatientHla1, defaultPatientHla2).Build(),
+                SubjectCalculatorInputsBuilder.New.WithLikelihoods(likelihoods).WithGenotypes(defaultDonorHla1, defaultDonorHla2).Build(),
+                matchingPairs,
+                AllowedLoci
+            );
         }
     }
 }
