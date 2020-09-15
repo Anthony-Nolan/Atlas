@@ -19,23 +19,32 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
     {
         public T Position1 { get; }
         public T Position2 { get; }
+        
+        /// <summary>
+        /// Pre-compute hash, so that if this object is used for multiple dictionary lookups, we do not need to calculate the hash multiple times.
+        /// This is only safe because this class in immutable, and all properties included in the hash cannot change after construction.
+        /// </summary>
+        private int? PreComputedHash { get; }
 
         #region Constructors
 
         public LocusInfo()
         {
+            PreComputedHash = CalculateHashCode();
         }
 
         public LocusInfo(T initialValue)
         {
             Position1 = initialValue;
             Position2 = initialValue;
+            PreComputedHash = CalculateHashCode();
         }
 
         public LocusInfo(T position1, T position2)
         {
             Position1 = position1;
             Position2 = position2;
+            PreComputedHash = CalculateHashCode();
         }
 
         #endregion
@@ -146,7 +155,9 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                    EqualityComparer<T>.Default.Equals(Position2, other.Position2);
         }
 
-        public override int GetHashCode()
+        public override int GetHashCode() => PreComputedHash ?? CalculateHashCode();
+
+        private int CalculateHashCode()
         {
             unchecked
             {
@@ -155,6 +166,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
                 return hashCode;
             }
         }
+
         #endregion
     }
 }
