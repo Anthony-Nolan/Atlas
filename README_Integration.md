@@ -74,6 +74,18 @@ triggered when any files are uploaded to the `donors` container in Azure Blob St
 
 In both cases, we expect performance to be better with several smaller files, than with larger ones.
 
+> On Concurrency: The number of allowed concurrent processes of donor import files is controlled in two places. 
+>
+> (a) The host.json of the donor import functions app, which controls how many import processes can be run on one instance of the import. 
+> (b) The application setting `WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT` (set via the terraform variable `DONOR_IMPORT_MAX_INSTANCES` at release-time), which controls
+> how many instances the donor import can scale out to.
+>
+> We recommend keeping both values at 1, i.e. disallowing concurrent import processing. Allowing concurrency introduces a risk of transaction deadlocks when writing 
+> updates to the database. 
+>
+> If set higher, a full import will likely finish a little quicker - but there will be some level of transient failures caused by deadlocks. Auto-retry logic should
+> ensure that all donors are still imported, but any import files that hit the retry limit and are dead-lettered (on the `donor-import-file-uploads` service bus topic) will need to be replayed.      
+
 #### Full Import
 
 This process is maximally efficient, but does not propagate changes to the matching algorithm as standard - that will need to be manually triggered once all donor files 
