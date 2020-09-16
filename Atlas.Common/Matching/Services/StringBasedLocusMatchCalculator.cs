@@ -15,6 +15,9 @@ namespace Atlas.Common.Matching.Services
         /// <summary>
         /// Calculates match count based *solely* on string comparison of the provided hla data.
         ///
+        /// Assumes that null alleles have already been handled by copying the expressing allele to the null position - nulls here will be
+        /// treated as missing loci, not null-expressing alleles 
+        ///
         /// This will *NOT* give accurate results for any resolution other than P-Group: as P-Group matching is the minimum requirement to
         /// consider a pair of Loci a match, any other resolution can (and likely will) correspond to multiple P-Groups: for which we should use
         /// the full matching logic in <see cref="ILocusMatchCalculator"/>
@@ -32,13 +35,21 @@ namespace Atlas.Common.Matching.Services
     {
         public int MatchCount(LocusInfo<string> patientHla, LocusInfo<string> donorHla, UntypedLocusBehaviour untypedLocusBehaviour)
         {
-            if (patientHla.SinglePositionNull() || donorHla.SinglePositionNull())
+            // ReSharper disable InconsistentNaming
+            // deconstruct once to avoid additional property access
+            var p_1 = patientHla.Position1;
+            var p_2 = patientHla.Position2;
+            var d_1 = donorHla.Position1;
+            var d_2 = donorHla.Position2;
+            
+            if (p_1 == null ^ p_2 == null || d_1 == null ^ d_2 == null)
             {
                 throw new ArgumentException(
                     "Locus cannot be partially typed. Either both positions should have data, or both should be null - check the validity of the matching data.");
             }
 
-            if (IsUntyped(patientHla) || IsUntyped(donorHla))
+            // have already confirmed that either both are null, or neither is - so just checking one position is enough to identify a missing locus here 
+            if (d_1 == null || p_1 == null)
             {
                 return untypedLocusBehaviour switch
                 {
@@ -51,11 +62,10 @@ namespace Atlas.Common.Matching.Services
                 };
             }
 
-            // ReSharper disable InconsistentNaming
-            var match_1_1 = ExpressingHlaMatch(patientHla.Position1, donorHla.Position1);
-            var match_1_2 = ExpressingHlaMatch(patientHla.Position1, donorHla.Position2);
-            var match_2_1 = ExpressingHlaMatch(patientHla.Position2, donorHla.Position1);
-            var match_2_2 = ExpressingHlaMatch(patientHla.Position2, donorHla.Position2);
+            var match_1_1 = ExpressingHlaMatch(p_1, d_1);
+            var match_1_2 = ExpressingHlaMatch(p_1, d_2);
+            var match_2_1 = ExpressingHlaMatch(p_2, d_1);
+            var match_2_2 = ExpressingHlaMatch(p_2, d_2);
             // ReSharper restore InconsistentNaming
 
             var directMatch = match_1_1 && match_2_2;
@@ -71,20 +81,10 @@ namespace Atlas.Common.Matching.Services
             return match_1_1 || match_1_2 || match_2_1 || match_2_2 ? 1 : 0;
         }
 
-        // nulls = non expressing alleles (aka "null alleles") for pGroups.
         private static bool ExpressingHlaMatch(string locus1, string locus2)
         {
-            if (locus1 == null || locus2 == null)
-            {
-                return false;
-            }
-
-            return locus1 == locus2;
-        }
-
-        private static bool IsUntyped(LocusInfo<string> hla)
-        {
-            return hla.Position1And2Null();
+            // string.CompareOrdinal is faster than == 
+            return string.CompareOrdinal(locus1, locus2) == 0;
         }
     }
 }

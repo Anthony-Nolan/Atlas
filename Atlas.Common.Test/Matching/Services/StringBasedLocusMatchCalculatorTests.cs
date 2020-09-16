@@ -173,7 +173,7 @@ namespace Atlas.Common.Test.Matching.Services
 
         [Test]
         // Each iteration runs 7 variations of the calculation
-        [Repeat(100000)]
+        [Repeat(100_000)]
         [IgnoreExceptOnCiPerfTest("Ran in ~1s")]
         public void MatchCount_PerformanceTest()
         {

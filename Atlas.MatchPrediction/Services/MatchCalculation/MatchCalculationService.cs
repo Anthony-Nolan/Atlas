@@ -68,14 +68,14 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
             PhenotypeInfo<string> donorGenotype,
             ISet<Locus> allowedLoci)
         {
-            return new LociInfo<int?>().Map((locus, matchCount) =>
-            {
-                var patientHla = patientGenotype.GetLocus(locus);
-                var donorHla = donorGenotype.GetLocus(locus);
-                return allowedLoci.Contains(locus)
-                    ? stringBasedLocusMatchCalculator.MatchCount(patientHla, donorHla)
-                    : (int?) null;
-            });
+            return new LociInfo<int?>(
+                allowedLoci.Contains(Locus.A) ? stringBasedLocusMatchCalculator.MatchCount(patientGenotype.A, donorGenotype.A) : (int?) null,
+                allowedLoci.Contains(Locus.B) ? stringBasedLocusMatchCalculator.MatchCount(patientGenotype.B, donorGenotype.B) : (int?) null,
+                allowedLoci.Contains(Locus.C) ? stringBasedLocusMatchCalculator.MatchCount(patientGenotype.C, donorGenotype.C) : (int?) null,
+                null,
+                allowedLoci.Contains(Locus.Dqb1) ? stringBasedLocusMatchCalculator.MatchCount(patientGenotype.Dqb1, donorGenotype.Dqb1) : (int?) null,
+                allowedLoci.Contains(Locus.Drb1) ? stringBasedLocusMatchCalculator.MatchCount(patientGenotype.Drb1, donorGenotype.Drb1) : (int?) null
+            );
         }
     }
 }
