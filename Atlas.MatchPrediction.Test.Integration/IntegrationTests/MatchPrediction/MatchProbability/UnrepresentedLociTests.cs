@@ -27,7 +27,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes, null, null);
 
-            var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>(null);
+            var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>((Probability) null);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
             var roundedMatchDetails = matchDetails.Round(4);
@@ -55,7 +55,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes, null, null);
 
-            var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>(null);
+            var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>((Probability) null);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
             var roundedMatchDetails = matchDetails.Round(4);
@@ -83,7 +83,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             await ImportFrequencies(possibleHaplotypes, null, null);
 
-            var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>(null);
+            var expectedMismatchProbabilityPerLocus = new LociInfo<Probability>((Probability) null);
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
             var roundedMatchDetails = matchDetails.Round(4);

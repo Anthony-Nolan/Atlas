@@ -37,9 +37,9 @@ namespace Atlas.MatchPrediction.Test.Models
             roundedResponse.MatchProbabilities.ZeroMismatchProbability.Should().BeNull();
             roundedResponse.MatchProbabilities.OneMismatchProbability.Should().BeNull();
             roundedResponse.MatchProbabilities.TwoMismatchProbability.Should().BeNull();
-            roundedResponse.ZeroMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(null));
-            roundedResponse.OneMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(null));
-            roundedResponse.TwoMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>(null));
+            roundedResponse.ZeroMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>((Probability) null));
+            roundedResponse.OneMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>((Probability) null));
+            roundedResponse.TwoMismatchProbabilityPerLocus.Should().BeEquivalentTo(new LociInfo<Probability>((Probability) null));
         }
 
         [Test]
