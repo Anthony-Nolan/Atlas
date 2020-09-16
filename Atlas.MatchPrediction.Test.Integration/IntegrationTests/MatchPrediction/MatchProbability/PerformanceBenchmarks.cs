@@ -126,7 +126,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        [IgnoreExceptOnCiPerfTest("Runs in ~50s")]
+        [IgnoreExceptOnCiPerfTest("Runs in ~11s")]
         public async Task MatchPrediction__WithDonor_AndPatient_FullyTypedAtXXCodeResolution__CalculatesProbabilityCorrectly()
         {
             var xxTypedHla = new PhenotypeInfoBuilder<string>()
@@ -171,7 +171,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         }
 
         [Test]
-        [IgnoreExceptOnCiPerfTest("Runs in ~75s")]
+        [IgnoreExceptOnCiPerfTest("Runs in ~15s")]
         public async Task
             MatchPrediction__WithDonor_TypedAtXXCodeResolution_AtRequiredLociOnly_AndPatient_UnambiguouslyTyped_AtRequiredLociOnly__CalculatesProbabilityCorrectly()
         {
