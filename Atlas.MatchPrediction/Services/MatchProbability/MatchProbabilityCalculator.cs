@@ -5,7 +5,6 @@ using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.MutableModels;
-using Atlas.Common.Utils.Extensions;
 using Atlas.Common.Utils.Models;
 using Atlas.MatchPrediction.Models;
 
@@ -23,8 +22,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     internal interface IMatchProbabilityCalculator
     {
         MatchProbabilityResponse CalculateMatchProbability(
-            SubjectCalculatorInputs patientInfo,
-            SubjectCalculatorInputs donorInfo,
+            decimal sumOfPatientLikelihoods,
+            decimal sumOfDonorLikelihoods,
             IEnumerable<GenotypeMatchDetails> patientDonorMatchDetails,
             ISet<Locus> allowedLoci);
     }
@@ -86,17 +85,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
     internal class MatchProbabilityCalculator : IMatchProbabilityCalculator
     {
         public MatchProbabilityResponse CalculateMatchProbability(
-            SubjectCalculatorInputs patientInfo,
-            SubjectCalculatorInputs donorInfo,
+            decimal sumOfPatientLikelihoods,
+            decimal sumOfDonorLikelihoods,
             IEnumerable<GenotypeMatchDetails> patientDonorMatchDetails,
             ISet<Locus> allowedLoci)
         {
-            var patientLikelihoods = patientInfo.GenotypeLikelihoods;
-            var donorLikelihoods = donorInfo.GenotypeLikelihoods;
-
-            var sumOfPatientLikelihoods = patientInfo.Genotypes.Select(p => patientLikelihoods[p]).SumDecimals();
-            var sumOfDonorLikelihoods = donorInfo.Genotypes.Select(d => donorLikelihoods[d]).SumDecimals();
-
             if (sumOfPatientLikelihoods == 0 || sumOfDonorLikelihoods == 0)
             {
                 throw new InvalidDataException("Cannot calculate match probability for unrepresented hla");
@@ -105,7 +98,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var denominator = sumOfDonorLikelihoods * sumOfPatientLikelihoods;
             decimal MatchProbability(decimal numerator) => numerator / denominator;
 
-            var matchProbabilityNumerators = CalculateEquationNumerators(patientDonorMatchDetails, allowedLoci, patientLikelihoods, donorLikelihoods);
+            var matchProbabilityNumerators = CalculateEquationNumerators(patientDonorMatchDetails, allowedLoci);
 
             return new MatchProbabilityResponse
             {
@@ -132,28 +125,23 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
         private static MatchProbabilityEquationNumerators CalculateEquationNumerators(
             IEnumerable<GenotypeMatchDetails> patientDonorMatchDetails,
-            ISet<Locus> allowedLoci,
-            IReadOnlyDictionary<PhenotypeInfo<string>, decimal> patientLikelihoods,
-            IReadOnlyDictionary<PhenotypeInfo<string>, decimal> donorLikelihoods
+            ISet<Locus> allowedLoci
         )
         {
             return patientDonorMatchDetails.AsParallel()
                 .Aggregate(
                     () => new MatchProbabilityEquationNumerators(allowedLoci),
-                    (numerators, pair) => AggregateNumerators(allowedLoci, patientLikelihoods, donorLikelihoods, pair, numerators),
+                    (numerators, pair) => AggregateNumerators(pair, numerators),
                     (total, thisThread) => total.Add(thisThread),
                     (finalTotal) => finalTotal
                 );
         }
 
         private static MatchProbabilityEquationNumerators AggregateNumerators(
-            ISet<Locus> allowedLoci,
-            IReadOnlyDictionary<PhenotypeInfo<string>, decimal> patientLikelihoods,
-            IReadOnlyDictionary<PhenotypeInfo<string>, decimal> donorLikelihoods,
             GenotypeMatchDetails pair,
             MatchProbabilityEquationNumerators numerators)
         {
-            var pairLikelihood = patientLikelihoods[pair.PatientGenotype] * donorLikelihoods[pair.DonorGenotype];
+            var pairLikelihood = pair.PatientGenotypeLikelihood * pair.DonorGenotypeLikelihood;
 
             switch (pair.MismatchCount)
             {

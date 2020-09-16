@@ -8,8 +8,8 @@ using Atlas.MatchPrediction.Models;
 using Atlas.MatchPrediction.Services.MatchProbability;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders;
 using FluentAssertions;
+using LochNessBuilder;
 using NUnit.Framework;
-using static Atlas.Common.Test.SharedTestHelpers.Builders.DictionaryBuilder;
 
 namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 {
@@ -25,6 +25,9 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
         private static readonly ISet<Locus> AllowedLoci = new HashSet<Locus> {Locus.A, Locus.B, Locus.C, Locus.Dqb1, Locus.Drb1};
 
+        private Builder<GenotypeMatchDetails> DefaultMatchDetailsBuilder => GenotypeMatchDetailsBuilder.New
+            .WithAvailableLoci(AllowedLoci);
+        
         [SetUp]
         public void Setup()
         {
@@ -36,26 +39,21 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         {
             var matchingPairs = new HashSet<GenotypeMatchDetails>
             {
-                GenotypeMatchDetailsBuilder.New
+                DefaultMatchDetailsBuilder
                     .WithGenotypes(defaultDonorHla1, defaultPatientHla1)
                     .WithMatchCounts(new MatchCountsBuilder().TenOutOfTen().Build())
-                    .WithAvailableLoci(AllowedLoci)
+                    .WithDonorGenotypeLikelihood(0.5m)
+                    .WithPatientGenotypeLikelihood(0.5m)
                     .Build(),
-                GenotypeMatchDetailsBuilder.New
+                DefaultMatchDetailsBuilder
                     .WithGenotypes(defaultDonorHla2, defaultPatientHla2)
                     .WithMatchCounts(new MatchCountsBuilder().TenOutOfTen().WithDoubleMismatchAt(Locus.Dqb1, Locus.Drb1).Build())
-                    .WithAvailableLoci(AllowedLoci)
+                    .WithDonorGenotypeLikelihood(0.5m)
+                    .WithPatientGenotypeLikelihood(0.5m)
                     .Build(),
             };
 
-            var likelihoods = DictionaryWithCommonValue(0.5m, defaultDonorHla1, defaultDonorHla2, defaultPatientHla1, defaultPatientHla2);
-
-            var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(
-                SubjectCalculatorInputsBuilder.New.WithLikelihoods(likelihoods).WithGenotypes(defaultPatientHla1, defaultPatientHla2).Build(),
-                SubjectCalculatorInputsBuilder.New.WithLikelihoods(likelihoods).WithGenotypes(defaultDonorHla1, defaultDonorHla2).Build(),
-                matchingPairs,
-                AllowedLoci
-            );
+            var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(1, 1, matchingPairs, AllowedLoci);
 
             var expectedMatchProbabilityPerLocus = new LociInfo<decimal?>(0.5M, 0.5M, 0.5M, null, 0.25M, 0.25M);
             actualProbability.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(0.25m);
@@ -67,26 +65,21 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         {
             var matchingPairs = new HashSet<GenotypeMatchDetails>
             {
-                GenotypeMatchDetailsBuilder.New
+                DefaultMatchDetailsBuilder
                     .WithGenotypes(defaultDonorHla1, defaultPatientHla1)
                     .WithMatchCounts(new MatchCountsBuilder().TenOutOfTen().Build())
-                    .WithAvailableLoci(AllowedLoci)
+                    .WithDonorGenotypeLikelihood(0.5m)
+                    .WithPatientGenotypeLikelihood(0.5m)
                     .Build(),
-                GenotypeMatchDetailsBuilder.New
+                DefaultMatchDetailsBuilder
                     .WithGenotypes(defaultDonorHla2, defaultPatientHla2)
                     .WithMatchCounts(new MatchCountsBuilder().TenOutOfTen().WithSingleMismatchAt(Locus.Drb1).Build())
-                    .WithAvailableLoci(AllowedLoci)
+                    .WithDonorGenotypeLikelihood(0.5m)
+                    .WithPatientGenotypeLikelihood(0.5m)
                     .Build(),
             };
 
-            var likelihoods = DictionaryWithCommonValue(0.5m, defaultDonorHla1, defaultDonorHla2, defaultPatientHla1, defaultPatientHla2);
-
-            var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(
-                SubjectCalculatorInputsBuilder.New.WithLikelihoods(likelihoods).WithGenotypes(defaultPatientHla1, defaultPatientHla2).Build(),
-                SubjectCalculatorInputsBuilder.New.WithLikelihoods(likelihoods).WithGenotypes(defaultDonorHla1, defaultDonorHla2).Build(),
-                matchingPairs,
-                AllowedLoci
-            );
+            var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(1, 1, matchingPairs, AllowedLoci);
 
             var expectedMatchProbabilityPerLocus = new LociInfo<decimal?>(0.5M, 0.5M, 0.5M, null, 0.5M, 0.25M);
             actualProbability.MatchProbabilities.OneMismatchProbability.Decimal.Should().Be(0.25m);
@@ -98,26 +91,22 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         {
             var matchingPairs = new HashSet<GenotypeMatchDetails>
             {
-                GenotypeMatchDetailsBuilder.New
+                DefaultMatchDetailsBuilder
                     .WithGenotypes(defaultDonorHla1, defaultPatientHla1)
                     .WithMatchCounts(new MatchCountsBuilder().TenOutOfTen().Build())
-                    .WithAvailableLoci(AllowedLoci)
+                    .WithDonorGenotypeLikelihood(0.5m)
+                    .WithPatientGenotypeLikelihood(0.5m)
                     .Build(),
-                GenotypeMatchDetailsBuilder.New
+                DefaultMatchDetailsBuilder
                     .WithGenotypes(defaultDonorHla2, defaultPatientHla2)
                     .WithMatchCounts(new MatchCountsBuilder().TenOutOfTen().WithDoubleMismatchAt(Locus.Drb1).Build())
-                    .WithAvailableLoci(AllowedLoci)
+                    .WithDonorGenotypeLikelihood(0.5m)
+                    .WithPatientGenotypeLikelihood(0.5m)
                     .Build(),
             };
 
-            var likelihoods = DictionaryWithCommonValue(0.5m, defaultDonorHla1, defaultDonorHla2, defaultPatientHla1, defaultPatientHla2);
 
-            var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(
-                SubjectCalculatorInputsBuilder.New.WithLikelihoods(likelihoods).WithGenotypes(defaultPatientHla1, defaultPatientHla2).Build(),
-                SubjectCalculatorInputsBuilder.New.WithLikelihoods(likelihoods).WithGenotypes(defaultDonorHla1, defaultDonorHla2).Build(),
-                matchingPairs,
-                AllowedLoci
-            );
+            var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(1, 1, matchingPairs, AllowedLoci);
 
             var expectedMatchProbabilityPerLocus = new LociInfo<decimal?>(0.5M, 0.5M, 0.5M, null, 0.5M, 0.25M);
             actualProbability.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0.25m);
@@ -129,26 +118,22 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         {
             var matchingPairs = new HashSet<GenotypeMatchDetails>
             {
-                GenotypeMatchDetailsBuilder.New
+                DefaultMatchDetailsBuilder
                     .WithGenotypes(defaultDonorHla1, defaultPatientHla1)
                     .WithMatchCounts(new MatchCountsBuilder().TenOutOfTen().Build())
-                    .WithAvailableLoci(AllowedLoci)
+                    .WithDonorGenotypeLikelihood(0.5m)
+                    .WithPatientGenotypeLikelihood(0.5m)
                     .Build(),
-                GenotypeMatchDetailsBuilder.New
+                DefaultMatchDetailsBuilder
                     .WithGenotypes(defaultDonorHla2, defaultPatientHla2)
                     .WithMatchCounts(new MatchCountsBuilder().TenOutOfTen().WithSingleMismatchAt(Locus.B, Locus.C).Build())
-                    .WithAvailableLoci(AllowedLoci)
+                    .WithDonorGenotypeLikelihood(0.5m)
+                    .WithPatientGenotypeLikelihood(0.5m)
                     .Build(),
             };
 
-            var likelihoods = DictionaryWithCommonValue(0.5m, defaultDonorHla1, defaultDonorHla2, defaultPatientHla1, defaultPatientHla2);
 
-            var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(
-                SubjectCalculatorInputsBuilder.New.WithLikelihoods(likelihoods).WithGenotypes(defaultPatientHla1, defaultPatientHla2).Build(),
-                SubjectCalculatorInputsBuilder.New.WithLikelihoods(likelihoods).WithGenotypes(defaultDonorHla1, defaultDonorHla2).Build(),
-                matchingPairs,
-                AllowedLoci
-            );
+            var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(1, 1, matchingPairs, AllowedLoci);
 
             var expectedMatchProbabilityPerLocus = new LociInfo<decimal?>(0.5M, 0.25M, 0.25M, null, 0.5M, 0.5M);
             actualProbability.MatchProbabilities.TwoMismatchProbability.Decimal.Should().Be(0.25m);
@@ -163,22 +148,15 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
 
             var matchingPairs = new HashSet<GenotypeMatchDetails>
             {
-                GenotypeMatchDetailsBuilder.New
+                DefaultMatchDetailsBuilder
                     .WithGenotypes(sharedHlaMatch, sharedHlaMatch)
                     .WithMatchCounts(new MatchCountsBuilder().TenOutOfTen().Build())
-                    .WithAvailableLoci(AllowedLoci)
+                    .WithDonorGenotypeLikelihood(0.01m)
+                    .WithPatientGenotypeLikelihood(0.03m)
                     .Build()
             };
 
-            var donorLikelihoods = new Dictionary<PhenotypeInfo<string>, decimal> {{sharedHlaMatch, 0.01m}, {sharedHlaMismatch, 0.02m}};
-            var patientLikelihoods = new Dictionary<PhenotypeInfo<string>, decimal> {{sharedHlaMatch, 0.03m}, {sharedHlaMismatch, 0.04m}};
-
-            var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(
-                SubjectCalculatorInputsBuilder.New.WithLikelihoods(donorLikelihoods).WithGenotypes(sharedHlaMatch, sharedHlaMismatch).Build(),
-                SubjectCalculatorInputsBuilder.New.WithLikelihoods(patientLikelihoods).WithGenotypes(sharedHlaMatch, sharedHlaMismatch).Build(),
-                matchingPairs,
-                AllowedLoci
-            );
+            var actualProbability = matchProbabilityCalculator.CalculateMatchProbability(0.03m, 0.07m, matchingPairs, AllowedLoci);
 
             actualProbability.MatchProbabilities.ZeroMismatchProbability.Decimal.Should().Be(0.1428571428571428571428571429m);
         }
@@ -187,20 +165,15 @@ namespace Atlas.MatchPrediction.Test.Services.MatchProbability
         [IgnoreExceptOnCiPerfTest("10M pairs runs in 15s")]
         public void PerformanceTest()
         {
-            var matchingPairs = GenotypeMatchDetailsBuilder.New
+            var matchingPairs = DefaultMatchDetailsBuilder
                 .WithGenotypes(defaultDonorHla1, defaultPatientHla1)
                 .WithMatchCounts(new MatchCountsBuilder().TenOutOfTen().Build())
-                .WithAvailableLoci(AllowedLoci)
-                .Build(10_000_000).ToHashSet();
-            
-            var likelihoods = DictionaryWithCommonValue(0.5m, defaultDonorHla1, defaultDonorHla2, defaultPatientHla1, defaultPatientHla2);
+                .WithDonorGenotypeLikelihood(0.5m)
+                .WithPatientGenotypeLikelihood(0.5m)
+                .Build(10_000_000)
+                .ToHashSet();
 
-            matchProbabilityCalculator.CalculateMatchProbability(
-                SubjectCalculatorInputsBuilder.New.WithLikelihoods(likelihoods).WithGenotypes(defaultPatientHla1, defaultPatientHla2).Build(),
-                SubjectCalculatorInputsBuilder.New.WithLikelihoods(likelihoods).WithGenotypes(defaultDonorHla1, defaultDonorHla2).Build(),
-                matchingPairs,
-                AllowedLoci
-            );
+            matchProbabilityCalculator.CalculateMatchProbability(1, 1, matchingPairs, AllowedLoci);
         }
     }
 }
