@@ -57,9 +57,9 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         /// This is only safe because this class in immutable, and all properties included in the hash cannot change after construction.
         /// </summary>
         private int? PreComputedHash { get; }
-        
+
         #region Constructors
-        
+
         /// <summary>
         /// Creates a new LociInfo with no inner values set.
         /// </summary>
@@ -101,8 +101,19 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             PreComputedHash = CalculateHashCode();
         }
 
+        public LociInfo(Func<Locus, T> initialValueFactory)
+        {
+            A = initialValueFactory(Locus.A);
+            B = initialValueFactory(Locus.B);
+            C = initialValueFactory(Locus.C);
+            Dpb1 = initialValueFactory(Locus.Dpb1);
+            Dqb1 = initialValueFactory(Locus.Dqb1);
+            Drb1 = initialValueFactory(Locus.Drb1);
+            PreComputedHash = CalculateHashCode();
+        }
+
         #endregion
-        
+
         private static ISet<Locus> SupportedLoci => EnumExtensions.EnumerateValues<Locus>().ToHashSet();
 
         public LociInfo<R> Map<R>(Func<Locus, T, R> mapping)

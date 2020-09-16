@@ -11,7 +11,7 @@ namespace Atlas.Common.Test.SharedTestHelpers.Builders
 
         public LociInfoBuilder()
         {
-            lociInfo = new LociInfo<T>(default);
+            lociInfo = new LociInfo<T>((T) default);
         }
 
         public LociInfoBuilder(LociInfo<T> initialValues)
