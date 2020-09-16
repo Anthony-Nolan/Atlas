@@ -31,6 +31,7 @@ This code is designed to be run locally; it is not production quality and cannot
 - [Searching](#searching)
   * [Send Search Requests](#send-search-requests)
   * [Retrieve Search Results](#retrieve-search-results)
+- [Verification Results](#verification-results)
 
 ### Glossary
 - Test Harness: a set of simulated patient and donors that will be run through search in order to verify match prediction.
@@ -198,7 +199,7 @@ Note: at present, the framework is hard-coded to only run five locus (A,B,C,DQB1
   - Check AI logs/Debug window for further info if messages repeatedly dead-letter.
 
 ### Verification Results
-Verification results are displayed using an Actual vs. Potential (AvP) plot
+Verification results are displayed using an Actual vs. Potential (AvP) plot.
 
 Recommended reading for how AvE plots and their metrics should be used and intepreted:
 Madbouly, A., at al, (2014); Validation of statistical imputation of allele-level multilocus phased genotypes from 
@@ -222,3 +223,6 @@ To generate the AvE plot:
   - `n`: total number of PDP pairs
   - `WCBD`: Weighted City Block Distance
   - `Weighted R2`: R2 value calculated using the weighted mean of each match probability bin.
+
+See also `\MiscTestingAndDebuggingResources\ManualTesting\MatchPredictionVerification\VerificationResultsSQLQueries.sql`
+for additional queries that can be run after verification search results have been retrieved.
