@@ -207,9 +207,9 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 }
             }
 
-            var allPatientDonorCombinations = CombineGenotypes(
-                await ConvertGenotypes(patientGenotypes, "patient", patientGenotypeLikelihoods),
-                await ConvertGenotypes(donorGenotypes, "donor", donorGenotypeLikelihoods));
+            var convertedPatientGenotypes = await ConvertGenotypes(patientGenotypes, "patient", patientGenotypeLikelihoods);
+            var convertedDonorGenotypes = await ConvertGenotypes(donorGenotypes, "donor", donorGenotypeLikelihoods);
+            var allPatientDonorCombinations = CombineGenotypes(convertedPatientGenotypes, convertedDonorGenotypes);
 
             using (var matchCountLogger = MatchCountLogger(allPatientDonorCombinations.Count))
             {
@@ -307,23 +307,23 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 .AsParallel()
                 .Select(pd =>
                 {
-                    // using (stopwatch.TimeInnerOperation())
-                    // {
-                    var (patient, donor) = pd;
-                    return new GenotypeMatchDetails
+                    using (stopwatch.TimeInnerOperation())
                     {
-                        AvailableLoci = allowedLoci,
-                        DonorGenotype = donor.HaplotypeResolution,
-                        DonorGenotypeLikelihood = donor.GenotypeLikelihood,
-                        PatientGenotype = patient.HaplotypeResolution,
-                        PatientGenotypeLikelihood = patient.GenotypeLikelihood,
-                        MatchCounts = matchCalculationService.CalculateMatchCounts_Fast(
-                            patient.StringMatchableResolution,
-                            donor.StringMatchableResolution,
-                            allowedLoci
-                        )
-                    };
-                    // }
+                        var (patient, donor) = pd;
+                        return new GenotypeMatchDetails
+                        {
+                            AvailableLoci = allowedLoci,
+                            DonorGenotype = donor.HaplotypeResolution,
+                            DonorGenotypeLikelihood = donor.GenotypeLikelihood,
+                            PatientGenotype = patient.HaplotypeResolution,
+                            PatientGenotypeLikelihood = patient.GenotypeLikelihood,
+                            MatchCounts = matchCalculationService.CalculateMatchCounts_Fast(
+                                patient.StringMatchableResolution,
+                                donor.StringMatchableResolution,
+                                allowedLoci
+                            )
+                        };
+                    }
                 });
         }
 
