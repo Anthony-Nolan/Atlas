@@ -56,7 +56,7 @@ locals {
     // maximum running instances of the algorithm = maximum_worker_count * maxConcurrentCalls (in host.json).
     // together these must ensure that the number of allowed concurrent SQL connections to the matching SQL DB is not exceeded.
     // Note that this is 200 workers for an S3 plan, and that each algorithm invocation can open up to 4 concurrent connections.
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "5"
+    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "3"
     "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
   }
   matching_algorithm_function_app_name = "${var.general.environment}-ATLAS-MATCHING-ALGORITHM-FUNCTIONS"
