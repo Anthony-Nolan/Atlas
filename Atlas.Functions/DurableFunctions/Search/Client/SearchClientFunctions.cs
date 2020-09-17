@@ -40,7 +40,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             [DurableClient] IDurableOrchestrationClient starter)
         {
             var searchId = resultsNotification.SearchRequestId;
-            await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.SearchOrchestrator), searchId, resultsNotification);
+            await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.SearchOrchestrator), resultsNotification);
 
             try
             {
