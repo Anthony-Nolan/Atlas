@@ -51,7 +51,7 @@ resource "azurerm_function_app" "atlas_function" {
     "Matching:AzureStorage:ConnectionString"           = azurerm_storage_account.azure_storage.primary_connection_string
     "Matching:AzureStorage:SearchResultsBlobContainer" = module.matching_algorithm.azure_storage.search_results_container
     "Matching:MessagingServiceBus:ConnectionString"    = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
-    "Matching:MessagingServiceBus:SearchRequestsQueue" = module.matching_algorithm.service_bus.search_requests_queue
+    "Matching:MessagingServiceBus:SearchRequestsTopic" = module.matching_algorithm.service_bus.matching_requests_topic
     "Matching:MessagingServiceBus:SearchResultsTopic"  = module.matching_algorithm.service_bus.matching_results_topic
 
     "NotificationsServiceBus:AlertsTopic"        = module.support.general.alerts_servicebus_topic.name
@@ -121,7 +121,7 @@ resource "azurerm_function_app" "atlas_public_api_function" {
     "FUNCTIONS_WORKER_RUNTIME" : "dotnet"
 
     "Matching:MessagingServiceBus:ConnectionString"    = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
-    "Matching:MessagingServiceBus:SearchRequestsQueue" = module.matching_algorithm.service_bus.search_requests_queue
+    "Matching:MessagingServiceBus:SearchRequestsTopic" = module.matching_algorithm.service_bus.matching_requests_topic
     "Matching:MessagingServiceBus:SearchResultsTopic"  = module.matching_algorithm.service_bus.matching_results_topic
 
     "NotificationsServiceBus:AlertsTopic"        = module.support.general.alerts_servicebus_topic.name

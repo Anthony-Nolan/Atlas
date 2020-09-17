@@ -10,29 +10,29 @@ namespace Atlas.MatchingAlgorithm.Clients.ServiceBus
 {
     public interface ISearchServiceBusClient
     {
-        Task PublishToSearchQueue(IdentifiedSearchRequest searchRequest);
+        Task PublishToSearchRequestsTopic(IdentifiedSearchRequest searchRequest);
         Task PublishToResultsNotificationTopic(MatchingResultsNotification matchingResultsNotification);
     }
     
     public class SearchServiceBusClient : ISearchServiceBusClient
     {
         private readonly string connectionString;
-        private readonly string searchQueueName;
+        private readonly string searchRequestsTopicName;
         private readonly string resultsNotificationTopicName;
 
         public SearchServiceBusClient(MessagingServiceBusSettings messagingServiceBusSettings)
         {
             connectionString = messagingServiceBusSettings.ConnectionString;
-            searchQueueName = messagingServiceBusSettings.SearchRequestsQueue;
+            searchRequestsTopicName = messagingServiceBusSettings.SearchRequestsTopic;
             resultsNotificationTopicName = messagingServiceBusSettings.SearchResultsTopic;
         }
 
-        public async Task PublishToSearchQueue(IdentifiedSearchRequest searchRequest)
+        public async Task PublishToSearchRequestsTopic(IdentifiedSearchRequest searchRequest)
         {
             var json = JsonConvert.SerializeObject(searchRequest);
             var message = new Message(Encoding.UTF8.GetBytes(json));
             
-            var client = new QueueClient(connectionString, searchQueueName);
+            var client = new TopicClient(connectionString, searchRequestsTopicName);
             await client.SendAsync(message);
         }
 
