@@ -33,7 +33,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 SearchRequest = matchingRequest,
                 Id = searchRequestId
             };
-            await searchServiceBusClient.PublishToSearchQueue(identifiedSearchRequest);
+            await searchServiceBusClient.PublishToSearchRequestsTopic(identifiedSearchRequest);
 
             return searchRequestId;
         }

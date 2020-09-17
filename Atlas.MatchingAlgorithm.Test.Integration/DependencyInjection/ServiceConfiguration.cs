@@ -92,7 +92,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
             // Clients
             var mockSearchServiceBusClient = Substitute.For<ISearchServiceBusClient>();
             mockSearchServiceBusClient
-                .PublishToSearchQueue(Arg.Any<IdentifiedSearchRequest>())
+                .PublishToSearchRequestsTopic(Arg.Any<IdentifiedSearchRequest>())
                 .Returns(Task.CompletedTask);
             services.AddScoped(sp => mockSearchServiceBusClient);
 

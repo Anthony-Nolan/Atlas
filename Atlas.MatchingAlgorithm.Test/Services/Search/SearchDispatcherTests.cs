@@ -36,7 +36,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
                     .WithTotalMismatchCount(0)
                     .Build());
 
-            await searchServiceBusClient.Received().PublishToSearchQueue(Arg.Is<IdentifiedSearchRequest>(r => r.Id != null));
+            await searchServiceBusClient.Received().PublishToSearchRequestsTopic(Arg.Is<IdentifiedSearchRequest>(r => r.Id != null));
         }
 
         [Test]

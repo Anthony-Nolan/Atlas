@@ -43,9 +43,10 @@ locals {
     "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
     "MacDictionary:TableName"                    = var.mac_import_table.name,
 
-    "MessagingServiceBus:ConnectionString"    = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
-    "MessagingServiceBus:SearchRequestsQueue" = azurerm_servicebus_queue.matching-requests.name
-    "MessagingServiceBus:SearchResultsTopic"  = azurerm_servicebus_topic.matching-results-ready.name
+    "MessagingServiceBus:ConnectionString"           = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
+    "MessagingServiceBus:SearchRequestsSubscription" = azurerm_servicebus_subscription.matching-requests-matching-algorithm.name
+    "MessagingServiceBus:SearchRequestsTopic"        = azurerm_servicebus_topic.matching-requests.name
+    "MessagingServiceBus:SearchResultsTopic"         = azurerm_servicebus_topic.matching-results-ready.name
 
     "NotificationsServiceBus:ConnectionString"   = var.servicebus_namespace_authorization_rules.write-only.primary_connection_string
     "NotificationsServiceBus:AlertsTopic"        = var.servicebus_topics.alerts.name

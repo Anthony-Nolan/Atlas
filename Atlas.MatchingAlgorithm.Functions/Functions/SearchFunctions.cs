@@ -31,7 +31,9 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(InitiateSearch))]
-        public async Task<IActionResult> InitiateSearch([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request)
+        public async Task<IActionResult> InitiateSearch(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            HttpRequest request)
         {
             var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
             try
@@ -48,7 +50,10 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(RunSearch))]
         public async Task RunSearch(
-            [ServiceBusTrigger("%MessagingServiceBus:SearchRequestsQueue%", Connection = "MessagingServiceBus:ConnectionString")]
+            [ServiceBusTrigger(
+                "%MessagingServiceBus:SearchRequestsTopic%",
+                "%MessagingServiceBus:SearchRequestsSubscription%",
+                Connection = "MessagingServiceBus:ConnectionString")]
             Message message)
         {
             var serialisedData = Encoding.UTF8.GetString(message.Body);
