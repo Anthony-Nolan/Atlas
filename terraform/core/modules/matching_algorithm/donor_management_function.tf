@@ -34,9 +34,9 @@ locals {
 
 resource "azurerm_function_app" "atlas_matching_algorithm_donor_management_function" {
   name                       = local.donor_management_function_app_name
-  resource_group_name        = var.app_service_plan.resource_group_name
+  resource_group_name        = var.elastic_app_service_plan.resource_group_name
   location                   = var.general.location
-  app_service_plan_id        = var.app_service_plan.id
+  app_service_plan_id        = var.elastic_app_service_plan.id
   https_only                 = true
   version                    = "~3"
   storage_account_access_key = var.shared_function_storage.primary_access_key

@@ -44,7 +44,6 @@ module "matching_algorithm" {
   default_servicebus_settings = local.service-bus
 
   // DI variables
-  app_service_plan          = azurerm_app_service_plan.atlas
   application_insights      = azurerm_application_insights.atlas
   azure_storage             = azurerm_storage_account.azure_storage
   donor_import_sql_database = azurerm_sql_database.atlas-database-shared
@@ -178,13 +177,12 @@ module "support" {
 
   default_servicebus_settings = local.service-bus
 
-  app_service_plan     = azurerm_app_service_plan.atlas
+  resource_group       = azurerm_resource_group.atlas_resource_group
   servicebus_namespace = azurerm_servicebus_namespace.general
 }
 
 module "multiple_allele_code_lookup" {
   source = "./modules/multiple_allele_code_lookup"
 
-  app_service_plan = azurerm_app_service_plan.atlas
-  azure_storage    = azurerm_storage_account.azure_storage
+  azure_storage = azurerm_storage_account.azure_storage
 }

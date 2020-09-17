@@ -13,7 +13,7 @@ locals {
     "AzureManagement:Authentication:ClientSecret"               = var.AZURE_CLIENT_SECRET
     "AzureManagement:Database:ServerName"                       = var.sql_server.name
     "AzureManagement:Database:PollingRetryIntervalMilliseconds" = var.DATABASE_OPERATION_POLLING_INTERVAL_MILLISECONDS
-    "AzureManagement:Database:ResourceGroupName"                = var.app_service_plan.resource_group_name
+    "AzureManagement:Database:ResourceGroupName"                = var.resource_group.name
     "AzureManagement:Database:SubscriptionId"                   = var.general.subscription_id
 
     "AzureStorage:ConnectionString"           = var.azure_storage.primary_connection_string
@@ -64,7 +64,7 @@ locals {
 
 resource "azurerm_function_app" "atlas_matching_algorithm_function" {
   name                       = local.matching_algorithm_function_app_name
-  resource_group_name        = var.app_service_plan.resource_group_name
+  resource_group_name        = var.resource_group.name
   location                   = var.general.location
   app_service_plan_id        = var.elastic_app_service_plan.id
   https_only                 = true

@@ -7,7 +7,7 @@ locals {
 resource "azurerm_sql_database" "atlas-matching-transient-a" {
   location            = var.general.location
   name                = lower("${var.general.environment}-ATLAS-MATCHING-A")
-  resource_group_name = var.app_service_plan.resource_group_name
+  resource_group_name = var.resource_group.name
   server_name         = var.sql_server.name
 
   // DO NOT SET THE PRICING TIER IN TERRAFORM - this is dynamically scaled as part of the data refresh, and specifying any values in terraform will cause releases to override said scaling
@@ -19,7 +19,7 @@ resource "azurerm_sql_database" "atlas-matching-transient-a" {
 resource "azurerm_sql_database" "atlas-matching-transient-b" {
   location            = var.general.location
   name                = lower("${var.general.environment}-ATLAS-MATCHING-B")
-  resource_group_name = var.app_service_plan.resource_group_name
+  resource_group_name = var.resource_group.name
   server_name         = var.sql_server.name
 
   // DO NOT SET THE PRICING TIER IN TERRAFORM - this is dynamically scaled as part of the data refresh, and specifying any values in terraform will cause releases to override said scaling
