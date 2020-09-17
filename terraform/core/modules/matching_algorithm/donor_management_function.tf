@@ -43,7 +43,6 @@ resource "azurerm_function_app" "atlas_matching_algorithm_donor_management_funct
   storage_account_name       = var.shared_function_storage.name
 
   site_config {
-    always_on = true
     ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
       ip_address = ip
       subnet_id  = null
