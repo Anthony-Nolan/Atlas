@@ -40,7 +40,7 @@ namespace Atlas.Functions.Services
             // This means we don't track the queue time, on either the matching or orchestration queue - so user observed search time may be
             // slightly longer than this reported time. This should only be noticeably different under high load. 
             var searchTime = searchResultSet.MatchingAlgorithmTime + orchestrationSearchTime;
-            
+
             logger.SendTrace(
                 $"Search Request: {searchResultSet.SearchRequestId} finished. Matched {searchResultSet.TotalResults} donors in {searchTime} total.",
                 LogLevel.Info,
@@ -83,7 +83,17 @@ namespace Atlas.Functions.Services
         private async Task SendNotificationMessage(SearchResultsNotification searchResultsNotification)
         {
             var json = JsonConvert.SerializeObject(searchResultsNotification);
-            var message = new Message(Encoding.UTF8.GetBytes(json));
+            var message = new Message(Encoding.UTF8.GetBytes(json))
+            {
+                UserProperties =
+                {
+                    {nameof(SearchResultsNotification.SearchRequestId), searchResultsNotification.SearchRequestId},
+                    {nameof(SearchResultsNotification.WasSuccessful), searchResultsNotification.WasSuccessful},
+                    {nameof(SearchResultsNotification.NumberOfResults), searchResultsNotification.NumberOfResults},
+                    {nameof(SearchResultsNotification.HlaNomenclatureVersion), searchResultsNotification.HlaNomenclatureVersion},
+                    {nameof(SearchResultsNotification.OverallSearchTime), searchResultsNotification.OverallSearchTime},
+                }
+            };
 
             var client = new TopicClient(connectionString, resultsNotificationTopicName);
             await client.SendAsync(message);
