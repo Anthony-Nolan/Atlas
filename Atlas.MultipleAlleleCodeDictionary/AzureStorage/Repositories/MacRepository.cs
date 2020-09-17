@@ -66,6 +66,10 @@ namespace Atlas.MultipleAlleleCodeDictionary.AzureStorage.Repositories
         public async Task<Mac> GetMac(string macCode)
         {
             var macEntity = await Table.GetByPartitionAndRowKey<MacEntity>(macCode.AsPartitionKey(), macCode.AsRowKey());
+            if (macEntity == null)
+            {
+                throw new MacNotFoundException(macCode);
+            }
             return new Mac(macEntity);
         }
 
