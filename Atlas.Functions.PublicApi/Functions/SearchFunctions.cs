@@ -5,6 +5,7 @@ using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;
+using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -28,6 +29,7 @@ namespace Atlas.Functions.PublicApi.Functions
         [FunctionName(nameof(Search))]
         public async Task<IActionResult> Search(
             [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(SearchRequest), nameof(SearchRequest))]
             HttpRequest request)
         {
             var searchRequest = JsonConvert.DeserializeObject<SearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
