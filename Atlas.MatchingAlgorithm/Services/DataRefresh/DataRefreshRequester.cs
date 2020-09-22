@@ -17,7 +17,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         /// <summary>
         /// Validates the request to refresh the database and queues it if valid.
         /// </summary>
-        /// <returns>Record ID, if request was accepted. Else 400 error thrown with failure details.</returns>
+        /// <returns>Record ID, if request was accepted. Else exception thrown with failure details.</returns>
         Task<DataRefreshResponse> RequestDataRefresh(DataRefreshRequest request);
     }
 
