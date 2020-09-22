@@ -100,6 +100,18 @@ resource "azurerm_servicebus_subscription" "audit-data-refresh-requests" {
   dead_lettering_on_message_expiration = false
 }
 
+resource "azurerm_servicebus_subscription" "matching-algorithm-data-refresh-requests" {
+  name                                 = "matching-algorithm"
+  resource_group_name                  = var.resource_group.name
+  namespace_name                       = var.servicebus_namespace.name
+  topic_name                           = azurerm_servicebus_topic.data-refresh-requests.name
+  auto_delete_on_idle                  = var.default_servicebus_settings.audit-subscription-idle-delete
+  default_message_ttl                  = var.default_servicebus_settings.long-expiry
+  lock_duration                        = var.default_servicebus_settings.default-read-lock
+  max_delivery_count                   = var.default_servicebus_settings.default-message-retries
+  dead_lettering_on_message_expiration = false
+}
+
 resource "azurerm_servicebus_topic" "completed-data-refresh-jobs" {
   name                  = "completed-data-refresh-jobs"
   resource_group_name   = var.resource_group.name

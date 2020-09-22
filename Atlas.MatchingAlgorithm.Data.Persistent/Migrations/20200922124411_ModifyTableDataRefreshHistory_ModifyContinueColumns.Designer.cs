@@ -4,14 +4,16 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Atlas.MatchingAlgorithm.Data.Persistent.Migrations
 {
     [DbContext(typeof(SearchAlgorithmPersistentContext))]
-    partial class SearchAlgorithmPersistentContextModelSnapshot : ModelSnapshot
+    [Migration("20200922124411_ModifyTableDataRefreshHistory_ModifyContinueColumns")]
+    partial class ModifyTableDataRefreshHistory_ModifyContinueColumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

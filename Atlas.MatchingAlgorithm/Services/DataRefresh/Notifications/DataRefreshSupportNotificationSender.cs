@@ -10,7 +10,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications
     public interface IDataRefreshSupportNotificationSender
     {
         Task SendInitialisationNotification(int recordId);
-        Task SendContinuationNotification(int recordId);
+        Task SendInProgressNotification(int recordId, int currentAttemptNumber);
         Task SendSuccessNotification(int recordId);
         Task SendFailureAlert(int recordId);
         Task SendTeardownFailureAlert(int recordId);
@@ -38,25 +38,23 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications
 
         public async Task SendInitialisationNotification(int recordId)
         {
-            var summary = $"Data refresh begun (#{recordId})";
-            var description =
-$@"The job to refresh all donor and hla data in the matching algorithm has begun (Record Id: {recordId}).
-This is expected to happen once every three months, and to take a large number of hours to run to completion.
-If no success or failure notification has been received within 24 hours of this one - check whether the job is still running.
-If it is not, follow the instructions in the Readme of the search algorithm project.
-Most urgently; scaling back the database the job was running on, as it is an expensive tier and should not be used when the job is not in progress";
+            var summary = $"Data refresh requested (#{recordId})";
+            var description = 
+                $@"A request to refresh all donor and hla data in the matching algorithm has been successfully queued (Record Id: {recordId}).";
 
             await SendNotification(summary, description);
         }
 
-        /// <inheritdoc />
-        public async Task SendContinuationNotification(int recordId)
+        public async Task SendInProgressNotification(int recordId, int currentAttemptNumber)
         {
-            var summary = $"Data refresh resumed (#{recordId})";
+            var summary = $"Data refresh in progress (#{recordId})";
             var description =
-$@"The matching algorithm data refresh (Record Id: {recordId}) has been resumed.
-This should only be able to be manually triggered - and should have only happened if the single in-progress
-refresh had been interrupted without success or failure.";
+$@"Request to run matching algorithm data refresh (Record Id: {recordId}) in now in progress.
+This is attempt number: {currentAttemptNumber}.
+
+If no completion message has been received within the expected timeframe, check whether the job is still running.
+If it is not, follow the instructions in the project Readme.
+Most urgently: scaling back the database the job was running on, as it is an expensive tier and should not be used when the job is not in progress.";
 
             await SendNotification(summary, description);
         }

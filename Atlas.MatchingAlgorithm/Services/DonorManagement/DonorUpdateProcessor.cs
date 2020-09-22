@@ -139,7 +139,7 @@ namespace Atlas.MatchingAlgorithm.Services.DonorManagement
         private DatabaseStateWithRespectToDonorUpdates DetermineDatabaseState(TransientDatabase targetDatabase)
         {
             var activeDb = refreshHistoryRepository.GetActiveDatabase();
-            var refreshJobs = refreshHistoryRepository.GetInProgressJobs().ToList();
+            var refreshJobs = refreshHistoryRepository.GetIncompleteRefreshJobs().ToList();
             var dbBeingRefreshed = refreshJobs.FirstOrDefault()?.Database?.ParseToEnum<TransientDatabase>();
             
             var targetDbIsActive = (activeDb == targetDatabase);

@@ -12,7 +12,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.DataRefresh
         public static Builder<DataRefreshRecord> New =>
             Builder<DataRefreshRecord>.New
                 .With(r => r.WasSuccessful, false)
-                .With(r => r.RefreshBeginUtc, DateTime.UtcNow.AddSeconds(-1))
+                .With(r => r.RefreshRequestedUtc, DateTime.UtcNow.AddSeconds(-1))
                 .WithDatabase(TransientDatabase.DatabaseA);
 
         public static Builder<DataRefreshRecord> WithDatabase(this Builder<DataRefreshRecord> builder, TransientDatabase db)
