@@ -93,7 +93,18 @@ namespace Atlas.MatchPrediction.Data.Repositories
         /// <inheritdoc />
         public async Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId)
         {
-            var sql = $"SELECT * FROM {HaplotypeFrequency.QualifiedTableName} WHERE Set_Id = @setId";
+            var sql = @$"
+SELECT {nameof(HaplotypeFrequency.Id)},
+{nameof(HaplotypeFrequency.A)},
+{nameof(HaplotypeFrequency.B)},
+{nameof(HaplotypeFrequency.C)},
+{nameof(HaplotypeFrequency.DQB1)},
+{nameof(HaplotypeFrequency.DRB1)}, 
+{nameof(HaplotypeFrequency.Frequency)}, 
+{nameof(HaplotypeFrequency.TypingCategory)},
+{HaplotypeFrequency.SetIdColumnName}
+FROM {HaplotypeFrequency.QualifiedTableName} 
+WHERE {HaplotypeFrequency.SetIdColumnName} = @setId";
 
             return await RetryConfig.AsyncRetryPolicy.ExecuteAsync(async () =>
             {
