@@ -66,7 +66,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         public async Task OrchestrateDataRefresh(int dataRefreshRecordId)
         {
-            var incompleteJob = PreJobChecks(dataRefreshRecordId);
+            var incompleteJob = FetchIncompleteJobRecord(dataRefreshRecordId);
 
             await dataRefreshNotificationSender.SendInProgressNotification(
                 dataRefreshRecordId, 1 + incompleteJob.RefreshContinuedCount);
@@ -74,7 +74,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             await ContinueRefreshJob(dataRefreshRecordId);
         }
 
-        private DataRefreshRecord PreJobChecks(int dataRefreshRecordId)
+        private DataRefreshRecord FetchIncompleteJobRecord(int dataRefreshRecordId)
         {
             var errorMessagePrefix = $"Cannot run data refresh {dataRefreshRecordId}. ";
 
