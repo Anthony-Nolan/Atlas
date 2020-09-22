@@ -84,11 +84,27 @@ namespace Atlas.MatchPrediction.Data.Models
     {
         public static void SetUpModel(this EntityTypeBuilder<HaplotypeFrequency> modelBuilder)
         {
+            // Index used for ensuring correct data - no duplicate haplotypes allowed
             modelBuilder
                 .HasIndex(f => new {f.A, f.B, f.C, f.DQB1, f.DRB1, f.SetId})
                 .IsUnique()
                 .IncludeProperties(f => new
                 {
+                    f.Frequency,
+                    f.TypingCategory
+                });
+            
+            // Index used for loading a set by id. Ensure all required data is included in this index to avoid clustered index scan.
+            modelBuilder
+                .HasIndex(f => new {f.SetId})
+                .IncludeProperties(f => new
+                {
+                    f.Id,
+                    f.A,
+                    f.B,
+                    f.C,
+                    f.DQB1,
+                    f.DRB1,
                     f.Frequency,
                     f.TypingCategory
                 });
