@@ -49,7 +49,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories
                 Database = "DatabaseA",
                 WasSuccessful = true,
                 HlaNomenclatureVersion = hlaNomenclatureVersion,
-                RefreshBeginUtc = DateTime.UtcNow,
+                RefreshRequestedUtc = DateTime.UtcNow,
                 RefreshEndUtc = DateTime.UtcNow
             };
             Context.DataRefreshRecords.Add(dataRefreshRecord);
@@ -81,7 +81,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories
                 Database = active.Other().ToString(),
                 WasSuccessful = true,
                 HlaNomenclatureVersion = latest.HlaNomenclatureVersion,
-                RefreshBeginUtc = DateTime.UtcNow,
+                RefreshRequestedUtc = DateTime.UtcNow,
                 RefreshEndUtc = DateTime.UtcNow
             };
             await Context.DataRefreshRecords.AddAsync(dataRefreshRecord);

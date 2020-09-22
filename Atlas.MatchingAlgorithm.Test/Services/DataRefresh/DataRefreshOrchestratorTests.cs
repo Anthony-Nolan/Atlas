@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Utils.Http;
-using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
-using Atlas.HlaMetadataDictionary.WmdaDataAccess;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Data.Persistent.Repositories;
@@ -27,7 +25,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
     public class DataRefreshOrchestratorTests
     {
         private IMatchingAlgorithmImportLogger logger;
-        private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private IActiveDatabaseProvider activeDatabaseProvider;
         private IDataRefreshRunner dataRefreshRunner;
         private IDataRefreshHistoryRepository dataRefreshHistoryRepository;
@@ -39,12 +36,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         private IDataRefreshOrchestrator dataRefreshOrchestrator;
         private const string ExistingHlaVersion = "old";
         private const string NewHlaVersion = "new";
+        private const int DefaultRecordId = 123;
 
         [SetUp]
         public void SetUp()
         {
-            wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
-
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
             activeDatabaseProvider = Substitute.For<IActiveDatabaseProvider>();
             dataRefreshRunner = Substitute.For<IDataRefreshRunner>();
@@ -54,12 +50,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             dataRefreshCompletionNotifier = Substitute.For<IDataRefreshCompletionNotifier>();
 
             dataRefreshOrchestrator = BuildDataRefreshOrchestrator();
+
+            var record = DataRefreshRecordBuilder.New
+                .With(r => r.Id, DefaultRecordId)
+                .Build();
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new[] { record });
         }
 
         private DataRefreshOrchestrator BuildDataRefreshOrchestrator(DataRefreshSettings dataRefreshSettings = null)
         {
-            var hlaMetadataDictionaryBuilder = new HlaMetadataDictionaryBuilder().Using(wmdaHlaNomenclatureVersionAccessor);
-            
             var activeHlaVersionAccessor = Substitute.For<IActiveHlaNomenclatureVersionAccessor>();
             activeHlaVersionAccessor.DoesActiveHlaNomenclatureVersionExist().Returns(true);
             activeHlaVersionAccessor.GetActiveHlaNomenclatureVersion().Returns(ExistingHlaVersion);
@@ -69,8 +68,6 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             return new DataRefreshOrchestrator(
                 logger,
                 settings,
-                hlaMetadataDictionaryBuilder,
-                activeHlaVersionAccessor,
                 activeDatabaseProvider,
                 dataRefreshRunner,
                 dataRefreshHistoryRepository,
@@ -82,166 +79,110 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task RefreshDataIfNecessary_WhenActiveHlaVersionMatchesLatest_DoesNotTriggerDataRefresh()
+        public async Task OrchestrateDataRefresh_WhenNoIncompleteJobs_ThrowsException()
         {
-            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(ExistingHlaVersion);
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new List<DataRefreshRecord>());
 
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await dataRefreshRunner.DidNotReceiveWithAnyArgs().RefreshData(default);
+            await dataRefreshOrchestrator.Invoking(r => r.OrchestrateDataRefresh(0)).Should().ThrowAsync<AtlasHttpException>();
         }
 
         [Test]
-        public async Task RefreshDataIfNecessary_WhenActiveHlaVersionMatchesLatest_AndShouldForceRefresh_TriggersDataRefresh()
+        public async Task OrchestrateDataRefresh_WithMultipleIncompleteJobs_ThrowsException()
         {
-            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(ExistingHlaVersion);
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(DataRefreshRecordBuilder.New.Build(2));
 
-            await dataRefreshOrchestrator.RefreshDataIfNecessary(shouldForceRefresh: true);
-
-            await dataRefreshRunner.ReceivedWithAnyArgs().RefreshData(default);
+            await dataRefreshOrchestrator.Invoking(r => r.OrchestrateDataRefresh(0)).Should().ThrowAsync<AtlasHttpException>();
         }
 
         [Test]
-        public async Task RefreshDataIfNecessary_WhenLatestHlaVersionHigherThanCurrent_TriggersDataRefresh()
+        public async Task OrchestrateDataRefresh_SendsNotification()
         {
-            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(NewHlaVersion);
+            const int recordId = 20;
+            const int currentAttemptNumber = 2;
 
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+            var record = DataRefreshRecordBuilder.New
+                .With(r => r.Id, recordId)
+                .With(r => r.RefreshContinuedCount, currentAttemptNumber - 1)
+                .Build();
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new[] { record });
 
-            await dataRefreshRunner.ReceivedWithAnyArgs().RefreshData(default);
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(recordId);
+
+            await dataRefreshSupportNotificationSender.ReceivedWithAnyArgs().SendInProgressNotification(recordId, currentAttemptNumber);
         }
 
         [Test]
-        public async Task RefreshDataIfNecessary_WhenLatestHlaVersionHigherThanCurrent_AndJobAlreadyInProgress_DoesNotTriggerDataRefresh()
+        public async Task OrchestrateDataRefresh_UpdatesContinueDetails()
         {
-            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(NewHlaVersion);
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await dataRefreshRunner.DidNotReceiveWithAnyArgs().RefreshData(default);
+            await dataRefreshHistoryRepository.Received().UpdateContinueDetails(DefaultRecordId);
         }
 
         [Test]
-        public async Task RefreshDataIfNecessary_WhenShouldForceRefresh_AndJobAlreadyInProgress_DoesNotTriggerDataRefresh()
+        public async Task OrchestrateDataRefresh_TriggersRefresh()
         {
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshOrchestrator.RefreshDataIfNecessary(shouldForceRefresh: true);
-
-            await dataRefreshRunner.DidNotReceiveWithAnyArgs().RefreshData(default);
+            await dataRefreshRunner.Received().RefreshData(DefaultRecordId);
         }
 
         [Test]
-        public async Task RefreshDataIfNecessary_RecordsInitialDataRefreshWithNoWmdaVersion()
+        public async Task OrchestrateDataRefresh_EventuallyRecordsDataRefreshOccurredWithLatestWmdaVersion()
         {
-            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(NewHlaVersion);
-
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-            await dataRefreshHistoryRepository.Received().Create(Arg.Is<DataRefreshRecord>(r => string.IsNullOrWhiteSpace(r.HlaNomenclatureVersion)));
-        }
-
-        [Test]
-        public async Task RefreshDataIfNecessary_EventuallyRecordsDataRefreshOccurredWithLatestWmdaVersion()
-        {
-            wmdaHlaNomenclatureVersionAccessor.GetLatestStableHlaNomenclatureVersion().ReturnsForAnyArgs(NewHlaVersion);
             dataRefreshRunner.RefreshData(Arg.Any<int>()).Returns(NewHlaVersion);
 
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-            await dataRefreshHistoryRepository.Received().UpdateExecutionDetails(Arg.Any<int>(), NewHlaVersion, Arg.Any<DateTime?>());
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
+            await dataRefreshHistoryRepository.Received().UpdateExecutionDetails(DefaultRecordId, NewHlaVersion, Arg.Any<DateTime?>());
         }
 
         [Test]
-        public async Task RefreshDataIfNecessary_StoresDataRefreshRecordWithNoEndTime()
+        public async Task OrchestrateDataRefresh_WhenJobSuccessful_StoresRecordAsSuccess()
         {
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.Received().Create(Arg.Is<DataRefreshRecord>(r =>
-                r.RefreshEndUtc == null
-            ));
+            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(DefaultRecordId, true);
         }
 
         [Test]
-        public async Task RefreshDataIfNecessary_StoresDataRefreshRecordWithNoSuccessStatus()
+        public async Task OrchestrateDataRefresh_WhenJobSuccessful_UpdatesExecutionDetails()
         {
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await dataRefreshHistoryRepository.Received().Create(Arg.Is<DataRefreshRecord>(r =>
-                r.WasSuccessful == null
-            ));
-        }
-
-        [Test]
-        public async Task RefreshDataIfNecessary_WhenDatabaseAActive_StoresRefreshRecordOfDatabaseB()
-        {
-            activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseB);
-
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await dataRefreshHistoryRepository.Received().Create(Arg.Is<DataRefreshRecord>(r =>
-                r.Database == "DatabaseB"
-            ));
-        }
-
-        [Test]
-        public async Task RefreshDataIfNecessary_WhenDatabaseBActive_StoresRefreshRecordOfDatabaseA()
-        {
-            activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
-
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await dataRefreshHistoryRepository.Received().Create(Arg.Is<DataRefreshRecord>(r =>
-                r.Database == "DatabaseA"
-            ));
-        }
-
-        [Test]
-        public async Task RefreshDataIfNecessary_WhenJobSuccessful_StoresRecordAsSuccess()
-        {
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(Arg.Any<int>(), true);
-        }
-
-        [Test]
-        public async Task RefreshDataIfNecessary_WhenJobSuccessful_StoresFinishTime()
-        {
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
             await dataRefreshHistoryRepository.ReceivedWithAnyArgs().UpdateExecutionDetails(default, default, default);
         }
 
         [Test]
-        public async Task RefreshDataIfNecessary_WhenDataRefreshFails_LogsExceptionDetails()
+        public async Task OrchestrateDataRefresh_WhenDataRefreshFails_LogsExceptionDetails()
         {
             const string exceptionMessage = "something very bad happened";
             dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception(exceptionMessage));
 
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
             logger.Received().SendTrace(Arg.Is<string>(e => e.Contains(exceptionMessage)), LogLevel.Critical);
         }
 
         [Test]
-        public async Task RefreshDataIfNecessary_WhenDataRefreshFails_StoresFinishTime()
+        public async Task OrchestrateDataRefresh_WhenDataRefreshFails_UpdatesExecutionDetails()
         {
             const string exceptionMessage = "something very bad happened";
             dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception(exceptionMessage));
 
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
             await dataRefreshHistoryRepository.ReceivedWithAnyArgs().UpdateExecutionDetails(default, default, default);
         }
 
         [Test]
-        public async Task RefreshDataIfNecessary_WhenDataRefreshFails_StoresSuccessFlagAsFalse()
+        public async Task OrchestrateDataRefresh_WhenDataRefreshFails_StoresSuccessFlagAsFalse()
         {
             const string exceptionMessage = "something very bad happened";
             dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception(exceptionMessage));
 
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(Arg.Any<int>(), false);
+            await dataRefreshHistoryRepository.Received().UpdateSuccessFlag(DefaultRecordId, false);
         }
 
         [Test]
@@ -254,7 +195,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             dataRefreshOrchestrator = BuildDataRefreshOrchestrator(settings);
             activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
 
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
             await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
         }
@@ -275,7 +216,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseB);
             });
 
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
             await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
         }
@@ -291,23 +232,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
             dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception());
 
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
             await azureDatabaseManager.DidNotReceive().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
         }
 
         [Test]
-        public async Task RefreshData_SendsNotificationOnInitialisation()
-        {
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-
-            await dataRefreshSupportNotificationSender.ReceivedWithAnyArgs().SendInitialisationNotification(default);
-        }
-
-        [Test]
         public async Task RefreshData_NotifiesOnSuccess()
         {
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
             await dataRefreshCompletionNotifier.ReceivedWithAnyArgs().NotifyOfSuccess(default);
         }
@@ -317,54 +250,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             dataRefreshRunner.RefreshData(Arg.Any<int>()).Throws(new Exception());
 
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
             await dataRefreshCompletionNotifier.ReceivedWithAnyArgs().NotifyOfFailure(default);
-        }
-
-        [Test]
-        public async Task ContinueDataRefresh_WhenNoJobsInProgress_ThrowsException()
-        {
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord>());
-
-            await dataRefreshOrchestrator.Invoking(r => r.ContinueDataRefresh()).Should().ThrowAsync<AtlasHttpException>();
-        }
-
-        [Test]
-        public async Task ContinueDataRefresh_WhenOneJobStarted_DoesNotThrow()
-        {
-            var record = DataRefreshRecordBuilder.New.Build();
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new[]{ record });
-
-            await dataRefreshOrchestrator.Invoking(r => r.ContinueDataRefresh()).Should().NotThrowAsync();
-        }
-
-        [Test]
-        public async Task ContinueDataRefresh_WhenOneJobPreviouslyContinuedButIncomplete_DoesNotThrow()
-        {
-            var record = DataRefreshRecordBuilder.New.With(r => r.RefreshContinueUtc, DateTime.UtcNow).Build();
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new[] { record });
-
-            await dataRefreshOrchestrator.Invoking(r => r.ContinueDataRefresh()).Should().NotThrowAsync();
-        }
-
-        [Test]
-        public async Task ContinueDataRefresh_WithMultipleJobsInProgress_ThrowsException()
-        {
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(DataRefreshRecordBuilder.New.Build(2));
-
-            await dataRefreshOrchestrator.Invoking(r => r.ContinueDataRefresh()).Should().ThrowAsync<AtlasHttpException>();
-        }
-
-        [Test]
-        public async Task ContinueDataRefresh_WithSingleJobInProgress_TriggersRefresh()
-        {
-            var record = DataRefreshRecordBuilder.New.With(r => r.Id, 19).Build();
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new[] {record});
-
-            await dataRefreshOrchestrator.ContinueDataRefresh();
-
-            await dataRefreshRunner.Received().RefreshData(record.Id);
         }
     }
 }

@@ -51,7 +51,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.DonorUpdates
 
             var refreshHistoryRepository = Substitute.For<IDataRefreshHistoryRepository>();
             refreshHistoryRepository.GetActiveDatabase().Returns(DbTarget);
-            refreshHistoryRepository.GetInProgressJobs().Returns(Enumerable.Empty<DataRefreshRecord>());
+            refreshHistoryRepository.GetIncompleteRefreshJobs().Returns(Enumerable.Empty<DataRefreshRecord>());
 
             donorManagementService = Substitute.For<IDonorManagementService>();
             searchableDonorUpdateConverter = provider.GetService<ISearchableDonorUpdateConverter>();

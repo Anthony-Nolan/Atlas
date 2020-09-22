@@ -168,6 +168,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IDonorInfoConverter, DonorInfoConverter>();
             services.AddScoped<IDonorImporter, DonorImporter>();
             services.AddScoped<IHlaProcessor, HlaProcessor>();
+            services.AddScoped<IDataRefreshRequester, DataRefreshRequester>();
             services.AddScoped<IDataRefreshOrchestrator, DataRefreshOrchestrator>();
             services.AddScoped<IDataRefreshRunner, DataRefreshRunner>();
             services.AddScoped<IDataRefreshSupportNotificationSender, DataRefreshSupportNotificationSender>();

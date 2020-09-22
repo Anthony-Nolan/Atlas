@@ -10,27 +10,42 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications
 {
     internal interface IDataRefreshServiceBusClient
     {
+        Task PublishToRequestTopic(ValidatedDataRefreshRequest dataRefreshRequest);
         Task PublishToCompletionTopic(CompletedDataRefresh completedDataRefresh);
     }
 
     internal class DataRefreshServiceBusClient : IDataRefreshServiceBusClient
     {
+        private readonly TopicClient requestTopicClient;
         private readonly TopicClient completionTopicClient;
 
         public DataRefreshServiceBusClient(
             MessagingServiceBusSettings messagingServiceBusSettings, 
             DataRefreshSettings dataRefreshSettings)
         {
+            requestTopicClient = new TopicClient(
+                messagingServiceBusSettings.ConnectionString, dataRefreshSettings.RequestsTopic);
+
             completionTopicClient = new TopicClient(
                 messagingServiceBusSettings.ConnectionString, dataRefreshSettings.CompletionTopic);
         }
 
+        public async Task PublishToRequestTopic(ValidatedDataRefreshRequest dataRefreshRequest)
+        {
+            var message = BuildMessage(dataRefreshRequest);
+            await requestTopicClient.SendAsync(message);
+        }
+
         public async Task PublishToCompletionTopic(CompletedDataRefresh completedDataRefresh)
         {
-            var json = JsonConvert.SerializeObject(completedDataRefresh);
-            var message = new Message(Encoding.UTF8.GetBytes(json));
-
+            var message = BuildMessage(completedDataRefresh);
             await completionTopicClient.SendAsync(message);
+        }
+
+        private static Message BuildMessage(object objectToSerialise)
+        {
+            var json = JsonConvert.SerializeObject(objectToSerialise);
+            return new Message(Encoding.UTF8.GetBytes(json));
         }
     }
 }

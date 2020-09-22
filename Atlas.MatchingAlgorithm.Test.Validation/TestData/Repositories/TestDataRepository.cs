@@ -44,7 +44,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
                 {
                     Database = TransientDatabase.DatabaseA.ToString(),
                     WasSuccessful = true,
-                    RefreshBeginUtc = DateTime.UtcNow,
+                    RefreshRequestedUtc = DateTime.UtcNow,
                     RefreshEndUtc = DateTime.UtcNow,
                     HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion
                 });

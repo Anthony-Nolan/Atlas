@@ -18,15 +18,15 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
         /// <returns>The HLA nomenclature version used in the most recently completed refresh job</returns>
         string GetActiveHlaNomenclatureVersion();
 
-        IEnumerable<DataRefreshRecord> GetInProgressJobs();
+        IEnumerable<DataRefreshRecord> GetIncompleteRefreshJobs();
         Task<int> Create(DataRefreshRecord dataRefreshRecord);
 
         Task<DataRefreshRecord> GetRecord(int dataRefreshRecordId);
+        Task UpdateContinueDetails(int recordId);
         Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion, DateTime? finishTimeUtc = null);
         Task UpdateSuccessFlag(int recordId, bool wasSuccess);
         Task UpdateLastSafelyProcessedDonor(int recordId, int donorId);
         Task MarkStageAsComplete(DataRefreshRecord record, DataRefreshStage stage);
-        Task MarkJobAsContinued(int recordId);
     }
 
     public class DataRefreshHistoryRepository : IDataRefreshHistoryRepository
@@ -51,7 +51,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
             return lastCompletedRecord?.HlaNomenclatureVersion;
         }
 
-        public IEnumerable<DataRefreshRecord> GetInProgressJobs()
+        public IEnumerable<DataRefreshRecord> GetIncompleteRefreshJobs()
         {
             return Context.DataRefreshRecords.Where(r => r.RefreshEndUtc == null);
         }
@@ -64,18 +64,19 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
             return dataRefreshRecord.Id;
         }
 
+        public async Task UpdateContinueDetails(int recordId)
+        {
+            var record = await GetRecord(recordId);
+            record.RefreshLastContinuedUtc = DateTime.UtcNow;
+            record.RefreshContinuedCount++;
+            await Context.SaveChangesAsync();
+        }
+
         public async Task UpdateExecutionDetails(int recordId, string wmdaHlaNomenclatureVersion, DateTime? finishTimeUtc)
         {
             var record = await GetRecord(recordId);
             record.HlaNomenclatureVersion = wmdaHlaNomenclatureVersion ?? record.HlaNomenclatureVersion; // Don't wipe the HLA version if we already recorded it.
             record.RefreshEndUtc = finishTimeUtc;
-            await Context.SaveChangesAsync();
-        }
-
-        public async Task MarkJobAsContinued(int recordId)
-        {
-            var record = await GetRecord(recordId);
-            record.RefreshContinueUtc = DateTime.UtcNow;
             await Context.SaveChangesAsync();
         }
 

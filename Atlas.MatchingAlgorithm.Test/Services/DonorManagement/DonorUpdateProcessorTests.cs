@@ -43,7 +43,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
             messageProcessorServiceForB = Substitute.For<IMessageProcessorForDbBDonorUpdates>();
 
             refreshHistory = Substitute.For<IDataRefreshHistoryRepository>();
-            refreshHistory.GetInProgressJobs().Returns(Enumerable.Empty<DataRefreshRecord>());
+            refreshHistory.GetIncompleteRefreshJobs().Returns(Enumerable.Empty<DataRefreshRecord>());
 
             donorManagementService = Substitute.For<IDonorManagementService>();
             searchableDonorUpdateConverter = Substitute.For<ISearchableDonorUpdateConverter>();
@@ -118,7 +118,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         [Test]
         public async Task ProcessDonorUpdates_IfTargetDbIsRefreshing_ThenDoesNotProcessMessages()
         {
-            refreshHistory.GetInProgressJobs().Returns(new[] {dbARefreshing});
+            refreshHistory.GetIncompleteRefreshJobs().Returns(new[] {dbARefreshing});
             refreshHistory.GetActiveDatabase().Returns(DatabaseB);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
@@ -130,7 +130,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         [Test]
         public async Task ProcessDonorUpdates_IfOtherDbIsRefreshing_ThenProcessesMessages()
         {
-            refreshHistory.GetInProgressJobs().Returns(new[] {dbBRefreshing});
+            refreshHistory.GetIncompleteRefreshJobs().Returns(new[] {dbBRefreshing});
             refreshHistory.GetActiveDatabase().Returns(DatabaseA);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
@@ -142,7 +142,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         [Test]
         public async Task ProcessDonorUpdates_IfTargetDbIsPerformingInitialRefresh_ThenDoesNotProcessMessages()
         {
-            refreshHistory.GetInProgressJobs().Returns(new[] {dbARefreshing});
+            refreshHistory.GetIncompleteRefreshJobs().Returns(new[] {dbARefreshing});
             refreshHistory.GetActiveDatabase().Returns((TransientDatabase?) null);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
@@ -154,7 +154,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         [Test]
         public async Task ProcessesDonorUpdates_IfOtherDbIsPerformingInitialRefresh_ThenProcessesMessages_ButDiscardsThem()
         {
-            refreshHistory.GetInProgressJobs().Returns(new[] {dbBRefreshing});
+            refreshHistory.GetIncompleteRefreshJobs().Returns(new[] {dbBRefreshing});
             refreshHistory.GetActiveDatabase().Returns((TransientDatabase?) null);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
@@ -166,7 +166,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         [Test]
         public async Task ProcessesDonorUpdates_IfHistoryStateIsBlank_ThenDoesNotProcessMessages()
         {
-            refreshHistory.GetInProgressJobs().Returns(Enumerable.Empty<DataRefreshRecord>());
+            refreshHistory.GetIncompleteRefreshJobs().Returns(Enumerable.Empty<DataRefreshRecord>());
             refreshHistory.GetActiveDatabase().Returns((TransientDatabase?) null);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);
@@ -178,7 +178,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DonorManagement
         [Test]
         public async Task ProcessesDonorUpdates_IfHistoryStateIsUnexpected_ThenDoesNotProcessMessages()
         {
-            refreshHistory.GetInProgressJobs().Returns(new[] {dbARefreshing, dbBRefreshing});
+            refreshHistory.GetIncompleteRefreshJobs().Returns(new[] {dbARefreshing, dbBRefreshing});
             refreshHistory.GetActiveDatabase().Returns(DatabaseA);
 
             await donorUpdateProcessor.ProcessDifferentialDonorUpdates(DatabaseA);

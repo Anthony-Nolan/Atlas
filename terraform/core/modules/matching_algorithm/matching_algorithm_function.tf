@@ -21,6 +21,7 @@ locals {
 
     "DataRefresh:ActiveDatabaseSize"                                                        = var.DATA_REFRESH_DB_SIZE_ACTIVE
     "DataRefresh:RequestsTopic"                                                             = azurerm_servicebus_topic.data-refresh-requests.name
+    "DataRefresh:RequestsTopicSubscription"                                                 = azurerm_servicebus_subscription.matching-algorithm-data-refresh-requests.name
     "DataRefresh:CompletionTopic"                                                           = azurerm_servicebus_topic.completed-data-refresh-jobs.name
     "DataRefresh:CronTab"                                                                   = var.DATA_REFRESH_CRONTAB
     "DataRefresh:DatabaseAName"                                                             = azurerm_sql_database.atlas-matching-transient-a.name

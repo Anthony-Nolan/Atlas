@@ -16,9 +16,14 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         internal static readonly string QualifiedTableName = $"{SearchAlgorithmPersistentContext.Schema}.{TableName}";
         
         public int Id { get; set; }
-        public DateTime RefreshBeginUtc { get; set; }
+        public DateTime RefreshRequestedUtc { get; set; }
+        public DateTime? RefreshLastContinuedUtc { get; set; }
         public DateTime? RefreshEndUtc { get; set; }
-        public DateTime? RefreshContinueUtc { get; set; }
+
+        /// <summary>
+        /// Number of times the job was continued before completion.
+        /// </summary>
+        public int RefreshContinuedCount { get; set; }
 
         /// <summary>
         /// The string representation of a "TransientDatabase" enum value. 

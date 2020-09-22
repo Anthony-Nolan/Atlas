@@ -69,7 +69,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private bool IsCleanupNecessary()
         {
             // This assumes that the method will not be called when a job is actually in progress, only when a job has finished without appropriate teardown 
-            return dataRefreshHistoryRepository.GetInProgressJobs().Any();
+            return dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Any();
         }
 
         private async Task ScaleDatabase()
@@ -82,7 +82,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
 
         private async Task UpdateStalledDataRefreshHistoryRecords()
         {
-            var dataRefreshRecords = dataRefreshHistoryRepository.GetInProgressJobs().ToList();
+            var dataRefreshRecords = dataRefreshHistoryRepository.GetIncompleteRefreshJobs().ToList();
             foreach (var job in dataRefreshRecords)
             {
                 await dataRefreshHistoryRepository.UpdateExecutionDetails(job.Id, job.HlaNomenclatureVersion, DateTime.UtcNow);

@@ -43,7 +43,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task RunDataRefreshCleanup_WhenNoJobsInProgress_DoesNotScaleDatabase()
         {
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord>());
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new List<DataRefreshRecord>());
 
             await dataRefreshCleanupService.RunDataRefreshCleanup();
 
@@ -53,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task RunDataRefreshCleanup_WhenNoJobsInProgress_DoesNotSendRequestManualTeardownNotification()
         {
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord>());
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new List<DataRefreshRecord>());
 
             await dataRefreshCleanupService.RunDataRefreshCleanup();
 
@@ -64,7 +64,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         public async Task RunDataRefreshCleanup_ScalesDormantDatabaseToDormantSize()
         {
             const string databaseName = "db-name";
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
             azureDatabaseNameProvider.GetDatabaseName(Arg.Any<TransientDatabase>()).Returns(databaseName);
             dataRefreshCleanupService = BuildDataRefreshCleanupService(new DataRefreshSettings {DormantDatabaseSize = "S1"});
 
@@ -78,7 +78,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             const int record1Id = 1;
             const int record2Id = 2;
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord>
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new List<DataRefreshRecord>
             {
                 new DataRefreshRecord {Id = record1Id},
                 new DataRefreshRecord {Id = record2Id},
@@ -95,7 +95,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         {
             const int record1Id = 1;
             const int record2Id = 2;
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord>
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new List<DataRefreshRecord>
             {
                 new DataRefreshRecord {Id = record1Id},
                 new DataRefreshRecord {Id = record2Id},
@@ -110,7 +110,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         [Test]
         public async Task RunDataRefreshCleanup_SendsRequestManualTeardownNotification()
         {
-            dataRefreshHistoryRepository.GetInProgressJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
 
             await dataRefreshCleanupService.RunDataRefreshCleanup();
 

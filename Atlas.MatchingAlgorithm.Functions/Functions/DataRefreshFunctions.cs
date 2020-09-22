@@ -1,64 +1,74 @@
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Atlas.Common.Utils;
+using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Atlas.MatchingAlgorithm.Services.DataRefresh;
+using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions
 {
     public class DataRefreshFunctions
     {
+        private readonly IDataRefreshRequester dataRefreshRequester;
         private readonly IDataRefreshOrchestrator dataRefreshOrchestrator;
         private readonly IDataRefreshCleanupService dataRefreshCleanupService;
 
-        public DataRefreshFunctions(IDataRefreshOrchestrator dataRefreshOrchestrator, IDataRefreshCleanupService dataRefreshCleanupService)
+        public DataRefreshFunctions(
+            IDataRefreshRequester dataRefreshRequester,
+            IDataRefreshOrchestrator dataRefreshOrchestrator,
+            IDataRefreshCleanupService dataRefreshCleanupService)
         {
+            this.dataRefreshRequester = dataRefreshRequester;
             this.dataRefreshOrchestrator = dataRefreshOrchestrator;
             this.dataRefreshCleanupService = dataRefreshCleanupService;
         }
 
         /// <summary>
-        /// Runs a full data refresh, regardless of whether the existing metadata dictionary is using the latest version of hla nomenclature.
-        /// If the nomenclature is up to date, a metadata dictionary refresh will not be performed.
+        /// Requests a data refresh according to submitted request parameters.
         /// </summary>
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(ForceDataRefresh))]
-        public async Task ForceDataRefresh([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
+        [FunctionName(nameof(SubmitDataRefreshRequestManual))]
+        public async Task<IActionResult> SubmitDataRefreshRequestManual(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(DataRefreshRequest), nameof(DataRefreshRequest))]
+            HttpRequest httpRequest)
         {
-            await dataRefreshOrchestrator.RefreshDataIfNecessary(shouldForceRefresh: true);
+            var request = await ReadRequestBody<DataRefreshRequest>(httpRequest);
+            var recordId = await dataRefreshRequester.RequestDataRefresh(request);
+            return new JsonResult(recordId);
         }
 
         /// <summary>
-        /// Runs a full data refresh, if necessary
+        /// Requests a full data refresh, if necessary.
         /// </summary>
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(RunDataRefreshManual))]
-        public async Task RunDataRefreshManual([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
+        [FunctionName(nameof(SubmitDataRefreshRequest))]
+        public async Task SubmitDataRefreshRequest([TimerTrigger("%DataRefresh:CronTab%")] TimerInfo timerInfo)
         {
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
-        }
-        
-        /// <summary>
-        /// If a single data refresh job is in progress, continues from the last successful stage.
-        /// Should not be called unless you are sure that an in progress job has been interrupted, to avoid multiple jobs running concurrently.
-        /// </summary>
-        [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
-        [FunctionName(nameof(ContinueDataRefresh))]
-        public async Task ContinueDataRefresh([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
-        {
-            await dataRefreshOrchestrator.ContinueDataRefresh();
+            var request = new DataRefreshRequest{ ForceDataRefresh = false };
+            await dataRefreshRequester.RequestDataRefresh(request);
         }
 
-        /// <summary>
-        /// Runs a full data refresh, if necessary
-        /// </summary>
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(RunDataRefresh))]
-        public async Task RunDataRefresh([TimerTrigger("%DataRefresh:CronTab%")] TimerInfo timerInfo)
+        public async Task RunDataRefresh(
+            [ServiceBusTrigger(
+                "%DataRefresh:RequestsTopic%",
+                "%DataRefresh:RequestsTopicSubscription%",
+                Connection = "MessagingServiceBus:ConnectionString")]
+            Message message)
         {
-            await dataRefreshOrchestrator.RefreshDataIfNecessary();
+            var request = JsonConvert.DeserializeObject<ValidatedDataRefreshRequest>(Encoding.UTF8.GetString(message.Body));
+
+            await dataRefreshOrchestrator.OrchestrateDataRefresh(request.DataRefreshRecordId);
         }
 
         /// <summary>
@@ -72,6 +82,11 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         public async Task RunDataRefreshCleanup([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
         {
             await dataRefreshCleanupService.RunDataRefreshCleanup();
+        }
+
+        private static async Task<T> ReadRequestBody<T>(HttpRequest request)
+        {
+            return JsonConvert.DeserializeObject<T>(await new StreamReader(request.Body).ReadToEndAsync());
         }
     }
 }

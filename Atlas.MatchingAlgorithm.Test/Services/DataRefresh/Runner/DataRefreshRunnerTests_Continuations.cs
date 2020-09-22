@@ -330,7 +330,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             dataRefreshHistoryRepository.GetRecord(default).ReturnsForAnyArgs(
                 DataRefreshRecordBuilder.New
                     .WithStagesCompletedUpToAndIncluding(DataRefreshStage.DonorHlaProcessing)
-                    .WithSetup(r => { r.RefreshContinueUtc = r.RefreshBeginUtc.AddSeconds(1); })
+                    .WithSetup(r => { r.RefreshLastContinuedUtc = r.RefreshRequestedUtc.AddSeconds(1); })
                     .Build()
             );
 
