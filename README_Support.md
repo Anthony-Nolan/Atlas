@@ -71,12 +71,15 @@ In this case there are two options:
 
 #### (a) Continued Refresh
 
-Calling the `ContinueDataRefresh` will, if there is exactly one in-progress data refresh, continue execution from the first unfinished stage. This is the recommended option for ensuring the refresh completes. 
- 
+Refresh requests are managed via the service-bus topic: `data-refresh-requests`.
+The automatic replay of a live message - or the manual replay of a dead-lettered message - will lead to the continuation of an incomplete job.
+
+Check Application Insights for continuation progress or exceptions.
+
 #### (b) Manual cleanup
  
-If you prefer not to continue a refresh, teardown must be performed.
-This can either be done entirely manually, or the `RunDataRefreshCleanup` function can be run, which performs the described steps.
+If you prefer not to continue a refresh, any live request messages must be purged from the `matching-algorithm` subscription, and teardown performed.
+Teardown can either be done entirely manually, or the `RunDataRefreshCleanup` function can be run, which performs the described steps.
  
 If a refresh stalls locally, you can likely ignore the infrastructure part of this checklist.
 
