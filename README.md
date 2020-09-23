@@ -6,7 +6,7 @@ For deployment instructions, see [README_Deployment](README_Deployment.md)
 
 ## Components
 
-###[Donor Import](README_DonorImport.md)
+### [Donor Import](README_DonorImport.md)
 
 Responsible for maintaining a master store of donor information. Assigns internal donor IDs, and will be used as a source of information by both the matching and 
 match prediction components.
@@ -16,7 +16,7 @@ Infrastructure:
 - Azure blob storage for uploading source data
 - Donor Import Functions App 
 
-###[HlaMetadataDictionary](README_HlaMetadataDictionary.md)
+### [HlaMetadataDictionary](README_HlaMetadataDictionary.md)
 
 Responsible for maintaining and accessing the dictionary of HLA Metadata - a set of tables in Azure Storage which act as an dedicated 'cache' for allele nomenclature
 details published by WMDA.
@@ -24,7 +24,7 @@ details published by WMDA.
 Infrastructure: 
 - Azure table storage Metadata store
 
-###[Matching Algorithm](README_MatchingAlgorithm.md)
+### [Matching Algorithm](README_MatchingAlgorithm.md)
 
 Responsible for maintaining a pre-processed store of donors, on which searches can be run - returning all donors that match input 
 patient HLA according to configurable matching preferences   
@@ -35,7 +35,7 @@ Infrastructure:
 - Azure blob storage used for search results
 - Azure service bus used for request queuing and results notifications
 
-###[Match Prediction Algorithm](README_MatchPredictionAlgorithm.md)
+### [Match Prediction Algorithm](README_MatchPredictionAlgorithm.md)
 
 Responsible for maintaining a collection of haplotype frequency sets, from which match predictions can be calculated for donor/patient pairs.
 
@@ -44,7 +44,7 @@ Infrastructure:
 - Azure blob storage for uploading source frequency data
 - Functions app for running match prediction calculations 
 
-###[MultipleAlleleCodeDictionary](README_MultipleAlleleCodeDictionary.md)
+### [MultipleAlleleCodeDictionary](README_MultipleAlleleCodeDictionary.md)
 
 Responsible for maintaining and accessing Multiple Allele Code data - used for allele compression, built from source data published by NMDP.
 
