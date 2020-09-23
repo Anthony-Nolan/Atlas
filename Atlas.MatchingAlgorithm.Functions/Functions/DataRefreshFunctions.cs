@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
@@ -41,9 +42,16 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
             [RequestBodyType(typeof(DataRefreshRequest), nameof(DataRefreshRequest))]
             HttpRequest httpRequest)
         {
-            var request = await ReadRequestBody<DataRefreshRequest>(httpRequest);
-            var recordId = await dataRefreshRequester.RequestDataRefresh(request);
-            return new JsonResult(recordId);
+            try
+            {
+                var request = await ReadRequestBody<DataRefreshRequest>(httpRequest);
+                var recordId = await dataRefreshRequester.RequestDataRefresh(request);
+                return new JsonResult(recordId);
+            }
+            catch (Exception ex)
+            {
+                return new BadRequestObjectResult(ex);
+            }
         }
 
         /// <summary>
@@ -53,7 +61,7 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
         [FunctionName(nameof(SubmitDataRefreshRequest))]
         public async Task SubmitDataRefreshRequest([TimerTrigger("%DataRefresh:CronTab%")] TimerInfo timerInfo)
         {
-            var request = new DataRefreshRequest{ ForceDataRefresh = false };
+            var request = new DataRefreshRequest { ForceDataRefresh = false };
             await dataRefreshRequester.RequestDataRefresh(request);
         }
 
