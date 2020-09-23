@@ -60,13 +60,13 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                 GetAllDonorsForPGroupsAtLocus(
                     locus,
                     criteria.PGroupIdsToMatchInPositionOne,
-                    criteria.SearchType,
+                    criteria.SearchDonorType,
                     filteringOptions
                 ),
                 GetAllDonorsForPGroupsAtLocus(
                     locus,
                     criteria.PGroupIdsToMatchInPositionTwo,
-                    criteria.SearchType,
+                    criteria.SearchDonorType,
                     filteringOptions
                 )
             );
@@ -102,15 +102,13 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            pGroups = pGroups.ToList();
-
-            var filterQuery = "";
+            var donorTypeFilteredJoin = "";
 
             if (filteringOptions.ShouldFilterOnDonorType)
             {
-                var donorTypeClause = filteringOptions.ShouldFilterOnDonorType ? $"AND d.DonorType = {(int)donorType}" : "";
+                var donorTypeClause = filteringOptions.ShouldFilterOnDonorType ? $"AND d.DonorType = {(int) donorType}" : "";
 
-                filterQuery = $@"
+                donorTypeFilteredJoin = $@"
                     INNER JOIN Donors d
                     ON m.DonorId = d.DonorId
                     {donorTypeClause}
@@ -120,7 +118,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             var sql = $@"
                 SELECT m.DonorId, TypePosition FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
 
-                {filterQuery}
+                {donorTypeFilteredJoin}
 
                 INNER JOIN (
                     SELECT {pGroups.FirstOrDefault()} AS PGroupId

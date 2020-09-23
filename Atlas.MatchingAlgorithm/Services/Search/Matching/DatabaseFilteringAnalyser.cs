@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         public bool ShouldFilterOnDonorTypeInDatabase(LocusSearchCriteria criteria)
         {
             // There are significantly fewer cords than adults, so filtering out adults before p-group matching can make up for the cost of a JOIN to the donor table
-            return criteria.SearchType == DonorType.Cord;
+            return criteria.SearchDonorType == DonorType.Cord;
         }
     }
 }

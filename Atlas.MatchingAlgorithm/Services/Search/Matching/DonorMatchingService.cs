@@ -67,7 +67,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            var matchFindingTasks = loci.Select(l => FindMatchesAtLocus(criteria.SearchType, l, criteria.MatchCriteriaForLocus(l))).ToList();
+            var matchFindingTasks = loci.Select(l => FindMatchesAtLocus(criteria.SearchType, l, criteria.LocusCriteria.GetLocus(l))).ToList();
             var results = await Task.WhenAll(matchFindingTasks);
 
             searchLogger.SendTrace($"MATCHING PHASE1: all donors from Db. {results.Sum(x => x.Count)} results in {stopwatch.ElapsedMilliseconds} ms");
@@ -81,13 +81,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 .Select(matchesForDonor =>
                 {
                     var donorId = matchesForDonor.Key;
-                    var result = new MatchResult
-                    {
-                        DonorId = donorId,
-                    };
+                    var result = new MatchResult {DonorId = donorId};
                     foreach (var locus in loci)
                     {
-                        var (key, donorAndMatchForLocus) = matchesForDonor.FirstOrDefault(m => m.Value.Locus == locus);
+                        var (_, donorAndMatchForLocus) = matchesForDonor.FirstOrDefault(m => m.Value.Locus == locus);
                         var locusMatchDetails = donorAndMatchForLocus != null
                             ? donorAndMatchForLocus.Match
                             : new LocusMatchDetails {MatchCount = 0};
@@ -114,7 +111,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         {
             var repoCriteria = new LocusSearchCriteria
             {
-                SearchType = searchType,
+                SearchDonorType = searchType,
                 PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
                 PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
                 MismatchCount = criteria.MismatchCount,
@@ -127,17 +124,17 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            
+
             var matchesAtLocus = await donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions);
             searchLogger.SendTrace($"MATCHING PHASE1: SQL Requests, {stopwatch.ElapsedMilliseconds}");
             stopwatch.Restart();
-            
+
             var matches = matchesAtLocus
                 .GroupBy(m => m.DonorId)
                 .ToDictionary(g => g.Key, g => DonorAndMatchFromGroup(g, locus));
 
             searchLogger.SendTrace($"MATCHING PHASE1: Direct/Cross analysis, {stopwatch.ElapsedMilliseconds}");
-            
+
             return matches;
         }
     }

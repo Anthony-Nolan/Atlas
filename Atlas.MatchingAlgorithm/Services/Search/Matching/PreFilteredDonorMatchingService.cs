@@ -48,7 +48,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 var results = await FindMatchesAtLocusFromDonorSelection(
                     criteria.SearchType,
                     locus,
-                    criteria.MatchCriteriaForLocus(locus),
+                    criteria.LocusCriteria.GetLocus(locus),
                     phaseOneMatchResults.Keys
                 );
 
@@ -84,7 +84,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         {
             var repoCriteria = new LocusSearchCriteria
             {
-                SearchType = searchType,
+                SearchDonorType = searchType,
                 PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
                 PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
                 MismatchCount = criteria.MismatchCount,

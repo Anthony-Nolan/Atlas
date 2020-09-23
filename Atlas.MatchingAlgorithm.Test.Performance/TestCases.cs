@@ -171,7 +171,7 @@ namespace Atlas.MatchingAlgorithm.Test.Performance
             // SLOW!
 //            new TestInput (LivePatient496738)
 //            {
-//                SearchType = SearchType.SixOutOfSix,
+//                SearchDonorType = SearchDonorType.SixOutOfSix,
 //                SolarSearchElapsedMilliseconds = 65300,
 //                SolarSearchMatchedDonors = 4980,
 //            },

@@ -15,7 +15,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
     public interface IMatchingService
     {
-        Task<IEnumerable<MatchResult>> GetMatches(AlleleLevelMatchCriteria criteria);
+        Task<List<MatchResult>> GetMatches(AlleleLevelMatchCriteria criteria);
     }
 
     public class MatchingService : IMatchingService
@@ -45,14 +45,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             this.searchLogger = searchLogger;
         }
 
-        public async Task<IEnumerable<MatchResult>> GetMatches(AlleleLevelMatchCriteria criteria)
+        public async Task<List<MatchResult>> GetMatches(AlleleLevelMatchCriteria criteria)
         {
             var lociToMatchFirst = matchCriteriaAnalyser.LociToMatchFirst(criteria).ToList();
             var lociToMatchSecond = criteria.LociWithCriteriaSpecified().Except(lociToMatchFirst).ToList();
 
             var initialMatches = await PerformMatchingPhaseOne(criteria, lociToMatchFirst);
             var matchesAtAllLoci = await PerformMatchingPhaseTwo(criteria, lociToMatchSecond, initialMatches);
-            return (await PerformMatchingPhaseThree(criteria, matchesAtAllLoci)).Values;
+            return (await PerformMatchingPhaseThree(criteria, matchesAtAllLoci)).Values.ToList();
         }
 
         /// <summary>
