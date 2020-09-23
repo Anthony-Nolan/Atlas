@@ -22,7 +22,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         {
             var criteria = new LocusSearchCriteria
             {
-                SearchType = DonorType.Adult
+                SearchDonorType = DonorType.Adult
             };
 
             var result = databaseFilteringAnalyser.ShouldFilterOnDonorTypeInDatabase(criteria);
@@ -35,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         {
             var criteria = new LocusSearchCriteria
             {
-                SearchType = DonorType.Cord
+                SearchDonorType = DonorType.Cord
             };
 
             var result = databaseFilteringAnalyser.ShouldFilterOnDonorTypeInDatabase(criteria);

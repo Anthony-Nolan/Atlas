@@ -57,11 +57,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             expansionTimer.Dispose();
 
             var matchingTimer = searchLogger.RunTimed($"{LoggingPrefix}Matching");
-            var matches = (await matchingService.GetMatches(criteria)).ToList();
+            var matches = await matchingService.GetMatches(criteria);
             matchingTimer.Dispose();
 
             searchLogger.SendTrace($"{LoggingPrefix}Matched {matches.Count} donors.");
-            
+
             var scoringTimer = searchLogger.RunTimed($"{LoggingPrefix}Scoring");
             var request = new MatchResultsScoringRequest
             {
@@ -69,7 +69,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 MatchResults = matches,
                 ScoringCriteria = matchingRequest.ScoringCriteria
             };
-            var scoredMatches= await donorScoringService.ScoreMatchesAgainstPatientHla(request);
+            var scoredMatches = await donorScoringService.ScoreMatchesAgainstPatientHla(request);
             scoringTimer.Dispose();
 
             return scoredMatches.Select(MapSearchResultToApiSearchResult);
@@ -90,11 +90,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 SearchType = matchingRequest.SearchDonorType.ToMatchingAlgorithmDonorType(),
                 DonorMismatchCount = matchCriteria.DonorMismatchCount,
-                LocusMismatchA = criteriaMappings[0],
-                LocusMismatchB = criteriaMappings[1],
-                LocusMismatchC = criteriaMappings[2],
-                LocusMismatchDrb1 = criteriaMappings[3],
-                LocusMismatchDqb1 = criteriaMappings[4]
+                LocusCriteria = new LociInfo<AlleleLevelLocusMatchCriteria>(
+                    criteriaMappings[0],
+                    criteriaMappings[1],
+                    criteriaMappings[2],
+                    null,
+                    criteriaMappings[4],
+                    criteriaMappings[3]
+                ),
             };
         }
 
@@ -129,7 +132,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 AtlasDonorId = result.MatchResult.DonorInfo.DonorId,
                 DonorType = result.MatchResult.DonorInfo.DonorType.ToAtlasClientModel(),
-                
+
                 MatchingResult = new MatchingResult
                 {
                     TotalMatchCount = result.MatchResult.TotalMatchCount,
@@ -145,7 +148,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     GradeScore = result.ScoreResult?.AggregateScoreDetails.GradeScore,
                     TypedLociCountAtScoredLoci = result.ScoreResult?.AggregateScoreDetails.TypedLociCount,
                     PotentialMatchCount = result.PotentialMatchCount,
-                    ScoringResultsByLocus = new LociInfo<LocusSearchResult>().Map((l, _) => MapSearchResultToApiLocusSearchResult(result, l)).ToLociInfoTransfer(),
+                    ScoringResultsByLocus = new LociInfo<LocusSearchResult>().Map((l, _) => MapSearchResultToApiLocusSearchResult(result, l))
+                        .ToLociInfoTransfer(),
                 },
             };
         }

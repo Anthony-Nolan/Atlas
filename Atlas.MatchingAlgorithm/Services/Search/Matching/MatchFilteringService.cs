@@ -27,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         public bool FulfilsPerLocusMatchCriteria(MatchResult match, AlleleLevelMatchCriteria criteria, Locus locus)
         {
             var locusMatchDetails = match.MatchDetailsForLocus(locus);
-            var locusCriteria = criteria.MatchCriteriaForLocus(locus);
+            var locusCriteria = criteria.LocusCriteria.GetLocus(locus);
             return locusMatchDetails.MatchCount >= MaximumMatchCountPerLocus - locusCriteria.MismatchCount;
         }
 
