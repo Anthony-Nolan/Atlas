@@ -74,9 +74,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(73);
-            matchDetails.MatchProbabilities.OneMismatchProbability.Percentage.Should().Be(23);
-            matchDetails.MatchProbabilities.TwoMismatchProbability.Percentage.Should().Be(3);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(73,23,3);
         }
 
         [Test]
@@ -97,9 +95,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(100);
-            matchDetails.MatchProbabilities.OneMismatchProbability.Percentage.Should().Be(0);
-            matchDetails.MatchProbabilities.TwoMismatchProbability.Percentage.Should().Be(0);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(100,0,0);
         }
 
         [Test]
@@ -120,9 +116,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(99);
-            matchDetails.MatchProbabilities.OneMismatchProbability.Percentage.Should().Be(1);
-            matchDetails.MatchProbabilities.TwoMismatchProbability.Percentage.Should().Be(0);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(99,1,0);
         }
 
         [Test]
@@ -144,9 +138,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(97);
-            matchDetails.MatchProbabilities.OneMismatchProbability.Percentage.Should().Be(3);
-            matchDetails.MatchProbabilities.TwoMismatchProbability.Percentage.Should().Be(0);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(97,3,0);
         }
 
         [Test]
@@ -165,13 +157,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(96);
-            matchDetails.MatchProbabilities.OneMismatchProbability.Percentage.Should().Be(4);
-            matchDetails.MatchProbabilities.TwoMismatchProbability.Percentage.Should().Be(0);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(96,4,0);
         }
 
         [Test]
-        [IgnoreExceptOnCiPerfTest("Runs in ~15s")]
+        [IgnoreExceptOnCiPerfTest("Runs in ~9s")]
         public async Task
             MatchPrediction__WithDonor_TypedAtXXCodeResolution_AtRequiredLociOnly_AndPatient_UnambiguouslyTyped_AtRequiredLociOnly__CalculatesProbabilityCorrectly()
         {
@@ -192,9 +182,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
             var matchDetails = await MatchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
 
-            matchDetails.MatchProbabilities.ZeroMismatchProbability.Percentage.Should().Be(93);
-            matchDetails.MatchProbabilities.OneMismatchProbability.Percentage.Should().Be(6);
-            matchDetails.MatchProbabilities.TwoMismatchProbability.Percentage.Should().Be(0);
+            matchDetails.MatchProbabilities.ShouldHavePercentages(93,6,0);
         }
 
         private static async Task ImportHaplotypeFrequencies()
