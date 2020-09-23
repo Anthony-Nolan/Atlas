@@ -176,6 +176,14 @@ The results can then be downloaded from this blob storage container. They will b
 - Read access to the appropriate service bus 
 - Read access to the blob storage account
 
+> IMPORTANT! 
+>
+> Consumers of the results messages must be idempotent. In some cases, multiple messages will be received for a single search request. 
+> The most common case of this is a transient search failure - this will trigger a failure notification, then retry.
+> This can lead to: 
+> (a) A failure notification for a search request, followed by a success. (In the case of a truly transient error)
+> (b) Several failure notifications in a row (In the case of an unexpected error that is present for all retries of a search - e.g. an Azure outage, or unexpected error with a specific search)
+
 
 #### Receiving matching results early
 
