@@ -84,6 +84,30 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         {
         }
 
+        public PhenotypeInfo(
+            T valueA_1 = default,
+            T valueA_2 = default,
+            T valueB_1 = default,
+            T valueB_2 = default,
+            T valueC_1 = default,
+            T valueC_2 = default,
+            T valueDpb1_1 = default,
+            T valueDpb1_2 = default,
+            T valueDqb1_1 = default,
+            T valueDqb1_2 = default,
+            T valueDrb1_1 = default,
+            T valueDrb1_2 = default
+        ) : base(
+            new LocusInfo<T>(valueA_1, valueA_2),
+            new LocusInfo<T>(valueB_1, valueB_2),
+            new LocusInfo<T>(valueC_1, valueC_2),
+            new LocusInfo<T>(valueDpb1_1, valueDpb1_2),
+            new LocusInfo<T>(valueDqb1_1, valueDqb1_2),
+            new LocusInfo<T>(valueDrb1_1, valueDrb1_2)
+        )
+        {
+        }
+
         #endregion
 
         public T GetPosition(Locus locus, LocusPosition position)
