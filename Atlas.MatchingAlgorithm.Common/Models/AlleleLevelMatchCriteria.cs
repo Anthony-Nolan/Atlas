@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 
 namespace Atlas.MatchingAlgorithm.Common.Models
@@ -11,51 +11,28 @@ namespace Atlas.MatchingAlgorithm.Common.Models
 
         public int DonorMismatchCount { get; set; }
 
-        public AlleleLevelLocusMatchCriteria LocusMismatchA { get; set; }
-        public AlleleLevelLocusMatchCriteria LocusMismatchB { get; set; }
-        public AlleleLevelLocusMatchCriteria LocusMismatchC { get; set; }
-        public AlleleLevelLocusMatchCriteria LocusMismatchDqb1 { get; set; }
-        public AlleleLevelLocusMatchCriteria LocusMismatchDrb1 { get; set; }
-        
-        public AlleleLevelLocusMatchCriteria MatchCriteriaForLocus(Locus locus)
-        {
-            switch (locus)
-            {
-                case Locus.A:
-                    return LocusMismatchA;
-                case Locus.B:
-                    return LocusMismatchB;
-                case Locus.C:
-                    return LocusMismatchC;
-                case Locus.Dqb1:
-                    return LocusMismatchDqb1;
-                case Locus.Drb1:
-                    return LocusMismatchDrb1;
-                default:
-                    throw new NotImplementedException();
-            }
-        }
+        public LociInfo<AlleleLevelLocusMatchCriteria> LocusCriteria { get; set; }
 
         public IEnumerable<Locus> LociWithCriteriaSpecified()
         {
             var loci = new List<Locus>();
-            if (LocusMismatchA != null)
+            if (LocusCriteria.A != null)
             {
                 loci.Add(Locus.A);
             }
-            if (LocusMismatchB != null)
+            if (LocusCriteria.B != null)
             {
                 loci.Add(Locus.B);
             }
-            if (LocusMismatchC != null)
+            if (LocusCriteria.C != null)
             {
                 loci.Add(Locus.C);
             }
-            if (LocusMismatchDrb1 != null)
+            if (LocusCriteria.Drb1 != null)
             {
                 loci.Add(Locus.Drb1);
             }
-            if (LocusMismatchDqb1 != null)
+            if (LocusCriteria.Dqb1 != null)
             {
                 loci.Add(Locus.Dqb1);
             }

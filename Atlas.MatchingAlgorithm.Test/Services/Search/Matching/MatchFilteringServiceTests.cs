@@ -5,6 +5,7 @@ using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -59,7 +60,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
             var match = new MatchResult();
             const Locus locus = Locus.B;
             match.SetMatchDetailsForLocus(locus, new LocusMatchDetails {MatchCount = 2});
-            var criteria = new AlleleLevelMatchCriteria {LocusMismatchB = new AlleleLevelLocusMatchCriteria {MismatchCount = 0}};
+            var criteria = new AlleleLevelMatchCriteriaBuilder()
+                .WithLocusMatchCriteria(Locus.B, new AlleleLevelLocusMatchCriteria {MismatchCount = 0})
+                .Build();
 
             var result = matchFilteringService.FulfilsPerLocusMatchCriteria(match, criteria, locus);
 
@@ -72,7 +75,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
             var match = new MatchResult();
             const Locus locus = Locus.B;
             match.SetMatchDetailsForLocus(locus, new LocusMatchDetails {MatchCount = 1});
-            var criteria = new AlleleLevelMatchCriteria {LocusMismatchB = new AlleleLevelLocusMatchCriteria {MismatchCount = 1}};
+            var criteria = new AlleleLevelMatchCriteriaBuilder()
+                .WithLocusMatchCriteria(Locus.B, new AlleleLevelLocusMatchCriteria {MismatchCount = 1})
+                .Build();
 
             var result = matchFilteringService.FulfilsPerLocusMatchCriteria(match, criteria, locus);
 
@@ -85,7 +90,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
             var match = new MatchResult();
             const Locus locus = Locus.B;
             match.SetMatchDetailsForLocus(locus, new LocusMatchDetails {MatchCount = 1});
-            var criteria = new AlleleLevelMatchCriteria {LocusMismatchB = new AlleleLevelLocusMatchCriteria {MismatchCount = 0}};
+            var criteria = new AlleleLevelMatchCriteriaBuilder()
+                .WithLocusMatchCriteria(Locus.B, new AlleleLevelLocusMatchCriteria {MismatchCount = 0})
+                .Build();
 
             var result = matchFilteringService.FulfilsPerLocusMatchCriteria(match, criteria, locus);
 
@@ -111,13 +118,13 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
             match.SetMatchDetailsForLocus(Locus.A, new LocusMatchDetails {MatchCount = 1});
             match.SetMatchDetailsForLocus(Locus.B, new LocusMatchDetails {MatchCount = 1});
             match.SetMatchDetailsForLocus(Locus.Drb1, new LocusMatchDetails {MatchCount = 1});
-            var criteria = new AlleleLevelMatchCriteria
-            {
-                DonorMismatchCount = 2,
-                LocusMismatchA = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
-                LocusMismatchB = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
-                LocusMismatchDrb1 = new AlleleLevelLocusMatchCriteria {MismatchCount = 1}
-            };
+            
+            var criteria = new AlleleLevelMatchCriteriaBuilder()
+                .WithDonorMismatchCount(2)
+                .WithLocusMatchCriteria(Locus.A, new AlleleLevelLocusMatchCriteria {MismatchCount = 1})
+                .WithLocusMatchCriteria(Locus.B, new AlleleLevelLocusMatchCriteria {MismatchCount = 1})
+                .WithLocusMatchCriteria(Locus.Drb1, new AlleleLevelLocusMatchCriteria {MismatchCount = 1})
+                .Build();
 
             var result = matchFilteringService.FulfilsTotalMatchCriteria(match, criteria);
 
@@ -133,15 +140,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
             match.SetMatchDetailsForLocus(Locus.Drb1, new LocusMatchDetails {MatchCount = 1});
             match.SetMatchDetailsForLocus(Locus.C, new LocusMatchDetails {MatchCount = 1});
             match.SetMatchDetailsForLocus(Locus.Dqb1, new LocusMatchDetails {MatchCount = 1});
-            var criteria = new AlleleLevelMatchCriteria
-            {
-                DonorMismatchCount = 2,
-                LocusMismatchA = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
-                LocusMismatchB = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
-                LocusMismatchDrb1 = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
-                LocusMismatchC = new AlleleLevelLocusMatchCriteria {MismatchCount = 1},
-                LocusMismatchDqb1 = new AlleleLevelLocusMatchCriteria {MismatchCount = 1}
-            };
+            
+            var criteria = new AlleleLevelMatchCriteriaBuilder()
+                .WithDonorMismatchCount(2)
+                .WithLocusMatchCriteria(Locus.A, new AlleleLevelLocusMatchCriteria {MismatchCount = 1})
+                .WithLocusMatchCriteria(Locus.B, new AlleleLevelLocusMatchCriteria {MismatchCount = 1})
+                .WithLocusMatchCriteria(Locus.Drb1, new AlleleLevelLocusMatchCriteria {MismatchCount = 1})
+                .WithLocusMatchCriteria(Locus.Dqb1, new AlleleLevelLocusMatchCriteria {MismatchCount = 1})
+                .WithLocusMatchCriteria(Locus.C, new AlleleLevelLocusMatchCriteria {MismatchCount = 1})
+                .Build();
 
             var result = matchFilteringService.FulfilsTotalMatchCriteria(match, criteria);
 
@@ -223,7 +230,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
 
             result.Should().BeTrue();
         }
-        
+
         [Test]
         public void FulfilsSearchTypeSpecificCriteria_ForAdultSearch_WithFewerMismatchesThanTotalMismatchCount_ReturnsFalse()
         {
@@ -240,7 +247,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
 
             result.Should().BeFalse();
         }
-        
+
         [Test]
         public void FulfilsSearchTypeSpecificCriteria_ForCordSearch_WithExactTotalMismatchCount_ReturnsTrue()
         {
@@ -257,7 +264,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
 
             result.Should().BeTrue();
         }
-        
+
         [Test]
         public void FulfilsSearchTypeSpecificCriteria_ForCordSearch_WithFewerMismatchesThanTotalMismatchCount_ReturnsTrue()
         {
