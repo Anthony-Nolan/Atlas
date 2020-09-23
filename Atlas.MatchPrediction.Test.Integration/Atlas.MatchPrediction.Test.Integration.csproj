@@ -34,14 +34,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Resources\HaplotypeFrequencySets\large.json" />
-        <None Remove="Resources\HaplotypeFrequencySets\global.json" />
         <EmbeddedResource Include="Resources\HaplotypeFrequencySets\global.json" />
-        <None Remove="Resources\HaplotypeFrequencySets\pop-1.json" />
-        <EmbeddedResource Include="Resources\HaplotypeFrequencySets\pop-1.json" />
-        <None Remove="Resources\HaplotypeFrequencySets\pop-16.json" />
-        <EmbeddedResource Include="Resources\HaplotypeFrequencySets\pop-16.json" />
-        <None Remove="Resources\HaplotypeFrequencySets\pop-16-ethnicity.json" />
-        <EmbeddedResource Include="Resources\HaplotypeFrequencySets\pop-16-ethnicity.json" />
+        <EmbeddedResource Include="Resources\HaplotypeFrequencySets\large.json" />
+        <EmbeddedResource Include="Resources\HaplotypeFrequencySets\reg-1-2-eth-1.json" />
+        <EmbeddedResource Include="Resources\HaplotypeFrequencySets\reg-2-3-eth-2.json" />
+        <EmbeddedResource Include="Resources\HaplotypeFrequencySets\reg-2-3.json" />
     </ItemGroup>
 </Project>

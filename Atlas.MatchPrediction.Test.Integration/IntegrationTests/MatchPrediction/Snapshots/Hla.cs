@@ -2,7 +2,6 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MatchPrediction.Test.TestHelpers.Builders.MatchProbabilityInputs;
-using FluentAssertions;
 using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.Snapshots
@@ -10,7 +9,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
     [TestFixture]
     internal class Hla : SnapshotTestsBase
     {
-        [TestCaseSource(nameof(genotypePairs))]
+        [TestCaseSource(nameof(genotypePairTestCases))]
         public async Task MatchPrediction_WithVariedPatientAndDonorHla(
             PhenotypeInfo<string> patientHla,
             PhenotypeInfo<string> donorHla,
@@ -28,7 +27,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         /// <summary>
         /// Test data in the form: { patientHla, donorHla, expected probability of 0 mismatches [P(0mm)], P(1mm), P(2mm) }
         /// </summary>
-        private static object[] genotypePairs =
+        private static object[] genotypePairTestCases =
         {
             // Identical patient/donor
             new object[]
