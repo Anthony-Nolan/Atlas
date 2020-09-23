@@ -172,7 +172,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             result.DonorSet.ShouldHaveEquivalentMetadata(GlobalPopulation);
             result.PatientSet.ShouldHaveEquivalentMetadata(GlobalPopulation);
         }
-        
+
         [Test]
         public async Task GetSingleHaplotypeSet_WhenExactHaplotypeSetMatch_ReturnsEthnicityAndRegistryMatchedSet()
         {
@@ -189,17 +189,17 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             var setInfo = FrequencySetMetadataBuilder.New.ForRegistry(DefaultRegistryCode).ForEthnicity("new-ethnicity-code").Build();
 
             var result = await service.GetSingleHaplotypeFrequencySet(setInfo);
-            
+
             result.ShouldHaveEquivalentMetadata(DefaultRegistryOnlyPopulation);
         }
-        
+
         [Test]
         public async Task GetSingleHaplotypeSet_WhenRegistryAndEthnicityDoNotMatch_ReturnsGlobalSet()
         {
             var setInfo = FrequencySetMetadataBuilder.New.ForRegistry("new-registry-code").ForEthnicity("new-ethnicity-code").Build();
 
             var result = await service.GetSingleHaplotypeFrequencySet(setInfo);
-            
+
             result.ShouldHaveEquivalentMetadata(GlobalPopulation);
         }
 
@@ -210,7 +210,9 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
 
         private async Task ImportHaplotypeSet(string registry, string ethnicity)
         {
-            using var file = FrequencySetFileBuilder.New(new[] {registry}, new[] {ethnicity}).Build();
+            var registries = registry == null ? null : new[] {registry};
+            var ethnicities = ethnicity == null ? null : new[] {ethnicity};
+            using var file = FrequencySetFileBuilder.New(registries, ethnicities).Build();
             await service.ImportFrequencySet(file);
         }
     }
