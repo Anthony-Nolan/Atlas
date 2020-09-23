@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.Snapshots
 {
     [TestFixture]
-    internal class FrequencySets : SnapshotTestsBase
+    internal partial class SnapshotTests
     {
         [TestCaseSource(nameof(metadataTestCases))]
         public async Task MatchPrediction_WithVariedFrequencySets(

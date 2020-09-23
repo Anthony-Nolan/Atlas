@@ -19,21 +19,20 @@ using NUnit.Framework;
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.Snapshots
 {
     [TestFixture]
-    internal class SnapshotTestsBase
+    internal partial class SnapshotTests
     {
-        protected IMatchProbabilityService MatchProbabilityService { get; set; }
+        private IMatchProbabilityService MatchProbabilityService { get; set; }
 
-        protected const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
-
+        private const string HlaNomenclatureVersion = FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion;
 
         // Registry and ethnicity values must match those used in test HF set files.
-        protected const string Registry1 = "reg-1";
-        protected const string Registry2 = "reg-2";
-        protected const string Registry3 = "reg-3";
-        protected const string Ethnicity1 = "eth-1";
-        protected const string Ethnicity2 = "eth-2";
+        private const string Registry1 = "reg-1";
+        private const string Registry2 = "reg-2";
+        private const string Registry3 = "reg-3";
+        private const string Ethnicity1 = "eth-1";
+        private const string Ethnicity2 = "eth-2";
 
-        protected static PhenotypeInfoBuilder<string> DefaultPhenotypeBuilder =>
+        private static PhenotypeInfoBuilder<string> DefaultPhenotypeBuilder =>
             new PhenotypeInfoBuilder<string>()
                 .WithDataAt(Locus.A, "01:XX", "11:XX")
                 .WithDataAt(Locus.B, "27:XX", "35:XX")
@@ -42,7 +41,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDataAt(Locus.Dqb1, "03:XX", "05:XX")
                 .WithDataAt(Locus.Drb1, "11:XX", "16:XX");
 
-        protected static Builder<SingleDonorMatchProbabilityInput> DefaultInputBuilder => SingleDonorMatchProbabilityInputBuilder.Default
+        private static Builder<SingleDonorMatchProbabilityInput> DefaultInputBuilder => SingleDonorMatchProbabilityInputBuilder.Default
             .WithHlaNomenclature(HlaNomenclatureVersion)
             .WithPatientHla(DefaultPhenotypeBuilder.Build())
             .WithDonorHla(DefaultPhenotypeBuilder.Build())
@@ -50,7 +49,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             .WithPatientMetadata(new FrequencySetMetadata());
 
         [SetUp]
-        protected void SetUp()
+        public void SetUp()
         {
             MatchProbabilityService = DependencyInjection.DependencyInjection.Provider.GetService<IMatchProbabilityService>();
         }
