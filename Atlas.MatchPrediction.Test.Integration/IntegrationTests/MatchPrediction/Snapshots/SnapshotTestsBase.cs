@@ -18,6 +18,16 @@ using NUnit.Framework;
 
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.Snapshots
 {
+    /// <summary>
+    /// These tests are designed to be snapshots covering a range of possibilities.
+    /// They make no logical assertions about the match prediction algorithm.
+    /// Their correctness has been confirmed by manual validation of the algorithm, with the assistance of the verification framework checked into this repository.
+    /// 
+    /// If any of the values for these tests change - then either:
+    /// (a) the change that caused a test failure was incorrect and should be fixed/reverted
+    /// (b) the change is correct, and we believe the new state of the algorithm is correct, despite having different values for these snapshots.
+    /// In this case verification must be re-run to make sure the algorithm is still performing with acceptable accuracy. 
+    /// </summary>
     [TestFixture]
     internal partial class SnapshotTests
     {

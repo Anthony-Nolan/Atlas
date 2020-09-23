@@ -32,7 +32,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         private static object[] metadataTestCases =
         {
             new object[] {Registry1, null, null, null, 22, 38, 33},
-            // TODO: ATLAS-612: Use different enough HF sets that these results actually differ
+            // TODO: ATLAS-829: Use different enough HF sets that these results actually differ
             new object[] {Registry2, null, null, null, 22, 38, 33},
             new object[] {Registry2, Ethnicity1, null, null, 22, 38, 33},
             new object[] {Registry2, Ethnicity2, null, null, 14, 30, 38},

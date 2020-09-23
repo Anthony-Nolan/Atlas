@@ -27,6 +27,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         /// <summary>
         /// Test data in the form: { patientHla, donorHla, expected probability of 0 mismatches [P(0mm)], P(1mm), P(2mm) }
         /// </summary>
+        // TODO: ATLAS-830: Add more varied phenotypes to these tests
         private static object[] genotypePairTestCases =
         {
             // Identical patient/donor
