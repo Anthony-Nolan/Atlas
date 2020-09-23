@@ -21,9 +21,9 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Models
         public DateTime? RefreshEndUtc { get; set; }
 
         /// <summary>
-        /// Number of times the job was continued before completion.
+        /// Number of times the job was attempted before completion.
         /// </summary>
-        public int RefreshContinuedCount { get; set; }
+        public int RefreshAttemptedCount { get; set; }
 
         /// <summary>
         /// The string representation of a "TransientDatabase" enum value. 

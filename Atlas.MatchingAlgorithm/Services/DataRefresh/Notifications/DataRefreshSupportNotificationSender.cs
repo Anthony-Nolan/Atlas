@@ -47,7 +47,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.Notifications
 
         public async Task SendInProgressNotification(int recordId, int currentAttemptNumber)
         {
-            var summary = $"Data refresh in progress (#{recordId})";
+            var summary = $"Data refresh in progress (#{recordId}:{currentAttemptNumber})";
             var description =
 $@"Request to run matching algorithm data refresh (Record Id: {recordId}) in now in progress.
 This is attempt number: {currentAttemptNumber}.

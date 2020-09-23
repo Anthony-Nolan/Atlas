@@ -69,7 +69,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             var incompleteJob = FetchIncompleteJobRecord(dataRefreshRecordId);
 
             await dataRefreshNotificationSender.SendInProgressNotification(
-                dataRefreshRecordId, 1 + incompleteJob.RefreshContinuedCount);
+                dataRefreshRecordId, 1 + incompleteJob.RefreshAttemptedCount);
 
             await ContinueRefreshJob(dataRefreshRecordId);
         }
@@ -107,7 +107,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         {
             try
             {
-                await dataRefreshHistoryRepository.UpdateContinueDetails(dataRefreshRecordId);
+                await dataRefreshHistoryRepository.UpdateRunAttemptDetails(dataRefreshRecordId);
                 var newWmdaHlaNomenclatureVersion = await dataRefreshRunner.RefreshData(dataRefreshRecordId);
                 var previouslyActiveDatabase = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetActiveDatabase());
                 await MarkDataHistoryRecordAsComplete(dataRefreshRecordId, true, newWmdaHlaNomenclatureVersion);

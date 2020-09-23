@@ -102,7 +102,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             var record = DataRefreshRecordBuilder.New
                 .With(r => r.Id, recordId)
-                .With(r => r.RefreshContinuedCount, currentAttemptNumber - 1)
+                .With(r => r.RefreshAttemptedCount, currentAttemptNumber - 1)
                 .Build();
             dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new[] { record });
 
@@ -112,11 +112,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         }
 
         [Test]
-        public async Task OrchestrateDataRefresh_UpdatesContinueDetails()
+        public async Task OrchestrateDataRefresh_UpdatesRunAttemptDetails()
         {
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await dataRefreshHistoryRepository.Received().UpdateContinueDetails(DefaultRecordId);
+            await dataRefreshHistoryRepository.Received().UpdateRunAttemptDetails(DefaultRecordId);
         }
 
         [Test]
