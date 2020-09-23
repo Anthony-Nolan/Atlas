@@ -29,9 +29,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         private readonly IMatchPredictionAlgorithm matchPredictionAlgorithm;
 
         // Atlas.Functions services
-        private readonly IResultsUploader searchResultsBlobUploader;
         private readonly IMatchPredictionInputBuilder matchPredictionInputBuilder;
-        private readonly IResultsCombiner resultsCombiner;
         private readonly ISearchCompletionMessageSender searchCompletionMessageSender;
         private readonly IMatchingResultsDownloader matchingResultsDownloader;
 
@@ -42,19 +40,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             IDonorReader donorReader,
             // Match Prediction services
             IMatchPredictionAlgorithm matchPredictionAlgorithm,
-            // Atlas.Functions services
-            IResultsUploader searchResultsBlobUploader,
             IMatchPredictionInputBuilder matchPredictionInputBuilder,
-            IResultsCombiner resultsCombiner,
             ISearchCompletionMessageSender searchCompletionMessageSender,
             IMatchingResultsDownloader matchingResultsDownloader)
         {
             this.searchRunner = searchRunner;
             this.donorReader = donorReader;
             this.matchPredictionAlgorithm = matchPredictionAlgorithm;
-            this.searchResultsBlobUploader = searchResultsBlobUploader;
             this.matchPredictionInputBuilder = matchPredictionInputBuilder;
-            this.resultsCombiner = resultsCombiner;
             this.searchCompletionMessageSender = searchCompletionMessageSender;
             this.matchingResultsDownloader = matchingResultsDownloader;
         }
@@ -87,10 +80,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [FunctionName(nameof(FetchDonorInformation))]
-        public async Task<TimedResultSet<IDictionary<int, Donor>>> FetchDonorInformation(
-            [ActivityTrigger] Tuple<string, IEnumerable<int>> searchAndDonorIds)
+        public async Task<TimedResultSet<IDictionary<int, Donor>>> FetchDonorInformation([ActivityTrigger] IEnumerable<int> donorIds)
         {
-            var (_, donorIds) = searchAndDonorIds;
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -122,10 +113,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         [FunctionName(nameof(SendFailureNotification))]
         public async Task SendFailureNotification([ActivityTrigger] (string, string) failureInfo)
         {
-            var (requestId, failedStage) = failureInfo;
+            var (searchRequestId, failedStage) = failureInfo;
 
             await searchCompletionMessageSender.PublishFailureMessage(
-                requestId,
+                searchRequestId,
                 $"Search failed at stage: {failedStage}. See Application Insights for failure details."
             );
         }

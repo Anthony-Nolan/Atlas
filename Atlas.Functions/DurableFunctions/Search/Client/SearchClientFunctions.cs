@@ -40,12 +40,12 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             [DurableClient] IDurableOrchestrationClient starter)
         {
             var searchId = resultsNotification.SearchRequestId;
-            await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.SearchOrchestrator), resultsNotification);
+            var instanceId = await starter.StartNewAsync(nameof(SearchOrchestrationFunctions.SearchOrchestrator), resultsNotification);
 
             try
             {
-                logger.SendTrace($"Started match prediction orchestration with ID = '{searchId}'.");
-                var statusCheck = await GetStatusCheckEndpoints(starter, searchId);
+                logger.SendTrace($"Started match prediction orchestration with ID = '{searchId}'. Orchestration Instance: {instanceId}");
+                var statusCheck = await GetStatusCheckEndpoints(starter, instanceId);
                 logger.SendTrace(statusCheck.StatusQueryGetUri);
             }
             catch (Exception)
@@ -55,10 +55,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             }
         }
 
-        private static async Task<StatusCheckEndpoints> GetStatusCheckEndpoints(IDurableOrchestrationClient orchestrationClient, string searchId)
+        private static async Task<StatusCheckEndpoints> GetStatusCheckEndpoints(IDurableOrchestrationClient orchestrationClient, string instanceId)
         {
             // Log status check endpoints for convenience of debugging long search requests
-            var checkStatusResponse = orchestrationClient.CreateCheckStatusResponse(new HttpRequestMessage(), searchId);
+            var checkStatusResponse = orchestrationClient.CreateCheckStatusResponse(new HttpRequestMessage(), instanceId);
             return JsonConvert.DeserializeObject<StatusCheckEndpoints>(await checkStatusResponse.Content.ReadAsStringAsync());
         }
 
