@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPrediction.Snapshots
 {
     [TestFixture]
-    internal class Hla : SnapshotTestsBase
+    internal partial class SnapshotTests
     {
         [TestCaseSource(nameof(genotypePairTestCases))]
         public async Task MatchPrediction_WithVariedPatientAndDonorHla(
