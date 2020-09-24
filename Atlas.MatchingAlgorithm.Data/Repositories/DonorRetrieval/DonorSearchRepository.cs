@@ -57,18 +57,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             }
 
             var results = await Task.WhenAll(
-                GetAllDonorsForPGroupsAtLocus(
-                    locus,
-                    criteria.PGroupIdsToMatchInPositionOne,
-                    criteria.SearchDonorType,
-                    filteringOptions
-                ),
-                GetAllDonorsForPGroupsAtLocus(
-                    locus,
-                    criteria.PGroupIdsToMatchInPositionTwo,
-                    criteria.SearchDonorType,
-                    filteringOptions
-                )
+                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupIdsToMatchInPositionOne, criteria.SearchDonorType, filteringOptions),
+                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupIdsToMatchInPositionTwo, criteria.SearchDonorType, filteringOptions)
             );
 
             var stopwatch = new Stopwatch();
@@ -102,11 +92,13 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
+            pGroups = pGroups.ToList();
+
             var donorTypeFilteredJoin = "";
 
             if (filteringOptions.ShouldFilterOnDonorType)
             {
-                var donorTypeClause = filteringOptions.ShouldFilterOnDonorType ? $"AND d.DonorType = {(int) donorType}" : "";
+                var donorTypeClause = filteringOptions.ShouldFilterOnDonorType ? $"AND d.DonorType = {(int)donorType}" : "";
 
                 donorTypeFilteredJoin = $@"
                     INNER JOIN Donors d
