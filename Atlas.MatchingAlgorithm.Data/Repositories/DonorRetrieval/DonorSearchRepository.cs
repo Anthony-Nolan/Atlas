@@ -57,18 +57,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             }
 
             var results = await Task.WhenAll(
-                GetAllDonorsForPGroupsAtLocus(
-                    locus,
-                    criteria.PGroupIdsToMatchInPositionOne,
-                    criteria.SearchDonorType,
-                    filteringOptions
-                ),
-                GetAllDonorsForPGroupsAtLocus(
-                    locus,
-                    criteria.PGroupIdsToMatchInPositionTwo,
-                    criteria.SearchDonorType,
-                    filteringOptions
-                )
+                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupIdsToMatchInPositionOne, criteria.SearchDonorType, filteringOptions),
+                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupIdsToMatchInPositionTwo, criteria.SearchDonorType, filteringOptions)
             );
 
             var stopwatch = new Stopwatch();
@@ -116,7 +106,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             }
 
             var sql = $@"
-                SELECT m.DonorId, TypePosition FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
+                SELECT DISTINCT m.DonorId, TypePosition FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
                 {donorTypeFilteredJoin}
                 WHERE PGroup_Id IN @pGroupIds
                 GROUP BY m.DonorId, TypePosition";
