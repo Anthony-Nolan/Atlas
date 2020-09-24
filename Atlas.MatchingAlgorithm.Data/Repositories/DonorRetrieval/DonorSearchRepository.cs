@@ -57,18 +57,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             }
 
             var results = await Task.WhenAll(
-                GetAllDonorsForPGroupsAtLocus(
-                    locus,
-                    criteria.PGroupIdsToMatchInPositionOne,
-                    criteria.SearchDonorType,
-                    filteringOptions
-                ),
-                GetAllDonorsForPGroupsAtLocus(
-                    locus,
-                    criteria.PGroupIdsToMatchInPositionTwo,
-                    criteria.SearchDonorType,
-                    filteringOptions
-                )
+                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupIdsToMatchInPositionOne, criteria.SearchDonorType, filteringOptions),
+                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupIdsToMatchInPositionTwo, criteria.SearchDonorType, filteringOptions)
             );
 
             var stopwatch = new Stopwatch();
@@ -102,13 +92,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var donorTypeFilteredJoin = "";
+            pGroups = pGroups.ToList();
+
+            var filterQuery = "";
 
             if (filteringOptions.ShouldFilterOnDonorType)
             {
-                var donorTypeClause = filteringOptions.ShouldFilterOnDonorType ? $"AND d.DonorType = {(int) donorType}" : "";
+                var donorTypeClause = filteringOptions.ShouldFilterOnDonorType ? $"AND d.DonorType = {(int)donorType}" : "";
 
-                donorTypeFilteredJoin = $@"
+                filterQuery = $@"
                     INNER JOIN Donors d
                     ON m.DonorId = d.DonorId
                     {donorTypeClause}
@@ -117,13 +109,21 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 
             var sql = $@"
                 SELECT m.DonorId, TypePosition FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
-                {donorTypeFilteredJoin}
-                WHERE PGroup_Id IN @pGroupIds
+
+                {filterQuery}
+
+                INNER JOIN (
+                    SELECT {pGroups.FirstOrDefault()} AS PGroupId
+                    {(pGroups.Count() > 1 ? "UNION ALL SELECT" : "")} {string.Join(" UNION ALL SELECT ", pGroups.Skip(1))}
+                )
+                AS PGroupIds 
+                ON (m.PGroup_Id = PGroupIds.PGroupId)
+
                 GROUP BY m.DonorId, TypePosition";
 
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                var matches = await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 300, param: new {pGroupIds = pGroups.ToList()});
+                var matches = await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 300);
                 logger.SendTrace($"Match Timing: Donor repo. Fetched donors at locus: {locus} in {stopwatch.ElapsedMilliseconds}ms");
                 return matches;
             }

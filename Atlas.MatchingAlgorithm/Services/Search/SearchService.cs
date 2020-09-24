@@ -83,8 +83,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                 MapLocusInformationToMatchCriteria(Locus.A, matchCriteria.LocusMismatchCriteria.A, searchHla.A),
                 MapLocusInformationToMatchCriteria(Locus.B, matchCriteria.LocusMismatchCriteria.B, searchHla.B),
                 MapLocusInformationToMatchCriteria(Locus.C, matchCriteria.LocusMismatchCriteria.C, searchHla.C),
-                MapLocusInformationToMatchCriteria(Locus.Drb1, matchCriteria.LocusMismatchCriteria.Drb1, searchHla.Drb1),
-                MapLocusInformationToMatchCriteria(Locus.Dqb1, matchCriteria.LocusMismatchCriteria.Dqb1, searchHla.Dqb1));
+                MapLocusInformationToMatchCriteria(Locus.Dqb1, matchCriteria.LocusMismatchCriteria.Dqb1, searchHla.Dqb1),
+                MapLocusInformationToMatchCriteria(Locus.Drb1, matchCriteria.LocusMismatchCriteria.Drb1, searchHla.Drb1));
 
             return new AlleleLevelMatchCriteria
             {
@@ -95,8 +95,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     criteriaMappings[1],
                     criteriaMappings[2],
                     null,
-                    criteriaMappings[4],
-                    criteriaMappings[3]
+                    criteriaMappings[3],
+                    criteriaMappings[4]
                 ),
             };
         }
