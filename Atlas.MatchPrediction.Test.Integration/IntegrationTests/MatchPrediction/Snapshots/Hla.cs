@@ -47,11 +47,11 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             // XX codes
             new object[]
             {
-                new PhenotypeInfo<string>("01:XX", "11:XX", "27:XX", "35:XX", "02:XX", "04:XX", "03:XX", "04:XX", "03:XX", "05:XX", "11:01", "16:01"),
                 new PhenotypeInfo<string>("01:XX", "11:XX", "27:XX", "35:XX", "02:XX", "04:XX", "03:XX", "04:XX", "03:XX", "05:XX", "11:XX", "16:XX"),
-                28, 42, 25
+                new PhenotypeInfo<string>("01:XX", "11:XX", "27:XX", "35:XX", "02:XX", "04:XX", "03:XX", "04:XX", "03:XX", "05:XX", "11:XX", "16:XX"),
+                22, 38, 33
             },
-            // MACs
+            // MACs vs XX Codes
             new object[]
             {
                 new PhenotypeInfo<string>("01:BKR", "11:BDFZ", "27:HHUG", "35:HWMD", "02:XX", "04:HYFS", "03:JCRF", "04:JEAS", "03:XX", "05:XX",
@@ -59,24 +59,24 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 new PhenotypeInfo<string>("01:XX", "11:XX", "27:XX", "35:XX", "02:XX", "04:XX", "03:XX", "04:XX", "03:XX", "05:XX", "11:XX", "16:XX"),
                 12, 15, 65
             },
-            // Ambiguous patient & donor - Different XX codes
+            // Ambiguous patient & donor - Different XX codes to the previous case
             new object[]
             {
-                new PhenotypeInfo<string>("02:XX", "01:XX", "15:XX", "08:XX", "01:XX", "03:XX", "03:XX", "04:XX", "03:XX", "02:XX", "03:01", "11:01"),
                 new PhenotypeInfo<string>("02:XX", "01:XX", "15:XX", "08:XX", "01:XX", "03:XX", "03:XX", "04:XX", "03:XX", "02:XX", "03:XX", "11:XX"),
-                30, 45, 21
+                new PhenotypeInfo<string>("02:XX", "01:XX", "15:XX", "08:XX", "01:XX", "03:XX", "03:XX", "04:XX", "03:XX", "02:XX", "03:XX", "11:XX"),
+                24, 44, 27
             },
             // Known single mismatch (at A)
             new object[]
             {
-                new PhenotypeInfo<string>("01:XX", "01:XX", "15:XX", "08:XX", "01:XX", "03:XX", "03:XX", "04:XX", "03:XX", "02:XX", "03:01", "11:01"),
+                new PhenotypeInfo<string>("01:XX", "01:XX", "15:XX", "08:XX", "01:XX", "03:XX", "03:XX", "04:XX", "03:XX", "02:XX", "03:XX", "11:XX"),
                 new PhenotypeInfo<string>("02:XX", "01:XX", "15:XX", "08:XX", "01:XX", "03:XX", "03:XX", "04:XX", "03:XX", "02:XX", "03:XX", "11:XX"),
-                0, 27, 50
+                0, 19, 42
             },
             // Known multiple mismatches
             new object[]
             {
-                new PhenotypeInfo<string>("03:XX", "03:XX", "07:02", "07:XX", "07:XX", "07:XX", "03:XX", "04:XX", "06:XX", "06:XX", "15:01", "15:01"),
+                new PhenotypeInfo<string>("03:XX", "03:XX", "07:02", "07:XX", "07:XX", "07:XX", "03:XX", "04:XX", "06:XX", "06:XX", "15:XX", "15:XX"),
                 new PhenotypeInfo<string>("02:XX", "01:XX", "15:XX", "08:XX", "01:XX", "03:XX", "03:XX", "04:XX", "03:XX", "02:XX", "03:XX", "11:XX"),
                 0, 0, 0
             },
@@ -91,16 +91,16 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
             // Missing Loci - Donor only
             new object[]
             {
-                new PhenotypeInfo<string>("01:XX", "11:XX", "27:XX", "35:XX", "02:XX", "04:XX", "03:XX", "04:XX", "03:XX", "05:XX", "11:01", "16:01"),
+                new PhenotypeInfo<string>("01:XX", "11:XX", "27:XX", "35:XX", "02:XX", "04:XX", "03:XX", "04:XX", "03:XX", "05:XX", "11:XX", "16:XX"),
                 new PhenotypeInfo<string>("01:XX", "11:XX", "27:XX", "35:XX", null, null, null, null, null, null, "11:XX", "16:XX"),
-                19, 30, 25
+                15, 28, 29
             },
             // Missing Loci - Patient and Donor
             new object[]
             {
-                new PhenotypeInfo<string>("01:XX", "11:XX", "27:XX", "35:XX", null, null, null, null, null, null, "11:01", "16:01"),
                 new PhenotypeInfo<string>("01:XX", "11:XX", "27:XX", "35:XX", null, null, null, null, null, null, "11:XX", "16:XX"),
-                15, 25, 26
+                new PhenotypeInfo<string>("01:XX", "11:XX", "27:XX", "35:XX", null, null, null, null, null, null, "11:XX", "16:XX"),
+                11, 21, 25
             },
         };
     }

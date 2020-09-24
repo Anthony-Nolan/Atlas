@@ -15,7 +15,7 @@ namespace Atlas.MatchPrediction.Test.Integration.TestHelpers
             );
             var expectedProbabilities = (expected0Mm, expected1Mm, expected2Mm);
 
-            probabilities.Should().BeEquivalentTo(expectedProbabilities);
+            probabilities.Should().Be(expectedProbabilities);
         }
     }
 }
