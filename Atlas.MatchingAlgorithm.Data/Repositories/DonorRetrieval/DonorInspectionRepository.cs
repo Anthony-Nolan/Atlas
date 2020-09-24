@@ -106,7 +106,7 @@ ON m.DonorId = DonorIds.Id
                 // A thorough perf test demonstrated that this 'IN' produces an identical QueryPlan, and compiles faster.
                 var sql = $@"SELECT * FROM Donors WHERE DonorId IN({donorIdsString})";
 
-                var donors = await conn.QueryAsync<Donor>(sql, commandTimeout: 300);
+                var donors = await conn.QueryAsync<Donor>(sql, commandTimeout: 1200);
                 return donors.Select(d => d.ToDonorInfo()).ToDictionary(d => d.DonorId, d => d);
             }
         }

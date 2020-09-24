@@ -15,6 +15,18 @@ using System.Threading.Tasks;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {
+    public interface IPreFilteredDonorSearchRepository
+    {
+        /// <summary>
+        /// Returns donor matches at a given locus matching the search criteria, that are also present in a supplied list of donor ids
+        /// </summary>
+        Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocusFromDonorSelection(
+            Locus locus,
+            LocusSearchCriteria criteria,
+            IEnumerable<int> donorIds
+        );
+    }
+
     public class PreFilteredDonorSearchRepository : Repository, IPreFilteredDonorSearchRepository
     {
         private const int DonorIdBatchSize = 50000;
@@ -40,7 +52,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             return results;
         }
 
-        private async Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorsMatches(Locus locus, LocusSearchCriteria criteria, IEnumerable<int> donorIds)
+        private async Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorsMatches(
+            Locus locus,
+            LocusSearchCriteria criteria,
+            IEnumerable<int> donorIds)
         {
             donorIds = donorIds.ToList();
 
@@ -87,7 +102,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             // TODO: ATLAS-686: Work out why this is so much slower for DQB1 than for C
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                return await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 450);
+                return await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 1800);
             }
         }
 
@@ -99,7 +114,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             }
 
             var untypedDonorIds = await GetIdsOfDonorsUntypedAtLocus(locus, donorIds);
-            var untypedDonorResults = untypedDonorIds.SelectMany(id => new[] { LocusPosition.One, LocusPosition.Two }.Select(
+            var untypedDonorResults = untypedDonorIds.SelectMany(id => new[] {LocusPosition.One, LocusPosition.Two}.Select(
                 position =>
                     new PotentialHlaMatchRelation
                     {
@@ -143,7 +158,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                return await conn.QueryAsync<int>(sql, commandTimeout: 300);
+                return await conn.QueryAsync<int>(sql, commandTimeout: 1800);
             }
         }
 

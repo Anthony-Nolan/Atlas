@@ -133,7 +133,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                var matches = await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 300);
+                var matches = await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 1800);
                 logger.SendTrace($"Match Timing: Donor repo. Fetched donors at locus: {locus} in {stopwatch.ElapsedMilliseconds}ms");
                 return matches;
             }
