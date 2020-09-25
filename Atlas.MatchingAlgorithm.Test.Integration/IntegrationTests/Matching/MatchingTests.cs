@@ -10,6 +10,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
+using Atlas.MatchingAlgorithm.Test.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -209,8 +210,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithSearchType(DonorType.Cord)
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithFullHeterozygousMatchAtLocusA.DonorId);
-            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithFullHomozygousMatchAtLocusA.DonorId);
+            results.ShouldContainDonor(cordDonorInfoWithFullHeterozygousMatchAtLocusA.DonorId);
+            results.ShouldContainDonor(cordDonorInfoWithFullHomozygousMatchAtLocusA.DonorId);
         }
 
         [Test]
@@ -232,7 +233,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithDonorMismatchCount(1)
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithFullHeterozygousMatchAtLocusA.DonorId);
+            results.ShouldContainDonor(cordDonorInfoWithFullHeterozygousMatchAtLocusA.DonorId);
         }
 
         [Test]

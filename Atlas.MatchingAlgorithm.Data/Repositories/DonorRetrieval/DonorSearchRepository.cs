@@ -14,6 +14,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Sql;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {
@@ -55,67 +57,59 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                 throw new ArgumentOutOfRangeException();
             }
 
-            var results = await Task.WhenAll(
-                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupIdsToMatchInPositionOne.ToList(), criteria.SearchDonorType, filteringOptions),
-                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupIdsToMatchInPositionTwo.ToList(), criteria.SearchDonorType, filteringOptions)
-            );
-
-            using (logger.RunTimed($"Match Timing: Donor repo. Manipulated data for locus: {locus}"))
-            {
-                var position1Matches = results[0].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.One, locus));
-                var position2Matches = results[1].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.Two, locus));
-                var groupedResults = position1Matches.Concat(position2Matches).GroupBy(r => r.DonorId);
-                if (criteria.MismatchCount == 0)
-                {
-                    // If no mismatch allowed at this locus, the donor must have been matched at both loci. 
-                    groupedResults = groupedResults.Where(g =>
-                        g.Count(r => r.MatchingTypePosition == LocusPosition.One) >= 1
-                        && g.Count(r => r.MatchingTypePosition == LocusPosition.Two) >= 1
-                    );
-                }
-
-                return groupedResults.SelectMany(g => g);
-            }
+            var pGroups = new LocusInfo<IEnumerable<int>>(criteria.PGroupIdsToMatchInPositionOne, criteria.PGroupIdsToMatchInPositionTwo);
+            var fullResults = await MatchAtLocus(locus, filteringOptions, criteria.SearchDonorType, pGroups, criteria.MismatchCount == 0);
+            var potentialHlaMatchRelations = fullResults.SelectMany(x => x.ToPotentialHlaMatchRelations(locus));
+            return potentialHlaMatchRelations;
         }
 
-        private async Task<IEnumerable<DonorMatch>> GetAllDonorsForPGroupsAtLocus(
+        private async Task<IEnumerable<FullDonorMatch>> MatchAtLocus(
             Locus locus,
-            IList<int> pGroups,
+            MatchingFilteringOptions filteringOptions,
             DonorType donorType,
-            MatchingFilteringOptions filteringOptions
-        )
+            LocusInfo<IEnumerable<int>> pGroups,
+            bool mustBeDoubleMatch)
         {
-            using (logger.RunTimed($"Match Timing: Donor repo. Fetched donors at locus: {locus}"))
+            if (!pGroups.Position1.Any() || !pGroups.Position2.Any())
             {
-                pGroups = pGroups.ToList();
-                var donorTypeFilteredJoin = "";
-                if (filteringOptions.ShouldFilterOnDonorType)
-                {
-                    var donorTypeClause = filteringOptions.ShouldFilterOnDonorType ? $"AND d.DonorType = {(int) donorType}" : "";
+                logger.SendTrace($"No P-Groups provided at locus {locus} - SQL was not run, no donors returned.");
+                return new List<FullDonorMatch>();
+            }
 
-                    donorTypeFilteredJoin = $@"
-                    INNER JOIN Donors d
-                    ON m.DonorId = d.DonorId
-                    {donorTypeClause}
-                    ";
-                }
+            using (logger.RunTimed($"Match Timing: Donor repo. Fetched donors at locus: {locus}. For both positions."))
+            {
+                // Ensure we have a Donor ID even when there is only one match at this locus.
+                const string selectDonorIdStatement = @"CASE WHEN DonorId1 IS NULL THEN DonorId2 ELSE DonorId1 END";
+                
+                var donorTypeFilteredJoin = filteringOptions.ShouldFilterOnDonorType
+                    ? $@"INNER JOIN Donors d ON {selectDonorIdStatement} = d.DonorId AND d.DonorType = {(int) donorType}"
+                    : "";
+
+                var joinType = mustBeDoubleMatch ? "INNER" : "FULL OUTER";
 
                 var sql = $@"
-                SELECT m.DonorId, TypePosition FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
+SELECT DISTINCT {selectDonorIdStatement} as DonorId, TypePosition1, TypePosition2
+FROM 
+(
+SELECT m.DonorId as DonorId1, TypePosition as TypePosition1
+FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
+WHERE m.PGroup_Id IN {pGroups.Position1.ToInClause()}
+) as m_1
 
-                {donorTypeFilteredJoin}
+{joinType} JOIN 
+(
+SELECT m.DonorId as DonorId2, TypePosition as TypePosition2
+FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
+WHERE m.PGroup_Id IN {pGroups.Position2.ToInClause()} 
+) as m_2
+ON DonorId1 = DonorId2
 
-                INNER JOIN (
-                    SELECT {pGroups.FirstOrDefault()} AS PGroupId
-                    {(pGroups.Count() > 1 ? "UNION ALL SELECT" : "")} {string.Join(" UNION ALL SELECT ", pGroups.Skip(1))}
-                )
-                AS PGroupIds 
-                ON (m.PGroup_Id = PGroupIds.PGroupId)
-
-                GROUP BY m.DonorId, TypePosition";
+{donorTypeFilteredJoin}
+";
                 await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+                using (logger.RunTimed("Match Timing: Donor Repo. Phase 1 query. Per Locus. 2/2 Only."))
                 {
-                    return await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 1800);
+                    return await conn.QueryAsync<FullDonorMatch>(sql, commandTimeout: 1800);
                 }
             }
         }

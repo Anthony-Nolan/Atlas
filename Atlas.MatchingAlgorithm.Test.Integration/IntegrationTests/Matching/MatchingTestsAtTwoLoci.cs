@@ -10,6 +10,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
+using Atlas.MatchingAlgorithm.Test.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,7 +67,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private readonly List<string> patientPGroupsAtLocusTwo_PositionTwo = new List<string> {PatientPGroupAtLocusTwo_PositionTwo};
 
 
-        public MatchingTestsAtTwoLoci(Locus locus1, Locus locus2) : base()
+        public MatchingTestsAtTwoLoci(Locus locus1, Locus locus2)
         {
             this.locus1 = locus1;
             this.locus2 = locus2;
@@ -177,7 +178,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMismatchCount(locus2, 1)
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithFullMatchAtBothLoci.DonorId);
+            results.ShouldContainDonor(cordDonorInfoWithFullMatchAtBothLoci.DonorId);
         }
 
         [Test]
@@ -189,7 +190,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMismatchCount(locus2, 1)
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithHalfMatchAtLocus1AndFullMatchAtLocus2.DonorId);
+            results.ShouldContainDonor(cordDonorInfoWithHalfMatchAtLocus1AndFullMatchAtLocus2.DonorId);
         }
 
         [Test]
@@ -201,8 +202,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMismatchCount(locus2, 1)
                 .Build();
             var results = (await matchingService.GetMatches(searchCriteria)).ToList();
-            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithNoMatchAtLocus1AndFullMatchAtLocus2.DonorId);
-            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithNoMatchAtLocus1AndHalfMatchAtLocus2.DonorId);
+            results.ShouldContainDonor(cordDonorInfoWithNoMatchAtLocus1AndFullMatchAtLocus2.DonorId);
+            results.ShouldContainDonor(cordDonorInfoWithNoMatchAtLocus1AndHalfMatchAtLocus2.DonorId);
         }
         
         [Test]
@@ -214,7 +215,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMismatchCount(locus2, 2)
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithNoMatchAtEitherLocus.DonorId);
+            results.ShouldContainDonor(cordDonorInfoWithNoMatchAtEitherLocus.DonorId);
         }
 
         /// <returns> A criteria builder pre-populated with default criteria data of an exact search. </returns>
