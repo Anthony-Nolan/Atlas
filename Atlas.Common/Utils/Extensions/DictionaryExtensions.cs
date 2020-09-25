@@ -19,5 +19,10 @@ namespace Atlas.Common.Utils.Extensions
                 dictionary.Add(key, value);
             }
         }
+
+        public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
+        {
+            return dictionary.TryGetValue(key, out var result) ? result : default;
+        }
     }
 }
