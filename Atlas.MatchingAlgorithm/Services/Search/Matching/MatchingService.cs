@@ -5,9 +5,9 @@ using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 
@@ -61,19 +61,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         /// </summary>
         private async Task<IDictionary<int, MatchResult>> PerformMatchingPhaseOne(AlleleLevelMatchCriteria criteria, ICollection<Locus> loci)
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            var matches = await donorMatchingService.FindMatchesForLoci(criteria, loci);
-
-            searchLogger.SendTrace("Matching timing: Phase 1 complete", LogLevel.Info, new Dictionary<string, string>
+            using (searchLogger.RunTimed("Matching timing: Phase 1 complete"))
             {
-                {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
-                {"Donors", matches.Count.ToString()},
-                {"Loci", loci.Select(l => l.ToString()).StringJoin(",")}
-            });
-
-            return matches;
+                var matches = await donorMatchingService.FindMatchesForLoci(criteria, loci);
+                searchLogger.SendTrace($"Matching Phase 1: Found {matches.Count} donors. At loci: {loci.Select(l => l.ToString()).StringJoin(",")}");
+                return matches;
+            }
         }
 
         /// <summary>
@@ -85,18 +78,13 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             IDictionary<int, MatchResult> initialMatches
         )
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            var matchesAtAllLoci = await preFilteredDonorMatchingService.FindMatchesForLociFromDonorSelection(criteria, loci, initialMatches);
-
-            searchLogger.SendTrace("Matching timing: Phase 2 complete", LogLevel.Info, new Dictionary<string, string>
+            using (searchLogger.RunTimed("Matching timing: Phase 2 complete"))
             {
-                {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
-                {"Donors", matchesAtAllLoci.Count.ToString()},
-                {"Loci", loci.Select(l => l.ToString()).StringJoin(",")}
-            });
-            return matchesAtAllLoci;
+                var matchesAtAllLoci = await preFilteredDonorMatchingService.FindMatchesForLociFromDonorSelection(criteria, loci, initialMatches);
+                searchLogger.SendTrace(
+                    $"Matching Phase 2: Found {matchesAtAllLoci.Count} donors. At loci: {loci.Select(l => l.ToString()).StringJoin(",")}");
+                return matchesAtAllLoci;
+            }
         }
 
         /// <summary>
@@ -108,30 +96,26 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             IDictionary<int, MatchResult> matches
         )
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            var filteredMatchesByMatchCriteria = matches
-                .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m.Value, criteria))
-                .ToDictionary(m => m.Key, m => m.Value);
-
-            var matchesWithDonorInfoPopulated = await PopulateDonorData(filteredMatchesByMatchCriteria);
-
-            var filteredMatchesByDonorInformation = matchesWithDonorInfoPopulated
-                .Where(m => matchFilteringService.IsAvailableForSearch(m.Value))
-                .Where(m => matchFilteringService.FulfilsSearchTypeCriteria(m.Value, criteria))
-                .Where(m => matchFilteringService.FulfilsSearchTypeSpecificCriteria(m.Value, criteria))
-                .ToList();
-
-            // Once finished populating match data, mark data as populated (so that null locus match data can be accessed for mapping to the api model)
-            filteredMatchesByDonorInformation.ForEach(m => m.Value.MarkMatchingDataFullyPopulated());
-
-            searchLogger.SendTrace("Matching timing: Phase 3 complete", LogLevel.Info, new Dictionary<string, string>
+            using (searchLogger.RunTimed("Matching timing: Phase 3 complete"))
             {
-                {"Milliseconds", stopwatch.ElapsedMilliseconds.ToString()},
-                {"Donors", filteredMatchesByDonorInformation.Count.ToString()},
-            });
-            return filteredMatchesByDonorInformation.ToDictionary(m => m.Key, m => m.Value);
+                var filteredMatchesByMatchCriteria = matches
+                    .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m.Value, criteria))
+                    .ToDictionary(m => m.Key, m => m.Value);
+
+                var matchesWithDonorInfoPopulated = await PopulateDonorData(filteredMatchesByMatchCriteria);
+
+                var filteredMatchesByDonorInformation = matchesWithDonorInfoPopulated
+                    .Where(m => matchFilteringService.IsAvailableForSearch(m.Value))
+                    .Where(m => matchFilteringService.FulfilsSearchTypeCriteria(m.Value, criteria))
+                    .Where(m => matchFilteringService.FulfilsSearchTypeSpecificCriteria(m.Value, criteria))
+                    .ToList();
+
+                // Once finished populating match data, mark data as populated (so that null locus match data can be accessed for mapping to the api model)
+                filteredMatchesByDonorInformation.ForEach(m => m.Value.MarkMatchingDataFullyPopulated());
+
+                searchLogger.SendTrace($"Matching Phase 3: Found {filteredMatchesByDonorInformation.Count} donors.");
+                return filteredMatchesByDonorInformation.ToDictionary();
+            }
         }
 
         private async Task<IDictionary<int, MatchResult>> PopulateDonorData(Dictionary<int, MatchResult> filteredMatchesByMatchCriteria)
