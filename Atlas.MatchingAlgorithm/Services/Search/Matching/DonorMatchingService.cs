@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
@@ -33,6 +34,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
     public class DonorMatchingService : DonorMatchingServiceBase, IDonorMatchingService
     {
+        private const string LoggingPrefix = "MATCHING PHASE1: ";
+
         private readonly IDonorSearchRepository donorSearchRepository;
         private readonly IMatchFilteringService matchFilteringService;
         private readonly IDatabaseFilteringAnalyser databaseFilteringAnalyser;
@@ -73,34 +76,33 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             searchLogger.SendTrace($"MATCHING PHASE1: all donors from Db. {results.Sum(x => x.Count)} results in {stopwatch.ElapsedMilliseconds} ms");
             stopwatch.Restart();
 
-            var matches = results
-                .SelectMany(r => r)
-                .GroupBy(m => m.Key)
-                // If no mismatches are allowed - donors must be matched at all provided loci. This check performed upfront to improve performance of such searches 
-                .Where(g => criteria.DonorMismatchCount != 0 || g.Count() == loci.Count)
-                .Select(matchesForDonor =>
-                {
-                    var donorId = matchesForDonor.Key;
-                    var result = new MatchResult {DonorId = donorId};
-                    foreach (var locus in loci)
+            using (searchLogger.RunTimed($"{LoggingPrefix}Manipulate + filter results from database"))
+            {
+                var matches = results
+                    .SelectMany(r => r)
+                    .GroupBy(m => m.Key)
+                    // If no mismatches are allowed - donors must be matched at all provided loci. This check performed upfront to improve performance of such searches 
+                    .Where(g => criteria.DonorMismatchCount != 0 || g.Count() == loci.Count)
+                    .Select(matchesForDonor =>
                     {
-                        var (_, donorAndMatchForLocus) = matchesForDonor.FirstOrDefault(m => m.Value.Locus == locus);
-                        var locusMatchDetails = donorAndMatchForLocus != null
-                            ? donorAndMatchForLocus.Match
-                            : new LocusMatchDetails {MatchCount = 0};
-                        result.SetMatchDetailsForLocus(locus, locusMatchDetails);
-                    }
+                        var donorId = matchesForDonor.Key;
+                        var result = new MatchResult {DonorId = donorId};
+                        foreach (var locus in loci)
+                        {
+                            var (_, donorAndMatchForLocus) = matchesForDonor.FirstOrDefault(m => m.Value.Locus == locus);
+                            var locusMatchDetails = donorAndMatchForLocus != null
+                                ? donorAndMatchForLocus.Match
+                                : new LocusMatchDetails {MatchCount = 0};
+                            result.SetMatchDetailsForLocus(locus, locusMatchDetails);
+                        }
 
-                    return result;
-                })
-                .Where(m => loci.All(l => matchFilteringService.FulfilsPerLocusMatchCriteria(m, criteria, l)))
-                .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m, criteria))
-                .ToList();
-
-            searchLogger.SendTrace($"MATCHING PHASE1: Manipulate + filter: {stopwatch.ElapsedMilliseconds}");
-            stopwatch.Restart();
-
-            return matches.ToDictionary(m => m.DonorId, m => m);
+                        return result;
+                    })
+                    .Where(m => loci.All(l => matchFilteringService.FulfilsPerLocusMatchCriteria(m, criteria, l)))
+                    .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m, criteria))
+                    .ToList();
+                return matches.ToDictionary(m => m.DonorId, m => m);
+            }
         }
 
         private async Task<IDictionary<int, DonorAndMatchForLocus>> FindMatchesAtLocus(
@@ -109,33 +111,36 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             AlleleLevelLocusMatchCriteria criteria
         )
         {
-            var repoCriteria = new LocusSearchCriteria
+            using (searchLogger.RunTimed($"{LoggingPrefix}Fetched donors from database - for Locus {locus}"))
             {
-                SearchDonorType = searchType,
-                PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
-                PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
-                MismatchCount = criteria.MismatchCount,
-            };
+                var repoCriteria = new LocusSearchCriteria
+                {
+                    SearchDonorType = searchType,
+                    PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
+                    PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
+                    MismatchCount = criteria.MismatchCount,
+                };
 
-            var filteringOptions = new MatchingFilteringOptions
-            {
-                ShouldFilterOnDonorType = databaseFilteringAnalyser.ShouldFilterOnDonorTypeInDatabase(repoCriteria),
-            };
+                var filteringOptions = new MatchingFilteringOptions
+                {
+                    ShouldFilterOnDonorType = databaseFilteringAnalyser.ShouldFilterOnDonorTypeInDatabase(repoCriteria),
+                };
 
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+                
+                var matchesAtLocus = await donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions);
 
-            var matchesAtLocus = await donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions);
-            searchLogger.SendTrace($"MATCHING PHASE1: SQL Requests, {stopwatch.ElapsedMilliseconds}");
-            stopwatch.Restart();
-
-            var matches = matchesAtLocus
-                .GroupBy(m => m.DonorId)
-                .ToDictionary(g => g.Key, g => DonorAndMatchFromGroup(g, locus));
-
-            searchLogger.SendTrace($"MATCHING PHASE1: Direct/Cross analysis, {stopwatch.ElapsedMilliseconds}");
-
-            return matches;
+                searchLogger.SendTrace($"{LoggingPrefix}SQL Requests, {stopwatch.ElapsedMilliseconds}");
+                stopwatch.Restart();
+                
+                var matches = matchesAtLocus
+                    .GroupBy(m => m.DonorId)
+                    .ToDictionary(g => g.Key, g => DonorAndMatchFromGroup(g, locus));
+                
+                searchLogger.SendTrace($"{LoggingPrefix}Direct/Cross analysis, {stopwatch.ElapsedMilliseconds}");
+                return matches;
+            }
         }
     }
 }

@@ -81,8 +81,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             using (searchLogger.RunTimed("Matching timing: Phase 2 complete"))
             {
                 var matchesAtAllLoci = await preFilteredDonorMatchingService.FindMatchesForLociFromDonorSelection(criteria, loci, initialMatches);
-                searchLogger.SendTrace(
-                    $"Matching Phase 2: Found {matchesAtAllLoci.Count} donors. At loci: {loci.Select(l => l.ToString()).StringJoin(",")}");
+                searchLogger.SendTrace($"Matching Phase 2: {matchesAtAllLoci.Count} donors. Loci: {loci.Select(l => l.ToString()).StringJoin(",")}");
                 return matchesAtAllLoci;
             }
         }
