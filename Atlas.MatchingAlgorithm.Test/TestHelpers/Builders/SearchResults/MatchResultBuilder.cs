@@ -6,7 +6,7 @@ using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
 {
-    public class MatchResultBuilder
+    internal class MatchResultBuilder
     {
         private readonly MatchResult matchResult;
 
