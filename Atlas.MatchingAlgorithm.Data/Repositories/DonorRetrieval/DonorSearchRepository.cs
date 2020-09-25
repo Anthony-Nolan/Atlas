@@ -12,10 +12,11 @@ using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Sql;
+using MoreLinq;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {
@@ -24,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
         /// <summary>
         /// Returns donor matches at a given locus matching the search criteria
         /// </summary>
-        Task<IAsyncEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(
+        IAsyncEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(
             Locus locus,
             LocusSearchCriteria criteria,
             MatchingFilteringOptions filteringOptions);
@@ -32,6 +33,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 
     public class DonorSearchRepository : Repository, IDonorSearchRepository
     {
+        private const int DonorIdBatchSize = 5000;
+
         private readonly ILogger logger;
 
         public DonorSearchRepository(IConnectionStringProvider connectionStringProvider, ILogger logger) : base(connectionStringProvider)
@@ -44,7 +47,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
         /// If the matching criteria allow no mismatches, ensures a match is present for each position.
         /// This method should only be called for loci that are guaranteed to be typed - i.e. A/B/DRB1 - as it does not check for untyped donors. 
         /// </summary>
-        public async Task<IAsyncEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(
+        public async IAsyncEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(
             Locus locus,
             LocusSearchCriteria criteria,
             MatchingFilteringOptions filteringOptions
@@ -58,9 +61,52 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             }
 
             var pGroups = new LocusInfo<IEnumerable<int>>(criteria.PGroupIdsToMatchInPositionOne, criteria.PGroupIdsToMatchInPositionTwo);
-            var fullResults = MatchAtLocus(locus, filteringOptions, criteria.SearchDonorType, pGroups, criteria.MismatchCount == 0);
-            var potentialHlaMatchRelations = fullResults.SelectMany(x => x.ToPotentialHlaMatchRelations(locus));
-            return potentialHlaMatchRelations;
+            var donorIds = filteringOptions?.DonorIds;
+
+            if (donorIds != null)
+            {
+                if (donorIds.Count > DonorIdBatchSize * 5)
+                {
+                    var options = new MatchingFilteringOptions
+                    {
+                        DonorIds = null,
+                        ShouldFilterOnDonorType = filteringOptions.ShouldFilterOnDonorType
+                    };
+                    var fullResults = MatchAtLocus(locus, options, criteria.SearchDonorType, pGroups, criteria.MismatchCount == 0)
+                        .Where(m => donorIds.Contains(m.DonorId));
+                    // TODO: ATLAS-714: Commonise this method!
+                    var convertedResults = fullResults.SelectMany(x => x.ToPotentialHlaMatchRelations(locus));
+                    await foreach (var result in convertedResults)
+                    {
+                        yield return result;
+                    }
+                }
+                else
+                {
+                    foreach (var donorBatch in donorIds.Batch(DonorIdBatchSize))
+                    {
+                        var batchOptions = new MatchingFilteringOptions
+                        {
+                            ShouldFilterOnDonorType = filteringOptions.ShouldFilterOnDonorType,
+                            DonorIds = Enumerable.ToHashSet(donorBatch),
+                        };
+                        var batchResults = MatchAtLocus(locus, batchOptions, criteria.SearchDonorType, pGroups, criteria.MismatchCount == 0);
+                        await foreach (var result in batchResults.SelectMany(x => x.ToPotentialHlaMatchRelations(locus)))
+                        {
+                            yield return result;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var fullResults = MatchAtLocus(locus, filteringOptions, criteria.SearchDonorType, pGroups, criteria.MismatchCount == 0);
+                var convertedResults = fullResults.SelectMany(x => x.ToPotentialHlaMatchRelations(locus));
+                await foreach (var result in convertedResults)
+                {
+                    yield return result;
+                }
+            }
         }
 
         private async IAsyncEnumerable<FullDonorMatch> MatchAtLocus(
@@ -74,6 +120,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             {
                 logger.SendTrace($"No P-Groups provided at locus {locus} - SQL was not run, no donors returned.");
             }
+            else if (filteringOptions.DonorIds != null && !filteringOptions.DonorIds.Any())
+            {
+                logger.SendTrace($"Asked to pre-filter donors at locus {locus} from an empty list - SQL was not run, no donors returned. ");
+            }
             else
             {
                 using (logger.RunTimed($"Match Timing: Donor repo. Fetched donors at locus: {locus}. For both positions."))
@@ -85,6 +135,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                         ? $@"INNER JOIN Donors d ON {selectDonorIdStatement} = d.DonorId AND d.DonorType = {(int) donorType}"
                         : "";
 
+                    var donorIdFilter = filteringOptions.DonorIds != null
+                        ? $"AND m.DonorId IN {filteringOptions.DonorIds.ToInClause()}"
+                        : "";
+
                     var joinType = mustBeDoubleMatch ? "INNER" : "FULL OUTER";
 
                     var sql = $@"
@@ -94,6 +148,7 @@ FROM
 SELECT m.DonorId as DonorId1, TypePosition as TypePosition1
 FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
 WHERE m.PGroup_Id IN {pGroups.Position1.ToInClause()}
+{donorIdFilter}
 ) as m_1
 
 {joinType} JOIN 
@@ -101,6 +156,7 @@ WHERE m.PGroup_Id IN {pGroups.Position1.ToInClause()}
 SELECT m.DonorId as DonorId2, TypePosition as TypePosition2
 FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
 WHERE m.PGroup_Id IN {pGroups.Position2.ToInClause()} 
+{donorIdFilter}
 ) as m_2
 ON DonorId1 = DonorId2
 
@@ -108,8 +164,9 @@ ON DonorId1 = DonorId2
 ";
                     IEnumerable<FullDonorMatch> matches;
 
+                    // TODO: ATLAS-714: sort out SQL timing logging - currently a few places claim to be timing similar things
                     await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
-                    using (logger.RunTimed("Match Timing: Donor Repo. Phase 1 query. Per Locus. 2/2 Only."))
+                    using (logger.RunTimed($"Match Timing: Donor Repo. Phase 1 query. Per Locus: {locus}"))
                     {
                         matches = await conn.QueryAsync<FullDonorMatch>(sql, commandTimeout: 1800);
                     }
@@ -120,6 +177,28 @@ ON DonorId1 = DonorId2
                     }
                 }
             }
+        }
+
+        private static string BuildDonorJoinStatement(MatchingFilteringOptions filteringOptions, DonorType donorType, string selectDonorIdStatement)
+        {
+            var shouldJoinToDonors = filteringOptions.ShouldFilterOnDonorType || filteringOptions.DonorIds != null;
+            if (!shouldJoinToDonors)
+            {
+                return "";
+            }
+
+            var joinStatementBuilder = new StringBuilder($"INNER JOIN Donors d ON {selectDonorIdStatement} = d.DonorId ");
+            if (filteringOptions.ShouldFilterOnDonorType)
+            {
+                joinStatementBuilder.Append($"AND d.DonorType = {(int) donorType}");
+            }
+
+            if (filteringOptions.DonorIds != null && filteringOptions.DonorIds.Any())
+            {
+                joinStatementBuilder.Append($"AND d.DonorId IN {filteringOptions.DonorIds.ToInClause()}");
+            }
+
+            return joinStatementBuilder.ToString();
         }
     }
 }

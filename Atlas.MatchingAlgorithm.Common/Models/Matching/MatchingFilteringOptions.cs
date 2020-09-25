@@ -10,10 +10,11 @@ namespace Atlas.MatchingAlgorithm.Common.Models.Matching
     {
         public bool ShouldFilterOnDonorType { get; set; }
         
+        // TODO: ATLAS-714: Is it right for this to be in the filtering options but the type to be in the criteria?
         /// <summary>
         /// When set, will filter the SQL query allowing only provided donor Ids.
         /// Otherwise, allows all donors. 
         /// </summary>
-        public IEnumerable<int> DonorIds { get; set; }
+        public HashSet<int> DonorIds { get; set; }
     }
 }

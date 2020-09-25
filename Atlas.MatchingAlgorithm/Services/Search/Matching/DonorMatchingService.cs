@@ -82,22 +82,23 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             // Keyed by DonorId
             IDictionary<int, MatchResult> results = new Dictionary<int, MatchResult>();
             var matchedLoci = new HashSet<Locus>();
-            
+
             foreach (var locusCriteria in lociMismatchCounts.OrderBy(c => c.Item2?.MismatchCount))
             {
                 var (locus, c) = locusCriteria;
-                var locusResults = await FindMatchesAtLocus(criteria.SearchType, locus, c);
-                
+                var donorIds = !matchedLoci.Any() ? null : results.Keys.ToHashSet();
+                var locusResults = await FindMatchesAtLocus(criteria.SearchType, locus, c, donorIds);
+
                 await foreach (var locusResult in locusResults)
                 {
                     var donorId = locusResult.DonorId;
                     var result = results.GetValueOrDefault(donorId);
                     if (result == default)
                     {
-                        result = new MatchResult{ DonorId = donorId};
+                        result = new MatchResult {DonorId = donorId};
                         results[donorId] = result;
                     }
-                    
+
                     result.UpdatePositionPairsForLocus(locus, locusResult.SearchTypePosition, locusResult.MatchingTypePosition);
                 }
 
@@ -116,29 +117,25 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         private async Task<IAsyncEnumerable<PotentialHlaMatchRelation>> FindMatchesAtLocus(
             DonorType searchType,
             Locus locus,
-            AlleleLevelLocusMatchCriteria criteria
+            AlleleLevelLocusMatchCriteria criteria,
+            HashSet<int> donorIds = null
         )
         {
-            using (searchLogger.RunTimed($"{LoggingPrefix}Fetched donors from database - for Locus {locus}"))
+            var repoCriteria = new LocusSearchCriteria
             {
-                var repoCriteria = new LocusSearchCriteria
-                {
-                    SearchDonorType = searchType,
-                    PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
-                    PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
-                    MismatchCount = criteria.MismatchCount,
-                };
+                SearchDonorType = searchType,
+                PGroupIdsToMatchInPositionOne = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionOne),
+                PGroupIdsToMatchInPositionTwo = await pGroupRepository.GetPGroupIds(criteria.PGroupsToMatchInPositionTwo),
+                MismatchCount = criteria.MismatchCount,
+            };
 
-                var filteringOptions = new MatchingFilteringOptions
-                {
-                    ShouldFilterOnDonorType = databaseFilteringAnalyser.ShouldFilterOnDonorTypeInDatabase(repoCriteria),
-                };
+            var filteringOptions = new MatchingFilteringOptions
+            {
+                ShouldFilterOnDonorType = databaseFilteringAnalyser.ShouldFilterOnDonorTypeInDatabase(repoCriteria),
+                DonorIds = donorIds
+            };
 
-                using (searchLogger.RunTimed($"{LoggingPrefix}SQL Requests"))
-                {
-                    return await donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions);
-                }
-            }
+            return donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions);
         }
     }
 }
