@@ -11,9 +11,9 @@ using Dapper;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights.Timing;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {
@@ -25,8 +25,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
         Task<IEnumerable<PotentialHlaMatchRelation>> GetDonorMatchesAtLocus(
             Locus locus,
             LocusSearchCriteria criteria,
-            MatchingFilteringOptions filteringOptions
-        );
+            MatchingFilteringOptions filteringOptions);
     }
 
     public class DonorSearchRepository : Repository, IDonorSearchRepository
@@ -57,57 +56,51 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             }
 
             var results = await Task.WhenAll(
-                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupIdsToMatchInPositionOne, criteria.SearchDonorType, filteringOptions),
-                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupIdsToMatchInPositionTwo, criteria.SearchDonorType, filteringOptions)
+                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupIdsToMatchInPositionOne.ToList(), criteria.SearchDonorType, filteringOptions),
+                GetAllDonorsForPGroupsAtLocus(locus, criteria.PGroupIdsToMatchInPositionTwo.ToList(), criteria.SearchDonorType, filteringOptions)
             );
 
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            var position1Matches = results[0].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.One, locus));
-            var position2Matches = results[1].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.Two, locus));
-
-            var groupedResults = position1Matches.Concat(position2Matches).GroupBy(r => r.DonorId);
-
-            if (criteria.MismatchCount == 0)
+            using (logger.RunTimed($"Match Timing: Donor repo. Manipulated data for locus: {locus}"))
             {
-                // If no mismatch allowed at this locus, the donor must have been matched at both loci. 
-                groupedResults = groupedResults.Where(g =>
-                    g.Count(r => r.MatchingTypePosition == LocusPosition.One) >= 1
-                    && g.Count(r => r.MatchingTypePosition == LocusPosition.Two) >= 1
-                );
-            }
+                var position1Matches = results[0].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.One, locus));
+                var position2Matches = results[1].Select(r => r.ToPotentialHlaMatchRelation(TypePosition.Two, locus));
+                var groupedResults = position1Matches.Concat(position2Matches).GroupBy(r => r.DonorId);
+                if (criteria.MismatchCount == 0)
+                {
+                    // If no mismatch allowed at this locus, the donor must have been matched at both loci. 
+                    groupedResults = groupedResults.Where(g =>
+                        g.Count(r => r.MatchingTypePosition == LocusPosition.One) >= 1
+                        && g.Count(r => r.MatchingTypePosition == LocusPosition.Two) >= 1
+                    );
+                }
 
-            logger.SendTrace($"Match Timing: Donor repo. Manipulated data for locus: {locus} in {stopwatch.ElapsedMilliseconds}ms");
-            return groupedResults.SelectMany(g => g);
+                return groupedResults.SelectMany(g => g);
+            }
         }
 
         private async Task<IEnumerable<DonorMatch>> GetAllDonorsForPGroupsAtLocus(
             Locus locus,
-            IEnumerable<int> pGroups,
+            IList<int> pGroups,
             DonorType donorType,
             MatchingFilteringOptions filteringOptions
         )
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            pGroups = pGroups.ToList();
-
-            var donorTypeFilteredJoin = "";
-
-            if (filteringOptions.ShouldFilterOnDonorType)
+            using (logger.RunTimed($"Match Timing: Donor repo. Fetched donors at locus: {locus}"))
             {
-                var donorTypeClause = filteringOptions.ShouldFilterOnDonorType ? $"AND d.DonorType = {(int)donorType}" : "";
+                pGroups = pGroups.ToList();
+                var donorTypeFilteredJoin = "";
+                if (filteringOptions.ShouldFilterOnDonorType)
+                {
+                    var donorTypeClause = filteringOptions.ShouldFilterOnDonorType ? $"AND d.DonorType = {(int) donorType}" : "";
 
-                donorTypeFilteredJoin = $@"
+                    donorTypeFilteredJoin = $@"
                     INNER JOIN Donors d
                     ON m.DonorId = d.DonorId
                     {donorTypeClause}
                     ";
-            }
+                }
 
-            var sql = $@"
+                var sql = $@"
                 SELECT m.DonorId, TypePosition FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
 
                 {donorTypeFilteredJoin}
@@ -120,12 +113,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                 ON (m.PGroup_Id = PGroupIds.PGroupId)
 
                 GROUP BY m.DonorId, TypePosition";
-
-            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
-            {
-                var matches = await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 1800);
-                logger.SendTrace($"Match Timing: Donor repo. Fetched donors at locus: {locus} in {stopwatch.ElapsedMilliseconds}ms");
-                return matches;
+                await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+                {
+                    return await conn.QueryAsync<DonorMatch>(sql, commandTimeout: 1800);
+                }
             }
         }
     }

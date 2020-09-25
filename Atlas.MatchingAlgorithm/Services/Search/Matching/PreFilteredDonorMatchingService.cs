@@ -90,11 +90,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 MismatchCount = criteria.MismatchCount,
             };
 
-            var matches = (await preFilteredDonorSearchRepository.GetDonorMatchesAtLocusFromDonorSelection(locus, repoCriteria, donorIds))
+            return (await preFilteredDonorSearchRepository.GetDonorMatchesAtLocusFromDonorSelection(locus, repoCriteria, donorIds))
                 .GroupBy(m => m.DonorId)
                 .ToDictionary(g => g.Key, g => DonorAndMatchFromGroup(g, locus));
-
-            return matches;
         }
     }
 }
