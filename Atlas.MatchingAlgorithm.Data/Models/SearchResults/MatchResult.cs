@@ -19,9 +19,6 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
         // We don't want to populate the full donor object until some filtering has been applied on those results
         public int DonorId { get; set; }
 
-        // Stored separately from the Donor object as we don't want to populate all donor data until we're done filtering
-        public PhenotypeInfo<IEnumerable<string>> DonorPGroups { get; set; }
-
         #endregion
 
         public DonorInfo.DonorInfo DonorInfo
@@ -46,32 +43,16 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
             }
         }
 
-        public int TotalMatchCount => LocusMatchDetails.Where(m => m != null).Select(m => m.MatchCount).Sum();
+        public int TotalMatchCount => MatchDetails.ToEnumerable().Where(m => m != null).Select(m => m.MatchCount).Sum();
 
-        public int PopulatedLociCount => LocusMatchDetails.Count(m => m != null);
+        public int PopulatedLociCount => MatchDetails.ToEnumerable().Count(m => m != null);
 
         /// <summary>
         /// Returns the loci for which match results have been set
         /// </summary>
-        public IEnumerable<Locus> MatchedLoci => EnumerateValues<Locus>()
-            .Where(l => MatchDetailsForLocus(l) != null);
+        public IEnumerable<Locus> MatchedLoci => EnumerateValues<Locus>().Where(l => MatchDetailsForLocus(l) != null);
 
-        private IEnumerable<LocusMatchDetails> LocusMatchDetails => new List<LocusMatchDetails>
-        {
-            MatchDetailsAtLocusA,
-            MatchDetailsAtLocusB,
-            MatchDetailsAtLocusC,
-            MatchDetailsAtLocusDpb1,
-            MatchDetailsAtLocusDqb1,
-            MatchDetailsAtLocusDrb1
-        };
-
-        private LocusMatchDetails MatchDetailsAtLocusA { get; set; }
-        private LocusMatchDetails MatchDetailsAtLocusB { get; set; }
-        private LocusMatchDetails MatchDetailsAtLocusC { get; set; }
-        private LocusMatchDetails MatchDetailsAtLocusDpb1 { get; set; }
-        private LocusMatchDetails MatchDetailsAtLocusDqb1 { get; set; }
-        private LocusMatchDetails MatchDetailsAtLocusDrb1 { get; set; }
+        private LociInfo<LocusMatchDetails> MatchDetails { get; set; } = new LociInfo<LocusMatchDetails>();
 
         // As this class is populated gradually over time, this is used to indicate when we've populated all matching data we plan to
         // Until then, accessing certain null values will throw exceptions, on the assumption they are not yet populated
@@ -79,31 +60,7 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
 
         public LocusMatchDetails MatchDetailsForLocus(Locus locus)
         {
-            LocusMatchDetails matchDetails;
-            switch (locus)
-            {
-                case Locus.A:
-                    matchDetails = MatchDetailsAtLocusA;
-                    break;
-                case Locus.B:
-                    matchDetails = MatchDetailsAtLocusB;
-                    break;
-                case Locus.C:
-                    matchDetails = MatchDetailsAtLocusC;
-                    break;
-                case Locus.Dpb1:
-                    matchDetails = MatchDetailsAtLocusDpb1;
-                    break;
-                case Locus.Dqb1:
-                    matchDetails = MatchDetailsAtLocusDqb1;
-                    break;
-                case Locus.Drb1:
-                    matchDetails = MatchDetailsAtLocusDrb1;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
+            var matchDetails = MatchDetails.GetLocus(locus);
             if (matchDetails == null && !isMatchingDataFullyPopulated)
             {
                 throw new Exception($"Attempted to access match details for locus {locus} before they were generated");
@@ -119,35 +76,10 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
                 throw new ReadOnlyException("Matching data cannot be changed after it has been marked as fully populated");
             }
 
-            switch (locus)
-            {
-                case Locus.A:
-                    MatchDetailsAtLocusA = locusMatchDetails;
-                    break;
-                case Locus.B:
-                    MatchDetailsAtLocusB = locusMatchDetails;
-                    break;
-                case Locus.C:
-                    MatchDetailsAtLocusC = locusMatchDetails;
-                    break;
-                case Locus.Dpb1:
-                    MatchDetailsAtLocusDpb1 = locusMatchDetails;
-                    break;
-                case Locus.Dqb1:
-                    MatchDetailsAtLocusDqb1 = locusMatchDetails;
-                    break;
-                case Locus.Drb1:
-                    MatchDetailsAtLocusDrb1 = locusMatchDetails;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            MatchDetails = MatchDetails.SetLocus(locus, locusMatchDetails);
         }
 
-        public void MarkMatchingDataFullyPopulated()
-        {
-            isMatchingDataFullyPopulated = true;
-        }
+        public void MarkMatchingDataFullyPopulated() => isMatchingDataFullyPopulated = true;
 
         public int TypedLociCount => DonorInfo.HlaNames.Reduce((_, hla, count) => hla.Position1And2NotNull() ? count + 1 : count, 0);
     }
