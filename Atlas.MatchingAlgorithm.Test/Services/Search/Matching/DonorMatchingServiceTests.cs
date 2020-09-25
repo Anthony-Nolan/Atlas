@@ -80,7 +80,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
                     HlaMatchFor(Locus.A, LocusPosition.One, LocusPosition.Two, donor_BothPositionsMatchPatientPositionOne_AtLocusA, PGroupA1),
                     HlaMatchFor(Locus.A, LocusPosition.One, LocusPosition.One, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupA1),
                     HlaMatchFor(Locus.A, LocusPosition.Two, LocusPosition.One, donor_OnePositionMatchesBothPatientPositions_AtLocusA, PGroupA2),
-                });
+                }.ToAsyncEnumerable());
 
             donorSearchRepository.GetDonorMatchesAtLocus(Locus.B, Arg.Any<LocusSearchCriteria>(), Arg.Any<MatchingFilteringOptions>())
                 .Returns(new List<PotentialHlaMatchRelation>
@@ -101,7 +101,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
                     HlaMatchFor(Locus.B, LocusPosition.One, LocusPosition.Two, donor_NoMatch_AtLocusA, PGroupB),
                     HlaMatchFor(Locus.B, LocusPosition.Two, LocusPosition.One, donor_NoMatch_AtLocusA, PGroupB),
                     HlaMatchFor(Locus.B, LocusPosition.Two, LocusPosition.Two, donor_NoMatch_AtLocusA, PGroupB),
-                });
+                }.ToAsyncEnumerable());
 
             donorSearchRepository.GetDonorMatchesAtLocus(Locus.Drb1, Arg.Any<LocusSearchCriteria>(), Arg.Any<MatchingFilteringOptions>())
                 .Returns(new List<PotentialHlaMatchRelation>
@@ -122,7 +122,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
                     HlaMatchFor(Locus.Drb1, LocusPosition.One, LocusPosition.Two, donor_NoMatch_AtLocusA, PGroupDrb1),
                     HlaMatchFor(Locus.Drb1, LocusPosition.Two, LocusPosition.One, donor_NoMatch_AtLocusA, PGroupDrb1),
                     HlaMatchFor(Locus.Drb1, LocusPosition.Two, LocusPosition.Two, donor_NoMatch_AtLocusA, PGroupDrb1),
-                });
+                }.ToAsyncEnumerable());
 
             criteriaBuilder = new DonorMatchCriteriaBuilder()
                 .WithDonorMismatchCount(2)

@@ -81,15 +81,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
             // Keyed by DonorId
             IDictionary<int, MatchResult> results = new Dictionary<int, MatchResult>();
-            HashSet<Locus> matchedLoci = new HashSet<Locus>();
-            
+            var matchedLoci = new HashSet<Locus>();
             
             foreach (var locusCriteria in lociMismatchCounts.OrderBy(c => c.Item2?.MismatchCount))
             {
                 var (locus, c) = locusCriteria;
                 var locusResults = await FindMatchesAtLocus(criteria.SearchType, locus, c);
                 
-                foreach (var locusResult in locusResults)
+                await foreach (var locusResult in locusResults)
                 {
                     var donorId = locusResult.DonorId;
                     var result = results.GetValueOrDefault(donorId);
@@ -114,7 +113,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 .ToDictionary();
         }
 
-        private async Task<IEnumerable<PotentialHlaMatchRelation>> FindMatchesAtLocus(
+        private async Task<IAsyncEnumerable<PotentialHlaMatchRelation>> FindMatchesAtLocus(
             DonorType searchType,
             Locus locus,
             AlleleLevelLocusMatchCriteria criteria

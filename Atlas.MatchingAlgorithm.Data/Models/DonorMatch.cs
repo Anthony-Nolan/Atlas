@@ -28,35 +28,31 @@ namespace Atlas.MatchingAlgorithm.Data.Models
 
         public int? TypePosition2 { get; set; }
 
-        internal PotentialHlaMatchRelation[] ToPotentialHlaMatchRelations(Locus locus)
+        internal async IAsyncEnumerable<PotentialHlaMatchRelation> ToPotentialHlaMatchRelations(Locus locus)
         {
-            var relations = new List<PotentialHlaMatchRelation>();
-
             if (TypePosition1 != null)
             {
-                relations.Add(new PotentialHlaMatchRelation
+                yield return new PotentialHlaMatchRelation
                 {
                     Locus = locus,
                     Name = "Unknown",
                     SearchTypePosition = TypePosition.One.ToLocusPosition(),
                     MatchingTypePosition = ((TypePosition) TypePosition1).ToLocusPosition(),
                     DonorId = DonorId
-                });
+                };
             }
 
             if (TypePosition2 != null)
             {
-                relations.Add(new PotentialHlaMatchRelation
+                yield return new PotentialHlaMatchRelation
                 {
                     Locus = locus,
                     Name = "Unknown",
                     SearchTypePosition = TypePosition.Two.ToLocusPosition(),
                     MatchingTypePosition = ((TypePosition) TypePosition2).ToLocusPosition(),
                     DonorId = DonorId
-                });
+                };
             }
-
-            return relations.ToArray();
         }
     }
 }
