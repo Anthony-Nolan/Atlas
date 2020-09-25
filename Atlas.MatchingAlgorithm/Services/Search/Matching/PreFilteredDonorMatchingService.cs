@@ -56,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 {
                     var locusMatchDetails = phase2Match != null
                         ? phase2Match.Match
-                        : new LocusMatchDetails {MatchCount = 0};
+                        : new LocusMatchDetails();
 
                     var phase1Match = phaseOneMatchResults[donorId];
                     phase1Match?.SetMatchDetailsForLocus(locus, locusMatchDetails);
@@ -65,7 +65,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 var mismatchDonorIds = phaseOneMatchResults.Keys.Except(results.Select(r => r.Key));
                 foreach (var mismatchDonorId in mismatchDonorIds)
                 {
-                    phaseOneMatchResults[mismatchDonorId].SetMatchDetailsForLocus(locus, new LocusMatchDetails {MatchCount = 0});
+                    phaseOneMatchResults[mismatchDonorId].SetMatchDetailsForLocus(locus, new LocusMatchDetails());
                 }
             }
 

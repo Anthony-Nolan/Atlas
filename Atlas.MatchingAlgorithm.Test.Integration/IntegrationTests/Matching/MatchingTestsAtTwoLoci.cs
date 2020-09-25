@@ -166,7 +166,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMismatchCount(locus1, 2)
                 .Build();
             var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().NotContain(d => d.DonorInfo.DonorId == cordDonorInfoWithNoMatchAtLocus1AndHalfMatchAtLocus2.DonorId);
+            results.ShouldNotContainDonor(cordDonorInfoWithNoMatchAtLocus1AndHalfMatchAtLocus2.DonorId);
         }
 
         [Test]

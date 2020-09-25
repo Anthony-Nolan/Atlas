@@ -13,6 +13,12 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers
             var donorIds = matchResults.Select(r => r.DonorInfo.DonorId);
             donorIds.Should().Contain(donorId);
         }
+        
+        public static void ShouldNotContainDonor(this IEnumerable<MatchResult> matchResults, int donorId)
+        {
+            var donorIds = matchResults.Select(r => r.DonorInfo.DonorId);
+            donorIds.Should().NotContain(donorId);
+        }
 
         public static void ShouldContainDonor(this IEnumerable<MatchingAlgorithmResult> matchingAlgorithmResults, int donorId)
         {

@@ -24,7 +24,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 DonorId = donorId,
                 Match = new LocusMatchDetails
                 {
-                    MatchCount = DirectMatch(potentialHlaMatchRelations) || CrossMatch(potentialHlaMatchRelations) ? 2 : 1
+                    // TODO: ATLAS-714: Don't rely on having this ordering in two places? 
+                    PositionPairs = potentialHlaMatchRelations.Select(p => (p.SearchTypePosition, p.MatchingTypePosition)).ToHashSet()
                 },
                 Locus = locus
             };

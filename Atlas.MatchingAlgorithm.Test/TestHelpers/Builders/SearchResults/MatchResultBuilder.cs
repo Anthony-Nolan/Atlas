@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
         {
             matchResult.SetMatchDetailsForLocus(locus, new LocusMatchDetails
             {
-                MatchCount = matchCount
+                // MatchCount = matchCount
             });
             return this;
         }

@@ -189,9 +189,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         public async Task Search_WithNoAllowedMismatches_DoesNotMatchDonorsWithFewerThanTwoMatchesAtLocus()
         {
             var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build());
-            results.Should().NotContain(d => d.DonorInfo.DonorId == donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
-            results.Should().NotContain(d => d.DonorInfo.DonorId == donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
-            results.Should().NotContain(d => d.DonorInfo.DonorId == donorInfoWithNoMatchAtLocus.DonorId);
+            results.ShouldNotContainDonor(donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
+            results.ShouldNotContainDonor(donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
+            results.ShouldNotContainDonor(donorInfoWithNoMatchAtLocus.DonorId);
         }
 
         [Test]
@@ -257,7 +257,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 })
                 .Build();
             var results = await matchingService.GetMatches(criteria);
-            results.Should().NotContain(d => d.DonorInfo.DonorId == donorInfoWithNoMatchAtLocus.DonorId);
+            results.ShouldNotContainDonor(donorInfoWithNoMatchAtLocus.DonorId);
         }
 
         [Test]
