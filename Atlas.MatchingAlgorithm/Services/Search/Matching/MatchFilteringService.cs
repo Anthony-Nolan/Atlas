@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Models;
@@ -68,7 +69,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         private static bool FulfilsAdultSpecificCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
         {
             // Adult searches should return matches only where the mismatch count equals exactly the requested mismatch count
-            return match.TotalMatchCount == (match.PopulatedLociCount * MaximumMatchCountPerLocus) - criteria.DonorMismatchCount;
+            return match.TotalMatchCount == (criteria.LociWithCriteriaSpecified().Count() * MaximumMatchCountPerLocus) - criteria.DonorMismatchCount;
         }
     }
 }

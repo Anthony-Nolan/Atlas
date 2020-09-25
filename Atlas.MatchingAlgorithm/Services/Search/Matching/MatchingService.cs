@@ -50,8 +50,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             var lociToMatchFirst = matchCriteriaAnalyser.LociToMatchFirst(criteria).ToList();
             var lociToMatchSecond = criteria.LociWithCriteriaSpecified().Except(lociToMatchFirst).ToList();
 
-            var initialMatches = await PerformMatchingPhaseOne(criteria, lociToMatchFirst);
-            var matchesAtAllLoci = await PerformMatchingPhaseTwo(criteria, lociToMatchSecond, initialMatches);
+            var initialMatches = await PerformMatchingPhaseOne(criteria, lociToMatchFirst, lociToMatchSecond);
+            var matchesAtAllLoci = initialMatches;
             return (await PerformMatchingPhaseThree(criteria, matchesAtAllLoci)).Values.ToList();
         }
 
@@ -59,11 +59,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         /// The first phase of matching must perform a full scan of the MatchingHla tables for the specified loci.
         /// It must return a superset of the final matching donor set - i.e. no matching donors may exist and not be returned in this phase.
         /// </summary>
-        private async Task<IDictionary<int, MatchResult>> PerformMatchingPhaseOne(AlleleLevelMatchCriteria criteria, ICollection<Locus> loci)
+        private async Task<IDictionary<int, MatchResult>> PerformMatchingPhaseOne(AlleleLevelMatchCriteria criteria, ICollection<Locus> loci, ICollection<Locus> loci2)
         {
             using (searchLogger.RunTimed("Matching timing: Phase 1 complete"))
             {
-                var matches = await donorMatchingService.FindMatchesForLoci(criteria, loci);
+                var matches = await donorMatchingService.FindMatchesForLoci(criteria, loci, loci2);
                 searchLogger.SendTrace($"Matching Phase 1: Found {matches.Count} donors. At loci: {loci.Select(l => l.ToString()).StringJoin(",")}");
                 return matches;
             }

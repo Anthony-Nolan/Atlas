@@ -31,7 +31,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         /// A dictionary of PotentialSearchResults, keyed by donor id.
         /// MatchDetails will be populated only for the specified loci.
         /// </returns>
-        Task<IDictionary<int, MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, ICollection<Locus> loci);
+        Task<IDictionary<int, MatchResult>> FindMatchesForLoci(
+            AlleleLevelMatchCriteria criteria,
+            ICollection<Locus> loci,
+            ICollection<Locus> loci2 = null);
     }
 
     public class DonorMatchingService : DonorMatchingServiceBase, IDonorMatchingService
@@ -59,7 +62,10 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             this.searchLogger = searchLogger;
         }
 
-        public async Task<IDictionary<int, MatchResult>> FindMatchesForLoci(AlleleLevelMatchCriteria criteria, ICollection<Locus> loci)
+        public async Task<IDictionary<int, MatchResult>> FindMatchesForLoci(
+            AlleleLevelMatchCriteria criteria,
+            ICollection<Locus> loci,
+            ICollection<Locus> loci2)
         {
             if (loci.Any(locus => !LocusSettings.LociPossibleToMatchInMatchingPhaseOne.Contains(locus)))
             {
@@ -73,17 +79,23 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var lociMismatchCounts = loci.Select(l => (l, criteria.LocusCriteria.GetLocus(l))).ToList();
+            var lociMismatchCounts = loci.Select(l => (l, criteria.LocusCriteria.GetLocus(l)))
+                .OrderBy(c => c.Item2?.MismatchCount)
+                .ToList();
             if (lociMismatchCounts.All(c => c.Item2?.MismatchCount == 2))
             {
                 throw new NotImplementedException("TODO: ATLAS-714: Re-work out how to do 4/8");
             }
 
+            var phase2LociMismatchCounts = loci2.Select(l => (l, criteria.LocusCriteria.GetLocus(l)))
+                .OrderBy(c => c.Item2?.MismatchCount)
+                .ToList();
+
             // Keyed by DonorId
             IDictionary<int, MatchResult> results = new Dictionary<int, MatchResult>();
             var matchedLoci = new HashSet<Locus>();
 
-            foreach (var locusCriteria in lociMismatchCounts.OrderBy(c => c.Item2?.MismatchCount))
+            foreach (var locusCriteria in lociMismatchCounts.Concat(phase2LociMismatchCounts))
             {
                 var (locus, c) = locusCriteria;
                 var donorIds = !matchedLoci.Any() ? null : results.Keys.ToHashSet();

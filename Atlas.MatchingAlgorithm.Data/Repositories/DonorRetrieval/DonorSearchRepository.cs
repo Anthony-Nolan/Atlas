@@ -11,11 +11,14 @@ using Dapper;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Sql;
+using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using MoreLinq;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
@@ -53,20 +56,29 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             MatchingFilteringOptions filteringOptions
         )
         {
-            if (!LocusSettings.LociPossibleToMatchInMatchingPhaseOne.Contains(locus))
+            var pGroups = new LocusInfo<IEnumerable<int>>(criteria.PGroupIdsToMatchInPositionOne, criteria.PGroupIdsToMatchInPositionTwo);
+            var donorIds = filteringOptions?.DonorIds;
+            if (!TypingIsRequiredAtLocus(locus) && donorIds == null)
             {
                 // Donors can be untyped at these loci, which counts as a potential match.
                 // This method does not return untyped donors, so cannot be used for any loci that are not guaranteed to be typed.  
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException("Must provide donorIds for non-required loci.");
             }
-
-            var pGroups = new LocusInfo<IEnumerable<int>>(criteria.PGroupIdsToMatchInPositionOne, criteria.PGroupIdsToMatchInPositionTwo);
-            var donorIds = filteringOptions?.DonorIds;
 
             if (donorIds != null)
             {
+                if (!TypingIsRequiredAtLocus(locus))
+                {
+                    var untypedResults = await GetResultsForDonorsUntypedAtLocus(locus, donorIds);
+                    foreach (var untypedResult in untypedResults)
+                    {
+                        yield return untypedResult;
+                    }
+                }
+                
                 if (donorIds.Count > DonorIdBatchSize * 5)
                 {
+                    logger.SendTrace($"Donor Ids available for pre-filtering, but too many for DB - filtering in C#. Locus {locus}");
                     var options = new MatchingFilteringOptions
                     {
                         DonorIds = null,
@@ -83,6 +95,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                 }
                 else
                 {
+                    logger.SendTrace($"Pre-filtering by Donor Id. Locus {locus}");
                     foreach (var donorBatch in donorIds.Batch(DonorIdBatchSize))
                     {
                         var batchOptions = new MatchingFilteringOptions
@@ -166,7 +179,6 @@ ON DonorId1 = DonorId2
 
                     // TODO: ATLAS-714: sort out SQL timing logging - currently a few places claim to be timing similar things
                     await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
-                    using (logger.RunTimed($"Match Timing: Donor Repo. Phase 1 query. Per Locus: {locus}"))
                     {
                         matches = await conn.QueryAsync<FullDonorMatch>(sql, commandTimeout: 1800);
                     }
@@ -178,27 +190,64 @@ ON DonorId1 = DonorId2
                 }
             }
         }
-
-        private static string BuildDonorJoinStatement(MatchingFilteringOptions filteringOptions, DonorType donorType, string selectDonorIdStatement)
+        
+        private async Task<IEnumerable<PotentialHlaMatchRelation>> GetResultsForDonorsUntypedAtLocus(Locus locus, IEnumerable<int> donorIds)
         {
-            var shouldJoinToDonors = filteringOptions.ShouldFilterOnDonorType || filteringOptions.DonorIds != null;
-            if (!shouldJoinToDonors)
+            using (logger.RunTimed($"Fetching untyped Donor IDs at Locus: {locus}"))
             {
-                return "";
+                var untypedDonorIds = await GetIdsOfDonorsUntypedAtLocus(locus, donorIds);
+                return untypedDonorIds.SelectMany(id => new[] {LocusPosition.One, LocusPosition.Two}.Select(
+                    position =>
+                        new PotentialHlaMatchRelation
+                        {
+                            DonorId = id,
+                            Locus = locus,
+                            SearchTypePosition = position,
+                            MatchingTypePosition = position
+                        }));
+            }
+        }
+        
+        private static bool TypingIsRequiredAtLocus(Locus locus)
+        {
+            return TypingIsRequiredInDatabaseAtLocusPosition(locus, TypePosition.One) &&
+                   TypingIsRequiredInDatabaseAtLocusPosition(locus, TypePosition.Two);
+        }
+
+        private static bool TypingIsRequiredInDatabaseAtLocusPosition(Locus locus, TypePosition position)
+        {
+            var locusColumnName = DonorHlaColumnAtLocus(locus, position);
+            var locusProperty = typeof(Donor).GetProperty(locusColumnName);
+
+            return Attribute.IsDefined(locusProperty, typeof(RequiredAttribute));
+        }
+        
+        
+        private async Task<IEnumerable<int>> GetIdsOfDonorsUntypedAtLocus(Locus locus, IEnumerable<int> donorIds)
+        {
+            donorIds = donorIds.ToList();
+            if (!donorIds.Any())
+            {
+                return new List<int>();
             }
 
-            var joinStatementBuilder = new StringBuilder($"INNER JOIN Donors d ON {selectDonorIdStatement} = d.DonorId ");
-            if (filteringOptions.ShouldFilterOnDonorType)
-            {
-                joinStatementBuilder.Append($"AND d.DonorType = {(int) donorType}");
-            }
+            var sql = $@"
+                SELECT DonorId FROM Donors d 
+                WHERE d.DonorId IN {donorIds.ToInClause()} 
+                AND {DonorHlaColumnAtLocus(locus, TypePosition.One)} IS NULL 
+                AND {DonorHlaColumnAtLocus(locus, TypePosition.Two)} IS NULL
+                ";
 
-            if (filteringOptions.DonorIds != null && filteringOptions.DonorIds.Any())
+            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                joinStatementBuilder.Append($"AND d.DonorId IN {filteringOptions.DonorIds.ToInClause()}");
+                return await conn.QueryAsync<int>(sql, commandTimeout: 1800);
             }
-
-            return joinStatementBuilder.ToString();
+        }
+        
+        private static string DonorHlaColumnAtLocus(Locus locus, TypePosition position)
+        {
+            var positionString = position == TypePosition.One ? "1" : "2";
+            return $"{locus.ToString().ToUpper()}_{positionString}";
         }
     }
 }
