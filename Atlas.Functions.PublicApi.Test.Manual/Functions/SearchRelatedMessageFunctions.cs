@@ -50,6 +50,19 @@ namespace Atlas.Functions.PublicApi.Test.Manual.Functions
             return new JsonResult(ids);
         }
 
+        [FunctionName(nameof(GetSearchResultsNotificationsWithSummary))]
+        public async Task<IActionResult> GetSearchResultsNotificationsWithSummary(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(PeekRequest), nameof(PeekRequest))]
+            HttpRequest request)
+        {
+            var peekRequest = await PeekRequest(request);
+
+            var resultsNotifications = await notificationsPeeker.GetSearchResultsNotifications(peekRequest);
+
+            return new JsonResult(resultsNotifications);
+        }
+
         private static async Task<PeekRequest> PeekRequest(HttpRequest request)
         {
             return JsonConvert.DeserializeObject<PeekRequest>(

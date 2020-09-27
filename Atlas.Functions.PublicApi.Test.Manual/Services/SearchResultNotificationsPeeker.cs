@@ -10,6 +10,7 @@ namespace Atlas.Functions.PublicApi.Test.Manual.Services
     public interface ISearchResultNotificationsPeeker
     {
         Task<IEnumerable<string>> GetIdsOfFailedSearches(PeekRequest peekRequest);
+        Task<PeekedSearchResultsNotifications> GetSearchResultsNotifications(PeekRequest peekRequest);
     }
 
     internal class SearchResultNotificationsPeeker : ISearchResultNotificationsPeeker
@@ -29,6 +30,23 @@ namespace Atlas.Functions.PublicApi.Test.Manual.Services
                 .Where(n => !n.DeserializedBody.WasSuccessful)
                 .Select(n => n.DeserializedBody.SearchRequestId)
                 .Distinct();
+        }
+
+        public async Task<PeekedSearchResultsNotifications> GetSearchResultsNotifications(PeekRequest peekRequest)
+        {
+            var notifications = (await messagesReceiver.Peek(peekRequest)).Select(m => m.DeserializedBody).ToList();
+
+            return new PeekedSearchResultsNotifications
+            {
+                TotalNotificationCount = notifications.Count,
+                WasSuccessfulCount = notifications.Count(n => n.WasSuccessful),
+                FailureInfo = notifications
+                    .Where(n => !n.WasSuccessful)
+                    .GroupBy(n => n.FailureMessage)
+                    .ToDictionary(grp => grp.Key, grp => grp.Count()),
+                UniqueSearchRequestIdCount = notifications.Select(n => n.SearchRequestId).Distinct().Count(),
+                PeekedNotifications = notifications
+            };
         }
     }
 }
