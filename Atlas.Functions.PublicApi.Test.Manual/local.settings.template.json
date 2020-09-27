@@ -1,0 +1,15 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+
+    "MessagingServiceBus:ConnectionString": "override-this",
+
+    "Matching:RequestsTopic": "matching-requests",
+    "Matching:RequestsSubscription": "audit",
+
+    "Search:ResultsTopic": "search-results-ready",
+    "Search:ResultsSubscription": "audit"
+  },
+  "ConnectionStrings": {}
+}
