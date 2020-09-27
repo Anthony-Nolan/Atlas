@@ -2,6 +2,10 @@ Projects dedicated to manual, non-automated testing of various aspects of the At
 This code is designed to be run locally; it is not production quality and cannot be deployed "as-is" to remote environments.
 
 ## Projects
+- `Atlas.Functions.PublicApi.Test.Manual`
+  - Functions project for the manual testing and debugging of the Atlas public API.
+  - e.g., Peek search-related service bus messages for info on search requests and results.
+
 - `Atlas.MatchingAlgorithm.Performance`
   - A rudimentary harness for collating performance data of search times.
   - Relies on locally-run MatchingAlgorithm API.
