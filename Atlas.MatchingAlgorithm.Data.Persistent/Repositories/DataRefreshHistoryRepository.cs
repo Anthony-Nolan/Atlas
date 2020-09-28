@@ -6,7 +6,6 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using EnumStringValues;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
 
 namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
 {
@@ -53,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
 
         public IEnumerable<DataRefreshRecord> GetIncompleteRefreshJobs()
         {
-            return Context.DataRefreshRecords.Where(r => r.RefreshEndUtc == null);
+            return Context.DataRefreshRecords.AsEnumerable().Where(r => r.RefreshEndUtc == null);
         }
 
         public async Task<int> Create(DataRefreshRecord dataRefreshRecord)

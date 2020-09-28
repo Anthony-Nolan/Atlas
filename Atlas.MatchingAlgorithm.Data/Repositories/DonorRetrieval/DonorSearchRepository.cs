@@ -174,18 +174,18 @@ WHERE m.PGroup_Id IN {pGroups.Position2.ToInClause()}
 ON DonorId1 = DonorId2
 
 {donorTypeFilteredJoin}
+
+ORDER BY DonorId
 ";
-                    IEnumerable<FullDonorMatch> matches;
 
                     // TODO: ATLAS-714: sort out SQL timing logging - currently a few places claim to be timing similar things
                     await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
                     {
-                        matches = await conn.QueryAsync<FullDonorMatch>(sql, commandTimeout: 1800);
-                    }
-
-                    foreach (var match in matches)
-                    {
-                        yield return match;
+                        var matches = conn.Query<FullDonorMatch>(sql, commandTimeout: 1800, buffered: false);
+                        foreach (var match in matches)
+                        {
+                            yield return match;
+                        }
                     }
                 }
             }
