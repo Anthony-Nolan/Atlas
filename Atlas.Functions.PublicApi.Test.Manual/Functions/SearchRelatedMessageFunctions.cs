@@ -30,7 +30,7 @@ namespace Atlas.Functions.PublicApi.Test.Manual.Functions
             [RequestBodyType(typeof(PeekRequest), nameof(PeekRequest))]
             HttpRequest request)
         {
-            var peekRequest = await PeekRequest(request);
+            var peekRequest = await DeserialiseRequestBody<PeekRequest>(request);
 
             var ids = await matchingRequestsPeeker.GetIdsOfDeadLetteredMatchingRequests(peekRequest);
 
@@ -43,7 +43,7 @@ namespace Atlas.Functions.PublicApi.Test.Manual.Functions
             [RequestBodyType(typeof(PeekRequest), nameof(PeekRequest))]
             HttpRequest request)
         {
-            var peekRequest = await PeekRequest(request);
+            var peekRequest = await DeserialiseRequestBody<PeekRequest>(request);
 
             var ids = await notificationsPeeker.GetIdsOfFailedSearches(peekRequest);
 
@@ -56,16 +56,29 @@ namespace Atlas.Functions.PublicApi.Test.Manual.Functions
             [RequestBodyType(typeof(PeekRequest), nameof(PeekRequest))]
             HttpRequest request)
         {
-            var peekRequest = await PeekRequest(request);
+            var peekRequest = await DeserialiseRequestBody<PeekRequest>(request);
 
             var resultsNotifications = await notificationsPeeker.GetSearchResultsNotifications(peekRequest);
 
             return new JsonResult(resultsNotifications);
         }
 
-        private static async Task<PeekRequest> PeekRequest(HttpRequest request)
+        [FunctionName(nameof(FilterSearchResultsNotificationsBySearchRequestId))]
+        public async Task<IActionResult> FilterSearchResultsNotificationsBySearchRequestId(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(PeekBySearchRequestIdRequest), nameof(PeekBySearchRequestIdRequest))]
+            HttpRequest request)
         {
-            return JsonConvert.DeserializeObject<PeekRequest>(
+            var peekRequest = await DeserialiseRequestBody<PeekBySearchRequestIdRequest>(request);
+
+            var resultsNotifications = await notificationsPeeker.GetNotificationsBySearchRequestId(peekRequest);
+
+            return new JsonResult(resultsNotifications);
+        }
+
+        private static async Task<T> DeserialiseRequestBody<T>(HttpRequest request)
+        {
+            return JsonConvert.DeserializeObject<T>(
                 await new StreamReader(request.Body).ReadToEndAsync());
         }
     }

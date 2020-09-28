@@ -11,6 +11,7 @@ namespace Atlas.Functions.PublicApi.Test.Manual.Services
     {
         Task<IEnumerable<string>> GetIdsOfFailedSearches(PeekRequest peekRequest);
         Task<PeekedSearchResultsNotifications> GetSearchResultsNotifications(PeekRequest peekRequest);
+        Task<PeekedSearchResultsNotifications> GetNotificationsBySearchRequestId(PeekBySearchRequestIdRequest peekRequest);
     }
 
     internal class SearchResultNotificationsPeeker : ISearchResultNotificationsPeeker
@@ -34,8 +35,29 @@ namespace Atlas.Functions.PublicApi.Test.Manual.Services
 
         public async Task<PeekedSearchResultsNotifications> GetSearchResultsNotifications(PeekRequest peekRequest)
         {
-            var notifications = (await messagesReceiver.Peek(peekRequest)).Select(m => m.DeserializedBody).ToList();
+            var notifications = await PeekNotifications(peekRequest);
 
+            return BuildResponse(notifications);
+        }
+
+        public async Task<PeekedSearchResultsNotifications> GetNotificationsBySearchRequestId(PeekBySearchRequestIdRequest peekRequest)
+        {
+            var notifications = (await PeekNotifications(peekRequest))
+                .Where(n => string.Equals(n.SearchRequestId,  peekRequest.SearchRequestId))
+                .ToList();
+
+            return BuildResponse(notifications);
+        }
+
+        private async Task<IReadOnlyCollection<SearchResultsNotification>> PeekNotifications(PeekRequest peekRequest)
+        {
+            return (await messagesReceiver.Peek(peekRequest))
+                .Select(m => m.DeserializedBody)
+                .ToList();
+        }
+
+        private static PeekedSearchResultsNotifications BuildResponse(IReadOnlyCollection<SearchResultsNotification> notifications)
+        {
             return new PeekedSearchResultsNotifications
             {
                 TotalNotificationCount = notifications.Count,
