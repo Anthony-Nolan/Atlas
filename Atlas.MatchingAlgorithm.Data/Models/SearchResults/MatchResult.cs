@@ -104,5 +104,16 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
         public void MarkMatchingDataFullyPopulated() => isMatchingDataFullyPopulated = true;
 
         public int TypedLociCount => DonorInfo.HlaNames.Reduce((_, hla, count) => hla.Position1And2NotNull() ? count + 1 : count, 0);
+
+        public void PopulateMismatches(IEnumerable<Locus> loci)
+        {
+            foreach (var locus in loci)
+            {
+                if (MatchDetails.GetLocus(locus) == null)
+                {
+                    MatchDetails.SetLocus(locus, new LocusMatchDetails());
+                }
+            }
+        }
     }
 }

@@ -74,10 +74,10 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
 
             var results = apiResult.Results.MatchingAlgorithmResults.ToList();
 
-            var higherResult = ParseResultType(results, higherResultType);
-            var lowerResult = ParseResultType(results, lowerResultType);
+            var higherResult = ParseResultType(results, higherResultType)?.AtlasDonorId;
+            var lowerResult = ParseResultType(results, lowerResultType)?.AtlasDonorId;
 
-            results.Should().ContainInOrder(new List<MatchingAlgorithmResult> { higherResult, lowerResult });
+            results.Select(r => r.AtlasDonorId).Should().ContainInOrder(new List<int?> {higherResult, lowerResult});
         }
 
         [Then(@"the match confidence should be (.*) at (.*) at (.*)")]
@@ -140,21 +140,21 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             switch (grades.ToLower())
             {
                 case "p-group":
-                    return new[] { MatchGrade.PGroup };
+                    return new[] {MatchGrade.PGroup};
                 case "g-group":
-                    return new[] { MatchGrade.GGroup };
+                    return new[] {MatchGrade.GGroup};
                 case "cdna":
-                    return new[] { MatchGrade.CDna };
+                    return new[] {MatchGrade.CDna};
                 case "gdna":
-                    return new[] { MatchGrade.GDna };
+                    return new[] {MatchGrade.GDna};
                 case "protein":
-                    return new[] { MatchGrade.Protein };
+                    return new[] {MatchGrade.Protein};
                 case "serology":
-                    return new[] { MatchGrade.Associated, MatchGrade.Broad, MatchGrade.Split };
+                    return new[] {MatchGrade.Associated, MatchGrade.Broad, MatchGrade.Split};
                 case "permissive mismatch":
-                    return new[] { MatchGrade.PermissiveMismatch };
+                    return new[] {MatchGrade.PermissiveMismatch};
                 case "mismatch":
-                    return new[] { MatchGrade.Mismatch };
+                    return new[] {MatchGrade.Mismatch};
                 default:
                     scenarioContext.Pending();
                     return new List<MatchGrade>();
@@ -202,7 +202,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
 
         private IEnumerable<Locus> ParseExpectedLoci(string locus)
         {
-            var allLoci = new[] { Locus.A, Locus.B, Locus.C, Locus.Dpb1, Locus.Dqb1, Locus.Drb1 };
+            var allLoci = new[] {Locus.A, Locus.B, Locus.C, Locus.Dpb1, Locus.Dqb1, Locus.Drb1};
             var expectedLoci = new List<Locus>();
 
             switch (locus.ToUpper())
@@ -249,11 +249,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             switch (position)
             {
                 case "both positions":
-                    return new LocusPosition?[] { LocusPosition.One, LocusPosition.Two };
+                    return new LocusPosition?[] {LocusPosition.One, LocusPosition.Two};
                 case "position 1":
-                    return new LocusPosition?[] { LocusPosition.One };
+                    return new LocusPosition?[] {LocusPosition.One};
                 case "position 2":
-                    return new LocusPosition?[] { LocusPosition.Two };
+                    return new LocusPosition?[] {LocusPosition.Two};
                 default:
                     scenarioContext.Pending();
                     return null;
@@ -289,7 +289,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                 case "a full p-group match":
                     return results.Find(r => IsMatchGradeAtMatchedLoci(r, MatchGrade.PGroup));
                 case "a full serology match":
-                    return results.Find(r => IsOneOfMatchGradesAtMatchedLoci(r, new[] { MatchGrade.Broad, MatchGrade.Associated, MatchGrade.Split }));
+                    return results.Find(r => IsOneOfMatchGradesAtMatchedLoci(r, new[] {MatchGrade.Broad, MatchGrade.Associated, MatchGrade.Split}));
                 case "a full definite match":
                     return results.Find(r => IsMatchConfidenceAtMatchedLoci(r, MatchConfidence.Definite));
                 case "a full exact match":
@@ -304,12 +304,12 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
 
         private static bool IsMatchGradeAtMatchedLoci(MatchingAlgorithmResult result, MatchGrade matchGrade)
         {
-            return IsOneOfMatchGradesAtMatchedLoci(result, new[] { matchGrade });
+            return IsOneOfMatchGradesAtMatchedLoci(result, new[] {matchGrade});
         }
 
         private static bool IsMatchConfidenceAtMatchedLoci(MatchingAlgorithmResult result, MatchConfidence matchConfidence)
         {
-            return IsOneOfMatchConfidencesAtMatchedLoci(result, new[] { matchConfidence });
+            return IsOneOfMatchConfidencesAtMatchedLoci(result, new[] {matchConfidence});
         }
 
         private static bool IsOneOfMatchGradesAtMatchedLoci(MatchingAlgorithmResult result, IEnumerable<MatchGrade> matchGrades)
@@ -329,10 +329,10 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             };
 
             return positionResults.All(r =>
-                    // we only want to assert grades of searched loci
-                    !r.IsLocusMatchCountIncludedInTotal
-                    || (matchGrades.Contains(r.ScoreDetailsAtPositionOne.MatchGrade) &&
-                        matchGrades.Contains(r.ScoreDetailsAtPositionTwo.MatchGrade))
+                // we only want to assert grades of searched loci
+                !r.IsLocusMatchCountIncludedInTotal
+                || (matchGrades.Contains(r.ScoreDetailsAtPositionOne.MatchGrade) &&
+                    matchGrades.Contains(r.ScoreDetailsAtPositionTwo.MatchGrade))
             );
         }
 
@@ -353,10 +353,10 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             };
 
             return positionResults.All(r =>
-                    // we only want to assert grades of searched loci
-                    !r.IsLocusMatchCountIncludedInTotal
-                    || (matchConfidences.Contains(r.ScoreDetailsAtPositionOne.MatchConfidence) &&
-                        matchConfidences.Contains(r.ScoreDetailsAtPositionTwo.MatchConfidence))
+                // we only want to assert grades of searched loci
+                !r.IsLocusMatchCountIncludedInTotal
+                || (matchConfidences.Contains(r.ScoreDetailsAtPositionOne.MatchConfidence) &&
+                    matchConfidences.Contains(r.ScoreDetailsAtPositionTwo.MatchConfidence))
             );
         }
 

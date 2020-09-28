@@ -99,67 +99,107 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             {
                 var (locus, c) = locusCriteria;
 
-                var canStartFiltering = matchedLoci.Any(l => criteria.LocusCriteria.GetLocus(l).MismatchCount != 2);
-                
+                // If all previous loci have been allowed 2 mismatches, we cannot guarantee that all results are contained in that query 
+                var canStartFiltering = matchedLoci.Any(l => criteria.LocusCriteria.GetLocus(l).MismatchCount != 2)
+                                        // Matched loci * 2 = number of mismatches there must be to have not been returned by now. If this exceeds the overall limit, we must have found all donors by now.
+                                        || matchedLoci.Count * 2 > criteria.DonorMismatchCount;
+
                 // if first locus matches no donors, but is allowed 2 mismatches. E.g. 8/10, 4/8 searches can trigger this.
-                if (!canStartFiltering && !(await prevIterator.AnyAsync()))
+                // Do this outside of batching to ensure all results are actually grouped if first locus returns > batchsize results.
+                // TODO: ATLAS-714: Lots of commonisation probably possible here!
+                if (!canStartFiltering)
                 {
-                    var iterator = MatchIndependentLocus(criteria, (locus, c));
-                    await foreach (var result in iterator)
+                    // This will be quite memory intensive! But necessary for these very lenient searches I think.
+                    var dict = new Dictionary<int, MatchResult>();
+                    await foreach (var result in prevIterator)
                     {
-                        // Final filtering uses *populated* loci. 
-                        // If matching has been performed at a locus, and no results came back for it - it needs to have 0 matches at each of these loci. 
-                        // TODO: ATLAS-714: Switching to a "specified loci" rather than "populated loci" approach might be cleaner here, so we can just treat null a 0 matches
-                        foreach (var matchedLocus in matchedLoci)
+                        dict[result.DonorId] = result;
+                    }
+                    
+                    // TODO: ATLAS-714: Do not create unnecessary match Result objects here
+                    var iterator = MatchIndependentLocus(criteria, (locus, c));
+
+                    await foreach (var locusResult in iterator)
+                    {
+                        var donorId = locusResult.DonorId;
+                        if (dict.ContainsKey(donorId))
                         {
-                            result.SetMatchDetailsForLocus(matchedLocus, new LocusMatchDetails());
+                            var result = dict[donorId];
+                            result.SetMatchDetailsForLocus(locus, locusResult.MatchDetailsForLocus(locus));
                         }
-                        yield return result;
+                        else
+                        {
+                            var result = new MatchResult {DonorId = donorId};
+
+                            result.SetMatchDetailsForLocus(locus, locusResult.MatchDetails.GetLocus(locus));
+
+                            // Final filtering uses *populated* loci. 
+                            // If matching has been performed at a locus, and no results came back for it - it needs to have 0 matches at each of these loci. 
+                            foreach (var matchedLocus in matchedLoci)
+                            {
+                                result.SetMatchDetailsForLocus(matchedLocus, new LocusMatchDetails());
+                            }
+
+                            dict.Add(donorId, result);
+                        }
+                    }
+                    
+                    foreach (var result in dict)
+                    {
+                        var allLoci = matchedLoci.Append(locus);
+                        if (allLoci.All(l => matchFilteringService.FulfilsPerLocusMatchCriteria(result.Value, criteria, l)))
+                        {
+                            yield return result.Value;
+                        }
                     }
                 }
-
-                await foreach (var resultBatch in prevIterator.Batch(100_000))
+                else
                 {
-                    using (searchLogger.RunTimed($"Matching Batch at locus {locus}", LogLevel.Verbose))
+                    await foreach (var resultBatch in prevIterator.Batch(100_000))
                     {
-                        var dict = resultBatch.ToDictionary(r => r.DonorId, r => r);
-                        var donorIds = dict.Keys;
-                        var newResults = FindMatchesAtLocus(criteria.SearchType, locus, c, donorIds.ToHashSet());
-                        await foreach (var locusResult in newResults)
+                        using (searchLogger.RunTimed($"Matching Batch at locus {locus}", LogLevel.Verbose))
                         {
-                            var donorId = locusResult.Item1;
-                            if (dict.ContainsKey(donorId))
+                            var dict = resultBatch.ToDictionary(r => r.DonorId, r => r);
+                            var donorIds = dict.Keys;
+                            var donorIdsToFilter = canStartFiltering ? donorIds.ToHashSet() : null;
+                            var newResults = FindMatchesAtLocus(criteria.SearchType, locus, c, donorIdsToFilter);
+                            await foreach (var locusResult in newResults)
                             {
-                                var result = dict[donorId];
-                                result.SetMatchDetailsForLocus(locus, locusResult.Item2);
-                            }
-                            else if (canStartFiltering)
-                            {
-                                // "CanStartFiltering" means that this code path should never be hit! 
-                                // But if it does, e.g. with an SQL mistake / refactor, we can guarantee that any donor not already matched by now should not be returned, so we don't return these donors
-                            }
-                            else
-                            {
-                                var result = new MatchResult {DonorId = donorId};
-                                
-                                // Final filtering uses *populated* loci. 
-                                // If matching has been performed at a locus, and no results came back for it - it needs to have 0 matches at each of these loci. 
-                                // TODO: ATLAS-714: Switching to a "specified loci" rather than "populated loci" approach might be cleaner here, so we can just treat null a 0 matches
-                                foreach (var matchedLocus in matchedLoci)
+                                var donorId = locusResult.Item1;
+                                if (dict.ContainsKey(donorId))
                                 {
-                                    result.SetMatchDetailsForLocus(matchedLocus, new LocusMatchDetails());
+                                    var result = dict[donorId];
+                                    result.SetMatchDetailsForLocus(locus, locusResult.Item2);
                                 }
+                                else if (canStartFiltering)
+                                {
+                                    // "CanStartFiltering" means that this code path should never be hit! 
+                                    // But if it does, e.g. with an SQL mistake / refactor, we can guarantee that any donor not already matched by now should not be returned, so we don't return these donors
+                                }
+                                else
+                                {
+                                    var result = new MatchResult {DonorId = donorId};
 
-                                dict.Add(donorId, result);
+                                    result.MatchDetails.SetLocus(locus, locusResult.Item2);
+                                
+                                    // Final filtering uses *populated* loci. 
+                                    // If matching has been performed at a locus, and no results came back for it - it needs to have 0 matches at each of these loci. 
+                                    foreach (var matchedLocus in matchedLoci)
+                                    {
+                                        result.SetMatchDetailsForLocus(matchedLocus, new LocusMatchDetails());
+                                    }
+
+                                    dict.Add(donorId, result);
+                                }
                             }
-                        }
 
-                        foreach (var result in dict)
-                        {
-                            var allLoci = matchedLoci.Append(locus);
-                            if (allLoci.All(l => matchFilteringService.FulfilsPerLocusMatchCriteria(result.Value, criteria, l)))
+                            foreach (var result in dict)
                             {
-                                yield return result.Value;
+                                var allLoci = matchedLoci.Append(locus);
+                                if (allLoci.All(l => matchFilteringService.FulfilsPerLocusMatchCriteria(result.Value, criteria, l)))
+                                {
+                                    yield return result.Value;
+                                }
                             }
                         }
                     }
@@ -178,10 +218,19 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 results[result.DonorId] = result;
             }
 
+            var specifiedLoci = lociMismatchCounts.Select(x => x.l).ToList();
+
+            foreach (var result in results)
+            {
+                result.Value.PopulateMismatches(specifiedLoci);
+            }
+
             return results;
         }
 
-        private IAsyncEnumerable<MatchResult> MatchIndependentLocus(AlleleLevelMatchCriteria criteria, (Locus l, AlleleLevelLocusMatchCriteria) firstLocus)
+        private IAsyncEnumerable<MatchResult> MatchIndependentLocus(
+            AlleleLevelMatchCriteria criteria,
+            (Locus l, AlleleLevelLocusMatchCriteria) firstLocus)
         {
             return FindMatchesAtLocus(criteria.SearchType, firstLocus.l, firstLocus.Item2)
                 .SelectAsync(lmd =>
