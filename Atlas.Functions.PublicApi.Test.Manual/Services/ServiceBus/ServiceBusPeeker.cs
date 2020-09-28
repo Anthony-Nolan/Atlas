@@ -55,8 +55,25 @@ namespace Atlas.Functions.PublicApi.Test.Manual.Services.ServiceBus
 
         public async Task<IEnumerable<ServiceBusMessage<T>>> Peek(PeekRequest peekRequest)
         {
-            var messages = await messageReceiver.PeekBySequenceNumberAsync(peekRequest.FromSequenceNumber, peekRequest.MessageCount);
-            return messages?.Select(GetServiceBusMessage) ?? new List<ServiceBusMessage<T>>();
+            var messages = new List<ServiceBusMessage<T>>();
+
+            // The message receiver Peek method has an undocumented upper message count limit
+            // So, keep fetching until desired total message count reached or no new messages returned
+            while (messages.Count < peekRequest.MessageCount)
+            {
+                var fromSequenceNumber = messages.Any() ? messages.Last().SequenceNumber + 1 : peekRequest.FromSequenceNumber;
+                var messageCount = peekRequest.MessageCount - messages.Count;
+                var batch = await messageReceiver.PeekBySequenceNumberAsync(fromSequenceNumber, messageCount);
+                
+                if (!batch.Any())
+                {
+                    break;
+                }
+
+                messages.AddRange(batch.Select(GetServiceBusMessage));
+            }
+
+            return messages;
         }
 
         private static ServiceBusMessage<T> GetServiceBusMessage(Message message)
