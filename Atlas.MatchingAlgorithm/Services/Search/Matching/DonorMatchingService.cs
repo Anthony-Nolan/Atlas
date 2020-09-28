@@ -155,7 +155,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 }
                 else
                 {
-                    await foreach (var resultBatch in prevIterator.Batch(100_000))
+                    // TODO: ATLAS-714: Make batch size configurable - allow finer control over performance vs. memory 
+                    await foreach (var resultBatch in prevIterator.Batch(250_000))
                     {
                         using (searchLogger.RunTimed($"Matching Batch at locus {locus}", LogLevel.Verbose))
                         {
