@@ -69,6 +69,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             {
                 if (!TypingIsRequiredAtLocus(locus))
                 {
+                    // TODO: ATLAS-714: This might cause issues due to expecting donors in order? Might be ok as long as no donors are returned both from this and the typed version.
                     var untypedResults = await GetResultsForDonorsUntypedAtLocus(locus, donorIds);
                     foreach (var untypedResult in untypedResults)
                     {
@@ -78,7 +79,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                 
                 if (donorIds.Count > DonorIdBatchSize * 5)
                 {
-                    logger.SendTrace($"Donor Ids available for pre-filtering, but too many for DB - filtering in C#. Locus {locus}");
+                    logger.SendTrace($"Donor Ids available for pre-filtering, but too many for DB - filtering in C#. Locus {locus}", LogLevel.Verbose);
                     var options = new MatchingFilteringOptions
                     {
                         DonorIds = null,
@@ -95,7 +96,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                 }
                 else
                 {
-                    logger.SendTrace($"Pre-filtering by Donor Id. Locus {locus}");
+                    logger.SendTrace($"Pre-filtering by Donor Id. Locus {locus}", LogLevel.Verbose);
                     foreach (var donorBatch in donorIds.Batch(DonorIdBatchSize))
                     {
                         var batchOptions = new MatchingFilteringOptions
@@ -139,7 +140,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             }
             else
             {
-                using (logger.RunTimed($"Match Timing: Donor repo. Fetched donors at locus: {locus}. For both positions."))
+                using (logger.RunTimed($"Match Timing: Donor repo. Matched at locus: {locus}. For both positions. Connection closed."))
                 {
                     // Ensure we have a Donor ID even when there is only one match at this locus.
                     const string selectDonorIdStatement = @"CASE WHEN DonorId1 IS NULL THEN DonorId2 ELSE DonorId1 END";
@@ -236,6 +237,7 @@ ORDER BY DonorId
                 WHERE d.DonorId IN {donorIds.ToInClause()} 
                 AND {DonorHlaColumnAtLocus(locus, TypePosition.One)} IS NULL 
                 AND {DonorHlaColumnAtLocus(locus, TypePosition.Two)} IS NULL
+                ORDER BY DonorId
                 ";
 
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))

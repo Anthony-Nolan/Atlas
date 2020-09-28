@@ -34,7 +34,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
         public bool FulfilsTotalMatchCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
         {
-            return match.TotalMatchCount >= (match.PopulatedLociCount * MaximumMatchCountPerLocus) - criteria.DonorMismatchCount;
+            return match.TotalMatchCount >= (criteria.LociWithCriteriaSpecified().Count() * MaximumMatchCountPerLocus) - criteria.DonorMismatchCount;
         }
 
         public bool FulfilsSearchTypeCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
