@@ -128,12 +128,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             ISet<Locus> allowedLoci
         )
         {
-            return patientDonorMatchDetails.AsParallel()
+            return patientDonorMatchDetails
                 .Aggregate(
-                    () => new MatchProbabilityEquationNumerators(allowedLoci),
+                    new MatchProbabilityEquationNumerators(allowedLoci),
                     (numerators, pair) => AggregateNumerators(pair, numerators),
-                    (total, thisThread) => total.Add(thisThread),
-                    (finalTotal) => finalTotal
+                    finalTotal => finalTotal
                 );
         }
 

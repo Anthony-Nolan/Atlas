@@ -304,7 +304,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             ILongOperationLoggingStopwatch stopwatch)
         {
             return allPatientDonorCombinations
-                .AsParallel()
                 .Select(pd =>
                 {
                     using (stopwatch.TimeInnerOperation())
