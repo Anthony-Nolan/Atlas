@@ -12,7 +12,7 @@ namespace Atlas.MatchingAlgorithm.Common.Models
 
         public int DonorMismatchCount { get; set; }
 
-        public LociInfo<AlleleLevelLocusMatchCriteria> LocusCriteria { get; set; }
+        public LociInfo<AlleleLevelLocusMatchCriteria> LocusCriteria { get; set; } = new LociInfo<AlleleLevelLocusMatchCriteria>();
 
         public IEnumerable<Locus> LociWithCriteriaSpecified()
         {

@@ -92,10 +92,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                         LogLevel.Verbose
                     );
                     var options = new MatchingFilteringOptions {DonorIds = null, DonorType = filteringOptions.DonorType};
-                    
+
                     var results = MatchAtLocus(locus, options, pGroups, criteria.MismatchCount == 0)
                         .Where(m => donorIds.Contains(m.DonorId));
-                    
+
                     await foreach (var result in results)
                     {
                         yield return result;
@@ -112,7 +112,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                             DonorIds = Enumerable.ToHashSet(donorBatch),
                         };
                         var batchResults = MatchAtLocus(locus, batchOptions, pGroups, criteria.MismatchCount == 0);
-                        
+
                         await foreach (var result in batchResults)
                         {
                             yield return result;
@@ -136,12 +136,29 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             }
         }
 
+        /// <summary>
+        /// Performs matching at the specified locus.
+        ///
+        /// Streams donors from the database, which are fed through to later loci in batches - so we can expect the connection for the first locus
+        /// to remain open for some time. 
+        /// </summary>
+        /// <param name="locus">Locus to perform matching on.</param>
+        /// <param name="filteringOptions">Provides information which can be used to perform pre-filtering in the SQL request. </param>
+        /// <param name="pGroups">pGroups to match at each position at this locus. </param>
+        /// <param name="mustBeDoubleMatch">
+        /// If true, no mismatches are allowed at this locus, allowing the query to perform a logical AND on the two positions.
+        /// Else, at least one mismatch is allowed here, so we must instead perform a logical OR. 
+        /// </param>
+        /// <returns></returns>
         private async IAsyncEnumerable<DonorLocusMatch> MatchAtLocusSql(
             Locus locus,
             MatchingFilteringOptions filteringOptions,
             LocusInfo<IEnumerable<int>> pGroups,
             bool mustBeDoubleMatch)
         {
+            // Technically this would incorrectly reject empty P-group collections at a single locus only. We assert that this will never happen, as partially typed loci are disallowed,
+            // and null expressing alleles (the only way to have a null p group) are handled by copying the expressing allele's P-groups to the null position.
+            // If either of these facts changes, this validation may be incorrect.
             if (!pGroups.Position1.Any() || !pGroups.Position2.Any())
             {
                 logger.SendTrace($"No P-Groups provided at locus {locus} - SQL was not run, no donors returned.");
@@ -194,7 +211,9 @@ ORDER BY DonorId
 
                     await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
                     {
-                        var matches = conn.Query<DonorLocusMatch>(sql, commandTimeout: 1800, buffered: false);
+                        // This is streamed from the database via `buffered: false` - this allows us to minimise our memory footprint, by not loading
+                        // all donors into memory at once, and filtering as we go. 
+                        var matches = conn.Query<DonorLocusMatch>(sql, commandTimeout: 3600, buffered: false);
                         foreach (var match in matches)
                         {
                             yield return match;

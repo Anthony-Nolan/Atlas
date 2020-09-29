@@ -25,6 +25,14 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
             return this;
         }
 
+        public AlleleLevelMatchCriteriaBuilder WithRequiredLociMatchCriteria(int mismatchCount)
+        {
+            criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(Locus.A, new AlleleLevelLocusMatchCriteria {MismatchCount = mismatchCount});
+            criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(Locus.B, new AlleleLevelLocusMatchCriteria {MismatchCount = mismatchCount});
+            criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(Locus.Drb1, new AlleleLevelLocusMatchCriteria {MismatchCount = mismatchCount});
+            return this;
+        }
+
         public AlleleLevelMatchCriteriaBuilder WithLocusMatchCriteria(Locus locus, AlleleLevelLocusMatchCriteria locusMatchCriteria)
         {
             criteria.LocusCriteria = criteria.LocusCriteria.SetLocus(locus, locusMatchCriteria);
@@ -33,7 +41,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 
         public AlleleLevelMatchCriteriaBuilder WithLocusMismatchCount(Locus locus, int mismatchCount)
         {
-            var locusCriteria = criteria.LocusCriteria.GetLocus(locus);
+            var locusCriteria = criteria.LocusCriteria.GetLocus(locus) ?? new AlleleLevelLocusMatchCriteria();
             locusCriteria.MismatchCount = mismatchCount;
             return WithLocusMatchCriteria(locus, locusCriteria);
         }

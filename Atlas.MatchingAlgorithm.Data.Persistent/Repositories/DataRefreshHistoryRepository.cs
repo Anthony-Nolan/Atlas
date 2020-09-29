@@ -52,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
 
         public IEnumerable<DataRefreshRecord> GetIncompleteRefreshJobs()
         {
-            return Context.DataRefreshRecords.AsEnumerable().Where(r => r.RefreshEndUtc == null);
+            return Context.DataRefreshRecords.Where(r => r.RefreshEndUtc == null);
         }
 
         public async Task<int> Create(DataRefreshRecord dataRefreshRecord)
