@@ -1,4 +1,3 @@
-using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
@@ -9,14 +8,15 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
     public interface IActiveRepositoryFactory : ITransientRepositoryFactory
     {
         IDonorSearchRepository GetDonorSearchRepository();
-        IPreFilteredDonorSearchRepository GetPreFilteredDonorSearchRepository();
         IDonorManagementLogRepository GetDonorManagementLogRepository();
     }
 
     public class ActiveRepositoryFactory : TransientRepositoryFactoryBase, IActiveRepositoryFactory
     {
         // ReSharper disable once SuggestBaseTypeForParameter
-        public ActiveRepositoryFactory(ActiveTransientSqlConnectionStringProvider activeConnectionStringProvider, IMatchingAlgorithmImportLogger logger)
+        public ActiveRepositoryFactory(
+            ActiveTransientSqlConnectionStringProvider activeConnectionStringProvider,
+            IMatchingAlgorithmImportLogger logger)
             : base(activeConnectionStringProvider, logger)
         {
         }
@@ -24,11 +24,6 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         public IDonorSearchRepository GetDonorSearchRepository()
         {
             return new DonorSearchRepository(ConnectionStringProvider, logger);
-        }
-
-        public IPreFilteredDonorSearchRepository GetPreFilteredDonorSearchRepository()
-        {
-            return new PreFilteredDonorSearchRepository(ConnectionStringProvider);
         }
 
         public IDonorManagementLogRepository GetDonorManagementLogRepository()

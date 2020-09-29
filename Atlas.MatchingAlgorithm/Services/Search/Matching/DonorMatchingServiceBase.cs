@@ -1,7 +1,6 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
@@ -29,18 +28,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 },
                 Locus = locus
             };
-        }
-
-        private static bool DirectMatch(IList<PotentialHlaMatchRelation> matches)
-        {
-            return matches.Any(m => m.SearchTypePosition == LocusPosition.One && m.MatchingTypePosition == LocusPosition.One)
-                   && matches.Any(m => m.SearchTypePosition == LocusPosition.Two && m.MatchingTypePosition == LocusPosition.Two);
-        }
-
-        private static bool CrossMatch(IList<PotentialHlaMatchRelation> matches)
-        {
-            return matches.Any(m => m.SearchTypePosition == LocusPosition.One && m.MatchingTypePosition == LocusPosition.Two)
-                   && matches.Any(m => m.SearchTypePosition == LocusPosition.Two && m.MatchingTypePosition == LocusPosition.One);
         }
     }
 }

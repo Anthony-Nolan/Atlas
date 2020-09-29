@@ -21,7 +21,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
     public class MatchingService : IMatchingService
     {
         private readonly IDonorMatchingService donorMatchingService;
-        private readonly IPreFilteredDonorMatchingService preFilteredDonorMatchingService;
         private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IMatchFilteringService matchFilteringService;
         private readonly IMatchCriteriaAnalyser matchCriteriaAnalyser;
@@ -29,7 +28,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
         public MatchingService(
             IDonorMatchingService donorMatchingService,
-            IPreFilteredDonorMatchingService preFilteredDonorMatchingService,
             // ReSharper disable once SuggestBaseTypeForParameter
             IActiveRepositoryFactory transientRepositoryFactory,
             IMatchFilteringService matchFilteringService,
@@ -38,7 +36,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             IMatchingAlgorithmSearchLogger searchLogger)
         {
             this.donorMatchingService = donorMatchingService;
-            this.preFilteredDonorMatchingService = preFilteredDonorMatchingService;
             donorInspectionRepository = transientRepositoryFactory.GetDonorInspectionRepository();
             this.matchFilteringService = matchFilteringService;
             this.matchCriteriaAnalyser = matchCriteriaAnalyser;
@@ -52,11 +49,11 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
             var initialMatches = await PerformMatchingPhaseOne(criteria, lociToMatchFirst, lociToMatchSecond);
             var matchesAtAllLoci = initialMatches;
-            return (await PerformMatchingPhaseThree(criteria, matchesAtAllLoci)).Values.ToList();
+            return (await PerformMatchingPhaseTwo(criteria, matchesAtAllLoci)).Values.ToList();
         }
 
         /// <summary>
-        /// The first phase of matching must perform a full scan of the MatchingHla tables for the specified loci.
+        /// The first phase of matching performs the bulk of the work - it returns all donors that meet the matching criteria, at all specified loci.
         /// It must return a superset of the final matching donor set - i.e. no matching donors may exist and not be returned in this phase.
         /// </summary>
         private async Task<IDictionary<int, MatchResult>> PerformMatchingPhaseOne(AlleleLevelMatchCriteria criteria, ICollection<Locus> loci, ICollection<Locus> loci2)
@@ -70,32 +67,17 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         }
 
         /// <summary>
-        /// The second phase of matching needs only consider the donors matched by phase 1, and filter out mismatches at the remaining loci.
+        /// The second phase of matching does not need to query the p-group matching tables.
+        /// It will assess the matches from all individual loci against the remaining search criteria.
+        ///
+        /// Any filtering performed on non-hla donor info is performed here, as well as any search-type specific criteria.  
         /// </summary>
         private async Task<IDictionary<int, MatchResult>> PerformMatchingPhaseTwo(
-            AlleleLevelMatchCriteria criteria,
-            ICollection<Locus> loci,
-            IDictionary<int, MatchResult> initialMatches
-        )
-        {
-            using (searchLogger.RunTimed("Matching timing: Phase 2 complete"))
-            {
-                var matchesAtAllLoci = await preFilteredDonorMatchingService.FindMatchesForLociFromDonorSelection(criteria, loci, initialMatches);
-                searchLogger.SendTrace($"Matching Phase 2: {matchesAtAllLoci.Count} donors. Loci: {loci.Select(l => l.ToString()).StringJoin(",")}");
-                return matchesAtAllLoci;
-            }
-        }
-
-        /// <summary>
-        /// The third phase of matching does not need to query the p-group matching tables.
-        /// It will assess the matches from all individual loci against the remaining search criteria
-        /// </summary>
-        private async Task<IDictionary<int, MatchResult>> PerformMatchingPhaseThree(
             AlleleLevelMatchCriteria criteria,
             IDictionary<int, MatchResult> matches
         )
         {
-            using (searchLogger.RunTimed("Matching timing: Phase 3 complete"))
+            using (searchLogger.RunTimed("Matching timing: Phase 2 complete"))
             {
                 var filteredMatchesByMatchCriteria = matches
                     .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m.Value, criteria))
@@ -112,7 +94,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 // Once finished populating match data, mark data as populated (so that null locus match data can be accessed for mapping to the api model)
                 filteredMatchesByDonorInformation.ForEach(m => m.Value.MarkMatchingDataFullyPopulated());
 
-                searchLogger.SendTrace($"Matching Phase 3: Found {filteredMatchesByDonorInformation.Count} donors.");
+                searchLogger.SendTrace($"Matching Phase 2: Found {filteredMatchesByDonorInformation.Count} donors.");
                 return filteredMatchesByDonorInformation.ToDictionary();
             }
         }
