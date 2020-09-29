@@ -61,35 +61,42 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             if (!TypingIsRequiredAtLocus(locus) && donorIds == null)
             {
                 // Donors can be untyped at these loci, which counts as a potential match.
-                // This method does not return untyped donors, so cannot be used for any loci that are not guaranteed to be typed.  
-                throw new ArgumentOutOfRangeException("Must provide donorIds for non-required loci.");
+                // This method is not expected to be performant enough without donorIds to pre-filter. 
+                throw new InvalidOperationException("Must provide donorIds for non-required loci.");
             }
 
-            if (donorIds != null)
+            if (donorIds == null)
+            {
+                var results = MatchAtLocus(locus, filteringOptions, pGroups, criteria.MismatchCount == 0);
+                await foreach (var result in results)
+                {
+                    yield return result;
+                }
+            }
+            else
             {
                 if (!TypingIsRequiredAtLocus(locus))
                 {
-                    // TODO: ATLAS-714: This might cause issues due to expecting donors in order? Might be ok as long as no donors are returned both from this and the typed version.
-                    var untypedResults = await GetResultsForDonorsUntypedAtLocus(locus, donorIds);
+                    var untypedResults = await GetResultsForDonorsUntypedAtLocus(locus, donorIds.ToList());
                     foreach (var untypedResult in untypedResults)
                     {
                         yield return untypedResult;
                     }
                 }
-                
+
+                // This is explicitly not an else if! We need to return untyped donors *in addition to* matching donors
                 if (donorIds.Count > DonorIdBatchSize * 5)
                 {
-                    logger.SendTrace($"Donor Ids available for pre-filtering, but too many for DB - filtering in C#. Locus {locus}", LogLevel.Verbose);
-                    var options = new MatchingFilteringOptions
-                    {
-                        DonorIds = null,
-                        DonorType = filteringOptions.DonorType
-                    };
-                    var fullResults = MatchAtLocus(locus, options, pGroups, criteria.MismatchCount == 0)
+                    logger.SendTrace(
+                        $"{donorIds.Count} Donor Ids available for pre-filtering, but too many for DB - filtering in C#. Locus {locus}",
+                        LogLevel.Verbose
+                    );
+                    var options = new MatchingFilteringOptions {DonorIds = null, DonorType = filteringOptions.DonorType};
+                    
+                    var results = MatchAtLocus(locus, options, pGroups, criteria.MismatchCount == 0)
                         .Where(m => donorIds.Contains(m.DonorId));
-                    // TODO: ATLAS-714: Commonise this method!
-                    var convertedResults = fullResults.SelectMany(x => x.ToPotentialHlaMatchRelations(locus));
-                    await foreach (var result in convertedResults)
+                    
+                    await foreach (var result in results)
                     {
                         yield return result;
                     }
@@ -105,25 +112,31 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                             DonorIds = Enumerable.ToHashSet(donorBatch),
                         };
                         var batchResults = MatchAtLocus(locus, batchOptions, pGroups, criteria.MismatchCount == 0);
-                        await foreach (var result in batchResults.SelectMany(x => x.ToPotentialHlaMatchRelations(locus)))
+                        
+                        await foreach (var result in batchResults)
                         {
                             yield return result;
                         }
                     }
                 }
             }
-            else
+        }
+
+        private async IAsyncEnumerable<PotentialHlaMatchRelation> MatchAtLocus(
+            Locus locus,
+            MatchingFilteringOptions filteringOptions,
+            LocusInfo<IEnumerable<int>> pGroups,
+            bool mustBeDoubleMatch)
+        {
+            var sqlMatchResults = MatchAtLocusSql(locus, filteringOptions, pGroups, mustBeDoubleMatch);
+            var relations = sqlMatchResults.SelectMany(x => x.ToPotentialHlaMatchRelations(locus));
+            await foreach (var relation in relations)
             {
-                var fullResults = MatchAtLocus(locus, filteringOptions, pGroups, criteria.MismatchCount == 0);
-                var convertedResults = fullResults.SelectMany(x => x.ToPotentialHlaMatchRelations(locus));
-                await foreach (var result in convertedResults)
-                {
-                    yield return result;
-                }
+                yield return relation;
             }
         }
 
-        private async IAsyncEnumerable<DonorLocusMatch> MatchAtLocus(
+        private async IAsyncEnumerable<DonorLocusMatch> MatchAtLocusSql(
             Locus locus,
             MatchingFilteringOptions filteringOptions,
             LocusInfo<IEnumerable<int>> pGroups,
@@ -179,7 +192,6 @@ ON DonorId1 = DonorId2
 ORDER BY DonorId
 ";
 
-                    // TODO: ATLAS-714: sort out SQL timing logging - currently a few places claim to be timing similar things
                     await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
                     {
                         var matches = conn.Query<DonorLocusMatch>(sql, commandTimeout: 1800, buffered: false);
@@ -191,8 +203,8 @@ ORDER BY DonorId
                 }
             }
         }
-        
-        private async Task<IEnumerable<PotentialHlaMatchRelation>> GetResultsForDonorsUntypedAtLocus(Locus locus, IEnumerable<int> donorIds)
+
+        private async Task<IEnumerable<PotentialHlaMatchRelation>> GetResultsForDonorsUntypedAtLocus(Locus locus, IList<int> donorIds)
         {
             using (logger.RunTimed($"Fetching untyped Donor IDs at Locus: {locus}"))
             {
@@ -208,7 +220,7 @@ ORDER BY DonorId
                         }));
             }
         }
-        
+
         private static bool TypingIsRequiredAtLocus(Locus locus)
         {
             return TypingIsRequiredInDatabaseAtLocusPosition(locus, TypePosition.One) &&
@@ -222,11 +234,9 @@ ORDER BY DonorId
 
             return Attribute.IsDefined(locusProperty, typeof(RequiredAttribute));
         }
-        
-        
-        private async Task<IEnumerable<int>> GetIdsOfDonorsUntypedAtLocus(Locus locus, IEnumerable<int> donorIds)
+
+        private async Task<IEnumerable<int>> GetIdsOfDonorsUntypedAtLocus(Locus locus, IList<int> donorIds)
         {
-            donorIds = donorIds.ToList();
             if (!donorIds.Any())
             {
                 return new List<int>();
@@ -245,7 +255,7 @@ ORDER BY DonorId
                 return await conn.QueryAsync<int>(sql, commandTimeout: 1800);
             }
         }
-        
+
         private static string DonorHlaColumnAtLocus(Locus locus, TypePosition position)
         {
             var positionString = position == TypePosition.One ? "1" : "2";
