@@ -1,31 +1,18 @@
 ﻿using System.Collections.Generic;
 using Atlas.Common.GeneticData;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace Atlas.MatchingAlgorithm.Data.Models
 {
-    public class DonorMatch
+    // ReSharper disable once ClassNeverInstantiated.Global - instantiated by Dapper
+    internal class DonorLocusMatch
     {
         public int DonorId { get; set; }
-        public int TypePosition { get; set; }
         
-        internal PotentialHlaMatchRelation ToPotentialHlaMatchRelation(TypePosition searchTypePosition, Locus locus)
-        {
-            return new PotentialHlaMatchRelation()
-            {
-                Locus = locus,
-                Name = "Unknown",
-                SearchTypePosition = searchTypePosition.ToLocusPosition(),
-                MatchingTypePosition = ((TypePosition) TypePosition).ToLocusPosition(),
-                DonorId = DonorId
-            };
-        }
-    }
-    
-    public class FullDonorMatch
-    {
-        public int DonorId { get; set; }
+        // ReSharper disable once MemberCanBePrivate.Global - needed for Dapper deserialisation
         public int? TypePosition1 { get; set; }
 
+        // ReSharper disable once MemberCanBePrivate.Global - needed for Dapper deserialisation
         public int? TypePosition2 { get; set; }
 
         internal async IAsyncEnumerable<PotentialHlaMatchRelation> ToPotentialHlaMatchRelations(Locus locus)

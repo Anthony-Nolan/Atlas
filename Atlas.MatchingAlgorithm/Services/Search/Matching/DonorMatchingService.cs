@@ -234,7 +234,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
             var filteringOptions = new MatchingFilteringOptions
             {
-                ShouldFilterOnDonorType = databaseFilteringAnalyser.ShouldFilterOnDonorTypeInDatabase(repoCriteria),
+                DonorType = databaseFilteringAnalyser.ShouldFilterOnDonorTypeInDatabase(repoCriteria) ? searchType : (DonorType?) null,
                 DonorIds = donorIds
             };
 

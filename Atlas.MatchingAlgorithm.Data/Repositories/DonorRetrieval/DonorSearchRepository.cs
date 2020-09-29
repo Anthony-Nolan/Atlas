@@ -83,9 +83,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                     var options = new MatchingFilteringOptions
                     {
                         DonorIds = null,
-                        ShouldFilterOnDonorType = filteringOptions.ShouldFilterOnDonorType
+                        DonorType = filteringOptions.DonorType
                     };
-                    var fullResults = MatchAtLocus(locus, options, criteria.SearchDonorType, pGroups, criteria.MismatchCount == 0)
+                    var fullResults = MatchAtLocus(locus, options, pGroups, criteria.MismatchCount == 0)
                         .Where(m => donorIds.Contains(m.DonorId));
                     // TODO: ATLAS-714: Commonise this method!
                     var convertedResults = fullResults.SelectMany(x => x.ToPotentialHlaMatchRelations(locus));
@@ -101,10 +101,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                     {
                         var batchOptions = new MatchingFilteringOptions
                         {
-                            ShouldFilterOnDonorType = filteringOptions.ShouldFilterOnDonorType,
+                            DonorType = filteringOptions.DonorType,
                             DonorIds = Enumerable.ToHashSet(donorBatch),
                         };
-                        var batchResults = MatchAtLocus(locus, batchOptions, criteria.SearchDonorType, pGroups, criteria.MismatchCount == 0);
+                        var batchResults = MatchAtLocus(locus, batchOptions, pGroups, criteria.MismatchCount == 0);
                         await foreach (var result in batchResults.SelectMany(x => x.ToPotentialHlaMatchRelations(locus)))
                         {
                             yield return result;
@@ -114,7 +114,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             }
             else
             {
-                var fullResults = MatchAtLocus(locus, filteringOptions, criteria.SearchDonorType, pGroups, criteria.MismatchCount == 0);
+                var fullResults = MatchAtLocus(locus, filteringOptions, pGroups, criteria.MismatchCount == 0);
                 var convertedResults = fullResults.SelectMany(x => x.ToPotentialHlaMatchRelations(locus));
                 await foreach (var result in convertedResults)
                 {
@@ -123,10 +123,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             }
         }
 
-        private async IAsyncEnumerable<FullDonorMatch> MatchAtLocus(
+        private async IAsyncEnumerable<DonorLocusMatch> MatchAtLocus(
             Locus locus,
             MatchingFilteringOptions filteringOptions,
-            DonorType donorType,
             LocusInfo<IEnumerable<int>> pGroups,
             bool mustBeDoubleMatch)
         {
@@ -146,10 +145,11 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                     const string selectDonorIdStatement = @"CASE WHEN DonorId1 IS NULL THEN DonorId2 ELSE DonorId1 END";
 
                     var donorTypeFilteredJoin = filteringOptions.ShouldFilterOnDonorType
-                        ? $@"INNER JOIN Donors d ON {selectDonorIdStatement} = d.DonorId AND d.DonorType = {(int) donorType}"
+                        // ReSharper disable once PossibleInvalidOperationException - implicitly checked via ShouldFilterOnDonorType
+                        ? $@"INNER JOIN Donors d ON {selectDonorIdStatement} = d.DonorId AND d.DonorType = {(int) filteringOptions.DonorType}"
                         : "";
 
-                    var donorIdFilter = filteringOptions.DonorIds != null
+                    var donorIdFilter = filteringOptions.ShouldFilterOnDonorIds
                         ? $"AND m.DonorId IN {filteringOptions.DonorIds.ToInClause()}"
                         : "";
 
@@ -182,7 +182,7 @@ ORDER BY DonorId
                     // TODO: ATLAS-714: sort out SQL timing logging - currently a few places claim to be timing similar things
                     await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
                     {
-                        var matches = conn.Query<FullDonorMatch>(sql, commandTimeout: 1800, buffered: false);
+                        var matches = conn.Query<DonorLocusMatch>(sql, commandTimeout: 1800, buffered: false);
                         foreach (var match in matches)
                         {
                             yield return match;
