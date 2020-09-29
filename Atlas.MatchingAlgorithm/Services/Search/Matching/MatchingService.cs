@@ -23,7 +23,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         private readonly IDonorMatchingService donorMatchingService;
         private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IMatchFilteringService matchFilteringService;
-        private readonly IMatchCriteriaAnalyser matchCriteriaAnalyser;
         private readonly ILogger searchLogger;
 
         public MatchingService(
@@ -31,23 +30,18 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             // ReSharper disable once SuggestBaseTypeForParameter
             IActiveRepositoryFactory transientRepositoryFactory,
             IMatchFilteringService matchFilteringService,
-            IMatchCriteriaAnalyser matchCriteriaAnalyser,
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchingAlgorithmSearchLogger searchLogger)
         {
             this.donorMatchingService = donorMatchingService;
             donorInspectionRepository = transientRepositoryFactory.GetDonorInspectionRepository();
             this.matchFilteringService = matchFilteringService;
-            this.matchCriteriaAnalyser = matchCriteriaAnalyser;
             this.searchLogger = searchLogger;
         }
 
         public async Task<IList<MatchResult>> GetMatches(AlleleLevelMatchCriteria criteria)
         {
-            var lociToMatchFirst = matchCriteriaAnalyser.LociInMatchingOrder(criteria).ToList();
-            var lociToMatchSecond = criteria.LociWithCriteriaSpecified().Except(lociToMatchFirst).ToList();
-
-            var initialMatches = await PerformMatchingPhaseOne(criteria, lociToMatchFirst, lociToMatchSecond);
+            var initialMatches = await PerformMatchingPhaseOne(criteria);
             var matchesAtAllLoci = initialMatches;
             return (await PerformMatchingPhaseTwo(criteria, matchesAtAllLoci)).Values.ToList();
         }
@@ -56,12 +50,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         /// The first phase of matching performs the bulk of the work - it returns all donors that meet the matching criteria, at all specified loci.
         /// It must return a superset of the final matching donor set - i.e. no matching donors may exist and not be returned in this phase.
         /// </summary>
-        private async Task<IDictionary<int, MatchResult>> PerformMatchingPhaseOne(AlleleLevelMatchCriteria criteria, ICollection<Locus> loci, ICollection<Locus> loci2)
+        private async Task<IDictionary<int, MatchResult>> PerformMatchingPhaseOne(AlleleLevelMatchCriteria criteria)
         {
             using (searchLogger.RunTimed("Matching timing: Phase 1 complete"))
             {
-                var matches = await donorMatchingService.FindMatchesForLoci(criteria, loci, loci2);
-                searchLogger.SendTrace($"Matching Phase 1: Found {matches.Count} donors. At loci: {loci.Select(l => l.ToString()).StringJoin(",")}");
+                var matches = await donorMatchingService.FindMatchesForLoci(criteria);
+                searchLogger.SendTrace($"Matching Phase 1: Found {matches.Count} donors.");
                 return matches;
             }
         }
