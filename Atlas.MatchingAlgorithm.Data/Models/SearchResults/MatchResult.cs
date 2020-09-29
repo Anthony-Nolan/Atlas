@@ -111,7 +111,7 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
             {
                 if (MatchDetails.GetLocus(locus) == null)
                 {
-                    MatchDetails.SetLocus(locus, new LocusMatchDetails());
+                    MatchDetails = MatchDetails.SetLocus(locus, new LocusMatchDetails());
                 }
             }
         }

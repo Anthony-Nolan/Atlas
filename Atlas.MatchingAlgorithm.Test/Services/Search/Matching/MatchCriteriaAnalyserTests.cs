@@ -19,174 +19,109 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         }
 
         [Test]
-        public void LociToMatchInDatabase_ForExactSearch_ReturnsBAndDrb1()
+        public void LociInMatchingOrder_ForExactSearch_ReturnsBAndDrb1BeforeA()
         {
-            var criteria = new DonorMatchCriteriaBuilder()
-                .WithLocusMismatchA("", "", 0)
-                .WithLocusMismatchB("", "", 0)
-                .WithLocusMismatchDRB1("", "", 0)
-                .Build();
+            var criteria = new DonorMatchCriteriaBuilder().WithLocusMismatchA(0).WithLocusMismatchB(0).WithLocusMismatchDrb1(0).Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
+            var lociInMatchingOrder = criteriaAnalyser.LociInMatchingOrder(criteria);
 
-            lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.B, Locus.Drb1});
+            lociInMatchingOrder.Should().ContainInOrder(Locus.B, Locus.A);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.Drb1, Locus.A);
         }
 
         // The logic in this test especially is based on an unproved hypothesis, and is likely to change based on performance investigations
         [Test]
-        public void LociToMatchInDatabase_WithSingleAllowedMismatchesAtBAndDrb1_ReturnsA()
+        public void LociInMatchingOrder_WithSingleAllowedMismatchesAtBAndDrb1_ReturnsAFirst()
         {
-            var criteria = new DonorMatchCriteriaBuilder()
-                .WithLocusMismatchA("", "", 0)
-                .WithLocusMismatchB("", "", 1)
-                .WithLocusMismatchDRB1("", "", 1)
-                .Build();
+            var criteria = new DonorMatchCriteriaBuilder().WithLocusMismatchA(0).WithLocusMismatchB(1).WithLocusMismatchDrb1(1).Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria).ToList();
+            var lociInMatchingOrder = criteriaAnalyser.LociInMatchingOrder(criteria);
 
-            lociToMatchInDatabase.Should().Contain(Locus.A);
-            lociToMatchInDatabase.Count().Should().Be(2);
-        }
-        
-        [Test]
-        public void LociToMatchInDatabase_WithSingleAllowedMismatchAtA_ReturnsBAndDrb1()
-        {
-            var criteria = new DonorMatchCriteriaBuilder()
-                .WithLocusMismatchA("", "", 1)
-                .WithLocusMismatchB("", "", 0)
-                .WithLocusMismatchDRB1("", "", 0)
-                .Build();
-
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
-
-            lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.B, Locus.Drb1});
-        }
-        
-        [Test]
-        public void LociToMatchInDatabase_WithSingleAllowedMismatchAtB_ReturnsAAndDrb1()
-        {
-            var criteria = new DonorMatchCriteriaBuilder()
-                .WithLocusMismatchA("", "", 0)
-                .WithLocusMismatchB("", "", 1)
-                .WithLocusMismatchDRB1("", "", 0)
-                .Build();
-
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
-
-            lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.A, Locus.Drb1});
-        }
-        
-        [Test]
-        public void LociToMatchInDatabase_WithSingleAllowedMismatchAtDrb1_ReturnsAAndB()
-        {
-            var criteria = new DonorMatchCriteriaBuilder()
-                .WithLocusMismatchA("", "", 0)
-                .WithLocusMismatchB("", "", 0)
-                .WithLocusMismatchDRB1("", "", 1)
-                .Build();
-
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
-
-            lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.A, Locus.B});
+            lociInMatchingOrder.Should().ContainInOrder(Locus.A, Locus.B);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.A, Locus.Drb1);
         }
 
         [Test]
-        public void LociToMatchInDatabase_WithTwoAllowedMismatchesAtB_DoesNotIncludeB()
+        public void LociInMatchingOrder_WithSingleAllowedMismatchAtA_ReturnsBAndDrb1BeforeA()
         {
-            var criteria = new DonorMatchCriteriaBuilder()
-                .WithLocusMismatchA("", "", 0)
-                .WithLocusMismatchB("", "", 2)
-                .WithLocusMismatchDRB1("", "", 0)
-                .Build();
+            var criteria = new DonorMatchCriteriaBuilder().WithLocusMismatchA(1).WithLocusMismatchB(0).WithLocusMismatchDrb1(0).Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
+            var lociInMatchingOrder = criteriaAnalyser.LociInMatchingOrder(criteria);
 
-            lociToMatchInDatabase.Should().NotContain(Locus.B);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.B, Locus.A);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.Drb1, Locus.A);
         }
 
         [Test]
-        public void LociToMatchInDatabase_WithTwoAllowedMismatchesAtDrb1_DoesNotIncludeDrb1()
+        public void LociInMatchingOrder_WithSingleAllowedMismatchAtB_ReturnsAAndDrb1BeforeB()
         {
-            var criteria = new DonorMatchCriteriaBuilder()
-                .WithLocusMismatchA("", "", 0)
-                .WithLocusMismatchB("", "", 0)
-                .WithLocusMismatchDRB1("", "", 2)
-                .Build();
+            var criteria = new DonorMatchCriteriaBuilder().WithLocusMismatchA(0).WithLocusMismatchB(1).WithLocusMismatchDrb1(0).Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
+            var lociInMatchingOrder = criteriaAnalyser.LociInMatchingOrder(criteria);
 
-            lociToMatchInDatabase.Should().NotContain(Locus.Drb1);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.A, Locus.B);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.Drb1, Locus.B);
         }
 
         [Test]
-        public void LociToMatchInDatabase_WithTwoAllowedMismatchesAtDrb1_IncludesA()
+        public void LociInMatchingOrder_WithSingleAllowedMismatchAtDrb1_ReturnsAAndBBeforeDrb1()
         {
-            var criteria = new DonorMatchCriteriaBuilder()
-                .WithLocusMismatchA("", "", 0)
-                .WithLocusMismatchB("", "", 0)
-                .WithLocusMismatchDRB1("", "", 2)
-                .Build();
+            var criteria = new DonorMatchCriteriaBuilder().WithLocusMismatchA(0).WithLocusMismatchB(0).WithLocusMismatchDrb1(1).Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
+            var lociInMatchingOrder = criteriaAnalyser.LociInMatchingOrder(criteria);
 
-            lociToMatchInDatabase.Should().Contain(Locus.A);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.A, Locus.Drb1);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.B, Locus.Drb1);
         }
 
         [Test]
-        public void LociToMatchInDatabase_WithTwoAllowedMismatchesAtB_IncludesA()
+        public void LociInMatchingOrder_WithNoAllowedMismatches_ReturnsRequiredLociBeforeOptional()
         {
             var criteria = new DonorMatchCriteriaBuilder()
-                .WithLocusMismatchA("", "", 0)
-                .WithLocusMismatchB("", "", 0)
-                .WithLocusMismatchDRB1("", "", 2)
+                .WithLocusMismatchA(0).WithLocusMismatchB(0).WithLocusMismatchDrb1(1)
+                .WithLocusMismatchCount(Locus.Dqb1, 0)
+                .WithLocusMismatchCount(Locus.C, 0)
                 .Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
+            var lociInMatchingOrder = criteriaAnalyser.LociInMatchingOrder(criteria);
 
-            lociToMatchInDatabase.Should().Contain(Locus.A);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.A, Locus.Dqb1);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.A, Locus.C);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.B, Locus.Dqb1);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.B, Locus.C);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.Drb1, Locus.Dqb1);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.Drb1, Locus.C);
         }
 
         [Test]
-        public void LociToMatchInDatabase_WithTwoAllowedMismatchesAtBAndA_ReturnsDrb1Only()
+        public void LociInMatchingOrder_WithManyAllowedMismatches_ReturnsRequiredLociBeforeOptional()
         {
-            var criteria = new DonorMatchCriteriaBuilder()
-                .WithLocusMismatchA("", "", 2)
-                .WithLocusMismatchB("", "", 2)
-                .WithLocusMismatchDRB1("", "", 0)
+            var criteria = new DonorMatchCriteriaBuilder().WithLocusMismatchA(2).WithLocusMismatchB(2).WithLocusMismatchDrb1(2)
+                .WithLocusMismatchCount(Locus.Dqb1, 0)
+                .WithLocusMismatchCount(Locus.C, 0)
                 .Build();
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
+            var lociInMatchingOrder = criteriaAnalyser.LociInMatchingOrder(criteria);
 
-            lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.Drb1});
+            lociInMatchingOrder.Should().ContainInOrder(Locus.A, Locus.Dqb1);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.A, Locus.C);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.B, Locus.Dqb1);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.B, Locus.C);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.Drb1, Locus.Dqb1);
+            lociInMatchingOrder.Should().ContainInOrder(Locus.Drb1, Locus.C);
         }
 
-        [Test]
-        public void LociToMatchInDatabase_WithTwoAllowedMismatchesAtDrb1AndA_ReturnsBOnly()
+        [TestCase(new[] {Locus.Dqb1})]
+        [TestCase(new[] {Locus.C})]
+        [TestCase(new[] {Locus.Dqb1, Locus.C})]
+        public void LociInMatchingOrder_WhenLociExcludedFromCriteria_DoesNotReturnExcludedLoci(Locus[] excludedLoci)
         {
-            var criteria = new DonorMatchCriteriaBuilder()
-                .WithLocusMismatchA("", "", 2)
-                .WithLocusMismatchB("", "", 0)
-                .WithLocusMismatchDRB1("", "", 2)
-                .Build();
+            var criteriaBuilder = new DonorMatchCriteriaBuilder();
+            criteriaBuilder = excludedLoci.Aggregate(criteriaBuilder, (current, locus) => current.WithNoCriteriaAtLocus(locus));
 
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
+            var loci = criteriaAnalyser.LociInMatchingOrder(criteriaBuilder.Build());
 
-            lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.B});
-        }
-
-        [Test]
-        public void LociToMatchInDatabase_WithFourAllowedMismatches_AcrossAllRequiredLoci_ReturnsABAndDrb1()
-        {
-            var criteria = new DonorMatchCriteriaBuilder()
-                .WithDonorMismatchCount(4)
-                .WithLocusMismatchA("", "", 2)
-                .WithLocusMismatchB("", "", 2)
-                .WithLocusMismatchDRB1("", "", 2)
-                .Build();
-
-            var lociToMatchInDatabase = criteriaAnalyser.LociToMatchFirst(criteria);
-
-            lociToMatchInDatabase.Should().BeEquivalentTo(new[] {Locus.A, Locus.B, Locus.Drb1});
+            loci.Should().NotContain(excludedLoci);
         }
     }
 }

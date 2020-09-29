@@ -64,15 +64,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             ICollection<Locus> loci,
             ICollection<Locus> loci2)
         {
-            if (loci.Any(locus => !LocusSettings.LociPossibleToMatchInMatchingPhaseOne.Contains(locus)))
-            {
-                // Currently the logic here is not advised for these loci
-                // Donors can be untyped at these loci, which counts as a potential match
-                // so a simple search of the database would return a huge number of donors. 
-                // To avoid serialising that many results, we filter on these loci based on the results at other loci
-                throw new NotImplementedException();
-            }
-
             var phase1LociMismatchCounts = loci.Select(l => (l, criteria.LocusCriteria.GetLocus(l)))
                 .OrderBy(c => c.Item2?.MismatchCount)
                 .ToList();

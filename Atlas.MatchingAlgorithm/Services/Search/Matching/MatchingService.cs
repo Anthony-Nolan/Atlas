@@ -44,7 +44,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
         public async Task<IList<MatchResult>> GetMatches(AlleleLevelMatchCriteria criteria)
         {
-            var lociToMatchFirst = matchCriteriaAnalyser.LociToMatchFirst(criteria).ToList();
+            var lociToMatchFirst = matchCriteriaAnalyser.LociInMatchingOrder(criteria).ToList();
             var lociToMatchSecond = criteria.LociWithCriteriaSpecified().Except(lociToMatchFirst).ToList();
 
             var initialMatches = await PerformMatchingPhaseOne(criteria, lociToMatchFirst, lociToMatchSecond);

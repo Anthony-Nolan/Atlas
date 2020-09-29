@@ -10,61 +10,44 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
     public interface IMatchCriteriaAnalyser
     {
         /// <summary>
-        /// Determines for which loci the matching database should be hit
-        /// This takes into account mismatch counts - the database can only return results with at least one match, so it is pointless to query it for a locus with two allowed mismatches
-        /// It may 
+        /// Determines the order in which the hla tables are queried.
+        ///
+        /// Required loci must be queried before optional ones, as untyped donors will hugely inflate the result set size of optional loci if queried first.
+        /// Otherwise, attempts to optimise based on a combination of the mismatchCount at each locus, and known properties of that locus (e.g. A is generally a
+        /// more ambiguous locus with a larger search space, so tends to be more efficient to query after B/DRB1. 
         /// </summary>
-        IEnumerable<Locus> LociToMatchFirst(AlleleLevelMatchCriteria criteria);
+        IList<Locus> LociInMatchingOrder(AlleleLevelMatchCriteria criteria);
     }
 
     public class MatchCriteriaAnalyser : IMatchCriteriaAnalyser
     {
-        // TODO: NOVA-1395: Dynamically decide which loci to initially query for based on criteria, optimising for search speed
-        public IEnumerable<Locus> LociToMatchFirst(AlleleLevelMatchCriteria criteria)
+        private readonly Dictionary<Locus, int> locusPriority = new Dictionary<Locus, int>
         {
-            var lociToSearchInDatabase = new List<Locus>();
+            {Locus.Drb1, 1},
+            {Locus.B, 2},
+            // Prefer to avoid searching for Locus A first as it is the largest dataset, and takes longest to query
+            {Locus.A, 3},
+            {Locus.Dqb1, 4},
+            {Locus.C, 4},
+        };
 
-            // Prefer to avoid searching for Locus A as it is the largest dataset, and takes longest to query
-            if (criteria.LocusCriteria.B.MismatchCount == 0)
-            {
-                lociToSearchInDatabase.Add(Locus.B);
-            }
+        // TODO: NOVA-1395: Dynamically decide which loci to initially query for based on criteria, optimising for search speed
+        public IList<Locus> LociInMatchingOrder(AlleleLevelMatchCriteria criteria)
+        {
+            var locusMismatchCounts = criteria.LocusCriteria.Map((locus, c) => (locus, c?.MismatchCount))
+                .ToEnumerable()
+                .Where(x => x.Item2 != null)
+                .ToList();
 
-            if (criteria.LocusCriteria.Drb1.MismatchCount == 0)
-            {
-                lociToSearchInDatabase.Add(Locus.Drb1);
-            }
+            var requiredLoci = locusMismatchCounts.Where(locusMismatch => LocusSettings.RequiredLoci.Contains(locusMismatch.locus)).ToList();
 
-            // Searching on two loci necessary to narrow down results enough to be suitably performant
-            if (lociToSearchInDatabase.Count() < 2 && criteria.LocusCriteria.A.MismatchCount < 2)
-            {
-                lociToSearchInDatabase.Add(Locus.A);
-            }
+            var optionalLoci = locusMismatchCounts.Except(requiredLoci);
 
-            if (!lociToSearchInDatabase.Contains(Locus.B) && lociToSearchInDatabase.Count() < 2 && criteria.LocusCriteria.B.MismatchCount < 2)
-            {
-                lociToSearchInDatabase.Add(Locus.B);
-            }
+            var orderedRequiredLoci = requiredLoci
+                .OrderBy(x => x.MismatchCount)
+                .ThenBy(x => locusPriority[x.locus]);
 
-            if (!lociToSearchInDatabase.Contains(Locus.Drb1) && lociToSearchInDatabase.Count() < 2 && criteria.LocusCriteria.Drb1.MismatchCount < 2)
-            {
-                lociToSearchInDatabase.Add(Locus.Drb1);
-            }
-            
-            if (!lociToSearchInDatabase.Any())
-            {
-                // Unless we allow 6+ mismatches total across A, B, DRB1, at least one of them must have at least one match
-                if (criteria.DonorMismatchCount < 6)
-                {
-                    lociToSearchInDatabase = LocusSettings.LociPossibleToMatchInMatchingPhaseOne.ToList();
-                }
-                else
-                {
-                    throw new NotImplementedException("A search cannot be run with 2 allowed mismatches at A, B and DRB1 at 6+ total mismatches. Please refine the search criteria");
-                }
-            }
-
-            return lociToSearchInDatabase;
+            return orderedRequiredLoci.Select(x => x.locus).Concat(optionalLoci.Select(x => x.locus)).ToList();
         }
     }
 }

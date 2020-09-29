@@ -127,7 +127,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
             criteriaBuilder = new DonorMatchCriteriaBuilder()
                 .WithDonorMismatchCount(2)
                 .WithLocusMismatchB(PGroupB, PGroupB, 2)
-                .WithLocusMismatchDRB1(PGroupDrb1, PGroupDrb1, 2);
+                .WithLocusMismatchDrb1(PGroupDrb1, PGroupDrb1, 2);
         }
 
         private static PotentialHlaMatchRelation HlaMatchFor(
@@ -207,7 +207,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
             var criteria = criteriaBuilder
                 .WithLocusMismatchA(PGroupA1, PGroupA2, 0)
                 .WithLocusMismatchB(PGroupB, PGroupB, 0)
-                .WithLocusMismatchDRB1(PGroupDrb1, PGroupDrb1, 0)
+                .WithLocusMismatchDrb1(PGroupDrb1, PGroupDrb1, 0)
                 .Build();
 
             var results = (await matchingService.FindMatchesForLoci(criteria, loci)).ToList();
