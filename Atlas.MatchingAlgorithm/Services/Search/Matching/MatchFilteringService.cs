@@ -34,7 +34,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
         public bool FulfilsTotalMatchCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
         {
-            return match.TotalMatchCount >= (criteria.LociWithCriteriaSpecified().Count() * MaximumMatchCountPerLocus) - criteria.DonorMismatchCount;
+            return match.TotalMatchCount >= DesiredMatchCount(criteria);
         }
 
         public bool FulfilsSearchTypeCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
@@ -59,6 +59,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             }
         }
 
+        // ReSharper disable twice UnusedParameter.Local
         private static bool FulfilsCordSpecificCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
         {
             // There are no cord specific matching rules.
@@ -69,7 +70,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         private static bool FulfilsAdultSpecificCriteria(MatchResult match, AlleleLevelMatchCriteria criteria)
         {
             // Adult searches should return matches only where the mismatch count equals exactly the requested mismatch count
-            return match.TotalMatchCount == (criteria.LociWithCriteriaSpecified().Count() * MaximumMatchCountPerLocus) - criteria.DonorMismatchCount;
+            return match.TotalMatchCount == DesiredMatchCount(criteria);
+        }
+
+        private static int DesiredMatchCount(AlleleLevelMatchCriteria criteria)
+        {
+            return criteria.LociWithCriteriaSpecified().Count() * MaximumMatchCountPerLocus - criteria.DonorMismatchCount;
         }
     }
 }
