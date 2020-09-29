@@ -50,10 +50,10 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
         /// <summary>
         /// Returns the loci for which match results have been set
         /// </summary>
-        public IEnumerable<Locus> MatchedLoci => EnumerateValues<Locus>().Where(l => MatchDetailsForLocus(l) != null);
+        internal IEnumerable<Locus> MatchedLoci => EnumerateValues<Locus>().Where(l => MatchDetailsForLocus(l) != null);
 
         // TODO: ATLAS-714: Can we do this without making it public? Need to allow for nulls for mismatches that weren't populated by later locus
-        public LociInfo<LocusMatchDetails> MatchDetails { get; set; } = new LociInfo<LocusMatchDetails>();
+        public LociInfo<LocusMatchDetails> MatchDetails { get; private set; } = new LociInfo<LocusMatchDetails>();
 
         // As this class is populated gradually over time, this is used to indicate when we've populated all matching data we plan to
         // Until then, accessing certain null values will throw exceptions, on the assumption they are not yet populated
@@ -64,33 +64,14 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
             var matchDetails = MatchDetails.GetLocus(locus);
             if (matchDetails == null && !isMatchingDataFullyPopulated)
             {
+                // If not fully populated, consider the locus a mismatch. We can only assume that null = not matched once result is finalised. 
+                // This case can occur in e.g. 8/10 searches, when a locus can be a full mismatch - donors that match at e.g. B but not A would have a null locus match details for A, as they were not matched during that locus' matching request. 
                 return new LocusMatchDetails();
-                // throw new Exception($"Attempted to access match details for locus {locus} before they were generated");
             }
 
             return matchDetails;
         }
 
-        public void UpdatePositionPairsForLocus(Locus locus, LocusPosition searchPosition, LocusPosition matchingPosition)
-        {
-            var positionPair = (searchPosition, matchingPosition);
-            
-            if (isMatchingDataFullyPopulated)
-            {
-                throw new ReadOnlyException("Matching data cannot be changed after it has been marked as fully populated");
-            }
-
-            var matchDetails = MatchDetails.GetLocus(locus);
-            if (matchDetails == null)
-            {
-                SetMatchDetailsForLocus(locus, new LocusMatchDetails{ PositionPairs = new HashSet<(LocusPosition, LocusPosition)>{ positionPair}});
-            }
-            else
-            {
-                matchDetails.PositionPairs.Add(positionPair);
-            }
-        }
-        
         public void SetMatchDetailsForLocus(Locus locus, LocusMatchDetails locusMatchDetails)
         {
             if (isMatchingDataFullyPopulated)
@@ -105,6 +86,12 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
 
         public int TypedLociCount => DonorInfo.HlaNames.Reduce((_, hla, count) => hla.Position1And2NotNull() ? count + 1 : count, 0);
 
+        /// <summary>
+        /// Ensures that any loci that were searched for, but have null values, are set to 0 match results, to distinguish them from un-searched loci.
+        ///
+        /// Converts nulls to empty search results at specified loci.
+        /// </summary>
+        /// <param name="loci">Searched loci.</param>
         public void PopulateMismatches(IEnumerable<Locus> loci)
         {
             foreach (var locus in loci)
