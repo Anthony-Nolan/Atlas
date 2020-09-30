@@ -60,7 +60,7 @@ namespace Atlas.Common.Sql
 
             const string idColumnName = "id";
 
-            var joinString = $"RIGHT JOIN {tempTableName} t ON t.{idColumnName} = {filteredTableAlias}.{filteredColumnName}";
+            var joinString = $"RIGHT JOIN {tempTableName} ON {tempTableName}.{idColumnName} = {filteredTableAlias}.{filteredColumnName}";
 
             async Task TableFactory(SqlConnection connection)
             {

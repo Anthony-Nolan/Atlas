@@ -166,7 +166,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                         ? $@"INNER JOIN Donors d ON {selectDonorIdStatement} = d.DonorId AND d.DonorType = {(int) filteringOptions.DonorType}"
                         : "";
 
-                    var donorIdTempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("m", "DonorId", filteringOptions.DonorIds);
+                    var donorIdTempTableJoinConfig =
+                        SqlTempTableFiltering.PrepareTempTableFiltering("m", "DonorId", filteringOptions.DonorIds, "DonorIds");
+                    var pGroups1TempTableJoinConfig =
+                        SqlTempTableFiltering.PrepareTempTableFiltering("m", "PGroup_Id", pGroups.Position1, "PGroups1");
+                    var pGroups2TempTableJoinConfig =
+                        SqlTempTableFiltering.PrepareTempTableFiltering("m", "PGroup_Id", pGroups.Position2, "PGroups2");
 
                     var donorIdTempTableJoin = filteringOptions.ShouldFilterOnDonorIds ? donorIdTempTableJoinConfig.FilteredJoinQueryString : "";
 
@@ -179,7 +184,7 @@ FROM
 SELECT m.DonorId as DonorId1, TypePosition as TypePosition1
 FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
 {donorIdTempTableJoin}
-WHERE m.PGroup_Id IN {pGroups.Position1.ToInClause()}
+{pGroups1TempTableJoinConfig.FilteredJoinQueryString}
 ) as m_1
 
 {joinType} JOIN 
@@ -187,7 +192,7 @@ WHERE m.PGroup_Id IN {pGroups.Position1.ToInClause()}
 SELECT m.DonorId as DonorId2, TypePosition as TypePosition2
 FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
 {donorIdTempTableJoin}
-WHERE m.PGroup_Id IN {pGroups.Position2.ToInClause()} 
+{pGroups2TempTableJoinConfig.FilteredJoinQueryString}
 ) as m_2
 ON DonorId1 = DonorId2
 
@@ -199,11 +204,11 @@ ORDER BY DonorId
                     {
                         if (filteringOptions.DonorIds != null)
                         {
-                            using (logger.RunTimed($"Creating donor id temp table - locus {locus}"))
-                            {
-                                await donorIdTempTableJoinConfig.BuildTempTableFactory(conn);
-                            }
+                            await donorIdTempTableJoinConfig.BuildTempTableFactory(conn);
                         }
+
+                        await pGroups1TempTableJoinConfig.BuildTempTableFactory(conn);
+                        await pGroups2TempTableJoinConfig.BuildTempTableFactory(conn);
 
                         // This is streamed from the database via `buffered: false` - this allows us to minimise our memory footprint, by not loading
                         // all donors into memory at once, and filtering as we go. 
@@ -254,7 +259,7 @@ ORDER BY DonorId
             {
                 return new List<int>();
             }
-            
+
             var donorIdTempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("d", "DonorId", donorIds);
 
 
