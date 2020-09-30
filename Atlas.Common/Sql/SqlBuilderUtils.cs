@@ -8,26 +8,30 @@ namespace Atlas.Common.Sql
     {
         public static string ToInClause(this IEnumerable<string> values)
         {
-            return $"({values.StringJoin(",")})";
+            return $"({values.Select(x => $"'{x}'").StringJoin(",")})";
         }
 
-        public static string ToInClause<T>(this IEnumerable<T> values)
+        public static string ToInClause(this IEnumerable<int> values)
         {
-            return values.Select(v => v.ToString()).ToInClause();
+            return $"({values.Select(x => x.ToString()).StringJoin(",")})";
         }
 
         public static string ToJoinBasedInClause(this IEnumerable<string> values, string joinType = "")
         {
-            values = values.ToList();
+            values = values.Select(x => $"'{x}'").ToList();
             return @$"{joinType} JOIN (
                 SELECT {values.FirstOrDefault()} AS PGroupId
                 {(values.Count() > 1 ? "UNION ALL SELECT" : "")} {string.Join(" UNION ALL SELECT ", values.Skip(1))}
             )";
         }
 
-        public static string ToJoinBasedInClause<T>(this IEnumerable<T> values, string joinType = "")
+        public static string ToJoinBasedInClause(this IEnumerable<int> values, string joinType = "")
         {
-            return values.Select(v => v.ToString()).ToJoinBasedInClause();
+            values = values.ToList();
+            return @$"{joinType} JOIN (
+                SELECT {values.FirstOrDefault()} AS PGroupId
+                {(values.Count() > 1 ? "UNION ALL SELECT" : "")} {string.Join(" UNION ALL SELECT ", values.Skip(1))}
+            )";
         }
     }
 }

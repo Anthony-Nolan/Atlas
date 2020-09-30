@@ -41,7 +41,7 @@ namespace Atlas.MatchingAlgorithm.Common.Models.SearchResults
         /// <summary>
         /// Lazily populated sets of known pairs of positions. Once fully populated, can be used to determine the MatchCount.
         ///
-        /// Search : Matching (i.e. Patient: Donor)
+        /// (Search, Matching) [i.e. (Patient, Donor)]
         /// </summary>
         public HashSet<(LocusPosition, LocusPosition)> PositionPairs { get; set; } = new HashSet<(LocusPosition, LocusPosition)>();
     }

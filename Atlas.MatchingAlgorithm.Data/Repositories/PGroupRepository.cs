@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Sql;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Data.Helpers;
 using LoggingStopwatch;
@@ -77,10 +78,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
             var sql = $@"
 SELECT p.Id FROM PGroupNames p
-WHERE p.Name IN ({pGroupNames.Select(name => $"'{name}'").StringJoin(", ")}) 
+WHERE p.Name IN {pGroupNames.ToInClause()} 
 ";
 
-            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 return await conn.QueryAsync<int>(sql, commandTimeout: 300);
             }

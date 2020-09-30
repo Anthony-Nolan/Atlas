@@ -1,4 +1,6 @@
-﻿using Atlas.Common.GeneticData;
+﻿using System;
+using System.Collections.Generic;
+using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
@@ -23,10 +25,17 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
 
         public MatchResultBuilder WithMatchCountAtLocus(Locus locus, int matchCount)
         {
-            matchResult.SetMatchDetailsForLocus(locus, new LocusMatchDetails
+            var locusMatchDetails = matchResult.MatchDetails.GetLocus(locus) ?? new LocusMatchDetails();
+
+            locusMatchDetails.PositionPairs = matchCount switch
             {
-                // MatchCount = matchCount
-            });
+                0 => new HashSet<(LocusPosition, LocusPosition)>(),
+                1 => new HashSet<(LocusPosition, LocusPosition)> {(LocusPosition.One, LocusPosition.One)},
+                2 => new HashSet<(LocusPosition, LocusPosition)> {(LocusPosition.One, LocusPosition.One), (LocusPosition.Two, LocusPosition.Two)},
+                _ => throw new ArgumentOutOfRangeException(nameof(matchCount))
+            };
+
+            matchResult.SetMatchDetailsForLocus(locus, locusMatchDetails);
             return this;
         }
 

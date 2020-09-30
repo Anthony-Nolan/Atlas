@@ -264,7 +264,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 {
                     // Cloud tables are cached for performance reasons
                     var dictionaryCacheControl = hlaMetadataDictionaryFactory.BuildCacheControl(hlaNomenclatureVersion);
-                    // await dictionaryCacheControl.PreWarmAllCaches();
+                    await dictionaryCacheControl.PreWarmAllCaches();
                 }
 
                 using (logger.RunTimed("HLA PROCESSOR: Inserting new P-Groups to database", LogLevel.Info, true))

@@ -26,7 +26,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
     public interface IDonorSearchRepository
     {
         /// <summary>
-        /// Returns donor matches at a given locus matching the search criteria
+        /// Returns donor matches at a given locus matching the search criteria.
+        ///
+        /// Returns objects of the type <see cref="PotentialHlaMatchRelation"/>, which is a relationship for a specific pair of PGroups for the donor/patient.
+        /// e.g. stating that the patient's hla at position 1 matches the donor's at position 2.
+        ///
+        /// As such multiple relations can be returned per donor. Donor relations returned by this method must be grouped - i.e. once a relation is seen
+        /// for a donor in the resulting enumerable, if any other relations exist for that donor, they must be returned *before* any relations for other donors.
+        ///
+        /// This can be achieved via `ORDER BY` statements in the SQL requests. 
         /// </summary>
         IAsyncEnumerable<PotentialHlaMatchRelation> GetDonorMatchesAtLocus(
             Locus locus,

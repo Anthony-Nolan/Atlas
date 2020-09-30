@@ -1,5 +1,4 @@
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
