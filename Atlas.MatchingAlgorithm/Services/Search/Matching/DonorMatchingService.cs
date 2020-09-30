@@ -171,7 +171,6 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 .WhereAsync(result => allLoci.All(l => matchFilteringService.FulfilsPerLocusMatchCriteria(result, criteria, l)));
         }
 
-
         private static async IAsyncEnumerable<MatchResult> ConsolidateResults(
             Locus locus,
             IAsyncEnumerable<(int, LocusMatchDetails)> relationEnumerator,

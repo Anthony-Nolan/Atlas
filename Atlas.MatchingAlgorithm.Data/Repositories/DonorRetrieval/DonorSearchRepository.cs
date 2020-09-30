@@ -1,7 +1,5 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
-using Atlas.MatchingAlgorithm.Client.Models.Donors;
-using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.Matching;
 using Atlas.MatchingAlgorithm.Data.Helpers;
@@ -13,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData.PhenotypeInfo;
@@ -44,7 +41,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 
     public class DonorSearchRepository : Repository, IDonorSearchRepository
     {
-        private const int DonorIdBatchSize = 5000;
+        // TODO: ATLAS-714: Make this configurable / see if it's even worthwhile, or whether the outer batch is enough
+        private const int DonorIdBatchSize = 10_000_000;
 
         private readonly ILogger logger;
 
@@ -92,40 +90,20 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                     }
                 }
 
-                // This is explicitly not an else if! We need to return untyped donors *in addition to* matching donors
-                // TODO: ATLAS-714: Consider this carefully - I think this means we're performing SQL queries too many times?
-                if (donorIds.Count > DonorIdBatchSize * 5)
+                logger.SendTrace($"Pre-filtering by Donor Id. Locus {locus}. {donorIds.Count} donors in batches of {DonorIdBatchSize}",
+                    LogLevel.Verbose);
+                foreach (var donorBatch in donorIds.Batch(DonorIdBatchSize))
                 {
-                    logger.SendTrace(
-                        $"{donorIds.Count} Donor Ids available for pre-filtering, but too many for DB - filtering in C#. Locus {locus}",
-                        LogLevel.Verbose
-                    );
-                    var options = new MatchingFilteringOptions {DonorIds = null, DonorType = filteringOptions.DonorType};
+                    var batchOptions = new MatchingFilteringOptions
+                    {
+                        DonorType = filteringOptions.DonorType,
+                        DonorIds = Enumerable.ToHashSet(donorBatch),
+                    };
+                    var batchResults = MatchAtLocus(locus, batchOptions, pGroups, criteria.MismatchCount == 0);
 
-                    var results = MatchAtLocus(locus, options, pGroups, criteria.MismatchCount == 0)
-                        .Where(m => donorIds.Contains(m.DonorId));
-
-                    await foreach (var result in results)
+                    await foreach (var result in batchResults)
                     {
                         yield return result;
-                    }
-                }
-                else
-                {
-                    logger.SendTrace($"Pre-filtering by Donor Id. Locus {locus}", LogLevel.Verbose);
-                    foreach (var donorBatch in donorIds.Batch(DonorIdBatchSize))
-                    {
-                        var batchOptions = new MatchingFilteringOptions
-                        {
-                            DonorType = filteringOptions.DonorType,
-                            DonorIds = Enumerable.ToHashSet(donorBatch),
-                        };
-                        var batchResults = MatchAtLocus(locus, batchOptions, pGroups, criteria.MismatchCount == 0);
-
-                        await foreach (var result in batchResults)
-                        {
-                            yield return result;
-                        }
                     }
                 }
             }
@@ -188,9 +166,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                         ? $@"INNER JOIN Donors d ON {selectDonorIdStatement} = d.DonorId AND d.DonorType = {(int) filteringOptions.DonorType}"
                         : "";
 
-                    var donorIdFilter = filteringOptions.ShouldFilterOnDonorIds
-                        ? $"AND m.DonorId IN {filteringOptions.DonorIds.ToInClause()}"
-                        : "";
+                    var donorIdTempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("m", "DonorId", filteringOptions.DonorIds);
+
+                    var donorIdTempTableJoin = filteringOptions.ShouldFilterOnDonorIds ? donorIdTempTableJoinConfig.FilteredJoinQueryString : "";
 
                     var joinType = mustBeDoubleMatch ? "INNER" : "FULL OUTER";
 
@@ -200,16 +178,16 @@ FROM
 (
 SELECT m.DonorId as DonorId1, TypePosition as TypePosition1
 FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
+{donorIdTempTableJoin}
 WHERE m.PGroup_Id IN {pGroups.Position1.ToInClause()}
-{donorIdFilter}
 ) as m_1
 
 {joinType} JOIN 
 (
 SELECT m.DonorId as DonorId2, TypePosition as TypePosition2
 FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
+{donorIdTempTableJoin}
 WHERE m.PGroup_Id IN {pGroups.Position2.ToInClause()} 
-{donorIdFilter}
 ) as m_2
 ON DonorId1 = DonorId2
 
@@ -217,9 +195,16 @@ ON DonorId1 = DonorId2
 
 ORDER BY DonorId
 ";
-
                     await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
                     {
+                        if (filteringOptions.DonorIds != null)
+                        {
+                            using (logger.RunTimed($"Creating donor id temp table - locus {locus}"))
+                            {
+                                await donorIdTempTableJoinConfig.BuildTempTableFactory(conn);
+                            }
+                        }
+
                         // This is streamed from the database via `buffered: false` - this allows us to minimise our memory footprint, by not loading
                         // all donors into memory at once, and filtering as we go. 
                         var matches = conn.Query<DonorLocusMatch>(sql, commandTimeout: 3600, buffered: false);
@@ -234,7 +219,7 @@ ORDER BY DonorId
 
         private async Task<IEnumerable<PotentialHlaMatchRelation>> GetResultsForDonorsUntypedAtLocus(Locus locus, IList<int> donorIds)
         {
-            using (logger.RunTimed($"Fetching untyped Donor IDs at Locus: {locus}"))
+            using (logger.RunTimed($"Fetched untyped Donor IDs at Locus: {locus}"))
             {
                 var untypedDonorIds = await GetIdsOfDonorsUntypedAtLocus(locus, donorIds);
                 return untypedDonorIds.SelectMany(id => new[] {LocusPosition.One, LocusPosition.Two}.Select(
@@ -269,25 +254,29 @@ ORDER BY DonorId
             {
                 return new List<int>();
             }
+            
+            var donorIdTempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("d", "DonorId", donorIds);
+
 
             var sql = $@"
                 SELECT DonorId FROM Donors d 
-                WHERE d.DonorId IN {donorIds.ToInClause()} 
-                AND {DonorHlaColumnAtLocus(locus, TypePosition.One)} IS NULL 
+                {donorIdTempTableJoinConfig.FilteredJoinQueryString}
+                WHERE {DonorHlaColumnAtLocus(locus, TypePosition.One)} IS NULL 
                 AND {DonorHlaColumnAtLocus(locus, TypePosition.Two)} IS NULL
                 ORDER BY DonorId
                 ";
 
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
+                await donorIdTempTableJoinConfig.BuildTempTableFactory(conn);
                 return await conn.QueryAsync<int>(sql, commandTimeout: 1800);
             }
         }
 
-        private static string DonorHlaColumnAtLocus(Locus locus, TypePosition position)
-        {
-            var positionString = position == TypePosition.One ? "1" : "2";
-            return $"{locus.ToString().ToUpper()}_{positionString}";
-        }
+        private static string DonorHlaColumnAtLocus(Locus locus, TypePosition position) => $"{locus.ToString().ToUpper()}_{PositionString(position)}";
+
+        private static string DonorIdTempTableName(LocusPosition position) => $"temp-donor-ids-pos-{position}";
+
+        private static string PositionString(TypePosition position) => position == TypePosition.One ? "1" : "2";
     }
 }
