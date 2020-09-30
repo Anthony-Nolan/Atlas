@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
@@ -14,7 +15,7 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
 
         public MatchResultBuilder()
         {
-            matchResult = new MatchResult
+            matchResult = new MatchResult(IncrementingIdGenerator.NextIntId())
             {
                 DonorInfo = new DonorInfoWithExpandedHla
                 {

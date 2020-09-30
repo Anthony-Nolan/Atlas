@@ -93,6 +93,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                 }
 
                 // This is explicitly not an else if! We need to return untyped donors *in addition to* matching donors
+                // TODO: ATLAS-714: Consider this carefully - I think this means we're performing SQL queries too many times?
                 if (donorIds.Count > DonorIdBatchSize * 5)
                 {
                     logger.SendTrace(

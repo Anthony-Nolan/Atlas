@@ -53,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         {
             using (searchLogger.RunTimed("Matching timing: Phase 1 complete"))
             {
-                var matches = await donorMatchingService.FindMatchesForLoci(criteria);
+                var matches = await donorMatchingService.FindMatchingDonors(criteria);
                 searchLogger.SendTrace($"Matching Phase 1: Found {matches.Count} donors.");
                 return matches;
             }

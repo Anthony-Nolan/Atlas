@@ -24,7 +24,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         [Test]
         public void IsAvailableForSearch_MatchIsAvailableForSearch_ReturnsTrue()
         {
-            var match = new MatchResult
+            var match = new MatchResult(default)
             {
                 DonorInfo = new DonorInfo
                 {
@@ -40,7 +40,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         [Test]
         public void IsAvailableForSearch_MatchIsUnavailableForSearch_ReturnsFalse()
         {
-            var match = new MatchResult
+            var match = new MatchResult(default)
             {
                 DonorInfo = new DonorInfo
                 {
@@ -56,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         [Test]
         public void FulfilsPerLocusMatchCriteria_WithFewerMismatchesThanSpecified_ReturnsTrue()
         {
-            var match = new MatchResult();
+            var match = new MatchResult(default);
             const Locus locus = Locus.B;
             match.SetMatchDetailsForLocus(locus, LocusMatchDetailsBuilder.New.WithDoubleMatch());
             var criteria = new AlleleLevelMatchCriteriaBuilder()
@@ -71,7 +71,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         [Test]
         public void FulfilsPerLocusMatchCriteria_WithAsManyMismatchesAsSpecified_ReturnsTrue()
         {
-            var match = new MatchResult();
+            var match = new MatchResult(default);
             const Locus locus = Locus.B;
             match.SetMatchDetailsForLocus(locus, LocusMatchDetailsBuilder.New.WithSingleMatch());
             var criteria = new AlleleLevelMatchCriteriaBuilder()
@@ -86,7 +86,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         [Test]
         public void FulfilsPerLocusMatchCriteria_WithMoreMismatchesThanSpecified_ReturnsFalse()
         {
-            var match = new MatchResult();
+            var match = new MatchResult(default);
             const Locus locus = Locus.B;
             match.SetMatchDetailsForLocus(locus, LocusMatchDetailsBuilder.New.WithSingleMatch());
             var criteria = new AlleleLevelMatchCriteriaBuilder()
@@ -101,7 +101,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         [Test]
         public void FulfilsTotalMatchCriteria_WithMoreMismatchesAtASingleLocusThanSpecifiedOverall_ReturnsFalse()
         {
-            var match = new MatchResult();
+            var match = new MatchResult(default);
             match.SetMatchDetailsForLocus(Locus.B, LocusMatchDetailsBuilder.New.WithSingleMatch());
             var criteria = new AlleleLevelMatchCriteriaBuilder().WithDonorMismatchCount(0).WithRequiredLociMatchCriteria(2).Build();
 
@@ -113,7 +113,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         [Test]
         public void FulfilsTotalMatchCriteria_WithMoreMismatchesAcrossMultipleLociThanSpecifiedOverall_ReturnsFalse()
         {
-            var match = new MatchResult();
+            var match = new MatchResult(default);
             match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch());
             match.SetMatchDetailsForLocus(Locus.B, LocusMatchDetailsBuilder.New.WithSingleMatch());
             match.SetMatchDetailsForLocus(Locus.Drb1, LocusMatchDetailsBuilder.New.WithSingleMatch());
@@ -133,7 +133,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         [Test]
         public void FulfilsTotalMatchCriteria_WithMoreMismatchesAcrossAllLociThanSpecifiedOverall_ReturnsFalse()
         {
-            var match = new MatchResult();
+            var match = new MatchResult(default);
             match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch());
             match.SetMatchDetailsForLocus(Locus.B, LocusMatchDetailsBuilder.New.WithSingleMatch());
             match.SetMatchDetailsForLocus(Locus.Drb1, LocusMatchDetailsBuilder.New.WithSingleMatch());
@@ -157,7 +157,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         [Test]
         public void FulfilsTotalMatchCriteria_WithFewerTotalMismatchesThanSpecifiedOverall_ReturnsTrue()
         {
-            var match = new MatchResult();
+            var match = new MatchResult(default);
             match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch());
             match.SetMatchDetailsForLocus(Locus.B, LocusMatchDetailsBuilder.New.WithSingleMatch());
             match.SetMatchDetailsForLocus(Locus.Drb1, LocusMatchDetailsBuilder.New.WithSingleMatch());
@@ -174,7 +174,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         [Test]
         public void FulfilsTotalMatchCriteria_WithAsManyTotalMismatchesAsSpecifiedOverall_ReturnsTrue()
         {
-            var match = new MatchResult();
+            var match = new MatchResult(default);
             match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch());
             match.SetMatchDetailsForLocus(Locus.B, LocusMatchDetailsBuilder.New.WithSingleMatch());
             match.SetMatchDetailsForLocus(Locus.Drb1, LocusMatchDetailsBuilder.New.WithSingleMatch());
@@ -192,7 +192,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         public void FulfilsSearchTypeCriteria_ForMatchOfSpecifiedType_ReturnsTrue()
         {
             const DonorType donorType = DonorType.Cord;
-            var match = new MatchResult {DonorInfo = new DonorInfo {DonorType = donorType}};
+            var match = new MatchResult(default) {DonorInfo = new DonorInfo {DonorType = donorType}};
             var criteria = new AlleleLevelMatchCriteria {SearchType = donorType};
 
             var result = matchFilteringService.FulfilsSearchTypeCriteria(match, criteria);
@@ -205,7 +205,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         {
             const DonorType donorType = DonorType.Cord;
             const DonorType searchType = DonorType.Adult;
-            var match = new MatchResult {DonorInfo = new DonorInfo {DonorType = donorType}};
+            var match = new MatchResult(default) {DonorInfo = new DonorInfo {DonorType = donorType}};
             var criteria = new AlleleLevelMatchCriteria {SearchType = searchType};
 
             var result = matchFilteringService.FulfilsSearchTypeCriteria(match, criteria);
@@ -218,7 +218,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         {
             const DonorType searchType = DonorType.Adult;
             const Locus locus = Locus.A;
-            var match = new MatchResult {DonorInfo = new DonorInfo {DonorType = searchType}};
+            var match = new MatchResult(default) {DonorInfo = new DonorInfo {DonorType = searchType}};
             match.SetMatchDetailsForLocus(locus, LocusMatchDetailsBuilder.New.WithSingleMatch());
             var criteria = new AlleleLevelMatchCriteriaBuilder()
                 .WithSearchType(searchType)
@@ -235,7 +235,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         public void FulfilsSearchTypeSpecificCriteria_ForAdultSearch_WithFewerMismatchesThanTotalMismatchCount_ReturnsFalse()
         {
             const DonorType searchType = DonorType.Adult;
-            var match = new MatchResult {DonorInfo = new DonorInfo {DonorType = searchType}};
+            var match = new MatchResult(default) {DonorInfo = new DonorInfo {DonorType = searchType}};
             match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.Build());
             var criteria = new AlleleLevelMatchCriteria
             {
@@ -252,7 +252,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         public void FulfilsSearchTypeSpecificCriteria_ForCordSearch_WithExactTotalMismatchCount_ReturnsTrue()
         {
             const DonorType searchType = DonorType.Cord;
-            var match = new MatchResult {DonorInfo = new DonorInfo {DonorType = searchType}};
+            var match = new MatchResult(default) {DonorInfo = new DonorInfo {DonorType = searchType}};
             match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.WithSingleMatch());
             var criteria = new AlleleLevelMatchCriteria
             {
@@ -269,7 +269,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search.Matching
         public void FulfilsSearchTypeSpecificCriteria_ForCordSearch_WithFewerMismatchesThanTotalMismatchCount_ReturnsTrue()
         {
             const DonorType searchType = DonorType.Cord;
-            var match = new MatchResult {DonorInfo = new DonorInfo {DonorType = searchType}};
+            var match = new MatchResult(default) {DonorInfo = new DonorInfo {DonorType = searchType}};
             match.SetMatchDetailsForLocus(Locus.A, LocusMatchDetailsBuilder.New.Build());
             var criteria = new AlleleLevelMatchCriteria
             {

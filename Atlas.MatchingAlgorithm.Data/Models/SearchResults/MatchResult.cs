@@ -11,6 +11,11 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
 {
     public class MatchResult
     {
+        public MatchResult(int donorId)
+        {
+            DonorId = donorId;
+        }
+        
         private DonorInfo.DonorInfo donorInfo;
 
         #region Partial donor information used in matching
@@ -92,7 +97,7 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
         /// Converts nulls to empty search results at specified loci.
         /// </summary>
         /// <param name="loci">Searched loci.</param>
-        public void PopulateMismatches(IEnumerable<Locus> loci)
+        public MatchResult PopulateMismatches(IEnumerable<Locus> loci)
         {
             foreach (var locus in loci)
             {
@@ -101,6 +106,8 @@ namespace Atlas.MatchingAlgorithm.Data.Models.SearchResults
                     MatchDetails = MatchDetails.SetLocus(locus, new LocusMatchDetails());
                 }
             }
+
+            return this;
         }
     }
 }

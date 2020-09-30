@@ -35,17 +35,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
     {
         private readonly IDonorSearchRepository donorSearchRepository;
         private readonly IDatabaseFilteringAnalyser databaseFilteringAnalyser;
-        private readonly ILogger searchLogger;
         private readonly IPGroupRepository pGroupRepository;
 
-        public PerLocusDonorMatchingService(
-            IActiveRepositoryFactory repositoryFactory,
-            ILogger searchLogger,
-            IDatabaseFilteringAnalyser databaseFilteringAnalyser)
+        public PerLocusDonorMatchingService(IActiveRepositoryFactory repositoryFactory, IDatabaseFilteringAnalyser databaseFilteringAnalyser)
         {
             donorSearchRepository = repositoryFactory.GetDonorSearchRepository();
             pGroupRepository = repositoryFactory.GetPGroupRepository();
-            this.searchLogger = searchLogger;
             this.databaseFilteringAnalyser = databaseFilteringAnalyser;
         }
 
