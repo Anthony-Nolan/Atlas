@@ -10,6 +10,7 @@ using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Common.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Helpers;
+using Atlas.MatchingAlgorithm.Settings;
 using Dasync.Collections;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
@@ -34,6 +35,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         private readonly IMatchFilteringService matchFilteringService;
         private readonly IMatchCriteriaAnalyser matchCriteriaAnalyser;
         private readonly IPerLocusDonorMatchingService perLocusDonorMatchingService;
+        private readonly MatchingConfigurationSettings matchingConfigurationSettings;
         private readonly ILogger searchLogger;
 
         public DonorMatchingService(
@@ -41,12 +43,14 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchingAlgorithmSearchLogger searchLogger,
             IMatchCriteriaAnalyser matchCriteriaAnalyser,
-            IPerLocusDonorMatchingService perLocusDonorMatchingService)
+            IPerLocusDonorMatchingService perLocusDonorMatchingService,
+            MatchingConfigurationSettings matchingConfigurationSettings)
         {
             this.matchFilteringService = matchFilteringService;
             this.searchLogger = searchLogger;
             this.matchCriteriaAnalyser = matchCriteriaAnalyser;
             this.perLocusDonorMatchingService = perLocusDonorMatchingService;
+            this.matchingConfigurationSettings = matchingConfigurationSettings;
         }
 
         public async Task<IDictionary<int, MatchResult>> FindMatchingDonors(AlleleLevelMatchCriteria criteria)
@@ -114,10 +118,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 }
                 else
                 {
-                    // TODO: ATLAS-714: Make batch size configurable - allow finer control over performance vs. memory 
                     // Batching is implemented, as each SQL query needs a concrete list of filtered IDs, rather than a stream. 
                     // This batch size control a balance between performance and memory footprint - larger batches will lead to a higher memory footprint, but fewer SQL connections (and therefore faster searches)
-                    await foreach (var resultBatch in previousLociResultStream.Batch(250_000))
+                    await foreach (var resultBatch in previousLociResultStream.Batch(matchingConfigurationSettings.MatchingBatchSize))
                     {
                         var donorBatch = resultBatch.ToDictionary(r => r.DonorId, r => r);
                         var donorIds = donorBatch.Keys.ToHashSet();
@@ -166,8 +169,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         {
             var allLoci = matchedLoci.Append(locus).ToHashSet();
             var mustMatchAtLocus = criteria.LocusCriteria.GetLocus(locus).MismatchCount < 2;
-            
-            return ConsolidateResults(locus, relationEnumerator,mustMatchAtLocus, existingResults)
+
+            return ConsolidateResults(locus, relationEnumerator, mustMatchAtLocus, existingResults)
                 .WhereAsync(result => allLoci.All(l => matchFilteringService.FulfilsPerLocusMatchCriteria(result, criteria, l)));
         }
 

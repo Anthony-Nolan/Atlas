@@ -8,8 +8,6 @@ using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.Models;
 using Atlas.Functions.Services;
-using Atlas.MatchingAlgorithm.Common.Models;
-using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Microsoft.Azure.WebJobs;
@@ -19,9 +17,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
 {
     public class SearchActivityFunctions
     {
-        // Matching Algorithm Services
-        private readonly ISearchRunner searchRunner;
-
         // Donor Import services
         private readonly IDonorReader donorReader;
 
@@ -34,8 +29,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         private readonly IMatchingResultsDownloader matchingResultsDownloader;
 
         public SearchActivityFunctions(
-            // Matching Algorithm Services
-            ISearchRunner searchRunner,
             // Donor Import services
             IDonorReader donorReader,
             // Match Prediction services
@@ -44,7 +37,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             ISearchCompletionMessageSender searchCompletionMessageSender,
             IMatchingResultsDownloader matchingResultsDownloader)
         {
-            this.searchRunner = searchRunner;
             this.donorReader = donorReader;
             this.matchPredictionAlgorithm = matchPredictionAlgorithm;
             this.matchPredictionInputBuilder = matchPredictionInputBuilder;
@@ -60,21 +52,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             return new TimedResultSet<MatchingAlgorithmResultSet>
             {
                 ElapsedTime = matchingResultsNotification.ElapsedTime,
-                ResultSet = results
-            };
-        }
-
-        [FunctionName(nameof(RunMatchingAlgorithm))]
-        public async Task<TimedResultSet<MatchingAlgorithmResultSet>> RunMatchingAlgorithm([ActivityTrigger] IdentifiedSearchRequest searchRequest)
-        {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            var results = await searchRunner.RunSearch(searchRequest);
-
-            return new TimedResultSet<MatchingAlgorithmResultSet>
-            {
-                ElapsedTime = stopwatch.Elapsed,
-                FinishedTimeUtc = DateTime.UtcNow,
                 ResultSet = results
             };
         }

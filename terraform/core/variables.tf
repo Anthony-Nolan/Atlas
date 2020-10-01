@@ -106,6 +106,12 @@ variable "MATCH_PREDICTION_DATABASE_USERNAME" {
   default = "match_prediction"
 }
 
+variable "MATCHING_BATCH_SIZE" {
+  type        = number
+  default     = 250000
+  description = "Batch size at which donors will be iterated in the matching algorithm. Larger = quicker, but higher memory footprint."
+}
+
 variable "MATCHING_DATABASE_TRANSIENT_TIMEOUT" {
   type        = number
   default     = 1800

@@ -27,24 +27,6 @@ namespace Atlas.Functions
             RegisterSettings(builder.Services);
             RegisterTopLevelFunctionServices(builder.Services);
 
-            // TODO: ATLAS-472: Allow registration of matching with no data refresh functionality
-            builder.Services.RegisterMatchingAlgorithm(
-                _ => new AzureAuthenticationSettings(),
-                _ => new AzureDatabaseManagementSettings(),
-                _ => new DataRefreshSettings(),
-                _ => new DonorManagementSettings(),
-                OptionsReaderFor<ApplicationInsightsSettings>(),
-                OptionsReaderFor<AzureStorageSettings>(),
-                OptionsReaderFor<HlaMetadataDictionarySettings>(),
-                OptionsReaderFor<MacDictionarySettings>(),
-                OptionsReaderFor<MessagingServiceBusSettings>(),
-                OptionsReaderFor<NotificationsServiceBusSettings>(),
-                ConnectionStringReader("Matching:Sql:Persistent"),
-                ConnectionStringReader("Matching:Sql:A"),
-                ConnectionStringReader("Matching:Sql:B"),
-                ConnectionStringReader("DonorImport:Sql")
-            );
-
             builder.Services.RegisterMacDictionary(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MacDictionarySettings>()

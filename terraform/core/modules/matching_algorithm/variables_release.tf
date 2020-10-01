@@ -77,6 +77,11 @@ variable "IP_RESTRICTION_SETTINGS" {
   default = []
 }
 
+variable "MATCHING_BATCH_SIZE" {
+  type = number
+}
+
+
 variable "MESSAGING_BUS_DONOR_BATCH_SIZE" {
   type = number
 }
