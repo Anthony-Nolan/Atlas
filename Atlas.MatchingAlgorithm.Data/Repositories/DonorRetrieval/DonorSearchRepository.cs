@@ -183,9 +183,12 @@ ORDER BY DonorId
                             await donorIdTempTableJoinConfig.BuildTempTableFactory(conn);
                         }
 
-                        // This is streamed from the database via `buffered: false` - this allows us to minimise our memory footprint, by not loading
-                        // all donors into memory at once, and filtering as we go. 
-                        var matches = conn.Query<DonorLocusMatch>(sql, commandTimeout: 3600, buffered: false);
+                        
+                        // This is streamed from the database via disabling buffering (the default CommandFlags value = `Buffered`).
+                        // This allows us to minimise our memory footprint, by not loading all donors into memory at once, and filtering as we go. 
+                        var commandDefinition = new CommandDefinition(sql, commandTimeout: 3600, flags: CommandFlags.None);
+
+                        var matches = await conn.QueryAsync<DonorLocusMatch>(commandDefinition);
                         foreach (var match in matches)
                         {
                             yield return match;
