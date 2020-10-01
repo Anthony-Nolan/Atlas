@@ -1,11 +1,10 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Common.Notifications;
+using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.Functions;
 using Atlas.Functions.Services;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
-using Atlas.MatchingAlgorithm.DependencyInjection;
-using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
@@ -26,6 +25,8 @@ namespace Atlas.Functions
         {
             RegisterSettings(builder.Services);
             RegisterTopLevelFunctionServices(builder.Services);
+
+            builder.Services.RegisterDonorReader(ConnectionStringReader("DonorImport:Sql"));
 
             builder.Services.RegisterMacDictionary(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
