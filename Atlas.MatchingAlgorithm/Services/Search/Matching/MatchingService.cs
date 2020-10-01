@@ -1,20 +1,21 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Data.Models.SearchResults;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Atlas.Common.ApplicationInsights.Timing;
-using Atlas.Common.Utils.Extensions;
-using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
+using Atlas.MatchingAlgorithm.Settings;
+using Dasync.Collections;
 
 namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 {
     public interface IMatchingService
     {
-        Task<IList<MatchResult>> GetMatches(AlleleLevelMatchCriteria criteria);
+        IAsyncEnumerable<MatchResult> GetMatches(AlleleLevelMatchCriteria criteria);
     }
 
     public class MatchingService : IMatchingService
@@ -23,6 +24,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         private readonly IDonorInspectionRepository donorInspectionRepository;
         private readonly IMatchFilteringService matchFilteringService;
         private readonly ILogger searchLogger;
+        private readonly MatchingConfigurationSettings matchingConfigurationSettings;
 
         public MatchingService(
             IDonorMatchingService donorMatchingService,
@@ -30,32 +32,49 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             IActiveRepositoryFactory transientRepositoryFactory,
             IMatchFilteringService matchFilteringService,
             // ReSharper disable once SuggestBaseTypeForParameter
-            IMatchingAlgorithmSearchLogger searchLogger)
+            IMatchingAlgorithmSearchLogger searchLogger, 
+            MatchingConfigurationSettings matchingConfigurationSettings)
         {
             this.donorMatchingService = donorMatchingService;
             donorInspectionRepository = transientRepositoryFactory.GetDonorInspectionRepository();
             this.matchFilteringService = matchFilteringService;
             this.searchLogger = searchLogger;
+            this.matchingConfigurationSettings = matchingConfigurationSettings;
         }
 
-        public async Task<IList<MatchResult>> GetMatches(AlleleLevelMatchCriteria criteria)
+        public async IAsyncEnumerable<MatchResult> GetMatches(AlleleLevelMatchCriteria criteria)
         {
-            var initialMatches = await PerformMatchingPhaseOne(criteria);
-            var matchesAtAllLoci = initialMatches;
-            return (await PerformMatchingPhaseTwo(criteria, matchesAtAllLoci)).Values.ToList();
+            using (searchLogger.RunTimed("Matching"))
+            {
+                var initialMatches = PerformMatchingPhaseOne(criteria);
+                var matches = PerformMatchingPhaseTwo(criteria, initialMatches);
+                var matchCount = 0;
+                await foreach (var match in matches)
+                {
+                    matchCount++;
+                    yield return match;
+                }
+                searchLogger.SendTrace($"Matched {matchCount} donors");
+            }
         }
 
         /// <summary>
         /// The first phase of matching performs the bulk of the work - it returns all donors that meet the matching criteria, at all specified loci.
         /// It must return a superset of the final matching donor set - i.e. no matching donors may exist and not be returned in this phase.
         /// </summary>
-        private async Task<IDictionary<int, MatchResult>> PerformMatchingPhaseOne(AlleleLevelMatchCriteria criteria)
+        private async IAsyncEnumerable<MatchResult> PerformMatchingPhaseOne(AlleleLevelMatchCriteria criteria)
         {
             using (searchLogger.RunTimed("Matching timing: Phase 1 complete"))
             {
                 var matches = await donorMatchingService.FindMatchingDonors(criteria);
-                searchLogger.SendTrace($"Matching Phase 1: Found {matches.Count} donors.");
-                return matches;
+                var count = 0;
+                await foreach (var match in matches)
+                {
+                    count++;
+                    yield return match;
+                }
+
+                searchLogger.SendTrace($"Matching Phase 1: Found {count} donors.");
             }
         }
 
@@ -65,30 +84,29 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         ///
         /// Any filtering performed on non-hla donor info is performed here, as well as any search-type specific criteria.  
         /// </summary>
-        private async Task<IDictionary<int, MatchResult>> PerformMatchingPhaseTwo(
-            AlleleLevelMatchCriteria criteria,
-            IDictionary<int, MatchResult> matches
-        )
+        private async IAsyncEnumerable<MatchResult> PerformMatchingPhaseTwo(AlleleLevelMatchCriteria criteria, IAsyncEnumerable<MatchResult> matches)
         {
             using (searchLogger.RunTimed("Matching timing: Phase 2 complete"))
             {
-                var filteredMatchesByMatchCriteria = matches
-                    .Where(m => matchFilteringService.FulfilsTotalMatchCriteria(m.Value, criteria))
-                    .ToDictionary(m => m.Key, m => m.Value);
+                var count = 0;
+                await foreach (var resultBatch in matches.Batch(matchingConfigurationSettings.MatchingBatchSize))
+                {
+                    var matchesWithDonorInfoPopulated = await PopulateDonorData(resultBatch.ToDictionary(x => x.DonorId, x => x));
+                    var filteredMatchesByDonorInformation = matchesWithDonorInfoPopulated
+                        .Where(m => matchFilteringService.IsAvailableForSearch(m.Value))
+                        .Where(m => matchFilteringService.FulfilsSearchTypeCriteria(m.Value, criteria))
+                        .Where(m => matchFilteringService.FulfilsSearchTypeSpecificCriteria(m.Value, criteria))
+                        .ToList();
+                    // Once finished populating match data, mark data as populated (so that null locus match data can be accessed for mapping to the api model)
+                    filteredMatchesByDonorInformation.ForEach(m => m.Value.MarkMatchingDataFullyPopulated());
+                    foreach (var result in filteredMatchesByDonorInformation)
+                    {
+                        count++;
+                        yield return result.Value;
+                    }
+                }
 
-                var matchesWithDonorInfoPopulated = await PopulateDonorData(filteredMatchesByMatchCriteria);
-
-                var filteredMatchesByDonorInformation = matchesWithDonorInfoPopulated
-                    .Where(m => matchFilteringService.IsAvailableForSearch(m.Value))
-                    .Where(m => matchFilteringService.FulfilsSearchTypeCriteria(m.Value, criteria))
-                    .Where(m => matchFilteringService.FulfilsSearchTypeSpecificCriteria(m.Value, criteria))
-                    .ToList();
-
-                // Once finished populating match data, mark data as populated (so that null locus match data can be accessed for mapping to the api model)
-                filteredMatchesByDonorInformation.ForEach(m => m.Value.MarkMatchingDataFullyPopulated());
-
-                searchLogger.SendTrace($"Matching Phase 2: Found {filteredMatchesByDonorInformation.Count} donors.");
-                return filteredMatchesByDonorInformation.ToDictionary();
+                searchLogger.SendTrace($"Matching Phase 2: Found {count} donors.");
             }
         }
 

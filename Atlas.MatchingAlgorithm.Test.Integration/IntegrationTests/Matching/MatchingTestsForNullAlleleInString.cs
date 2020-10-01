@@ -509,7 +509,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         /// </summary>
         private async Task<IEnumerable<int>> GetMatchingDonorIds(AlleleLevelMatchCriteria alleleLevelMatchCriteria)
         {
-            var results = await matchingService.GetMatches(alleleLevelMatchCriteria);
+            var results = await matchingService.GetMatches(alleleLevelMatchCriteria).ToListAsync();
             return results.Select(d => d.DonorId);
         }
 

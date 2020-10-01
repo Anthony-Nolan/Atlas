@@ -17,9 +17,9 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Scoring.Ranking
         public IEnumerable<MatchAndScoreResult> RankSearchResults(IEnumerable<MatchAndScoreResult> results)
         {
             return results
-                .OrderByDescending(r => r.ScoreResult.AggregateScoreDetails.MatchCount)
-                .ThenByDescending(r => r.ScoreResult.AggregateScoreDetails.GradeScore)
-                .ThenByDescending(r => r.ScoreResult.AggregateScoreDetails.ConfidenceScore);
+                .OrderByDescending(r => r.ScoreResult?.AggregateScoreDetails?.MatchCount)
+                .ThenByDescending(r => r.ScoreResult?.AggregateScoreDetails?.GradeScore)
+                .ThenByDescending(r => r.ScoreResult?.AggregateScoreDetails?.ConfidenceScore);
         }
     }
 }

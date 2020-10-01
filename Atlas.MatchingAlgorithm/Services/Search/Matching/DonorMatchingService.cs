@@ -27,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         /// A dictionary of PotentialSearchResults, keyed by donor id.
         /// MatchDetails will be populated only for the specified loci.
         /// </returns>
-        Task<IDictionary<int, MatchResult>> FindMatchingDonors(AlleleLevelMatchCriteria criteria);
+        Task<IAsyncEnumerable<MatchResult>> FindMatchingDonors(AlleleLevelMatchCriteria criteria);
     }
 
     internal class DonorMatchingService : IDonorMatchingService
@@ -53,7 +53,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             this.matchingConfigurationSettings = matchingConfigurationSettings;
         }
 
-        public async Task<IDictionary<int, MatchResult>> FindMatchingDonors(AlleleLevelMatchCriteria criteria)
+        public async Task<IAsyncEnumerable<MatchResult>> FindMatchingDonors(AlleleLevelMatchCriteria criteria)
         {
             var orderedLoci = matchCriteriaAnalyser.LociInMatchingOrder(criteria);
             searchLogger.SendTrace($"Will match loci in the following order: {orderedLoci.Select(l => l.ToString()).StringJoin(", ")}");
@@ -73,10 +73,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 ).Item1
                 .WhereAsync(m => matchFilteringService.FulfilsTotalMatchCriteria(m, criteria));
 
-
-            return (await System.Linq.AsyncEnumerable.ToListAsync(resultStream))
-                .Select(r => r.PopulateMismatches(orderedLoci))
-                .ToDictionary(r => r.DonorId, r => r);
+            return resultStream.SelectAsync(r => r.PopulateMismatches(orderedLoci));
         }
 
         /// <summary>
