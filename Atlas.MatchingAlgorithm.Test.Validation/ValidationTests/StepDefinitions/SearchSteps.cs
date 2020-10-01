@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
 using Atlas.MatchingAlgorithm.Common.Config;
+using Atlas.MatchingAlgorithm.Test.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Services;
@@ -212,7 +213,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             var apiResult = scenarioContext.Get<SearchAlgorithmApiResult>();
             apiResult.IsSuccess.Should().BeTrue();
 
-            apiResult.Results.MatchingAlgorithmResults.Should().Contain(r => r.AtlasDonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
+            apiResult.Results.MatchingAlgorithmResults.ShouldContainDonor(expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
         }
 
         [Then(@"the results should contain all specified donors")]
@@ -224,7 +225,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
 
             foreach (var donorId in expectedDonorProvider.GetExpectedMatchingDonorIds())
             {
-                apiResult.Results.MatchingAlgorithmResults.Should().Contain(r => r.AtlasDonorId == donorId);
+                apiResult.Results.MatchingAlgorithmResults.ShouldContainDonor(donorId);
             }
         }
 
@@ -235,7 +236,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
             var apiResult = scenarioContext.Get<SearchAlgorithmApiResult>();
             apiResult.IsSuccess.Should().BeTrue();
 
-            apiResult.Results.MatchingAlgorithmResults.Should().NotContain(r => r.AtlasDonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
+            apiResult.Results.MatchingAlgorithmResults.ShouldNotContainDonor(expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
         }
 
         [Then(@"each set of results should contain the specified donor")]
@@ -248,7 +249,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                 apiResult.ApiResult.IsSuccess.Should().BeTrue();
                 var searchResultsForPatient = apiResult.ApiResult.Results.MatchingAlgorithmResults;
                 var expectedDonorProvider = apiResult.ExpectedDonorProvider;
-                searchResultsForPatient.Should().Contain(r => r.AtlasDonorId == expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
+                searchResultsForPatient.ShouldContainDonor(expectedDonorProvider.GetExpectedMatchingDonorIds().Single());
             }
         }
 

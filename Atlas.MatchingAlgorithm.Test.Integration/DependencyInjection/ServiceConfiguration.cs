@@ -55,8 +55,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 _ => new MacDictionarySettings(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 _ => new NotificationsServiceBusSettings(),
+                _ => new MatchingConfigurationSettings {MatchingBatchSize = 250000},
                 ConnectionStringReader(PersistentSqlConnectionStringKey),
-                ConnectionStringReader(TransientASqlConnectionStringKey), 
+                ConnectionStringReader(TransientASqlConnectionStringKey),
                 ConnectionStringReader(TransientBSqlConnectionStringKey),
                 ConnectionStringReader(DonorImportSqlConnectionStringKey));
 

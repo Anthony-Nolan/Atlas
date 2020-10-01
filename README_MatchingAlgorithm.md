@@ -130,28 +130,19 @@ The matching logic is split into three parts:
 #### (a) Database level p-group matching
 
 This involves running SQL queries against the MatchingHlaAtX tables, per locus.
-Any donors with at least one match (shared p-group) at the given locus are returned.
 
-- N.B. As untyped loci are considered potential matches, running this level of matching against the C and DQB1 tables (where many donors are untyped) will result in a large number of results. It is not recommended to match on these loci in the database for this reason.
+These tables are queried in series, with the results from each locus providing a filter for the next locus, to minimise memory footprint and ensure 
+the result dataset always shrinks.
 
-These results will be filtered, such that only donors matching the mismatch criteria of all database-matched loci, plus the total mismatch criteria, are returned
+(Note there is one exception - where all three required loci and permitted to have two mismatches, e.g. in a 4/8 or 8/10 search, no single locus can 
+ensure all results are returned, so multiple loci must be queried unfiltered.)
 
-#### (b) In-memory p-group matching
+> Performance Optimisation
+>
+> There is room for optimisation here, by ensuring that the queries used are the most efficient against the dataset. 
+> It may be that some searches have different optimal queries (e.g. very ambiguous patients will have a lot of p-groups to query), and query selection could be made more dynamic 
 
-The loci that were not matched on in part (a) are now considered. We run an in memory comparison of the p-groups of all donors, removing any that do not fit the mismatch criteria at the specified locus, or where mismatches at the new locus cause the total mismatch count to be exceeded
-
-This approach is significantly slower than database filtering for large numbers of donors.
-However, as our matching tables get quite large, it can be quicker than the database query when only performed on a small number of donors.
-
-##### *Performance Optimisation*
-
-Performance can be optimised by finding the correct balance between the two matching strategies.
-
-The current theory is that the best matching strategy is to run database matching on the smaller MatchingHlaAtX tables until a small enough set of donors are returned, at which point we switch to in memory matching.
-
-However, extensive research into the best approach has yet to be performed, so the balance may need to be shifted to achieve optimal search performance.
-
-#### (c) Further filtering
+#### (b) Further filtering
 
 Finally, additional filtering is performed on the donors by e.g. donor type.
 

@@ -63,6 +63,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
+            Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
             Func<IServiceProvider, string> fetchTransientBSqlConnectionString,
@@ -75,7 +76,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchMessagingServiceBusSettings
             );
 
-            services.RegisterMatchingAlgorithmDonorManagementOnly(
+            services.RegisterMatchingAlgorithmAndDonorManagementOnly(
                 fetchApplicationInsightsSettings,
                 fetchAzureStorageSettings,
                 fetchDonorManagementSettings,
@@ -83,6 +84,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchMacDictionarySettings,
                 fetchMessagingServiceBusSettings,
                 fetchNotificationsServiceBusSettings,
+                fetchMatchingConfigurationSettings,
                 fetchPersistentSqlConnectionString,
                 fetchTransientASqlConnectionString,
                 fetchTransientBSqlConnectionString
@@ -93,7 +95,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
 
         // TODO: ATLAS-472. This is still kind of a mess. "DonorManagementOnly" registers loads of things that aren't related to Don.Mgmt.
         // But this is (temporarily) better than the alternative, given that the main registration needs to register everything for Don.Mgmt, in order to do DataRefresh.
-        public static void RegisterMatchingAlgorithmDonorManagementOnly(
+        public static void RegisterMatchingAlgorithmAndDonorManagementOnly(
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
@@ -102,16 +104,18 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
+            Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
             Func<IServiceProvider, string> fetchTransientBSqlConnectionString
         )
         {
-            services.RegisterSettingsForMatchingDonorManagement(
+            services.RegisterSettingsForMatchingAndDonorManagement(
                 fetchApplicationInsightsSettings,
                 fetchAzureStorageSettings,
                 fetchMessagingServiceBusSettings,
-                fetchNotificationsServiceBusSettings
+                fetchNotificationsServiceBusSettings,
+                fetchMatchingConfigurationSettings
             );
 
             services.RegisterMatchingAlgorithmServices(
@@ -179,7 +183,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             // Matching Services
             services.AddScoped<IMatchingService, MatchingService>();
             services.AddScoped<IDonorMatchingService, DonorMatchingService>();
-            services.AddScoped<IPreFilteredDonorMatchingService, PreFilteredDonorMatchingService>();
+            services.AddScoped<IPerLocusDonorMatchingService, PerLocusDonorMatchingService>();
             services.AddScoped<IMatchFilteringService, MatchFilteringService>();
             services.AddScoped<IMatchCriteriaAnalyser, MatchCriteriaAnalyser>();
             services.AddScoped<IDatabaseFilteringAnalyser, DatabaseFilteringAnalyser>();
@@ -281,18 +285,19 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             });
         }
 
-        private static void RegisterSettingsForMatchingDonorManagement(
+        private static void RegisterSettingsForMatchingAndDonorManagement(
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
             Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
-            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings
-        )
+            Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
+            Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings)
         {
             services.MakeSettingsAvailableForUse(fetchApplicationInsightsSettings);
             services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
             services.MakeSettingsAvailableForUse(fetchNotificationsServiceBusSettings);
+            services.MakeSettingsAvailableForUse(fetchMatchingConfigurationSettings);
         }
 
         private static void RegisterSettingsForDataRefresh(

@@ -12,8 +12,7 @@ using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.Utils.Extensions;
-using MoreLinq.Extensions;
+using Atlas.Common.Sql;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {
@@ -54,9 +53,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
             }
 
             var results = donorIds
-                .Select(id => new DonorIdWithPGroupNames { DonorId = id, PGroupNames = new PhenotypeInfo<IEnumerable<string>>() })
+                .Select(id => new DonorIdWithPGroupNames {DonorId = id, PGroupNames = new PhenotypeInfo<IEnumerable<string>>()})
                 .ToList();
-            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 // TODO NOVA-1427: Do not fetch PGroups for loci that have already been matched at the DB level
                 foreach (var locus in LocusSettings.MatchingOnlyLoci)
@@ -75,7 +74,7 @@ ON m.DonorId = DonorIds.Id
                     var pGroups = await conn.QueryAsync<DonorMatchWithName>(sql, commandTimeout: 300);
                     foreach (var donorGroups in pGroups.GroupBy(p => p.DonorId))
                     {
-                        foreach (var pGroupGroup in donorGroups.GroupBy(p => (TypePosition)p.TypePosition))
+                        foreach (var pGroupGroup in donorGroups.GroupBy(p => (TypePosition) p.TypePosition))
                         {
                             var donorResult = results.Single(r => r.DonorId == donorGroups.Key);
                             donorResult.PGroupNames = donorResult.PGroupNames.SetPosition(
@@ -93,34 +92,21 @@ ON m.DonorId = DonorIds.Id
 
         public async Task<Dictionary<int, DonorInfo>> GetDonors(IEnumerable<int> donorIds)
         {
-            const int donorIdBatchSize = 50000;
-
-            donorIds = donorIds.ToList();
-            if (!donorIds.Any())
-            {
-                return new Dictionary<int, DonorInfo>();
-            }
-
-            var results = new List<DonorInfo>();
-
-            // Batching is being used here, as SQL server's query processor is limited in the number of donor IDs it can handle in a single query.
-            foreach (var donorIdBatch in donorIds.Batch(donorIdBatchSize))
-            {
-                results.AddRange(await GetDonorInfos(donorIds));
-            }
-
-            return results.ToDictionary(d => d.DonorId, d => d);
+            donorIds = donorIds.ToHashSet().ToList();
+            return !donorIds.Any()
+                ? new Dictionary<int, DonorInfo>()
+                : (await GetDonorInfos(donorIds)).ToDictionary(d => d.DonorId, d => d);
         }
 
         private async Task<IEnumerable<DonorInfo>> GetDonorInfos(IEnumerable<int> donorIds)
         {
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                var donorIdsString = donorIds.Select(id => id.ToString()).StringJoin(",");
+                var donorIdTempTableSetUp = SqlTempTableFiltering.PrepareTempTableFiltering("d", "DonorId", donorIds);
 
-                // Note that a previous iteration of this code used a JOIN on UNIONs of hard-coded Ids.
-                // A thorough perf test demonstrated that this 'IN' produces an identical QueryPlan, and compiles faster.
-                var sql = $@"SELECT * FROM Donors WHERE DonorId IN({donorIdsString})";
+                var sql = $@"SELECT * FROM Donors d {donorIdTempTableSetUp.FilteredJoinQueryString}";
+
+                await donorIdTempTableSetUp.BuildTempTableFactory(conn);
 
                 var donors = await conn.QueryAsync<Donor>(sql, commandTimeout: 1200);
                 return donors.Select(d => d.ToDonorInfo());

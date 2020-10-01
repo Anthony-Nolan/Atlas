@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
@@ -10,6 +11,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.Search.Matching;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
+using Atlas.MatchingAlgorithm.Test.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -187,7 +189,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             var searchCriteria = GetDefaultCriteriaBuilder()
                 .WithSearchType(DonorType.Adult)
                 .Build();
-            var results = await matchingService.GetMatches(searchCriteria);
+            var results = await matchingService.GetMatches(searchCriteria).ToListAsync();
             results.Should().NotContain(d => d.DonorInfo.DonorId == cordDonorInfoWithFullHeterozygousMatchAtLocusA.DonorId);
             results.Should().NotContain(d => d.DonorInfo.DonorId == cordDonorInfoWithFullHomozygousMatchAtLocusA.DonorId);
         }
@@ -198,7 +200,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             var searchCriteria = GetDefaultCriteriaBuilder()
                 .WithSearchType(DonorType.Cord)
                 .Build();
-            var results = await matchingService.GetMatches(searchCriteria);
+            var results = await matchingService.GetMatches(searchCriteria).ToListAsync();
             results.Should().NotContain(d => d.DonorInfo.DonorId == adultDonorInfoWithFullMatch.DonorId);
         }
 
@@ -208,9 +210,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             var searchCriteria = GetDefaultCriteriaBuilder()
                 .WithSearchType(DonorType.Cord)
                 .Build();
-            var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithFullHeterozygousMatchAtLocusA.DonorId);
-            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithFullHomozygousMatchAtLocusA.DonorId);
+            var results = await matchingService.GetMatches(searchCriteria).ToListAsync();
+            results.ShouldContainDonor(cordDonorInfoWithFullHeterozygousMatchAtLocusA.DonorId);
+            results.ShouldContainDonor(cordDonorInfoWithFullHomozygousMatchAtLocusA.DonorId);
         }
 
         [Test]
@@ -220,7 +222,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithSearchType(DonorType.Adult)
                 .WithDonorMismatchCount(1)
                 .Build();
-            var results = await matchingService.GetMatches(searchCriteria);
+            var results = await matchingService.GetMatches(searchCriteria).ToListAsync();
             results.Should().NotContain(d => d.DonorInfo.DonorId == adultDonorInfoWithFullMatch.DonorId);
         }
 
@@ -231,8 +233,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithSearchType(DonorType.Cord)
                 .WithDonorMismatchCount(1)
                 .Build();
-            var results = await matchingService.GetMatches(searchCriteria);
-            results.Should().Contain(d => d.DonorInfo.DonorId == cordDonorInfoWithFullHeterozygousMatchAtLocusA.DonorId);
+            var results = await matchingService.GetMatches(searchCriteria).ToListAsync();
+            results.ShouldContainDonor(cordDonorInfoWithFullHeterozygousMatchAtLocusA.DonorId);
         }
 
         [Test]
@@ -240,7 +242,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             var searchCriteria = GetDefaultCriteriaBuilder().Build();
 
-            var results = await matchingService.GetMatches(searchCriteria);
+            var results = await matchingService.GetMatches(searchCriteria).ToListAsync();
             results.Should().NotContain(d => d.DonorInfo.DonorId == unavailableMatchingCordDonor.DonorId);
         }
 

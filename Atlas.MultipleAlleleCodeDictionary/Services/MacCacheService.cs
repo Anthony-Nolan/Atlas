@@ -40,7 +40,6 @@ namespace Atlas.MultipleAlleleCodeDictionary.Services
                 logger.SendTrace(message, LogLevel.Error);
                 throw new ArgumentNullException(message);
             }
-            logger.SendTrace($"Attempting to expand Hla for Mac: {macCode}", LogLevel.Verbose);
             return macExpander.ExpandMac(mac, firstField);
         }
 

@@ -110,5 +110,13 @@ namespace Atlas.Common.Utils.Extensions
 
             return newCollection;
         }
+
+        public async static IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IEnumerable<T> enumerable)
+        {
+            foreach (var item in enumerable)
+            {
+                yield return item;
+            }
+        }
     }
 }

@@ -44,6 +44,8 @@ locals {
     "MacDictionary:AzureStorageConnectionString" = var.azure_storage.primary_connection_string
     "MacDictionary:TableName"                    = var.mac_import_table.name,
 
+    "MatchingConfiguration:MatchingBatchSize" = var.MATCHING_BATCH_SIZE,
+
     "MessagingServiceBus:ConnectionString"           = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
     "MessagingServiceBus:SearchRequestsSubscription" = azurerm_servicebus_subscription.matching-requests-matching-algorithm.name
     "MessagingServiceBus:SearchRequestsTopic"        = azurerm_servicebus_topic.matching-requests.name

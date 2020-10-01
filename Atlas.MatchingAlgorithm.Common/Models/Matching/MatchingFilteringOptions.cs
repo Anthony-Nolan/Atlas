@@ -1,4 +1,7 @@
-﻿namespace Atlas.MatchingAlgorithm.Common.Models.Matching
+﻿using System.Collections.Generic;
+using Atlas.MatchingAlgorithm.Client.Models.Donors;
+
+namespace Atlas.MatchingAlgorithm.Common.Models.Matching
 {
     /// <summary>
     /// Used to specify what level of donor filtering should be performed in the initial SQL query
@@ -6,6 +9,20 @@
     /// </summary>
     public class MatchingFilteringOptions
     {
-        public bool ShouldFilterOnDonorType { get; set; }
+        /// <summary>
+        /// When set, will filter the SQL query allowing only the specified donor type.
+        /// Otherwise, allows all donor types.
+        /// </summary>
+        public DonorType? DonorType { get; set; }
+
+        public bool ShouldFilterOnDonorType => DonorType != null;
+        
+        /// <summary>
+        /// When set, will filter the SQL query allowing only provided donor Ids.
+        /// Otherwise, allows all donors. 
+        /// </summary>
+        public HashSet<int> DonorIds { get; set; }
+
+        public bool ShouldFilterOnDonorIds => DonorIds != null;
     }
 }

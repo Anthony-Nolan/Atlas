@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Atlas.Common.Utils.Extensions
@@ -18,6 +19,26 @@ namespace Atlas.Common.Utils.Extensions
             {
                 dictionary.Add(key, value);
             }
+        }
+
+        public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
+        {
+            return dictionary.TryGetValue(key, out var result) ? result : default;
+        }
+
+        /// <summary>
+        /// If the dictionary contains the specified key, returns the corresponding value.
+        /// Otherwise, generates the value with the provided factory, sets it in the dictionary, and returns the generated value.
+        /// </summary>
+        public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TValue> valueFactory)
+        {
+            if (!dictionary.TryGetValue(key, out var value))
+            {
+                value = valueFactory();
+                dictionary.Add(key, value);
+            }
+
+            return value;
         }
     }
 }

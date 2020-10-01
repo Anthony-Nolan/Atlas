@@ -16,8 +16,10 @@ namespace Atlas.MatchingAlgorithm.Common.Config
         public static HashSet<Locus> MatchingOnlyLoci => EnumerateValues<Locus>().Except(new[] {Locus.Dpb1}).ToHashSet();
 
         /// <summary>
-        /// Only loci that are possible to match in Phase I of Matching.
+        /// Only loci that have required HLA typing, and are therefore preferable to match on first.
         /// </summary>
-        public static HashSet<Locus> LociPossibleToMatchInMatchingPhaseOne => new[] { Locus.A, Locus.B, Locus.Drb1 }.ToHashSet();
+        public static HashSet<Locus> RequiredLoci => new[] { Locus.A, Locus.B, Locus.Drb1 }.ToHashSet();
+
+        public static HashSet<Locus> OptionalLoci => MatchingOnlyLoci.Except(RequiredLoci).ToHashSet();
     }
 }

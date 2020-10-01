@@ -6,7 +6,6 @@ using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using EnumStringValues;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
 
 namespace Atlas.MatchingAlgorithm.Data.Persistent.Repositories
 {

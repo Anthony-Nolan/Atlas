@@ -31,6 +31,7 @@
     "HlaMetadataDictionary:HlaNomenclatureSourceUrl": "https://raw.githubusercontent.com/ANHIG/IMGTHLA/",
     "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
     "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
+    "MatchingConfiguration:MatchingBatchSize": 250000,
     "MessagingServiceBus:ConnectionString": "override-this",
     "MessagingServiceBus:SearchRequestsSubscription": "matching-algorithm",
     "MessagingServiceBus:SearchRequestsTopic": "matching-requests",

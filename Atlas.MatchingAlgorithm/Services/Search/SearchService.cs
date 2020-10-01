@@ -56,22 +56,20 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var criteria = await GetMatchCriteria(matchingRequest);
             expansionTimer.Dispose();
 
-            var matchingTimer = searchLogger.RunTimed($"{LoggingPrefix}Matching");
-            var matches = await matchingService.GetMatches(criteria);
-            matchingTimer.Dispose();
+            var matches = matchingService.GetMatches(criteria);
 
-            searchLogger.SendTrace($"{LoggingPrefix}Matched {matches.Count} donors.");
-
-            var scoringTimer = searchLogger.RunTimed($"{LoggingPrefix}Scoring");
-            var request = new MatchResultsScoringRequest
+            var request = new StreamingMatchResultsScoringRequest
             {
                 PatientHla = matchingRequest.SearchHlaData,
                 MatchResults = matches,
                 ScoringCriteria = matchingRequest.ScoringCriteria
             };
-            var scoredMatches = await donorScoringService.ScoreMatchesAgainstPatientHla(request);
-            scoringTimer.Dispose();
-
+            
+            // As matching phase 2 uses the same batch size as phase 1, which is expected to be very large - the result set is never expected to be large enough that scoring actually begins
+            // before matching is complete. However, it wouldn't take much tweaking of batch sizes to enable scoring streaming to begin early.
+            // If memory continues to be a concern on large datasets, it wouldn't be much work from here to stream results to file so we don't even need to store all results in memory! Though 
+            // to do so would be to remove ranking of results, and may cause issues down the line where all results *do* need to be loaded into memory.
+            var scoredMatches = await donorScoringService.StreamScoring(request);
             return scoredMatches.Select(MapSearchResultToApiSearchResult);
         }
 
