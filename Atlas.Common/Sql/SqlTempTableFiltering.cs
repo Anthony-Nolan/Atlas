@@ -32,7 +32,7 @@ namespace Atlas.Common.Sql
         /// 
         /// Usage:
         ///
-        /// (a) In your query, RIGHT JOIN the column being filtered to this table.
+        /// (a) In your query, INNER JOIN the column being filtered to this table.
         /// (b) Once an SqlConnection has been created, call the returned factory to create and populate the temp table before running your query.
         /// </summary>
         /// <param name="filteredTableAlias">Used in the join string to join your table by alias to the temp table.</param>
@@ -60,7 +60,7 @@ namespace Atlas.Common.Sql
 
             const string idColumnName = "id";
 
-            var joinString = $"RIGHT JOIN {tempTableName} ON {tempTableName}.{idColumnName} = {filteredTableAlias}.{filteredColumnName}";
+            var joinString = $"INNER JOIN {tempTableName} ON {tempTableName}.{idColumnName} = {filteredTableAlias}.{filteredColumnName}";
 
             async Task TableFactory(SqlConnection connection)
             {
