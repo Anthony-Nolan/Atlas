@@ -31,7 +31,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             {Locus.C, 4},
         };
 
-        // TODO: NOVA-1395: Dynamically decide which loci to initially query for based on criteria, optimising for search speed
+        // TODO: ATLAS-847: Dynamically decide which loci to initially query for based on criteria, optimising for search speed
         public IList<Locus> LociInMatchingOrder(AlleleLevelMatchCriteria criteria)
         {
             var locusMismatchCounts = criteria.LocusCriteria.Map((locus, c) => (locus, c?.MismatchCount))

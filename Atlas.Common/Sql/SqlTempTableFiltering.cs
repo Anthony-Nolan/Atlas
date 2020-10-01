@@ -12,7 +12,7 @@ namespace Atlas.Common.Sql
         /// A JOIN query that can be used on a query to filter by the specified ids.
         /// Example usage:
         ///
-        /// $"SELECT * FROM MyTable {FilteredJoinQueryString}}" 
+        /// $"SELECT * FROM MyTable {FilteredJoinQueryString}" 
         /// </summary>
         public string FilteredJoinQueryString { get; set; }
 
@@ -71,9 +71,11 @@ namespace Atlas.Common.Sql
 
                 var cmd = new SqlCommand($"CREATE TABLE {tempTableName} ({idColumnName} int)", connection);
                 cmd.ExecuteNonQuery();
+                
                 var dataTable = new DataTable(tempTableName);
-                var id = new DataColumn {DataType = Type.GetType("System.Int32"), ColumnName = idColumnName};
-                dataTable.Columns.Add(id);
+                var idColumn = new DataColumn {DataType = Type.GetType("System.Int32"), ColumnName = idColumnName};
+                dataTable.Columns.Add(idColumn);
+                
                 foreach (var item in ids)
                 {
                     var row = dataTable.NewRow();

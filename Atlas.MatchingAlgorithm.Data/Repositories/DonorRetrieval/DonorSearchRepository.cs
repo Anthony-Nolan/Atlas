@@ -41,9 +41,6 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 
     public class DonorSearchRepository : Repository, IDonorSearchRepository
     {
-        // TODO: ATLAS-714: Make this configurable / see if it's even worthwhile, or whether the outer batch is enough
-        private const int DonorIdBatchSize = 10_000_000;
-
         private readonly ILogger logger;
 
         public DonorSearchRepository(IConnectionStringProvider connectionStringProvider, ILogger logger) : base(connectionStringProvider)
@@ -71,41 +68,24 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                 throw new InvalidOperationException("Must provide donorIds for non-required loci.");
             }
 
-            if (donorIds == null)
+            var preFilteringLogMessage = donorIds == null ? "" : $"Pre-filtering by donor id - Batch of {donorIds.Count} donors.";
+            var logMessage = $"DonorSearchRepository: Matching at Locus {locus}. {preFilteringLogMessage}";
+            logger.SendTrace(logMessage, LogLevel.Verbose);
+
+            if (donorIds != null && !TypingIsRequiredAtLocus(locus))
             {
-                var results = MatchAtLocus(locus, filteringOptions, pGroups, criteria.MismatchCount == 0);
-                await foreach (var result in results)
+                var untypedResults = await GetResultsForDonorsUntypedAtLocus(locus, donorIds.ToList());
+                foreach (var untypedResult in untypedResults)
                 {
-                    yield return result;
+                    yield return untypedResult;
                 }
             }
-            else
+
+            var typedResults = MatchAtLocus(locus, filteringOptions, pGroups, criteria.MismatchCount == 0);
+
+            await foreach (var result in typedResults)
             {
-                if (!TypingIsRequiredAtLocus(locus))
-                {
-                    var untypedResults = await GetResultsForDonorsUntypedAtLocus(locus, donorIds.ToList());
-                    foreach (var untypedResult in untypedResults)
-                    {
-                        yield return untypedResult;
-                    }
-                }
-
-                logger.SendTrace($"Pre-filtering by Donor Id. Locus {locus}. {donorIds.Count} donors in batches of {DonorIdBatchSize}",
-                    LogLevel.Verbose);
-                foreach (var donorBatch in donorIds.Batch(DonorIdBatchSize))
-                {
-                    var batchOptions = new MatchingFilteringOptions
-                    {
-                        DonorType = filteringOptions.DonorType,
-                        DonorIds = Enumerable.ToHashSet(donorBatch),
-                    };
-                    var batchResults = MatchAtLocus(locus, batchOptions, pGroups, criteria.MismatchCount == 0);
-
-                    await foreach (var result in batchResults)
-                    {
-                        yield return result;
-                    }
-                }
+                yield return result;
             }
         }
 

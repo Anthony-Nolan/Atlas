@@ -98,7 +98,7 @@ ON m.DonorId = DonorIds.Id
                 return new Dictionary<int, DonorInfo>();
             }
 
-            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
                 var donorIdsString = donorIds.Select(id => id.ToString()).StringJoin(",");
 

@@ -52,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         public async Task<IDictionary<int, MatchResult>> FindMatchingDonors(AlleleLevelMatchCriteria criteria)
         {
             var orderedLoci = matchCriteriaAnalyser.LociInMatchingOrder(criteria);
-            searchLogger.SendTrace($"Will match loci in the following order: {orderedLoci.Select(l => l.ToString()).StringJoin(",")}");
+            searchLogger.SendTrace($"Will match loci in the following order: {orderedLoci.Select(l => l.ToString()).StringJoin(", ")}");
 
             var resultStream = orderedLoci
                 .Aggregate(
@@ -117,7 +117,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                     // TODO: ATLAS-714: Make batch size configurable - allow finer control over performance vs. memory 
                     // Batching is implemented, as each SQL query needs a concrete list of filtered IDs, rather than a stream. 
                     // This batch size control a balance between performance and memory footprint - larger batches will lead to a higher memory footprint, but fewer SQL connections (and therefore faster searches)
-                    await foreach (var resultBatch in previousLociResultStream.Batch(250_000))
+                    await foreach (var resultBatch in previousLociResultStream.Batch(100_000))
                     {
                         var donorBatch = resultBatch.ToDictionary(r => r.DonorId, r => r);
                         var donorIds = donorBatch.Keys.ToHashSet();

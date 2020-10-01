@@ -69,7 +69,8 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
 
             (int, LocusMatchDetails) aggregatedDonorRelations = default;
 
-            // relies on repository returning donors in groups by donor id
+            // Relies on repository returning donors in groups by donor id.
+            // Note that this is not semantic group objects, but groupings within a flat array of relations - e.g. (1, 1, 2, 4, 3, 3) is ok - (1, 1, 2, 3, 1) is not.  
             await foreach (var relation in donorMatchRelations)
             {
                 var positionPair = (relation.SearchTypePosition, relation.MatchingTypePosition);
