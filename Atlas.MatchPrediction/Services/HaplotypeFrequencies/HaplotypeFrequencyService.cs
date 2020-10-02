@@ -16,6 +16,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies.Import.Exceptions;
 using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
@@ -46,6 +47,11 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         public Task<HaplotypeFrequencySet> GetSingleHaplotypeFrequencySet(FrequencySetMetadata setMetaData);
 
         Task<ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId);
+
+        Task<ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>> GetHaplotypeFrequencies(
+            int setId,
+            PhenotypeInfo<IReadOnlyCollection<string>> gGroups,
+            PhenotypeInfo<IReadOnlyCollection<string>> pGroups);
 
         /// <param name="setId"></param>
         /// <param name="hla"></param>
@@ -185,6 +191,21 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                     return new ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>(allFrequencies);
                 }
             });
+        }
+
+        /// <inheritdoc />
+        public async Task<ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>> GetHaplotypeFrequencies(
+            int setId,
+            PhenotypeInfo<IReadOnlyCollection<string>> gGroups,
+            PhenotypeInfo<IReadOnlyCollection<string>> pGroups)
+        {
+            var combinedGGroups = gGroups.ToLociInfo((l, g1, g2) => g1?.Concat(g2).ToHashSet());
+            var combinedPGroups = pGroups.ToLociInfo((l, p1, p2) => p1?.Concat(p2).ToHashSet());
+
+            var combinedGroups = new LociInfo<HashSet<string>>(l => combinedGGroups.GetLocus(l)?.Concat(combinedPGroups.GetLocus(l)).ToHashSet());
+
+            var frequencies = await frequencyRepository.GetHaplotypeFrequencies(setId, combinedGroups);
+            return new ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>(frequencies);
         }
 
         /// <inheritdoc />

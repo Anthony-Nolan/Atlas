@@ -11,6 +11,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.ApplicationInsights;
 using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
+using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Utils;
 
 // ReSharper disable SuggestBaseTypeForParameter
@@ -90,20 +91,29 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         /// Does not consider phase - so the results cannot necessarily be considered Diplotypes.
         /// </summary>
         public Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandCompressedPhenotype(ExpandCompressedPhenotypeInput input);
+
+        public Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> Expand2(
+            PhenotypeInfo<string> genotype,
+            string hlaNom,
+            ISet<Locus> loci,
+            int setId);
     }
 
     internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
     {
         private readonly ILogger logger;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
+        private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
 
         public CompressedPhenotypeExpander(
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchPredictionLogger logger,
-            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory)
+            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
+            IHaplotypeFrequencyService haplotypeFrequencyService)
         {
             this.logger = logger;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
+            this.haplotypeFrequencyService = haplotypeFrequencyService;
         }
 
         /// <inheritdoc />
@@ -137,6 +147,51 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
 
             logger.SendTrace($"Filtered expanded genotypes: {filteredDiplotypes.Count}");
             return filteredDiplotypes.Select(dp => new PhenotypeInfo<HlaAtKnownTypingCategory>(dp.Item1, dp.Item2)).ToHashSet();
+        }
+
+        /// <inheritdoc />
+        public async Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> Expand2(
+            PhenotypeInfo<string> genotype,
+            string hlaNom,
+            ISet<Locus> allowedLoci,
+            int setId)
+        {
+            var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNom);
+            var gGroups = await hlaMetadataDictionary.ConvertAllHla(genotype, TargetHlaCategory.GGroup, allowedLoci);
+            var pGroups = await hlaMetadataDictionary.ConvertAllHla(genotype, TargetHlaCategory.PGroup, allowedLoci);
+            var frequencies = await haplotypeFrequencyService.GetHaplotypeFrequencies(setId, gGroups, pGroups);
+            
+            var groupsPerPosition = new DataByResolution<PhenotypeInfo<IReadOnlyCollection<string>>>
+            {
+                GGroup = gGroups,
+                PGroup = pGroups
+            };
+            var groupsPerLocus = groupsPerPosition.Map(CombineSetsAtLoci);
+
+            var allHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
+            {
+                GGroup = frequencies
+                    .Where(h => h.Value.TypingCategory == HaplotypeTypingCategory.GGroup)
+                    .Select(h => h.Value.Hla)
+                    .ToList(),
+                PGroup = frequencies
+                    .Where(h => h.Value.TypingCategory == HaplotypeTypingCategory.PGroup)
+                    .Select(h => h.Value.Hla)
+                    .ToList()
+            };
+            
+            var allowedHaplotypes = GetAllowedHaplotypes(allowedLoci, allHaplotypes, groupsPerLocus);
+
+            var allowedHaplotypesExcludingLoci = new HashSet<LociInfo<HlaAtKnownTypingCategory>>(allowedHaplotypes.Select(h =>
+                h.Map((l, hla) => allowedLoci.Contains(l) ? hla : null)
+            ));
+
+            var allowedDiplotypes = Combinations.AllPairs(allowedHaplotypesExcludingLoci, true).ToList();
+            var filteredDiplotypes = FilterDiplotypes(allowedDiplotypes, groupsPerPosition, allowedLoci);
+
+            logger.SendTrace($"Filtered expanded genotypes: {filteredDiplotypes.Count}");
+            return filteredDiplotypes.Select(dp => new PhenotypeInfo<HlaAtKnownTypingCategory>(dp.Item1, dp.Item2)).ToHashSet();
+
         }
 
         private static IEnumerable<LociInfo<HlaAtKnownTypingCategory>> GetAllowedHaplotypes(

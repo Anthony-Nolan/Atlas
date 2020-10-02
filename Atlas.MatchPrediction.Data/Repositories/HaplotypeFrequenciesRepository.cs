@@ -2,6 +2,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData.PhenotypeInfo;
+using Atlas.Common.Sql;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Data.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
@@ -14,6 +17,7 @@ namespace Atlas.MatchPrediction.Data.Repositories
         Task AddHaplotypeFrequencies(int haplotypeFrequencySetId, IEnumerable<HaplotypeFrequency> haplotypeFrequencies);
 
         Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId);
+        Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetHaplotypeFrequencies(int setId, LociInfo<HashSet<string>> pAndGGroups);
     }
 
     public class HaplotypeFrequenciesRepository : IHaplotypeFrequenciesRepository
@@ -105,6 +109,39 @@ SELECT {nameof(HaplotypeFrequency.Id)},
 {HaplotypeFrequency.SetIdColumnName}
 FROM {HaplotypeFrequency.QualifiedTableName} 
 WHERE {HaplotypeFrequency.SetIdColumnName} = @setId";
+
+            return await RetryConfig.AsyncRetryPolicy.ExecuteAsync(async () =>
+            {
+                await using (var conn = new SqlConnection(connectionString))
+                {
+                    var frequencyModels = await conn.QueryAsync<HaplotypeFrequency>(sql, new {setId}, commandTimeout: 600);
+                    return frequencyModels.ToDictionary(
+                        f => f.Haplotype(),
+                        f => f
+                    );
+                }
+            });
+        }
+
+        public async Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetHaplotypeFrequencies(int setId, LociInfo<HashSet<string>> pAndGGroups)
+        {
+            var filters = pAndGGroups.Map((l, g) => g == null ? null : $"AND {l.ToString()} IN {g.ToInClause()}");
+        
+            var sql = @$"
+SELECT {nameof(HaplotypeFrequency.Id)},
+{nameof(HaplotypeFrequency.A)},
+{nameof(HaplotypeFrequency.B)},
+{nameof(HaplotypeFrequency.C)},
+{nameof(HaplotypeFrequency.DQB1)},
+{nameof(HaplotypeFrequency.DRB1)}, 
+{nameof(HaplotypeFrequency.Frequency)}, 
+{nameof(HaplotypeFrequency.TypingCategory)},
+{HaplotypeFrequency.SetIdColumnName}
+FROM {HaplotypeFrequency.QualifiedTableName} 
+WHERE {HaplotypeFrequency.SetIdColumnName} = @setId
+
+{filters.ToEnumerable().Where(x => x != null).StringJoin("\n")}
+";
 
             return await RetryConfig.AsyncRetryPolicy.ExecuteAsync(async () =>
             {

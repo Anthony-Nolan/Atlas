@@ -243,6 +243,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             string hlaNomenclatureVersion,
             string subjectLogDescription = null)
         {
+            return await compressedPhenotypeExpander.Expand2(phenotype, hlaNomenclatureVersion, allowedLoci, frequencySetId);
+            
             var haplotypeFrequencies = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySetId);
             using (logger.RunTimed($"{LoggingPrefix}Expand {subjectLogDescription} phenotype", LogLevel.Verbose))
             {
