@@ -8,6 +8,8 @@ namespace Atlas.Common.Sql
 {
     public class TempTableFilterDetails
     {
+        public string TempTableName { get; set; }
+        
         /// <summary>
         /// A JOIN query that can be used on a query to filter by the specified ids.
         /// Example usage:
@@ -69,7 +71,7 @@ namespace Atlas.Common.Sql
                     connection.Open();
                 }
 
-                var cmd = new SqlCommand($"CREATE TABLE {tempTableName} ({idColumnName} int)", connection);
+                var cmd = new SqlCommand($"CREATE TABLE {tempTableName} ({idColumnName} int, PRIMARY KEY({idColumnName})); ", connection);
                 cmd.ExecuteNonQuery();
                 
                 var dataTable = new DataTable(tempTableName);
@@ -93,7 +95,8 @@ namespace Atlas.Common.Sql
             return new TempTableFilterDetails
             {
                 BuildTempTableFactory = TableFactory,
-                FilteredJoinQueryString = joinString
+                FilteredJoinQueryString = joinString,
+                TempTableName = tempTableName
             };
         }
     }

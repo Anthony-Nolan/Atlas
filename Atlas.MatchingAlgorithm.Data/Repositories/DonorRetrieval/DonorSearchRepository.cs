@@ -16,7 +16,6 @@ using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Sql;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
-using MoreLinq;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 {
@@ -146,34 +145,39 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                         ? $@"INNER JOIN Donors d ON {selectDonorIdStatement} = d.DonorId AND d.DonorType = {(int) filteringOptions.DonorType}"
                         : "";
 
-                    var donorIdTempTableJoinConfig =
-                        SqlTempTableFiltering.PrepareTempTableFiltering("m", "DonorId", filteringOptions.DonorIds, "DonorIds");
+                    var donorIdTempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("m", "DonorId", filteringOptions.DonorIds, "DonorIds");
+                    var pGroups1TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("m", "PGroup_Id", pGroups.Position1, "PGroups1");
+                    var pGroups2TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("m", "PGroup_Id", pGroups.Position2, "PGroups2");
 
                     var donorIdTempTableJoin = filteringOptions.ShouldFilterOnDonorIds ? donorIdTempTableJoinConfig.FilteredJoinQueryString : "";
 
                     var joinType = mustBeDoubleMatch ? "INNER" : "FULL OUTER";
 
                     var sql = $@"
-SELECT DISTINCT {selectDonorIdStatement} as DonorId, TypePosition1, TypePosition2
-FROM 
+SELECT * INTO #Pos1 FROM 
 (
 SELECT m.DonorId as DonorId1, TypePosition as TypePosition1
 FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
+{pGroups1TempTableJoinConfig.FilteredJoinQueryString}
 {donorIdTempTableJoin}
-WHERE m.PGroup_Id IN {pGroups.Position1.ToInClause()}
-) as m_1
+) as m_1; 
 
-{joinType} JOIN 
+CREATE INDEX IX_Temp_Position1 ON #Pos1(DonorId1);
+
+SELECT * INTO #Pos2 FROM 
 (
 SELECT m.DonorId as DonorId2, TypePosition as TypePosition2
 FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
+{pGroups2TempTableJoinConfig.FilteredJoinQueryString}
 {donorIdTempTableJoin}
-WHERE m.PGroup_Id IN {pGroups.Position2.ToInClause()}
-) as m_2
-ON DonorId1 = DonorId2
+) as m_2;
 
+CREATE INDEX IX_Temp_Position2 ON #Pos2(DonorId2);
+
+SELECT DISTINCT {selectDonorIdStatement} as DonorId, TypePosition1, TypePosition2
+FROM #Pos1 as m_1
+{joinType} JOIN #Pos2 as m_2 ON DonorId1 = DonorId2
 {donorTypeFilteredJoin}
-
 ORDER BY DonorId
 ";
                     await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
@@ -183,7 +187,9 @@ ORDER BY DonorId
                             await donorIdTempTableJoinConfig.BuildTempTableFactory(conn);
                         }
 
-                        
+                        await pGroups1TempTableJoinConfig.BuildTempTableFactory(conn);
+                        await pGroups2TempTableJoinConfig.BuildTempTableFactory(conn);
+
                         // This is streamed from the database via disabling buffering (the default CommandFlags value = `Buffered`).
                         // This allows us to minimise our memory footprint, by not loading all donors into memory at once, and filtering as we go. 
                         var commandDefinition = new CommandDefinition(sql, commandTimeout: 3600, flags: CommandFlags.None);
