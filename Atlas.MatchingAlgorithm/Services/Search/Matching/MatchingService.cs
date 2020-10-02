@@ -32,7 +32,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             IActiveRepositoryFactory transientRepositoryFactory,
             IMatchFilteringService matchFilteringService,
             // ReSharper disable once SuggestBaseTypeForParameter
-            IMatchingAlgorithmSearchLogger searchLogger, 
+            IMatchingAlgorithmSearchLogger searchLogger,
             MatchingConfigurationSettings matchingConfigurationSettings)
         {
             this.donorMatchingService = donorMatchingService;
@@ -46,6 +46,13 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         {
             using (searchLogger.RunTimed("Matching"))
             {
+                foreach (var (locus, c) in criteria.LocusCriteria.Map((l, c) => (l, c)).ToEnumerable().Where(x => x.Item2 != null))
+                {
+                    searchLogger.SendTrace(
+                        $"Matching: Locus {locus} has ({c.PGroupsToMatchInPositionOne.Count()}, {c.PGroupsToMatchInPositionTwo.Count()}) P-Groups to match"
+                    );
+                }
+
                 var initialMatches = PerformMatchingPhaseOne(criteria);
                 var matches = PerformMatchingPhaseTwo(criteria, initialMatches);
                 var matchCount = 0;
@@ -54,6 +61,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                     matchCount++;
                     yield return match;
                 }
+
                 searchLogger.SendTrace($"Matched {matchCount} donors");
             }
         }
