@@ -5,6 +5,9 @@
       "snapshotConfiguration": {
         "IsEnabled": true
       }
+    },
+    "logLevel": {
+      "Host.Triggers.DurableTask": "Information"
     }
   },
   "extensions": {
