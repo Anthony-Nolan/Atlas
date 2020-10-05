@@ -43,13 +43,18 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         /// <inheritdoc />
         public ConcurrentDictionary<HaplotypeHla, decimal> PreConsolidateFrequencies(IDictionary<HaplotypeHla, HaplotypeFrequency> frequencies)
         {
+            return PreConsolidateFrequencies(frequencies.ToDictionary(f => f.Key, f => f.Value.Frequency));
+        }
+
+        private ConcurrentDictionary<HaplotypeHla, decimal> PreConsolidateFrequencies(IDictionary<HaplotypeHla, decimal> frequencies)
+        {
             IEnumerable<KeyValuePair<HaplotypeHla, decimal>> FrequenciesExcluding(params Locus[] loci)
             {
                 return frequencies
                     .GroupBy(hf => hf.Key.SetLoci(null, loci))
                     .Select(group => new KeyValuePair<HaplotypeHla, decimal>(
                         group.Key,
-                        group.Select(f => f.Value.Frequency).SumDecimals()
+                        group.Select(f => f.Value).SumDecimals()
                     ));
             }
 

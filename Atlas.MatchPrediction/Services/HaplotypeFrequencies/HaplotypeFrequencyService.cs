@@ -65,7 +65,11 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         /// </returns>
         // ReSharper disable once ParameterTypeCanBeEnumerable.Global
         Task<decimal> GetFrequencyForHla(int setId, HaplotypeHla hla, ISet<Locus> excludedLoci);
-        decimal GetFrequencyForHla(HaplotypeHla hla, ISet<Locus> excludedLoci, ConcurrentDictionary<LociInfo<string>, HaplotypeFrequency> haplotypeFrequencies);
+
+        decimal GetFrequencyForHla(
+            HaplotypeHla hla,
+            ISet<Locus> excludedLoci,
+            ConcurrentDictionary<LociInfo<string>, HaplotypeFrequency> haplotypeFrequencies);
     }
 
     internal class HaplotypeFrequencyService : IHaplotypeFrequencyService
@@ -231,9 +235,19 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
 
         //TODO: ATLAS-854: Less duplication
         /// <inheritdoc />
-        public decimal GetFrequencyForHla(HaplotypeHla hla, ISet<Locus> excludedLoci, ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency> haplotypeFrequencies)
+        public decimal GetFrequencyForHla(
+            HaplotypeHla hla,
+            ISet<Locus> excludedLoci,
+            ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency> haplotypeFrequencies)
         {
             var frequencies = haplotypeFrequencies;
+
+            var consolidated = new ConcurrentDictionary<HaplotypeHla, decimal>(haplotypeFrequencies.ToDictionary(f => f.Key, f => f.Value.Frequency));
+
+            if (LocusSettings.MatchPredictionLoci.Any(excludedLoci.Contains))
+            {
+                consolidated = frequencyConsolidator.PreConsolidateFrequencies(haplotypeFrequencies);
+            }
 
             if (!frequencies.TryGetValue(hla, out var frequency))
             {
@@ -244,8 +258,10 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                     return 0;
                 }
 
-                // TODO: ATLAS-854: Fix consolidation
-                return 0;
+                // TODO: ATLAS-854: Fix consolidation caching
+                var hlaAtLoci = hla.SetLoci(null, excludedLoci.ToArray());
+                consolidated.TryGetValue(hlaAtLoci, out var result);
+                return result;
             }
 
             return frequency?.Frequency ?? 0;
