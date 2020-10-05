@@ -122,7 +122,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             }
             catch (HlaMetadataDictionaryException ex)
             {
-                await LogErrorAndSendAlert(file, $"{ex.Message} Locus: {ex.Locus}, GGroup: { ex.HlaName}", ex.StackTrace);
+                await LogErrorAndSendAlert(file, $"{ex.Message} Locus: {ex.Locus}, GGroup: {ex.HlaName}", ex.StackTrace);
             }
             catch (Exception ex)
             {
@@ -137,13 +137,13 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
             {
                 donorInfo ??= new FrequencySetMetadata();
                 patientInfo ??= new FrequencySetMetadata();
-                
+
                 var donorSet = await GetSingleHaplotypeFrequencySet(donorInfo);
                 var patientSet = await GetSingleHaplotypeFrequencySet(patientInfo);
-                
+
                 logger.SendTrace($"Frequency Set Selection: Donor {donorSet.RegistryCode}/{donorSet.EthnicityCode}/{donorSet.Id}");
                 logger.SendTrace($"Frequency Set Selection: Patient {patientSet.RegistryCode}/{patientSet.EthnicityCode}/{patientSet.Id}");
-                
+
                 return new HaplotypeFrequencySetResponse
                 {
                     DonorSet = donorSet,
@@ -176,18 +176,15 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         /// <inheritdoc />
         public async Task<ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>> GetAllHaplotypeFrequencies(int setId)
         {
-            using (logger.RunTimed("Get All Frequencies from HF Set", LogLevel.Verbose))
+            var cacheKey = $"hf-set-{setId}";
+            return await cache.GetOrAddAsync(cacheKey, async () =>
             {
-                var cacheKey = $"hf-set-{setId}";
-                return await cache.GetOrAddAsync(cacheKey, async () =>
+                using (logger.RunTimed("Get All Frequencies from HF set - from SQL database", LogLevel.Verbose))
                 {
-                    using (logger.RunTimed("Get All Frequencies from HF set - from SQL database", LogLevel.Verbose))
-                    {
-                        var allFrequencies = await frequencyRepository.GetAllHaplotypeFrequencies(setId);
-                        return new ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>(allFrequencies);
-                    }
-                });
-            }
+                    var allFrequencies = await frequencyRepository.GetAllHaplotypeFrequencies(setId);
+                    return new ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>(allFrequencies);
+                }
+            });
         }
 
         /// <inheritdoc />

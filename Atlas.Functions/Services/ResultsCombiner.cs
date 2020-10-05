@@ -25,8 +25,7 @@ namespace Atlas.Functions.Services
         }
 
         /// <inheritdoc />
-        public SearchResultSet CombineResults(
-            SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters)
+        public SearchResultSet CombineResults(SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters)
         {
             using (logger.RunTimed($"Combine search results: {persistSearchResultsParameters.MatchingAlgorithmResultSet.ResultSet.SearchRequestId}"))
             {
