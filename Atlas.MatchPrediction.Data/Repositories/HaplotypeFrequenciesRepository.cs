@@ -125,22 +125,24 @@ WHERE {HaplotypeFrequency.SetIdColumnName} = @setId";
 
         public async Task<Dictionary<HaplotypeHla, HaplotypeFrequency>> GetHaplotypeFrequencies(int setId, LociInfo<HashSet<string>> pAndGGroups)
         {
-            var filters = pAndGGroups.Map((l, g) => g == null ? null : $"AND {l.ToString()} IN {g.ToInClause()}");
+            var filters = pAndGGroups.Map((l, g) => g == null ? null : $"AND {l.ToString()} IN {g.ToInClause()}")
+                .ToEnumerable()
+                .Where(x => x != null);
         
             var sql = @$"
-SELECT {nameof(HaplotypeFrequency.Id)},
-{nameof(HaplotypeFrequency.A)},
-{nameof(HaplotypeFrequency.B)},
-{nameof(HaplotypeFrequency.C)},
-{nameof(HaplotypeFrequency.DQB1)},
-{nameof(HaplotypeFrequency.DRB1)}, 
-{nameof(HaplotypeFrequency.Frequency)}, 
-{nameof(HaplotypeFrequency.TypingCategory)},
-{HaplotypeFrequency.SetIdColumnName}
-FROM {HaplotypeFrequency.QualifiedTableName} 
+SELECT f.{nameof(HaplotypeFrequency.Id)},
+f.{nameof(HaplotypeFrequency.A)},
+f.{nameof(HaplotypeFrequency.B)},
+f.{nameof(HaplotypeFrequency.C)},
+f.{nameof(HaplotypeFrequency.DQB1)},
+f.{nameof(HaplotypeFrequency.DRB1)}, 
+f.{nameof(HaplotypeFrequency.Frequency)}, 
+f.{nameof(HaplotypeFrequency.TypingCategory)},
+f.{HaplotypeFrequency.SetIdColumnName}
+FROM {HaplotypeFrequency.QualifiedTableName} f 
 WHERE {HaplotypeFrequency.SetIdColumnName} = @setId
 
-{filters.ToEnumerable().Where(x => x != null).StringJoin("\n")}
+{filters.StringJoin("\n")}
 ";
 
             return await RetryConfig.AsyncRetryPolicy.ExecuteAsync(async () =>
