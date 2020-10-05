@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Sql;
 using Atlas.Common.Utils;
 using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.Data.Models;
@@ -67,17 +68,17 @@ WHERE {nameof(Donor.ExternalDonorCode)} IN @codes
         /// <inheritdoc />
         public async Task<Dictionary<int, Donor>> GetDonorsByIds(ICollection<int> donorIds)
         {
+            var tempTableConfig = SqlTempTableFiltering.PrepareTempTableFiltering("d", nameof(Donor.AtlasId), donorIds);
+            
             var sql = @$"
-SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM {Donor.QualifiedTableName}
-WHERE {nameof(Donor.AtlasId)} IN @ids
+SELECT {Donor.ColumnNamesForRead.StringJoin(",")} FROM {Donor.QualifiedTableName} d
+{tempTableConfig.FilteredJoinQueryString}
 ";
 
             await using (var connection = NewConnection())
             {
-                var donors = await donorIds.ProcessInBatchesAsync(
-                    DonorReadBatchSize,
-                    async ids => await connection.QueryAsync<Donor>(sql, new {ids})
-                );
+                await tempTableConfig.BuildTempTableFactory(connection);
+                var donors = await connection.QueryAsync<Donor>(sql);
                 return donors.ToDictionary(d => d.AtlasId, d => d);
             }
         }
