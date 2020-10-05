@@ -65,6 +65,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
         /// </returns>
         // ReSharper disable once ParameterTypeCanBeEnumerable.Global
         Task<decimal> GetFrequencyForHla(int setId, HaplotypeHla hla, ISet<Locus> excludedLoci);
+        decimal GetFrequencyForHla(HaplotypeHla hla, ISet<Locus> excludedLoci, ConcurrentDictionary<LociInfo<string>, HaplotypeFrequency> haplotypeFrequencies);
     }
 
     internal class HaplotypeFrequencyService : IHaplotypeFrequencyService
@@ -223,6 +224,28 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 }
 
                 return await GetConsolidatedFrequency(setId, hla, excludedLoci);
+            }
+
+            return frequency?.Frequency ?? 0;
+        }
+
+        //TODO: ATLAS-854: Less duplication
+        /// <inheritdoc />
+        public decimal GetFrequencyForHla(HaplotypeHla hla, ISet<Locus> excludedLoci, ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency> haplotypeFrequencies)
+        {
+            var frequencies = haplotypeFrequencies;
+
+            if (!frequencies.TryGetValue(hla, out var frequency))
+            {
+                // If no loci are excluded, there is nothing to calculate - the haplotype is just unrepresented.
+                // We do not want to add all unrepresented haplotypes to the cache - this drastically reduces algorithm speed, increases memory, and has no benefit
+                if (!excludedLoci.Any())
+                {
+                    return 0;
+                }
+
+                // TODO: ATLAS-854: Fix consolidation
+                return 0;
             }
 
             return frequency?.Frequency ?? 0;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,7 +25,6 @@ using Atlas.MatchPrediction.Utils;
 using Atlas.MatchPrediction.Validators;
 using FluentValidation;
 using LoggingStopwatch;
-using HaplotypeFrequencySet = Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet.HaplotypeFrequencySet;
 using TypedGenotype = Atlas.Common.GeneticData.PhenotypeInfo.PhenotypeInfo<Atlas.MatchPrediction.ExternalInterface.Models.HlaAtKnownTypingCategory>;
 using StringGenotype = Atlas.Common.GeneticData.PhenotypeInfo.PhenotypeInfo<string>;
 
@@ -139,7 +139,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 singleDonorMatchProbabilityInput.PatientFrequencySetMetadata
             );
 
-            var patientGenotypes = await ExpandToGenotypes(
+            var (patientGenotypes, patientFrequencies) = await ExpandToGenotypes(
                 singleDonorMatchProbabilityInput.PatientHla.ToPhenotypeInfo(),
                 frequencySets.PatientSet.Id,
                 allowedLoci,
@@ -147,7 +147,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 "patient"
             );
 
-            var donorGenotypes = await ExpandToGenotypes(
+            var (donorGenotypes, donorFrequencies) = await ExpandToGenotypes(
                 singleDonorMatchProbabilityInput.DonorInput.DonorHla.ToPhenotypeInfo(),
                 frequencySets.DonorSet.Id,
                 allowedLoci,
@@ -189,8 +189,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
 
             // TODO: ATLAS-233: Re-introduce hardcoded 100% probability for guaranteed match but no represented genotypes
-            var patientGenotypeLikelihoods = await CalculateGenotypeLikelihoods(patientStringGenotypes, frequencySets.PatientSet, allowedLoci);
-            var donorGenotypeLikelihoods = await CalculateGenotypeLikelihoods(donorStringGenotypes, frequencySets.DonorSet, allowedLoci);
+            var patientGenotypeLikelihoods = CalculateGenotypeLikelihoods(patientStringGenotypes, allowedLoci, patientFrequencies);
+            var donorGenotypeLikelihoods = CalculateGenotypeLikelihoods(donorStringGenotypes, allowedLoci, donorFrequencies);
 
             async Task<List<GenotypeAtDesiredResolutions>> ConvertGenotypes(
                 ISet<TypedGenotype> genotypes,
@@ -236,37 +236,16 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             }
         }
 
-        private async Task<ISet<TypedGenotype>> ExpandToGenotypes(
+        private async Task<(ISet<TypedGenotype>, ConcurrentDictionary<LociInfo<string>, HaplotypeFrequency>)> ExpandToGenotypes(
             StringGenotype phenotype,
             int frequencySetId,
             ISet<Locus> allowedLoci,
             string hlaNomenclatureVersion,
             string subjectLogDescription = null)
         {
-            return await compressedPhenotypeExpander.Expand2(phenotype, hlaNomenclatureVersion, allowedLoci, frequencySetId);
-            
-            var haplotypeFrequencies = await haplotypeFrequencyService.GetAllHaplotypeFrequencies(frequencySetId);
             using (logger.RunTimed($"{LoggingPrefix}Expand {subjectLogDescription} phenotype", LogLevel.Verbose))
             {
-                return await compressedPhenotypeExpander.ExpandCompressedPhenotype(
-                    new ExpandCompressedPhenotypeInput
-                    {
-                        Phenotype = phenotype,
-                        AllowedLoci = allowedLoci,
-                        HlaNomenclatureVersion = hlaNomenclatureVersion,
-                        AllHaplotypes = new DataByResolution<IReadOnlyCollection<LociInfo<string>>>
-                        {
-                            GGroup = haplotypeFrequencies
-                                .Where(h => h.Value.TypingCategory == HaplotypeTypingCategory.GGroup)
-                                .Select(h => h.Value.Hla)
-                                .ToList(),
-                            PGroup = haplotypeFrequencies
-                                .Where(h => h.Value.TypingCategory == HaplotypeTypingCategory.PGroup)
-                                .Select(h => h.Value.Hla)
-                                .ToList()
-                        }
-                    }
-                );
+                return await compressedPhenotypeExpander.Expand2(phenotype, hlaNomenclatureVersion, allowedLoci, frequencySetId);
             }
         }
 
@@ -328,25 +307,24 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 });
         }
 
-        private async Task<Dictionary<StringGenotype, decimal>> CalculateGenotypeLikelihoods(
+        private Dictionary<StringGenotype, decimal> CalculateGenotypeLikelihoods(
             ISet<StringGenotype> genotypes,
-            HaplotypeFrequencySet frequencySet,
-            ISet<Locus> allowedLoci)
+            ISet<Locus> allowedLoci,
+            ConcurrentDictionary<LociInfo<string>, HaplotypeFrequency> haplotypeFrequencies)
         {
             using (logger.RunTimed($"{LoggingPrefix}Calculate likelihoods for genotypes", LogLevel.Verbose))
             {
-                var genotypeLikelihoodTasks = genotypes.Select(genotype => CalculateLikelihood(genotype, frequencySet, allowedLoci)).ToList();
-                var genotypeLikelihoods = await Task.WhenAll(genotypeLikelihoodTasks);
+                var genotypeLikelihoods = genotypes.Select(genotype => CalculateLikelihood(genotype, allowedLoci, haplotypeFrequencies)).ToList();
                 return genotypeLikelihoods.ToDictionary();
             }
         }
 
-        private async Task<KeyValuePair<StringGenotype, decimal>> CalculateLikelihood(
+        private KeyValuePair<StringGenotype, decimal> CalculateLikelihood(
             StringGenotype genotype,
-            HaplotypeFrequencySet frequencySet,
-            ISet<Locus> allowedLoci)
+            ISet<Locus> allowedLoci,
+            ConcurrentDictionary<LociInfo<string>, HaplotypeFrequency> haplotypeFrequencies)
         {
-            var likelihood = await genotypeLikelihoodService.CalculateLikelihood(genotype, frequencySet, allowedLoci);
+            var likelihood = genotypeLikelihoodService.CalculateLikelihood(genotype, allowedLoci, haplotypeFrequencies);
             return new KeyValuePair<StringGenotype, decimal>(genotype, likelihood);
         }
     }

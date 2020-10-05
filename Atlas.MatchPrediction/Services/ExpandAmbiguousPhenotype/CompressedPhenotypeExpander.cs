@@ -13,6 +13,7 @@ using Atlas.MatchPrediction.Data.Models;
 using Atlas.MatchPrediction.ExternalInterface.Models;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Utils;
+using HaplotypeLookup = System.Collections.Concurrent.ConcurrentDictionary<Atlas.Common.GeneticData.PhenotypeInfo.LociInfo<string>, Atlas.MatchPrediction.Data.Models.HaplotypeFrequency>;
 
 // ReSharper disable SuggestBaseTypeForParameter
 // ReSharper disable ParameterTypeCanBeEnumerable.Local
@@ -92,7 +93,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         /// </summary>
         public Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> ExpandCompressedPhenotype(ExpandCompressedPhenotypeInput input);
 
-        public Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> Expand2(
+        public Task<(ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>, HaplotypeLookup)> Expand2(
             PhenotypeInfo<string> genotype,
             string hlaNom,
             ISet<Locus> loci,
@@ -150,7 +151,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         }
 
         /// <inheritdoc />
-        public async Task<ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>> Expand2(
+        public async Task<(ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>, HaplotypeLookup)> Expand2(
             PhenotypeInfo<string> genotype,
             string hlaNom,
             ISet<Locus> allowedLoci,
@@ -190,8 +191,8 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             var filteredDiplotypes = FilterDiplotypes(allowedDiplotypes, groupsPerPosition, allowedLoci);
 
             logger.SendTrace($"Filtered expanded genotypes: {filteredDiplotypes.Count}");
-            return filteredDiplotypes.Select(dp => new PhenotypeInfo<HlaAtKnownTypingCategory>(dp.Item1, dp.Item2)).ToHashSet();
-
+            var ret = filteredDiplotypes.Select(dp => new PhenotypeInfo<HlaAtKnownTypingCategory>(dp.Item1, dp.Item2)).ToHashSet();
+            return (ret, frequencies);
         }
 
         private static IEnumerable<LociInfo<HlaAtKnownTypingCategory>> GetAllowedHaplotypes(
