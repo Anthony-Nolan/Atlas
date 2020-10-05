@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Maths;
+using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.MatchPrediction.ApplicationInsights;
@@ -97,7 +99,8 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             PhenotypeInfo<string> genotype,
             string hlaNom,
             ISet<Locus> loci,
-            int setId);
+            int setId,
+            bool shouldCache = false);
     }
 
     internal class CompressedPhenotypeExpander : ICompressedPhenotypeExpander
@@ -106,6 +109,9 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
         private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
 
+        private static readonly ConcurrentDictionary<(PhenotypeInfo<string>, string, string, int),(ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>, HaplotypeLookup)> CachedResults = 
+            new ConcurrentDictionary<(PhenotypeInfo<string>, string, string, int), (ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>, HaplotypeLookup)>(); 
+        
         public CompressedPhenotypeExpander(
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchPredictionLogger logger,
@@ -155,13 +161,34 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
             PhenotypeInfo<string> genotype,
             string hlaNom,
             ISet<Locus> allowedLoci,
-            int setId)
+            int setId, 
+            bool shouldCache)
+        {
+            if (shouldCache)
+            {
+                var lociAsString = allowedLoci.Select(l => l.ToString()).StringJoin(",");
+                var cacheKey = (genotype, hlaNom, lociAsString, setId);
+                if (CachedResults.TryGetValue(cacheKey, out var cached))
+                {
+                    return cached;
+                }
+
+                var val = await CalculateExpansion(genotype, hlaNom, allowedLoci, setId);
+                CachedResults.TryAdd(cacheKey, val);
+                return val;
+            }
+            
+            
+            return await CalculateExpansion(genotype, hlaNom, allowedLoci, setId);
+        }
+
+        private async Task<(ISet<PhenotypeInfo<HlaAtKnownTypingCategory>>, HaplotypeLookup)> CalculateExpansion(PhenotypeInfo<string> genotype, string hlaNom, ISet<Locus> allowedLoci, int setId)
         {
             var hlaMetadataDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNom);
             var gGroups = await hlaMetadataDictionary.ConvertAllHla(genotype, TargetHlaCategory.GGroup, allowedLoci);
             var pGroups = await hlaMetadataDictionary.ConvertAllHla(genotype, TargetHlaCategory.PGroup, allowedLoci);
             var frequencies = await haplotypeFrequencyService.GetHaplotypeFrequencies(setId, gGroups, pGroups);
-            
+
             var groupsPerPosition = new DataByResolution<PhenotypeInfo<IReadOnlyCollection<string>>>
             {
                 GGroup = gGroups,
@@ -180,7 +207,7 @@ namespace Atlas.MatchPrediction.Services.ExpandAmbiguousPhenotype
                     .Select(h => h.Value.Hla)
                     .ToList()
             };
-            
+
             var allowedHaplotypes = GetAllowedHaplotypes(allowedLoci, allHaplotypes, groupsPerLocus);
 
             var allowedHaplotypesExcludingLoci = new HashSet<LociInfo<HlaAtKnownTypingCategory>>(allowedHaplotypes.Select(h =>

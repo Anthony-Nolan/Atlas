@@ -144,6 +144,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 frequencySets.PatientSet.Id,
                 allowedLoci,
                 hlaNomenclatureVersion,
+                true,
                 "patient"
             );
 
@@ -152,6 +153,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 frequencySets.DonorSet.Id,
                 allowedLoci,
                 hlaNomenclatureVersion,
+                false,
                 "donor"
             );
 
@@ -241,11 +243,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             int frequencySetId,
             ISet<Locus> allowedLoci,
             string hlaNomenclatureVersion,
+            bool shouldCache,
             string subjectLogDescription = null)
         {
             using (logger.RunTimed($"{LoggingPrefix}Expand {subjectLogDescription} phenotype", LogLevel.Verbose))
             {
-                return await compressedPhenotypeExpander.Expand2(phenotype, hlaNomenclatureVersion, allowedLoci, frequencySetId);
+                return await compressedPhenotypeExpander.Expand2(phenotype, hlaNomenclatureVersion, allowedLoci, frequencySetId, shouldCache);
             }
         }
 
