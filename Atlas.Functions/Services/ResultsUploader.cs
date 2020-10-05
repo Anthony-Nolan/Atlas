@@ -28,7 +28,7 @@ namespace Atlas.Functions.Services
         /// <inheritdoc />
         public async Task UploadResults(SearchResultSet searchResultSet)
         {
-            using (Logger.RunTimed($"Publishing results message: {searchResultSet.SearchRequestId}"))
+            using (Logger.RunTimed($"Uploading results: {searchResultSet.SearchRequestId}"))
             {
                 var serialisedResults = JsonConvert.SerializeObject(searchResultSet);
                 await Upload(resultsContainer, searchResultSet.ResultsFileName, serialisedResults);
