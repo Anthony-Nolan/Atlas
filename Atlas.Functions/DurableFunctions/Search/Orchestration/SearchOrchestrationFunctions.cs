@@ -56,6 +56,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
             try
             {
+                logger.SendTrace($"Search request {searchId} has orchestration instance id {context.InstanceId}");
                 var orchestrationInitiated = context.CurrentUtcDateTime;
                 var searchRequest = notification.SearchRequest;
                 if (!notification.WasSuccessful)
