@@ -5,14 +5,15 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
-using Atlas.Common.Utils.Extensions;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.DurableFunctions.Search.Activity;
+using Atlas.Functions.Exceptions;
 using Atlas.Functions.Models;
 using Atlas.Functions.Services;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using MoreLinq.Extensions;
 using Polly;
 
 namespace Atlas.Functions.DurableFunctions.Search.Orchestration
@@ -29,7 +30,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
     {
         private static readonly RetryOptions RetryOptions = new RetryOptions(TimeSpan.FromSeconds(5), 5) {BackoffCoefficient = 2};
 
-
         private readonly IResultsUploader searchResultsBlobUploader;
         private readonly IResultsCombiner resultsCombiner;
         private readonly ISearchCompletionMessageSender searchCompletionMessageSender;
@@ -45,41 +45,52 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         }
 
         [FunctionName(nameof(SearchOrchestrator))]
-        public async Task<SearchOrchestrationOutput> SearchOrchestrator(
-            [OrchestrationTrigger] IDurableOrchestrationContext context
-        )
+        public async Task<SearchOrchestrationOutput> SearchOrchestrator([OrchestrationTrigger] IDurableOrchestrationContext context)
         {
-            var orchestrationInitiated = context.CurrentUtcDateTime;
             var notification = context.GetInput<MatchingResultsNotification>();
             var searchId = notification.SearchRequestId;
-            var searchRequest = notification.SearchRequest;
 
-            if (!notification.WasSuccessful)
+            try
             {
-                await SendFailureNotification(context, "Matching Algorithm", searchId);
-                return null;
+                var orchestrationInitiated = context.CurrentUtcDateTime;
+                var searchRequest = notification.SearchRequest;
+                if (!notification.WasSuccessful)
+                {
+                    await SendFailureNotification(context, "Matching Algorithm", searchId);
+                    return null;
+                }
+
+                var timedSearchResults = await DownloadMatchingAlgorithmResults(context, notification);
+                var searchResults = timedSearchResults.ResultSet;
+                var timedDonorInformation = await FetchDonorInformation(context, searchResults, searchId);
+                var donorInformation = timedDonorInformation.ResultSet;
+                var matchPredictionResults =
+                    await RunMatchPredictionAlgorithm(context, searchRequest, searchResults, timedDonorInformation, searchId);
+                await PersistSearchResults(context, timedSearchResults, matchPredictionResults, donorInformation, orchestrationInitiated, searchId);
+                // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
+                return new SearchOrchestrationOutput
+                {
+                    MatchingAlgorithmTime = timedSearchResults.ElapsedTime,
+                    MatchPredictionTime = matchPredictionResults.ElapsedTime,
+                    TotalSearchTime = context.CurrentUtcDateTime.Subtract(orchestrationInitiated),
+                    MatchingDonorCount = searchResults.ResultCount,
+                    MatchingResultFileName = searchResults.ResultsFileName,
+                    MatchingResultBlobContainer = searchResults.BlobStorageContainerName,
+                    HlaNomenclatureVersion = searchResults.HlaNomenclatureVersion
+                };
             }
-
-            var timedSearchResults = await DownloadMatchingAlgorithmResults(context, notification);
-            var searchResults = timedSearchResults.ResultSet;
-
-            var timedDonorInformation = await FetchDonorInformation(context, searchResults, searchId);
-            var donorInformation = timedDonorInformation.ResultSet;
-
-            var matchPredictionResults = await RunMatchPredictionAlgorithm(context, searchRequest, searchResults, timedDonorInformation, searchId);
-            await PersistSearchResults(context, timedSearchResults, matchPredictionResults, donorInformation, orchestrationInitiated, searchId);
-
-            // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
-            return new SearchOrchestrationOutput
+            catch (HandledOrchestrationException)
             {
-                MatchingAlgorithmTime = timedSearchResults.ElapsedTime,
-                MatchPredictionTime = matchPredictionResults.ElapsedTime,
-                TotalSearchTime = context.CurrentUtcDateTime.Subtract(orchestrationInitiated),
-                MatchingDonorCount = searchResults.ResultCount,
-                MatchingResultFileName = searchResults.ResultsFileName,
-                MatchingResultBlobContainer = searchResults.BlobStorageContainerName,
-                HlaNomenclatureVersion = searchResults.HlaNomenclatureVersion
-            };
+                // Exceptions wrapper in "HandleOrchestrationException" have already been handled, and failure notifications sent.
+                // In this case we should just re-throw so the function is tracked as a failure.
+                throw;
+            }
+            catch (Exception)
+            {
+                // An unexpected exception occurred in the *orchestration* code. Ensure we send a failure notification
+                await SendFailureNotification(context, "Orchestrator", searchId);
+                throw;
+            }
         }
 
         private static async Task<TimedResultSet<MatchingAlgorithmResultSet>> DownloadMatchingAlgorithmResults(
@@ -122,7 +133,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                     searchId
                 ))
                 .SelectMany(x => x)
-                .ToDictionary();
+                // We have seen "Duplicate Key" exceptions in deployed environments. This is not consistent for the same search request, which implies the duplicates are added transiently by the fan-in process - this code is protection against such a case.
+                .DistinctBy(x => x.Key)
+                .ToDictionary(x => x.Key, x => x.Value);
 
             // We cannot use a stopwatch, as orchestration functions must be deterministic, and may be called multiple times.
             // Results of activity functions are constant across multiple invocations, so we can trust that finished time of the previous stage will remain constant 
@@ -280,10 +293,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             {
                 return await runStage();
             }
-            catch
+            catch (Exception e)
             {
                 await SendFailureNotification(context, stageName, searchId);
-                throw;
+                throw new HandledOrchestrationException(e);
             }
         }
 

@@ -3,6 +3,7 @@ using System.Linq;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 using Atlas.DonorImport.ExternalInterface.Models;
@@ -51,23 +52,23 @@ namespace Atlas.Functions.Services
         public IEnumerable<MultipleDonorMatchProbabilityInput> BuildMatchPredictionInputs(
             MatchPredictionInputParameters matchPredictionInputParameters)
         {
-            var matchingAlgorithmResultSet = matchPredictionInputParameters.MatchingAlgorithmResults;
-            var searchRequest = matchPredictionInputParameters.SearchRequest;
-            var donorDictionary = matchPredictionInputParameters.DonorDictionary;
-
-            var nonDonorInput = BuildSearchRequestMatchPredictionInput(
-                matchingAlgorithmResultSet.SearchRequestId,
-                searchRequest,
-                matchingAlgorithmResultSet.HlaNomenclatureVersion
-            );
-
-            var donorInputs = matchingAlgorithmResultSet.MatchingAlgorithmResults.Select(matchingResult => BuildPerDonorMatchPredictionInput(
-                    matchingResult,
-                    donorDictionary
-                ))
-                .Where(r => r != null);
-
-            return donorInputBatcher.BatchDonorInputs(nonDonorInput, donorInputs, matchPredictionBatchSize);
+            using (logger.RunTimed($"Building match prediction inputs: {matchPredictionInputParameters.MatchingAlgorithmResults.SearchRequestId}"))
+            {
+                var matchingAlgorithmResultSet = matchPredictionInputParameters.MatchingAlgorithmResults;
+                var searchRequest = matchPredictionInputParameters.SearchRequest;
+                var donorDictionary = matchPredictionInputParameters.DonorDictionary;
+                var nonDonorInput = BuildSearchRequestMatchPredictionInput(
+                    matchingAlgorithmResultSet.SearchRequestId,
+                    searchRequest,
+                    matchingAlgorithmResultSet.HlaNomenclatureVersion
+                );
+                var donorInputs = matchingAlgorithmResultSet.MatchingAlgorithmResults.Select(matchingResult => BuildPerDonorMatchPredictionInput(
+                        matchingResult,
+                        donorDictionary
+                    ))
+                    .Where(r => r != null);
+                return donorInputBatcher.BatchDonorInputs(nonDonorInput, donorInputs, matchPredictionBatchSize);
+            }
         }
 
         /// <summary>

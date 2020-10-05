@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Functions.Settings;
 using Microsoft.Extensions.Options;
@@ -27,8 +28,11 @@ namespace Atlas.Functions.Services
         /// <inheritdoc />
         public async Task UploadResults(SearchResultSet searchResultSet)
         {
-            var serialisedResults = JsonConvert.SerializeObject(searchResultSet);
-            await Upload(resultsContainer, searchResultSet.ResultsFileName, serialisedResults);
+            using (Logger.RunTimed($"Publishing results message: {searchResultSet.SearchRequestId}"))
+            {
+                var serialisedResults = JsonConvert.SerializeObject(searchResultSet);
+                await Upload(resultsContainer, searchResultSet.ResultsFileName, serialisedResults);
+            }
         }
     }
 }

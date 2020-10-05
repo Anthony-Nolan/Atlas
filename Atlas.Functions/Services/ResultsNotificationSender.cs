@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
 using Atlas.Common.ApplicationInsights;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Functions.Settings;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Options;
@@ -33,38 +34,38 @@ namespace Atlas.Functions.Services
         /// <inheritdoc />
         public async Task PublishResultsMessage(SearchResultSet searchResultSet, DateTime searchInitiationTime)
         {
-            var orchestrationSearchTime = DateTime.UtcNow.Subtract(searchInitiationTime);
-            // Orchestration time covers everything in the orchestration function layer:
-            // [matching results download, donor info fetching, match prediction, results upload]
-            // It does not cover matching, which happens in another functions app - so we add it on here. 
-            // This means we don't track the queue time, on either the matching or orchestration queue - so user observed search time may be
-            // slightly longer than this reported time. This should only be noticeably different under high load. 
-            var searchTime = searchResultSet.MatchingAlgorithmTime + orchestrationSearchTime;
-
-            logger.SendTrace(
-                $"Search Request: {searchResultSet.SearchRequestId} finished. Matched {searchResultSet.TotalResults} donors in {searchTime} total.",
-                LogLevel.Info,
-                new Dictionary<string, string>
-                {
-                    {"SearchRequestId", searchResultSet.SearchRequestId},
-                    {"Donors", searchResultSet.TotalResults.ToString()},
-                    {"Milliseconds", searchTime.Milliseconds.ToString()},
-                });
-
-            var searchResultsNotification = new SearchResultsNotification
+            using (logger.RunTimed($"Publishing results message: {searchResultSet.SearchRequestId}"))
             {
-                WasSuccessful = true,
-                HlaNomenclatureVersion = searchResultSet.HlaNomenclatureVersion,
-                NumberOfResults = searchResultSet.TotalResults,
-                ResultsFileName = searchResultSet.ResultsFileName,
-                SearchRequestId = searchResultSet.SearchRequestId,
-                BlobStorageContainerName = searchResultSet.BlobStorageContainerName,
-                MatchingAlgorithmTime = searchResultSet.MatchingAlgorithmTime,
-                MatchPredictionTime = searchResultSet.MatchPredictionTime,
-                OverallSearchTime = searchTime
-            };
-
-            await SendNotificationMessage(searchResultsNotification);
+                var orchestrationSearchTime = DateTime.UtcNow.Subtract(searchInitiationTime);
+                // Orchestration time covers everything in the orchestration function layer:
+                // [matching results download, donor info fetching, match prediction, results upload]
+                // It does not cover matching, which happens in another functions app - so we add it on here. 
+                // This means we don't track the queue time, on either the matching or orchestration queue - so user observed search time may be
+                // slightly longer than this reported time. This should only be noticeably different under high load. 
+                var searchTime = searchResultSet.MatchingAlgorithmTime + orchestrationSearchTime;
+                logger.SendTrace(
+                    $"Search Request: {searchResultSet.SearchRequestId} finished. Matched {searchResultSet.TotalResults} donors in {searchTime} total.",
+                    LogLevel.Info,
+                    new Dictionary<string, string>
+                    {
+                        {"SearchRequestId", searchResultSet.SearchRequestId},
+                        {"Donors", searchResultSet.TotalResults.ToString()},
+                        {"Milliseconds", searchTime.Milliseconds.ToString()},
+                    });
+                var searchResultsNotification = new SearchResultsNotification
+                {
+                    WasSuccessful = true,
+                    HlaNomenclatureVersion = searchResultSet.HlaNomenclatureVersion,
+                    NumberOfResults = searchResultSet.TotalResults,
+                    ResultsFileName = searchResultSet.ResultsFileName,
+                    SearchRequestId = searchResultSet.SearchRequestId,
+                    BlobStorageContainerName = searchResultSet.BlobStorageContainerName,
+                    MatchingAlgorithmTime = searchResultSet.MatchingAlgorithmTime,
+                    MatchPredictionTime = searchResultSet.MatchPredictionTime,
+                    OverallSearchTime = searchTime
+                };
+                await SendNotificationMessage(searchResultsNotification);
+            }
         }
 
         /// <inheritdoc />
