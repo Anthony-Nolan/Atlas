@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
+using Atlas.Common.ApplicationInsights;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.DurableFunctions.Search.Activity;
 using Atlas.Functions.Exceptions;
@@ -33,15 +34,18 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         private readonly IResultsUploader searchResultsBlobUploader;
         private readonly IResultsCombiner resultsCombiner;
         private readonly ISearchCompletionMessageSender searchCompletionMessageSender;
+        private readonly ILogger logger;
 
         public SearchOrchestrationFunctions(
             IResultsCombiner resultsCombiner,
             IResultsUploader searchResultsBlobUploader,
-            ISearchCompletionMessageSender searchCompletionMessageSender)
+            ISearchCompletionMessageSender searchCompletionMessageSender, 
+            ILogger logger)
         {
             this.resultsCombiner = resultsCombiner;
             this.searchResultsBlobUploader = searchResultsBlobUploader;
             this.searchCompletionMessageSender = searchCompletionMessageSender;
+            this.logger = logger;
         }
 
         [FunctionName(nameof(SearchOrchestrator))]
@@ -85,15 +89,16 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 // In this case we should just re-throw so the function is tracked as a failure.
                 throw;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                logger.SendTrace($"Failure during orchestration. Exception: {e.Message}, {e.InnerException?.Message}");
                 // An unexpected exception occurred in the *orchestration* code. Ensure we send a failure notification
                 await SendFailureNotification(context, "Orchestrator", searchId);
                 throw;
             }
         }
 
-        private static async Task<TimedResultSet<MatchingAlgorithmResultSet>> DownloadMatchingAlgorithmResults(
+        private async Task<TimedResultSet<MatchingAlgorithmResultSet>> DownloadMatchingAlgorithmResults(
             IDurableOrchestrationContext context,
             MatchingResultsNotification notification)
         {
@@ -117,7 +122,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             return matchingResults;
         }
 
-        private static async Task<TimedResultSet<Dictionary<int, MatchProbabilityResponse>>> RunMatchPredictionAlgorithm(
+        private async Task<TimedResultSet<Dictionary<int, MatchProbabilityResponse>>> RunMatchPredictionAlgorithm(
             IDurableOrchestrationContext context,
             SearchRequest searchRequest,
             MatchingAlgorithmResultSet searchResults,
@@ -161,7 +166,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             };
         }
 
-        private static async Task<IEnumerable<MultipleDonorMatchProbabilityInput>> BuildMatchPredictionInputs(
+        private async Task<IEnumerable<MultipleDonorMatchProbabilityInput>> BuildMatchPredictionInputs(
             IDurableOrchestrationContext context,
             SearchRequest searchRequest,
             MatchingAlgorithmResultSet searchResults,
@@ -185,7 +190,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             );
         }
 
-        private static async Task<TimedResultSet<Dictionary<int, Donor>>> FetchDonorInformation(
+        private async Task<TimedResultSet<Dictionary<int, Donor>>> FetchDonorInformation(
             IDurableOrchestrationContext context,
             MatchingAlgorithmResultSet matchingAlgorithmResults,
             string searchId)
@@ -272,7 +277,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             });
         }
 
-        private static async Task RunStageAndHandleFailures(
+        private async Task RunStageAndHandleFailures(
             Func<Task> runStage,
             IDurableOrchestrationContext context,
             string stageName,
@@ -283,7 +288,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 return true;
             }, context, stageName, searchId);
 
-        private static async Task<T> RunStageAndHandleFailures<T>(
+        private async Task<T> RunStageAndHandleFailures<T>(
             Func<Task<T>> runStage,
             IDurableOrchestrationContext context,
             string stageName,
@@ -295,6 +300,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
             catch (Exception e)
             {
+                logger.SendTrace($"Failure at stage: {stageName}. Exception: {e.Message}, {e.InnerException?.Message}");
                 await SendFailureNotification(context, stageName, searchId);
                 throw new HandledOrchestrationException(e);
             }
