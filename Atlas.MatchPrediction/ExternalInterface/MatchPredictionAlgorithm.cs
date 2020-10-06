@@ -17,8 +17,8 @@ namespace Atlas.MatchPrediction.ExternalInterface
     {
         public Task<MatchProbabilityResponse> RunMatchPredictionAlgorithm(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput);
 
-        /// <returns>A list of filenames in blob storage where the per-donor results can be located.</returns>
-        public Task<IList<string>> RunMatchPredictionAlgorithmBatch(MultipleDonorMatchProbabilityInput multipleDonorMatchProbabilityInput);
+        /// <returns>A dictionary of donorId:filenames in blob storage where the per-donor results can be located.</returns>
+        public Task<IReadOnlyDictionary<int, string>> RunMatchPredictionAlgorithmBatch(MultipleDonorMatchProbabilityInput multipleDonorMatchProbabilityInput);
 
         public Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet(HaplotypeFrequencySetInput haplotypeFrequencySetInput);
     }
@@ -54,13 +54,13 @@ namespace Atlas.MatchPrediction.ExternalInterface
         }
 
         /// <inheritdoc />
-        public async Task<IList<string>> RunMatchPredictionAlgorithmBatch(
+        public async Task<IReadOnlyDictionary<int, string>> RunMatchPredictionAlgorithmBatch(
             MultipleDonorMatchProbabilityInput multipleDonorMatchProbabilityInput)
         {
             using (logger.RunLongOperationWithTimer("Run Match Prediction Algorithm Batch", new LongLoggingSettings()))
             {
                 var searchRequestId = multipleDonorMatchProbabilityInput.SearchRequestId;
-                var fileNames = new List<string>();
+                var fileNames = new Dictionary<int, string>();
                 foreach (var matchProbabilityInput in multipleDonorMatchProbabilityInput.SingleDonorMatchProbabilityInputs)
                 {
                     using (logger.RunTimed("Run Match Prediction Algorithm per donor"))
@@ -69,7 +69,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
                         foreach (var donorId in matchProbabilityInput.DonorInput.DonorIds)
                         {
                             var fileName = await resultUploader.UploadDonorResult(searchRequestId, donorId, result);
-                            fileNames.Add(fileName);
+                            fileNames[donorId] = fileName;
                         }
                     }
                 }

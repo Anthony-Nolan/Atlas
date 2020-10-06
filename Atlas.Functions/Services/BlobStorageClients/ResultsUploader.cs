@@ -7,7 +7,7 @@ using Atlas.Functions.Settings;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
-namespace Atlas.Functions.Services
+namespace Atlas.Functions.Services.BlobStorageClients
 {
     public interface IResultsUploader
     {
@@ -20,7 +20,7 @@ namespace Atlas.Functions.Services
 
         /// <inheritdoc />
         public ResultsUploader(IOptions<AzureStorageSettings> azureStorageSettings, ILogger logger)
-            : base(azureStorageSettings.Value.ConnectionString, logger)
+            : base(azureStorageSettings.Value.MatchingConnectionString, logger)
         {
             resultsContainer = azureStorageSettings.Value.SearchResultsBlobContainer;
         }
