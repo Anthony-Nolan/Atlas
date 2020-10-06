@@ -27,7 +27,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         // Atlas.Functions services
         private readonly IMatchPredictionInputBuilder matchPredictionInputBuilder;
         private readonly ISearchCompletionMessageSender searchCompletionMessageSender;
-        private readonly IMatchingResultsDownloader matchingResultsDownloader;
+        private readonly IMatchingResultsDownloader matchingResultsDownloader;        
+        private readonly IResultsUploader searchResultsBlobUploader;
+        private readonly IResultsCombiner resultsCombiner;
 
         public SearchActivityFunctions(
             // Donor Import services
@@ -36,13 +38,17 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             IMatchPredictionAlgorithm matchPredictionAlgorithm,
             IMatchPredictionInputBuilder matchPredictionInputBuilder,
             ISearchCompletionMessageSender searchCompletionMessageSender,
-            IMatchingResultsDownloader matchingResultsDownloader)
+            IMatchingResultsDownloader matchingResultsDownloader,
+            IResultsUploader searchResultsBlobUploader,
+            IResultsCombiner resultsCombiner)
         {
             this.donorReader = donorReader;
             this.matchPredictionAlgorithm = matchPredictionAlgorithm;
             this.matchPredictionInputBuilder = matchPredictionInputBuilder;
             this.searchCompletionMessageSender = searchCompletionMessageSender;
             this.matchingResultsDownloader = matchingResultsDownloader;
+            this.searchResultsBlobUploader = searchResultsBlobUploader;
+            this.resultsCombiner = resultsCombiner;
         }
 
         [FunctionName(nameof(DownloadMatchingAlgorithmResults))]
@@ -87,6 +93,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             return await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(matchProbabilityInput);
         }
 
+        [FunctionName(nameof(PersistSearchResults))]
+        public async Task PersistSearchResults([ActivityTrigger] PersistSearchResultsParameters persistSearchResultsParameters)
+        {
+            var resultSet = await resultsCombiner.CombineResults(persistSearchResultsParameters);
+            await searchResultsBlobUploader.UploadResults(resultSet);
+            await searchCompletionMessageSender.PublishResultsMessage(resultSet, persistSearchResultsParameters.SearchInitiated);
+        }
+        
         [FunctionName(nameof(SendFailureNotification))]
         public async Task SendFailureNotification([ActivityTrigger] (string, string) failureInfo)
         {
