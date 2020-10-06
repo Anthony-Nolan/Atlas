@@ -1,14 +1,13 @@
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
-using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Functions.Settings;
 using Microsoft.Extensions.Options;
 
 namespace Atlas.Functions.Services.BlobStorageClients
 {
-    public interface IMatchPredictionResultsDownloader
+    internal interface IMatchPredictionResultsDownloader
     {
         public Task<MatchProbabilityResponse> Download(string blobName);
     }
@@ -17,7 +16,6 @@ namespace Atlas.Functions.Services.BlobStorageClients
     {
         private readonly AzureStorageSettings messagingServiceBusSettings;
         private readonly IBlobDownloader blobDownloader;
-        private readonly ILogger logger;
 
         public MatchPredictionResultsDownloader(
             IOptions<AzureStorageSettings> azureStorageSettings,
@@ -26,7 +24,6 @@ namespace Atlas.Functions.Services.BlobStorageClients
         {
             messagingServiceBusSettings = azureStorageSettings.Value;
             this.blobDownloader = blobDownloader;
-            this.logger = logger;
         }
 
         /// <inheritdoc />
