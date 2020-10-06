@@ -16,6 +16,7 @@ using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Atlas.MatchPrediction.ExternalInterface.Settings;
+using Atlas.MatchPrediction.Services.ResultsUpload;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
 
 namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
@@ -121,6 +122,8 @@ namespace Atlas.MatchPrediction.ExternalInterface.DependencyInjection
 
             services.AddScoped<IMatchProbabilityService, MatchProbabilityService>();
             services.AddScoped<IMatchProbabilityCalculator, MatchProbabilityCalculator>();
+
+            services.AddScoped<IResultUploader, ResultUploader>();
         }
     }
 }
