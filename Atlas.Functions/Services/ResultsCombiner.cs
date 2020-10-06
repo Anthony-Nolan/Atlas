@@ -70,9 +70,16 @@ namespace Atlas.Functions.Services
             {
                 logger.SendTrace($"{matchPredictionResultLocations.Count} donor results to download");
 
-                var results = await Task.WhenAll(matchPredictionResultLocations.Select(async l =>
-                    new KeyValuePair<int, MatchProbabilityResponse>(l.Key, await matchPredictionResultsDownloader.Download(l.Value)))
-                );
+                var results = new List<KeyValuePair<int, MatchProbabilityResponse>>();
+
+                // Batch downloads to avoid using too many outbound connections
+                foreach (var resultLocationBatch in matchPredictionResultLocations.Batch(100))
+                {
+                    var resultBatch = await Task.WhenAll(resultLocationBatch.Select(async l =>
+                        new KeyValuePair<int, MatchProbabilityResponse>(l.Key, await matchPredictionResultsDownloader.Download(l.Value)))
+                    );
+                    results.AddRange(resultBatch);
+                }
 
                 return results.ToList().ToDictionary();
             }

@@ -81,7 +81,7 @@ namespace Atlas.Functions
             services.AddScoped<IResultsCombiner, ResultsCombiner>();
             services.AddScoped<IResultsUploader, ResultsUploader>();
             services.AddScoped<ISearchCompletionMessageSender, SearchCompletionMessageSender>();
-            services.AddScoped<IMatchingResultsDownloader, MatchingResultsDownloader>(sp =>
+            services.AddSingleton<IMatchingResultsDownloader, MatchingResultsDownloader>(sp =>
             {
                 var logger = sp.GetService<ILogger>();
                 var options = sp.GetService<IOptions<Settings.AzureStorageSettings>>();
@@ -89,7 +89,7 @@ namespace Atlas.Functions
                 var downloader = new BlobDownloader(connectionString, logger);
                 return new MatchingResultsDownloader(options, downloader, logger);
             });
-            services.AddScoped<IMatchPredictionResultsDownloader, MatchPredictionResultsDownloader>(sp =>
+            services.AddSingleton<IMatchPredictionResultsDownloader, MatchPredictionResultsDownloader>(sp =>
             {
                 var logger = sp.GetService<ILogger>();
                 var options = sp.GetService<IOptions<Settings.AzureStorageSettings>>();
