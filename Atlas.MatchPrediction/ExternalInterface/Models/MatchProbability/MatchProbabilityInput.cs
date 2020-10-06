@@ -85,7 +85,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         }
 
         /// <summary>
-        /// Search ID is not necessary for running match prediction, but will be useful for logging
+        /// Search ID is used to identify uploaded results of the Match Prediction Algorithm
         /// </summary>
         public string SearchRequestId { get; set; }
 

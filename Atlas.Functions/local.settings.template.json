@@ -31,6 +31,9 @@
     "Matching:MessagingServiceBus:SearchRequestsQueue": "matching-requests",
     "Matching:MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
 
+    "MatchPrediction:AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
+    "MatchPrediction:AzureStorage:MatchPredictionResultsBlobContainer": "match-prediction-results",
+    
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications"

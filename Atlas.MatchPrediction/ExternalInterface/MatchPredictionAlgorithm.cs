@@ -8,8 +8,7 @@ using Atlas.MatchPrediction.ExternalInterface.Models.HaplotypeFrequencySet;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Atlas.MatchPrediction.Services.HaplotypeFrequencies;
 using Atlas.MatchPrediction.Services.MatchProbability;
-using Atlas.MatchPrediction.Validators;
-using FluentValidation.Results;
+using Atlas.MatchPrediction.Services.ResultsUpload;
 using LoggingStopwatch;
 
 namespace Atlas.MatchPrediction.ExternalInterface
@@ -18,9 +17,8 @@ namespace Atlas.MatchPrediction.ExternalInterface
     {
         public Task<MatchProbabilityResponse> RunMatchPredictionAlgorithm(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput);
 
-        /// <returns>A dictionary of DonorIds to Match Prediction Result</returns>
-        public Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> RunMatchPredictionAlgorithmBatch(
-            MultipleDonorMatchProbabilityInput multipleDonorMatchProbabilityInput);
+        /// <returns>A list of filenames in blob storage where the per-donor results can be located.</returns>
+        public Task<IList<string>> RunMatchPredictionAlgorithmBatch(MultipleDonorMatchProbabilityInput multipleDonorMatchProbabilityInput);
 
         public Task<HaplotypeFrequencySetResponse> GetHaplotypeFrequencySet(HaplotypeFrequencySetInput haplotypeFrequencySetInput);
     }
@@ -29,17 +27,20 @@ namespace Atlas.MatchPrediction.ExternalInterface
     {
         private readonly IMatchProbabilityService matchProbabilityService;
         private readonly IHaplotypeFrequencyService haplotypeFrequencyService;
+        private readonly IResultUploader resultUploader;
         private readonly ILogger logger;
 
         public MatchPredictionAlgorithm(
             IMatchProbabilityService matchProbabilityService,
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchPredictionLogger logger,
-            IHaplotypeFrequencyService haplotypeFrequencyService)
+            IHaplotypeFrequencyService haplotypeFrequencyService,
+            IResultUploader resultUploader)
         {
             this.matchProbabilityService = matchProbabilityService;
             this.logger = logger;
             this.haplotypeFrequencyService = haplotypeFrequencyService;
+            this.resultUploader = resultUploader;
         }
 
         /// <inheritdoc />
@@ -53,12 +54,13 @@ namespace Atlas.MatchPrediction.ExternalInterface
         }
 
         /// <inheritdoc />
-        public async Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> RunMatchPredictionAlgorithmBatch(
+        public async Task<IList<string>> RunMatchPredictionAlgorithmBatch(
             MultipleDonorMatchProbabilityInput multipleDonorMatchProbabilityInput)
         {
             using (logger.RunLongOperationWithTimer("Run Match Prediction Algorithm Batch", new LongLoggingSettings()))
             {
-                var results = new Dictionary<int, MatchProbabilityResponse>();
+                var searchRequestId = multipleDonorMatchProbabilityInput.SearchRequestId;
+                var fileNames = new List<string>();
                 foreach (var matchProbabilityInput in multipleDonorMatchProbabilityInput.SingleDonorMatchProbabilityInputs)
                 {
                     using (logger.RunTimed("Run Match Prediction Algorithm per donor"))
@@ -66,12 +68,13 @@ namespace Atlas.MatchPrediction.ExternalInterface
                         var result = await matchProbabilityService.CalculateMatchProbability(matchProbabilityInput);
                         foreach (var donorId in matchProbabilityInput.DonorInput.DonorIds)
                         {
-                            results[donorId] = result;
+                            var fileName = await resultUploader.UploadDonorResult(searchRequestId, donorId, result);
+                            fileNames.Add(fileName);
                         }
                     }
                 }
 
-                return results;
+                return fileNames;
             }
         }
 

@@ -8,7 +8,8 @@ output "function_app" {
 
 output "storage" {
   value = {
-    haplotype_frequency_set_container_name = azurerm_storage_container.haplotype_frequency_set_blob_container.name
+    haplotype_frequency_set_container_name  = azurerm_storage_container.haplotype_frequency_set_blob_container.name
+    match_prediction_results_container_name = azurerm_storage_container.match_prediction_results_container.name
   }
 }
 

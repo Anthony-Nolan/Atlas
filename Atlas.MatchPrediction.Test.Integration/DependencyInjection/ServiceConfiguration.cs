@@ -4,9 +4,9 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection;
-using Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs;
 using Atlas.MatchPrediction.Data.Context;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
+using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Test.Integration.TestHelpers;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.MultipleAlleleCodeDictionary.Test.Integration.DependencyInjection;
@@ -31,6 +31,7 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
                 _ => new HlaMetadataDictionarySettings(),
                 MacDictionarySettingsReader,
                 _ => new NotificationsServiceBusSettings(),
+                AzureStorageSettingsReader,
                 ConnectionStringReader(MatchPredictionSqlConnectionString)
             );
             services.RegisterIntegrationTestServices();
@@ -75,6 +76,9 @@ namespace Atlas.MatchPrediction.Test.Integration.DependencyInjection
 
         private static Func<IServiceProvider, ApplicationInsightsSettings> ApplicationInsightsSettingsReader =>
             _ => new ApplicationInsightsSettings {LogLevel = "Verbose"};
+
+        private static Func<IServiceProvider, AzureStorageSettings> AzureStorageSettingsReader =>
+            _ => new AzureStorageSettings {ConnectionString = "UseDevelopmentStorage=true", MatchPredictionResultsBlobContainer = "mpa-results"};
 
         private static Func<IServiceProvider, MacDictionarySettings> MacDictionarySettingsReader =>
             _ => new MacDictionarySettings();
