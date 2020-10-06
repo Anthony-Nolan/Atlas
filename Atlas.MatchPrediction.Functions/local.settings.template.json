@@ -4,6 +4,7 @@
     "ApplicationInsights:InstrumentationKey": "dummy-key",
     "ApplicationInsights:LogLevel": "Info",
     "AzureStorage:ConnectionString": "UseDevelopmentStorage=true",
+    "AzureStorage:MatchPredictionResultsBlobContainer": "match-prediction-results",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",

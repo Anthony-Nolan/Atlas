@@ -84,7 +84,8 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         public async Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> RunMatchPrediction(
             [ActivityTrigger] MultipleDonorMatchProbabilityInput matchProbabilityInput)
         {
-            return await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(matchProbabilityInput);
+            var fileNames = await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(matchProbabilityInput);
+            return null;
         }
 
         [FunctionName(nameof(SendFailureNotification))]

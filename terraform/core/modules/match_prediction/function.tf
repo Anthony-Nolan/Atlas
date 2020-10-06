@@ -20,7 +20,8 @@ resource "azurerm_function_app" "atlas_match_prediction_function" {
     "APPINSIGHTS_INSTRUMENTATIONKEY" = var.application_insights.instrumentation_key
     "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
-    "AzureStorage:ConnectionString" = var.azure_storage.primary_connection_string
+    "AzureStorage:ConnectionString"                    = var.azure_storage.primary_connection_string
+    "AzureStorage:MatchPredictionResultsBlobContainer" = azurerm_storage_container.match_prediction_results_container.name
 
     "FUNCTIONS_WORKER_RUNTIME" : "dotnet"
 

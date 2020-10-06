@@ -2,6 +2,7 @@
 using Atlas.Common.Notifications;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
+using Atlas.MatchPrediction.ExternalInterface.Settings;
 using Atlas.MatchPrediction.Functions;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
@@ -22,6 +23,7 @@ namespace Atlas.MatchPrediction.Functions
                 OptionsReaderFor<HlaMetadataDictionarySettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
+                OptionsReaderFor<AzureStorageSettings>(),
                 ConnectionStringReader("MatchPredictionSql")
             );
         }
@@ -29,6 +31,7 @@ namespace Atlas.MatchPrediction.Functions
         private static void RegisterSettings(IServiceCollection services)
         {
             services.RegisterAsOptions<ApplicationInsightsSettings>("ApplicationInsights");
+            services.RegisterAsOptions<AzureStorageSettings>("AzureStorage");
             services.RegisterAsOptions<HlaMetadataDictionarySettings>("HlaMetadataDictionary");
             services.RegisterAsOptions<MacDictionarySettings>("MacDictionary");
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
