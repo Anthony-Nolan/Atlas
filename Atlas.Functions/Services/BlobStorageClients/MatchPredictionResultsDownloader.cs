@@ -24,7 +24,7 @@ namespace Atlas.Functions.Services.BlobStorageClients
             IBlobDownloader blobDownloader,
             ILogger logger)
         {
-            this.messagingServiceBusSettings = azureStorageSettings.Value;
+            messagingServiceBusSettings = azureStorageSettings.Value;
             this.blobDownloader = blobDownloader;
             this.logger = logger;
         }
@@ -32,13 +32,10 @@ namespace Atlas.Functions.Services.BlobStorageClients
         /// <inheritdoc />
         public async Task<MatchProbabilityResponse> Download(string blobName)
         {
-            using (logger.RunTimed($"Downloading match prediction results: {blobName}"))
-            {
-                return await blobDownloader.Download<MatchProbabilityResponse>(
-                    messagingServiceBusSettings.MatchPredictionResultsBlobContainer,
-                    blobName
-                );
-            }
+            return await blobDownloader.Download<MatchProbabilityResponse>(
+                messagingServiceBusSettings.MatchPredictionResultsBlobContainer,
+                blobName
+            );
         }
     }
 }

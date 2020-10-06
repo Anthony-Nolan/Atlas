@@ -32,20 +32,10 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
     {
         private static readonly RetryOptions RetryOptions = new RetryOptions(TimeSpan.FromSeconds(5), 5) {BackoffCoefficient = 2};
 
-        private readonly IResultsUploader searchResultsBlobUploader;
-        private readonly IResultsCombiner resultsCombiner;
-        private readonly ISearchCompletionMessageSender searchCompletionMessageSender;
         private readonly ILogger logger;
 
-        public SearchOrchestrationFunctions(
-            IResultsCombiner resultsCombiner,
-            IResultsUploader searchResultsBlobUploader,
-            ISearchCompletionMessageSender searchCompletionMessageSender,
-            ILogger logger)
+        public SearchOrchestrationFunctions(ILogger logger)
         {
-            this.resultsCombiner = resultsCombiner;
-            this.searchResultsBlobUploader = searchResultsBlobUploader;
-            this.searchCompletionMessageSender = searchCompletionMessageSender;
             this.logger = logger;
         }
 
@@ -57,7 +47,6 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
             try
             {
-                logger.SendTrace($"Search request {searchId} has orchestration instance id {context.InstanceId}", LogLevel.Verbose);
                 var orchestrationInitiated = context.CurrentUtcDateTime;
                 var searchRequest = notification.SearchRequest;
                 if (!notification.WasSuccessful)
