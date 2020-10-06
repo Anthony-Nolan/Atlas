@@ -8,6 +8,7 @@ using Atlas.DonorImport.ExternalInterface;
 using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.Models;
 using Atlas.Functions.Services;
+using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Microsoft.Azure.WebJobs;
@@ -81,11 +82,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
         }
 
         [FunctionName(nameof(RunMatchPrediction))]
-        public async Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> RunMatchPrediction(
-            [ActivityTrigger] MultipleDonorMatchProbabilityInput matchProbabilityInput)
+        public async Task<IReadOnlyDictionary<int, string>> RunMatchPrediction([ActivityTrigger] MultipleDonorMatchProbabilityInput matchProbabilityInput)
         {
-            var fileNames = await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(matchProbabilityInput);
-            return null;
+            return await matchPredictionAlgorithm.RunMatchPredictionAlgorithmBatch(matchProbabilityInput);
         }
 
         [FunctionName(nameof(SendFailureNotification))]
@@ -107,9 +106,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Activity
             public TimedResultSet<MatchingAlgorithmResultSet> MatchingAlgorithmResultSet { get; set; }
 
             /// <summary>
-            /// Keyed by ATLAS ID
+            /// Keyed by ATLAS Donor ID
             /// </summary>
-            public TimedResultSet<Dictionary<int, MatchProbabilityResponse>> MatchPredictionResults { get; set; }
+            public TimedResultSet<IReadOnlyDictionary<int, string>> MatchPredictionResultLocations { get; set; }
 
             /// <summary>
             /// Keyed by ATLAS ID

@@ -1,8 +1,12 @@
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
+using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Functions.DurableFunctions.Search.Activity;
+using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.Functions.Settings;
 using Microsoft.Extensions.Options;
 
@@ -10,28 +14,36 @@ namespace Atlas.Functions.Services
 {
     public interface IResultsCombiner
     {
-        SearchResultSet CombineResults(SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters);
+        Task<SearchResultSet> CombineResults(SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters);
     }
 
     internal class ResultsCombiner : IResultsCombiner
     {
         private readonly ILogger logger;
+        private readonly IMatchPredictionResultsDownloader matchPredictionResultsDownloader;
         private readonly string resultsContainer;
 
-        public ResultsCombiner(IOptions<AzureStorageSettings> azureStorageSettings, ILogger logger)
+        public ResultsCombiner(
+            IOptions<AzureStorageSettings> azureStorageSettings,
+            ILogger logger,
+            IMatchPredictionResultsDownloader matchPredictionResultsDownloader)
         {
             this.logger = logger;
+            this.matchPredictionResultsDownloader = matchPredictionResultsDownloader;
             resultsContainer = azureStorageSettings.Value.SearchResultsBlobContainer;
         }
 
         /// <inheritdoc />
-        public SearchResultSet CombineResults(SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters)
+        public async Task<SearchResultSet> CombineResults(SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters)
         {
             using (logger.RunTimed($"Combine search results: {persistSearchResultsParameters.MatchingAlgorithmResultSet.ResultSet.SearchRequestId}"))
             {
                 var matchingResults = persistSearchResultsParameters.MatchingAlgorithmResultSet.ResultSet;
-                var matchPredictionResults = persistSearchResultsParameters.MatchPredictionResults.ResultSet;
+                var matchPredictionResultLocations = persistSearchResultsParameters.MatchPredictionResultLocations.ResultSet;
                 var donorInfo = persistSearchResultsParameters.DonorInformation;
+
+                var matchPredictionResults = await DownloadMatchPredictionResults(matchPredictionResultLocations);
+
                 return new SearchResultSet
                 {
                     SearchResults = matchingResults.MatchingAlgorithmResults.Select(r => new SearchResult
@@ -45,8 +57,25 @@ namespace Atlas.Functions.Services
                     SearchRequestId = matchingResults.SearchRequestId,
                     BlobStorageContainerName = resultsContainer,
                     MatchingAlgorithmTime = persistSearchResultsParameters.MatchingAlgorithmResultSet.ElapsedTime,
-                    MatchPredictionTime = persistSearchResultsParameters.MatchPredictionResults.ElapsedTime
+                    MatchPredictionTime = persistSearchResultsParameters.MatchPredictionResultLocations.ElapsedTime
                 };
+            }
+        }
+
+        private async Task<Dictionary<int, MatchProbabilityResponse>> DownloadMatchPredictionResults(
+            IReadOnlyDictionary<int, string> matchPredictionResultLocations)
+        {
+            using (logger.RunTimed("Download match prediction algorithm results"))
+            {
+                logger.SendTrace($"{matchPredictionResultLocations.Count} donor results to download");
+                var matchProbabilityResponses = new Dictionary<int, MatchProbabilityResponse>();
+                foreach (var (donorId, resultLocation) in matchPredictionResultLocations)
+                {
+                    var result = await matchPredictionResultsDownloader.Download(resultLocation);
+                    matchProbabilityResponses[donorId] = result;
+                }
+
+                return matchProbabilityResponses;
             }
         }
     }

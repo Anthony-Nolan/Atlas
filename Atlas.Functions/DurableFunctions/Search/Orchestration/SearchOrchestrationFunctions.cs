@@ -11,6 +11,7 @@ using Atlas.Functions.DurableFunctions.Search.Activity;
 using Atlas.Functions.Exceptions;
 using Atlas.Functions.Models;
 using Atlas.Functions.Services;
+using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -56,7 +57,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
 
             try
             {
-                logger.SendTrace($"Search request {searchId} has orchestration instance id {context.InstanceId}");
+                logger.SendTrace($"Search request {searchId} has orchestration instance id {context.InstanceId}", LogLevel.Verbose);
                 var orchestrationInitiated = context.CurrentUtcDateTime;
                 var searchRequest = notification.SearchRequest;
                 if (!notification.WasSuccessful)
@@ -123,7 +124,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             return matchingResults;
         }
 
-        private async Task<TimedResultSet<Dictionary<int, MatchProbabilityResponse>>> RunMatchPredictionAlgorithm(
+        private async Task<TimedResultSet<IReadOnlyDictionary<int, string>>> RunMatchPredictionAlgorithm(
             IDurableOrchestrationContext context,
             SearchRequest searchRequest,
             MatchingAlgorithmResultSet searchResults,
@@ -132,16 +133,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         {
             var matchPredictionInputs = await BuildMatchPredictionInputs(context, searchRequest, searchResults, donorInformation.ResultSet, searchId);
             var matchPredictionTasks = matchPredictionInputs.Select(r => RunMatchPredictionForDonorBatch(context, r)).ToList();
-            var matchPredictionResults = (await RunStageAndHandleFailures(
+            var matchPredictionResultLocations = (await RunStageAndHandleFailures(
                     async () => await Task.WhenAll(matchPredictionTasks),
                     context,
                     nameof(RunMatchPredictionAlgorithm),
                     searchId
                 ))
                 .SelectMany(x => x)
-                // We have seen "Duplicate Key" exceptions in deployed environments. This is not consistent for the same search request, which implies the duplicates are added transiently by the fan-in process - this code is protection against such a case.
-                .DistinctBy(x => x.Key)
-                .ToDictionary(x => x.Key, x => x.Value);
+                .ToDictionary();
 
             // We cannot use a stopwatch, as orchestration functions must be deterministic, and may be called multiple times.
             // Results of activity functions are constant across multiple invocations, so we can trust that finished time of the previous stage will remain constant 
@@ -158,9 +157,9 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 ElapsedTimeOfStage = totalElapsedTime,
             });
 
-            return new TimedResultSet<Dictionary<int, MatchProbabilityResponse>>
+            return new TimedResultSet<IReadOnlyDictionary<int, string>>
             {
-                ResultSet = matchPredictionResults,
+                ResultSet = matchPredictionResultLocations,
                 // If the previous stage did not successfully report a timespan, we do not want to report an error - so we allow it to be null.
                 // TimedResultSet promises a non-null timestamp, so return MaxValue to be clear that this timing was not successful
                 ElapsedTime = totalElapsedTime ?? TimeSpan.MaxValue
@@ -216,14 +215,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             return donorInfo;
         }
 
-        /// <returns>A Task returning a Key Value pair of Atlas Donor ID, and match prediction response.</returns>
-        private static async Task<IReadOnlyDictionary<int, MatchProbabilityResponse>> RunMatchPredictionForDonorBatch(
+        /// <returns>A Task a list of locations in which MPA results (per donor) can be found.</returns>
+        private static async Task<IReadOnlyDictionary<int, string>> RunMatchPredictionForDonorBatch(
             IDurableOrchestrationContext context,
             MultipleDonorMatchProbabilityInput matchProbabilityInput
         )
         {
             // Do not add error handling to this, as we will then see multiple failure notifications with multiple batches
-            return await context.CallActivityWithRetryAsync<IReadOnlyDictionary<int, MatchProbabilityResponse>>(
+            return await context.CallActivityWithRetryAsync<IReadOnlyDictionary<int, string>>(
                 nameof(SearchActivityFunctions.RunMatchPrediction),
                 RetryOptions,
                 matchProbabilityInput
@@ -233,7 +232,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
         private async Task PersistSearchResults(
             IDurableOrchestrationContext context,
             TimedResultSet<MatchingAlgorithmResultSet> searchResults,
-            TimedResultSet<Dictionary<int, MatchProbabilityResponse>> matchPredictionResults,
+            TimedResultSet<IReadOnlyDictionary<int, string>> matchPredictionResultLocations,
             Dictionary<int, Donor> donorInformation,
             DateTime searchInitiated,
             string searchId)
@@ -256,12 +255,12 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                             var parameters = new SearchActivityFunctions.PersistSearchResultsParameters
                             {
                                 DonorInformation = donorInformation,
-                                MatchPredictionResults = matchPredictionResults,
+                                MatchPredictionResultLocations = matchPredictionResultLocations,
                                 MatchingAlgorithmResultSet = searchResults,
                                 SearchInitiated = searchInitiated
                             };
 
-                            var resultSet = resultsCombiner.CombineResults(parameters);
+                            var resultSet = await resultsCombiner.CombineResults(parameters);
                             await searchResultsBlobUploader.UploadResults(resultSet);
                             await searchCompletionMessageSender.PublishResultsMessage(resultSet, parameters.SearchInitiated);
                         });

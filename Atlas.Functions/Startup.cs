@@ -4,6 +4,7 @@ using Atlas.Common.Notifications;
 using Atlas.DonorImport.ExternalInterface.DependencyInjection;
 using Atlas.Functions;
 using Atlas.Functions.Services;
+using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
@@ -80,12 +81,21 @@ namespace Atlas.Functions
             services.AddScoped<IResultsCombiner, ResultsCombiner>();
             services.AddScoped<IResultsUploader, ResultsUploader>();
             services.AddScoped<ISearchCompletionMessageSender, SearchCompletionMessageSender>();
-            services.AddScoped<IMatchingResultsDownloader, MatchingResultsDownloader>();
-            services.AddScoped<IBlobDownloader, BlobDownloader>(sp =>
+            services.AddScoped<IMatchingResultsDownloader, MatchingResultsDownloader>(sp =>
             {
                 var logger = sp.GetService<ILogger>();
-                var connectionString = sp.GetService<IOptions<Settings.AzureStorageSettings>>().Value.ConnectionString;
-                return new BlobDownloader(connectionString, logger);
+                var options = sp.GetService<IOptions<Settings.AzureStorageSettings>>();
+                var connectionString = options.Value.MatchingConnectionString;
+                var downloader = new BlobDownloader(connectionString, logger);
+                return new MatchingResultsDownloader(options, downloader, logger);
+            });
+            services.AddScoped<IMatchPredictionResultsDownloader, MatchPredictionResultsDownloader>(sp =>
+            {
+                var logger = sp.GetService<ILogger>();
+                var options = sp.GetService<IOptions<Settings.AzureStorageSettings>>();
+                var connectionString = options.Value.MatchPredictionConnectionString;
+                var downloader = new BlobDownloader(connectionString, logger);
+                return new MatchPredictionResultsDownloader(options, downloader, logger);
             });
         }
     }

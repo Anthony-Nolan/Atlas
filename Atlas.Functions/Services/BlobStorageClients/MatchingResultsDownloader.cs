@@ -6,7 +6,7 @@ using Atlas.Common.AzureStorage.Blob;
 using Atlas.Functions.Settings;
 using Microsoft.Extensions.Options;
 
-namespace Atlas.Functions.Services
+namespace Atlas.Functions.Services.BlobStorageClients
 {
     public interface IMatchingResultsDownloader
     {
