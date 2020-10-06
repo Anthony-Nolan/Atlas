@@ -29,7 +29,7 @@ resource "azurerm_function_app" "atlas_function" {
     "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.atlas.instrumentation_key
     "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
-    "AtlasFunction:AzureStorage:ConnectionString"                    = azurerm_storage_account.azure_storage.primary_connection_string
+    "AtlasFunction:AzureStorage:MatchingConnectionString"            = azurerm_storage_account.azure_storage.primary_connection_string
     "AtlasFunction:AzureStorage:MatchingResultsBlobContainer"        = module.matching_algorithm.azure_storage.search_results_container
     "AtlasFunction:AzureStorage:SearchResultsBlobContainer"          = azurerm_storage_container.search_results_blob_container.name
     "AtlasFunction:AzureStorage:MatchPredictionConnectionString"     = azurerm_storage_account.azure_storage.primary_connection_string
