@@ -20,17 +20,30 @@ fs.readFile(`${config.searchFile}.json`, 'utf-8', (err, rawData) => {
 
         var groups = Object.values(grouped)
 
-        console.log("search unique IDs: " + groups.length)
+        let someSuccess = groups.filter(x => x.some(y => y.Success));
+        let allSuccess = groups.filter(x => !x.some(y => !y.Success));
+        let allFail = groups.filter(x => !x.some(y => y.Success));
+        
+        console.log("Fully Successful:", allSuccess.length)
+        
+        console.log("Successful (but with retries):", someSuccess.length - allSuccess.length)
+        
+        console.log("Failed:", allFail.length)
+        
+        console.log("search unique IDs:", groups.length)
 
-        console.log(groups.filter(x => x.length > 1))
+        // Groups with duplicates
+        // console.log(groups.filter(x => x.length > 1))
 
-        console.log(searchParsed.filter(x => !x.Success))
+        // Failures
+        // console.log(searchParsed.filter(x => !x.Success))
 
-        var unfinished = matchingParsed.filter(({Id}) => !searchParsed.some(y => {
+        const unfinished = matchingParsed.filter(({Id}) => !searchParsed.some(y => {
             return y.Id === Id;
-        }))
+        }));
 
         console.log("AWAITING RESULTS:")
+        console.log(unfinished.length)
         console.log(unfinished)
     });
 });
