@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
@@ -38,6 +39,7 @@ namespace Atlas.MatchPrediction.ExternalInterface
 
             return consolidatedDonorInputs.Batch(batchSize).Select(donorBatch => new MultipleDonorMatchProbabilityInput(requestInput)
             {
+                MatchProbabilityRequestId = Guid.NewGuid().ToString(),
                 Donors = donorBatch.ToList()
             });
         }

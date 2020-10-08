@@ -68,7 +68,8 @@ namespace Atlas.Functions.Services
                         donorDictionary
                     ))
                     .Where(r => r != null);
-                return donorInputBatcher.BatchDonorInputs(nonDonorInput, donorInputs, matchPredictionBatchSize);
+
+                return donorInputBatcher.BatchDonorInputs(nonDonorInput, donorInputs, matchPredictionBatchSize).ToList();
             }
         }
 
@@ -88,8 +89,7 @@ namespace Atlas.Functions.Services
             string hlaNomenclatureVersion
         )
         {
-            var batchId = Guid.NewGuid().ToString();
-            return new MatchProbabilityRequestInput(batchId)
+            return new MatchProbabilityRequestInput
             {
                 SearchRequestId = searchRequestId,
                 ExcludedLoci = ExcludedLoci(searchRequest.MatchCriteria),

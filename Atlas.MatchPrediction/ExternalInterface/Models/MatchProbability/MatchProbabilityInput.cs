@@ -12,10 +12,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         {
         }
 
-        public SingleDonorMatchProbabilityInput(string requestId) : base(requestId)
-        {
-        }
-
         public SingleDonorMatchProbabilityInput(MatchProbabilityRequestInput matchProbabilityRequestInput) : base(matchProbabilityRequestInput)
         {
         }
@@ -29,10 +25,6 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
     public class MultipleDonorMatchProbabilityInput : MatchProbabilityRequestInput
     {
         public MultipleDonorMatchProbabilityInput()
-        {
-        }
-
-        public MultipleDonorMatchProbabilityInput(string requestId) : base(requestId)
         {
         }
 
@@ -76,14 +68,9 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
     /// </summary>
     public class MatchProbabilityRequestInput
     {
-        public MatchProbabilityRequestInput() : this("no-request-id")
-        {
-        }
-
         // ReSharper disable once MemberCanBeProtected.Global - Deserialised
-        public MatchProbabilityRequestInput(string requestId)
+        public MatchProbabilityRequestInput()
         {
-            MatchProbabilityRequestId = requestId;
         }
 
         protected MatchProbabilityRequestInput(MatchProbabilityRequestInput initial)

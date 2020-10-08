@@ -7,7 +7,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models
     {
         public static SingleDonorMatchProbabilityInput ToPartialMatchProbabilitySearchRequest(this SearchRequest searchRequest)
         {
-            return new SingleDonorMatchProbabilityInput("arbitrary")
+            return new SingleDonorMatchProbabilityInput
             {
                 PatientHla = searchRequest.SearchHlaData,
                 ExcludedLoci = searchRequest.ScoringCriteria?.LociToExcludeFromAggregateScore

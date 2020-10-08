@@ -24,7 +24,7 @@ namespace Atlas.Functions.Services.BlobStorageClients
         {
             blobDownloader = new BlobDownloader(azureStorageSettings.Value.MatchPredictionConnectionString, logger);
             blobUploader = new BlobUploader(azureStorageSettings.Value.MatchPredictionConnectionString, logger);
-            container = azureStorageSettings.Value.MatchPredictionResultsBlobContainer;
+            container = azureStorageSettings.Value.MatchPredictionRequestsBlobContainer;
         }
 
         /// <inheritdoc />
