@@ -2,17 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Client.Models.Search.Requests;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
-using Atlas.DonorImport.ExternalInterface.Models;
 using Atlas.Functions.DurableFunctions.Search.Activity;
 using Atlas.Functions.Exceptions;
 using Atlas.Functions.Models;
-using Atlas.Functions.Services;
 using Atlas.Functions.Services.BlobStorageClients;
-using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using MoreLinq.Extensions;
@@ -48,30 +44,26 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             try
             {
                 var orchestrationInitiated = context.CurrentUtcDateTime;
-                var searchRequest = notification.SearchRequest;
                 if (!notification.WasSuccessful)
                 {
                     await SendFailureNotification(context, "Matching Algorithm", searchId);
                     return null;
                 }
 
-                var timedSearchResults = await DownloadMatchingAlgorithmResults(context, notification);
-                var searchResults = timedSearchResults.ResultSet;
-                var timedDonorInformation = await FetchDonorInformation(context, searchResults, searchId);
-                var donorInformation = timedDonorInformation.ResultSet;
-                var matchPredictionResults =
-                    await RunMatchPredictionAlgorithm(context, searchRequest, searchResults, timedDonorInformation, searchId);
-                await PersistSearchResults(context, timedSearchResults, matchPredictionResults, donorInformation, orchestrationInitiated, searchId);
+                var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification);
+                var matchPredictionResultLocations = await RunMatchPredictionAlgorithm(context, searchId, matchPredictionRequestLocations);
+                await PersistSearchResults(context, new SearchActivityFunctions.PersistSearchResultsParameters
+                {
+                    SearchInitiated = orchestrationInitiated,
+                    MatchingResultsNotification = notification, 
+                    MatchPredictionResultLocations = matchPredictionResultLocations
+                });
+
                 // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
                 return new SearchOrchestrationOutput
                 {
-                    MatchingAlgorithmTime = timedSearchResults.ElapsedTime,
-                    MatchPredictionTime = matchPredictionResults.ElapsedTime,
                     TotalSearchTime = context.CurrentUtcDateTime.Subtract(orchestrationInitiated),
-                    MatchingDonorCount = searchResults.ResultCount,
-                    MatchingResultFileName = searchResults.ResultsFileName,
-                    MatchingResultBlobContainer = searchResults.BlobStorageContainerName,
-                    HlaNomenclatureVersion = searchResults.HlaNomenclatureVersion
+                    MatchingDonorCount = notification.NumberOfResults ?? -1,
                 };
             }
             catch (HandledOrchestrationException)
@@ -89,39 +81,37 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
         }
 
-        private async Task<TimedResultSet<MatchingAlgorithmResultSet>> DownloadMatchingAlgorithmResults(
+        private async Task<TimedResultSet<IList<string>>> PrepareMatchPrediction(
             IDurableOrchestrationContext context,
             MatchingResultsNotification notification)
         {
-            var matchingResults = await RunStageAndHandleFailures(async () =>
-                    await context.CallActivityWithRetryAsync<TimedResultSet<MatchingAlgorithmResultSet>>(
-                        nameof(SearchActivityFunctions.DownloadMatchingAlgorithmResults),
+            var batchIds = await RunStageAndHandleFailures(async () =>
+                    await context.CallActivityWithRetryAsync<TimedResultSet<IList<string>>>(
+                        nameof(SearchActivityFunctions.PrepareMatchPredictionBatches),
                         RetryOptions,
                         notification
                     ),
                 context,
-                nameof(DownloadMatchingAlgorithmResults),
+                nameof(SearchActivityFunctions.PrepareMatchPredictionBatches),
                 notification.SearchRequestId
             );
 
             context.SetCustomStatus(new OrchestrationStatus
             {
-                LastCompletedStage = "MatchingAlgorithm",
+                LastCompletedStage = "Prepare Match Prediction Batches",
                 ElapsedTimeOfStage = notification.ElapsedTime,
             });
 
-            return matchingResults;
+            return batchIds;
         }
 
         private async Task<TimedResultSet<IReadOnlyDictionary<int, string>>> RunMatchPredictionAlgorithm(
             IDurableOrchestrationContext context,
-            SearchRequest searchRequest,
-            MatchingAlgorithmResultSet searchResults,
-            TimedResultSet<Dictionary<int, Donor>> donorInformation,
-            string searchId)
+            string searchId,
+            TimedResultSet<IList<string>> matchPredictionRequestLocations
+        )
         {
-            var matchPredictionInputs = await BuildMatchPredictionInputs(context, searchRequest, searchResults, donorInformation.ResultSet, searchId);
-            var matchPredictionTasks = matchPredictionInputs.Select(r => RunMatchPredictionForDonorBatch(context, r)).ToList();
+            var matchPredictionTasks = matchPredictionRequestLocations.ResultSet.Select(r => RunMatchPredictionForDonorBatch(context, r)).ToList();
             var matchPredictionResultLocations = (await RunStageAndHandleFailures(
                     async () => await Task.WhenAll(matchPredictionTasks),
                     context,
@@ -131,13 +121,14 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
                 .SelectMany(x => x)
                 .ToDictionary();
 
+
             // We cannot use a stopwatch, as orchestration functions must be deterministic, and may be called multiple times.
             // Results of activity functions are constant across multiple invocations, so we can trust that finished time of the previous stage will remain constant 
             TimeSpan? totalElapsedTime = default;
-            if (donorInformation.FinishedTimeUtc.HasValue)
+            if (matchPredictionRequestLocations.FinishedTimeUtc.HasValue)
             {
                 var now = context.CurrentUtcDateTime;
-                totalElapsedTime = now.Subtract(donorInformation.FinishedTimeUtc.Value);
+                totalElapsedTime = now.Subtract(matchPredictionRequestLocations.FinishedTimeUtc.Value);
             }
 
             context.SetCustomStatus(new OrchestrationStatus
@@ -155,90 +146,31 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             };
         }
 
-        private async Task<IEnumerable<MultipleDonorMatchProbabilityInput>> BuildMatchPredictionInputs(
-            IDurableOrchestrationContext context,
-            SearchRequest searchRequest,
-            MatchingAlgorithmResultSet searchResults,
-            Dictionary<int, Donor> donorInformation,
-            string searchId
-        )
-        {
-            return await RunStageAndHandleFailures(async () =>
-                    await context.CallActivityWithRetryAsync<IEnumerable<MultipleDonorMatchProbabilityInput>>(
-                        nameof(SearchActivityFunctions.BuildMatchPredictionInputs),
-                        RetryOptions,
-                        new MatchPredictionInputParameters
-                        {
-                            SearchRequest = searchRequest,
-                            MatchingAlgorithmResults = searchResults,
-                            DonorDictionary = donorInformation
-                        }),
-                context,
-                nameof(BuildMatchPredictionInputs),
-                searchId
-            );
-        }
-
-        private async Task<TimedResultSet<Dictionary<int, Donor>>> FetchDonorInformation(
-            IDurableOrchestrationContext context,
-            MatchingAlgorithmResultSet matchingAlgorithmResults,
-            string searchId)
-        {
-            var donorInfo = await RunStageAndHandleFailures(async () =>
-                    await context.CallActivityWithRetryAsync<TimedResultSet<Dictionary<int, Donor>>>(
-                        nameof(SearchActivityFunctions.FetchDonorInformation),
-                        RetryOptions,
-                        matchingAlgorithmResults.MatchingAlgorithmResults.Select(r => r.AtlasDonorId)
-                    ),
-                context,
-                nameof(FetchDonorInformation),
-                searchId
-            );
-
-            context.SetCustomStatus(new OrchestrationStatus
-            {
-                LastCompletedStage = nameof(FetchDonorInformation),
-                ElapsedTimeOfStage = null,
-            });
-
-            return donorInfo;
-        }
-
         /// <returns>A Task a list of locations in which MPA results (per donor) can be found.</returns>
         private static async Task<IReadOnlyDictionary<int, string>> RunMatchPredictionForDonorBatch(
             IDurableOrchestrationContext context,
-            MultipleDonorMatchProbabilityInput matchProbabilityInput
+            string requestLocation
         )
         {
             // Do not add error handling to this, as we will then see multiple failure notifications with multiple batches
             return await context.CallActivityWithRetryAsync<IReadOnlyDictionary<int, string>>(
-                nameof(SearchActivityFunctions.RunMatchPrediction),
+                nameof(SearchActivityFunctions.RunMatchPredictionBatch),
                 RetryOptions,
-                matchProbabilityInput
+                requestLocation
             );
         }
 
         private async Task PersistSearchResults(
             IDurableOrchestrationContext context,
-            TimedResultSet<MatchingAlgorithmResultSet> searchResults,
-            TimedResultSet<IReadOnlyDictionary<int, string>> matchPredictionResultLocations,
-            IDictionary<int, Donor> donorInformation,
-            DateTime searchInitiated,
-            string searchId)
+            SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters
+        )
         {
-            var parameters = new SearchActivityFunctions.PersistSearchResultsParameters
-            {
-                DonorInformation = donorInformation,
-                MatchPredictionResultLocations = matchPredictionResultLocations,
-                MatchingAlgorithmResultSet = searchResults,
-                SearchInitiated = searchInitiated
-            };
-            
             await RunStageAndHandleFailures(
-                async () => await context.CallActivityWithRetryAsync(nameof(SearchActivityFunctions.PersistSearchResults), RetryOptions, parameters),
+                async () => await context.CallActivityWithRetryAsync(nameof(SearchActivityFunctions.PersistSearchResults), RetryOptions,
+                    persistSearchResultsParameters),
                 context,
-                nameof(FetchDonorInformation),
-                searchId
+                nameof(PersistSearchResults),
+                persistSearchResultsParameters.MatchingResultsNotification.SearchRequestId
             );
 
             context.SetCustomStatus(new OrchestrationStatus

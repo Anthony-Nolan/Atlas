@@ -7,6 +7,7 @@
     "AtlasFunction:AzureStorage:MatchingResultsBlobContainer": "matching-algorithm-results",
     "AtlasFunction:AzureStorage:SearchResultsBlobContainer": "atlas-search-results",
     "AtlasFunction:AzureStorage:MatchPredictionConnectionString": "UseDevelopmentStorage=true",
+    "AtlasFunction:AzureStorage:MatchPredictionRequestsBlobContainer": "match-prediction-requests",
     "AtlasFunction:AzureStorage:MatchPredictionResultsBlobContainer": "match-prediction-results",
 
     "AtlasFunction:MessagingServiceBus:ConnectionString": "override-this",

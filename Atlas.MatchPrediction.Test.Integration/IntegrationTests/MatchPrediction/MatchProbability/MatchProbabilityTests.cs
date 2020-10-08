@@ -274,7 +274,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
                 .WithDataAt(Locus.Drb1, LocusPosition.One, $"{Alleles.UnambiguousAlleleDetails.Drb1.Position1.Allele}/{alleleStringDrb1}")
                 .Build();
 
-            var matchProbabilityInput = new SingleDonorMatchProbabilityInput
+            var matchProbabilityInput = new SingleDonorMatchProbabilityInput("arbitrary-id")
             {
                 PatientHla = patientHla.ToPhenotypeInfoTransfer(),
                 DonorInput = new DonorInput

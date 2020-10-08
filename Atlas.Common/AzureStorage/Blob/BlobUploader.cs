@@ -4,17 +4,17 @@ using System.Threading.Tasks;
 
 namespace Atlas.Common.AzureStorage.Blob
 {
-    public abstract class BlobUploader : AzureStorageBlobClient
+    public class BlobUploader : AzureStorageBlobClient
     {
         private const string UploadLogLabel = "Upload";
         protected readonly ILogger Logger;
 
-        protected BlobUploader(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString)
+        public BlobUploader(string azureStorageConnectionString, ILogger logger) : base(azureStorageConnectionString)
         {
             Logger = logger;
         }
 
-        protected async Task Upload(string container, string filename, string messageBody)
+        public async Task Upload(string container, string filename, string messageBody)
         {
             var azureStorageEventModel = new AzureStorageEventModel(filename, container);
             azureStorageEventModel.StartAzureStorageCommunication();

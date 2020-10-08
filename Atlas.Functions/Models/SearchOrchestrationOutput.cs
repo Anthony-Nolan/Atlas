@@ -8,17 +8,11 @@ namespace Atlas.Functions.Models
     /// </summary>
     public class SearchOrchestrationOutput
     {
-        public TimeSpan MatchingAlgorithmTime { get; set; }
-        public TimeSpan MatchPredictionTime { get; set; }
-
         /// <summary>
         /// Note that this is calculated after the results notification has been sent, so will differ very slightly from the time logged on results notifications.
         /// </summary>
         public TimeSpan TotalSearchTime { get; set; }
 
         public int MatchingDonorCount { get; set; }
-        public string MatchingResultBlobContainer { get; set; }
-        public string MatchingResultFileName { get; set; }
-        public string HlaNomenclatureVersion { get; set; }
     }
 }
