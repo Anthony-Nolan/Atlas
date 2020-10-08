@@ -97,7 +97,7 @@ namespace Atlas.Functions
                 var downloader = new BlobDownloader(connectionString, logger);
                 return new MatchPredictionResultsDownloader(options, downloader, logger);
             });
-            services.AddSingleton<IMatchPredictionRequestBlobClient, MatchPredictionRequestBlobClient>();
+            services.AddScoped<IMatchPredictionRequestBlobClient, MatchPredictionRequestBlobClient>();
         }
     }
 }
