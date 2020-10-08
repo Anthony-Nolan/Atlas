@@ -3,6 +3,7 @@ using Atlas.Common.ApplicationInsights;
 using Atlas.Common.AzureStorage.Blob;
 using Atlas.Functions.Settings;
 using Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace Atlas.Functions.Services.BlobStorageClients
@@ -19,11 +20,11 @@ namespace Atlas.Functions.Services.BlobStorageClients
         private readonly IBlobDownloader blobDownloader;
         private readonly string container;
 
-        public MatchPredictionRequestBlobClient(AzureStorageSettings azureStorageSettings, ILogger logger)
+        public MatchPredictionRequestBlobClient(IOptions<AzureStorageSettings> azureStorageSettings, ILogger logger)
         {
-            blobDownloader = new BlobDownloader(azureStorageSettings.MatchPredictionConnectionString, logger);
-            blobUploader = new BlobUploader(azureStorageSettings.MatchPredictionConnectionString, logger);
-            container = azureStorageSettings.MatchPredictionResultsBlobContainer;
+            blobDownloader = new BlobDownloader(azureStorageSettings.Value.MatchPredictionConnectionString, logger);
+            blobUploader = new BlobUploader(azureStorageSettings.Value.MatchPredictionConnectionString, logger);
+            container = azureStorageSettings.Value.MatchPredictionResultsBlobContainer;
         }
 
         /// <inheritdoc />
