@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Atlas.Client.Models.Search.Requests;
@@ -24,7 +25,7 @@ namespace Atlas.Functions.Services
     {
         public SearchRequest SearchRequest { get; set; }
         public MatchingAlgorithmResultSet MatchingAlgorithmResults { get; set; }
-        public Dictionary<int, Donor> DonorDictionary { get; set; }
+        public IReadOnlyDictionary<int, Donor> DonorDictionary { get; set; }
     }
 
     public interface IMatchPredictionInputBuilder
@@ -87,7 +88,8 @@ namespace Atlas.Functions.Services
             string hlaNomenclatureVersion
         )
         {
-            return new MatchProbabilityRequestInput
+            var batchId = Guid.NewGuid().ToString();
+            return new MatchProbabilityRequestInput(batchId)
             {
                 SearchRequestId = searchRequestId,
                 ExcludedLoci = ExcludedLoci(searchRequest.MatchCriteria),

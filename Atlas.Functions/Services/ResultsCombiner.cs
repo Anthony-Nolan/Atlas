@@ -1,11 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results;
+using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Client.Models.Search.Results.MatchPrediction;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
-using Atlas.Functions.DurableFunctions.Search.Activity;
+using Atlas.DonorImport.ExternalInterface.Models;
+using Atlas.Functions.Models;
 using Atlas.Functions.Services.BlobStorageClients;
 using Atlas.Functions.Settings;
 using Microsoft.Extensions.Options;
@@ -15,7 +18,12 @@ namespace Atlas.Functions.Services
 {
     public interface IResultsCombiner
     {
-        Task<SearchResultSet> CombineResults(SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters);
+        Task<SearchResultSet> CombineResults(
+            MatchingAlgorithmResultSet matchingAlgorithmResultSet,
+            IReadOnlyDictionary<int, Donor> donorInformation,
+            TimedResultSet<IReadOnlyDictionary<int, string>> matchPredictionResultLocations,
+            TimeSpan matchingTime
+        );
     }
 
     internal class ResultsCombiner : IResultsCombiner
@@ -35,30 +43,31 @@ namespace Atlas.Functions.Services
         }
 
         /// <inheritdoc />
-        public async Task<SearchResultSet> CombineResults(SearchActivityFunctions.PersistSearchResultsParameters persistSearchResultsParameters)
+        public async Task<SearchResultSet> CombineResults(
+            MatchingAlgorithmResultSet matchingAlgorithmResultSet,
+            IReadOnlyDictionary<int, Donor> donorInformation,
+            TimedResultSet<IReadOnlyDictionary<int, string>> matchPredictionResultLocations,
+            TimeSpan matchingTime
+        )
         {
-            using (logger.RunTimed($"Combine search results: {persistSearchResultsParameters.MatchingAlgorithmResultSet.ResultSet.SearchRequestId}"))
+            using (logger.RunTimed($"Combine search results: {matchingAlgorithmResultSet.SearchRequestId}"))
             {
-                var matchingResults = persistSearchResultsParameters.MatchingAlgorithmResultSet.ResultSet;
-                var matchPredictionResultLocations = persistSearchResultsParameters.MatchPredictionResultLocations.ResultSet;
-                var donorInfo = persistSearchResultsParameters.DonorInformation;
-
-                var matchPredictionResults = await DownloadMatchPredictionResults(matchPredictionResultLocations);
+                var matchPredictionResults = await DownloadMatchPredictionResults(matchPredictionResultLocations.ResultSet);
 
                 return new SearchResultSet
                 {
-                    SearchResults = matchingResults.MatchingAlgorithmResults.Select(r => new SearchResult
+                    SearchResults = matchingAlgorithmResultSet.MatchingAlgorithmResults.Select(r => new SearchResult
                     {
-                        DonorCode = donorInfo[r.AtlasDonorId].ExternalDonorCode,
+                        DonorCode = donorInformation[r.AtlasDonorId].ExternalDonorCode,
                         MatchingResult = r,
                         MatchPredictionResult = matchPredictionResults[r.AtlasDonorId]
                     }),
-                    TotalResults = matchingResults.ResultCount,
-                    HlaNomenclatureVersion = matchingResults.HlaNomenclatureVersion,
-                    SearchRequestId = matchingResults.SearchRequestId,
+                    TotalResults = matchingAlgorithmResultSet.ResultCount,
+                    HlaNomenclatureVersion = matchingAlgorithmResultSet.HlaNomenclatureVersion,
+                    SearchRequestId = matchingAlgorithmResultSet.SearchRequestId,
                     BlobStorageContainerName = resultsContainer,
-                    MatchingAlgorithmTime = persistSearchResultsParameters.MatchingAlgorithmResultSet.ElapsedTime,
-                    MatchPredictionTime = persistSearchResultsParameters.MatchPredictionResultLocations.ElapsedTime
+                    MatchingAlgorithmTime = matchingTime,
+                    MatchPredictionTime = matchPredictionResultLocations.ElapsedTime
                 };
             }
         }

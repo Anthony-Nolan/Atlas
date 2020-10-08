@@ -7,6 +7,7 @@ namespace Atlas.Functions.Settings
         public string SearchResultsBlobContainer { get; set; }
         
         public string MatchPredictionConnectionString { get; set; }
+        public string MatchPredictionRequestsBlobContainer { get; set; }
         public string MatchPredictionResultsBlobContainer { get; set; }
     }
 }

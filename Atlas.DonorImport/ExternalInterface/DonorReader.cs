@@ -16,7 +16,7 @@ namespace Atlas.DonorImport.ExternalInterface
         /// </summary>
         /// <param name="donorIds">Atlas IDs to fetch</param>
         /// <returns>A dictionary of Donor ID to full donor information.</returns>
-        Task<IDictionary<int, Donor>> GetDonors(IEnumerable<int> donorIds);
+        Task<IReadOnlyDictionary<int, Donor>> GetDonors(IEnumerable<int> donorIds);
     }
 
     public class DonorReader : IDonorReader
@@ -33,7 +33,7 @@ namespace Atlas.DonorImport.ExternalInterface
             return donorReadRepository.StreamAllDonors().Select(d => d.ToPublicDonor());
         }
 
-        public async Task<IDictionary<int, Donor>> GetDonors(IEnumerable<int> donorIds)
+        public async Task<IReadOnlyDictionary<int, Donor>> GetDonors(IEnumerable<int> donorIds)
         {
             var donorsByIds = await donorReadRepository.GetDonorsByIds(donorIds.ToList());
             return donorsByIds.ToDictionary(d => d.Key, d => d.Value.ToPublicDonor());

@@ -12,6 +12,10 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         {
         }
 
+        public SingleDonorMatchProbabilityInput(string requestId) : base(requestId)
+        {
+        }
+
         public SingleDonorMatchProbabilityInput(MatchProbabilityRequestInput matchProbabilityRequestInput) : base(matchProbabilityRequestInput)
         {
         }
@@ -26,14 +30,16 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
     {
         public MultipleDonorMatchProbabilityInput()
         {
-            
+        }
+
+        public MultipleDonorMatchProbabilityInput(string requestId) : base(requestId)
+        {
         }
 
         public MultipleDonorMatchProbabilityInput(MatchProbabilityRequestInput requestInput) : base(requestInput)
         {
-            
         }
-        
+
         // ReSharper disable once MemberCanBePrivate.Global
         // ReSharper disable once UnusedAutoPropertyAccessor.Global
         // ReSharper disable once CollectionNeverUpdated.Global
@@ -60,7 +66,7 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
         {
             set => DonorIds = new List<int> {value};
         }
-        
+
         public PhenotypeInfoTransfer<string> DonorHla { get; set; }
         public FrequencySetMetadata DonorFrequencySetMetadata { get; set; }
     }
@@ -70,19 +76,30 @@ namespace Atlas.MatchPrediction.ExternalInterface.Models.MatchProbability
     /// </summary>
     public class MatchProbabilityRequestInput
     {
-        // ReSharper disable once MemberCanBeProtected.Global - Deserialised
-        public MatchProbabilityRequestInput()
+        public MatchProbabilityRequestInput() : this("no-request-id")
         {
+        }
+
+        // ReSharper disable once MemberCanBeProtected.Global - Deserialised
+        public MatchProbabilityRequestInput(string requestId)
+        {
+            MatchProbabilityRequestId = requestId;
         }
 
         protected MatchProbabilityRequestInput(MatchProbabilityRequestInput initial)
         {
+            MatchProbabilityRequestId = initial.MatchProbabilityRequestId;
             SearchRequestId = initial.SearchRequestId;
             ExcludedLoci = initial.ExcludedLoci;
             PatientHla = initial.PatientHla;
             PatientFrequencySetMetadata = initial.PatientFrequencySetMetadata;
             HlaNomenclatureVersion = initial.HlaNomenclatureVersion;
         }
+
+        /// <summary>
+        /// Unique Identifier used for this match prediction request, used to identify MPA requests across serialisation boundaries in duravble functions
+        /// </summary>
+        public string MatchProbabilityRequestId { get; set; }
 
         /// <summary>
         /// Search ID is used to identify uploaded results of the Match Prediction Algorithm
