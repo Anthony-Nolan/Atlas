@@ -7,7 +7,9 @@ namespace Atlas.MatchingAlgorithm.Validators.SearchRequest
     internal class MismatchCriteriaValidator : AbstractValidator<MismatchCriteria>
     {
         private const int MinimumMismatchCount = 0;
-        private const int MaximumTotalMismatchCount = 4;
+
+        // TODO ATLAS-865: make this configurable
+        private const int MaximumTotalMismatchCount = 9;
 
         public MismatchCriteriaValidator()
         {
