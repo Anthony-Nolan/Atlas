@@ -10,7 +10,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
     public interface ISearchRequestsRepository
     {
         Task AddSearchRequest(SearchRequestRecord request);
-        Task<int> GetRecordIdByAtlasSearchId(string atlasSearchId);
+        Task<SearchRequestRecord> GetRecordByAtlasSearchId(string atlasSearchId);
         Task MarkSearchResultsAsFailed(int searchRequestRecordId);
         Task MarkSearchResultsAsSuccessful(SuccessfulSearchRequestInfo info);
     }
@@ -29,11 +29,13 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             var sql = $@"INSERT INTO SearchRequests(
                 VerificationRun_Id,
                 PatientSimulant_Id,
-                AtlasSearchIdentifier)
+                AtlasSearchIdentifier,
+                DonorMismatchCount)
                 VALUES(
                     @{nameof(request.VerificationRun_Id)},
                     @{nameof(request.PatientSimulant_Id)},
-                    @{nameof(request.AtlasSearchIdentifier)}
+                    @{nameof(request.AtlasSearchIdentifier)},
+                    @{nameof(request.DonorMismatchCount)}
                 )";
 
             await using (var connection = new SqlConnection(connectionString))
@@ -42,18 +44,19 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
                 {
                     request.VerificationRun_Id,
                     request.PatientSimulant_Id,
-                    request.AtlasSearchIdentifier
+                    request.AtlasSearchIdentifier,
+                    request.DonorMismatchCount
                 });
             }
         }
 
-        public async Task<int> GetRecordIdByAtlasSearchId(string atlasSearchId)
+        public async Task<SearchRequestRecord> GetRecordByAtlasSearchId(string atlasSearchId)
         {
-            var sql = @$"SELECT s.Id FROM SearchRequests s WHERE s.AtlasSearchIdentifier = @{nameof(atlasSearchId)}";
+            var sql = @$"SELECT * FROM SearchRequests s WHERE s.AtlasSearchIdentifier = @{nameof(atlasSearchId)}";
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                return (await conn.QueryAsync<int>(sql, new { atlasSearchId })).SingleOrDefault();
+                return (await conn.QueryAsync<SearchRequestRecord>(sql, new { atlasSearchId })).SingleOrDefault();
             }
         }
 

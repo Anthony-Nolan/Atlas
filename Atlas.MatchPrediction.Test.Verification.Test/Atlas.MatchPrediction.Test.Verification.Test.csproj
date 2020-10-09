@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Atlas.Common.Test\Atlas.Common.Test.csproj" />
+    <ProjectReference Include="..\Atlas.MatchingAlgorithm.Test\Atlas.MatchingAlgorithm.Test.csproj" />
     <ProjectReference Include="..\Atlas.MatchPrediction.Test.Verification\Atlas.MatchPrediction.Test.Verification.csproj" />
   </ItemGroup>
 

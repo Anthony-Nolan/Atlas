@@ -10,6 +10,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
         Task<int> AddVerificationRun(VerificationRun run);
         Task MarkSearchRequestsAsSubmitted(int verificationRunId);
         Task<int> GetSearchLociCount(int verificationRunId);
+        Task<VerificationRun> GetVerificationRun(int verificationRunId);
     }
 
     public class VerificationRunRepository : IVerificationRunRepository
@@ -40,6 +41,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
         {
             var run = await FindVerificationRun(verificationRunId);
             return run.SearchLociCount;
+        }
+
+        public async Task<VerificationRun> GetVerificationRun(int verificationRunId)
+        {
+            return await FindVerificationRun(verificationRunId);
         }
 
         private async Task<VerificationRun> FindVerificationRun(int verificationRunId)

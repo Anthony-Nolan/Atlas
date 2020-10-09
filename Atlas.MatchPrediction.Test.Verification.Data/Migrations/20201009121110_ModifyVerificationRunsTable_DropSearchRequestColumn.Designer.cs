@@ -4,14 +4,16 @@ using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
 {
     [DbContext(typeof(MatchPredictionVerificationContext))]
-    partial class MatchPredictionVerificationContextModelSnapshot : ModelSnapshot
+    [Migration("20201009121110_ModifyVerificationRunsTable_DropSearchRequestColumn")]
+    partial class ModifyVerificationRunsTable_DropSearchRequestColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -301,7 +303,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MatchedDonor_Id", "Locus", "MatchCount");
+                    b.HasIndex("MatchedDonor_Id");
 
                     b.ToTable("MatchCounts");
                 });
@@ -365,7 +367,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
 
                     b.HasIndex("MatchedDonorSimulant_Id");
 
-                    b.HasIndex("SearchRequestRecord_Id", "MatchedDonorSimulant_Id", "TotalMatchCount");
+                    b.HasIndex("SearchRequestRecord_Id");
 
                     b.ToTable("MatchedDonors");
                 });
@@ -380,9 +382,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
                     b.Property<string>("AtlasSearchIdentifier")
                         .IsRequired()
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("DonorMismatchCount")
-                        .HasColumnType("int");
 
                     b.Property<double?>("MatchPredictionTimeInMs")
                         .HasColumnType("float");
@@ -410,11 +409,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AtlasSearchIdentifier");
-
                     b.HasIndex("PatientSimulant_Id");
 
-                    b.HasIndex("VerificationRun_Id", "PatientSimulant_Id", "SearchResultsRetrieved");
+                    b.HasIndex("VerificationRun_Id");
 
                     b.ToTable("SearchRequests");
                 });

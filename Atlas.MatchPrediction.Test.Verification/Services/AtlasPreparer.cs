@@ -7,6 +7,7 @@ using Atlas.MatchingAlgorithm.Client.Models.DataRefresh;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Settings;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services
 {
@@ -29,7 +30,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
         private readonly ITestHarnessRepository testHarnessRepository;
 
         public AtlasPreparer(
-            ITestDonorExporter testDonorExporter, 
+            ITestDonorExporter testDonorExporter,
             ITestDonorExportRepository exportRepository,
             ITestHarnessRepository testHarnessRepository,
             IOptions<VerificationDataRefreshSettings> settings)
@@ -75,7 +76,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
         {
             return !await testHarnessRepository.WasTestHarnessCompleted(testHarnessId);
         }
-        
+
         private async Task ExportDonors(int testHarnessId)
         {
             var recordId = await exportRepository.AddRecord(testHarnessId);
@@ -90,12 +91,13 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
             // need sufficient time for request to return - this is not equivalent to how long data refresh takes to complete.
             HttpRequestClient.Timeout = TimeSpan.FromMinutes(5);
 
-            var response = await HttpRequestClient.PostAsync(dataRefreshRequestUrl, new StringContent("{}"));
+            var request = JsonConvert.SerializeObject(new DataRefreshRequest { ForceDataRefresh = true });
+            var response = await HttpRequestClient.PostAsync(dataRefreshRequestUrl, new StringContent(request));
 
             // do not throw on response failure as data refresh requests often timeout even if the job itself completes successfully
             var debugMessage = response.IsSuccessStatusCode
                 ? "Data refresh request submitted - check relevant AI logs for detailed progress messages."
-                : $"Data refresh request failed: {response.StatusCode} - {response.ReasonPhrase}";
+                : $"Data refresh request failed: {response.ReasonPhrase}";
 
             Debug.WriteLine(debugMessage);
         }

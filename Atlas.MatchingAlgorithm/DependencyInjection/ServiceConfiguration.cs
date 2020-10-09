@@ -163,7 +163,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IActiveDatabaseProvider, ActiveDatabaseProvider>();
             services.AddScoped<IAzureDatabaseNameProvider, AzureDatabaseNameProvider>();
 
-            services.AddScoped<IDonorScoringService, DonorScoringService>();
             services.AddScoped<IDonorService, DonorService>();
             services.AddScoped<IDonorHlaExpanderFactory, DonorHlaExpanderFactory>();
 
@@ -189,6 +188,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IDatabaseFilteringAnalyser, DatabaseFilteringAnalyser>();
 
             // Scoring Services
+            services.AddScoped<IMatchScoringService, MatchScoringService>();
             services.AddScoped<IDonorScoringService, DonorScoringService>();
             services.AddScoped<IGradingService, GradingService>();
             services.AddScoped<IConfidenceService, ConfidenceService>();
@@ -198,6 +198,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.AddScoped<IScoringRequestService, ScoringRequestService>();
             services.AddScoped<IPermissiveMismatchCalculator, PermissiveMismatchCalculator>();
             services.AddScoped<IScoreResultAggregator, ScoreResultAggregator>();
+            services.AddScoped<IScoringCache, ScoringCache>();
 
             services.RegisterCommonGeneticServices();
             services.RegisterCommonMatchingServices();
@@ -217,8 +218,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 OptionsReaderFor<ApplicationInsightsSettings>()
             );
-
-            services.AddScoped<IScoringCache, ScoringCache>();
         }
 
         private static void RegisterDataServices(this IServiceCollection services, Func<IServiceProvider, string> fetchPersistentSqlConnectionString)

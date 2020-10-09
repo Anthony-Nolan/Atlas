@@ -36,13 +36,16 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
     {
         private readonly IVerificationRunRepository runRepository;
         private readonly IVerificationResultsRepository resultsRepository;
+        private readonly IGenotypeSimulantsInfoCache genotypeSimulantsInfoCache;
 
         public VerificationResultsCompiler(
             IVerificationRunRepository runRepository,
-            IVerificationResultsRepository resultsRepository)
+            IVerificationResultsRepository resultsRepository,
+            IGenotypeSimulantsInfoCache genotypeSimulantsInfoCache)
         {
             this.runRepository = runRepository;
             this.resultsRepository = resultsRepository;
+            this.genotypeSimulantsInfoCache = genotypeSimulantsInfoCache;
         }
 
         public async Task<IEnumerable<VerificationResult>> CompileVerificationResults(CompileResultsRequest request)
@@ -87,18 +90,17 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
         private async Task<IEnumerable<ActualMatchStatus>> GetActualMatchStatusOfPdps(CompileResultsRequest request)
         {
             var predictions = (await GetMaskedPdpPredictions(request)).ToList();
-            var genotypePdps = await GetMatchedGenotypePdps(request);
+            var matchedGenotypePdps = await GetMatchedGenotypePdps(request);
 
             return
                 from prediction in predictions
-                join genotypePdp in genotypePdps on
-                    new { prediction.PatientGenotypeSimulantId, prediction.DonorGenotypeSimulantId } equals
-                    new { genotypePdp.PatientGenotypeSimulantId, genotypePdp.DonorGenotypeSimulantId } into gj
-                from pdp in gj.DefaultIfEmpty()
+                join matchedPdp in matchedGenotypePdps on
+                    prediction equals matchedPdp into leftJoin
+                from mPdp in leftJoin.DefaultIfEmpty()
                 select new ActualMatchStatus
                 {
                     Prediction = prediction,
-                    WasActuallyMatched = pdp != null
+                    WasActuallyMatched = mPdp != null
                 };
         }
 
@@ -136,11 +138,32 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
                 throw new ArgumentNullException(nameof(request.Locus));
             }
 
+            var locus = request.Locus.Value;
+
+            switch (request.MismatchCount)
+            {
+                case 0:
+                case 1:
+                    return await GetPatientDonorPairsForLocus(request.VerificationRunId, request.MismatchCount, locus);
+                case 2:
+                    // PDPs with 0 matches must be calculated, as they are not stored in the db.
+                    var allPossiblePdps =
+                        await genotypeSimulantsInfoCache.GetOrAddAllPossibleGenotypePatientDonorPairs(request.VerificationRunId);
+                    var oneMatchPdps = await GetPatientDonorPairsForLocus(request.VerificationRunId, 1, locus);
+                    var twoMatchPdps = await GetPatientDonorPairsForLocus(request.VerificationRunId, 0, locus);
+                    return allPossiblePdps.Except(oneMatchPdps.Concat(twoMatchPdps));
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(request.MismatchCount));
+            }
+        }
+
+        private async Task<IEnumerable<PatientDonorPair>> GetPatientDonorPairsForLocus(int verificationRunId, int mismatchCount, Locus locus)
+        {
             return await resultsRepository.GetMatchedGenotypePdpsForSingleLocusPrediction(new SingleLocusMatchedPdpsRequest
             {
-                VerificationRunId = request.VerificationRunId,
-                MatchCount = CalculateMatchCount(1, request.MismatchCount),
-                Locus = request.Locus.Value
+                VerificationRunId = verificationRunId,
+                MatchCount = CalculateMatchCount(1, mismatchCount),
+                Locus = locus
             });
         }
 

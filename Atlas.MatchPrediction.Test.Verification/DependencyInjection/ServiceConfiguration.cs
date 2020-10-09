@@ -118,10 +118,12 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             services.AddScoped<ITestDonorExporter, TestDonorExporter>();
 
             services.AddScoped<IVerificationRunner, VerificationRunner>();
+            services.AddScoped<IGenotypeSimulantsInfoCache, GenotypeSimulantsInfoCache>();
             services.AddScoped<ISearchResultSetProcessor, SearchResultSetSetProcessor>();
             services.AddScoped<IResultsProcessor<MatchedDonor>, MatchedDonorsProcessor>();
             services.AddScoped<IResultsProcessor<LocusMatchCount>, MatchCountsProcessor>();
             services.AddScoped<IResultsProcessor<MatchProbability>, MatchedProbabilitiesProcessor>();
+            services.AddScoped<IMismatchedDonorsProcessor, MismatchedDonorsProcessor>();
             services.AddScoped<ISearchResultsStreamer, SearchResultsStreamer>();
             services.AddScoped<IVerificationResultsWriter, VerificationResultsWriter>();
             services.AddScoped<IVerificationResultsCompiler, VerificationResultsCompiler>();

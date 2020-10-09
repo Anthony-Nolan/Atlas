@@ -11,6 +11,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
 {
     public interface ISearchResultSetProcessor
     {
+        /// <summary>
+        /// Note: Only loci match counts with value > 0 will be stored.
+        /// </summary>
         Task ProcessAndStoreSearchResultSet(SearchResultsNotification notification);
     }
 
@@ -21,26 +24,29 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
         private readonly IResultsProcessor<MatchedDonor> donorsProcessor;
         private readonly IResultsProcessor<LocusMatchCount> countsProcessor;
         private readonly IResultsProcessor<MatchProbability> probabilitiesProcessor;
+        private readonly IMismatchedDonorsProcessor mismatchedDonorsProcessor;
 
         public SearchResultSetSetProcessor(
             ISearchRequestsRepository searchRequestsRepository,
             ISearchResultsStreamer resultsStreamer,
             IResultsProcessor<MatchedDonor> donorsProcessor,
             IResultsProcessor<LocusMatchCount> countsProcessor,
-            IResultsProcessor<MatchProbability> probabilitiesProcessor)
+            IResultsProcessor<MatchProbability> probabilitiesProcessor,
+            IMismatchedDonorsProcessor mismatchedDonorsProcessor)
         {
             this.searchRequestsRepository = searchRequestsRepository;
             this.resultsStreamer = resultsStreamer;
             this.donorsProcessor = donorsProcessor;
             this.countsProcessor = countsProcessor;
             this.probabilitiesProcessor = probabilitiesProcessor;
+            this.mismatchedDonorsProcessor = mismatchedDonorsProcessor;
         }
 
         public async Task ProcessAndStoreSearchResultSet(SearchResultsNotification notification)
         {
-            var recordId = await searchRequestsRepository.GetRecordIdByAtlasSearchId(notification.SearchRequestId);
+            var record = await searchRequestsRepository.GetRecordByAtlasSearchId(notification.SearchRequestId);
 
-            if (recordId == 0)
+            if (record == null)
             {
                 Debug.WriteLine($"No record found with Atlas search id {notification.SearchRequestId}.");
                 return;
@@ -48,21 +54,21 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
 
             if (!notification.WasSuccessful)
             {
-                await searchRequestsRepository.MarkSearchResultsAsFailed(recordId);
-                Debug.WriteLine($"Search request {recordId} was not successful - record updated.");
+                await searchRequestsRepository.MarkSearchResultsAsFailed(record.Id);
+                Debug.WriteLine($"Search request {record.Id} was not successful - record updated.");
                 return;
             }
 
-            await FetchAndPersistResults(recordId, notification);
+            await FetchAndPersistResults(record, notification);
         }
 
-        private async Task FetchAndPersistResults(int recordId, SearchResultsNotification notification)
+        private async Task FetchAndPersistResults(SearchRequestRecord searchRequest, SearchResultsNotification notification)
         {
             var resultSet = JsonConvert.DeserializeObject<SearchResultSet>(await DownloadResults(notification));
-            await ProcessAndStoreResults(recordId, resultSet);
-            await searchRequestsRepository.MarkSearchResultsAsSuccessful(GetSuccessInfo(recordId, notification));
+            await ProcessAndStoreResults(searchRequest, resultSet);
+            await searchRequestsRepository.MarkSearchResultsAsSuccessful(GetSuccessInfo(searchRequest.Id, notification));
 
-            Debug.WriteLine($"Search request {recordId} was successful - {resultSet.TotalResults} matched donors found.");
+            Debug.WriteLine($"Search request {searchRequest.Id} was successful - {resultSet.TotalResults} matched donors found.");
         }
 
         private async Task<string> DownloadResults(SearchResultsNotification notification)
@@ -72,11 +78,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             return await new StreamReader(blobStream).ReadToEndAsync();
         }
 
-        private async Task ProcessAndStoreResults(int searchRequestRecordId, SearchResultSet resultSet)
+        private async Task ProcessAndStoreResults(SearchRequestRecord searchRequest, SearchResultSet resultSet)
         {
-            await donorsProcessor.ProcessAndStoreResults(searchRequestRecordId, resultSet);
-            await countsProcessor.ProcessAndStoreResults(searchRequestRecordId, resultSet);
-            await probabilitiesProcessor.ProcessAndStoreResults(searchRequestRecordId, resultSet);
+            await donorsProcessor.ProcessAndStoreResults(searchRequest.Id, resultSet);
+            await countsProcessor.ProcessAndStoreResults(searchRequest.Id, resultSet);
+            await probabilitiesProcessor.ProcessAndStoreResults(searchRequest.Id, resultSet);
+            await mismatchedDonorsProcessor.CreateRecordsForGenotypeDonorsWithTooManyMismatches(searchRequest, resultSet);
         }
 
         private static SuccessfulSearchRequestInfo GetSuccessInfo(int searchRequestRecordId, SearchResultsNotification notification)

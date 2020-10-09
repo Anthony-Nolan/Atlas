@@ -1,5 +1,6 @@
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
+using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchPrediction.Test.Verification;
 using Atlas.MatchPrediction.Test.Verification.DependencyInjection;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
@@ -29,6 +30,13 @@ namespace Atlas.MatchPrediction.Test.Verification
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MacDownloadSettings>());
+
+            builder.Services.RegisterMatchingAlgorithmScoring(
+                OptionsReaderFor<ApplicationInsightsSettings>(),
+                OptionsReaderFor<HlaMetadataDictionarySettings>(),
+                OptionsReaderFor<MacDictionarySettings>(),
+                ConnectionStringReader("Matching:PersistentSql")
+            );
         }
 
         private static void RegisterSettings(IServiceCollection services)

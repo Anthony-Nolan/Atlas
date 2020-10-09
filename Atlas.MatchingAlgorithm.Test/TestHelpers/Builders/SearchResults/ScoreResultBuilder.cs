@@ -201,7 +201,9 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
                 case 2:
                     return this.WithMatchConfidenceAtLocus(locus, MatchConfidence.Definite);
                 case 1:
-                    return this.WithMatchConfidenceAtLocusPosition(locus, LocusPosition.One, MatchConfidence.Mismatch);
+                    return this
+                        .WithMatchConfidenceAtLocusPosition(locus, LocusPosition.One, MatchConfidence.Mismatch)
+                        .WithMatchConfidenceAtLocusPosition(locus, LocusPosition.Two, MatchConfidence.Definite);
                 case 0:
                     return this.WithMatchConfidenceAtLocus(locus, MatchConfidence.Mismatch);
                 default:
@@ -219,6 +221,13 @@ namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchResults
         public ScoreResultBuilder WithAggregateScoringData(AggregateScoreDetails aggregateScoreDetails)
         {
             scoreResult.AggregateScoreDetails = aggregateScoreDetails;
+            return this;
+        }
+
+        public ScoreResultBuilder WithTotalMatchCount(int totalMatchCount)
+        {
+            var aggregateScoreDetails = scoreResult.AggregateScoreDetails;
+            aggregateScoreDetails.MatchCount = totalMatchCount;
             return this;
         }
 

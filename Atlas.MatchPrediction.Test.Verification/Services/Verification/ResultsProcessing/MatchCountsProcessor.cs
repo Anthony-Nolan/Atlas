@@ -22,6 +22,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
             this.matchedDonorsRepository = matchedDonorsRepository;
         }
 
+        /// <returns>Locus match counts greater than zero.</returns>
         protected override async Task<IEnumerable<LocusMatchCount>> ProcessSingleSearchResult(int searchRequestRecordId, SearchResult result)
         {
             var matchedDonorId = await matchedDonorsRepository.GetMatchedDonorId(
@@ -40,7 +41,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsP
                     Locus = l,
                     MatchedDonor_Id = matchedDonorId.Value,
                     MatchCount = lociResults.GetLocus(l).MatchCount
-                });
+                })
+                .Where(m => m.MatchCount > 0);
         }
     }
 }

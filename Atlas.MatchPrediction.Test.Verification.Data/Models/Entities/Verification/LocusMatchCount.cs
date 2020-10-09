@@ -25,6 +25,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
                 .HasOne<MatchedDonor>()
                 .WithMany()
                 .HasForeignKey(r => r.MatchedDonor_Id);
+
+            modelBuilder.HasIndex(r => new {r.MatchedDonor_Id, r.Locus, r.MatchCount});
         }
     }
 }
