@@ -1,5 +1,4 @@
 ﻿using Atlas.MatchPrediction.Test.Verification.Data.Context;
-using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 using System.Data;
@@ -11,13 +10,7 @@ using Dapper;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {
-    public interface IMatchProbabilitiesRepository
-    {
-        Task DeleteMatchProbabilities(IEnumerable<int> matchedDonorIds);
-        Task BulkInsertMatchProbabilities(IReadOnlyCollection<MatchProbability> matchProbabilities);
-    }
-
-    public class MatchProbabilitiesRepository : IMatchProbabilitiesRepository
+    public class MatchProbabilitiesRepository : IProcessedSearchResultsRepository<MatchProbability>
     {
         private readonly string connectionString;
 
@@ -26,17 +19,22 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             this.connectionString = connectionString;
         }
 
-        public async Task DeleteMatchProbabilities(IEnumerable<int> matchedDonorIds)
+        public async Task DeleteResults(int searchRequestRecordId)
         {
-            var sql = $@"DELETE FROM MatchProbabilities WHERE MatchedDonor_Id IN @{nameof(matchedDonorIds)}";
+            var sql = $@"
+                DELETE FROM MatchProbabilities
+                FROM MatchProbabilities m
+                JOIN MatchedDonors d
+                ON m.MatchedDonor_Id = d.Id
+                WHERE d.SearchRequestRecord_Id = @{nameof(searchRequestRecordId)}";
 
             await using (var connection = new SqlConnection(connectionString))
             {
-                await connection.ExecuteAsync(sql, new { matchedDonorIds });
+                await connection.ExecuteAsync(sql, new { searchRequestRecordId });
             }
         }
 
-        public async Task BulkInsertMatchProbabilities(IReadOnlyCollection<MatchProbability> matchProbabilities)
+        public async Task BulkInsertResults(IReadOnlyCollection<MatchProbability> matchProbabilities)
         {
             if (!matchProbabilities.Any())
             {

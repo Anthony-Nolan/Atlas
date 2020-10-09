@@ -10,10 +10,11 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
     public interface IVerificationResultsRepository
     {
         Task<IEnumerable<PdpPrediction>> GetMaskedPdpPredictions(PdpPredictionsRequest request);
-        Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdps(MatchedPdpsRequest request);
+        Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdpsForCrossLociPrediction(MatchedPdpsRequest request);
+        Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdpsForSingleLocusPrediction(SingleLocusMatchedPdpsRequest request);
     }
 
-    public class VerificationResultsRepository : IVerificationResultsRepository
+	public class VerificationResultsRepository : IVerificationResultsRepository
     {
         private readonly string connectionString;
 
@@ -24,6 +25,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 
         public async Task<IEnumerable<PdpPrediction>> GetMaskedPdpPredictions(PdpPredictionsRequest request)
         {
+            const string nullLocusValue = "CrossLoci";
+            var locus = request.Locus == null ? nullLocusValue : request.Locus.ToString();
+
             var sql = @$"
                 SELECT 
 				    ps.SourceSimulantId AS {nameof(PdpPrediction.PatientGenotypeSimulantId)},
@@ -44,15 +48,16 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 				    ds.SimulatedHlaTypingCategory = '{SimulatedHlaTypingCategory.Masked}' AND
 				    r.VerificationRun_Id = @{nameof(request.VerificationRunId)} AND
 				    p.MismatchCount = @{nameof(request.MismatchCount)} AND
-				    p.Locus IS NULL";
+				    ISNULL(p.Locus, '{nullLocusValue}') = @{nameof(locus)}";
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                return await conn.QueryAsync<PdpPrediction>(sql, new { request.VerificationRunId, request.MismatchCount });
+                return await conn.QueryAsync<PdpPrediction>(
+                    sql, new { request.VerificationRunId, request.MismatchCount, locus });
             }
         }
 
-        public async Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdps(MatchedPdpsRequest request)
+        public async Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdpsForCrossLociPrediction(MatchedPdpsRequest request)
         {
             var sql = @$"
                 SELECT 
@@ -75,6 +80,37 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             await using (var conn = new SqlConnection(connectionString))
             {
                 return await conn.QueryAsync<PatientDonorPair>(sql, new { request.VerificationRunId, request.MatchCount });
+            }
+        }
+
+        public async Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdpsForSingleLocusPrediction(SingleLocusMatchedPdpsRequest request)
+        {
+            var locus = request.Locus.ToString();
+
+            var sql = @$"
+                SELECT 
+				    ps.Id AS {nameof(PatientDonorPair.PatientGenotypeSimulantId)},
+				    ds.Id AS {nameof(PatientDonorPair.DonorGenotypeSimulantId)}
+			    FROM SearchRequests r
+			    JOIN MatchedDonors d
+			    ON r.Id = d.SearchRequestRecord_Id
+			    JOIN Simulants ps
+			    ON r.PatientSimulant_Id = ps.Id
+			    JOIN Simulants ds
+			    ON d.MatchedDonorSimulant_Id = ds.Id
+                JOIN MatchCounts mc
+                ON d.Id = mc.MatchedDonor_Id
+			    WHERE 
+				    r.SearchResultsRetrieved = 1 AND
+				    r.VerificationRun_Id = @{nameof(request.VerificationRunId)} AND
+				    ps.SimulatedHlaTypingCategory = '{SimulatedHlaTypingCategory.Genotype}' AND
+				    ds.SimulatedHlaTypingCategory = '{SimulatedHlaTypingCategory.Genotype}' AND
+                    mc.Locus = @{nameof(locus)} AND
+				    mc.MatchCount = @{nameof(request.MatchCount)}";
+
+            await using (var conn = new SqlConnection(connectionString))
+            {
+                return await conn.QueryAsync<PatientDonorPair>(sql, new { request.VerificationRunId, request.MatchCount, locus });
             }
 		}
     }

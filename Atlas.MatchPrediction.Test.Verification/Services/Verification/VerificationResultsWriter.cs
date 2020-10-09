@@ -4,7 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.Common.Utils.Extensions;
+using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using CsvHelper;
 
@@ -31,33 +33,70 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
                 throw new ArgumentException($"{nameof(request.WriteDirectory)} cannot be null or empty; provide a valid directory.");
             }
 
-            var results = await GetVerificationResults(request);
+            await CompileAndWriteResults(request);
+
+
+            Debug.WriteLine("Completed writing results.");
+        }
+
+        private async Task CompileAndWriteResults(VerificationResultsRequest request)
+        {
+            var singleLocusRequests = MatchPredictionStaticData.MatchPredictionLoci
+                .SelectMany(l => BuildCompileRequestByPrediction(request.VerificationRunId, l));
+            var crossLociRequests = BuildCompileRequestByPrediction(request.VerificationRunId);
+            var compileRequests = singleLocusRequests.Concat(crossLociRequests);
+
+            foreach (var compileRequest in compileRequests)
+            {
+                await FetchAndWriteResults(request, compileRequest);
+            }
+        }
+
+        private static IEnumerable<CompileResultsRequest> BuildCompileRequestByPrediction(int runId, Locus? locus = null)
+        {
+            var mismatchCounts = new[] { 0, 1, 2 };
+            return mismatchCounts.Select(mc => new CompileResultsRequest
+            {
+                VerificationRunId = runId,
+                Locus = locus,
+                MismatchCount = mc
+            });
+        }
+
+        private async Task FetchAndWriteResults(VerificationResultsRequest request, CompileResultsRequest compileRequest)
+        {
+            var results = await GetVerificationResults(compileRequest);
 
             if (results.IsNullOrEmpty())
             {
-                throw new Exception($"No results found for run id: {request.VerificationRunId}, with mismatch count: {request.MismatchCount}.");
+                Debug.WriteLine($"No results found for {compileRequest}.");
             }
-
-            WriteToCsv(request, results);
+            else
+            {
+                WriteToCsv(request, compileRequest, results);
+                Debug.WriteLine($"Results written for {compileRequest}.");
+            }
         }
 
-        private async Task<IReadOnlyCollection<VerificationResult>> GetVerificationResults(VerificationResultsRequest request)
+        private async Task<IReadOnlyCollection<VerificationResult>> GetVerificationResults(CompileResultsRequest compileRequest)
         {
-            var results = await resultsCompiler.CompileVerificationResults(request);
+            var results = await resultsCompiler.CompileVerificationResults(compileRequest);
             return results
                 .OrderBy(r => r.Probability)
                 .ToList();
         }
 
-        private static void WriteToCsv(VerificationResultsRequest request, IReadOnlyCollection<VerificationResult> results)
+        private static void WriteToCsv(
+            VerificationResultsRequest request,
+            CompileResultsRequest compileRequest,
+            IEnumerable<VerificationResult> results)
         {
-            var filePath = $"{request.WriteDirectory}\\Results_VerId-{request.VerificationRunId}_MMCount-{request.MismatchCount}.csv";
+            var filePath = $"{request.WriteDirectory}\\Results_VerId-{request.VerificationRunId}" +
+                           $"_MMCount-{compileRequest.MismatchCount}_{compileRequest.PredictionName}.csv";
 
             using var writer = new StreamWriter(filePath);
             using var csv = new CsvWriter(writer);
             csv.WriteRecords(results);
-
-            Debug.WriteLine($"Results successfully written to {filePath}");
         }
     }
 }
