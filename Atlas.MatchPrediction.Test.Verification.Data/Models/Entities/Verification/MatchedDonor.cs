@@ -40,6 +40,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
                 .HasOne<Simulant>()
                 .WithMany()
                 .HasForeignKey(r => r.MatchedDonorSimulant_Id);
+
+            modelBuilder
+                .HasIndex(r => new { r.SearchRequestRecord_Id, r.MatchedDonorSimulant_Id, r.TotalMatchCount });
         }
     }
 }

@@ -9,7 +9,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
 namespace Atlas.MatchingAlgorithm.Test.TestHelpers.Builders
 {
     [Builder]
-    public static class MatchResultsScoringRequestBuilder
+    internal static class MatchResultsScoringRequestBuilder
     {
         public static Builder<MatchResultsScoringRequest> New =>
             Builder<MatchResultsScoringRequest>.New

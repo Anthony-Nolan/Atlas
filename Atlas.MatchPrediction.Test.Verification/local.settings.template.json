@@ -26,8 +26,10 @@
     "Search:ResultsTopicSubscription": "override-this"
   },
   "ConnectionStrings": {
-    "MatchPredictionVerification:Sql": "Data Source=(local);Initial Catalog=AtlasMatchPredictionVerification;Integrated Security=True;MultipleActiveResultSets=True;",
-    "MatchPrediction:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
-    "DonorImport:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;"
+    "MatchPredictionVerification:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
+
+    "DonorImport:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
+    "Matching:PersistentSql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;",
+    "MatchPrediction:Sql": "Data Source=(local);Initial Catalog=Atlas;Integrated Security=True;MultipleActiveResultSets=True;"
   }
 }

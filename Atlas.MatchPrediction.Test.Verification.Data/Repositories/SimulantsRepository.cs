@@ -1,5 +1,4 @@
 ﻿using Atlas.MatchPrediction.Test.Verification.Data.Context;
-using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Collections.Generic;

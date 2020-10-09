@@ -4,14 +4,16 @@ using Atlas.MatchPrediction.Test.Verification.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
 {
     [DbContext(typeof(MatchPredictionVerificationContext))]
-    partial class MatchPredictionVerificationContextModelSnapshot : ModelSnapshot
+    [Migration("20201012134948_AddIndexesToOptimiseQueryingOfVerificationResults")]
+    partial class AddIndexesToOptimiseQueryingOfVerificationResults
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -380,9 +382,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Migrations
                     b.Property<string>("AtlasSearchIdentifier")
                         .IsRequired()
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("DonorMismatchCount")
-                        .HasColumnType("int");
 
                     b.Property<double?>("MatchPredictionTimeInMs")
                         .HasColumnType("float");

@@ -13,11 +13,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
         public int Id { get; set; }
         public int VerificationRun_Id { get; set; }
         public int PatientSimulant_Id { get; set; }
+        public int DonorMismatchCount { get; set; }
 
         [Required]
         [Column(TypeName = "nvarchar(50)")]
         public string AtlasSearchIdentifier { get; set; }
-        
+
         public bool SearchResultsRetrieved { get; set; }
         public bool? WasSuccessful { get; set; }
         public int? MatchedDonorCount { get; set; }
@@ -41,6 +42,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
                 .HasOne<Simulant>()
                 .WithMany()
                 .HasForeignKey(r => r.PatientSimulant_Id);
+
+            modelBuilder.HasIndex(r => r.AtlasSearchIdentifier);
+            modelBuilder.HasIndex(r => new { r.VerificationRun_Id, r.PatientSimulant_Id, r.SearchResultsRetrieved });
         }
     }
 }

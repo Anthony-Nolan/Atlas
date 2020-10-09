@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification
@@ -13,15 +11,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verificat
     {
         public int TestHarness_Id { get; set; }
         public int SearchLociCount { get; set; }
-        
-        /// <summary>
-        /// Serialised copy of the <see cref="Client.Models.Search.Requests.SearchRequest"/> submitted for all patients
-        /// within this run, minus the SearchHla.
-        /// </summary>
-        [Required]
-        [Column(TypeName = "nvarchar(max)")]
-        public string SearchRequest { get; set; }
-
         public bool SearchRequestsSubmitted { get; set; }
     }
     
