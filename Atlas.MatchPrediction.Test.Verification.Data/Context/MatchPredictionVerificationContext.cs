@@ -1,5 +1,4 @@
-﻿using Atlas.MatchPrediction.Test.Verification.Data.Models;
-using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
+﻿using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +24,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Context
             modelBuilder.Entity<VerificationRun>().SetUpModel();
             modelBuilder.Entity<SearchRequestRecord>().SetUpModel();
             modelBuilder.Entity<MatchedDonor>().SetUpModel();
+            modelBuilder.Entity<LocusMatchCount>().SetUpModel();
             modelBuilder.Entity<MatchProbability>().SetUpModel();
             base.OnModelCreating(modelBuilder);
         }
@@ -39,6 +39,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Context
         public DbSet<VerificationRun> VerificationRuns { get; set; }
         public DbSet<SearchRequestRecord> SearchRequests { get; set; }
         public DbSet<MatchedDonor> MatchedDonors { get; set; }
+        public DbSet<LocusMatchCount> MatchCounts { get; set; }
         public DbSet<MatchProbability> MatchProbabilities { get; set; }
     }
 }

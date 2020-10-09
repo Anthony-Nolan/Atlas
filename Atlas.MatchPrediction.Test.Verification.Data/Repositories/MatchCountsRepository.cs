@@ -1,5 +1,4 @@
 ﻿using Atlas.MatchPrediction.Test.Verification.Data.Context;
-using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 using System.Data;
@@ -7,26 +6,27 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
+using Dapper;
 
 namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 {
-    public interface IMatchedDonorsRepository
-    {
-        Task<int?> GetMatchedDonorId(int searchRequestRecordId, int simulantId);
-    }
-
-    public class MatchedDonorsRepository : IMatchedDonorsRepository, IProcessedSearchResultsRepository<MatchedDonor>
+    public class MatchCountsRepository : IProcessedSearchResultsRepository<LocusMatchCount>
     {
         private readonly string connectionString;
 
-        public MatchedDonorsRepository(string connectionString)
+        public MatchCountsRepository(string connectionString)
         {
             this.connectionString = connectionString;
         }
 
         public async Task DeleteResults(int searchRequestRecordId)
         {
-            var sql = $@"DELETE FROM MatchedDonors WHERE SearchRequestRecord_Id = @{nameof(searchRequestRecordId)}";
+            var sql = $@"
+                DELETE FROM MatchCounts
+                FROM MatchCounts c
+                JOIN MatchedDonors d
+                ON c.MatchedDonor_Id = d.Id
+                WHERE d.SearchRequestRecord_Id = @{nameof(searchRequestRecordId)}";
 
             await using (var connection = new SqlConnection(connectionString))
             {
@@ -34,15 +34,15 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             }
         }
 
-        public async Task BulkInsertResults(IReadOnlyCollection<MatchedDonor> matchedDonors)
+        public async Task BulkInsertResults(IReadOnlyCollection<LocusMatchCount> matchCounts)
         {
-            if (!matchedDonors.Any())
+            if (!matchCounts.Any())
             {
                 return;
             }
 
-            var columnNames = matchedDonors.GetColumnNamesForBulkInsert();
-            var dataTable = BuildDataTable(matchedDonors, columnNames);
+            var columnNames = matchCounts.GetColumnNamesForBulkInsert();
+            var dataTable = BuildDataTable(matchCounts, columnNames);
 
             using (var sqlBulk = BuildSqlBulkCopy(columnNames))
             {
@@ -50,19 +50,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             }
         }
 
-        public async Task<int?> GetMatchedDonorId(int searchRequestRecordId, int simulantId)
-        {
-            var sql = @$"SELECT Id FROM MatchedDonors WHERE 
-                SearchRequestRecord_Id = @{nameof(searchRequestRecordId)} AND
-                MatchedDonorSimulant_Id = @{nameof(simulantId)}";
-
-            await using (var conn = new SqlConnection(connectionString))
-            {
-                return (await conn.QueryAsync<int>(sql, new { searchRequestRecordId, simulantId })).SingleOrDefault();
-            }
-        }
-
-        private static DataTable BuildDataTable(IEnumerable<MatchedDonor> matchedDonors, IEnumerable<string> columnNames)
+        private static DataTable BuildDataTable(IEnumerable<LocusMatchCount> matchCounts, IEnumerable<string> columnNames)
         {
             var dataTable = new DataTable();
             foreach (var columnName in columnNames)
@@ -70,16 +58,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
                 dataTable.Columns.Add(columnName);
             }
 
-            foreach (var donor in matchedDonors)
+            foreach (var probability in matchCounts)
             {
                 dataTable.Rows.Add(
-                    donor.SearchRequestRecord_Id,
-                    donor.MatchedDonorSimulant_Id,
-                    donor.TotalMatchCount,
-                    donor.TypedLociCount,
-                    donor.WasPatientRepresented,
-                    donor.WasDonorRepresented,
-                    donor.SearchResult);
+                    probability.MatchedDonor_Id,
+                    probability.Locus,
+                    probability.MatchCount);
             }
 
             return dataTable;
@@ -91,7 +75,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             {
                 BulkCopyTimeout = 3600,
                 BatchSize = 10000,
-                DestinationTableName = nameof(MatchPredictionVerificationContext.MatchedDonors)
+                DestinationTableName = nameof(MatchPredictionVerificationContext.MatchCounts)
             };
 
             foreach (var columnName in columnNames)

@@ -2,6 +2,7 @@
 using Atlas.Common.Utils;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.Verification;
+using Atlas.MatchPrediction.Test.Verification.Services.Verification.ResultsProcessing;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,16 +21,16 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
     public class VerificationFunctions
     {
         private readonly IVerificationRunner verificationRunner;
-        private readonly ISearchResultsFetcher searchResultsFetcher;
+        private readonly ISearchResultSetProcessor searchResultSetProcessor;
         private readonly IVerificationResultsWriter resultsWriter;
 
         public VerificationFunctions(
             IVerificationRunner verificationRunner,
-            ISearchResultsFetcher searchResultsFetcher,
+            ISearchResultSetProcessor searchResultSetProcessor,
             IVerificationResultsWriter resultsWriter)
         {
             this.verificationRunner = verificationRunner;
-            this.searchResultsFetcher = searchResultsFetcher;
+            this.searchResultSetProcessor = searchResultSetProcessor;
             this.resultsWriter = resultsWriter;
         }
 
@@ -61,7 +62,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Functions
 
             try
             {
-                await searchResultsFetcher.FetchSearchResults(notification);
+                await searchResultSetProcessor.ProcessAndStoreSearchResultSet(notification);
             }
             catch (System.Exception ex)
             {

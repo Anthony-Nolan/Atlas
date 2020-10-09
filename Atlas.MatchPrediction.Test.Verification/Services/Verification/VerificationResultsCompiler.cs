@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData;
 using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
@@ -9,7 +11,25 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 {
     internal interface IVerificationResultsCompiler
     {
-        Task<IEnumerable<VerificationResult>> CompileVerificationResults(VerificationResultsRequest request);
+        Task<IEnumerable<VerificationResult>> CompileVerificationResults(CompileResultsRequest request);
+    }
+
+    internal class CompileResultsRequest
+    {
+        public int VerificationRunId { get; set; }
+        public int MismatchCount { get; set; }
+
+        /// <summary>
+        /// Leave null for Cross-Loci prediction.
+        /// </summary>
+        public Locus? Locus { get; set; }
+
+        public string PredictionName => Locus == null ? "CrossLoci" : Locus.ToString();
+
+        public override string ToString()
+        {
+            return $"RunId: {VerificationRunId}, Mismatch-count: {MismatchCount}, Prediction: {PredictionName}";
+        }
     }
 
     internal class VerificationResultsCompiler : IVerificationResultsCompiler
@@ -25,7 +45,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
             this.resultsRepository = resultsRepository;
         }
 
-        public async Task<IEnumerable<VerificationResult>> CompileVerificationResults(VerificationResultsRequest request)
+        public async Task<IEnumerable<VerificationResult>> CompileVerificationResults(CompileResultsRequest request)
         {
             var defaultResults = BuildDefaultResults();
             var verificationResults = await GetVerificationResults(request);
@@ -51,7 +71,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
                 });
         }
 
-        private async Task<IReadOnlyCollection<VerificationResult>> GetVerificationResults(VerificationResultsRequest request)
+        private async Task<IReadOnlyCollection<VerificationResult>> GetVerificationResults(CompileResultsRequest request)
         {
             var actualMatchStatuses = await GetActualMatchStatusOfPdps(request);
 
@@ -64,9 +84,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
                 }).ToList();
         }
 
-        private async Task<IEnumerable<ActualMatchStatus>> GetActualMatchStatusOfPdps(VerificationResultsRequest request)
+        private async Task<IEnumerable<ActualMatchStatus>> GetActualMatchStatusOfPdps(CompileResultsRequest request)
         {
-            var predictions = await GetMaskedPdpPredictions(request);
+            var predictions = (await GetMaskedPdpPredictions(request)).ToList();
             var genotypePdps = await GetMatchedGenotypePdps(request);
 
             return
@@ -82,24 +102,60 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
                 };
         }
 
-        private async Task<IEnumerable<PdpPrediction>> GetMaskedPdpPredictions(VerificationResultsRequest request)
+        private async Task<IEnumerable<PdpPrediction>> GetMaskedPdpPredictions(CompileResultsRequest request)
         {
             return await resultsRepository.GetMaskedPdpPredictions(new PdpPredictionsRequest
             {
                 VerificationRunId = request.VerificationRunId,
-                MismatchCount = request.MismatchCount
+                MismatchCount = request.MismatchCount,
+                Locus = request.Locus
             });
         }
 
-        private async Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdps(VerificationResultsRequest request)
+        private async Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdps(CompileResultsRequest request)
         {
-            var searchLociCount = await runRepository.GetSearchLociCount(request.VerificationRunId);
+            return request.Locus == null
+                ? await GetMatchedGenotypePdpsForCrossLociPrediction(request)
+                : await GetMatchedGenotypePdpsForSingleLocusPrediction(request);
+        }
 
-            return await resultsRepository.GetMatchedGenotypePdps(new MatchedPdpsRequest
+        private async Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdpsForCrossLociPrediction(CompileResultsRequest request)
+        {
+            return await resultsRepository.GetMatchedGenotypePdpsForCrossLociPrediction(new MatchedPdpsRequest
             {
                 VerificationRunId = request.VerificationRunId,
-                MatchCount = searchLociCount * 2 - request.MismatchCount
+                MatchCount = CalculateMatchCount(
+                    await runRepository.GetSearchLociCount(request.VerificationRunId), request.MismatchCount)
             });
+        }
+
+        private async Task<IEnumerable<PatientDonorPair>> GetMatchedGenotypePdpsForSingleLocusPrediction(CompileResultsRequest request)
+        {
+            if (request.Locus == null)
+            {
+                throw new ArgumentNullException(nameof(request.Locus));
+            }
+
+            return await resultsRepository.GetMatchedGenotypePdpsForSingleLocusPrediction(new SingleLocusMatchedPdpsRequest
+            {
+                VerificationRunId = request.VerificationRunId,
+                MatchCount = CalculateMatchCount(1, request.MismatchCount),
+                Locus = request.Locus.Value
+            });
+        }
+
+        private int CalculateMatchCount(int lociCount, int mismatchCount)
+        {
+            var positionCount = 2 * lociCount;
+
+            if (mismatchCount > positionCount)
+            {
+                throw new ArgumentException(
+                    $"Mismatch count ({mismatchCount}) greater than total position count ({positionCount}).",
+                    nameof(mismatchCount));
+            }
+
+            return positionCount - mismatchCount;
         }
 
         private class ActualMatchStatus
