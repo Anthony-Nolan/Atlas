@@ -1,12 +1,10 @@
 ﻿using Atlas.Client.Models.Search.Requests;
 using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
-using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
+using Atlas.Common.Test.SharedTestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using FluentAssertions;
 using FluentValidation;
-using FluentValidation.TestHelper;
 using NUnit.Framework;
 
 namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
@@ -23,12 +21,18 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         }
 
         [TestCase(-1)]
-        [TestCase(5)]
+        // TODO ATLAS-865
+        [TestCase(10)]
         public void Validator_WhenDonorMismatchCountInvalid_ShouldHaveValidationError(int totalMismatchCount)
         {
+            var locusCriteria = new LociInfoBuilder<int?>(0)
+                .WithDataAt(Locus.Dpb1, null)
+                .Build()
+                .ToLociInfoTransfer();
+
             var mismatchCriteria = new MismatchCriteria
             {
-                LocusMismatchCriteria = new LociInfo<int?>(0).ToLociInfoTransfer(),
+                LocusMismatchCriteria = locusCriteria,
                 DonorMismatchCount = totalMismatchCount
             };
 
@@ -49,11 +53,17 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         [TestCase(Locus.A)]
         [TestCase(Locus.B)]
         [TestCase(Locus.Drb1)]
-        public void Validator_WhenMissingRequiredLocusMismatchCriteria_ShouldHaveValidationError(Locus locus)
+        public void Validator_WhenMissingRequiredLocusMismatchCriteria_ShouldHaveValidationError(Locus testLocus)
         {
+            var locusCriteria = new LociInfoBuilder<int?>(0)
+                .WithDataAt(Locus.Dpb1, null)
+                .WithDataAt(testLocus, null)
+                .Build()
+                .ToLociInfoTransfer();
+
             var mismatchCriteria = new MismatchCriteria
             {
-                LocusMismatchCriteria = new LociInfo<int?>(0).SetLocus(locus, null).ToLociInfoTransfer()
+                LocusMismatchCriteria = locusCriteria
             };
 
             validator.Invoking(v => v.ValidateAndThrow(mismatchCriteria)).Should().Throw<ValidationException>();
@@ -69,11 +79,17 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
         [TestCase(Locus.C, 5)]
         [TestCase(Locus.Dqb1, -1)]
         [TestCase(Locus.Dqb1, 5)]
-        public void Validator_WhenLocusMismatchCountInvalid_ShouldHaveValidationError(Locus locus, int mismatchCount)
+        public void Validator_WhenLocusMismatchCountInvalid_ShouldHaveValidationError(Locus testLocus, int mismatchCount)
         {
+            var locusCriteria = new LociInfoBuilder<int?>(0)
+                .WithDataAt(Locus.Dpb1, null)
+                .WithDataAt(testLocus, mismatchCount)
+                .Build()
+                .ToLociInfoTransfer();
+
             var mismatchCriteria = new MismatchCriteria
             {
-                LocusMismatchCriteria = new LociInfo<int?>(0).SetLocus(locus, mismatchCount).ToLociInfoTransfer()
+                LocusMismatchCriteria = locusCriteria
             };
 
             validator.Invoking(v => v.ValidateAndThrow(mismatchCriteria)).Should().Throw<ValidationException>();

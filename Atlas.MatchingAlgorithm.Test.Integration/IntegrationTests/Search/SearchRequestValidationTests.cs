@@ -1,6 +1,5 @@
 ﻿using Atlas.Common.GeneticData;
 using Atlas.MatchingAlgorithm.Client.Models.Donors;
-using Atlas.MatchingAlgorithm.Client.Models.SearchRequests;
 using Atlas.MatchingAlgorithm.Clients.ServiceBus;
 using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Test.Integration.Resources.TestData;
@@ -96,7 +95,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
         }
 
         [TestCase(-1)]
-        [TestCase(5)]
+        // TODO ATLAS-865
+        [TestCase(10)]
         public void DispatchSearch_DonorMismatchCountIsInvalid_ThrowsValidationError(int donorMismatchCount)
         {
             var matchRequest = defaultSearchRequestBuilder.Build();
