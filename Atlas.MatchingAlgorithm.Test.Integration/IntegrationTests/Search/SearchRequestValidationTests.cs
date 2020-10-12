@@ -96,7 +96,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
 
         [TestCase(-1)]
         // TODO ATLAS-865
-        [TestCase(10)]
+        [TestCase(6)]
         public void DispatchSearch_DonorMismatchCountIsInvalid_ThrowsValidationError(int donorMismatchCount)
         {
             var matchRequest = defaultSearchRequestBuilder.Build();

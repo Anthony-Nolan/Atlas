@@ -22,7 +22,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validators.SearchRequest
 
         [TestCase(-1)]
         // TODO ATLAS-865
-        [TestCase(10)]
+        [TestCase(6)]
         public void Validator_WhenDonorMismatchCountInvalid_ShouldHaveValidationError(int totalMismatchCount)
         {
             var locusCriteria = new LociInfoBuilder<int?>(0)
