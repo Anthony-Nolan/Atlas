@@ -42,6 +42,7 @@ This code is designed to be run locally; it is not production quality and cannot
 - Simulant: a simulated individual - either a patient or a donor - and their HLA typing (genotype and phenotype).
 - Normalised Haplotype Pool: data source for genotype simulation; produced by assigning each haplotype within a set a copy number, based on its relative frequency.
 - Masking: the process of converting a high-resolution genotype into a lower resolution phenotype; this may include deleting selected locus typings entirely.
+- PDP: patient-donor pair.
 
 ### Start Up Guide
 - Run Migrations on the Verification database
@@ -87,8 +88,9 @@ This code is designed to be run locally; it is not production quality and cannot
           "Search:ResultsTopicSubscription": "subscription-name"
         }
         "ConnectionStrings": {
-          "MatchPrediction:Sql": "remote-connection-string",
-          "DonorImport:Sql": "remote-connection-string"
+          "DonorImport:Sql": "remote-connection-string",
+          "Matching:PersistentSql": "remote-connection-string",
+          "MatchPrediction:Sql": "remote-connection-string"
         }
       }
       ```
@@ -173,12 +175,11 @@ The following steps must be completed prior to generating the test harness.
       export record from the local verification database, and start from scratch.
 
 ### Searching
-Note: at present, the framework is hard-coded to only run five locus (A,B,C,DQB1,DRB1) search requests,
-  allowing up to 2 mismatches at any position in the donor's HLA. No scoring is requested.
+Note: at present, the framework is hard-coded to only run five locus (A,B,C,DQB1,DRB1) search requests.
 
 #### Send Search Requests
-- The last part of verification data generation involves sending search requests to the test environment;
-  one for each test patient within the specified test harness.
+- The last part of verification data generation involves sending search requests to the test environment
+  for each test patient within the specified test harness.
 - This involves launching the verification functions app, and invoking the http-triggered function, `SendVerificationSearchRequests`.
   - This takes in the ID of a completed test harness (see Swagger UI for request model).
   - It will return a verification run ID.
@@ -193,6 +194,12 @@ Note: at present, the framework is hard-coded to only run five locus (A,B,C,DQB1
 - As search is an async process, a second service-bus triggered function, `FetchSearchResults`, is used to retrieve
   the results when they are ready to download from blob storage.
   - Ensure `Search:ResultsTopicSubscription` has been overriden in `local.settings.json` with the remote environment value.
+  - The property `serviceBus:"messageHandlerOptions:maxConcurrentCalls` determines how many results are processed at a time.
+    - This can be changed to a count that is optimal for the local environment.
+    - Note: the first batch of messages will take the longest to run, due to the loading of in-memory caches.
+- The processing of some search results requires the scoring of genotype PDPs.
+  - In addition to previously mentioned config parameters, also ensure that `Matching:PersistentSql` has been overriden
+    in `local.settings.json` with the remote environment value.
 - The functions app must be running for the function to listen for new messages.
   - As it may take several hours for all requests to complete, it is advised to either leave the app running in the
     background, or only launch it when it seems the majority of requests have completed.
@@ -212,10 +219,9 @@ ambiguous HLA assignments; Tissue Antigens, 84(3):285-92.
 To generate the AvE plot:
 1. Launch the verification functions app, and invoke the http-triggered function, `WriteVerificationResultsToFile`; it requires:
   - Verification run ID;
-  - Mismatch count, e.g., submit `1` if you want to verify P(1 mismatch);
-    - Note: the framework does not currently write out individual locus predictions, only cross-loci predictions.
-  - Directory where results CSV file should be written out to.
-    - The filename will be auto-generated to contain the verification run ID and the mismatch count.
+  - Directory where CSV files should be written out to.
+    - Filenames will be auto-generated to contain the verification run ID, mismatch count, and locus name 
+      (or "CrossLoci" for P(x/10) predictions).
     - Any existing file in the specified directory with the same name will be overwritten without warning.
     - Reminder: any backslashes in the path should be escaped, i.e., `C:\\dir\\subdir`.
   - See Swagger UI for exact request model.
