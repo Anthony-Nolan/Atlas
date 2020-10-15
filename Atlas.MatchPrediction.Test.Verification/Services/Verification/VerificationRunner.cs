@@ -15,6 +15,7 @@ using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Settings;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Polly;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 {
@@ -120,17 +121,22 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
         private async Task RunAndStoreSearchRequests(int verificationRunId, Simulant patient)
         {
+            const string failedSearchId = "FAILED-SEARCH";
+            var retryPolicy = Policy.Handle<Exception>().RetryAsync(10);
             var searchRequests = BuildFiveLocusMismatchSearchRequests(patient);
 
             foreach (var searchRequest in searchRequests)
             {
-                var atlasId = await SubmitSingleSearch(searchRequest, patient.Id);
+                var requestResponse = await retryPolicy.ExecuteAndCaptureAsync(
+                    async () => await SubmitSingleSearch(searchRequest, patient.Id));
+
                 await searchRequestsRepository.AddSearchRequest(new SearchRequestRecord
                 {
                     VerificationRun_Id = verificationRunId,
                     PatientSimulant_Id = patient.Id,
                     DonorMismatchCount = searchRequest.MatchCriteria.DonorMismatchCount,
-                    AtlasSearchIdentifier = atlasId
+                    AtlasSearchIdentifier = requestResponse.Outcome == OutcomeType.Failure ? failedSearchId : requestResponse.Result,
+                    WasSuccessful = requestResponse.Outcome == OutcomeType.Failure ? false : (bool?)null
                 });
             }
         }
@@ -178,20 +184,23 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
         private async Task<string> SubmitSingleSearch(SearchRequest searchRequest, int patientId)
         {
-            var response = await HttpRequestClient.PostAsync(
-                            searchRequestUrl, new StringContent(JsonConvert.SerializeObject(searchRequest)));
-            var body = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                const string failedSearchText = "FAILED-SEARCH";
-                Debug.WriteLine($"Search request failed for {patientId}. Details: {response.ReasonPhrase} - {body}");
-                return failedSearchText;
-            }
+                var response = await HttpRequestClient.PostAsync(
+                searchRequestUrl, new StringContent(JsonConvert.SerializeObject(searchRequest)));
+                response.EnsureSuccessStatusCode();
 
-            var searchResponse = JsonConvert.DeserializeObject<SearchInitiationResponse>(body);
-            Debug.WriteLine($"Search request submitted for {patientId} with request id: {searchResponse.SearchIdentifier}.");
-            return searchResponse.SearchIdentifier;
+                var searchResponse = JsonConvert.DeserializeObject<SearchInitiationResponse>(await response.Content.ReadAsStringAsync());
+                Debug.WriteLine($"Search request (mm:{searchRequest.MatchCriteria.DonorMismatchCount}) submitted for {patientId} " +
+                                $"with request id: {searchResponse.SearchIdentifier}.");
+                return searchResponse.SearchIdentifier;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Search request (mm:{searchRequest.MatchCriteria.DonorMismatchCount}) failed for {patientId}. Details: {ex.Message} " +
+                                "Re-attempting until success or re-attempt count reached.");
+                throw;
+            }
         }
     }
 }

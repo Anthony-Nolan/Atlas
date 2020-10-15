@@ -38,7 +38,7 @@ SELECT r.*
 FROM VerificationRuns v
 JOIN SearchRequests r
 ON v.Id = r.VerificationRun_Id
-WHERE v.Id = @runId AND r.SearchResultsRetrieved = 1 AND r.WasSuccessful = 0
+WHERE v.Id = @runId AND r.WasSuccessful = 0
 
 /*
  *	MATCH PREDICTION TIMES
