@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
+using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using MoreLinq.Extensions;
 
@@ -16,6 +17,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
     internal class GenotypeSimulantsInfoCache : IGenotypeSimulantsInfoCache
     {
+        private static readonly Dictionary<int, VerificationRun> CachedVerificationRuns = new Dictionary<int, VerificationRun>();
         private static readonly Dictionary<int, GenotypeSimulantsInfo> CachedGenotypeSimulantsInfo =
             new Dictionary<int, GenotypeSimulantsInfo>();
         private static readonly Dictionary<int, IReadOnlyCollection<PatientDonorPair>> CachedPossiblePdps =
@@ -34,28 +36,30 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
         public async Task<GenotypeSimulantsInfo> GetOrAddGenotypeSimulantsInfo(int verificationRunId)
         {
-            if (CachedGenotypeSimulantsInfo.ContainsKey(verificationRunId))
-            {
-                return CachedGenotypeSimulantsInfo[verificationRunId];
-            }
+            var testHarnessId = await GetTestHarnessId(verificationRunId);
 
-            var verificationRun = await verificationRunRepository.GetVerificationRun(verificationRunId);
+            if (CachedGenotypeSimulantsInfo.ContainsKey(testHarnessId))
+            {
+                return CachedGenotypeSimulantsInfo[testHarnessId];
+            }
+            
             var info = new GenotypeSimulantsInfo
             {
-                TypedLociCount = verificationRun.SearchLociCount,
-                Patients = await GetSimulantsInfo(verificationRun.TestHarness_Id, TestIndividualCategory.Patient),
-                Donors = await GetSimulantsInfo(verificationRun.TestHarness_Id, TestIndividualCategory.Donor)
+                TypedLociCount = await GetSearchLociCount(verificationRunId),
+                Patients = await GetSimulantsInfo(testHarnessId, TestIndividualCategory.Patient),
+                Donors = await GetSimulantsInfo(testHarnessId, TestIndividualCategory.Donor)
             };
-            CachedGenotypeSimulantsInfo[verificationRunId] = info;
-
+            CachedGenotypeSimulantsInfo[testHarnessId] = info;
             return info;
         }
 
         public async Task<IReadOnlyCollection<PatientDonorPair>> GetOrAddAllPossibleGenotypePatientDonorPairs(int verificationRunId)
         {
-            if (CachedPossiblePdps.ContainsKey(verificationRunId))
+            var testHarnessId = await GetTestHarnessId(verificationRunId);
+
+            if (CachedPossiblePdps.ContainsKey(testHarnessId))
             {
-                return CachedPossiblePdps[verificationRunId];
+                return CachedPossiblePdps[testHarnessId];
             }
             
             var info = await GetOrAddGenotypeSimulantsInfo(verificationRunId);
@@ -72,9 +76,31 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
                 })
                 .ToList();
 
-            CachedPossiblePdps[verificationRunId] = allPdps;
+            CachedPossiblePdps[testHarnessId] = allPdps;
 
             return allPdps;
+        }
+
+        private async Task<int> GetTestHarnessId(int verificationRunId)
+        {
+            return (await GetVerificationRun(verificationRunId)).TestHarness_Id;
+        }
+
+        private async Task<int> GetSearchLociCount(int verificationRunId)
+        {
+            return (await GetVerificationRun(verificationRunId)).SearchLociCount;
+        }
+
+        private async Task<VerificationRun> GetVerificationRun(int verificationRunId)
+        {
+            if (CachedVerificationRuns.ContainsKey(verificationRunId))
+            {
+                return CachedVerificationRuns[verificationRunId];
+            }
+
+            var verificationRun = await verificationRunRepository.GetVerificationRun(verificationRunId);
+            CachedVerificationRuns[verificationRunId] = verificationRun;
+            return verificationRun;
         }
 
         private async Task<SimulantsInfo> GetSimulantsInfo(int testHarnessId, TestIndividualCategory category)

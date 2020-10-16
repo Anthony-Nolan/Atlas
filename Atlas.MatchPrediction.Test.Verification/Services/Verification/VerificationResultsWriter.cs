@@ -35,7 +35,6 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
             await CompileAndWriteResults(request);
 
-
             Debug.WriteLine("Completed writing results.");
         }
 
@@ -65,6 +64,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
         private async Task FetchAndWriteResults(VerificationResultsRequest request, CompileResultsRequest compileRequest)
         {
+            Debug.WriteLine($"Compiling results for {compileRequest}...");
+
             var results = await GetVerificationResults(compileRequest);
 
             if (results.IsNullOrEmpty())
