@@ -53,7 +53,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
             await using (var conn = new SqlConnection(connectionString))
             {
                 return await conn.QueryAsync<PdpPrediction>(
-                    sql, new { request.VerificationRunId, request.MismatchCount, locus });
+                    sql, new { request.VerificationRunId, request.MismatchCount, locus }, commandTimeout: 180);
             }
         }
 
@@ -79,7 +79,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                return await conn.QueryAsync<PatientDonorPair>(sql, new { request.VerificationRunId, request.MatchCount });
+                return await conn.QueryAsync<PatientDonorPair>(
+                    sql, new { request.VerificationRunId, request.MatchCount }, commandTimeout: 180);
             }
         }
 
@@ -110,7 +111,8 @@ namespace Atlas.MatchPrediction.Test.Verification.Data.Repositories
 
             await using (var conn = new SqlConnection(connectionString))
             {
-                return await conn.QueryAsync<PatientDonorPair>(sql, new { request.VerificationRunId, request.MatchCount, locus });
+                return await conn.QueryAsync<PatientDonorPair>(
+                    sql, new { request.VerificationRunId, request.MatchCount, locus }, commandTimeout: 180);
             }
 		}
     }
