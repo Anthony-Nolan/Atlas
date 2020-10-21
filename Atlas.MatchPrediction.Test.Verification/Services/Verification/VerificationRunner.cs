@@ -12,6 +12,7 @@ using Atlas.MatchPrediction.Test.Verification.Config;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
+using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Settings;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -157,7 +158,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
             return donorMismatchCounts.Select(mm => new SearchRequest
             {
                 SearchHlaData = patient.ToPhenotypeInfo().ToPhenotypeInfoTransfer(),
-                SearchDonorType = VerificationConstants.GetSearchDonorType(patient.SimulatedHlaTypingCategory),
+                SearchDonorType = patient.SimulatedHlaTypingCategory.ToDonorType(),
                 MatchCriteria = new MismatchCriteria
                 {
                     DonorMismatchCount = mm,

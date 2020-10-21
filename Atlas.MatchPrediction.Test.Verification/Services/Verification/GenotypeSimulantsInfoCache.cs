@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.Verification;
@@ -17,11 +19,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
     internal class GenotypeSimulantsInfoCache : IGenotypeSimulantsInfoCache
     {
-        private static readonly Dictionary<int, VerificationRun> CachedVerificationRuns = new Dictionary<int, VerificationRun>();
-        private static readonly Dictionary<int, GenotypeSimulantsInfo> CachedGenotypeSimulantsInfo =
-            new Dictionary<int, GenotypeSimulantsInfo>();
-        private static readonly Dictionary<int, IReadOnlyCollection<PatientDonorPair>> CachedPossiblePdps =
-            new Dictionary<int, IReadOnlyCollection<PatientDonorPair>>();
+        private static readonly IDictionary<int, VerificationRun> CachedVerificationRuns = 
+            new ConcurrentDictionary<int, VerificationRun>();
+        private static readonly IDictionary<int, GenotypeSimulantsInfo> CachedGenotypeSimulantsInfo =
+            new ConcurrentDictionary<int, GenotypeSimulantsInfo>();
+        private static readonly IDictionary<int, IReadOnlyCollection<PatientDonorPair>> CachedPossiblePdps =
+            new ConcurrentDictionary<int, IReadOnlyCollection<PatientDonorPair>>();
 
         private readonly IVerificationRunRepository verificationRunRepository;
         private readonly ISimulantsRepository simulantsRepository;
@@ -38,47 +41,33 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
         {
             var testHarnessId = await GetTestHarnessId(verificationRunId);
 
-            if (CachedGenotypeSimulantsInfo.ContainsKey(testHarnessId))
-            {
-                return CachedGenotypeSimulantsInfo[testHarnessId];
-            }
-            
-            var info = new GenotypeSimulantsInfo
-            {
-                TypedLociCount = await GetSearchLociCount(verificationRunId),
-                Patients = await GetSimulantsInfo(testHarnessId, TestIndividualCategory.Patient),
-                Donors = await GetSimulantsInfo(testHarnessId, TestIndividualCategory.Donor)
-            };
-            CachedGenotypeSimulantsInfo[testHarnessId] = info;
-            return info;
+            return await CachedGenotypeSimulantsInfo.GetOrAddAsync(testHarnessId, async () =>
+                new GenotypeSimulantsInfo
+                {
+                    TypedLociCount = await GetSearchLociCount(verificationRunId),
+                    Patients = await GetSimulantsInfo(testHarnessId, TestIndividualCategory.Patient),
+                    Donors = await GetSimulantsInfo(testHarnessId, TestIndividualCategory.Donor)
+                });
         }
 
         public async Task<IReadOnlyCollection<PatientDonorPair>> GetOrAddAllPossibleGenotypePatientDonorPairs(int verificationRunId)
         {
             var testHarnessId = await GetTestHarnessId(verificationRunId);
 
-            if (CachedPossiblePdps.ContainsKey(testHarnessId))
-            {
-                return CachedPossiblePdps[testHarnessId];
-            }
-            
-            var info = await GetOrAddGenotypeSimulantsInfo(verificationRunId);
-
-            var patientIds = info.Patients.Ids;
-            var donorIds = info.Donors.Ids;
-
-            var allPdps = patientIds.Cartesian(
-                donorIds, 
-                (patientId, donorId) => new PatientDonorPair
+            return await CachedPossiblePdps.GetOrAddAsync<int, IReadOnlyCollection<PatientDonorPair>>(
+                testHarnessId,
+                async () =>
                 {
-                    PatientGenotypeSimulantId = patientId,
-                    DonorGenotypeSimulantId = donorId
-                })
-                .ToList();
-
-            CachedPossiblePdps[testHarnessId] = allPdps;
-
-            return allPdps;
+                    var info = await GetOrAddGenotypeSimulantsInfo(verificationRunId);
+                    return info.Patients.Ids.Cartesian(
+                            info.Donors.Ids,
+                            (patientId, donorId) => new PatientDonorPair
+                            {
+                                PatientGenotypeSimulantId = patientId,
+                                DonorGenotypeSimulantId = donorId
+                            })
+                        .ToList();
+                });
         }
 
         private async Task<int> GetTestHarnessId(int verificationRunId)
@@ -93,14 +82,9 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 
         private async Task<VerificationRun> GetVerificationRun(int verificationRunId)
         {
-            if (CachedVerificationRuns.ContainsKey(verificationRunId))
-            {
-                return CachedVerificationRuns[verificationRunId];
-            }
-
-            var verificationRun = await verificationRunRepository.GetVerificationRun(verificationRunId);
-            CachedVerificationRuns[verificationRunId] = verificationRun;
-            return verificationRun;
+            return await CachedVerificationRuns.GetOrAddAsync(
+                verificationRunId,
+                async () => await verificationRunRepository.GetVerificationRun(verificationRunId));
         }
 
         private async Task<SimulantsInfo> GetSimulantsInfo(int testHarnessId, TestIndividualCategory category)
