@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Atlas.Common.Utils.Extensions
 {
@@ -35,6 +36,20 @@ namespace Atlas.Common.Utils.Extensions
             if (!dictionary.TryGetValue(key, out var value))
             {
                 value = valueFactory();
+                dictionary.Add(key, value);
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Async version of <see cref="GetOrAdd{TKey,TValue}"/>.
+        /// </summary>
+        public static async Task<TValue> GetOrAddAsync<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<Task<TValue>> valueFactoryAsync)
+        {
+            if (!dictionary.TryGetValue(key, out var value))
+            {
+                value = await valueFactoryAsync();
                 dictionary.Add(key, value);
             }
 

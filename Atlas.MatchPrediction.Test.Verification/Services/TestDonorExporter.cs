@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.DonorImport.Data.Models;
 using Atlas.DonorImport.Data.Repositories;
-using Atlas.MatchPrediction.Test.Verification.Config;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities.TestHarness;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
+using Atlas.MatchPrediction.Test.Verification.Models;
 using MoreLinq;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services
@@ -77,7 +77,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Services
                 ExternalDonorCode = simulant.Id.ToString(),
                 UpdateFile = updateFileText,
                 LastUpdated = DateTimeOffset.UtcNow,
-                DonorType = VerificationConstants.GetDatabaseDonorType(simulant.SimulatedHlaTypingCategory),
+                DonorType = simulant.SimulatedHlaTypingCategory.ToDonorType().ToDatabaseType(),
                 EthnicityCode = null,
                 RegistryCode = null,
                 A_1 = simulant.A_1,
