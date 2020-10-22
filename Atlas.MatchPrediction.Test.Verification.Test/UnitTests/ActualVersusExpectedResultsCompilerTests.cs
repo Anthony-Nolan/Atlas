@@ -5,7 +5,9 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
+using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.Verification;
+using Atlas.MatchPrediction.Test.Verification.Services.Verification.Compilation;
 using Atlas.MatchPrediction.Test.Verification.Test.TestHelpers;
 using FluentAssertions;
 using NSubstitute;
@@ -14,13 +16,13 @@ using NUnit.Framework;
 namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
 {
     [TestFixture]
-    public class VerificationResultsCompilerTests
+    public class ActualVersusExpectedResultsCompilerTests
     {
         private IVerificationRunRepository runRepository;
         private IVerificationResultsRepository resultsRepository;
         private IGenotypeSimulantsInfoCache infoCache;
 
-        private IVerificationResultsCompiler resultsCompiler;
+        private IActualVersusExpectedResultsCompiler resultsCompiler;
 
         [SetUp]
         public void SetUp()
@@ -29,7 +31,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             resultsRepository = Substitute.For<IVerificationResultsRepository>();
             infoCache = Substitute.For<IGenotypeSimulantsInfoCache>();
 
-            resultsCompiler = new VerificationResultsCompiler(runRepository, resultsRepository, infoCache);
+            resultsCompiler = new ActualVersusExpectedResultsCompiler(runRepository, resultsRepository, infoCache);
 
             runRepository.GetSearchLociCount(default).ReturnsForAnyArgs(5);
             resultsRepository.GetMaskedPdpPredictions(default).ReturnsForAnyArgs(new List<PdpPrediction>());
@@ -38,16 +40,16 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
         }
 
         [Test]
-        public async Task CompileVerificationResults_ReturnsOneResultPerProbabilityBetween0To100Inclusive()
+        public async Task CompileResults_ReturnsOneAvEResultPerProbabilityBetween0To100Inclusive()
         {
-            var results = await resultsCompiler.CompileVerificationResults(new CompileResultsRequest());
+            var results = await resultsCompiler.CompileResults(new CompileResultsRequest());
 
             // 101 results: 0-100% inclusive
             results.Count().Should().Be(101);
         }
 
         [Test]
-        public async Task CompileVerificationResults_GetsMaskedPdpPredictions()
+        public async Task CompileResults_GetsMaskedPdpPredictions()
         {
             var request = new CompileResultsRequest
             {
@@ -55,7 +57,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                 MismatchCount = 2
             };
 
-            await resultsCompiler.CompileVerificationResults(request);
+            await resultsCompiler.CompileResults(request);
 
             await resultsRepository.Received().GetMaskedPdpPredictions(Arg.Is<PdpPredictionsRequest>(x =>
                 x.VerificationRunId == request.VerificationRunId &&
@@ -63,7 +65,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
         }
 
         [Test]
-        public async Task CompileVerificationResults_WhenCrossLociPrediction_GetsSearchLociCount()
+        public async Task CompileResults_WhenCrossLociPrediction_GetsSearchLociCount()
         {
             var request = new CompileResultsRequest
             {
@@ -71,13 +73,13 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                 Locus = null
             };
 
-            await resultsCompiler.CompileVerificationResults(request);
+            await resultsCompiler.CompileResults(request);
 
             await runRepository.Received().GetSearchLociCount(request.VerificationRunId);
         }
 
         [Test]
-        public async Task CompileVerificationResults_WhenSingleLocusPrediction_DoesNotGetSearchLociCount()
+        public async Task CompileResults_WhenSingleLocusPrediction_DoesNotGetSearchLociCount()
         {
             var request = new CompileResultsRequest
             {
@@ -85,13 +87,13 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                 Locus = Locus.A
             };
 
-            await resultsCompiler.CompileVerificationResults(request);
+            await resultsCompiler.CompileResults(request);
 
             await runRepository.DidNotReceive().GetSearchLociCount(Arg.Any<int>());
         }
 
         [Test]
-        public async Task CompileVerificationResults_WhenCrossLociPrediction_GetsMatchedGenotypePdpsUsingCorrectMatchCount()
+        public async Task CompileResults_WhenCrossLociPrediction_GetsMatchedGenotypePdpsUsingCorrectMatchCount()
         {
             const int searchLociCount = 3;
             const int mismatchCount = 1;
@@ -104,7 +106,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                 VerificationRunId = 456,
                 MismatchCount = mismatchCount
             };
-            await resultsCompiler.CompileVerificationResults(request);
+            await resultsCompiler.CompileResults(request);
 
             await resultsRepository.Received().GetMatchedGenotypePdpsForCrossLociPrediction(Arg.Is<MatchedPdpsRequest>(x =>
                 x.VerificationRunId == request.VerificationRunId &&
@@ -112,7 +114,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
         }
 
         [Test]
-        public async Task CompileVerificationResults_WhenSingleLocusPrediction_AndMismatchCountLessThan2_DoesNotGetAllPossiblePatientDonorPairs(
+        public async Task CompileResults_WhenSingleLocusPrediction_AndMismatchCountLessThan2_DoesNotGetAllPossiblePatientDonorPairs(
             [Range(0, 1)] int mismatchCount)
         {
             var request = new CompileResultsRequest
@@ -121,14 +123,14 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                 Locus = Locus.A,
                 MismatchCount = mismatchCount
             };
-            await resultsCompiler.CompileVerificationResults(request);
+            await resultsCompiler.CompileResults(request);
 
             await infoCache.DidNotReceive().GetOrAddAllPossibleGenotypePatientDonorPairs(Arg.Any<int>());
         }
 
         [TestCase(0, 2)]
         [TestCase(1, 1)]
-        public async Task CompileVerificationResults_WhenSingleLocusPrediction_AndMismatchCountLessThan2_GetsMatchedGenotypePdpsUsingCorrectMatchCount(
+        public async Task CompileResults_WhenSingleLocusPrediction_AndMismatchCountLessThan2_GetsMatchedGenotypePdpsUsingCorrectMatchCount(
             int mismatchCount,
             int expectedMatchCount)
         {
@@ -138,7 +140,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                 Locus = Locus.A,
                 MismatchCount = mismatchCount
             };
-            await resultsCompiler.CompileVerificationResults(request);
+            await resultsCompiler.CompileResults(request);
 
             await resultsRepository.Received(1).GetMatchedGenotypePdpsForSingleLocusPrediction(Arg.Is<SingleLocusMatchedPdpsRequest>(x =>
                 x.VerificationRunId == request.VerificationRunId &&
@@ -147,7 +149,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
         }
 
         [Test]
-        public async Task CompileVerificationResults_WhenSingleLocusPrediction_AndMismatchCountIs2_GetsAllPossiblePatientDonorPairs()
+        public async Task CompileResults_WhenSingleLocusPrediction_AndMismatchCountIs2_GetsAllPossiblePatientDonorPairs()
         {
             const int runId = 456;
 
@@ -157,13 +159,13 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                 Locus = Locus.A,
                 MismatchCount = 2
             };
-            await resultsCompiler.CompileVerificationResults(request);
+            await resultsCompiler.CompileResults(request);
 
             await infoCache.Received().GetOrAddAllPossibleGenotypePatientDonorPairs(runId);
         }
 
         [Test]
-        public async Task CompileVerificationResults_WhenSingleLocusPrediction_AndMismatchCountIs2_GetsGenotypePdpsWithOneOrTwoMatches()
+        public async Task CompileResults_WhenSingleLocusPrediction_AndMismatchCountIs2_GetsGenotypePdpsWithOneOrTwoMatches()
         {
             var request = new CompileResultsRequest
             {
@@ -171,7 +173,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                 Locus = Locus.A,
                 MismatchCount = 2
             };
-            await resultsCompiler.CompileVerificationResults(request);
+            await resultsCompiler.CompileResults(request);
 
             await resultsRepository.Received(1).GetMatchedGenotypePdpsForSingleLocusPrediction(Arg.Is<SingleLocusMatchedPdpsRequest>(x =>
                 x.VerificationRunId == request.VerificationRunId &&
@@ -185,7 +187,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
         }
 
         [Test]
-        public async Task CompileVerificationResults_CountsTotalPdps()
+        public async Task CompileResults_CountsTotalPdpsPerProbability()
         {
             const int probabilityCount = 101;
             const int expectedCount = 2;
@@ -201,13 +203,13 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
 
             resultsRepository.GetMaskedPdpPredictions(default).ReturnsForAnyArgs(predictions);
 
-            var results = await resultsCompiler.CompileVerificationResults(new CompileResultsRequest());
+            var results = await resultsCompiler.CompileResults(new CompileResultsRequest());
 
             results.Select(r => r.TotalPdpCount).Should().AllBeEquivalentTo(expectedCount);
         }
 
         [Test]
-        public async Task CompileVerificationResults_WhenCrossLociPrediction_CountsActuallyMatchedPdps()
+        public async Task CompileResults_WhenCrossLociPrediction_CountsActuallyMatchedPdpsPerProbability()
         {
             const int probabilityCount = 101;
             const int pdpCount = 3;
@@ -219,13 +221,13 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
             var pdps = predictions.Select(p => (PatientDonorPair)p);
             resultsRepository.GetMatchedGenotypePdpsForCrossLociPrediction(default).ReturnsForAnyArgs(pdps);
 
-            var results = await resultsCompiler.CompileVerificationResults(new CompileResultsRequest());
+            var results = await resultsCompiler.CompileResults(new CompileResultsRequest());
 
             results.Select(r => r.ActuallyMatchedPdpCount).Should().AllBeEquivalentTo(pdpCount);
         }
 
         [Test]
-        public async Task CompileVerificationResults_WhenSingleLocusPrediction_AndMismatchCountLessThan2_CountsActuallyMatchedPdps(
+        public async Task CompileResults_WhenSingleLocusPrediction_AndMismatchCountLessThan2_CountsActuallyMatchedPdpsPerProbability(
             [Range(0, 1)] int mismatchCount)
         {
             const int probabilityCount = 101;
@@ -244,13 +246,13 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                 Locus = Locus.A,
                 MismatchCount = mismatchCount
             };
-            var results = await resultsCompiler.CompileVerificationResults(request);
+            var results = await resultsCompiler.CompileResults(request);
 
             results.Select(r => r.ActuallyMatchedPdpCount).Should().AllBeEquivalentTo(pdpCount);
         }
 
         [Test]
-        public async Task CompileVerificationResults_WhenSingleLocusPrediction_AndMismatchCountIs2_CountsActuallyMatchedPdps()
+        public async Task CompileResults_WhenSingleLocusPrediction_AndMismatchCountIs2_CountsActuallyMatchedPdpsPerProbability()
         {
             const int probabilityCount = 101;
             const int totalPdpCount = 4;
@@ -286,13 +288,13 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
                 Locus = Locus.A,
                 MismatchCount = 2
             };
-            var results = await resultsCompiler.CompileVerificationResults(request);
+            var results = await resultsCompiler.CompileResults(request);
 
             results.Select(r => r.ActuallyMatchedPdpCount).Should().AllBeEquivalentTo(expectedZeroMatchPdpCount);
         }
 
         [Test]
-        public async Task CompileVerificationResults_AssignsDefaultResultForMissingProbability()
+        public async Task CompileResults_AssignsDefaultResultForMissingProbability()
         {
             // will generate results for 0-99% inclusive; 100% will be missing.
             const int probabilityCount = 100;
@@ -307,7 +309,7 @@ namespace Atlas.MatchPrediction.Test.Verification.Test.UnitTests
 
             resultsRepository.GetMaskedPdpPredictions(default).ReturnsForAnyArgs(predictions);
 
-            var results = (await resultsCompiler.CompileVerificationResults(new CompileResultsRequest())).ToList();
+            var results = (await resultsCompiler.CompileResults(new CompileResultsRequest())).ToList();
             var hundredPercentResult = results.Single(r => r.Probability == 100);
 
             results.Count.Should().Be(101);

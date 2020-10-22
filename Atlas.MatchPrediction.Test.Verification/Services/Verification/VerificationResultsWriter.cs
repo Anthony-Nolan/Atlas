@@ -8,6 +8,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.Test.Verification.Models;
+using Atlas.MatchPrediction.Test.Verification.Services.Verification.Compilation;
 using CsvHelper;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
@@ -66,38 +67,33 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
         {
             Debug.WriteLine($"Compiling results for {compileRequest}...");
 
-            var results = await GetVerificationResults(compileRequest);
+            var results = await resultsCompiler.CompileVerificationResults(compileRequest);
 
-            if (results.IsNullOrEmpty())
+            if (results.ActualVersusExpectedResults.IsNullOrEmpty())
             {
                 Debug.WriteLine($"No results found for {compileRequest}.");
             }
             else
             {
-                WriteToCsv(request, compileRequest, results);
+                WriteActualVsExpectedResultsToCsv(request, compileRequest, results.ActualVersusExpectedResults);
                 Debug.WriteLine($"Results written for {compileRequest}.");
             }
         }
 
-        private async Task<IReadOnlyCollection<VerificationResult>> GetVerificationResults(CompileResultsRequest compileRequest)
-        {
-            var results = await resultsCompiler.CompileVerificationResults(compileRequest);
-            return results
-                .OrderBy(r => r.Probability)
-                .ToList();
-        }
-
-        private static void WriteToCsv(
+        private static void WriteActualVsExpectedResultsToCsv(
             VerificationResultsRequest request,
             CompileResultsRequest compileRequest,
-            IEnumerable<VerificationResult> results)
+            IEnumerable<ActualVersusExpectedResult> results)
         {
-            var filePath = $"{request.WriteDirectory}\\Results_VerId-{request.VerificationRunId}" +
+            var writeDir = $"{request.WriteDirectory}\\AvE";
+            Directory.CreateDirectory(writeDir);
+
+            var filePath = $"{writeDir}\\VerId-{request.VerificationRunId}" +
                            $"_MMCount-{compileRequest.MismatchCount}_{compileRequest.PredictionName}.csv";
 
             using var writer = new StreamWriter(filePath);
             using var csv = new CsvWriter(writer);
-            csv.WriteRecords(results);
+            csv.WriteRecords(results.OrderBy(r => r.Probability));
         }
     }
 }

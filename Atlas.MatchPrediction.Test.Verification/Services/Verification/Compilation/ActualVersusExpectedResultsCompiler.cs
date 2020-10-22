@@ -7,38 +7,20 @@ using Atlas.MatchPrediction.Test.Verification.Data.Models;
 using Atlas.MatchPrediction.Test.Verification.Data.Repositories;
 using Atlas.MatchPrediction.Test.Verification.Models;
 
-namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
+namespace Atlas.MatchPrediction.Test.Verification.Services.Verification.Compilation
 {
-    internal interface IVerificationResultsCompiler
+    internal interface IActualVersusExpectedResultsCompiler
     {
-        Task<IEnumerable<VerificationResult>> CompileVerificationResults(CompileResultsRequest request);
+        Task<IEnumerable<ActualVersusExpectedResult>> CompileResults(CompileResultsRequest request);
     }
 
-    internal class CompileResultsRequest
-    {
-        public int VerificationRunId { get; set; }
-        public int MismatchCount { get; set; }
-
-        /// <summary>
-        /// Leave null for Cross-Loci prediction.
-        /// </summary>
-        public Locus? Locus { get; set; }
-
-        public string PredictionName => Locus == null ? "CrossLoci" : Locus.ToString();
-
-        public override string ToString()
-        {
-            return $"RunId: {VerificationRunId}, Mismatch-count: {MismatchCount}, Prediction: {PredictionName}";
-        }
-    }
-
-    internal class VerificationResultsCompiler : IVerificationResultsCompiler
+    internal class ActualVersusExpectedResultsCompiler : IActualVersusExpectedResultsCompiler
     {
         private readonly IVerificationRunRepository runRepository;
         private readonly IVerificationResultsRepository resultsRepository;
         private readonly IGenotypeSimulantsInfoCache genotypeSimulantsInfoCache;
 
-        public VerificationResultsCompiler(
+        public ActualVersusExpectedResultsCompiler(
             IVerificationRunRepository runRepository,
             IVerificationResultsRepository resultsRepository,
             IGenotypeSimulantsInfoCache genotypeSimulantsInfoCache)
@@ -48,25 +30,25 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
             this.genotypeSimulantsInfoCache = genotypeSimulantsInfoCache;
         }
 
-        public async Task<IEnumerable<VerificationResult>> CompileVerificationResults(CompileResultsRequest request)
+        public async Task<IEnumerable<ActualVersusExpectedResult>> CompileResults(CompileResultsRequest request)
         {
             var defaultResults = BuildDefaultResults();
-            var verificationResults = await GetVerificationResults(request);
+            var verificationResults = await GetActualVersusExpectedResults(request);
 
             // ensure that every probability value between 0-100% has a result
             return
                 from defaultResult in defaultResults
                 join verificationResult in verificationResults
-                    on defaultResult.Probability equals verificationResult.Probability into gj
+                on defaultResult.Probability equals verificationResult.Probability into gj
                 from result in gj.DefaultIfEmpty()
                 select result ?? defaultResult;
         }
 
-        private static IEnumerable<VerificationResult> BuildDefaultResults()
+        private static IEnumerable<ActualVersusExpectedResult> BuildDefaultResults()
         {
             const int minProbabilityValue = 0;
             return Enumerable.Range(minProbabilityValue, 101)
-                .Select(probability => new VerificationResult
+                .Select(probability => new ActualVersusExpectedResult
                 {
                     Probability = probability,
                     ActuallyMatchedPdpCount = 0,
@@ -74,12 +56,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
                 });
         }
 
-        private async Task<IReadOnlyCollection<VerificationResult>> GetVerificationResults(CompileResultsRequest request)
+        private async Task<IReadOnlyCollection<ActualVersusExpectedResult>> GetActualVersusExpectedResults(CompileResultsRequest request)
         {
             var actualMatchStatuses = await GetActualMatchStatusOfPdps(request);
 
             return actualMatchStatuses.GroupBy(status => status.Prediction.ProbabilityAsRoundedPercentage)
-                .Select(grp => new VerificationResult
+                .Select(grp => new ActualVersusExpectedResult
                 {
                     Probability = grp.Key,
                     ActuallyMatchedPdpCount = grp.Count(status => status.WasActuallyMatched),
