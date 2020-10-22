@@ -1,10 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils;
 using Atlas.MatchingAlgorithm.Client.Models.Scoring;
 using Atlas.MatchingAlgorithm.Services.Search.Scoring;
+using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -23,7 +23,10 @@ namespace Atlas.MatchingAlgorithm.Functions.Functions
 
         [SuppressMessage(null, SuppressMessage.UnusedParameter, Justification = SuppressMessage.UsedByAzureTrigger)]
         [FunctionName(nameof(Score))]
-        public async Task<ScoringResult> Score([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest httpRequest)
+        public async Task<ScoringResult> Score(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(DonorHlaScoringRequest), nameof(DonorHlaScoringRequest))]
+            HttpRequest httpRequest)
         {
             var scoringRequest = JsonConvert.DeserializeObject<DonorHlaScoringRequest>(await new StreamReader(httpRequest.Body).ReadToEndAsync());
             return await scoringRequestService.Score(scoringRequest);
