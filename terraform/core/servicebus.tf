@@ -3,10 +3,9 @@ locals {
     default-sku = "Standard"
     // Required for Topics.
     long-expiry = "P9999D"
-    // 2.75 years
-    audit-subscription-idle-delete = "P8D"
-    default-read-lock              = "PT5M"
-    default-bus-size               = 5120
+    // equivalent to 27.4 years - use on any prop that requires a long timespan before expiry
+    default-read-lock                = "PT5M"
+    default-bus-size                 = 5120
     // 5GB
     default-message-retries = 10
   }
@@ -64,7 +63,7 @@ resource "azurerm_servicebus_subscription" "audit-search-results-ready" {
   resource_group_name                  = azurerm_resource_group.atlas_resource_group.name
   namespace_name                       = azurerm_servicebus_namespace.general.name
   topic_name                           = azurerm_servicebus_topic.search-results-ready.name
-  auto_delete_on_idle                  = local.service-bus.audit-subscription-idle-delete
+  auto_delete_on_idle                  = local.service-bus.long-expiry
   default_message_ttl                  = local.service-bus.long-expiry
   lock_duration                        = local.service-bus.default-read-lock
   max_delivery_count                   = local.service-bus.default-message-retries
@@ -76,7 +75,7 @@ resource "azurerm_servicebus_subscription" "match-prediction-orchestration-searc
   resource_group_name                  = azurerm_resource_group.atlas_resource_group.name
   namespace_name                       = azurerm_servicebus_namespace.general.name
   topic_name                           = module.matching_algorithm.service_bus.matching_results_topic
-  auto_delete_on_idle                  = local.service-bus.audit-subscription-idle-delete
+  auto_delete_on_idle                  = local.service-bus.long-expiry
   default_message_ttl                  = local.service-bus.long-expiry
   lock_duration                        = local.service-bus.default-read-lock
   max_delivery_count                   = local.service-bus.default-message-retries
