@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
-using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
@@ -12,7 +11,6 @@ using Dapper;
 using LoggingStopwatch;
 using Microsoft.Data.SqlClient;
 using static Atlas.Common.GeneticData.Locus;
-using static Atlas.MatchingAlgorithm.Data.Helpers.MatchingTableNameHelper;
 
 // ReSharper disable InconsistentNaming
 
@@ -73,7 +71,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         private const string MatchingHlaTable_IndexName_DonorId = "IX_DonorId__PGroup_Id_TypePosition";
 
         private static readonly string[] HlaTables =
-            {MatchingTableName(A), MatchingTableName(B), MatchingTableName(C), MatchingTableName(Drb1), MatchingTableName(Dqb1)};
+            {MatchingHla.TableName(A), MatchingHla.TableName(B), MatchingHla.TableName(C), MatchingHla.TableName(Drb1), MatchingHla.TableName(Dqb1)};
 
         private const string DropAllDonorsSql = @"TRUNCATE TABLE [Donors]";
         private string BuildDropAllPreProcessedDonorHlaSql() => HlaTables.Select(table => $"TRUNCATE TABLE [{table}];").StringJoinWithNewline();

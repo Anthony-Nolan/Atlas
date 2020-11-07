@@ -55,7 +55,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
             using (var bulkCopy = new SqlBulkCopy(ConnectionStringProvider.GetConnectionString()))
             {
-                bulkCopy.DestinationTableName = TableName(locus);
+                bulkCopy.DestinationTableName = HlaNamePGroupRelation.TableName(locus);
                 await bulkCopy.WriteToServerAsync(dataTable);
             }
         }
@@ -67,7 +67,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                 return new HashSet<int>();
             }
 
-            var tableName = TableName(locus);
+            var tableName = HlaNamePGroupRelation.TableName(locus);
             var tempTableConfig = SqlTempTableFiltering.PrepareTempTableFiltering("h", nameof(HlaNamePGroupRelation.HlaName_Id), hlaIds);
 
             var sql = $@"
@@ -81,7 +81,5 @@ SELECT DISTINCT h.{nameof(HlaNamePGroupRelation.HlaName_Id)} FROM {tableName} h
                 return (await conn.QueryAsync<int>(sql, new {hlaIds})).ToHashSet();
             }
         }
-
-        private static string TableName(Locus locus) => $"HlaNamePGroupRelationAt{locus.ToString().ToUpperInvariant()}";
     }
 }

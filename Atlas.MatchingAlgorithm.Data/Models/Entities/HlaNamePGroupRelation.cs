@@ -1,9 +1,12 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using Atlas.Common.GeneticData;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.Entities
 {
     public class HlaNamePGroupRelation
     {
+        internal static string TableName(Locus locus) => $"HlaNamePGroupRelationAt{locus.ToString().ToUpperInvariant()}";
+        
         public long Id { get; set; }
         
         public int HlaName_Id { get; set; }
