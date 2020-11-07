@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Atlas.Common.Sql;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Data.Helpers;
+using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using LoggingStopwatch;
 using MoreLinq.Extensions;
 
