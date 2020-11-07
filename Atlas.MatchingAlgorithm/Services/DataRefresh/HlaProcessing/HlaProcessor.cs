@@ -4,13 +4,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Notifications;
 using Atlas.Common.Utils;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.MatchingAlgorithm.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Models;
@@ -18,6 +22,7 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Settings;
 using LoggingStopwatch;
+using MoreLinq;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 {
@@ -48,6 +53,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IPGroupRepository pGroupRepository;
+        private readonly IHlaNamesRepository hlaNamesRepository;
+        private readonly IHlaImportRepository hlaImportRepository;
 
         public const int NumberOfBatchesOverlapOnRestart = 3;
 
@@ -67,6 +74,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
             pGroupRepository = repositoryFactory.GetPGroupRepository();
+            hlaNamesRepository = repositoryFactory.GetHlaNamesRepository();
+            hlaImportRepository = repositoryFactory.GetHlaImportRepository();
         }
 
         public async Task UpdateDonorHla(
@@ -132,6 +141,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_Overall_TimerKey, " * Ensuring all PGroups exist in the DB, during HlaProcessing (no actual DB writing, just processing)")) 
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_Flattening_TimerKey, " * * Flatten the donors' PGroups, during EnsureAllPGroupsExist, during HlaProcessing")) 
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_FindNew_TimerKey, " * * Check PGroups against known dictionary, during EnsureAllPGroupsExist, during HlaProcessing"))
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewHlaNameInsertion_Overall_TimerKey, " * * Check HLA Names against known dictionary, during HlaProcessing"))
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewHlaNameInsertion_Flattening_TimerKey, " * * Flatten HLA Names, during HlaProcessing"))
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_Overall_TimerKey, " * UpsertMatchingPGroupsAtSpecifiedLoci, during HlaProcessing")) 
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_Overall_TimerKey, " * * Time setting up Hla BulkInsert statements, during HlaProcessing")) 
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_Overall_TimerKey, " * * * Data Table Build, in Hla BulkInsert SETUP, during HlaProcessing"))
@@ -217,10 +228,41 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName);
             timedInnerOperation.Dispose();
 
+            IDictionary<string, int> hlaNameLookup;
+            IDictionary<string, int> pGroupLookup;
+
             using (timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewPGroupInsertion_Overall_TimerKey))
             {
-                EnsureAllPGroupsExist(hlaExpansionResults.ProcessingResults, timerCollection);
+                pGroupLookup = await EnsureAllPGroupsExist(hlaExpansionResults.ProcessingResults, timerCollection);
             }
+
+            using (timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewHlaNameInsertion_Overall_TimerKey))
+            {
+                hlaNameLookup = await EnsureAllHlaNamesExist(hlaExpansionResults.ProcessingResults, timerCollection);
+            }
+
+            var hlaToInsert = hlaExpansionResults.ProcessingResults.Select(r => new PhenotypeInfo<IList<HlaNamePGroupRelation>>((l, p) =>
+                    r?.MatchingHla?.GetPosition(l, p)?.MatchingPGroups
+                        .Select(pGroup =>
+                            new HlaNamePGroupRelation
+                            {
+                                HlaName_Id = hlaNameLookup[r.HlaNames.GetPosition(l, p)],
+                                PGroup_Id = pGroupLookup[pGroup]
+                            }
+                        ).ToList()
+                )
+            );
+
+            var flattenedHlaToInsert = new LociInfo<IList<HlaNamePGroupRelation>>(
+                l =>
+                {
+                    return hlaToInsert.SelectMany(h => h.GetPosition(l, LocusPosition.One)?.Concat(h.GetPosition(l, LocusPosition.Two)) ?? new List<HlaNamePGroupRelation>())
+                        .Where(x => x != null)
+                        .DistinctBy(x => x.HlaName)
+                        .ToList();
+                });
+
+            await hlaImportRepository.ImportHla(flattenedHlaToInsert);
 
             await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(
                 hlaExpansionResults.ProcessingResults,
@@ -239,7 +281,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         /// Note that over the course of a 2M donor import, this is flattening a total of ~1B records, which
         /// ends up taking 2-3 minutes. The EnsureAllPGroupsExist check also takes 2-3 minutes.
         /// </remarks>
-        private void EnsureAllPGroupsExist(
+        private async Task<IDictionary<string, int>> EnsureAllPGroupsExist(
             IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHlas,
             LongStopwatchCollection timerCollection
         )
@@ -253,7 +295,19 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 ).ToList();
             flatteningTimer.Dispose();
 
-            pGroupRepository.EnsureAllPGroupsExist(allPGroups, timerCollection);
+            return await pGroupRepository.EnsureAllPGroupsExist(allPGroups, timerCollection);
+        }
+
+        private async Task<IDictionary<string, int>> EnsureAllHlaNamesExist(
+            IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHlas,
+            LongStopwatchCollection timerCollection
+        )
+        {
+            var flatteningTimer = timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewHlaNameInsertion_Flattening_TimerKey);
+            var allHlaNames = donorsWithHlas.SelectMany(d => d.HlaNames?.ToEnumerable() ?? new List<string>()).ToList();
+            flatteningTimer.Dispose();
+
+            return await hlaNamesRepository.EnsureAllHlaNamesExist(allHlaNames, timerCollection);
         }
 
         private async Task PerformUpfrontSetup(string hlaNomenclatureVersion)
@@ -284,7 +338,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                     // bad out-come from allowing it to re-run.
                     var hlaDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
                     var pGroups = await hlaDictionary.GetAllPGroups();
-                    pGroupRepository.InsertPGroups(pGroups);
+                    await pGroupRepository.InsertPGroups(pGroups);
                 }
             }
             catch (Exception e)

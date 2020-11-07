@@ -148,6 +148,18 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             return new LociInfo<R>(a.Result, b.Result, c.Result, dpb1.Result, dqb1.Result, drb1.Result);
         }
 
+        public async Task WhenAllLoci(Func<Locus, T, Task> action)
+        {
+            var a = action(Locus.A, A);
+            var b = action(Locus.B, B);
+            var c = action(Locus.C, C);
+            var dpb1 = action(Locus.Dpb1, Dpb1);
+            var dqb1 = action(Locus.Dqb1, Dqb1);
+            var drb1 = action(Locus.Drb1, Drb1);
+
+            await Task.WhenAll(a, b, c, dpb1, dqb1, drb1);
+        }
+        
         public R Reduce<R>(Func<Locus, T, R, R> reducer, R initialValue = default)
         {
             var result = initialValue;

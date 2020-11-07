@@ -108,6 +108,17 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         {
         }
 
+        public PhenotypeInfo(Func<Locus, LocusPosition, T> valueFactory) : base(
+            new LocusInfo<T>(valueFactory(Locus.A, LocusPosition.One), valueFactory(Locus.A, LocusPosition.Two)),
+            new LocusInfo<T>(valueFactory(Locus.B, LocusPosition.One), valueFactory(Locus.B, LocusPosition.Two)),
+            new LocusInfo<T>(valueFactory(Locus.C, LocusPosition.One), valueFactory(Locus.C, LocusPosition.Two)),
+            new LocusInfo<T>(valueFactory(Locus.Dpb1, LocusPosition.One), valueFactory(Locus.Dpb1, LocusPosition.Two)),
+            new LocusInfo<T>(valueFactory(Locus.Dqb1, LocusPosition.One), valueFactory(Locus.Dqb1, LocusPosition.Two)),
+            new LocusInfo<T>(valueFactory(Locus.Drb1, LocusPosition.One), valueFactory(Locus.Drb1, LocusPosition.Two))
+        )
+        {
+        }
+
         #endregion
 
         public T GetPosition(Locus locus, LocusPosition position)

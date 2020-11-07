@@ -26,6 +26,13 @@ namespace Atlas.Common.Sql
 
     public static class SqlTempTableFiltering
     {
+        private static Dictionary<Type, string> SqlTypes = new Dictionary<Type, string>
+        {
+            {typeof(int), "int"},
+            {typeof(long), "bigint"},
+            {typeof(string), "varchar(100)"},
+        };
+        
         /// <summary>
         /// For SQL queries of the form WHERE x IN (y1, y2...), when the number of values is very large, the query becomes infeasibly slow to run.
         /// Quicker is to create a temp table of ids and join to it.
@@ -44,10 +51,10 @@ namespace Atlas.Common.Sql
         ///     By default, will create a temp table named "temp".
         ///     If specified, a custom name can be used for the temp join table - e.g. if multiple temp tables are needed within the same connection.
         /// </param>
-        public static TempTableFilterDetails PrepareTempTableFiltering(
+        public static TempTableFilterDetails PrepareTempTableFiltering<T>(
             string filteredTableAlias,
             string filteredColumnName,
-            IEnumerable<int> ids,
+            IEnumerable<T> ids,
             string tempTableName = "temp")
         {
             if (!tempTableName.StartsWith("#"))
@@ -71,11 +78,11 @@ namespace Atlas.Common.Sql
                     connection.Open();
                 }
 
-                var cmd = new SqlCommand($"CREATE TABLE {tempTableName} ({idColumnName} int, PRIMARY KEY({idColumnName})); ", connection);
+                var cmd = new SqlCommand($"CREATE TABLE {tempTableName} ({idColumnName} {SqlTypes[typeof(T)]}, PRIMARY KEY({idColumnName})); ", connection);
                 cmd.ExecuteNonQuery();
                 
                 var dataTable = new DataTable(tempTableName);
-                var idColumn = new DataColumn {DataType = Type.GetType("System.Int32"), ColumnName = idColumnName};
+                var idColumn = new DataColumn {DataType = typeof(T), ColumnName = idColumnName};
                 dataTable.Columns.Add(idColumn);
                 
                 foreach (var item in ids)

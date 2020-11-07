@@ -1,5 +1,4 @@
-﻿using Atlas.MatchingAlgorithm.Data.Models;
-using Atlas.MatchingAlgorithm.Data.Services;
+﻿using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
@@ -7,7 +6,6 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.Sql;
-using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using LoggingStopwatch;
@@ -21,21 +19,21 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         /// <summary>
         /// Given a collection of PGroups, inserts any that don't already exist into the Database, and updates the in-memory map to their Ids
         /// </summary>
-        void InsertPGroups(IEnumerable<string> pGroups);
+        Task InsertPGroups(IEnumerable<string> pGroups);
         Task<IEnumerable<int>> GetPGroupIds(IEnumerable<string> pGroupNames);
-        void EnsureAllPGroupsExist(List<string> allPGroups, LongStopwatchCollection timerCollection = null);
+        Task<IDictionary<string, int>> EnsureAllPGroupsExist(List<string> allPGroups, LongStopwatchCollection timerCollection = null);
         int FindOrCreatePGroup(string pGroupName);
     }
 
     public class PGroupRepository : Repository, IPGroupRepository
     {
-        private Dictionary<string, int> pGroupNameToIdDictionary;
+        private IDictionary<string, int> pGroupNameToIdDictionary;
 
         public PGroupRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
         {
         }
 
-        public void InsertPGroups(IEnumerable<string> pGroups)
+        public async Task InsertPGroups(IEnumerable<string> pGroups)
         {
             EnsurePGroupDictionaryCacheIsPopulated();
 
@@ -63,7 +61,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                 sqlBulk.BulkCopyTimeout = 600;
                 sqlBulk.BatchSize = 10000;
                 sqlBulk.DestinationTableName = "PGroupNames";
-                sqlBulk.WriteToServer(dt);
+                await sqlBulk.WriteToServerAsync(dt);
             }
             // We need to get the new Ids back out.
             ForceCachePGroupDictionary();
@@ -103,7 +101,7 @@ WHERE p.Name IN {pGroupNames.ToInClause()}
         /// **Note that this method gets used *heavily* during DataRefresh (despite being a no-op!) and has been aggressively optimised for that use-case.**
         /// Over the course of a 2M donor import, we must check ~1B pGroup strings, which ends up taking 2-3 minutes. All in the actual dictionary lookup line.
         /// </remarks>
-        public void EnsureAllPGroupsExist(
+        public async Task<IDictionary<string, int>> EnsureAllPGroupsExist(
             List<string> allPGroups,
             LongStopwatchCollection timerCollection = null)
         {
@@ -116,8 +114,10 @@ WHERE p.Name IN {pGroupNames.ToInClause()}
 
             if (newPGroups.Any())
             {
-                InsertPGroups(newPGroups); //This method refreshes the Cache after adding.
+                await InsertPGroups(newPGroups); //This method refreshes the Cache after adding.
             }
+
+            return pGroupNameToIdDictionary;
         }
 
         /// <remarks>
