@@ -3,8 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
 using LoggingStopwatch;
@@ -52,8 +54,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// Adds pre-processed matching p-groups for a batch of donors
         /// Used when adding donors
         /// </summary>
-        Task AddMatchingPGroupsForExistingDonorBatch(
-            IEnumerable<DonorInfoWithExpandedHla> donors,
+        Task AddMatchingRelationsForExistingDonorBatch(
+            IEnumerable<DonorInfoForHlaPreProcessing> donors,
             bool runAllHlaInsertionsInASingleTransactionScope,
             LongStopwatchCollection timerCollection = null);
     }
@@ -61,9 +63,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
     public class DonorImportRepository : DonorUpdateRepositoryBase, IDonorImportRepository
     {
         public DonorImportRepository(
-            IPGroupRepository pGroupRepository,
+            IHlaNamesRepository hlaNamesRepository,
             IConnectionStringProvider connectionStringProvider,
-            ILogger logger) : base(pGroupRepository, connectionStringProvider, logger)
+            ILogger logger) : base(hlaNamesRepository, connectionStringProvider, logger)
         {
         }
 

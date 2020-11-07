@@ -5,7 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Utils;
+using Atlas.Common.Utils.Concurrency;
 using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Data.Helpers;
@@ -23,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 {
     public abstract class DonorUpdateRepositoryBase : Repository
     {
-        protected readonly IPGroupRepository pGroupRepository;
+        protected readonly IHlaNamesRepository hlaNamesRepository;
         protected readonly ILogger logger;
 
         // The order of these matters when setting up the datatable - if re-ordering, also re-order datatable contents
@@ -52,15 +54,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             "Id",
             "DonorId",
             "TypePosition",
-            "PGroup_Id"
+            "HlaNameId"
         };
 
         protected DonorUpdateRepositoryBase(
-            IPGroupRepository pGroupRepository,
+            IHlaNamesRepository hlaNamesRepository,
             IConnectionStringProvider connectionStringProvider,
             ILogger logger) : base(connectionStringProvider)
         {
-            this.pGroupRepository = pGroupRepository;
+            this.hlaNamesRepository = hlaNamesRepository;
             this.logger = logger;
         }
 
@@ -78,8 +80,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             await BulkInsertDataTable("Donors", dataTable, donorInsertDataTableColumnNames);
         }
 
-        public async Task AddMatchingPGroupsForExistingDonorBatch(
-            IEnumerable<DonorInfoWithExpandedHla> donorInfos,
+        public async Task AddMatchingRelationsForExistingDonorBatch(
+            IEnumerable<DonorInfoForHlaPreProcessing> donorInfos,
             bool runAllHlaInsertionsInASingleTransactionScope,
             LongStopwatchCollection timerCollection = null)
         {
@@ -99,10 +101,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
         protected class DonorWithChangedMatchingLoci
         {
-            public DonorInfoWithExpandedHla DonorInfo { get; }
-            public HashSet<Locus> ChangedMatchingLoci { get; }
+            public DonorInfoForHlaPreProcessing DonorInfo { get; }
+            public ISet<Locus> ChangedMatchingLoci { get; }
 
-            public DonorWithChangedMatchingLoci(DonorInfoWithExpandedHla donorInfo, HashSet<Locus> changedMatchingLoci)
+            public DonorWithChangedMatchingLoci(DonorInfoForHlaPreProcessing donorInfo, ISet<Locus> changedMatchingLoci)
             {
                 DonorInfo = donorInfo;
                 ChangedMatchingLoci = changedMatchingLoci;
@@ -127,7 +129,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
                     if (donorsWhichChangedAtThisLocus.Any())
                     {
-                        var insertSetupOperationTimer = timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_Overall_TimerKey);
+                        var insertSetupOperationTimer =
+                            timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_Overall_TimerKey);
                         var upsertTask = UpsertMatchingPGroupsAtLocus(
                             donorsWhichChangedAtThisLocus,
                             locus,
@@ -167,22 +170,22 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 {
                     await Task.WhenAll(perLocusUpsertTasks);
                 }
+
                 transactionScope.Complete();
             }
         }
 
         private async Task UpsertMatchingPGroupsAtLocus(
-            List<DonorInfoWithExpandedHla> donors,
-            Locus locus, bool isKnownToBeCreate,
+            List<DonorInfoForHlaPreProcessing> donors,
+            Locus locus,
+            bool isKnownToBeCreate,
             LongStopwatchCollection timerCollection = null)
         {
             var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
 
-            var buildDataTableTimer = timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_Overall_TimerKey);
-            var dataTable = BuildPerLocusPGroupDataTable(
-                donors,
-                locus,
-                timerCollection);
+            var buildDataTableTimer =
+                timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_Overall_TimerKey);
+            var dataTable = BuildPerLocusPGroupDataTable(donors, locus, timerCollection);
             buildDataTableTimer?.Dispose();
 
             using (var transactionScope = new AsyncTransactionScope())
@@ -257,26 +260,28 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         /// See HlaProcessor to re-enable it.
         /// </remarks>
         protected DataTable BuildPerLocusPGroupDataTable(
-            List<DonorInfoWithExpandedHla> donors,
+            List<DonorInfoForHlaPreProcessing> donors,
             Locus locus,
-            LongStopwatchCollection timerCollection = null)
+            LongStopwatchCollection timers = null)
         {
-            var createDataTableObjectTimer = timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_CreateDtObject_TimerKey);
+            var createDataTableObjectTimer =
+                timers?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_CreateDtObject_TimerKey);
             var dataTable = new DataTable();
             foreach (var columnName in donorPGroupDataTableColumnNames)
             {
                 dataTable.Columns.Add(columnName);
             }
+
             createDataTableObjectTimer?.Dispose();
 
             dataTable.BeginLoadData();
             //During a 2M donor dataRefresh. This line (outside the loop) is run ~5.6K times.
             foreach (var donor in donors)
             {
-                donor.MatchingHla.GetLocus(locus).EachPosition((position, hlaAtLocusPosition) =>
+                donor.HlaNameIds.GetLocus(locus).EachPosition((position, hlaNameId) =>
                 {
                     //During a 2M donor dataRefresh. This line (inside all these loops, but before the filter) is run ~22.2M times.
-                    if (hlaAtLocusPosition == null)
+                    if (hlaNameId == null)
                     {
                         return;
                     }
@@ -285,29 +290,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     // Data should be written as "TypePosition" so we can guarantee control over the backing int values for this enum
                     var positionId = (int) position.ToTypePosition();
 
-                    using (timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_OutsideForeach_TimerKey))
+                    using (timers?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_AddRowToDt_TimerKey))
                     {
-                        foreach (var pGroup in hlaAtLocusPosition.MatchingPGroups)
-                        {
-                            using (timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_InsideForeach_TimerKey))
-                            {
-                                //During a 2M donor dataRefresh. This line (inside the tightest loop) is run ~1.01B times.
-                                //As noted above, this is the pinch point for DataRefresh performance.
-                                var fetchPGroupIdsTimer = timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_FetchPGroupId_TimerKey);
-                                var pGroupId = pGroupRepository.FindOrCreatePGroup(pGroup);
-                                fetchPGroupIdsTimer?.Dispose();
-
-                                using (timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_AddRowToDt_TimerKey))
-                                {
-                                    dataTable.Rows.Add(
-                                        0,
-                                        donor.DonorId,
-                                        positionId,
-                                        pGroupId);
-                                }
-                            } //InsideForeach
-                        } //foreach
-                    } //OutsideForeach
+                        dataTable.Rows.Add(0, donor.DonorId, positionId, hlaNameId);
+                    }
                 });
             }
 
@@ -317,6 +303,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         }
 
         #region BulkInsertDataTable
+
         /// <summary>
         /// Opens a new connection and performs a bulk insert wrapped in a transaction.
         /// If columnNames provided, sets up a map from dataTable to SQL, assuming a 1:1 mapping between dataTable and SQL column names  
@@ -352,6 +339,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
             return bulkCopy;
         }
+
         #endregion
     }
 }

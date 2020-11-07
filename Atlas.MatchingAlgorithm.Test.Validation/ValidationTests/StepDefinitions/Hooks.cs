@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Models;
@@ -42,9 +44,21 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
                 serviceProvider = ServiceConfiguration.CreateProvider();
                 var testDataService = serviceProvider.GetService<ITestDataService>();
 
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+
                 testDataService.SetupTestData();
+                
+                logger.Log(LogLevel.Info, $"Set up test data: {stopwatch.Elapsed}");
+                stopwatch.Restart();
+                
                 AlgorithmTestingService.StartServer();
+                logger.Log(LogLevel.Info, $"Start test server: {stopwatch.Elapsed}");
+                stopwatch.Restart();
+
                 await AlgorithmTestingService.RunHlaRefresh();
+                logger.Log(LogLevel.Info, $"Run HLA refresh: {stopwatch.Elapsed}");
+                stopwatch.Restart();
             }
             catch (Exception e)
             {
@@ -57,9 +71,9 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         {
             config = new LoggingConfiguration();
 
-            var traceFileInfo = new FileTarget("logfile") { FileName = "${basedir}\\trace.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2 };
-            var logfileInfo = new FileTarget("logfile") { FileName = "${basedir}\\info.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2 };
-            var logfileError = new FileTarget("logfile") {FileName = "${basedir}\\error.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2 };
+            var traceFileInfo = new FileTarget("logfile") {FileName = "${basedir}\\trace.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2};
+            var logfileInfo = new FileTarget("logfile") {FileName = "${basedir}\\info.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2};
+            var logfileError = new FileTarget("logfile") {FileName = "${basedir}\\error.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2};
 
             config.AddRule(LogLevel.Trace, LogLevel.Trace, traceFileInfo);
             config.AddRule(LogLevel.Info, LogLevel.Info, logfileInfo);
