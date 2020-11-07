@@ -91,14 +91,16 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
                 DELETE FROM [HlaNamePGroupRelationAtDrb1]
                 DELETE FROM [HlaNamePGroupRelationAtDqb1]
                 
-                DELETE FROM [HlaNames]
                 
-                DELETE FROM [Donors]
                 DELETE FROM [MatchingHlaAtA]
                 DELETE FROM [MatchingHlaAtB]
                 DELETE FROM [MatchingHlaAtC]
                 DELETE FROM [MatchingHlaAtDrb1]
                 DELETE FROM [MatchingHlaAtDqb1]
+
+                DELETE FROM [Donors]
+
+                DELETE FROM [HlaNames]
                 ");
                 
                 context.SaveChanges();

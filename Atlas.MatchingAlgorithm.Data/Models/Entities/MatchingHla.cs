@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Atlas.Common.GeneticData;
 
 // ReSharper disable ClassNeverInstantiated.Global - Instantiated by EF
 // ReSharper disable UnusedMember.Global - Used by EF
@@ -12,6 +13,8 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
     /// </summary>
     public abstract class MatchingHla
     {
+        internal static string TableName(Locus locus) => $"MatchingHlaAt{locus.ToString().ToUpperInvariant()}";
+        
         public long Id { get; set; }
         public int TypePosition { get; set; }
 

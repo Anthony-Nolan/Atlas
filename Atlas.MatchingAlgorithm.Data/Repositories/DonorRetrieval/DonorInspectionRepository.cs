@@ -61,7 +61,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                 foreach (var locus in LocusSettings.MatchingOnlyLoci)
                 {
                     var sql = $@"
-SELECT m.DonorId, m.TypePosition, p.Name as PGroupName FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
+SELECT m.DonorId, m.TypePosition, p.Name as PGroupName FROM {MatchingHla.TableName(locus)} m
 JOIN PGroupNames p 
 ON m.PGroup_Id = p.Id
 INNER JOIN (

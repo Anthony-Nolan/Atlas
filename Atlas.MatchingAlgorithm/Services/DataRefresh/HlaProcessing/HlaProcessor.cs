@@ -259,9 +259,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                 l =>
                 {
                     return hlaToInsert.SelectMany(h =>
-                            h.GetPosition(l, LocusPosition.One)?.Concat(h.GetPosition(l, LocusPosition.Two)) ?? new List<HlaNamePGroupRelation>())
+                        {
+                            var position1Relations = h.GetPosition(l, LocusPosition.One) ?? new List<HlaNamePGroupRelation>();
+                            var position2Relations = h.GetPosition(l, LocusPosition.Two) ?? new List<HlaNamePGroupRelation>();
+                            return position1Relations.Concat(position2Relations);
+                        })
                         .Where(x => x != null)
-                        .DistinctBy(x => x.HlaName)
                         .ToList();
                 });
 

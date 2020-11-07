@@ -140,14 +140,17 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                     // Ensure we have a Donor ID even when there is only one match at this locus.
                     const string selectDonorIdStatement = @"CASE WHEN DonorId1 IS NULL THEN DonorId2 ELSE DonorId1 END";
 
+                    var matchingHlaTableName = MatchingHla.TableName(locus);
+                    var hlaPGroupRelationTableName = HlaNamePGroupRelation.TableName(locus);
+                    
                     var donorTypeFilteredJoin = filteringOptions.ShouldFilterOnDonorType
                         // ReSharper disable once PossibleInvalidOperationException - implicitly checked via ShouldFilterOnDonorType
                         ? $@"INNER JOIN Donors d ON {selectDonorIdStatement} = d.DonorId AND d.DonorType = {(int) filteringOptions.DonorType}"
                         : "";
 
                     var donorIdTempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("m", "DonorId", filteringOptions.DonorIds, "DonorIds");
-                    var pGroups1TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("m", "PGroup_Id", pGroups.Position1, "PGroups1");
-                    var pGroups2TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("m", "PGroup_Id", pGroups.Position2, "PGroups2");
+                    var pGroups1TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("hlaPGroupRelations", "PGroup_Id", pGroups.Position1, "PGroups1");
+                    var pGroups2TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("hlaPGroupRelations", "PGroup_Id", pGroups.Position2, "PGroups2");
 
                     var donorIdTempTableJoin = filteringOptions.ShouldFilterOnDonorIds ? donorIdTempTableJoinConfig.FilteredJoinQueryString : "";
 
@@ -157,8 +160,9 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 SELECT * INTO #Pos1 FROM 
 (
 SELECT m.DonorId as DonorId1, TypePosition as TypePosition1
-FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
+FROM {hlaPGroupRelationTableName} hlaPGroupRelations
 {pGroups1TempTableJoinConfig.FilteredJoinQueryString}
+JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaName_Id
 {donorIdTempTableJoin}
 ) as m_1; 
 
@@ -167,8 +171,9 @@ CREATE INDEX IX_Temp_Position1 ON #Pos1(DonorId1);
 SELECT * INTO #Pos2 FROM 
 (
 SELECT m.DonorId as DonorId2, TypePosition as TypePosition2
-FROM {MatchingTableNameHelper.MatchingTableName(locus)} m
+FROM {hlaPGroupRelationTableName} hlaPGroupRelations
 {pGroups2TempTableJoinConfig.FilteredJoinQueryString}
+JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaName_Id
 {donorIdTempTableJoin}
 ) as m_2;
 
@@ -261,8 +266,6 @@ ORDER BY DonorId
         }
 
         private static string DonorHlaColumnAtLocus(Locus locus, TypePosition position) => $"{locus.ToString().ToUpper()}_{PositionString(position)}";
-
-        private static string DonorIdTempTableName(LocusPosition position) => $"temp-donor-ids-pos-{position}";
 
         private static string PositionString(TypePosition position) => position == TypePosition.One ? "1" : "2";
     }

@@ -13,6 +13,7 @@ using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
 using EnumStringValues;
@@ -181,7 +182,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             bool isKnownToBeCreate,
             LongStopwatchCollection timerCollection = null)
         {
-            var matchingTableName = MatchingTableNameHelper.MatchingTableName(locus);
+            var matchingTableName = MatchingHla.TableName(locus);
 
             var buildDataTableTimer =
                 timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_Overall_TimerKey);
