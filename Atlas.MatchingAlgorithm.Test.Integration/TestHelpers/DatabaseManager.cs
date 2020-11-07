@@ -73,14 +73,22 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
             if (context != null)
             {
                 return context.Database.ExecuteSqlRawAsync(@"
-TRUNCATE TABLE [DonorManagementLogs];
-TRUNCATE TABLE [Donors];
-TRUNCATE TABLE [MatchingHlaAtA];
-TRUNCATE TABLE [MatchingHlaAtB];
-TRUNCATE TABLE [MatchingHlaAtC];
-TRUNCATE TABLE [MatchingHlaAtDrb1];
-TRUNCATE TABLE [MatchingHlaAtDqb1];
-DELETE FROM [PGroupNames];");
+                DELETE FROM [HlaNamePGroupRelationAtA]
+                DELETE FROM [HlaNamePGroupRelationAtB]
+                DELETE FROM [HlaNamePGroupRelationAtC]
+                DELETE FROM [HlaNamePGroupRelationAtDrb1]
+                DELETE FROM [HlaNamePGroupRelationAtDqb1]
+                
+                DELETE FROM [PGroupNames]
+                DELETE FROM [HlaNames]
+                
+                DELETE FROM [Donors]
+                DELETE FROM [MatchingHlaAtA]
+                DELETE FROM [MatchingHlaAtB]
+                DELETE FROM [MatchingHlaAtC]
+                DELETE FROM [MatchingHlaAtDrb1]
+                DELETE FROM [MatchingHlaAtDqb1]
+                ");
             }
             return Task.CompletedTask;
         }

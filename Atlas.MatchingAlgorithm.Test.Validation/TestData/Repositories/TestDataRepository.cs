@@ -79,14 +79,28 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
 
         private void RemoveTestData()
         {
+            // TODO: ATLAS-749: disable FK and TRUNCATE TABLE? 
             if (TransientDatabaseExists() && DonorTableExists())
             {
-                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [Donors]");
-                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtA]");
-                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtB]");
-                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtC]");
-                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtDrb1]");
-                context.Database.ExecuteSqlRaw("TRUNCATE TABLE [MatchingHlaAtDqb1]");
+                // TODO: ATLAS-749: Comment explaining that we don't delete p groups for test speed?
+                
+                context.Database.ExecuteSqlRaw(@"
+                DELETE FROM [HlaNamePGroupRelationAtA]
+                DELETE FROM [HlaNamePGroupRelationAtB]
+                DELETE FROM [HlaNamePGroupRelationAtC]
+                DELETE FROM [HlaNamePGroupRelationAtDrb1]
+                DELETE FROM [HlaNamePGroupRelationAtDqb1]
+                
+                DELETE FROM [HlaNames]
+                
+                DELETE FROM [Donors]
+                DELETE FROM [MatchingHlaAtA]
+                DELETE FROM [MatchingHlaAtB]
+                DELETE FROM [MatchingHlaAtC]
+                DELETE FROM [MatchingHlaAtDrb1]
+                DELETE FROM [MatchingHlaAtDqb1]
+                ");
+                
                 context.SaveChanges();
             }
         }

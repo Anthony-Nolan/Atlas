@@ -9,6 +9,8 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 {
     public interface ITransientRepositoryFactory
     {
+        IHlaNamesRepository GetHlaNamesRepository(); 
+        IHlaImportRepository GetHlaImportRepository(); 
         IPGroupRepository GetPGroupRepository();
         IDonorInspectionRepository GetDonorInspectionRepository();
         IDonorUpdateRepository GetDonorUpdateRepository();
@@ -23,6 +25,17 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         {
             this.ConnectionStringProvider = connectionStringProvider;
             this.logger = logger;
+        }
+
+        public IHlaNamesRepository GetHlaNamesRepository()
+        {
+            return new HlaNamesRepository(ConnectionStringProvider);
+        }
+
+        /// <inheritdoc />
+        public IHlaImportRepository GetHlaImportRepository()
+        {
+            return new HlaImportRepository(ConnectionStringProvider);
         }
 
         public IPGroupRepository GetPGroupRepository()

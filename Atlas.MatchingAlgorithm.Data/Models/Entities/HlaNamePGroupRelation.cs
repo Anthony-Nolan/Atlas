@@ -2,14 +2,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.Entities
 {
-    public abstract class HlaNamePGroupRelation
+    public class HlaNamePGroupRelation
     {
         public long Id { get; set; }
         
-        [ForeignKey("HlaName_Id")]
-        public HlaName HlaName { get; set; }
+        public int HlaName_Id { get; set; }
         
-        [ForeignKey("PGroup_Id")]
+        [ForeignKey(nameof(HlaName_Id))]
+        public HlaName HlaName { get; set; }
+
+        public int PGroup_Id { get; set; }
+
+        [ForeignKey(nameof(PGroup_Id))]
         public PGroupName PGroup { get; set; }
     }
     
