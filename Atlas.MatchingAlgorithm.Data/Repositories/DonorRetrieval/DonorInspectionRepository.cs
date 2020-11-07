@@ -62,8 +62,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                 {
                     var sql = $@"
 SELECT m.DonorId, m.TypePosition, p.Name as PGroupName FROM {MatchingHla.TableName(locus)} m
-JOIN PGroupNames p 
-ON m.PGroup_Id = p.Id
+JOIN {HlaNamePGroupRelation.TableName(locus)} relation ON relation.HlaNameId = m.HlaNameId
+JOIN PGroupNames p ON relation.PGroupId = p.Id
 INNER JOIN (
     SELECT '{donorIds.FirstOrDefault()}' AS Id
     UNION ALL SELECT '{string.Join("' UNION ALL SELECT '", donorIds.Skip(1))}'

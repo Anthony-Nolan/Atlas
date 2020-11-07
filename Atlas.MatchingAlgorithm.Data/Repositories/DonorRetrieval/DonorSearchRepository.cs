@@ -149,8 +149,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                         : "";
 
                     var donorIdTempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("m", "DonorId", filteringOptions.DonorIds, "DonorIds");
-                    var pGroups1TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("hlaPGroupRelations", "PGroup_Id", pGroups.Position1, "PGroups1");
-                    var pGroups2TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("hlaPGroupRelations", "PGroup_Id", pGroups.Position2, "PGroups2");
+                    var pGroups1TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("hlaPGroupRelations", "PGroupId", pGroups.Position1, "PGroups1");
+                    var pGroups2TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("hlaPGroupRelations", "PGroupId", pGroups.Position2, "PGroups2");
 
                     var donorIdTempTableJoin = filteringOptions.ShouldFilterOnDonorIds ? donorIdTempTableJoinConfig.FilteredJoinQueryString : "";
 
@@ -162,7 +162,7 @@ SELECT * INTO #Pos1 FROM
 SELECT m.DonorId as DonorId1, TypePosition as TypePosition1
 FROM {hlaPGroupRelationTableName} hlaPGroupRelations
 {pGroups1TempTableJoinConfig.FilteredJoinQueryString}
-JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaName_Id
+JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
 {donorIdTempTableJoin}
 ) as m_1; 
 
@@ -173,7 +173,7 @@ SELECT * INTO #Pos2 FROM
 SELECT m.DonorId as DonorId2, TypePosition as TypePosition2
 FROM {hlaPGroupRelationTableName} hlaPGroupRelations
 {pGroups2TempTableJoinConfig.FilteredJoinQueryString}
-JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaName_Id
+JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
 {donorIdTempTableJoin}
 ) as m_2;
 

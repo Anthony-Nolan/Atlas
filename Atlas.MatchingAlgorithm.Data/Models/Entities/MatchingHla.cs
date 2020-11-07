@@ -1,6 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Common.Config;
 
 // ReSharper disable ClassNeverInstantiated.Global - Instantiated by EF
 // ReSharper disable UnusedMember.Global - Used by EF
@@ -14,21 +17,15 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
     public abstract class MatchingHla
     {
         internal static string TableName(Locus locus) => $"MatchingHlaAt{locus.ToString().ToUpperInvariant()}";
-        
+
         public long Id { get; set; }
         public int TypePosition { get; set; }
 
         [NotNull]
         public int DonorId { get; set; }
-        
-        [ForeignKey(nameof(DonorId))]
-        public Donor Donor { get; set; }
 
         [NotNull]
         public int HlaNameId { get; set; }
-        
-        [ForeignKey(nameof(HlaNameId))]
-        public HlaName HlaName { get; set; }
     }
 
     [Table("MatchingHlaAtA")]

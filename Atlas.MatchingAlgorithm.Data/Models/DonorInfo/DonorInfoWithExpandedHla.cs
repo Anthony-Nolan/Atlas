@@ -20,6 +20,11 @@ namespace Atlas.MatchingAlgorithm.Data.Models.DonorInfo
             return donorInfos.SelectMany(d => d.FlatHlaNames).Distinct().ToList();
         }
 
+        public static IList<string> AllPGroupNames(this IEnumerable<DonorInfoWithExpandedHla> donorInfos)
+        {
+            return donorInfos.SelectMany(d => d.MatchingHla.ToEnumerable().SelectMany(p => p?.MatchingPGroups ?? new List<string>())).ToList();
+        }
+
         public static DonorInfoForHlaPreProcessing ToDonorInfoForPreProcessing(
             this DonorInfoWithExpandedHla donorInfoWithExpandedHla,
             Func<string, int> lookupHlaNameId)

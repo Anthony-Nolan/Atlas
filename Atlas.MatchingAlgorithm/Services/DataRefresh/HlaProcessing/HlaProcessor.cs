@@ -230,45 +230,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName);
             timedInnerOperation.Dispose();
 
-            IDictionary<string, int> hlaNameLookup;
-            IDictionary<string, int> pGroupLookup;
-
-            using (timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewPGroupInsertion_Overall_TimerKey))
-            {
-                pGroupLookup = await EnsureAllPGroupsExist(hlaExpansionResults.ProcessingResults, timerCollection);
-            }
-
-            using (timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewHlaNameInsertion_Overall_TimerKey))
-            {
-                hlaNameLookup = await EnsureAllHlaNamesExist(hlaExpansionResults.ProcessingResults, timerCollection);
-            }
-
-            var hlaToInsert = hlaExpansionResults.ProcessingResults.Select(r => new PhenotypeInfo<IList<HlaNamePGroupRelation>>((l, p) =>
-                    r?.MatchingHla?.GetPosition(l, p)?.MatchingPGroups
-                        .Select(pGroup =>
-                            new HlaNamePGroupRelation
-                            {
-                                HlaName_Id = hlaNameLookup[r.HlaNames.GetPosition(l, p)],
-                                PGroup_Id = pGroupLookup[pGroup]
-                            }
-                        ).ToList()
-                )
-            );
-
-            var flattenedHlaToInsert = new LociInfo<IList<HlaNamePGroupRelation>>(
-                l =>
-                {
-                    return hlaToInsert.SelectMany(h =>
-                        {
-                            var position1Relations = h.GetPosition(l, LocusPosition.One) ?? new List<HlaNamePGroupRelation>();
-                            var position2Relations = h.GetPosition(l, LocusPosition.Two) ?? new List<HlaNamePGroupRelation>();
-                            return position1Relations.Concat(position2Relations);
-                        })
-                        .Where(x => x != null)
-                        .ToList();
-                });
-
-            await hlaImportRepository.ImportHla(flattenedHlaToInsert);
+            var hlaNameLookup = await hlaImportRepository.ImportHla(hlaExpansionResults.ProcessingResults);
 
             var donorEntries = hlaExpansionResults.ProcessingResults.Select(r => r.ToDonorInfoForPreProcessing(hlaName => hlaNameLookup[hlaName]));
 
@@ -315,7 +277,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             var allHlaNames = donorsWithHlas.AllHlaNames();
             flatteningTimer.Dispose();
 
-            return await hlaNamesRepository.EnsureAllHlaNamesExist(allHlaNames, timerCollection);
+            return await hlaNamesRepository.EnsureAllHlaNamesExist(allHlaNames);
         }
 
         private async Task PerformUpfrontSetup(string hlaNomenclatureVersion)

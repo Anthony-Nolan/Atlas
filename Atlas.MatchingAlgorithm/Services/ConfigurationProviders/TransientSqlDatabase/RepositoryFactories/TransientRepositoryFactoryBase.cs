@@ -35,7 +35,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
         /// <inheritdoc />
         public IHlaImportRepository GetHlaImportRepository()
         {
-            return new HlaImportRepository(ConnectionStringProvider);
+            return new HlaImportRepository(GetHlaNamesRepository(), GetPGroupRepository(), ConnectionStringProvider);
         }
 
         public IPGroupRepository GetPGroupRepository()
@@ -50,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 
         public IDonorUpdateRepository GetDonorUpdateRepository()
         {
-            return new DonorUpdateRepository(GetHlaNamesRepository(), ConnectionStringProvider, logger);
+            return new DonorUpdateRepository(GetHlaImportRepository(), ConnectionStringProvider, logger);
         }
     }
 }
