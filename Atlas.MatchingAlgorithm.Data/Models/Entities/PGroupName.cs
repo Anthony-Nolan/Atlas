@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Atlas.MatchingAlgorithm.Data.Models
+namespace Atlas.MatchingAlgorithm.Data.Models.Entities
 {
     [Table("PGroupNames")]
     public class PGroupName
