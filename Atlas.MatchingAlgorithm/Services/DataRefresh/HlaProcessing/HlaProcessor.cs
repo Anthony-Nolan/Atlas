@@ -23,6 +23,8 @@ using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Settings;
 using LoggingStopwatch;
 using MoreLinq;
+using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 {
@@ -256,7 +258,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             var flattenedHlaToInsert = new LociInfo<IList<HlaNamePGroupRelation>>(
                 l =>
                 {
-                    return hlaToInsert.SelectMany(h => h.GetPosition(l, LocusPosition.One)?.Concat(h.GetPosition(l, LocusPosition.Two)) ?? new List<HlaNamePGroupRelation>())
+                    return hlaToInsert.SelectMany(h =>
+                            h.GetPosition(l, LocusPosition.One)?.Concat(h.GetPosition(l, LocusPosition.Two)) ?? new List<HlaNamePGroupRelation>())
                         .Where(x => x != null)
                         .DistinctBy(x => x.HlaName)
                         .ToList();
@@ -264,8 +267,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 
             await hlaImportRepository.ImportHla(flattenedHlaToInsert);
 
-            await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(
-                hlaExpansionResults.ProcessingResults,
+            var donorEntries = hlaExpansionResults.ProcessingResults.Select(r => r.ToDonorInfoForPreProcessing(hlaName => hlaNameLookup[hlaName]));
+
+            await donorImportRepository.AddMatchingRelationsForExistingDonorBatch(
+                donorEntries,
                 settings.DataRefreshDonorUpdatesShouldBeFullyTransactional,
                 timerCollection);
 
@@ -304,7 +309,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         )
         {
             var flatteningTimer = timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewHlaNameInsertion_Flattening_TimerKey);
-            var allHlaNames = donorsWithHlas.SelectMany(d => d.HlaNames?.ToEnumerable() ?? new List<string>()).ToList();
+            var allHlaNames = donorsWithHlas.AllHlaNames();
             flatteningTimer.Dispose();
 
             return await hlaNamesRepository.EnsureAllHlaNamesExist(allHlaNames, timerCollection);

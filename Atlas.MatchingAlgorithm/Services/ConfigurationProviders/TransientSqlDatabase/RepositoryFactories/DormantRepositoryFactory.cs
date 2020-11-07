@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 
         public IDonorImportRepository GetDonorImportRepository()
         {
-            return new DonorImportRepository(GetPGroupRepository(), ConnectionStringProvider, logger);
+            return new DonorImportRepository(GetHlaNamesRepository(), ConnectionStringProvider, logger);
         }
 
         public IDataRefreshRepository GetDataRefreshRepository()

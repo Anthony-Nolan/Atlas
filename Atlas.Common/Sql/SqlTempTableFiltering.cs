@@ -30,7 +30,7 @@ namespace Atlas.Common.Sql
         {
             {typeof(int), "int"},
             {typeof(long), "bigint"},
-            {typeof(string), "varchar(100)"},
+            {typeof(string), "varchar(8000)"},
         };
         
         /// <summary>

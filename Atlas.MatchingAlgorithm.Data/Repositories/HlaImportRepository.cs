@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Sql;
+using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
@@ -37,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
         private async Task ImportProcessedHla(Locus locus, IList<HlaNamePGroupRelation> newHlaRelations)
         {
-            if (!newHlaRelations.Any())
+            if (!newHlaRelations.Any() || !LocusSettings.MatchingOnlyLoci.Contains(locus))
             {
                 return;
             }
@@ -61,7 +62,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
         private async Task<ISet<int>> GetExistingHlaAtLocus(Locus locus, IList<int> hlaIds)
         {
-            if (!hlaIds.Any())
+            if (!hlaIds.Any() || !LocusSettings.MatchingOnlyLoci.Contains(locus))
             {
                 return new HashSet<int>();
             }

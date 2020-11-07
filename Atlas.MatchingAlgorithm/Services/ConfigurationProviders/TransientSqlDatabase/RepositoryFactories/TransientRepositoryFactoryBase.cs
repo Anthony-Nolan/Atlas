@@ -50,7 +50,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
 
         public IDonorUpdateRepository GetDonorUpdateRepository()
         {
-            return new DonorUpdateRepository(GetPGroupRepository(), ConnectionStringProvider, logger);
+            return new DonorUpdateRepository(GetHlaNamesRepository(), ConnectionStringProvider, logger);
         }
     }
 }
