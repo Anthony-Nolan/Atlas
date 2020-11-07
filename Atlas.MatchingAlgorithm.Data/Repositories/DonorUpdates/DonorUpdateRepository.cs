@@ -20,12 +20,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 {
     public class DonorUpdateRepository : DonorUpdateRepositoryBase, IDonorUpdateRepository
     {
+        private readonly IHlaImportRepository hlaImportRepository;
+
         public DonorUpdateRepository(
-            IHlaNamesRepository hlaNamesRepository,
+            IHlaImportRepository hlaImportRepository,
             IConnectionStringProvider connectionStringProvider,
             ILogger logger)
-            : base(hlaNamesRepository, connectionStringProvider, logger)
+            : base(connectionStringProvider, logger)
         {
+            this.hlaImportRepository = hlaImportRepository;
         }
 
         public async Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds)
@@ -49,7 +52,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 return;
             }
 
-            var hlaLookup = await hlaNamesRepository.EnsureAllHlaNamesExist(donors.AllHlaNames());
+            var hlaLookup = await hlaImportRepository.ImportHla(donors.ToList());
             var processedDonorRecords = donors.Select(d => d.ToDonorInfoForPreProcessing(hla => hlaLookup[hla]));
             using (var transactionScope = new OptionalAsyncTransactionScope(runAllHlaInsertionsInASingleTransactionScope))
             {
@@ -124,10 +127,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     innerNonHlaTransactionScope.Complete();
                 }
 
-                var hlaNames = await hlaNamesRepository.EnsureAllHlaNamesExist(donorsWhereHlaHasChanged.Select(d => d.Item1).AllHlaNames());
+                var hlaLookup = await hlaImportRepository.ImportHla(donorsWhereHlaHasChanged.Select(d => d.Item1).ToList());
                 var donorUpdates = donorsWhereHlaHasChanged.Select(d =>
                 {
-                    var donorUpdate = d.Item1.ToDonorInfoForPreProcessing(hla => hlaNames[hla]);
+                    var donorUpdate = d.Item1.ToDonorInfoForPreProcessing(hla => hlaLookup[hla]);
                     return new DonorWithChangedMatchingLoci(donorUpdate, d.Item2);
                 }).ToList();
 

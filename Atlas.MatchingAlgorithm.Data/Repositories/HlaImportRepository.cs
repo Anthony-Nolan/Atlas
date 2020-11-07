@@ -6,6 +6,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Sql;
 using Atlas.MatchingAlgorithm.Common.Config;
+using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
@@ -15,24 +16,76 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 {
     public interface IHlaImportRepository
     {
-        Task ImportHla(LociInfo<IList<HlaNamePGroupRelation>> hlaNamesToImport);
+        // TODO: ATLAS-749: document that this inserts HlaNames and *then* performs p group processing per hla name 
+        Task<IDictionary<string, int>> ImportHla(IList<DonorInfoWithExpandedHla> hlaNamesToImport);
     }
 
     public class HlaImportRepository : Repository, IHlaImportRepository
     {
-        public HlaImportRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
+        private readonly IHlaNamesRepository hlaNamesRepository;
+        private readonly IPGroupRepository pGroupRepository;
+
+        public HlaImportRepository(
+            IHlaNamesRepository hlaNamesRepository,
+            IPGroupRepository pGroupRepository,
+            IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
         {
+            // TODO: ATLAS-749: Consider combining name insert + HLA import?
+            this.hlaNamesRepository = hlaNamesRepository;
+            this.pGroupRepository = pGroupRepository;
         }
 
-        public async Task ImportHla(LociInfo<IList<HlaNamePGroupRelation>> hlaNamesToImport)
+        public async Task<IDictionary<string, int>> ImportHla(IList<DonorInfoWithExpandedHla> hlaNamesToImport)
+        {
+            var pGroupLookup = await pGroupRepository.EnsureAllPGroupsExist(hlaNamesToImport.AllPGroupNames());
+
+            var hlaLookup = await hlaNamesRepository.EnsureAllHlaNamesExist(hlaNamesToImport.AllHlaNames());
+
+            var hlaToInsert = hlaNamesToImport.Select(donor => new PhenotypeInfo<IList<HlaNamePGroupRelation>>((locus, position) =>
+                    donor?.MatchingHla?.GetPosition(locus, position)?.MatchingPGroups
+                        .Select(pGroup =>
+                        {
+                            var hlaName = donor.HlaNames.GetPosition(locus, position);
+                            return hlaName == null
+                                ? null
+                                : new HlaNamePGroupRelation
+                                {
+                                    HlaNameId = hlaLookup[hlaName],
+                                    PGroupId = pGroupLookup[pGroup]
+                                };
+                        })
+                        .Where(relation => relation != null)
+                        .ToList()
+                )
+            );
+
+            var flattenedHlaToInsert = new LociInfo<IList<HlaNamePGroupRelation>>(
+                l =>
+                {
+                    return hlaToInsert.SelectMany(h =>
+                        {
+                            var position1Relations = h.GetPosition(l, LocusPosition.One) ?? new List<HlaNamePGroupRelation>();
+                            var position2Relations = h.GetPosition(l, LocusPosition.Two) ?? new List<HlaNamePGroupRelation>();
+                            return position1Relations.Concat(position2Relations);
+                        })
+                        .Where(x => x != null)
+                        .ToList();
+                });
+
+            await ImportHla(flattenedHlaToInsert);
+
+            return hlaLookup;
+        }
+
+        private async Task ImportHla(LociInfo<IList<HlaNamePGroupRelation>> hlaNamesToImport)
         {
             await hlaNamesToImport.WhenAllLoci(async (l, v) => await ImportHlaAtLocus(l, v));
         }
 
         private async Task ImportHlaAtLocus(Locus locus, IList<HlaNamePGroupRelation> hla)
         {
-            var existingHla = await GetExistingHlaAtLocus(locus, hla.Select(h => h.HlaName_Id).Distinct().ToList());
-            var newHla = hla.Where(h => !existingHla.Contains(h.HlaName_Id)).ToList();
+            var existingHla = await GetExistingHlaAtLocus(locus, hla.Select(h => h.HlaNameId).Distinct().ToList());
+            var newHla = hla.Where(h => !existingHla.Contains(h.HlaNameId)).ToList();
             await ImportProcessedHla(locus, newHla);
         }
 
@@ -42,15 +95,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             {
                 return;
             }
-            
+
             var dataTable = new DataTable();
             dataTable.Columns.Add(nameof(HlaNamePGroupRelation.Id));
-            dataTable.Columns.Add(nameof(HlaNamePGroupRelation.HlaName_Id));
-            dataTable.Columns.Add(nameof(HlaNamePGroupRelation.PGroup_Id));
+            dataTable.Columns.Add(nameof(HlaNamePGroupRelation.HlaNameId));
+            dataTable.Columns.Add(nameof(HlaNamePGroupRelation.PGroupId));
 
             foreach (var relation in newHlaRelations)
             {
-                dataTable.Rows.Add(0, relation.HlaName_Id, relation.PGroup_Id);
+                dataTable.Rows.Add(0, relation.HlaNameId, relation.PGroupId);
             }
 
             using (var bulkCopy = new SqlBulkCopy(ConnectionStringProvider.GetConnectionString()))
@@ -68,10 +121,10 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             }
 
             var tableName = HlaNamePGroupRelation.TableName(locus);
-            var tempTableConfig = SqlTempTableFiltering.PrepareTempTableFiltering("h", nameof(HlaNamePGroupRelation.HlaName_Id), hlaIds);
+            var tempTableConfig = SqlTempTableFiltering.PrepareTempTableFiltering("h", nameof(HlaNamePGroupRelation.HlaNameId), hlaIds);
 
             var sql = $@"
-SELECT DISTINCT h.{nameof(HlaNamePGroupRelation.HlaName_Id)} FROM {tableName} h
+SELECT DISTINCT h.{nameof(HlaNamePGroupRelation.HlaNameId)} FROM {tableName} h
 {tempTableConfig.FilteredJoinQueryString} 
 ";
 

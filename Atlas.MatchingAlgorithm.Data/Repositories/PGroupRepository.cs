@@ -21,7 +21,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         /// </summary>
         Task InsertPGroups(IEnumerable<string> pGroups);
         Task<IEnumerable<int>> GetPGroupIds(IEnumerable<string> pGroupNames);
-        Task<IDictionary<string, int>> EnsureAllPGroupsExist(List<string> allPGroups, LongStopwatchCollection timerCollection = null);
+        Task<IDictionary<string, int>> EnsureAllPGroupsExist(IList<string> allPGroups, LongStopwatchCollection timerCollection = null);
         int FindOrCreatePGroup(string pGroupName);
     }
 
@@ -102,7 +102,7 @@ WHERE p.Name IN {pGroupNames.ToInClause()}
         /// Over the course of a 2M donor import, we must check ~1B pGroup strings, which ends up taking 2-3 minutes. All in the actual dictionary lookup line.
         /// </remarks>
         public async Task<IDictionary<string, int>> EnsureAllPGroupsExist(
-            List<string> allPGroups,
+            IList<string> allPGroups,
             LongStopwatchCollection timerCollection = null)
         {
             EnsurePGroupDictionaryCacheIsPopulated();

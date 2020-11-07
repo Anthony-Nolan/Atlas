@@ -1,25 +1,25 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Atlas.Common.GeneticData;
+using Atlas.MatchingAlgorithm.Common.Config;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.Entities
 {
     public class HlaNamePGroupRelation
     {
         internal static string TableName(Locus locus) => $"HlaNamePGroupRelationAt{locus.ToString().ToUpperInvariant()}";
-        
+
         public long Id { get; set; }
-        
-        public int HlaName_Id { get; set; }
-        
-        [ForeignKey(nameof(HlaName_Id))]
-        public HlaName HlaName { get; set; }
 
-        public int PGroup_Id { get; set; }
+        [NotNull]
+        public int HlaNameId { get; set; }
 
-        [ForeignKey(nameof(PGroup_Id))]
-        public PGroupName PGroup { get; set; }
+        [NotNull]
+        public int PGroupId { get; set; }
     }
-    
+
     [Table("HlaNamePGroupRelationAtA")]
     public class HlaNamePGroupRelationAtA : HlaNamePGroupRelation
     {

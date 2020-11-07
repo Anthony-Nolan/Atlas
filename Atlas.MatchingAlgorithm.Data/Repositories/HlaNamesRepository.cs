@@ -6,14 +6,13 @@ using Atlas.Common.Sql;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
-using LoggingStopwatch;
 using Microsoft.Data.SqlClient;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
 {
     public interface IHlaNamesRepository
     {
-        Task<IDictionary<string, int>> EnsureAllHlaNamesExist(IList<string> allHlaNames, LongStopwatchCollection timerCollection = null);
+        Task<IDictionary<string, int>> EnsureAllHlaNamesExist(IList<string> allHlaNames);
     }
 
     public class HlaNamesRepository : Repository, IHlaNamesRepository
@@ -22,7 +21,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         {
         }
 
-        public async Task<IDictionary<string, int>> EnsureAllHlaNamesExist(IList<string> allHlaNames, LongStopwatchCollection timerCollection = null)
+        public async Task<IDictionary<string, int>> EnsureAllHlaNamesExist(IList<string> allHlaNames)
         {
             allHlaNames = allHlaNames.Where(hla => hla != null).Distinct().ToList();
             var existingHlaNames = await GetExistingHlaNames(allHlaNames);

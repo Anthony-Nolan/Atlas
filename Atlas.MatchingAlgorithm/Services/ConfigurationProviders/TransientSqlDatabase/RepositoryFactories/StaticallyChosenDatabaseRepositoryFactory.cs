@@ -39,7 +39,7 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
             public IDonorManagementLogRepository DonorManagementLog { get; set; }
             public IDonorInspectionRepository DonorInspection { get; set; }
             public IPGroupRepository PGroup { get; set; }
-            public IHlaNamesRepository HlaNames { get; set; }
+            public IHlaImportRepository HlaImport { get; set; }
             public IDonorUpdateRepository DonorUpdate { get; set; }
         }
 
@@ -77,16 +77,19 @@ namespace Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDa
             return available.PGroup ?? (available.PGroup = new PGroupRepository(GetConnectionStringProvider(targetDatabase)));
         }
 
-        public IHlaNamesRepository GetHlaNamesRepositoryForDatabase(TransientDatabase targetDatabase)
+        public IHlaImportRepository GetHlaImportRepositoryForDatabase(TransientDatabase targetDatabase)
         {
             var available = cachedRepositories[targetDatabase];
-            return available.HlaNames ?? (available.HlaNames = new HlaNamesRepository(GetConnectionStringProvider(targetDatabase)));
+            return available.HlaImport ?? (available.HlaImport = new HlaImportRepository(
+                new HlaNamesRepository(GetConnectionStringProvider(targetDatabase)),
+                GetPGroupRepositoryForDatabase(targetDatabase),
+                GetConnectionStringProvider(targetDatabase)));
         }
 
         public IDonorUpdateRepository GetDonorUpdateRepositoryForDatabase(TransientDatabase targetDatabase)
         {
             var available = cachedRepositories[targetDatabase];
-            return available.DonorUpdate ?? (available.DonorUpdate = new DonorUpdateRepository(GetHlaNamesRepositoryForDatabase(targetDatabase),
+            return available.DonorUpdate ?? (available.DonorUpdate = new DonorUpdateRepository(GetHlaImportRepositoryForDatabase(targetDatabase),
                 GetConnectionStringProvider(targetDatabase), logger));
         }
     }

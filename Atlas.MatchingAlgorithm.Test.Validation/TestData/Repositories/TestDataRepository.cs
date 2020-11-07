@@ -85,22 +85,19 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
                 // TODO: ATLAS-749: Comment explaining that we don't delete p groups for test speed?
                 
                 context.Database.ExecuteSqlRaw(@"
-                DELETE FROM [HlaNamePGroupRelationAtA]
-                DELETE FROM [HlaNamePGroupRelationAtB]
-                DELETE FROM [HlaNamePGroupRelationAtC]
-                DELETE FROM [HlaNamePGroupRelationAtDrb1]
-                DELETE FROM [HlaNamePGroupRelationAtDqb1]
+                TRUNCATE TABLE [HlaNamePGroupRelationAtA]
+                TRUNCATE TABLE [HlaNamePGroupRelationAtB]
+                TRUNCATE TABLE [HlaNamePGroupRelationAtC]
+                TRUNCATE TABLE [HlaNamePGroupRelationAtDrb1]
+                TRUNCATE TABLE [HlaNamePGroupRelationAtDqb1]
                 
+                TRUNCATE TABLE [MatchingHlaAtA]
+                TRUNCATE TABLE [MatchingHlaAtB]
+                TRUNCATE TABLE [MatchingHlaAtC]
+                TRUNCATE TABLE [MatchingHlaAtDrb1]
+                TRUNCATE TABLE [MatchingHlaAtDqb1]
                 
-                DELETE FROM [MatchingHlaAtA]
-                DELETE FROM [MatchingHlaAtB]
-                DELETE FROM [MatchingHlaAtC]
-                DELETE FROM [MatchingHlaAtDrb1]
-                DELETE FROM [MatchingHlaAtDqb1]
-
-                DELETE FROM [Donors]
-
-                DELETE FROM [HlaNames]
+                TRUNCATE TABLE [Donors]
                 ");
                 
                 context.SaveChanges();
