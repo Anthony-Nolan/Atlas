@@ -10,6 +10,7 @@ using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.Test.Verification.Models;
 using Atlas.MatchPrediction.Test.Verification.Services.Verification.Compilation;
 using CsvHelper;
+using MoreLinq.Extensions;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
 {
@@ -34,22 +35,28 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
                 throw new ArgumentException($"{nameof(request.WriteDirectory)} cannot be null or empty; provide a valid directory.");
             }
 
-            await CompileAndWriteResults(request);
+            var results = await CompileResults(request);
+            WriteResults(request, results);
 
             Debug.WriteLine("Completed writing results.");
         }
 
-        private async Task CompileAndWriteResults(VerificationResultsRequest request)
+        private async Task<IReadOnlyCollection<VerificationResult>> CompileResults(VerificationResultsRequest request)
         {
             var singleLocusRequests = MatchPredictionStaticData.MatchPredictionLoci
                 .SelectMany(l => BuildCompileRequestByPrediction(request.VerificationRunId, l));
             var crossLociRequests = BuildCompileRequestByPrediction(request.VerificationRunId);
             var compileRequests = singleLocusRequests.Concat(crossLociRequests);
 
+            var results = new List<VerificationResult>();
+
             foreach (var compileRequest in compileRequests)
             {
-                await FetchAndWriteResults(request, compileRequest);
+                Debug.WriteLine($"Compiling results for {compileRequest}.");
+                results.Add(await resultsCompiler.CompileVerificationResults(compileRequest));
             }
+
+            return results;
         }
 
         private static IEnumerable<CompileResultsRequest> BuildCompileRequestByPrediction(int runId, Locus? locus = null)
@@ -63,37 +70,48 @@ namespace Atlas.MatchPrediction.Test.Verification.Services.Verification
             });
         }
 
-        private async Task FetchAndWriteResults(VerificationResultsRequest request, CompileResultsRequest compileRequest)
+        private static void WriteResults(VerificationResultsRequest request, IReadOnlyCollection<VerificationResult> results)
         {
-            Debug.WriteLine($"Compiling results for {compileRequest}...");
+            var avEDir = $"{request.WriteDirectory}\\AvE";
+            Directory.CreateDirectory(avEDir);
 
-            var results = await resultsCompiler.CompileVerificationResults(compileRequest);
-
-            if (results.ActualVersusExpectedResults.IsNullOrEmpty())
-            {
-                Debug.WriteLine($"No results found for {compileRequest}.");
-            }
-            else
-            {
-                WriteActualVsExpectedResultsToCsv(request, compileRequest, results.ActualVersusExpectedResults);
-                Debug.WriteLine($"Results written for {compileRequest}.");
-            }
+            results.ForEach(r => WriteActualVsExpectedResults(avEDir, request.VerificationRunId, r));
+            WriteMetrics(request.WriteDirectory, request.VerificationRunId, results);
         }
 
-        private static void WriteActualVsExpectedResultsToCsv(
-            VerificationResultsRequest request,
-            CompileResultsRequest compileRequest,
-            IEnumerable<ActualVersusExpectedResult> results)
+        private static void WriteActualVsExpectedResults(string writeDirectory, int runId, VerificationResult result)
         {
-            var writeDir = $"{request.WriteDirectory}\\AvE";
-            Directory.CreateDirectory(writeDir);
+            if (result.ActualVersusExpectedResults.IsNullOrEmpty())
+            {
+                Debug.WriteLine($"No results found for {result.Request}.");
+                return;
+            }
 
-            var filePath = $"{writeDir}\\VerId-{request.VerificationRunId}" +
-                           $"_MMCount-{compileRequest.MismatchCount}_{compileRequest.PredictionName}.csv";
+            var filePath = $"{writeDirectory}\\VerId-{runId}" + $"_Prediction-{result.Request.PredictionName}.csv";
 
             using var writer = new StreamWriter(filePath);
             using var csv = new CsvWriter(writer);
-            csv.WriteRecords(results.OrderBy(r => r.Probability));
+            csv.WriteRecords(result.ActualVersusExpectedResults.OrderBy(r => r.Probability));
+
+            Debug.WriteLine($"AvE results written for {result.Request}.");
+        }
+
+        private static void WriteMetrics(string writeDirectory, int runId, IReadOnlyCollection<VerificationResult> results)
+        {
+            var filePath = $"{writeDirectory}\\VerId-{runId}-metrics.csv";
+
+            using var writer = new StreamWriter(filePath);
+            using var csv = new CsvWriter(writer);
+            csv.WriteRecords(results.Select(r => new
+            {
+                RunId = r.Request.VerificationRunId,
+                Locus = r.Request.LocusName,
+                MM = r.Request.MismatchCount,
+                r.TotalPdpCount,
+                WCBD = r.WeightedCityBlockDistance,
+                r.WeightedLinearRegression.Slope,
+                r.WeightedLinearRegression.Intercept
+            }));
         }
     }
 }

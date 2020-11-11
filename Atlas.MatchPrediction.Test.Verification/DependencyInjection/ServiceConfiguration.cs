@@ -129,6 +129,7 @@ namespace Atlas.MatchPrediction.Test.Verification.DependencyInjection
             services.AddScoped<IVerificationResultsWriter, VerificationResultsWriter>();
             services.AddScoped<IVerificationResultsCompiler, VerificationResultsCompiler>();
             services.AddScoped<IActualVersusExpectedResultsCompiler, ActualVersusExpectedResultsCompiler>();
+            services.AddScoped<IProbabilityBinCalculator, ProbabilityBinCalculator>();
         }
     }
 }
