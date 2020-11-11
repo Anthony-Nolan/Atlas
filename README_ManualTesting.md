@@ -216,16 +216,15 @@ Recommended reading for how AvE plots and their metrics should be used and intep
 Madbouly, A., at al, (2014); Validation of statistical imputation of allele-level multilocus phased genotypes from 
 ambiguous HLA assignments; Tissue Antigens, 84(3):285-92.
 
-To generate the AvE plot:
+To generate an AvE plot:
 1. Launch the verification functions app, and invoke the http-triggered function, `WriteVerificationResultsToFile`; it requires:
   - Verification run ID;
   - Directory where CSV files should be written out to.
-    - Filenames will be auto-generated to contain the verification run ID, mismatch count, and locus name 
-      (or "CrossLoci" for P(x/10) predictions).
+    - Filenames will be auto-generated to contain the verification run ID and prediction type.
     - Any existing file in the specified directory with the same name will be overwritten without warning.
     - Reminder: any backslashes in the path should be escaped, i.e., `C:\\dir\\subdir`.
   - See Swagger UI for exact request model.
-2. Open the generated results file, and copy the two columns labeled: `ActuallyMatchedPdpCount` and	`TotalPdpCount`.
+2. Open the generated AvE results file of interest, and copy all three columns.
 3. Open the template file, `AvE_Plot_Template.xlsx`, located in `\MiscTestingAndDebuggingResources\ManualTesting\MatchPredictionVerification`.
   - Navigate to the tab, labelled: `ENTER DATA HERE`, and paste the copied data into the columns of the same name.
   - Save a copy of the file to the location of your choice.
@@ -233,6 +232,8 @@ To generate the AvE plot:
   - `n`: total number of PDP pairs
   - `WCBD`: Weighted City Block Distance
   - `Weighted R2`: R2 value calculated using the weighted mean of each match probability bin.
+
+Verification metrics (without plots) for all predictions are also written out to a CSV file in the requested directory.
 
 See also `\MiscTestingAndDebuggingResources\ManualTesting\MatchPredictionVerification\VerificationResultsSQLQueries.sql`
 for additional queries that can be run after verification search results have been retrieved.

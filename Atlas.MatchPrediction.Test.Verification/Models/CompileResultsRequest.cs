@@ -12,11 +12,12 @@ namespace Atlas.MatchPrediction.Test.Verification.Models
         /// </summary>
         public Locus? Locus { get; set; }
 
-        public string PredictionName => Locus == null ? "CrossLoci" : Locus.ToString();
+        public string LocusName => Locus == null ? "CrossLoci" : Locus.ToString();
+        public string PredictionName => $"{LocusName}_{MismatchCount}mm";
 
         public override string ToString()
         {
-            return $"RunId: {VerificationRunId}, Mismatch-count: {MismatchCount}, Prediction: {PredictionName}";
+            return $"RunId: {VerificationRunId}, Prediction: {PredictionName}";
         }
     }
 }
