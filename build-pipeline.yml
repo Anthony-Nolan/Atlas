@@ -45,6 +45,13 @@ jobs:
             Atlas.MatchPrediction.Test
             Atlas.MatchPrediction.Functions
           arguments: '--configuration Release --no-restore'
+      - task: SonarCloudPrepare@1
+        inputs:
+          SonarCloud: 'sonarcloud'
+          organization: 'wmda'
+          scannerMode: 'MSBuild'
+          projectKey: 'ATLAS'
+          projectName: 'ATLAS'
       - task: DotNetCoreCLI@2
         displayName: 'Run Unit Tests'
         inputs:
