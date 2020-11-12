@@ -45,13 +45,6 @@ jobs:
             Atlas.MatchPrediction.Test
             Atlas.MatchPrediction.Functions
           arguments: '--configuration Release --no-restore'
-      - task: SonarCloudPrepare@1
-        inputs:
-          SonarCloud: 'sonarcloud'
-          organization: 'wmda'
-          scannerMode: 'MSBuild'
-          projectKey: 'ATLAS'
-          projectName: 'ATLAS'
       - task: DotNetCoreCLI@2
         displayName: 'Run Unit Tests'
         inputs:
@@ -203,10 +196,6 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/SQL'
           ArtifactName: sql
-      - task: SonarCloudAnalyze@1
-      - task: SonarCloudPublish@1
-        inputs:
-          pollingTimeoutSec: '300'
   - job: Terraform_Core
     pool: Hosted Ubuntu 1604
     steps:
