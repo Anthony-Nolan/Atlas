@@ -203,6 +203,10 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/SQL'
           ArtifactName: sql
+      - task: SonarCloudAnalyze@1
+      - task: SonarCloudPublish@1
+        inputs:
+          pollingTimeoutSec: '300'
   - job: Terraform_Core
     pool: Hosted Ubuntu 1604
     steps:
