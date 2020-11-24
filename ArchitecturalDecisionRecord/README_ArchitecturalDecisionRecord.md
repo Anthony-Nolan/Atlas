@@ -28,3 +28,8 @@ ATLAS was originally ported from Anthony Nolan's internal matching algorithm, an
 ### Phase 1 
 
 The initial phase of work on ATLAS as a standalone product.
+
+### Phase 2 
+
+Phase 1 covered enough work to deliver ATLAS as a product suitable to replace Anthony Nolan's internal matching algorithm, but did not fully 
+cover the all work necessary to scale the algorithm to a significantly larger dataset, as well as some other features required to prepare ATLAS for international use. 
