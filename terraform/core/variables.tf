@@ -66,6 +66,12 @@ variable "DONOR_IMPORT_STALLED_FILE_DURATION" {
   description = "How long, in hours, a file must have been in the 'Started' state to be considered stalled"
 }
 
+variable "ELASTIC_SERVICE_PLAN_SKU_SIZE" {
+  type        = string
+  default     = "EP1"
+  description = "This database will be on the Elastic Premium tier, so only elastic premium sku sizes are appropriate e.g. EP1, EP2, EP3. Each tier represents a double in service plan price, and a corresponding halving of algorithm time."
+}
+
 variable "ENVIRONMENT" {
   type        = string
   description = "Prepended to all ATLAS resources, to indicate which environment of the installation they represent. Some alphanumeric characters must be present, as non-alphanumeric characters will be stripped from the storage account name. Max 8 alphanumeric characters. e.g. DEV/UAT/LIVE"
@@ -207,6 +213,15 @@ variable "ORCHESTRATION_MATCH_PREDICTION_BATCH_SIZE" {
   default = 10
 }
 
+variable "REPEAT_SEARCH_DATABASE_PASSWORD" {
+  type = string
+}
+
+variable "REPEAT_SEARCH_DATABASE_USERNAME" {
+  type    = string
+  default = "repeat_search"
+}
+
 variable "SERVICE_PLAN_SKU" {
   type = object({
     tier = string,
@@ -217,12 +232,6 @@ variable "SERVICE_PLAN_SKU" {
     size = "S1"
   }
   description = "The SKU size for the *non-elastic* service plan. This only hosts the donor import functions, all other services live on the elastic plan."
-}
-
-variable "ELASTIC_SERVICE_PLAN_SKU_SIZE" {
-  type        = string
-  default     = "EP1"
-  description = "This database will be on the Elastic Premium tier, so only elastic premium sku sizes are appropriate e.g. EP1, EP2, EP3. Each tier represents a double in service plan price, and a corresponding halving of algorithm time."
 }
 
 variable "TERRAFORM_RESOURCE_GROUP_NAME" {

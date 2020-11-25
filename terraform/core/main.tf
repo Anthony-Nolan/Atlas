@@ -11,7 +11,7 @@ locals {
   min_tls_version     = "1.0"
   resource_group_name = "${local.environment}-ATLAS-RESOURCE-GROUP"
   subscription_id     = var.AZURE_SUBSCRIPTION_ID
-  common_tags = {
+  common_tags         = {
     controlled_by_terraform = true
     repository_name         = local.repository_name
   }
@@ -29,6 +29,46 @@ provider "azurerm" {
   // Currently, the only resource provider needed is this AzureRM provider.
   skip_provider_registration = false
   features {}
+}
+
+module "donor_import" {
+  source = "./modules/donor_import"
+
+  general = {
+    environment = local.environment
+    location    = local.location
+    common_tags = local.common_tags
+  }
+
+  default_servicebus_settings = local.service-bus
+
+  // DI Variables 
+  app_service_plan        = azurerm_app_service_plan.atlas-elastic-plan
+  application_insights    = azurerm_application_insights.atlas
+  azure_storage           = azurerm_storage_account.azure_storage
+  servicebus_namespace    = azurerm_servicebus_namespace.general
+  shared_function_storage = azurerm_storage_account.function_storage
+  sql_database            = azurerm_sql_database.atlas-database-shared
+  sql_server              = azurerm_sql_server.atlas_sql_server
+
+  servicebus_namespace_authorization_rules = {
+    write-only = azurerm_servicebus_namespace_authorization_rule.write-only
+    read-write = azurerm_servicebus_namespace_authorization_rule.read-write
+  }
+
+  servicebus_topics = {
+    alerts        = module.support.general.alerts_servicebus_topic
+    notifications = module.support.general.notifications_servicebus_topic
+  }
+
+  // Release variables
+  APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
+  DATABASE_PASSWORD              = var.DONOR_DATABASE_PASSWORD
+  DATABASE_USERNAME              = var.DONOR_DATABASE_USERNAME
+  IP_RESTRICTION_SETTINGS        = var.IP_RESTRICTION_SETTINGS
+  MAX_INSTANCES                  = var.DONOR_IMPORT_MAX_INSTANCES
+  STALLED_FILE_CHECK_CRONTAB     = var.DONOR_IMPORT_STALLED_FILE_CHECK_CRONTAB
+  STALLED_FILE_DURATION          = var.DONOR_IMPORT_STALLED_FILE_DURATION
 }
 
 module "matching_algorithm" {
@@ -96,7 +136,7 @@ module "matching_algorithm" {
 module "match_prediction" {
   source = "./modules/match_prediction"
 
-  general = {
+  general                     = {
     environment = local.environment
     location    = local.location
     common_tags = local.common_tags
@@ -133,44 +173,46 @@ module "match_prediction" {
   WEBSITE_RUN_FROM_PACKAGE       = var.WEBSITE_RUN_FROM_PACKAGE
 }
 
-module "donor_import" {
-  source = "./modules/donor_import"
+module "multiple_allele_code_lookup" {
+  source = "./modules/multiple_allele_code_lookup"
 
-  general = {
+  azure_storage = azurerm_storage_account.azure_storage
+}
+
+module "repeat_search" {
+  source = "./modules/repeat_search"
+
+  general                     = {
     environment = local.environment
     location    = local.location
     common_tags = local.common_tags
   }
-
   default_servicebus_settings = local.service-bus
 
-  // DI Variables 
-  app_service_plan        = azurerm_app_service_plan.atlas-elastic-plan
-  application_insights    = azurerm_application_insights.atlas
-  azure_storage           = azurerm_storage_account.azure_storage
-  servicebus_namespace    = azurerm_servicebus_namespace.general
-  shared_function_storage = azurerm_storage_account.function_storage
-  sql_database            = azurerm_sql_database.atlas-database-shared
-  sql_server              = azurerm_sql_server.atlas_sql_server
-
+  // DI Variables
+  application_insights                     = azurerm_application_insights.atlas
+  app_service_plan                         = azurerm_app_service_plan.atlas-elastic-plan
+  azure_storage                            = azurerm_storage_account.azure_storage
+  servicebus_namespace                     = azurerm_servicebus_namespace.general
   servicebus_namespace_authorization_rules = {
-    write-only = azurerm_servicebus_namespace_authorization_rule.write-only
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
+    read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
+    write-only = azurerm_servicebus_namespace_authorization_rule.write-only
   }
-
-  servicebus_topics = {
+  servicebus_topics                        = {
     alerts        = module.support.general.alerts_servicebus_topic
     notifications = module.support.general.notifications_servicebus_topic
   }
+  shared_function_storage                  = azurerm_storage_account.function_storage
+  sql_database                             = azurerm_sql_database.atlas-database-shared
+  sql_server                               = azurerm_sql_server.atlas_sql_server
+
 
   // Release variables
   APPLICATION_INSIGHTS_LOG_LEVEL = var.APPLICATION_INSIGHTS_LOG_LEVEL
-  DATABASE_PASSWORD              = var.DONOR_DATABASE_PASSWORD
-  DATABASE_USERNAME              = var.DONOR_DATABASE_USERNAME
+  DATABASE_PASSWORD              = var.REPEAT_SEARCH_DATABASE_PASSWORD
+  DATABASE_USERNAME              = var.REPEAT_SEARCH_DATABASE_USERNAME
   IP_RESTRICTION_SETTINGS        = var.IP_RESTRICTION_SETTINGS
-  MAX_INSTANCES                  = var.DONOR_IMPORT_MAX_INSTANCES
-  STALLED_FILE_CHECK_CRONTAB     = var.DONOR_IMPORT_STALLED_FILE_CHECK_CRONTAB
-  STALLED_FILE_DURATION          = var.DONOR_IMPORT_STALLED_FILE_DURATION
 }
 
 module "support" {
@@ -180,10 +222,4 @@ module "support" {
 
   resource_group       = azurerm_resource_group.atlas_resource_group
   servicebus_namespace = azurerm_servicebus_namespace.general
-}
-
-module "multiple_allele_code_lookup" {
-  source = "./modules/multiple_allele_code_lookup"
-
-  azure_storage = azurerm_storage_account.azure_storage
 }
