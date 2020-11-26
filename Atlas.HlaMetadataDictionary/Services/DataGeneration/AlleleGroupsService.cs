@@ -35,7 +35,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             var pGroups = dataset.PGroups.Select(GetMetadataFromAlleleGroup);
             var gGroups = dataset.GGroups.Select(GetMetadataFromAlleleGroup);
             
-            return pGroups.Concat(gGroups).Where(IsAlleleGroupMetadata);
+            return pGroups.Concat(gGroups).Where(IsAlleleGroup);
         }
 
         private static IAlleleGroupMetadata GetMetadataFromAlleleGroup(IWmdaAlleleGroup alleleGroup)
@@ -44,7 +44,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             return new AlleleGroupMetadata(locus, alleleGroup.Name, alleleGroup.Alleles);
         }
 
-        private bool IsAlleleGroupMetadata(IAlleleGroupMetadata metadata)
+        private bool IsAlleleGroup(IAlleleGroupMetadata metadata)
         {
             var category = hlaCategorisationService.GetHlaTypingCategory(metadata.LookupName);
             return category == HlaTypingCategory.GGroup || category == HlaTypingCategory.PGroup;

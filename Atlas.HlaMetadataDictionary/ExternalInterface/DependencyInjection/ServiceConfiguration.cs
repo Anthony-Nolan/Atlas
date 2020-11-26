@@ -71,6 +71,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.AddScoped<IHlaMatchPreCalculationService, HlaMatchPreCalculationService>();
             services.AddScoped<IDpb1TceGroupsService, Dpb1TceGroupsService>();
             services.AddScoped<IAlleleGroupsService, AlleleGroupsService>();
+            services.AddScoped<ISmallGGroupsBuilder, SmallGGroupsBuilder>();
+            services.AddScoped<ISmallGGroupsService, SmallGGroupsService>();
             services.AddScoped<IHlaToMatchingMetaDataConverter, HlaToMatchingMetaDataConverter>();
             services.AddScoped<IHlaToScoringMetaDataConverter, HlaToScoringMetaDataConverter>();
 
