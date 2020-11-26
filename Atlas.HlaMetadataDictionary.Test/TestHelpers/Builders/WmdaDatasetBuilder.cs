@@ -19,5 +19,29 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
             .With(w => w.AlleleStatuses, new List<AlleleStatus>())
             .With(w => w.AlleleNameHistories, new List<AlleleNameHistory>())
             .With(w => w.Dpb1TceGroupAssignments, new List<Dpb1TceGroupAssignment>());
+
+        public static Builder<WmdaDataset> AddPGroup(this Builder<WmdaDataset> builder, string locus, string pGroupName, string allele)
+        {
+            return AddPGroup(builder, locus, pGroupName, new[] { allele });
+        }
+
+        public static Builder<WmdaDataset> AddPGroup(this Builder<WmdaDataset> builder, string locus, string pGroupName, IEnumerable<string> alleles)
+        {
+            var pGroups = builder.Build().PGroups;
+            pGroups.Add(new HlaNomP(locus, pGroupName, alleles));
+            return builder.With(x => x.PGroups, pGroups);
+        }
+
+        public static Builder<WmdaDataset> AddGGroup(this Builder<WmdaDataset> builder, string locus, string gGroupName, string allele)
+        {
+            return AddGGroup(builder, locus, gGroupName, new[] { allele });
+        }
+
+        public static Builder<WmdaDataset> AddGGroup(this Builder<WmdaDataset> builder, string locus, string gGroupName, IEnumerable<string> alleles)
+        {
+            var gGroups = builder.Build().GGroups;
+            gGroups.Add(new HlaNomG(locus, gGroupName, alleles));
+            return builder.With(x => x.GGroups, gGroups);
+        }
     }
 }
