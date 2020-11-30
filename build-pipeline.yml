@@ -222,7 +222,7 @@ jobs:
         inputs:
           command: custom
           custom: ef
-          arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/RepeatSearchMigrationScript.sql --context DonorContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.RepeatSearch.Data --project $(System.DefaultWorkingDirectory)/Atlas.RepeatSearch.Data'
+          arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/RepeatSearchMigrationScript.sql --context RepeatSearchContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.RepeatSearch.Data --project $(System.DefaultWorkingDirectory)/Atlas.RepeatSearch.Data'
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Artifact: sql'
         inputs:
