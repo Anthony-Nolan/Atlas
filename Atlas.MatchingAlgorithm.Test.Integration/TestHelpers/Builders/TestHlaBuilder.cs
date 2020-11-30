@@ -3,6 +3,7 @@ using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.Common.Test.SharedTestHelpers;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 {
@@ -28,8 +29,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
             hlaMetadata = new TestHlaMetadata
             {
                 Locus = Locus.A,
-                LookupName = "HLA",
-                OriginalName = "HLA",
+                LookupName = IncrementingIdGenerator.NextStringId("hla-lookup-"),
+                OriginalName = IncrementingIdGenerator.NextStringId("hla-original-"),
                 MatchingPGroups = new List<string>()
             };
         }
