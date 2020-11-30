@@ -12,27 +12,23 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
 {
     internal interface IHlaConverter
     {
-        Task<bool> ValidateHla(Locus locus, string hlaName, HlaConversionBehaviour conversionBehaviour);
         Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, HlaConversionBehaviour conversionBehaviour);
-    }
-
-    internal class HlaConversionBehaviour
-    {
-        public TargetHlaCategory TargetHlaCategory { get; set; }
-        public string HlaNomenclatureVersion { get; set; }
     }
 
     internal class HlaConverter : IHlaConverter
     {
         private readonly IHlaNameToTwoFieldAlleleConverter hlaNameToTwoFieldAlleleConverter;
         private readonly IHlaScoringMetadataService scoringMetadataService;
+        private readonly ISmallGGroupMetadataService smallGGroupMetadataService;
 
         public HlaConverter(
             IHlaNameToTwoFieldAlleleConverter hlaNameToTwoFieldAlleleConverter,
-            IHlaScoringMetadataService scoringMetadataService)
+            IHlaScoringMetadataService scoringMetadataService,
+            ISmallGGroupMetadataService smallGGroupMetadataService)
         {
             this.hlaNameToTwoFieldAlleleConverter = hlaNameToTwoFieldAlleleConverter;
             this.scoringMetadataService = scoringMetadataService;
+            this.smallGGroupMetadataService = smallGGroupMetadataService;
         }
 
         public async Task<IReadOnlyCollection<string>> ConvertHla(Locus locus, string hlaName, HlaConversionBehaviour conversionBehaviour)
@@ -54,6 +50,8 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
                 case TargetHlaCategory.GGroup:
                     //TODO ATLAS-394: After HMD has been decoupled from Scoring, use appropriate GGroup lookup service
                     return (await GetHlaScoringInfo(locus, hlaName, conversionBehaviour.HlaNomenclatureVersion)).MatchingGGroups.ToList();
+                case TargetHlaCategory.SmallGGroup:
+                    return (await smallGGroupMetadataService.GetSmallGGroups(locus, hlaName, conversionBehaviour.HlaNomenclatureVersion)).ToList();
                 case TargetHlaCategory.PGroup:
                     //TODO ATLAS-394: After HMD has been decoupled from Scoring, use appropriate PGroup lookup service
                     return (await GetHlaScoringInfo(locus, hlaName, conversionBehaviour.HlaNomenclatureVersion)).MatchingPGroups.ToList();
@@ -64,32 +62,6 @@ namespace Atlas.HlaMetadataDictionary.Services.HlaConversion
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(conversionBehaviour), conversionBehaviour, null);
-            }
-        }
-
-        public async Task<bool> ValidateHla(Locus locus, string hlaName, HlaConversionBehaviour validationBehaviour)
-        {
-            if (hlaName == null || validationBehaviour == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            // ReSharper disable once ConvertSwitchStatementToSwitchExpression
-            switch (validationBehaviour.TargetHlaCategory)
-            {
-                case TargetHlaCategory.TwoFieldAlleleIncludingExpressionSuffix:
-                    throw new NotImplementedException();
-                case TargetHlaCategory.TwoFieldAlleleExcludingExpressionSuffix:
-                    throw new NotImplementedException();
-                case TargetHlaCategory.GGroup:
-                    return (await scoringMetadataService.GetAllGGroups(validationBehaviour.HlaNomenclatureVersion))[locus].Contains(hlaName);
-                case TargetHlaCategory.PGroup:
-                    throw new NotImplementedException();
-                case TargetHlaCategory.Serology:
-                    throw new NotImplementedException();
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(validationBehaviour), validationBehaviour, null);
             }
         }
 

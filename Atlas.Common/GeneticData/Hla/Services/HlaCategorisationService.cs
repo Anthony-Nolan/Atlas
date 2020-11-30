@@ -12,7 +12,7 @@ namespace Atlas.Common.GeneticData.Hla.Services
     {
         /// <summary>
         /// Tests whether the specified string matches the syntactic pattern of an HLA.
-        /// i.e. whether it conforms to the general Regex pattern of one of the 8 Typing Categories.
+        /// i.e. whether it conforms to the general Regex pattern of one of the supported Typing Categories.
         /// <br/>
         /// Does NOT check whether the exact values of the string are recognised. i.e. non-existent NMDP codes or Field values will NOT be detected.
         /// </summary>

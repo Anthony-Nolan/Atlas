@@ -5,7 +5,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models
 {
     /// <summary>
     /// Available target HLA categories for the HLA converter.
-    /// <para>Note: this has a different usage and intent to the <see cref="Common.GeneticData.Hla.Models.HlaTypingCategory"/> HlaTypingCategory enum,
+    /// <para>Note: this has a different usage and intent to the <see cref="HlaTypingCategory"/> enum,
     /// despite the overlap in values.</para>
     /// </summary>
     public enum TargetHlaCategory
@@ -13,6 +13,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models
         TwoFieldAlleleIncludingExpressionSuffix,
         TwoFieldAlleleExcludingExpressionSuffix,
         GGroup,
+        SmallGGroup,
         PGroup,
         Serology
     }
@@ -21,6 +22,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models
     {
         public static TargetHlaCategory ToTargetHlaCategory(this HlaTypingCategory hlaTypingCategory)
         {
+            // TODO: ATLAS-838 - add case for small g group
             return hlaTypingCategory switch
             {
                 HlaTypingCategory.Allele => throw new NotSupportedException(),

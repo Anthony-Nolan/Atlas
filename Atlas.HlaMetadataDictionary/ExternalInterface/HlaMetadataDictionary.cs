@@ -7,6 +7,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
+using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
@@ -62,6 +63,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         private readonly IRecreateHlaMetadataService recreateMetadataService;
         private readonly IHlaConverter hlaConverter;
+        private readonly IHlaValidator hlaValidator;
         private readonly IHlaMatchingMetadataService hlaMatchingMetadataService;
         private readonly ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
         private readonly IHlaScoringMetadataService hlaScoringMetadataService;
@@ -75,6 +77,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             string activeHlaNomenclatureVersionOrDefault,
             IRecreateHlaMetadataService recreateMetadataService,
             IHlaConverter hlaConverter,
+            IHlaValidator hlaValidator,
             IHlaMatchingMetadataService hlaMatchingMetadataService,
             ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService,
             IHlaScoringMetadataService hlaScoringMetadataService,
@@ -87,6 +90,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.activeHlaNomenclatureVersionOrDefault = activeHlaNomenclatureVersionOrDefault;
             this.recreateMetadataService = recreateMetadataService;
             this.hlaConverter = hlaConverter;
+            this.hlaValidator = hlaValidator;
             this.hlaMatchingMetadataService = hlaMatchingMetadataService;
             this.locusHlaMatchingMetadataService = locusHlaMatchingMetadataService;
             this.hlaScoringMetadataService = hlaScoringMetadataService;
@@ -131,7 +135,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         /// <inheritdoc />
         public async Task<bool> ValidateHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory)
         {
-            return await hlaConverter.ValidateHla(locus, hlaName, new HlaConversionBehaviour
+            return await hlaValidator.ValidateHla(locus, hlaName, new HlaConversionBehaviour
             {
                 HlaNomenclatureVersion = ActiveHlaNomenclatureVersion,
                 TargetHlaCategory = targetHlaCategory

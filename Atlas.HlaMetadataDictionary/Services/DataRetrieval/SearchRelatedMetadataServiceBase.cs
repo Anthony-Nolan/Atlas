@@ -18,7 +18,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     }
 
     /// <summary>
-    /// Common functionality when looking up metadata for search requests (i.e., matching or scoring).
+    /// Common functionality when looking up search-related metadata (e.g., for matching, scoring, MPA, etc.)
+    /// where the submitted HLA name could be any supported <see cref="Common.GeneticData.Hla.Models.HlaTypingCategory"/>.
     /// </summary>
     internal abstract class SearchRelatedMetadataServiceBase<THlaMetadata> :
         MetadataServiceBase<THlaMetadata>,

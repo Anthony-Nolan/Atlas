@@ -1,6 +1,7 @@
 ﻿using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
@@ -13,6 +14,7 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
     {
         private IRecreateHlaMetadataService recreate;
         private IHlaConverter converter;
+        private IHlaValidator validator;
         private IHlaMatchingMetadataService matching;
         private ILocusHlaMatchingMetadataService locus;
         private IHlaScoringMetadataService scoring;
@@ -32,6 +34,7 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
         {
             recreate = Substitute.For<IRecreateHlaMetadataService>();
             converter = Substitute.For<IHlaConverter>();
+            validator = Substitute.For<IHlaValidator>();
             matching = Substitute.For<IHlaMatchingMetadataService>();
             locus = Substitute.For<ILocusHlaMatchingMetadataService>();
             scoring = Substitute.For<IHlaScoringMetadataService>();
@@ -57,6 +60,9 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                     break;
                 case IHlaConverter typedDependency:
                     converter = typedDependency;
+                    break;
+                case IHlaValidator typedDependency:
+                    validator = typedDependency;
                     break;
                 case IHlaMatchingMetadataService typedDependency:
                     matching = typedDependency;
@@ -93,10 +99,11 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                 return cannedResponse;
             }
 
-            return new Atlas.HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary(
+            return new ExternalInterface.HlaMetadataDictionary(
                 activeVersion,
                 recreate,
                 converter,
+                validator,
                 matching,
                 locus,
                 scoring,
