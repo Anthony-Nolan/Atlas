@@ -1,10 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
-        <AzureFunctionsVersion>V3</AzureFunctionsVersion>
+        <AzureFunctionsVersion>v3</AzureFunctionsVersion>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <OutputPath>bin/</OutputPath>
     </PropertyGroup>
-
-
+    
     <Target Name="Scaffold local settings file" BeforeTargets="Build" Condition="!EXISTS('$(ProjectDir)\local.settings.json')">
         <Copy SourceFiles="$(ProjectDir)\local.settings.template.json" DestinationFiles="$(ProjectDir)\local.settings.json" />
     </Target>
