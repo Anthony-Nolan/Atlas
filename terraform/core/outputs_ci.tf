@@ -61,6 +61,10 @@ output "public-api-function-app-name" {
   value = local.atlas_public_api_function_app_name
 }
 
+output "repeat-search-database-name" {
+  value = azurerm_sql_database.atlas-database-shared.name
+}
+
 output "repeat-search-username" {
   value = var.REPEAT_SEARCH_DATABASE_USERNAME
 }
