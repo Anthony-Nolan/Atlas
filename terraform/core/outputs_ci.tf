@@ -61,6 +61,10 @@ output "public-api-function-app-name" {
   value = local.atlas_public_api_function_app_name
 }
 
+output "repeat-search-username" {
+  value = var.REPEAT_SEARCH_DATABASE_USERNAME
+}
+
 output "sql-server" {
   value = azurerm_sql_server.atlas_sql_server.fully_qualified_domain_name
 }
