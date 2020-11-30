@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Sql;
@@ -79,7 +80,17 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
         private async Task ImportHla(LociInfo<IList<HlaNamePGroupRelation>> hlaNamesToImport)
         {
-            await hlaNamesToImport.WhenAllLoci(async (l, v) => await ImportHlaAtLocus(l, v));
+            // Distributed transactions are not yet supported in .Net core - see https://github.com/dotnet/runtime/issues/715
+            // Until they are, we cannot update loci in parallel while also in a transaction scope. But if we are not in a transaction, it is quicker to run in parallel.
+            // Therefore, we check for an open transaction here and either allow parallel execution across loci (via WhenAll), or do not (via WhenEach)
+            if (Transaction.Current != null)
+            {
+                await hlaNamesToImport.WhenEachLocus(async (l, v) => await ImportHlaAtLocus(l, v));
+            }
+            else
+            {
+                await hlaNamesToImport.WhenAllLoci(async (l, v) => await ImportHlaAtLocus(l, v));
+            }
         }
 
         private async Task ImportHlaAtLocus(Locus locus, IList<HlaNamePGroupRelation> hla)

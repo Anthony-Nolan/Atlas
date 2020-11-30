@@ -159,6 +159,19 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
 
             await Task.WhenAll(a, b, c, dpb1, dqb1, drb1);
         }
+
+        /// <summary>
+        /// Explicitly runs an action per locus in order, rather than using Task.WhenAll - for when it is imperative that no external processing runs in parallel. 
+        /// </summary>
+        public async Task WhenEachLocus(Func<Locus, T, Task> action)
+        {
+            await action(Locus.A, A);
+            await action(Locus.B, B);
+            await action(Locus.C, C);
+            await action(Locus.Dpb1, Dpb1);
+            await action(Locus.Dqb1, Dqb1);
+            await action(Locus.Drb1, Drb1);
+        }
         
         public R Reduce<R>(Func<Locus, T, R, R> reducer, R initialValue = default)
         {
