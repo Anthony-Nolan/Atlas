@@ -49,6 +49,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.DependencyInjection
             services.AddSingleton<IDpb1TceGroupsMetadataRepository, FileBackedTceMetadataRepository>();
             services.AddSingleton<IAlleleGroupsMetadataRepository, FileBackedAlleleGroupsMetadataRepository>();
             services.AddSingleton<IGGroupToPGroupMetadataRepository, FileBackedGGroupToPGroupMetadataRepository>();
+            services.AddSingleton<ISmallGGroupsMetadataRepository, FileBackedSmallGroupsMetadataRepository>();
             services.AddSingleton(sp =>
             {
                 var wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
