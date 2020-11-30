@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
+using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
@@ -18,6 +19,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
 
         private IRecreateHlaMetadataService recreateMetadataService;
         private IHlaConverter hlaConverter;
+        private IHlaValidator hlaValidator;
         private IHlaMatchingMetadataService hlaMatchingMetadataService;
         private ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
         private IHlaScoringMetadataService hlaScoringMetadataService;
@@ -34,6 +36,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         {
             recreateMetadataService = Substitute.For<IRecreateHlaMetadataService>();
             hlaConverter = Substitute.For<IHlaConverter>();
+            hlaValidator = Substitute.For<IHlaValidator>();
             hlaMatchingMetadataService = Substitute.For<IHlaMatchingMetadataService>();
             locusHlaMatchingMetadataService = Substitute.For<ILocusHlaMatchingMetadataService>();
             hlaScoringMetadataService = Substitute.For<IHlaScoringMetadataService>();
@@ -47,6 +50,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
                 DefaultVersion,
                 recreateMetadataService,
                 hlaConverter,
+                hlaValidator,
                 hlaMatchingMetadataService,
                 locusHlaMatchingMetadataService,
                 hlaScoringMetadataService,

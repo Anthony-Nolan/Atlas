@@ -2,6 +2,7 @@ using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
+using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
@@ -39,6 +40,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         //For Dictionary
         private readonly IRecreateHlaMetadataService recreateMetadataService;
         private readonly IHlaConverter hlaConverter;
+        private readonly IHlaValidator hlaValidator;
         private readonly IHlaMatchingMetadataService hlaMatchingMetadataService;
         private readonly ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
         private readonly IHlaScoringMetadataService hlaScoringMetadataService;
@@ -62,6 +64,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             //For Dictionary
             IRecreateHlaMetadataService recreateMetadataService,
             IHlaConverter hlaConverter,
+            IHlaValidator hlaValidator,
             IHlaMatchingMetadataService hlaMatchingMetadataService,
             ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService,
             IHlaScoringMetadataService hlaScoringMetadataService,
@@ -84,6 +87,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             //For Dictionary
             this.recreateMetadataService = recreateMetadataService;
             this.hlaConverter = hlaConverter;
+            this.hlaValidator = hlaValidator;
             this.hlaMatchingMetadataService = hlaMatchingMetadataService;
             this.locusHlaMatchingMetadataService = locusHlaMatchingMetadataService;
             this.hlaScoringMetadataService = hlaScoringMetadataService;
@@ -147,6 +151,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 activeHlaNomenclatureVersion,
                 recreateMetadataService,
                 hlaConverter,
+                hlaValidator,
                 hlaMatchingMetadataService,
                 locusHlaMatchingMetadataService,
                 hlaScoringMetadataService,
