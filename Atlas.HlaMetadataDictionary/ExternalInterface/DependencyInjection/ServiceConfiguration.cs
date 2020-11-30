@@ -53,6 +53,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.AddScoped<IAlleleNamesMetadataRepository, AlleleNamesMetadataRepository>();
             services.AddScoped<IDpb1TceGroupsMetadataRepository, Dpb1TceGroupsMetadataRepository>();
             services.AddScoped<IAlleleGroupsMetadataRepository, AlleleGroupsMetadataRepository>();
+            services.AddScoped<ISmallGGroupsMetadataRepository, SmallGGroupsMetadataRepository>();
         }
 
         private static void RegisterTypesRelatedToDictionaryRecreation(this IServiceCollection services)
