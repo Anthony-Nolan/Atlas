@@ -10,7 +10,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
     {
         protected override IEnumerable<ISmallGGroupsMetadata> GetHlaMetadata(FileBackedHlaMetadataCollection metadataCollection)
         {
-            return metadataCollection.SmallGGroupsMetadata;
+            return metadataCollection.SmallGGroupMetadata;
         }
     }
 }
