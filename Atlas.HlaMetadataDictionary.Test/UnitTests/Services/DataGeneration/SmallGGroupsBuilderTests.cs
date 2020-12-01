@@ -28,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
         }
 
         [Test]
-        public void GetSmallGGroupMetadata_PGroupMapsToGGroupWithNoNulls_SmallGGroupOnlyHasPGroupAlleles()
+        public void BuildSmallGGroups_PGroupMapsToGGroupWithNoNulls_SmallGGroupOnlyHasPGroupAlleles()
         {
             const string sharedAllele = "01:01";
             var pGroupAlleles = new[] { sharedAllele, "01:02L", "01:03S", "01:04Q" };
@@ -46,7 +46,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
         }
 
         [Test]
-        public void GetSmallGGroupMetadata_PGroupMapsToGGroupsWithNulls_SmallGGroupHasPGroupAllelesAndNullsFromGGroups()
+        public void BuildSmallGGroups_PGroupMapsToGGroupsWithNulls_SmallGGroupHasPGroupAllelesAndNullsFromGGroups()
         {
             const string sharedAllele = "01:01";
             const string nullAllele1 = "01:03N";
@@ -68,7 +68,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
         }
 
         [Test]
-        public void GetSmallGGroupMetadata_PGroupMapsToGGroup_OnlyGroupsAllelesFromTheSameLocus()
+        public void BuildSmallGGroups_PGroupMapsToGGroup_OnlyGroupsAllelesFromTheSameLocus()
         {
             const string sharedAllele = "01:01";
             const string nullAllele = "01:03N";
@@ -102,7 +102,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
         [TestCase("L")]
         [TestCase("S")]
         [TestCase("Q")]
-        public void GetSmallGGroupMetadata_ExpressingAlleleNotAssignedToAPGroup_SmallGGroupOnlyHasExpressingAllele(string expressionLetter)
+        public void BuildSmallGGroups_ExpressingAlleleNotAssignedToAPGroup_SmallGGroupOnlyHasExpressingAllele(string expressionLetter)
         {
             var alleleName = "01:01" + expressionLetter;
 
@@ -119,7 +119,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
         }
 
         [Test]
-        public void GetSmallGGroupMetadata_NullAllelesThatDoNotMapToPGroups_GroupsNullAllelesByFirst2Fields()
+        public void BuildSmallGGroups_NullAllelesThatDoNotMapToPGroups_GroupsNullAllelesByFirst2Fields()
         {
             const string nSuffix = "N";
 
@@ -151,7 +151,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
         }
 
         [Test]
-        public void GetSmallGGroupMetadata_NullAllelesThatDoNotMapToPGroups_OnlyGroupsAllelesFromTheSameLocus()
+        public void BuildSmallGGroups_NullAllelesThatDoNotMapToPGroups_OnlyGroupsAllelesFromTheSameLocus()
         {
             const string nullAllele = "01:01N";
             const string differentLocusName = "B*";
@@ -185,7 +185,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
             new[] { "01:01:04N", "01:01:05:01N" },
             "01:01")]
 
-        public void GetSmallGGroupMetadata_AllelesInSmallGGroupHaveSameFirst2Fields_NamesWithFirst2Fields(
+        public void BuildSmallGGroups_AllelesInSmallGGroupHaveSameFirst2Fields_NamesWithFirst2Fields(
             object[] expressingAlleles,
             object[] nullAlleles,
             string firstTwoFields)
@@ -216,7 +216,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
             new[] { "01:01", "01:02L", "01:03:01S", "01:04:01:01Q" },
             new[] { "01:05N", "01:06:01N", "01:07:01:01N" },
             "999:999")]
-        public void GetSmallGGroupMetadata_AllelesInSmallGGroupHaveDifferentFirst2Fields_NamesAfterPGroup(
+        public void BuildSmallGGroups_AllelesInSmallGGroupHaveDifferentFirst2Fields_NamesAfterPGroup(
             object[] expressingAlleles,
             object[] nullAlleles,
             string pGroupNameWithoutSuffix)
@@ -243,7 +243,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
         [TestCase("L")]
         [TestCase("S")]
         [TestCase("Q")]
-        public void GetSmallGGroupMetadata_SmallGGroupOnlyHasOneAllele_Expressing_NamesWithAlleleName(string expressionLetter)
+        public void BuildSmallGGroups_SmallGGroupOnlyHasOneAllele_Expressing_NamesWithAlleleName(string expressionLetter)
         {
             var alleleName = "01:01" + expressionLetter;
 
@@ -263,7 +263,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
         }
 
         [Test]
-        public void GetSmallGGroupMetadata_SmallGGroupOnlyHasOneAllele_Null_NamesWithAlleleName()
+        public void BuildSmallGGroups_SmallGGroupOnlyHasOneAllele_Null_NamesWithAlleleName()
         {
             const string nullAllele = "01:01N";
 
@@ -281,7 +281,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
         }
 
         [Test]
-        public void GetSmallGGroupMetadata_AllelesInSmallGGroupAreAllNull_NamesWithFirst2Fields()
+        public void BuildSmallGGroups_AllelesInSmallGGroupAreAllNull_NamesWithFirst2Fields()
         {
             const string nSuffix = "N";
 
