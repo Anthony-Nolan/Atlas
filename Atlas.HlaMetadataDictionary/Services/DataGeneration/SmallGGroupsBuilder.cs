@@ -46,29 +46,27 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 
         private static IEnumerable<SmallGGroup> BuildSmallGGroupsFromPGroups(WmdaDataset wmdaDataset)
         {
-            var smallGGroups = new List<SmallGGroup>();
+            return wmdaDataset.PGroups.Select(p => BuildSmallGGroupFromSinglePGroup(wmdaDataset.GGroups, p));
+        }
 
-            foreach (var pGroup in wmdaDataset.PGroups)
+        private static SmallGGroup BuildSmallGGroupFromSinglePGroup(IEnumerable<HlaNomG> gGroups, IWmdaAlleleGroup pGroup)
+        {
+            var nullAlleles = gGroups
+                .Where(g => g.TypingLocus == pGroup.TypingLocus && g.Alleles.Intersect(pGroup.Alleles).Any())
+                .SelectMany(g => g.Alleles.Where(ExpressionSuffixParser.IsAlleleNull));
+
+            var allAlleles = pGroup.Alleles.Concat(nullAlleles).ToList();
+
+            var groupName = AllelesShareSameFirstTwoFields(allAlleles)
+                ? AlleleSplitter.FirstTwoFieldsAsString(allAlleles.First())
+                : pGroup.Name.Replace('P', 'g');
+
+            return new SmallGGroup
             {
-                var nullAlleles = wmdaDataset.GGroups
-                    .Where(g => g.TypingLocus == pGroup.TypingLocus && g.Alleles.Intersect(pGroup.Alleles).Any())
-                    .SelectMany(g => g.Alleles.Where(ExpressionSuffixParser.IsAlleleNull));
-
-                var allAlleles = pGroup.Alleles.Concat(nullAlleles).ToList();
-
-                var groupName = AllelesShareSameFirstTwoFields(allAlleles)
-                    ? AlleleSplitter.FirstTwoFieldsAsString(allAlleles.First())
-                    : pGroup.Name.Replace('P', 'g');
-
-                smallGGroups.Add(new SmallGGroup
-                {
-                    Locus = GetLocus(pGroup.TypingLocus),
-                    Name = groupName,
-                    Alleles = allAlleles
-                });
-            }
-
-            return smallGGroups;
+                Locus = GetLocus(pGroup.TypingLocus),
+                Name = groupName,
+                Alleles = allAlleles
+            };
         }
 
         private static IEnumerable<SmallGGroup> BuildSmallGGroupsFromNullAllelesNotMappedToPGroups(WmdaDataset wmdaDataset)

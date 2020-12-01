@@ -69,8 +69,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
                 .Select(grp =>
                     new SmallGGroupsMetadata(
                         grp.Key.Locus,
-                        grp.Key.LookupName,
-                    grp.SelectMany(g => g.SmallGGroups).Distinct().ToList()
+                        grp.Key.LookupName, 
+                        grp.SelectMany(g => g.SmallGGroups).Distinct().ToList()
                         ));
         }
     }

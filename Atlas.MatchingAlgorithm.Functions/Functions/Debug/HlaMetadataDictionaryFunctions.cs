@@ -17,7 +17,7 @@ using Newtonsoft.Json;
 
 namespace Atlas.MatchingAlgorithm.Functions.Functions.Debug
 {
-    public class HlaMetadataDictionaryFunctions //TODO: ATLAS-262 (MDM) migrate to new project
+    public class HlaMetadataDictionaryFunctions //TODO: ATLAS-262 - migrate to new project
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
 

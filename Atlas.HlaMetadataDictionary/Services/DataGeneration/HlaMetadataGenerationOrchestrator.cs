@@ -79,7 +79,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
                 logger.SendTrace("HlaMetadataDictionary: GGroup to PGroup");
                 var gGroupToPGroupMetadata = GetGGroupToPGroupMetadata(hlaNomenclatureVersion).ToList();
 
-                logger.SendTrace("HlaMetadataDictionary: Building small G groups");
+                logger.SendTrace("HlaMetadataDictionary: Building small g groups");
                 var smallGGroupsMetadata = GetSmallGGroupsMetadata(hlaNomenclatureVersion).ToList();
 
                 return new HlaMetadataCollection
