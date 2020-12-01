@@ -3,6 +3,7 @@ using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using LazyCache;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
@@ -38,7 +39,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
         private static string FormatLookupName(string lookupName)
         {
-            return lookupName?.Trim().TrimStart('*');
+            // TODO: ATLAS-749: Find a less flakey way to do this. 
+            return lookupName?.Trim().TrimStart('*').Split("[NULL-AS]").First();
         }
 
         private async Task<T> GetOrAddCachedMetadata(Locus locus, string formattedLookupName, string hlaNomenclatureVersion)
