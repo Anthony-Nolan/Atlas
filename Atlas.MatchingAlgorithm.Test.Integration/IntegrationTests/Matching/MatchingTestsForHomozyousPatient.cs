@@ -162,10 +162,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private void SetPatientMatchingHlaPhenotype()
         {
-            var locusUnderTestConditions = new LocusTypingInfo(
-                patientZygosity,
-                originalHlaAtLocusUnderTest,
-                OriginalNullAllele);
+            var locusUnderTestConditions = new LocusTypingInfo(patientZygosity, originalHlaAtLocusUnderTest, OriginalNullAllele);
 
             var patientHlaPhenotype = GetHlaPhenotype(originalHlaPhenotype, locusUnderTestConditions);
 

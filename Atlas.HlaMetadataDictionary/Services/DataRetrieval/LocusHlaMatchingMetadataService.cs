@@ -65,9 +65,13 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             IHlaMatchingMetadata otherMetadata)
         {
             var mergedPGroups = metadata.MatchingPGroups.Union(otherMetadata.MatchingPGroups).ToList();
+
+            // TODO: ATLAS-749: Find a less flakey way to do this. 
+            var mergedLookupName = $"{metadata.LookupName}[NULL-AS]{otherMetadata.LookupName}";
+            
             return new HlaMatchingMetadata(
                 metadata.Locus,
-                metadata.LookupName,
+                mergedLookupName,
                 metadata.TypingMethod,
                 mergedPGroups
                 );
