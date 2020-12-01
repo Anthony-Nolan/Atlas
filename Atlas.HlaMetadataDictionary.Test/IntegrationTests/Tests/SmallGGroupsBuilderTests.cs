@@ -5,6 +5,7 @@ using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Test.UnitTests;
+using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -13,17 +14,18 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
     public class SmallGGroupsBuilderTests
     {
         private List<SmallGGroup> allSmallGGroups;
+        private WmdaDataset wmdaDataset;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
             TestStackTraceHelper.CatchAndRethrowWithStackTraceInExceptionMessage(() =>
             {
-                var dataRepository = SharedTestDataCache.GetWmdaDataRepository();
+                var repo = SharedTestDataCache.GetWmdaDataRepository();
+                const string version = SharedTestDataCache.HlaNomenclatureVersionForImportingTestWmdaRepositoryFiles;
 
-                allSmallGGroups = new SmallGGroupsBuilder(dataRepository)
-                    .BuildSmallGGroups(SharedTestDataCache.HlaNomenclatureVersionForImportingTestWmdaRepositoryFiles)
-                    .ToList();
+                allSmallGGroups = new SmallGGroupsBuilder(repo).BuildSmallGGroups(version).ToList();
+                wmdaDataset = repo.GetWmdaDataset(version);
             });
         }
 
@@ -35,6 +37,29 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
                 .Any(group => group.Count() > 1)
                 .Should()
                 .BeFalse();
+        }
+
+        [TestCase(Locus.A)]
+        [TestCase(Locus.B)]
+        [TestCase(Locus.C)]
+        [TestCase(Locus.Dpb1)]
+        [TestCase(Locus.Dqb1)]
+        [TestCase(Locus.Drb1)]
+        public void BuildSmallGGroups_EveryNonConfidentialAlleleHasBeenAssignedToASmallGGroup(Locus locus)
+        {
+            var typingLocus = $"{locus}*";
+
+            var alleles = wmdaDataset.Alleles
+                .Where(a => a.TypingLocus == typingLocus && a.IsDeleted == false && IsNotConfidential(typingLocus, a.Name))
+                .Select(a => a.Name);
+
+            var smallGAlleles = allSmallGGroups.Where(g => g.Locus == locus).SelectMany(g => g.Alleles);
+
+            // Due to manual curation, the hla_nom file stored in the test Resources folder has fewer alleles
+            // than the _g and _p files, and so the direction of comparison here is important.
+            var allelesWithoutSmallGGroup = alleles.Except(smallGAlleles).ToList();
+
+            allelesWithoutSmallGGroup.Should().BeEmpty();
         }
 
         [TestCase(Locus.A, "01:52", "01:52:01N,01:52:02N",
@@ -67,6 +92,11 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         {
             return allSmallGGroups
                 .Single(name => name.Name.Equals(lookupName) && name.Locus.Equals(locus));
+        }
+
+        private bool IsNotConfidential(string typingLocus, string name)
+        {
+            return !wmdaDataset.ConfidentialAlleles.Any(c => c.TypingLocus == typingLocus && c.Name.Equals(name));
         }
     }
 }
