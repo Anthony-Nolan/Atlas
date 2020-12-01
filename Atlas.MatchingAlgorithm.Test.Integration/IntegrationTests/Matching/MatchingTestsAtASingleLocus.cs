@@ -12,7 +12,8 @@ using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
-using FluentAssertions;
+using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders.SearchRequests;
+using LochNessBuilder;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -26,25 +27,82 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
     public class MatchingTestsAtASingleLocus
     {
         private IMatchingService matchingService;
+
+        private readonly TestHlaMetadata defaultRequiredHla = new TestHlaBuilder().WithPGroups(MatchingPGroup).Build();
+        private const DonorType DefaultDonorType = DonorType.Cord;
+
+        private static string NonMatchingPGroup(int index = 0) => $"non-matching-p-group-{index}";
+
+        private DonorInfoWithTestHlaBuilder DefaultDonorBuilder() => new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
+            .WithDonorType(DefaultDonorType)
+            .WithDefaultRequiredHla(defaultRequiredHla);
+
         private DonorInfoWithExpandedHla donorInfoWithFullHomozygousMatchAtLocus;
+
+        private DonorInfoWithExpandedHla DonorInfoWithFullHomozygousMatchAtLocus => donorInfoWithFullHomozygousMatchAtLocus ??= DefaultDonorBuilder()
+            .WithPGroupsAtLocus(
+                locus,
+                new[] {PatientPGroupAtBothPositions, PatientPGroupAtPositionOne},
+                new[] {PatientPGroupAtBothPositions, "non-matching-p-group"})
+            .Build();
+
         private DonorInfoWithExpandedHla donorInfoWithFullExactHeterozygousMatchAtLocus;
+
+        private DonorInfoWithExpandedHla DonorInfoWithFullExactHeterozygousMatchAtLocus => donorInfoWithFullExactHeterozygousMatchAtLocus ??=
+            DefaultDonorBuilder()
+                .WithPGroupsAtLocus(
+                    locus,
+                    new[] {PatientPGroupAtBothPositions, NonMatchingPGroup()},
+                    new[] {PatientPGroupAtPositionTwo, NonMatchingPGroup()})
+                .Build();
+
         private DonorInfoWithExpandedHla donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus;
+
+        private DonorInfoWithExpandedHla DonorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus =>
+            donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus ??= DefaultDonorBuilder()
+                .WithPGroupsAtLocus(
+                    locus,
+                    new[] {PatientPGroupAtBothPositions, NonMatchingPGroup(1)},
+                    new[] {NonMatchingPGroup(1), NonMatchingPGroup(2)})
+                .Build();
+
         private DonorInfoWithExpandedHla donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus;
+
+        private DonorInfoWithExpandedHla DonorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus =>
+            donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus ??= DefaultDonorBuilder()
+                .WithPGroupsAtLocus(
+                    locus,
+                    new[] {PatientPGroupAtPositionOne, PatientPGroupAtPositionTwo},
+                    new[] {NonMatchingPGroup(1), NonMatchingPGroup(2)})
+                .Build();
+
         private DonorInfoWithExpandedHla donorInfoWithNoMatchAtLocus;
+
+        private DonorInfoWithExpandedHla DonorInfoWithNoMatchAtLocus => donorInfoWithNoMatchAtLocus ??= DefaultDonorBuilder()
+            .WithPGroupsAtLocus(
+                locus,
+                new[] {NonMatchingPGroup(1), NonMatchingPGroup(2)},
+                new[] {NonMatchingPGroup(1), NonMatchingPGroup(2)})
+            .Build();
+
         private DonorInfoWithExpandedHla donorInfoWithFullCrossHeterozygousMatchAtLocus;
 
-        private const DonorType DefaultDonorType = DonorType.Cord;
+        private DonorInfoWithExpandedHla DonorInfoWithFullCrossHeterozygousMatchAtLocus => donorInfoWithFullCrossHeterozygousMatchAtLocus ??=
+            DefaultDonorBuilder()
+                .WithPGroupsAtLocus(locus, PatientPGroupAtPositionTwo, PatientPGroupAtPositionOne)
+                .Build();
+
 
         private const string MatchingPGroup = "dummy-matching-p-group";
         private readonly Locus locus;
-        private readonly List<string> patientPGroupsAtPositionOne = new List<string> { PatientPGroupAtBothPositions, PatientPGroupAtPositionOne };
-        private readonly List<string> patientPGroupsAtPositionTwo = new List<string> { PatientPGroupAtBothPositions, PatientPGroupAtPositionTwo };
+        private readonly List<string> patientPGroupsAtPositionOne = new List<string> {PatientPGroupAtBothPositions, PatientPGroupAtPositionOne};
+        private readonly List<string> patientPGroupsAtPositionTwo = new List<string> {PatientPGroupAtBothPositions, PatientPGroupAtPositionTwo};
 
         private const string PatientPGroupAtBothPositions = "patient-p-group-at-both-positions";
         private const string PatientPGroupAtPositionOne = "patient-p-group-at-position-one";
         private const string PatientPGroupAtPositionTwo = "patient-p-group-at-position-two";
 
-        public MatchingTestsAtASingleLocus(Locus locus) : base()
+        public MatchingTestsAtASingleLocus(Locus locus)
         {
             this.locus = locus;
         }
@@ -63,102 +121,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IActiveRepositoryFactory>();
                 var updateRepo = repositoryFactory.GetDonorUpdateRepository();
 
-                var defaultRequiredHla = new TestHlaBuilder()
-                    .WithPGroups(MatchingPGroup)
-                    .Build();
-
-                donorInfoWithFullHomozygousMatchAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
-                    .WithHlaAtLocus(
-                        locus,
-                        new TestHlaBuilder()
-                            .WithPGroups(PatientPGroupAtBothPositions, PatientPGroupAtPositionOne)
-                            .Build(),
-                        new TestHlaBuilder()
-                            .WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup")
-                            .Build()
-                    )
-                    .WithDefaultRequiredHla(defaultRequiredHla)
-                    .WithDonorType(DefaultDonorType)
-                    .Build();
-
-                donorInfoWithFullExactHeterozygousMatchAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
-                        .WithHlaAtLocus(
-                            locus,
-                            new TestHlaBuilder()
-                                .WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup")
-                                .Build(),
-                            new TestHlaBuilder()
-                                .WithPGroups(PatientPGroupAtPositionTwo, "non-matching-pgroup")
-                                .Build()
-                        )
-                        .WithDefaultRequiredHla(defaultRequiredHla)
-                        .WithDonorType(DefaultDonorType)
-                        .Build();
-
-                donorInfoWithFullCrossHeterozygousMatchAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
-                        .WithHlaAtLocus(
-                            locus,
-                            new TestHlaBuilder()
-                                .WithPGroups(PatientPGroupAtPositionTwo)
-                                .Build(),
-                            new TestHlaBuilder()
-                                .WithPGroups(PatientPGroupAtPositionOne)
-                                .Build()
-                        )
-                        .WithDefaultRequiredHla(defaultRequiredHla)
-                        .WithDonorType(DefaultDonorType)
-                        .Build();
-
-                donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
-                        .WithHlaAtLocus(
-                            locus,
-                            new TestHlaBuilder()
-                                .WithPGroups(PatientPGroupAtBothPositions, "non-matching-pgroup")
-                                .Build(),
-                            new TestHlaBuilder()
-                                .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
-                                .Build()
-                        )
-                        .WithDefaultRequiredHla(defaultRequiredHla)
-                        .WithDonorType(DefaultDonorType)
-                        .Build();
-
-                donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
-                        .WithHlaAtLocus(
-                            locus,
-                            new TestHlaBuilder()
-                                .WithPGroups(PatientPGroupAtPositionOne, PatientPGroupAtPositionTwo)
-                                .Build(),
-                            new TestHlaBuilder()
-                                .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
-                                .Build()
-                        )
-                        .WithDefaultRequiredHla(defaultRequiredHla)
-                        .WithDonorType(DefaultDonorType)
-                        .Build();
-
-                donorInfoWithNoMatchAtLocus = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
-                    .WithHlaAtLocus(
-                        locus,
-                        new TestHlaBuilder()
-                            .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
-                            .Build(),
-                        new TestHlaBuilder()
-                            .WithPGroups("non-matching-pgroup", "non-matching-pgroup-2")
-                            .Build()
-                    )
-                    .WithDefaultRequiredHla(defaultRequiredHla)
-                    .WithDonorType(DefaultDonorType)
-                    .Build();
-
                 var allDonors = new List<DonorInfoWithExpandedHla>
                 {
-                    donorInfoWithFullHomozygousMatchAtLocus,
-                    donorInfoWithFullExactHeterozygousMatchAtLocus,
-                    donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus,
-                    donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus,
-                    donorInfoWithNoMatchAtLocus,
-                    donorInfoWithFullCrossHeterozygousMatchAtLocus
+                    DonorInfoWithFullHomozygousMatchAtLocus,
+                    DonorInfoWithFullExactHeterozygousMatchAtLocus,
+                    DonorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus,
+                    DonorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus,
+                    DonorInfoWithNoMatchAtLocus,
+                    DonorInfoWithFullCrossHeterozygousMatchAtLocus
                 };
 
                 Task.Run(() => updateRepo.InsertBatchOfDonorsWithExpandedHla(allDonors, false)).Wait();
@@ -175,24 +145,25 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         public async Task Search_WithNoAllowedMismatches_MatchesDonorWithTwoOfTwoHomozygousMatchesAtLocus()
         {
             var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build()).ToListAsync();
-            results.ShouldContainDonor(donorInfoWithFullHomozygousMatchAtLocus.DonorId);
+            results.ShouldContainDonor(DonorInfoWithFullHomozygousMatchAtLocus.DonorId);
         }
 
         [Test]
         public async Task Search_WithNoAllowedMismatches_MatchesDonorWithTwoOfTwoHeterozygousMatchesAtLocus()
         {
             var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build()).ToListAsync();
-            results.ShouldContainDonor(donorInfoWithFullExactHeterozygousMatchAtLocus.DonorId);
-            results.ShouldContainDonor(donorInfoWithFullCrossHeterozygousMatchAtLocus.DonorId);
+
+            results.ShouldContainDonor(DonorInfoWithFullExactHeterozygousMatchAtLocus.DonorId);
+            results.ShouldContainDonor(DonorInfoWithFullCrossHeterozygousMatchAtLocus.DonorId);
         }
 
         [Test]
         public async Task Search_WithNoAllowedMismatches_DoesNotMatchDonorsWithFewerThanTwoMatchesAtLocus()
         {
             var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build()).ToListAsync();
-            results.ShouldNotContainDonor(donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
-            results.ShouldNotContainDonor(donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
-            results.ShouldNotContainDonor(donorInfoWithNoMatchAtLocus.DonorId);
+            results.ShouldNotContainDonor(DonorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
+            results.ShouldNotContainDonor(DonorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
+            results.ShouldNotContainDonor(DonorInfoWithNoMatchAtLocus.DonorId);
         }
 
         [Test]
@@ -200,17 +171,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             var criteria = GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(1)
-                .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
-                {
-                    MismatchCount = 1,
-                    PGroupsToMatchInPositionOne = patientPGroupsAtPositionOne,
-                    PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo,
-                })
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1))
                 .Build();
+
             var results = await matchingService.GetMatches(criteria).ToListAsync();
-            results.ShouldContainDonor(donorInfoWithFullExactHeterozygousMatchAtLocus.DonorId);
-            results.ShouldContainDonor(donorInfoWithFullCrossHeterozygousMatchAtLocus.DonorId);
-            results.ShouldContainDonor(donorInfoWithFullHomozygousMatchAtLocus.DonorId);
+
+            results.ShouldContainDonor(DonorInfoWithFullExactHeterozygousMatchAtLocus.DonorId);
+            results.ShouldContainDonor(DonorInfoWithFullCrossHeterozygousMatchAtLocus.DonorId);
+            results.ShouldContainDonor(DonorInfoWithFullHomozygousMatchAtLocus.DonorId);
         }
 
         [Test]
@@ -218,15 +186,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             var criteria = GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(1)
-                .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
-                {
-                    MismatchCount = 1,
-                    PGroupsToMatchInPositionOne = patientPGroupsAtPositionOne,
-                    PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo,
-                })
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1))
                 .Build();
+
             var results = await matchingService.GetMatches(criteria).ToListAsync();
-            results.ShouldContainDonor(donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
+
+            results.ShouldContainDonor(DonorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
         }
 
         [Test]
@@ -234,15 +199,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             var criteria = GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(1)
-                .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
-                {
-                    MismatchCount = 1,
-                    PGroupsToMatchInPositionOne = patientPGroupsAtPositionOne,
-                    PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo,
-                })
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1))
                 .Build();
+
             var results = await matchingService.GetMatches(criteria).ToListAsync();
-            results.ShouldContainDonor(donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
+
+            results.ShouldContainDonor(DonorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
         }
 
         [Test]
@@ -250,15 +212,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             var criteria = GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(1)
-                .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
-                {
-                    MismatchCount = 1,
-                    PGroupsToMatchInPositionOne = patientPGroupsAtPositionOne,
-                    PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo,
-                })
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1))
                 .Build();
+
             var results = await matchingService.GetMatches(criteria).ToListAsync();
-            results.ShouldNotContainDonor(donorInfoWithNoMatchAtLocus.DonorId);
+
+            results.ShouldNotContainDonor(DonorInfoWithNoMatchAtLocus.DonorId);
         }
 
         [Test]
@@ -266,15 +225,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             var criteria = GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(2)
-                .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
-                {
-                    MismatchCount = 2,
-                    PGroupsToMatchInPositionOne = patientPGroupsAtPositionOne,
-                    PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo,
-                })
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2))
                 .Build();
+
             var results = await matchingService.GetMatches(criteria).ToListAsync();
-            results.ShouldContainDonor(donorInfoWithNoMatchAtLocus.DonorId);
+
+            results.ShouldContainDonor(DonorInfoWithNoMatchAtLocus.DonorId);
         }
 
         [Test]
@@ -282,17 +238,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             var criteria = GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(2)
-                .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
-                {
-                    MismatchCount = 2,
-                    PGroupsToMatchInPositionOne = patientPGroupsAtPositionOne,
-                    PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo,
-                })
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2))
                 .Build();
+
             var results = await matchingService.GetMatches(criteria).ToListAsync();
-            results.ShouldContainDonor(donorInfoWithFullExactHeterozygousMatchAtLocus.DonorId);
-            results.ShouldContainDonor(donorInfoWithFullCrossHeterozygousMatchAtLocus.DonorId);
-            results.ShouldContainDonor(donorInfoWithFullHomozygousMatchAtLocus.DonorId);
+
+            results.ShouldContainDonor(DonorInfoWithFullExactHeterozygousMatchAtLocus.DonorId);
+            results.ShouldContainDonor(DonorInfoWithFullCrossHeterozygousMatchAtLocus.DonorId);
+            results.ShouldContainDonor(DonorInfoWithFullHomozygousMatchAtLocus.DonorId);
         }
 
         [Test]
@@ -300,36 +253,31 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         {
             var criteria = GetDefaultCriteriaBuilder()
                 .WithDonorMismatchCount(2)
-                .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
-                {
-                    MismatchCount = 2,
-                    PGroupsToMatchInPositionOne = patientPGroupsAtPositionOne,
-                    PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo,
-                })
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2))
                 .Build();
+
             var results = await matchingService.GetMatches(criteria).ToListAsync();
-            results.ShouldContainDonor(donorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
-            results.ShouldContainDonor(donorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
+
+            results.ShouldContainDonor(DonorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
+            results.ShouldContainDonor(DonorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
         }
 
         /// <returns> A criteria builder pre-populated with default criteria data of an exact search. </returns>
-        private AlleleLevelMatchCriteriaBuilder GetDefaultCriteriaBuilder()
-        {
-            return new AlleleLevelMatchCriteriaBuilder()
-                .WithLocusMatchCriteria(locus, new AlleleLevelLocusMatchCriteria
-                {
-                    MismatchCount = 0,
-                    PGroupsToMatchInPositionOne = patientPGroupsAtPositionOne,
-                    PGroupsToMatchInPositionTwo = patientPGroupsAtPositionTwo
-                })
-                .WithDefaultLocusMatchCriteria(new AlleleLevelLocusMatchCriteria
-                {
-                    MismatchCount = 0,
-                    PGroupsToMatchInPositionOne = new[] { MatchingPGroup },
-                    PGroupsToMatchInPositionTwo = new[] { MatchingPGroup }
-                })
+        private AlleleLevelMatchCriteriaBuilder GetDefaultCriteriaBuilder() =>
+            new AlleleLevelMatchCriteriaBuilder()
+                .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().Build())
+                .WithDefaultLocusMatchCriteria(DefaultMatchingCriteriaBuilder().Build())
                 .WithSearchType(DefaultDonorType)
                 .WithDonorMismatchCount(0);
-        }
+
+        private Builder<AlleleLevelLocusMatchCriteria> DefaultMatchingCriteriaBuilder() =>
+            AlleleLevelLocusMatchCriteriaBuilder.New
+                .WithMismatchCount(0)
+                .WithPGroups(new[] {MatchingPGroup}, new[] {MatchingPGroup});
+
+        private Builder<AlleleLevelLocusMatchCriteria> DefaultPatientLocusCriteriaBuilder() =>
+            AlleleLevelLocusMatchCriteriaBuilder.New
+                .WithMismatchCount(0)
+                .WithPGroups(patientPGroupsAtPositionOne, patientPGroupsAtPositionTwo);
     }
 }

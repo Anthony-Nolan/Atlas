@@ -28,14 +28,28 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
         private const DonorType DefaultDonorType = DonorType.Cord;
 
+        /// <returns> An input donor builder pre-populated with default donor data of an exact match. </returns>
+        private static DonorInfoWithTestHlaBuilder DefaultDonorBuilder() =>
+            new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
+                .WithDonorType(DefaultDonorType)
+                .WithPGroupsAtLocus(Locus.A, PatientPGroup_LocusA_PositionOne, PatientPGroup_LocusA_PositionTwo)
+                .WithPGroupsAtLocus(Locus.B, PatientPGroup_LocusB_PositionOne, PatientPGroup_LocusB_PositionTwo)
+                .WithPGroupsAtLocus(Locus.Drb1, PatientPGroup_LocusDRB1_PositionOne, PatientPGroup_LocusDRB1_PositionTwo);
+
         private static string NonMatchingPGroup(int index = 0) => $"non-matching-p-group-{index}";
 
         private const string PatientPGroup_LocusA_BothPositions = "01:01P";
+
         private const string PatientPGroup_LocusA_PositionOne = "01:02";
+
         private const string PatientPGroup_LocusA_PositionTwo = "02:01";
+
         private const string PatientPGroup_LocusB_PositionOne = "07:02P";
+
         private const string PatientPGroup_LocusB_PositionTwo = "08:01P";
+
         private const string PatientPGroup_LocusDRB1_PositionOne = "01:11P";
+
         private const string PatientPGroup_LocusDRB1_PositionTwo = "03:41P";
 
         private readonly DonorInfoWithExpandedHla cordDonorInfoWithFullHomozygousMatchAtLocusA = DefaultDonorBuilder().Build();
@@ -195,14 +209,6 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             var results = await matchingService.GetMatches(searchCriteria).ToListAsync();
             results.ShouldNotContainDonor(unavailableDonor.DonorId);
         }
-
-        /// <returns> An input donor builder pre-populated with default donor data of an exact match. </returns>
-        private static DonorInfoWithTestHlaBuilder DefaultDonorBuilder() =>
-            new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
-                .WithDonorType(DefaultDonorType)
-                .WithPGroupsAtLocus(Locus.A, PatientPGroup_LocusA_PositionOne, PatientPGroup_LocusA_PositionTwo)
-                .WithPGroupsAtLocus(Locus.B, PatientPGroup_LocusB_PositionOne, PatientPGroup_LocusB_PositionTwo)
-                .WithPGroupsAtLocus(Locus.Drb1, PatientPGroup_LocusDRB1_PositionOne, PatientPGroup_LocusDRB1_PositionTwo);
 
         /// <returns> A criteria builder pre-populated with default criteria data of an exact search. </returns>
         private static AlleleLevelMatchCriteriaBuilder GetDefaultCriteriaBuilder()

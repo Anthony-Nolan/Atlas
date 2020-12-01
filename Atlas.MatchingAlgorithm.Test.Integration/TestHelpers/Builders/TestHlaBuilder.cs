@@ -7,7 +7,7 @@ using Atlas.Common.Test.SharedTestHelpers;
 
 namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
 {
-    public class TestHlaMetadata : IHlaMatchingMetadata
+    internal class TestHlaMetadata : IHlaMatchingMetadata
     {
         public string OriginalName { get; set; }
         public string LookupName { get; set; }
@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
     }
 
 
-    public class TestHlaBuilder
+    internal class TestHlaBuilder
     {
         private readonly TestHlaMetadata hlaMetadata;
 
@@ -38,6 +38,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         public TestHlaBuilder WithPGroups(params string[] pGroups)
         {
             hlaMetadata.MatchingPGroups = hlaMetadata.MatchingPGroups.Concat(pGroups).ToList();
+            hlaMetadata.OriginalName = pGroups.GetHashCode().ToString();
             return this;
         }
         
