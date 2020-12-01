@@ -1,7 +1,7 @@
 # file: hla_nom.txt
 # date: 2018-07-11
 # version: IPD-IMGT/HLA 3.33.0
-# origin: http://hla.alleles.org/wmda/hla_nom.txt
+# origin: file modified from http://hla.alleles.org/wmda/hla_nom.txt; only contains alleles needed for tests; all other removed to improve performance
 # repository: https://raw.githubusercontent.com/ANHIG/IMGTHLA/Latest/wmda/hla_nom.txt
 # author: WHO, Steven G. E. Marsh (steven.marsh@ucl.ac.uk)
 
