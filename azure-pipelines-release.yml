@@ -1,0 +1,29 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: TerraformInstaller@0
+  inputs:
+    terraformVersion: '0.12.24'
+- script: |
+   terraform init -reconfigure -backend-config="storage_account_name=$(BackendStorageAccountName)" -backend-config="container_name=$(BackendStorageContainerName)" -backend-config="resource_group_name=$(BackendResourceGroupName)"
+   
+  workingDirectory: '$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/$(TerraformArtifactName)'
+  displayName: 'terraform init'
+  env:
+    ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+- bash: |
+   terraform workspace select $(TerraformWorkspace) || terraform workspace new $(TerraformWorkspace)
+   
+  workingDirectory: '$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/$(TerraformArtifactName)'
+  displayName: 'select terraform workspace (and create if not exists)'
+  env:
+    ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
