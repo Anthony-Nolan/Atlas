@@ -27,3 +27,9 @@ steps:
   displayName: 'select terraform workspace (and create if not exists)'
   env:
     ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+- script: 'terraform apply -auto-approve -input=false'
+  workingDirectory: '$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/$(TerraformArtifactName)'
+  displayName: 'apply terraform'
+  env:
+    ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+    ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)    
