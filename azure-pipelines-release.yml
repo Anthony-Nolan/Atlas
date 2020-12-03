@@ -72,3 +72,89 @@ steps:
     donorImportUser: $(TERRAFORM.donor-database-username)
     matchingUsernameForDonorDB: $(TERRAFORM.matching-username-for-donor-import-database)
     matchingPasswordForDonorDB: $(TF_VAR_MATCHING_PASSWORD_FOR_DONOR_IMPORT_DATABASE)
+- task: SqlAzureDacpacDeployment@1
+  displayName: 'Migrate Transient Storage A'
+  inputs:
+    azureSubscription: '$(AzureSubscriptionName)'
+    ServerName: '$(sql-server)'
+    DatabaseName: '$(matching-algorithm-transient-a-db-name)'
+    SqlUsername: '$(sql-server-admin-login)'
+    SqlPassword: '$(sql-server-admin-login-password)'
+    deployType: SqlTask
+    SqlFile: '$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/sql/SearchAlgorithmTransientMigrationScript.sql'
+- task: SqlAzureDacpacDeployment@1
+  displayName: 'Migrate Transient Storage B'
+  inputs:
+    azureSubscription: '$(AzureSubscriptionName)'
+    ServerName: '$(sql-server)'
+    DatabaseName: '$(matching-algorithm-transient-b-db-name)'
+    SqlUsername: '$(sql-server-admin-login)'
+    SqlPassword: '$(sql-server-admin-login-password)'
+    deployType: SqlTask
+    SqlFile: '$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/sql/SearchAlgorithmTransientMigrationScript.sql'
+- task: SqlAzureDacpacDeployment@1
+  displayName: 'Migrate Persistent Storage'
+  inputs:
+    azureSubscription: '$(AzureSubscriptionName)'
+    ServerName: '$(sql-server)'
+    DatabaseName: '$(matching-algorithm-persistent-db-name)'
+    SqlUsername: '$(sql-server-admin-login)'
+    SqlPassword: '$(sql-server-admin-login-password)'
+    deployType: SqlTask
+    SqlFile: '$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/sql/SearchAlgorithmPersistentMigrationScript.sql'
+- task: AzureRmWebAppDeployment@4
+  displayName: 'Deploy Matching Algorithm Functions App'
+  inputs:
+    azureSubscription: '$(AzureSubscriptionName)'
+    WebAppName: '$(matching-algorithm-function-name)'
+    packageForLinux: '$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/functions/MatchingFunctions-$(Build.BuildId).zip'
+- task: AzureRmWebAppDeployment@4
+  displayName: 'Deploy Donor Import Functions App'
+  inputs:
+    azureSubscription: '$(AzureSubscriptionName)'
+    WebAppName: '$(donor-matching-function-name)'
+    packageForLinux: '$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/functions/MatchingDonorFunctions-$(Build.BuildId).zip'
+- task: SqlAzureDacpacDeployment@1
+  displayName: 'Migrate Match Prediction SQL'
+  inputs:
+    azureSubscription: '$(AzureSubscriptionName)'
+    ServerName: '$(sql-server)'
+    DatabaseName: '$(match-prediction-database-name)'
+    SqlUsername: '$(sql-server-admin-login)'
+    SqlPassword: '$(sql-server-admin-login-password)'
+    deployType: SqlTask
+    SqlFile: '$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/sql/MatchPredictionMigrationScript.sql'
+- task: AzureRmWebAppDeployment@4
+  displayName: 'Deploy Match Prediction Functions App'
+  inputs:
+    azureSubscription: '$(AzureSubscriptionName)'
+    WebAppName: '$(match-prediction-function-name)'
+    packageForLinux: '$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/functions/MatchPredictionFunctions-$(Build.BuildId).zip'
+- task: SqlAzureDacpacDeployment@1
+  displayName: 'Migrate Donor Import Storage'
+  inputs:
+    azureSubscription: '$(AzureSubscriptionName)'
+    ServerName: '$(sql-server)'
+    DatabaseName: '$(donor-import-database-name)'
+    SqlUsername: '$(sql-server-admin-login)'
+    SqlPassword: '$(sql-server-admin-login-password)'
+    deployType: SqlTask
+    SqlFile: '$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/sql/DonorImportMigrationScript.sql'
+- task: AzureRmWebAppDeployment@4
+  displayName: 'Deploy Donor Import Functions App'
+  inputs:
+    azureSubscription: '$(AzureSubscriptionName)'
+    WebAppName: '$(donor-import-function-name)'
+    packageForLinux: '$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/functions/DonorImportFunctions-$(Build.BuildId).zip'
+- task: AzureRmWebAppDeployment@4
+  displayName: 'Deploy Atlas Functions App'
+  inputs:
+    azureSubscription: 'Azure DevOps - WMDA-SPOKE-ATLAS'
+    WebAppName: '$(TERRAFORM.function-app-name)'
+    packageForLinux: '$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/functions/AtlasFunctions-$(Build.BuildId).zip'
+- task: AzureRmWebAppDeployment@4
+  displayName: 'Deploy Atlas Public Api Functions App'
+  inputs:
+    azureSubscription: 'Azure DevOps - WMDA-SPOKE-ATLAS'
+    WebAppName: '$(TERRAFORM.public-api-function-app-name)'
+    packageForLinux: '$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/functions/AtlasPublicApiFunctions-$(Build.BuildId).zip'
