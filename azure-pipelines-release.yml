@@ -4,14 +4,13 @@
 # https://aka.ms/yaml
 
 trigger:
-- main
+
 variables:
   - group: Terraform
 
 
 pool:
-  vmImage: 'ubuntu-latest'
-
+    vmImage: 'windows-latest'
 steps:
 - task: TerraformInstaller@0
   inputs:
