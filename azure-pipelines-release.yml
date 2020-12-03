@@ -33,3 +33,42 @@ steps:
   env:
     ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
     ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)    
+- powershell: |
+   $output = terraform output -json
+   
+   $json = $output | ConvertFrom-Json
+   
+   Write-Host $json
+   
+   foreach($prop in $json.psobject.properties) {
+   
+   Write-Host("##vso[task.setvariable variable=$($prop.Name);isOutput=true;]$($prop.Value.value)")
+   Write-Host(“Setting {0} to {1}” –f $prop.name, $prop.Value.value)
+   }
+  workingDirectory: '$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/terraform-atlas-core'
+  displayName: 'Make Terraform Output Variables Available to Azure'
+  env:
+    ARM_ACCESS_KEY: $(ARM_ACCESS_KEY)
+- task: PowerShell@2
+  displayName: 'Add DB Users'
+  inputs:
+    targetType: filePath
+    filePath: './$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/terraform-atlas-core/scripts/migrate_users.ps1'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/$(Release.PrimaryArtifactSourceAlias)/terraform-atlas-core'
+  env:
+    matchingPassword: $(TF_VAR_MATCHING_DATABASE_PASSWORD)
+    matchPredictionPassword: $(TF_VAR_MATCH_PREDICTION_DATABASE_PASSWORD)
+    donorImportPassword: $(TF_VAR_DONOR_DATABASE_PASSWORD)
+    sqlServer: $(TERRAFORM.sql-server)
+    matchPredictionDatabaseName: $(TERRAFORM.match-prediction-database-name)
+    matchingAlgorithmDatabaseTransientAName: $(TERRAFORM.matching-algorithm-database-transient-a-name)
+    matchingAlgorithmDatabaseTransientBName: $(TERRAFORM.matching-algorithm-database-transient-b-name)
+    matchingAlgorithmDatabasePersistentName: $(TERRAFORM.matching-algorithm-database-persistent-name)
+    donorImportDatabase: $(TERRAFORM.donor-import-database-name)
+    sqlServerLogin: $(TERRAFORM.sql-server-admin-login)
+    sqlServerLoginPassword: $(TERRAFORM.sql-server-admin-login-password)
+    matchingUser: $(TERRAFORM.matching-database-username)
+    matchPredictionUser: $(TERRAFORM.match-prediction-database-username)
+    donorImportUser: $(TERRAFORM.donor-database-username)
+    matchingUsernameForDonorDB: $(TERRAFORM.matching-username-for-donor-import-database)
+    matchingPasswordForDonorDB: $(TF_VAR_MATCHING_PASSWORD_FOR_DONOR_IMPORT_DATABASE)
