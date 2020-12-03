@@ -10,7 +10,7 @@ variables:
 pool:
     vmImage: 'windows-latest'
 steps:
-- task: TerraformInstaller@0
+- task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller
   inputs:
     terraformVersion: '0.12.24'
 - script: |
