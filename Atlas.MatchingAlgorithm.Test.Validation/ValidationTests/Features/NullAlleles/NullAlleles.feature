@@ -3,7 +3,7 @@ Feature: Ten Out Of Ten Search - Null Alleles - patient has single null allele
   When patient has a single null allele
   I want to be able to run a search when the patient or donor has a potential null allele
 
-#  TODO: ATLAS-749: Ensure card is raised to make sure these tests are suitable - they didn't catch a null allele bug from this card
+#  TODO: ATLAS-889: Make sure these tests are suitable - they didn't catch a null allele bug from ATLAS-749
   
   Scenario: Null Alleles - Same typing
     Given a patient has a match

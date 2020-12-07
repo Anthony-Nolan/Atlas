@@ -115,42 +115,41 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         /// This test exists to prove that having duplicate P Group IDs does not cause any issues with searching for that donor - no exceptions
         /// are thrown, and the donor is still returned.
         /// </summary>
-        ///  TODO: ATLAS-749: Confirm this test is no longer needed, and consider adding an equivalent for duplicate MatchingHla Records in teh new format
-        // [Test]
-        // public async Task UpdateDonorHla_WhenHlaUpdateIsContinued_DonorWithDuplicatePGroupsIsReturnedFromSearchWithNoErrors()
-        // {
-        //     var donorInfo = new DonorInfoBuilder().Build();
-        //     await importRepo.InsertBatchOfDonors(new List<DonorInfo> {donorInfo});
-        //
-        //     await processor.UpdateDonorHla(
-        //         DefaultHlaNomenclatureVersion,
-        //         donorId => dataRefreshHistoryRepository.UpdateLastSafelyProcessedDonor(refreshRecordId, donorId)
-        //     );
-        //
-        //     var lastProcessedDonor = await dataRefreshHistoryRepository.GetLastSuccessfullyInsertedDonor(refreshRecordId);
-        //
-        //     await processor.UpdateDonorHla(
-        //         DefaultHlaNomenclatureVersion,
-        //         donorId => dataRefreshHistoryRepository.UpdateLastSafelyProcessedDonor(refreshRecordId, donorId),
-        //         lastProcessedDonor,
-        //         true);
-        //
-        //     var finalPGroupCount = await GetPGroupCountAtLocusAPositionOne(donorInfo.DonorId);
-        //     
-        //     // Assert we correctly set up duplicate P-Groups
-        //     finalPGroupCount.Should().Be(2);
-        //
-        //     // Hla processor acts on the dormant database, so once complete, we need to activate it before running a search
-        //     await dataRefreshHistoryRepository.SwitchDormantDatabase();
-        //     // Database selection cached per-scope, so we need a new scope after switching the active database
-        //     DependencyInjection.DependencyInjection.NewScope();
-        //     
-        //     var searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
-        //     var searchRequest = new SearchRequestBuilder().WithSearchHla(donorInfo.HlaNames).Build();
-        //     var searchResults = await searchService.Search(searchRequest);
-        //
-        //     searchResults.Should().ContainSingle(r => r.AtlasDonorId == donorInfo.DonorId);
-        // }
+        [Test]
+        public async Task UpdateDonorHla_WhenHlaUpdateIsContinued_DonorWithDuplicatePGroupsIsReturnedFromSearchWithNoErrors()
+        {
+            var donorInfo = new DonorInfoBuilder().Build();
+            await importRepo.InsertBatchOfDonors(new List<DonorInfo> {donorInfo});
+        
+            await processor.UpdateDonorHla(
+                DefaultHlaNomenclatureVersion,
+                donorId => dataRefreshHistoryRepository.UpdateLastSafelyProcessedDonor(refreshRecordId, donorId)
+            );
+        
+            var lastProcessedDonor = await dataRefreshHistoryRepository.GetLastSuccessfullyInsertedDonor(refreshRecordId);
+        
+            await processor.UpdateDonorHla(
+                DefaultHlaNomenclatureVersion,
+                donorId => dataRefreshHistoryRepository.UpdateLastSafelyProcessedDonor(refreshRecordId, donorId),
+                lastProcessedDonor,
+                true);
+        
+            var finalPGroupCount = await GetPGroupCountAtLocusAPositionOne(donorInfo.DonorId);
+            
+            // Assert we correctly set up duplicate P-Groups
+            finalPGroupCount.Should().BeGreaterOrEqualTo(2);
+        
+            // Hla processor acts on the dormant database, so once complete, we need to activate it before running a search
+            await dataRefreshHistoryRepository.SwitchDormantDatabase();
+            // Database selection cached per-scope, so we need a new scope after switching the active database
+            DependencyInjection.DependencyInjection.NewScope();
+            
+            var searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
+            var searchRequest = new SearchRequestBuilder().WithSearchHla(donorInfo.HlaNames).Build();
+            var searchResults = await searchService.Search(searchRequest);
+        
+            searchResults.Should().ContainSingle(r => r.AtlasDonorId == donorInfo.DonorId);
+        }
 
         [Test]
         public async Task UpdateDonorHla_WhenHlaUpdateIsContinued_ButIsToldItsANewRun_ReAddsPGroups()

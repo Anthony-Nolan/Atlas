@@ -145,6 +145,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_FindNew_TimerKey, " * * Check PGroups against known dictionary, during EnsureAllPGroupsExist, during HlaProcessing"))
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewHlaNameInsertion_Overall_TimerKey, " * * Check HLA Names against known dictionary, during HlaProcessing"))
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewHlaNameInsertion_Flattening_TimerKey, " * * Flatten HLA Names, during HlaProcessing"))
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewHlaNameInsertion_FindNew_TimerKey, " * * Check HLA Names against known dictionary, during EnsureAllHlaNamesExist, during HlaProcessing"))
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_Overall_TimerKey, " * UpsertMatchingPGroupsAtSpecifiedLoci, during HlaProcessing")) 
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_Overall_TimerKey, " * * Time setting up Hla BulkInsert statements, during HlaProcessing")) 
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_Overall_TimerKey, " * * * Data Table Build, in Hla BulkInsert SETUP, during HlaProcessing"))
@@ -234,6 +235,16 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 
             var donorEntries = hlaExpansionResults.ProcessingResults.Select(r => r.ToDonorInfoForPreProcessing(hlaName => hlaNameLookup[hlaName]));
 
+            using (timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewPGroupInsertion_Overall_TimerKey))
+            {
+                await EnsureAllPGroupsExist(hlaExpansionResults.ProcessingResults, timerCollection);
+            }
+            
+            using (timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewHlaNameInsertion_Overall_TimerKey))
+            {
+                await EnsureAllHlaNamesExist(hlaExpansionResults.ProcessingResults, timerCollection);
+            }
+            
             await donorImportRepository.AddMatchingRelationsForExistingDonorBatch(
                 donorEntries,
                 settings.DataRefreshDonorUpdatesShouldBeFullyTransactional,
@@ -277,7 +288,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             var allHlaNames = donorsWithHlas.AllHlaNames();
             flatteningTimer.Dispose();
 
-            return await hlaNamesRepository.EnsureAllHlaNamesExist(allHlaNames);
+            return await hlaNamesRepository.EnsureAllHlaNamesExist(allHlaNames, timerCollection);
         }
 
         private async Task PerformUpfrontSetup(string hlaNomenclatureVersion)

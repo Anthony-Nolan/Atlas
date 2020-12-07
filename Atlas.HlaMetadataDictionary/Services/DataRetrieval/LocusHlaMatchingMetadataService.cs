@@ -51,30 +51,25 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 singleHlaMetadataService.GetHlaMetadata(locus, locusHlaTyping.Position2, hlaNomenclatureVersion));
         }
 
-        private static IHlaMatchingMetadata HandleNullAlleles(
-            IHlaMatchingMetadata metadata,
-            IHlaMatchingMetadata otherMetadata)
+        private static IHlaMatchingMetadata HandleNullAlleles(IHlaMatchingMetadata metadata, IHlaMatchingMetadata otherMetadata)
         {
             return metadata.IsNullExpressingTyping
                 ? MergeMatchingHla(metadata, otherMetadata)
                 : metadata;
         }
 
-        private static IHlaMatchingMetadata MergeMatchingHla(
-            IHlaMatchingMetadata metadata,
-            IHlaMatchingMetadata otherMetadata)
+        private static IHlaMatchingMetadata MergeMatchingHla(IHlaMatchingMetadata metadata, IHlaMatchingMetadata otherMetadata)
         {
             var mergedPGroups = metadata.MatchingPGroups.Union(otherMetadata.MatchingPGroups).ToList();
 
-            // TODO: ATLAS-749: Find a less flakey way to do this. 
-            var mergedLookupName = $"{metadata.LookupName}[NULL-AS]{otherMetadata.LookupName}";
-            
+            var mergedLookupName = NullAlleleHandling.CombineAlleleNames(metadata.LookupName, otherMetadata.LookupName);
+
             return new HlaMatchingMetadata(
                 metadata.Locus,
                 mergedLookupName,
                 metadata.TypingMethod,
                 mergedPGroups
-                );
+            );
         }
     }
 }
