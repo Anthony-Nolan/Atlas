@@ -79,10 +79,10 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
 
         private void RemoveTestData()
         {
-            // TODO: ATLAS-749: disable FK and TRUNCATE TABLE? 
             if (TransientDatabaseExists() && DonorTableExists())
             {
-                // TODO: ATLAS-749: Comment explaining that we don't delete p groups for test speed?
+                // HlaNames and PGroups are not deleted between test runs, as these stay constant - and not needing to add them every test run saves test runtime.
+                // If any issues arise from this in future, consider deleting them here also. 
                 
                 context.Database.ExecuteSqlRaw(@"
                 TRUNCATE TABLE [HlaNamePGroupRelationAtA]

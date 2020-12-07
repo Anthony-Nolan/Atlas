@@ -21,10 +21,8 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
         public long Id { get; set; }
         public int TypePosition { get; set; }
 
-        [NotNull]
         public int DonorId { get; set; }
 
-        [NotNull]
         public int HlaNameId { get; set; }
     }
 

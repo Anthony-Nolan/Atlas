@@ -39,8 +39,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
         private static string FormatLookupName(string lookupName)
         {
-            // TODO: ATLAS-749: Find a less flakey way to do this. 
-            return lookupName?.Trim().TrimStart('*').Split("[NULL-AS]").First();
+            var lookupNameWithoutAsterisk = lookupName?.Trim().TrimStart('*');
+            return NullAlleleHandling.GetOriginalAlleleFromCombinedName(lookupNameWithoutAsterisk);
         }
 
         private async Task<T> GetOrAddCachedMetadata(Locus locus, string formattedLookupName, string hlaNomenclatureVersion)

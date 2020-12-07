@@ -2,58 +2,58 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using Atlas.Common.Sql;
+using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
+using LoggingStopwatch;
 using Microsoft.Data.SqlClient;
+using MoreLinq.Extensions;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
 {
     public interface IHlaNamesRepository
     {
-        Task<IDictionary<string, int>> EnsureAllHlaNamesExist(IList<string> allHlaNames);
+        /// <summary>
+        /// For all HLA names provided - adds to the data store if they are not already present.
+        /// </summary>
+        /// <returns>A dictionary with Key = HlaName, Value = Database ID</returns>
+        Task<IDictionary<string, int>> EnsureAllHlaNamesExist(IList<string> allHlaNames, LongStopwatchCollection timerCollection = null);
     }
 
     public class HlaNamesRepository : Repository, IHlaNamesRepository
     {
+        private IDictionary<string, int> hlaNameToIdDictionary;
+
+
         public HlaNamesRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
         {
         }
 
-        public async Task<IDictionary<string, int>> EnsureAllHlaNamesExist(IList<string> allHlaNames)
+        public async Task<IDictionary<string, int>> EnsureAllHlaNamesExist(IList<string> allHlaNames, LongStopwatchCollection timerCollection)
         {
-            allHlaNames = allHlaNames.Where(hla => hla != null).Distinct().ToList();
-            var existingHlaNames = await GetExistingHlaNames(allHlaNames);
-            var newHlaNames = allHlaNames.Except(existingHlaNames).ToList();
-            await InsertHlaNames(newHlaNames);
+            EnsureHlaNameDictionaryCacheIsPopulated();
 
-            return await GetHlaNameIds(allHlaNames);
-        }
+            var dictionaryCheckTimer = timerCollection?.TimeInnerOperation(DataRefreshTimingKeys.NewHlaNameInsertion_FindNew_TimerKey);
+            // Note that it turns out that it's quicker to run this WITHOUT a .Distinct() in it.
+            var newHlaNames = allHlaNames.Where(hlaName => hlaName != null && !hlaNameToIdDictionary.ContainsKey(hlaName)).ToList();
+            dictionaryCheckTimer?.Dispose();
 
-        private async Task<IDictionary<string, int>> GetHlaNameIds(IList<string> allHlaNames)
-        {
-            var tempTableFilterDetails = SqlTempTableFiltering.PrepareTempTableFiltering("h", nameof(HlaName.Name), allHlaNames);
-            
-            var sql = $@"
-SELECT h.{nameof(HlaName.Name)}, h.{nameof(HlaName.Id)} 
-FROM HlaNames h 
-{tempTableFilterDetails.FilteredJoinQueryString}";
-            await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            if (newHlaNames.Any())
             {
-                await tempTableFilterDetails.BuildTempTableFactory(conn);
-                return (await conn.QueryAsync<HlaName>(sql, new {allHlaNames})).ToDictionary(hlaName => hlaName.Name, hlaName => hlaName.Id);
+                await InsertHlaNames(newHlaNames); //This method refreshes the Cache after adding.
             }
-        }
 
-        private async Task<IList<string>> GetExistingHlaNames(IList<string> namesToCheck)
-        {
-            return (await GetHlaNameIds(namesToCheck)).Keys.ToList();
+            return hlaNameToIdDictionary;
         }
 
         private async Task InsertHlaNames(IList<string> hlaNames)
         {
-            if (!hlaNames.Any())
+            EnsureHlaNameDictionaryCacheIsPopulated();
+
+            var newHlaNames = hlaNames.Distinct().Except(hlaNameToIdDictionary.Keys).ToList();
+
+            if (!newHlaNames.Any())
             {
                 return;
             }
@@ -62,7 +62,7 @@ FROM HlaNames h
             dt.Columns.Add("Id");
             dt.Columns.Add("Name");
 
-            foreach (var hlaName in hlaNames)
+            foreach (var hlaName in newHlaNames)
             {
                 dt.Rows.Add(0, hlaName);
             }
@@ -73,6 +73,30 @@ FROM HlaNames h
                 sqlBulk.BatchSize = 10000;
                 sqlBulk.DestinationTableName = "HlaNames";
                 await sqlBulk.WriteToServerAsync(dt);
+            }
+
+            // We need to get the new Ids back out.
+            ForceCacheHlaNameDictionary();
+        }
+
+        private void EnsureHlaNameDictionaryCacheIsPopulated()
+        {
+            if (hlaNameToIdDictionary == null)
+            {
+                ForceCacheHlaNameDictionary();
+            }
+        }
+
+        private void ForceCacheHlaNameDictionary()
+        {
+            using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
+            {
+                var innerHlaNames = conn.Query<HlaName>(
+                    $"SELECT h.{nameof(HlaName.Name)}, h.{nameof(HlaName.Id)} FROM HlaNames h ",
+                    commandTimeout: 300);
+                hlaNameToIdDictionary = innerHlaNames
+                    .DistinctBy(hla => hla.Name)
+                    .ToDictionary(h => h.Name, h => h.Id);
             }
         }
     }
