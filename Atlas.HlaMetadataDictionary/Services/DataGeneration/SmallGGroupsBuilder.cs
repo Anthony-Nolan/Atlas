@@ -2,7 +2,7 @@
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
-using Atlas.Common.GeneticData.Hla.Services;
+using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 using Atlas.HlaMetadataDictionary.Extensions;
 using Atlas.HlaMetadataDictionary.HlaTypingInfo;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;

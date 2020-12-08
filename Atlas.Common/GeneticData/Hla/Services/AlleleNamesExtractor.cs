@@ -1,6 +1,7 @@
 ﻿using Atlas.Common.GeneticData.Hla.Models;
 using System;
 using System.Collections.Generic;
+using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 
 namespace Atlas.Common.GeneticData.Hla.Services
 {

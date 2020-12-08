@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
+using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 
 namespace Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping
 {
     public class MolecularAlleleDetails
     {
-        private static readonly Regex ExpressionSuffixRegex = new Regex(MolecularTypingNameConstants.ExpressionSuffixesRegexCharacterGroup, RegexOptions.Compiled);
 
         public MolecularAlleleDetails()
         {
         }
-        
+
         public string AlleleNameWithoutPrefix { get; }
 
         /// <summary>
@@ -44,36 +42,19 @@ namespace Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping
                 throw new ArgumentException("Allele name cannot be null or empty.");
             }
 
-            AlleleNameWithoutPrefix = RemoveAllelePrefix(alleleName);
+            AlleleNameWithoutPrefix = AlleleSplitter.RemovePrefix(alleleName);
 
-            var fields = GetFields(alleleName).ToList();
+            var fields = AlleleSplitter.SplitToFields(alleleName).ToList();
             FamilyField = fields[0];
             SubtypeField = fields.Count > 1 ? fields[1] : string.Empty;
             IntronicField = fields.Count > 2 ? fields[2] : string.Empty;
             SilentField = fields.Count > 3 ? fields[3] : string.Empty;
 
-            ExpressionSuffix = GetExpressionSuffix(alleleName);
+            ExpressionSuffix = AlleleSplitter.GetExpressionSuffix(alleleName);
         }
 
-        public MolecularAlleleDetails(string family, string subtype)
-            : this(family + MolecularTypingNameConstants.FieldDelimiter + subtype)
+        public MolecularAlleleDetails(string family, string subtype) : this(family + MolecularTypingNameConstants.FieldDelimiter + subtype)
         {
-        }
-
-        private static string RemoveAllelePrefix(string alleleTyping)
-        {
-            return alleleTyping.TrimStart(MolecularTypingNameConstants.Prefix);
-        }
-
-        private static string GetExpressionSuffix(string alleleName)
-        {
-            return ExpressionSuffixRegex.Match(alleleName).Value;
-        }
-
-        private static IEnumerable<string> GetFields(string alleleName)
-        {
-            var trimmedName = alleleName.TrimEnd(MolecularTypingNameConstants.ExpressionSuffixArray);
-            return trimmedName.Split(MolecularTypingNameConstants.FieldDelimiter);
         }
     }
 }
