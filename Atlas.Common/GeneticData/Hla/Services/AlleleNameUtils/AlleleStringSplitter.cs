@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping;
 
-namespace Atlas.Common.GeneticData.Hla.Services
+namespace Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils
 {
     /// <summary>
     /// Note: no checks are made on the HLA categories of the submitted allele strings.

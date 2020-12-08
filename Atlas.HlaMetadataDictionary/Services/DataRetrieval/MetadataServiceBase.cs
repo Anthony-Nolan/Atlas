@@ -3,8 +3,8 @@ using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using LazyCache;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 
 namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 {
@@ -39,7 +39,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
 
         private static string FormatLookupName(string lookupName)
         {
-            var lookupNameWithoutAsterisk = lookupName?.Trim().TrimStart('*');
+            var lookupNameWithoutAsterisk = AlleleSplitter.RemovePrefix(lookupName?.Trim());
             return NullAlleleHandling.GetOriginalAlleleFromCombinedName(lookupNameWithoutAsterisk);
         }
 

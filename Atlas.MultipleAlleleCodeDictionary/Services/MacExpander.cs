@@ -1,6 +1,7 @@
 ﻿using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.MultipleAlleleCodeDictionary.ExternalInterface.Models;
 using System.Collections.Generic;
+using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 
 namespace Atlas.MultipleAlleleCodeDictionary.Services
 {
