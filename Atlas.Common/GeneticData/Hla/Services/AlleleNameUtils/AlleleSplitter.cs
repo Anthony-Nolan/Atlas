@@ -38,9 +38,7 @@ namespace Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils
 
         internal static IEnumerable<string> SplitToFields(string alleleName)
         {
-            // TODO: NOVA-1571: Handle alleles with an expression suffix. This truncation will remove expression suffix.
-            var trimmedName = alleleName.TrimEnd(MolecularTypingNameConstants.ExpressionSuffixArray);
-            return trimmedName.Split(MolecularTypingNameConstants.FieldDelimiter);
+            return alleleName.Split(MolecularTypingNameConstants.FieldDelimiter);
         }
     }
 }
