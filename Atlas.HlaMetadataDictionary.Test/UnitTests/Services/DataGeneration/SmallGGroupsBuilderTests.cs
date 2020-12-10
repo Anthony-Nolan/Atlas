@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
@@ -16,6 +15,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
     {
         private const string LocusName = "A*";
         private const Locus ExpectedLocus = Locus.A;
+        private const string DefaultHlaVersion = "hla-version";
 
         private IWmdaDataRepository wmdaDataRepository;
         private ISmallGGroupsBuilder smallGGroupsBuilder;
@@ -39,7 +39,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
 
-            var result = smallGGroupsBuilder.BuildSmallGGroups(default);
+            var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
             var smallG = result.Single();
 
             smallG.Alleles.Should().BeEquivalentTo(pGroupAlleles);
@@ -60,7 +60,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
 
-            var result = smallGGroupsBuilder.BuildSmallGGroups(default);
+            var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
             var smallG = result.Single();
 
             smallG.Alleles.Should().BeEquivalentTo(
@@ -85,7 +85,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
 
-            var result = smallGGroupsBuilder.BuildSmallGGroups(default)
+            var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion)
                 .OrderByDescending(g => g.Alleles.Count)
                 .ToList();
             var firstSmallG = result[0];
@@ -112,7 +112,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
 
-            var result = smallGGroupsBuilder.BuildSmallGGroups(default);
+            var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
             var smallG = result.Single();
 
             smallG.Alleles.Should().BeEquivalentTo(alleleName);
@@ -139,7 +139,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
 
-            var result = smallGGroupsBuilder.BuildSmallGGroups(default)
+            var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion)
                 .OrderByDescending(g => g.Alleles.Count)
                 .ToList();
             var firstSmallG = result[0];
@@ -163,7 +163,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
 
-            var result = smallGGroupsBuilder.BuildSmallGGroups(default)
+            var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion)
                 .OrderBy(g => g.Locus)
                 .ToList();
             var firstSmallG = result[0];
@@ -199,7 +199,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
 
-            var result = smallGGroupsBuilder.BuildSmallGGroups(default);
+            var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
             var smallG = result.Single();
 
             smallG.Name.Should().Be(firstTwoFields);
@@ -230,7 +230,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
 
-            var result = smallGGroupsBuilder.BuildSmallGGroups(default);
+            var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
             var smallG = result.Single();
 
             smallG.Name.Should().Be(pGroupNameWithoutSuffix + "g");
@@ -253,7 +253,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
 
-            var result = smallGGroupsBuilder.BuildSmallGGroups(default);
+            var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
             var smallG = result.Single();
 
             smallG.Name.Should().BeEquivalentTo(alleleName);
@@ -271,7 +271,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
 
-            var result = smallGGroupsBuilder.BuildSmallGGroups(default);
+            var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
             var smallG = result.Single();
 
             smallG.Name.Should().Be(nullAllele);
@@ -298,7 +298,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
 
-            var result = smallGGroupsBuilder.BuildSmallGGroups(default);
+            var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
             var smallG = result.Single();
 
             smallG.Name.Should().Be(twoFields);
