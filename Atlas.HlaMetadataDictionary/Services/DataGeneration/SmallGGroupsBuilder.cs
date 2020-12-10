@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
+using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.Extensions;
 using Atlas.HlaMetadataDictionary.HlaTypingInfo;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
@@ -26,6 +28,9 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 
     internal class SmallGGroupsBuilder : ISmallGGroupsBuilder
     {
+        private readonly Dictionary<string, IReadOnlyCollection<SmallGGroup>> smallGGroupCollections
+            = new Dictionary<string, IReadOnlyCollection<SmallGGroup>>();
+
         private readonly IWmdaDataRepository wmdaDataRepository;
 
         public SmallGGroupsBuilder(IWmdaDataRepository wmdaDataRepository)
@@ -38,10 +43,23 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
         /// </summary>
         public IEnumerable<SmallGGroup> BuildSmallGGroups(string hlaNomenclatureVersion)
         {
-            var wmdaDataset = wmdaDataRepository.GetWmdaDataset(hlaNomenclatureVersion);
+            if (hlaNomenclatureVersion.IsNullOrEmpty())
+            {
+                throw new ArgumentNullException(nameof(hlaNomenclatureVersion));
+            }
 
-            return BuildSmallGGroupsFromPGroups(wmdaDataset)
-                .Concat(BuildSmallGGroupsFromNullAllelesNotMappedToPGroups(wmdaDataset));
+            if (!smallGGroupCollections.TryGetValue(hlaNomenclatureVersion, out var dataset))
+            {
+                var wmdaDataset = wmdaDataRepository.GetWmdaDataset(hlaNomenclatureVersion);
+
+                dataset = BuildSmallGGroupsFromPGroups(wmdaDataset)
+                    .Concat(BuildSmallGGroupsFromNullAllelesNotMappedToPGroups(wmdaDataset))
+                    .ToList();
+
+                smallGGroupCollections.Add(hlaNomenclatureVersion, dataset);
+            }
+
+            return dataset;
         }
 
         private static IEnumerable<SmallGGroup> BuildSmallGGroupsFromPGroups(WmdaDataset wmdaDataset)
