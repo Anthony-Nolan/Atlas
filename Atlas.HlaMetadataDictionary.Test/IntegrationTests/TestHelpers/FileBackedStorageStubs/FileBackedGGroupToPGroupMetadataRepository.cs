@@ -7,15 +7,15 @@ using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs
 {
     internal class FileBackedGGroupToPGroupMetadataRepository :
-        FileBackedHlaMetadataRepositoryBase<IGGroupToPGroupMetadata>,
+        FileBackedHlaMetadataRepositoryBase<IMolecularTypingToPGroupMetadata>,
         IGGroupToPGroupMetadataRepository
     {
-        protected override IEnumerable<IGGroupToPGroupMetadata> GetHlaMetadata(FileBackedHlaMetadataCollection metadataCollection)
+        protected override IEnumerable<IMolecularTypingToPGroupMetadata> GetHlaMetadata(FileBackedHlaMetadataCollection metadataCollection)
         {
             return metadataCollection.GGroupToPGroupMetadata;
         }
 
-        public Task<IGGroupToPGroupMetadata> GetPGroupByGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
+        public Task<IMolecularTypingToPGroupMetadata> GetPGroupByGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
             return LookupMetadata(locus, lookupName, hlaNomenclatureVersion);
         }

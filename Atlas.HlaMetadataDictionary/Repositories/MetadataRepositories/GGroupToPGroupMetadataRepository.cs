@@ -10,7 +10,7 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
 {
     internal interface IGGroupToPGroupMetadataRepository : IHlaMetadataRepository
     {
-        Task<IGGroupToPGroupMetadata> GetPGroupByGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion);
+        Task<IMolecularTypingToPGroupMetadata> GetPGroupByGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion);
     }
 
     internal class GGroupToPGroupMetadataRepository : HlaMetadataRepositoryBase, IGGroupToPGroupMetadataRepository
@@ -27,13 +27,13 @@ namespace Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories
         {
         }
 
-        public async Task<IGGroupToPGroupMetadata> GetPGroupByGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
+        public async Task<IMolecularTypingToPGroupMetadata> GetPGroupByGGroupIfExists(Locus locus, string lookupName, string hlaNomenclatureVersion)
         {
             var row = await GetHlaMetadataRowIfExists(locus, lookupName, TypingMethod.Molecular, hlaNomenclatureVersion);
 
             return row == null
                 ? null
-                : new GGroupToPGroupMetadata(row.Locus, row.LookupName, row.GetHlaInfo<string>());
+                : new MolecularTypingToPGroupMetadata(row.Locus, row.LookupName, row.GetHlaInfo<string>());
         }
     }
 }

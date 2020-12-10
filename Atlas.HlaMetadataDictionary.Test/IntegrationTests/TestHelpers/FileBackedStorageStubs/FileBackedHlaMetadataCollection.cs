@@ -13,7 +13,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         public IEnumerable<FileBackedHlaScoringMetadata> HlaScoringMetadata { get; set; }
         public IEnumerable<FileBackedDpb1TceGroupsMetadata> Dpb1TceGroupMetadata { get; set; }
         public IEnumerable<FileBackedAlleleGroupMetadata> AlleleGroupMetadata { get; set; }
-        public IEnumerable<FileBackedGGroupToPGroupMetadata> GGroupToPGroupMetadata { get; set; }
+        public IEnumerable<FileBackedMolecularTypingToPGroupMetadata> GGroupToPGroupMetadata { get; set; }
         public IEnumerable<FileBackedSmallGGroupsMetadata> SmallGGroupMetadata { get; set; }
     }
 }

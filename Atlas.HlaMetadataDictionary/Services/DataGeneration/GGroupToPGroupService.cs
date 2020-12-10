@@ -14,7 +14,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 {
     internal interface IGGroupToPGroupService
     {
-        IEnumerable<IGGroupToPGroupMetadata> GetGGroupToPGroupMetadata(string hlaNomenclatureVersion);
+        IEnumerable<IMolecularTypingToPGroupMetadata> GetGGroupToPGroupMetadata(string hlaNomenclatureVersion);
     }
 
     internal class GGroupToPGroupService : IGGroupToPGroupService
@@ -28,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             this.logger = logger;
         }
 
-        public IEnumerable<IGGroupToPGroupMetadata> GetGGroupToPGroupMetadata(string hlaNomenclatureVersion)
+        public IEnumerable<IMolecularTypingToPGroupMetadata> GetGGroupToPGroupMetadata(string hlaNomenclatureVersion)
         {
             var dataset = wmdaDataRepository.GetWmdaDataset(hlaNomenclatureVersion);
 
@@ -49,7 +49,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             }).ToDictionary();
         }
 
-        private IGGroupToPGroupMetadata GetMetadata(IReadOnlyDictionary<(Locus, string), string> alleleToPGroup, IAlleleGroupMetadata gGroup)
+        private IMolecularTypingToPGroupMetadata GetMetadata(IReadOnlyDictionary<(Locus, string), string> alleleToPGroup, IAlleleGroupMetadata gGroup)
         {
             // GGroup alleles with no PGroup are expected, as in the case of null expressing alleles only.
             var pGroup = gGroup.AllelesInGroup.Where(allele =>
@@ -64,7 +64,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
                 throw new HlaMetadataDictionaryException(gGroup.Locus, gGroup.LookupName, errorMessage);
             }
 
-            return new GGroupToPGroupMetadata(gGroup.Locus, gGroup.LookupName, pGroup.SingleOrDefault() ?? string.Empty);
+            return new MolecularTypingToPGroupMetadata(gGroup.Locus, gGroup.LookupName, pGroup.SingleOrDefault());
         }
 
         private static IAlleleGroupMetadata GetMetadataFromAlleleGroup(IWmdaAlleleGroup alleleGroup)
