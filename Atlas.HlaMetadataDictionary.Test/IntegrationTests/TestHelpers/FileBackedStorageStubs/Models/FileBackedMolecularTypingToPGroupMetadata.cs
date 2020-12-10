@@ -5,7 +5,7 @@ using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 
 namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBackedStorageStubs.Models
 {
-    public class FileBackedGGroupToPGroupMetadata : IGGroupToPGroupMetadata
+    public class FileBackedMolecularTypingToPGroupMetadata : IMolecularTypingToPGroupMetadata
     {
         public Locus Locus { get; }
         public string LookupName { get; }
@@ -23,7 +23,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.TestHelpers.FileBack
         /// i.e. `all_hla_metadata.json`.
         /// ********************* WARNING! *********************
         /// </remarks>
-        public FileBackedGGroupToPGroupMetadata(         //*******************
+        public FileBackedMolecularTypingToPGroupMetadata(         //*******************
             Locus locus,                                 //****  warning  ****
             string lookupName,                           //****    See    ***
             string pGroup,                               //****   above   ****
