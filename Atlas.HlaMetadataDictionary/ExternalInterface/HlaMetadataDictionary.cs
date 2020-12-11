@@ -34,6 +34,12 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         /// </summary>
         public Task<string> ConvertGGroupToPGroup(Locus locus, string gGroup);
 
+        /// <summary>
+        /// Functionally the same as calling ConvertHla on small g group typed hla, with a target type of P group.
+        /// As small g groups are guaranteed to correspond to exactly 0 or 1 PGroups, this method makes this specific conversion much faster.  
+        /// </summary>
+        public Task<string> ConvertSmallGGroupToPGroup(Locus locus, string smallGGroup);
+
         Task<LocusInfo<IHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
         Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
@@ -69,6 +75,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IHlaScoringMetadataService hlaScoringMetadataService;
         private readonly IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
         private readonly IGGroupToPGroupMetadataService gGroupToPGroupMetadataService;
+        private readonly ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService;
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
@@ -83,6 +90,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IHlaScoringMetadataService hlaScoringMetadataService,
             IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
             IGGroupToPGroupMetadataService gGroupToPGroupMetadataService,
+            ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger)
@@ -96,6 +104,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.hlaScoringMetadataService = hlaScoringMetadataService;
             this.dpb1TceGroupMetadataService = dpb1TceGroupMetadataService;
             this.gGroupToPGroupMetadataService = gGroupToPGroupMetadataService;
+            this.smallGGroupToPGroupMetadataService = smallGGroupToPGroupMetadataService;
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
@@ -191,6 +200,11 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         public async Task<string> ConvertGGroupToPGroup(Locus locus, string gGroup)
         {
             return await gGroupToPGroupMetadataService.ConvertGGroupToPGroup(locus, gGroup, ActiveHlaNomenclatureVersion);
+        }
+
+        public async Task<string> ConvertSmallGGroupToPGroup(Locus locus, string smallGGroup)
+        {
+            return await smallGGroupToPGroupMetadataService.ConvertSmallGGroupToPGroup(locus, smallGGroup, ActiveHlaNomenclatureVersion);
         }
 
         public async Task<IEnumerable<string>> GetAllPGroups()

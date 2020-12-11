@@ -25,6 +25,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         private IHlaScoringMetadataService hlaScoringMetadataService;
         private IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
         private IGGroupToPGroupMetadataService gGroupToPGroupMetadataService;
+        private ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService;
         private IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private ILogger logger;
@@ -42,6 +43,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
             hlaScoringMetadataService = Substitute.For<IHlaScoringMetadataService>();
             dpb1TceGroupMetadataService = Substitute.For<IDpb1TceGroupMetadataService>();
             gGroupToPGroupMetadataService = Substitute.For<IGGroupToPGroupMetadataService>();
+            smallGGroupToPGroupMetadataService = Substitute.For<ISmallGGroupToPGroupMetadataService>();
             hlaMetadataGenerationOrchestrator = Substitute.For<IHlaMetadataGenerationOrchestrator>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
             logger = Substitute.For<ILogger>();
@@ -56,6 +58,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
                 hlaScoringMetadataService,
                 dpb1TceGroupMetadataService,
                 gGroupToPGroupMetadataService,
+                smallGGroupToPGroupMetadataService,
                 hlaMetadataGenerationOrchestrator,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger);

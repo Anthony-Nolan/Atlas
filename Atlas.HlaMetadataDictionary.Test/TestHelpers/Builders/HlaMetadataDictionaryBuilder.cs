@@ -19,7 +19,8 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
         private ILocusHlaMatchingMetadataService locus;
         private IHlaScoringMetadataService scoring;
         private IDpb1TceGroupMetadataService dpb1;
-        private IGGroupToPGroupMetadataService pGroup;
+        private IGGroupToPGroupMetadataService gGroupToPGroup;
+        private ISmallGGroupToPGroupMetadataService smallGGroupToPGroup;
         private IHlaMetadataGenerationOrchestrator metadata;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private ILogger logger;
@@ -39,7 +40,8 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
             locus = Substitute.For<ILocusHlaMatchingMetadataService>();
             scoring = Substitute.For<IHlaScoringMetadataService>();
             dpb1 = Substitute.For<IDpb1TceGroupMetadataService>();
-            pGroup = Substitute.For<IGGroupToPGroupMetadataService>();
+            gGroupToPGroup = Substitute.For<IGGroupToPGroupMetadataService>();
+            smallGGroupToPGroup = Substitute.For<ISmallGGroupToPGroupMetadataService>();
             metadata = Substitute.For<IHlaMetadataGenerationOrchestrator>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
             logger = Substitute.For<ILogger>();
@@ -77,7 +79,10 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                     dpb1 = typedDependency;
                     break;
                 case IGGroupToPGroupMetadataService typedDependency:
-                    pGroup = typedDependency;
+                    gGroupToPGroup = typedDependency;
+                    break;
+                case ISmallGGroupToPGroupMetadataService typedDependency:
+                    smallGGroupToPGroup = typedDependency;
                     break;
                 case IHlaMetadataGenerationOrchestrator typedDependency:
                     metadata = typedDependency;
@@ -108,7 +113,8 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                 locus,
                 scoring,
                 dpb1,
-                pGroup,
+                gGroupToPGroup,
+                smallGGroupToPGroup,
                 metadata,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger
