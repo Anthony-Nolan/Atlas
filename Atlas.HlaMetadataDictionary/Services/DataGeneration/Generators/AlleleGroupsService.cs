@@ -1,13 +1,13 @@
-﻿using Atlas.Common.GeneticData.Hla.Models;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.HlaTypingInfo;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators
 {
     internal interface IAlleleGroupsService
     {

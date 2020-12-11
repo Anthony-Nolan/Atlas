@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
-using Atlas.HlaMetadataDictionary.Repositories;
 using System.Linq;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
@@ -8,9 +6,11 @@ using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Exceptions;
 using Atlas.HlaMetadataDictionary.HlaTypingInfo;
+using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
+using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators
 {
     internal interface IGGroupToPGroupService
     {

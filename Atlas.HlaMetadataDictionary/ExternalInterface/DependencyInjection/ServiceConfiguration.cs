@@ -10,6 +10,7 @@ using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
 using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversion;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
@@ -55,6 +56,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.DependencyInjection
             services.AddScoped<IDpb1TceGroupsMetadataRepository, Dpb1TceGroupsMetadataRepository>();
             services.AddScoped<IAlleleGroupsMetadataRepository, AlleleGroupsMetadataRepository>();
             services.AddScoped<ISmallGGroupsMetadataRepository, SmallGGroupsMetadataRepository>();
+            services.AddScoped<ISmallGGroupToPGroupMetadataRepository, SmallGGroupToPGroupMetadataRepository>();
         }
 
         private static void RegisterTypesRelatedToDictionaryRecreation(this IServiceCollection services)

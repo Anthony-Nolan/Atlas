@@ -3,8 +3,8 @@ using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.Test.SharedTestHelpers;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
-using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators;
 using FluentAssertions;
 using NUnit.Framework;
 

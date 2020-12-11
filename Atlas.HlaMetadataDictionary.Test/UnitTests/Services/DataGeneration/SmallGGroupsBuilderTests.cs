@@ -2,7 +2,7 @@
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.Repositories;
-using Atlas.HlaMetadataDictionary.Services.DataGeneration;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using FluentAssertions;
 using NSubstitute;

@@ -6,6 +6,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.InternalExceptions;
 using Atlas.HlaMetadataDictionary.InternalModels.MatchingTypings;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.HlaMatchPreCalculation;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.MatchedHlaConversion;
 
@@ -81,6 +82,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 
                 logger.SendTrace("HlaMetadataDictionary: Building small g groups");
                 var smallGGroupsMetadata = GetSmallGGroupsMetadata(hlaNomenclatureVersion).ToList();
+                var smallGToPGroupMetadata = GetSmallGGroupToPGroupMetadata(hlaNomenclatureVersion).ToList();
 
                 return new HlaMetadataCollection
                 {
@@ -90,7 +92,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
                     Dpb1TceGroupMetadata = dpb1TceGroupMetadata,
                     AlleleGroupMetadata = alleleGroupsMetadata,
                     GGroupToPGroupMetadata = gGroupToPGroupMetadata,
-                    SmallGGroupMetadata = smallGGroupsMetadata
+                    SmallGGroupMetadata = smallGGroupsMetadata,
+                    SmallGGroupToPGroupMetadata = smallGToPGroupMetadata
                 };
             }
             catch (Exception ex)
@@ -136,7 +139,12 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
 
         private IEnumerable<ISmallGGroupsMetadata> GetSmallGGroupsMetadata(string hlaNomenclatureVersion)
         {
-            return smallGGroupsService.GetSmallGGroupMetadata(hlaNomenclatureVersion);
+            return smallGGroupsService.GetAlleleLookupNameToSmallGGroupsMetadata(hlaNomenclatureVersion);
+        }
+
+        private IEnumerable<IMolecularTypingToPGroupMetadata> GetSmallGGroupToPGroupMetadata(string hlaNomenclatureVersion)
+        {
+            return smallGGroupsService.GetSmallGGroupToPGroupMetadata(hlaNomenclatureVersion);
         }
     }
 }

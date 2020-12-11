@@ -26,6 +26,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
         private readonly IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository;
         private readonly IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository;
         private readonly ISmallGGroupsMetadataRepository smallGGroupsMetadataRepository;
+        private readonly ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository;
         private readonly ILogger logger;
 
         public RecreateHlaMetadataService(
@@ -37,6 +38,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             IAlleleGroupsMetadataRepository alleleGroupsMetadataRepository,
             IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository,
             ISmallGGroupsMetadataRepository smallGGroupsMetadataRepository,
+            ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository,
             ILogger logger)
         {
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
@@ -47,6 +49,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             this.alleleGroupsMetadataRepository = alleleGroupsMetadataRepository;
             this.gGroupToPGroupMetadataRepository = gGroupToPGroupMetadataRepository;
             this.smallGGroupsMetadataRepository = smallGGroupsMetadataRepository;
+            this.smallGGroupToPGroupMetadataRepository = smallGGroupToPGroupMetadataRepository;
             this.logger = logger;
         }
 
@@ -77,7 +80,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
                 dpb1TceGroupsMetadataRepository.RecreateHlaMetadataTable(metadataCollection.Dpb1TceGroupMetadata, hlaNomenclatureVersion),
                 alleleGroupsMetadataRepository.RecreateHlaMetadataTable(metadataCollection.AlleleGroupMetadata, hlaNomenclatureVersion),
                 gGroupToPGroupMetadataRepository.RecreateHlaMetadataTable(metadataCollection.GGroupToPGroupMetadata, hlaNomenclatureVersion),
-                smallGGroupsMetadataRepository.RecreateHlaMetadataTable(metadataCollection.SmallGGroupMetadata, hlaNomenclatureVersion)
+                smallGGroupsMetadataRepository.RecreateHlaMetadataTable(metadataCollection.SmallGGroupMetadata, hlaNomenclatureVersion),
+                smallGGroupToPGroupMetadataRepository.RecreateHlaMetadataTable(metadataCollection.SmallGGroupToPGroupMetadata, hlaNomenclatureVersion)
             );
         }
     }

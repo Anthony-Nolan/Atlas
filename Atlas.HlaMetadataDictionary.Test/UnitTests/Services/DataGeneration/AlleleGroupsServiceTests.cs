@@ -2,7 +2,6 @@
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.HlaMetadataDictionary.Repositories;
-using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 using FluentAssertions;
@@ -10,6 +9,7 @@ using NSubstitute;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators;
 
 namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 {
