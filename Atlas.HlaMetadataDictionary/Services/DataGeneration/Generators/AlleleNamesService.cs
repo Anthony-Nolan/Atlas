@@ -3,7 +3,7 @@ using System.Linq;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration.AlleleNames;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators
 {
     /// <summary>
     /// Generates a complete collection of Allele Names.

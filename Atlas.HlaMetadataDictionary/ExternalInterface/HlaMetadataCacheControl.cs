@@ -26,6 +26,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository;
         private readonly IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository;
         private readonly ISmallGGroupsMetadataRepository smallGGroupsMetadataRepository;
+        private readonly ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository;
 
         public HlaMetadataCacheControl(
             string hlaNomenclatureVersion,
@@ -34,7 +35,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IHlaScoringMetadataRepository scoringMetadataRepository,
             IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository,
             IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository,
-            ISmallGGroupsMetadataRepository smallGGroupsMetadataRepository)
+            ISmallGGroupsMetadataRepository smallGGroupsMetadataRepository,
+            ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository)
         {
             this.hlaNomenclatureVersion = hlaNomenclatureVersion;
 
@@ -44,6 +46,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.dpb1TceGroupsMetadataRepository = dpb1TceGroupsMetadataRepository;
             this.gGroupToPGroupMetadataRepository = gGroupToPGroupMetadataRepository;
             this.smallGGroupsMetadataRepository = smallGGroupsMetadataRepository;
+            this.smallGGroupToPGroupMetadataRepository = smallGGroupToPGroupMetadataRepository;
         }
 
         public async Task PreWarmAllCaches()
@@ -55,6 +58,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             await dpb1TceGroupsMetadataRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
             await gGroupToPGroupMetadataRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
             await smallGGroupsMetadataRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
+            await smallGGroupToPGroupMetadataRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
         }
 
         public async Task PreWarmAlleleNameCache()

@@ -6,7 +6,7 @@ using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators
 {
     /// <summary>
     /// Generates a complete collection of Small G Group Metadata, where allele lookup name
@@ -14,7 +14,11 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
     /// </summary>
     internal interface ISmallGGroupsService
     {
-        IEnumerable<ISmallGGroupsMetadata> GetSmallGGroupMetadata(string hlaNomenclatureVersion);
+        /// <returns>Small g group(s) for each possible allele lookup name.</returns>
+        IEnumerable<ISmallGGroupsMetadata> GetAlleleLookupNameToSmallGGroupsMetadata(string hlaNomenclatureVersion);
+
+        /// <returns>P group mapping for each small g group.</returns>
+        IEnumerable<IMolecularTypingToPGroupMetadata> GetSmallGGroupToPGroupMetadata(string hlaNomenclatureVersion);
     }
 
     internal class SmallGGroupsService : ISmallGGroupsService
@@ -26,7 +30,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             this.smallGGroupsBuilder = smallGGroupsBuilder;
         }
 
-        public IEnumerable<ISmallGGroupsMetadata> GetSmallGGroupMetadata(string hlaNomenclatureVersion)
+        public IEnumerable<ISmallGGroupsMetadata> GetAlleleLookupNameToSmallGGroupsMetadata(string hlaNomenclatureVersion)
         {
             var smallGGroups = smallGGroupsBuilder.BuildSmallGGroups(hlaNomenclatureVersion);
             var allMetadata = smallGGroups
@@ -34,6 +38,13 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
                 .SelectMany(GetMetadataPerLookupName);
 
             return GroupMetadataByLookupName(allMetadata);
+        }
+
+        public IEnumerable<IMolecularTypingToPGroupMetadata> GetSmallGGroupToPGroupMetadata(string hlaNomenclatureVersion)
+        {
+            var smallGGroups = smallGGroupsBuilder.BuildSmallGGroups(hlaNomenclatureVersion);
+
+            return smallGGroups.Select(g => new MolecularTypingToPGroupMetadata(g.Locus, g.Name, g.PGroup));
         }
 
         private static IEnumerable<ISmallGGroupsMetadata> BuildMetadata(SmallGGroup smallGGroup)

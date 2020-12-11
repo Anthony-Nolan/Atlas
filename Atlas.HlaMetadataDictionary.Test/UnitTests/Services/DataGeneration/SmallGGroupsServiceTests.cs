@@ -2,7 +2,7 @@
 using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
-using Atlas.HlaMetadataDictionary.Services.DataGeneration;
+using Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators;
 using Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders;
 using FluentAssertions;
 using NSubstitute;
@@ -26,11 +26,21 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
         }
 
         [Test]
+        public void GetSmallGGroupToPGroupMetadata_BuildsSmallGGroupsToRequestedHlaNomenclatureVersion()
+        {
+            const string hlaNomenclatureVersion = "version";
+
+            service.GetSmallGGroupToPGroupMetadata(hlaNomenclatureVersion);
+
+            builder.Received(1).BuildSmallGGroups(hlaNomenclatureVersion);
+        }
+
+        [Test]
         public void GetSmallGGroupMetadata_BuildsSmallGGroupsToRequestedHlaNomenclatureVersion()
         {
             const string hlaNomenclatureVersion = "version";
 
-            service.GetSmallGGroupMetadata(hlaNomenclatureVersion);
+            service.GetAlleleLookupNameToSmallGGroupsMetadata(hlaNomenclatureVersion);
 
             builder.Received(1).BuildSmallGGroups(hlaNomenclatureVersion);
         }
@@ -49,7 +59,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             builder.BuildSmallGGroups(default).ReturnsForAnyArgs(smallGGroup);
 
-            var result = service.GetSmallGGroupMetadata(default).ToList();
+            var result = service.GetAlleleLookupNameToSmallGGroupsMetadata(default).ToList();
 
             result.Select(r => r.LookupName).Should().BeEquivalentTo(expectedLookupNames);
             result.Count.Should().Be(expectedLookupNames.Length);
@@ -79,7 +89,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             builder.BuildSmallGGroups(default).ReturnsForAnyArgs(new[] { smallGGroup1, smallGGroup2 });
 
-            var result = service.GetSmallGGroupMetadata(default).ToList();
+            var result = service.GetAlleleLookupNameToSmallGGroupsMetadata(default).ToList();
 
             // both alleles should result in the same XX code lookup name
             var xxCodeMetadata = result.Single(r => r.LookupName == firstField + ":XX");

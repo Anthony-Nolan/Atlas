@@ -11,7 +11,7 @@ using Atlas.HlaMetadataDictionary.InternalModels.HLATypings;
 using Atlas.HlaMetadataDictionary.Repositories;
 using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 
-namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
+namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators
 {
     /// <summary>
     /// Like a P group, a "small g" group consists of alleles that have the same protein sequence at the ARS region,

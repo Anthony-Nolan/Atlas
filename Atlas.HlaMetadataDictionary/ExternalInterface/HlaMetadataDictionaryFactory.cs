@@ -57,6 +57,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository;
         private readonly IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository;
         private readonly ISmallGGroupsMetadataRepository smallGGroupsMetadataRepository;
+        private readonly ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository;
 
         public HlaMetadataDictionaryFactory(
             IPersistentCacheProvider cacheProvider,
@@ -80,7 +81,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IHlaScoringMetadataRepository scoringMetadataRepository,
             IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository,
             IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository,
-            ISmallGGroupsMetadataRepository smallGGroupsMetadataRepository)
+            ISmallGGroupsMetadataRepository smallGGroupsMetadataRepository,
+            ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository)
         {
             this.cache = cacheProvider.Cache;
 
@@ -104,6 +106,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.dpb1TceGroupsMetadataRepository = dpb1TceGroupsMetadataRepository;
             this.gGroupToPGroupMetadataRepository = gGroupToPGroupMetadataRepository;
             this.smallGGroupsMetadataRepository = smallGGroupsMetadataRepository;
+            this.smallGGroupToPGroupMetadataRepository = smallGGroupToPGroupMetadataRepository;
         }
 
         /// <summary>
@@ -171,7 +174,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 scoringMetadataRepository,
                 dpb1TceGroupsMetadataRepository,
                 gGroupToPGroupMetadataRepository,
-                smallGGroupsMetadataRepository);
+                smallGGroupsMetadataRepository,
+                smallGGroupToPGroupMetadataRepository);
         }
     }
 }
