@@ -46,6 +46,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IHlaScoringMetadataService hlaScoringMetadataService;
         private readonly IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
         private readonly IGGroupToPGroupMetadataService gGroupToPGroupMetadataService;
+        private readonly ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService;
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
@@ -71,6 +72,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IHlaScoringMetadataService hlaScoringMetadataService,
             IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
             IGGroupToPGroupMetadataService gGroupToPGroupMetadataService,
+            ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger,
@@ -95,6 +97,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.hlaScoringMetadataService = hlaScoringMetadataService;
             this.dpb1TceGroupMetadataService = dpb1TceGroupMetadataService;
             this.gGroupToPGroupMetadataService = gGroupToPGroupMetadataService;
+            this.smallGGroupToPGroupMetadataService = smallGGroupToPGroupMetadataService;
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
@@ -160,6 +163,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 hlaScoringMetadataService,
                 dpb1TceGroupMetadataService,
                 gGroupToPGroupMetadataService,
+                smallGGroupToPGroupMetadataService,
                 hlaMetadataGenerationOrchestrator,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger);
