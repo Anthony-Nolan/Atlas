@@ -30,7 +30,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
-        public void BuildSmallGGroups_DoesNotGenerateDuplicateMetadata()
+        public void BuildSmallGGroups_DoesNotGenerateDuplicateSmallGGroups()
         {
             allSmallGGroups
                 .GroupBy(metadata => new { metadata.Locus, metadata.Name })
@@ -62,36 +62,63 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
             allelesWithoutSmallGGroup.Should().BeEmpty();
         }
 
-        [TestCase(Locus.A, "01:52", "01:52:01N,01:52:02N",
+        [TestCase(Locus.A, "01:52",
+            new object[] { "01:52:01N", "01:52:02N" },
             Description = "All Null alleles within small g group")]
-        [TestCase(Locus.A, "02:04g", "02:04,02:664,02:710N",
+        [TestCase(Locus.A, "02:04g",
+            new object[] { "02:04", "02:664", "02:710N" },
             Description = "One Null allele within small g group")]
-        [TestCase(Locus.B, "38:01g", "38:01:01:01,38:01:01:02,38:01:02,38:01:03,38:01:04,38:01:05,38:01:06,38:01:07,38:01:08,38:01:09,38:01:10,38:01:11,38:01:12,38:68Q",
+        [TestCase(Locus.B, "38:01g",
+            new object[] { "38:01:01:01", "38:01:01:02", "38:01:02", "38:01:03", "38:01:04", "38:01:05", "38:01:06", "38:01:07", "38:01:08", "38:01:09", "38:01:10", "38:01:11", "38:01:12", "38:68Q" },
             Description = "Other Expression Letters within small g group")]
-        [TestCase(Locus.A, "02:22g", "02:22:01:01,02:22:01:02,02:22:02,02:104",
+        [TestCase(Locus.A, "02:22g",
+            new object[] { "02:22:01:01", "02:22:01:02", "02:22:02", "02:104" },
             Description = "Mixture of 2,3 and 4 field typing resolutions within small g group")]
-        [TestCase(Locus.B, "44:192", "44:192:01,44:192:02,44:192:03",
+        [TestCase(Locus.B, "44:192",
+            new object[] { "44:192:01", "44:192:02", "44:192:03" },
             Description = "Changes in third field typing within small g group")]
-        [TestCase(Locus.C, "04:13", "04:13:01:01,04:13:01:02",
+        [TestCase(Locus.C, "04:13",
+            new object[] { "04:13:01:01", "04:13:01:02" },
             Description = "Changes in fourth field typing within small g group")]
-        [TestCase(Locus.Dpb1, "02:02g", "02:02:01:01,02:02:01:02,02:02:01:03,02:02:01:04,02:02:01:05,02:02:01:06,02:02:01:07,547:01",
+        [TestCase(Locus.Dpb1, "02:02g",
+            new object[] { "02:02:01:01", "02:02:01:02", "02:02:01:03", "02:02:01:04", "02:02:01:05", "02:02:01:06", "02:02:01:07", "547:01" },
             Description = "Changes allele family within small g group")]
-        [TestCase(Locus.Drb1, "01:03", "01:03:01,01:03:02",
+        [TestCase(Locus.Drb1, "01:03",
+            new object[] { "01:03:01", "01:03:02" },
             Description = "Returned small g group is locus specific")]
         public void BuildSmallGGroups_SmallGGroupIsAsExpected(
-            Locus locus, string name, string alleles)
+            Locus locus, string name, object[] expectedAlleles)
         {
-            var actualMetadata = BuildSmallGGroups(locus, name);
+            var smallGGroup = GetSmallGGroup(locus, name);
 
-            var alleleStrings = string.Join(",", actualMetadata.Alleles);
-
-            alleleStrings.Should().Be(alleles);
+            smallGGroup.Alleles.Should().BeEquivalentTo(expectedAlleles);
         }
 
-        private SmallGGroup BuildSmallGGroups(Locus locus, string lookupName)
+        [TestCase(Locus.A, "01:52", null,
+            Description = "All Null alleles within small g group")]
+        [TestCase(Locus.A, "02:04g", "02:04P",
+            Description = "One Null allele within small g group")]
+        [TestCase(Locus.B, "38:01g", "38:01P",
+            Description = "Other Expression Letters within small g group")]
+        [TestCase(Locus.A, "02:22g", "02:22P",
+            Description = "Mixture of 2,3 and 4 field typing resolutions within small g group")]
+        [TestCase(Locus.B, "44:192", "44:192P",
+            Description = "Changes in third field typing within small g group")]
+        [TestCase(Locus.C, "04:13", "04:13P",
+            Description = "Changes in fourth field typing within small g group")]
+        [TestCase(Locus.Dpb1, "02:02g", "02:02P",
+            Description = "Changes allele family within small g group")]
+        public void BuildSmallGGroups_PGroupIsAsExpected(
+            Locus locus, string name, string expectedPGroup)
         {
-            return allSmallGGroups
-                .Single(name => name.Name.Equals(lookupName) && name.Locus.Equals(locus));
+            var smallGGroup = GetSmallGGroup(locus, name);
+
+            smallGGroup.PGroup.Should().Be(expectedPGroup);
+        }
+
+        private SmallGGroup GetSmallGGroup(Locus locus, string lookupName)
+        {
+            return allSmallGGroups.Single(name => name.Locus.Equals(locus) && name.Name.Equals(lookupName));
         }
 
         private bool IsNotConfidential(string typingLocus, string name)
