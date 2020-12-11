@@ -43,7 +43,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [TestCase(Locus.C, "07:01g", "07:01P")]
         [TestCase(Locus.Dqb1, "02:01g", "02:01P")]
         [TestCase(Locus.Drb1, "03:01g", "03:01P")]
-        public async Task GetSinglePGroupForSmallGGroup_WithMatchingPGroup_ReturnsPGroup(Locus locus, string smallGGroup, string expectedPGroup)
+        public async Task ConvertSmallGGroupToPGroup_WithMatchingPGroup_ReturnsPGroup(Locus locus, string smallGGroup, string expectedPGroup)
         {
             var pGroup = await metadataService.ConvertSmallGGroupToPGroup(locus, smallGGroup, HlaVersion);
 
@@ -55,7 +55,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         [TestCase(Locus.C, "07:491")]
         [TestCase(Locus.Dqb1, "02:20N")]
         [TestCase(Locus.Drb1, "08:78N")]
-        public async Task GetSinglePGroupForSmallGGroup_WithNoMatchingPGroup_ReturnsNull(Locus locus, string smallGGroup)
+        public async Task ConvertSmallGGroupToPGroup_WithNoMatchingPGroup_ReturnsNull(Locus locus, string smallGGroup)
         {
             var pGroup = await metadataService.ConvertSmallGGroupToPGroup(locus, smallGGroup, HlaVersion);
 
@@ -63,7 +63,7 @@ namespace Atlas.HlaMetadataDictionary.Test.IntegrationTests.Tests
         }
 
         [Test]
-        public void GetSinglePGroupForSmallGGroup_ForInvalidSmallGGroup_ThrowsException()
+        public void ConvertSmallGGroupToPGroup_ForInvalidSmallGGroup_ThrowsException()
         {
             metadataService.Invoking(async service =>
                  await service.ConvertSmallGGroupToPGroup(Locus.A, "not-a-valid-small-g-group", HlaVersion)
