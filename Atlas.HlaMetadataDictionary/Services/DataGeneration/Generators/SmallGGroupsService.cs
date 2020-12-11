@@ -9,8 +9,7 @@ using Atlas.HlaMetadataDictionary.InternalModels.Metadata;
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators
 {
     /// <summary>
-    /// Generates a complete collection of Small G Group Metadata, where allele lookup name
-    /// is mapped to its corresponding small g group name.
+    /// Generates a complete collection of metadata related to small G groups.
     /// </summary>
     internal interface ISmallGGroupsService
     {
