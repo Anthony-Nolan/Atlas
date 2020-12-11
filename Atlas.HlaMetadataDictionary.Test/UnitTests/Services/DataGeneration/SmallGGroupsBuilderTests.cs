@@ -98,6 +98,22 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
             secondSmallG.Alleles.Should().BeEquivalentTo(sharedAllele);
         }
 
+        [Test]
+        public void BuildSmallGGroups_PGroupMapsToGGroup_SetsPGroup()
+        {
+            const string pGroupName = "01:01P";
+
+            var dataset = WmdaDatasetBuilder.New
+                .AddPGroup(LocusName, pGroupName , "01:01:01");
+
+            wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+
+            var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
+            var smallG = result.Single();
+            
+            smallG.PGroup.Should().Be(pGroupName);
+        }
+
         [TestCase("")]
         [TestCase("L")]
         [TestCase("S")]
@@ -116,6 +132,26 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
             var smallG = result.Single();
 
             smallG.Alleles.Should().BeEquivalentTo(alleleName);
+        }
+
+        [TestCase("")]
+        [TestCase("L")]
+        [TestCase("S")]
+        [TestCase("Q")]
+        public void BuildSmallGGroups_ExpressingAlleleNotAssignedToAPGroup_PGroupIsExpressingAlleleName(string expressionLetter)
+        {
+            var alleleName = "01:01" + expressionLetter;
+
+            var dataset = WmdaDatasetBuilder.New
+                .AddPGroup(LocusName, alleleName, alleleName)
+                .AddGGroup(LocusName, alleleName, alleleName);
+
+            wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+
+            var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
+            var smallG = result.Single();
+
+            smallG.PGroup.Should().BeEquivalentTo(alleleName);
         }
 
         [Test]
@@ -174,6 +210,26 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataGeneration
 
             secondSmallG.Locus.Should().Be(differentLocus);
             secondSmallG.Alleles.Should().BeEquivalentTo(nullAllele);
+        }
+
+        [Test]
+        public void BuildSmallGGroups_NullAllelesThatDoNotMapToPGroups_PGroupIsNull()
+        {
+            const string nSuffix = "N";
+            const string twoFields = "01:01";
+            const string nullAllele1 = twoFields + ":01" + nSuffix;
+            const string nullAllele2 = twoFields + ":02" + nSuffix;
+
+            var dataset = WmdaDatasetBuilder.New
+                .AddGGroup(LocusName, nullAllele1, nullAllele1)
+                .AddGGroup(LocusName, nullAllele2, nullAllele2);
+
+            wmdaDataRepository.GetWmdaDataset(default).ReturnsForAnyArgs(dataset);
+
+            var result = smallGGroupsBuilder.BuildSmallGGroups(DefaultHlaVersion);
+            var smallG = result.Single();
+
+            smallG.PGroup.Should().BeNull();
         }
 
         [TestCase(

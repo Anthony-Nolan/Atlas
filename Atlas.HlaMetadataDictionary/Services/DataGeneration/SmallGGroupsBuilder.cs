@@ -83,7 +83,8 @@ namespace Atlas.HlaMetadataDictionary.Services.DataGeneration
             {
                 Locus = GetLocus(pGroup.TypingLocus),
                 Name = groupName,
-                Alleles = allAlleles
+                Alleles = allAlleles,
+                PGroup = pGroup.Name
             };
         }
 
