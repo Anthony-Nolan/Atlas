@@ -14,13 +14,13 @@ using Atlas.HlaMetadataDictionary.WmdaDataAccess.Models;
 namespace Atlas.HlaMetadataDictionary.Services.DataGeneration.Generators
 {
     /// <summary>
-    /// Like a P group, a "small g" group consists of alleles that have the same protein sequence at the ARS region,
+    /// Like a P group, a "small g" group consists of alleles that have the same protein sequence at the ABD region,
     /// but null-alleles are also included when grouping.
     /// </summary>
     internal interface ISmallGGroupsBuilder
     {
         /// <returns>
-        /// All small g groups - with or without 'g' suffix - and single alleles that do not share an ARS protein
+        /// All small g groups - with or without 'g' suffix - and single alleles that do not share an ABD protein
         /// sequence with any other allele.
         /// </returns>
         IEnumerable<SmallGGroup> BuildSmallGGroups(string hlaNomenclatureVersion);
