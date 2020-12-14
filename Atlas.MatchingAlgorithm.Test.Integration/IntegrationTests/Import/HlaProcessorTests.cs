@@ -82,6 +82,50 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         }
 
         [Test]
+        public async Task UpdateDonorHla_DonorHasNullExpressingAllele_InsertsPGroupsOfExpressingAllele()
+        {
+            // We know the number of p-groups for a given hla string from the in-memory metadata dictionary.
+            // If the underlying data changes, this may become incorrect.
+            const string hlaWithKnownPGroups = "02:01/02:02";
+            const string nullExpressingAllele = "01:01N";
+
+            var donorInfo = new DonorInfoBuilder()
+                .WithHlaAtLocus(Locus.A, LocusPosition.Two, hlaWithKnownPGroups)
+                .WithHlaAtLocus(Locus.A, LocusPosition.One, nullExpressingAllele)
+                .Build();
+
+            await importRepo.InsertBatchOfDonors(new List<DonorInfo> {donorInfo});
+
+            await processor.UpdateDonorHla(
+                DefaultHlaNomenclatureVersion,
+                donorId => dataRefreshHistoryRepository.UpdateLastSafelyProcessedDonor(refreshRecordId, donorId));
+
+            var actualPGroupCount = await GetPGroupCountAtLocusAPositionOne(donorInfo.DonorId);
+            actualPGroupCount.Should().Be(2);
+        }
+        
+        [Test]
+        public async Task UpdateDonorHla_MultipleDonorsWithSameHla_DoesNotInsertDuplicateRows()
+        {
+            // We know the number of p-groups for a given hla string from the in-memory metadata dictionary.
+            // If the underlying data changes, this may become incorrect.
+            const string hlaWithKnownPGroups = "01:XX";
+            const int expectedPGroupCount = 213;
+
+            var donorInfo1 = new DonorInfoBuilder().WithHlaAtLocus(Locus.A, LocusPosition.One, hlaWithKnownPGroups).Build();
+            var donorInfo2 = new DonorInfoBuilder().WithHlaAtLocus(Locus.A, LocusPosition.One, hlaWithKnownPGroups).Build();
+            
+            await importRepo.InsertBatchOfDonors(new List<DonorInfo> {donorInfo1, donorInfo2});
+
+            await processor.UpdateDonorHla(
+                DefaultHlaNomenclatureVersion,
+                donorId => dataRefreshHistoryRepository.UpdateLastSafelyProcessedDonor(refreshRecordId, donorId));
+
+            var actualPGroupCount = await GetPGroupCountAtLocusAPositionOne(donorInfo1.DonorId);
+            actualPGroupCount.Should().Be(expectedPGroupCount);
+        }
+
+        [Test]
         public async Task UpdateDonorHla_WhenHlaUpdateIsContinued_AddsDuplicatePGroups()
         {
             var donorInfo = new DonorInfoBuilder().Build();

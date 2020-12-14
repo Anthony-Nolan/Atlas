@@ -8,9 +8,9 @@ namespace Atlas.MatchingAlgorithm.Data.Models.DonorInfo
 {
     public class DonorInfoWithExpandedHla : DonorInfo
     {
-        public PhenotypeInfo<IHlaMatchingMetadata> MatchingHla { get; set; }
+        public PhenotypeInfo<INullHandledHlaMatchingMetadata> MatchingHla { get; set; }
 
-        internal IEnumerable<string> FlatHlaNames => HlaNames.ToEnumerable();
+        internal IEnumerable<string> FlatHlaNames => MatchingHla.Map(x => x?.LookupName).ToEnumerable().Where(x => x != null);
     }
 
     public static class DonorInfoExtensions
@@ -32,7 +32,9 @@ namespace Atlas.MatchingAlgorithm.Data.Models.DonorInfo
             return new DonorInfoForHlaPreProcessing
             {
                 DonorId = donorInfoWithExpandedHla.DonorId,
-                HlaNameIds = donorInfoWithExpandedHla.HlaNames.Map(hlaName => hlaName == null ? null as int? : lookupHlaNameId(hlaName))
+                HlaNameIds = donorInfoWithExpandedHla.MatchingHla.Map(metadata =>
+                    metadata?.LookupName == null ? null as int? : lookupHlaNameId(metadata.LookupName)
+                )
             };
         }
     }

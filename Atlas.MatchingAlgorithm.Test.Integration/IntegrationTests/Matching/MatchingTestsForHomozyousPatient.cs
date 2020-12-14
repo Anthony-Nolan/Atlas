@@ -78,7 +78,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private PhenotypeInfo<string> originalHlaPhenotype;
         private LocusInfo<string> originalHlaAtLocusUnderTest;
         private LocusInfo<string> mismatchedHlaAtLocusUnderTest;
-        private PhenotypeInfo<IHlaMatchingMetadata> patientMatchingHlaPhenotype;
+        private PhenotypeInfo<INullHandledHlaMatchingMetadata> patientMatchingHlaPhenotype;
 
         private IDonorHlaExpander donorHlaExpander;
         private IMatchingService matchingService;
@@ -301,7 +301,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             return donors;
         }
 
-        private PhenotypeInfo<IHlaMatchingMetadata> GetDonorMatchingHlaPhenotype(LocusTypingInfo locusUnderTestTypingInfo)
+        private PhenotypeInfo<INullHandledHlaMatchingMetadata> GetDonorMatchingHlaPhenotype(LocusTypingInfo locusUnderTestTypingInfo)
         {
             var donorHlaPhenotype = GetHlaPhenotype(originalHlaPhenotype, locusUnderTestTypingInfo);
             return donorHlaExpander.ExpandDonorHlaAsync(new DonorInfo {HlaNames = donorHlaPhenotype}).Result.MatchingHla;

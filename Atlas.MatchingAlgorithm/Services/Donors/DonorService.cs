@@ -87,9 +87,7 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             var pGroupRepo = repositoryFactory.GetPGroupRepositoryForDatabase(targetDatabase);
             var allPGroups = donorsWithHlas
                 .SelectMany(d =>
-                    d.MatchingHla?.ToEnumerable().SelectMany(hla =>
-                        hla?.MatchingPGroups ?? new string[0]
-                    ) ?? new List<string>()
+                    d.MatchingHla?.ToEnumerable().SelectMany(hla => hla?.MatchingPGroups ?? new string[0]) ?? new List<string>()
                 ).ToList();
 
             pGroupRepo.EnsureAllPGroupsExist(allPGroups);

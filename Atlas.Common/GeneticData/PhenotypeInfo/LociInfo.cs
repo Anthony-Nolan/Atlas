@@ -148,31 +148,49 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             return new LociInfo<R>(a.Result, b.Result, c.Result, dpb1.Result, dqb1.Result, drb1.Result);
         }
 
-        public async Task WhenAllLoci(Func<Locus, T, Task> action)
+        public void ForEachLocus(Action<Locus, T> action)
         {
-            var a = action(Locus.A, A);
-            var b = action(Locus.B, B);
-            var c = action(Locus.C, C);
-            var dpb1 = action(Locus.Dpb1, Dpb1);
-            var dqb1 = action(Locus.Dqb1, Dqb1);
-            var drb1 = action(Locus.Drb1, Drb1);
-
-            await Task.WhenAll(a, b, c, dpb1, dqb1, drb1);
-        }
-
-        /// <summary>
-        /// Explicitly runs an action per locus in order, rather than using Task.WhenAll - for when it is imperative that no external processing runs in parallel. 
-        /// </summary>
-        public async Task WhenEachLocus(Func<Locus, T, Task> action)
-        {
-            await action(Locus.A, A);
-            await action(Locus.B, B);
-            await action(Locus.C, C);
-            await action(Locus.Dpb1, Dpb1);
-            await action(Locus.Dqb1, Dqb1);
-            await action(Locus.Drb1, Drb1);
+            action(Locus.A, A);
+            action(Locus.B, B);
+            action(Locus.C, C);
+            action(Locus.Dpb1, Dpb1);
+            action(Locus.Dqb1, Dqb1);
+            action(Locus.Drb1, Drb1);
         }
         
+        /// <summary>
+        /// Runs the provided action asynchronously at each locus.
+        ///
+        /// By default, will use `Task.WhenAll`, allowing any external awaited work to run in parallel.  
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="restrictParallelism">
+        /// If set to true, will enforce that the loci are processed in series.
+        /// </param>
+        /// <returns></returns>
+        public async Task WhenAllLoci(Func<Locus, T, Task> action, bool restrictParallelism = false)
+        {
+            if (restrictParallelism)
+            {
+                await action(Locus.A, A);
+                await action(Locus.B, B);
+                await action(Locus.C, C);
+                await action(Locus.Dpb1, Dpb1);
+                await action(Locus.Dqb1, Dqb1);
+                await action(Locus.Drb1, Drb1);
+            }
+            else
+            {
+                var a = action(Locus.A, A);
+                var b = action(Locus.B, B);
+                var c = action(Locus.C, C);
+                var dpb1 = action(Locus.Dpb1, Dpb1);
+                var dqb1 = action(Locus.Dqb1, Dqb1);
+                var drb1 = action(Locus.Drb1, Drb1);
+                await Task.WhenAll(a, b, c, dpb1, dqb1, drb1);
+            }
+        }
+
         public R Reduce<R>(Func<Locus, T, R, R> reducer, R initialValue = default)
         {
             var result = initialValue;

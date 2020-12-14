@@ -8,7 +8,7 @@ using Atlas.MatchingAlgorithm.Data.Services;
 using Dapper;
 using LoggingStopwatch;
 using Microsoft.Data.SqlClient;
-using MoreLinq.Extensions;
+using static MoreLinq.Extensions.DistinctByExtension;
 
 namespace Atlas.MatchingAlgorithm.Data.Repositories
 {
@@ -24,7 +24,6 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
     public class HlaNamesRepository : Repository, IHlaNamesRepository
     {
         private IDictionary<string, int> hlaNameToIdDictionary;
-
 
         public HlaNamesRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
         {

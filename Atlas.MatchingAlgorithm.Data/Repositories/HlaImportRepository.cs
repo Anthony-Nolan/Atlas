@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Transactions;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
-using Atlas.Common.Sql;
+using Atlas.Common.Utils.Extensions;
 using Atlas.MatchingAlgorithm.Common.Config;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
@@ -17,8 +17,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 {
     public interface IHlaImportRepository
     {
-        // TODO: ATLAS-749: document that this inserts HlaNames and *then* performs p group processing per hla name 
-        Task<IDictionary<string, int>> ImportHla(IList<DonorInfoWithExpandedHla> hlaNamesToImport);
+        /// <summary>
+        /// Extracts all HLA information from a batch of donors to import, and runs HLA pre-processing on these alleles.
+        /// If HLA processing has already been performed on an allele, it will not be performed again.
+        /// </summary>
+        /// <returns>
+        /// A dictionary for quick lookup of the provided HLA.
+        /// Key = HLA lookup name. Value = processed Atlas ID for this HLA. 
+        /// </returns>
+        Task<IDictionary<string, int>> ImportHla(IList<DonorInfoWithExpandedHla> donorsToImport);
     }
 
     public class HlaImportRepository : Repository, IHlaImportRepository
@@ -26,32 +33,35 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
         private readonly IHlaNamesRepository hlaNamesRepository;
         private readonly IPGroupRepository pGroupRepository;
 
+        private LociInfo<ISet<int>> processedHlaIds;
+
         public HlaImportRepository(
             IHlaNamesRepository hlaNamesRepository,
             IPGroupRepository pGroupRepository,
             IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider)
         {
-            // TODO: ATLAS-749: Consider combining name insert + HLA import?
             this.hlaNamesRepository = hlaNamesRepository;
             this.pGroupRepository = pGroupRepository;
         }
 
-        public async Task<IDictionary<string, int>> ImportHla(IList<DonorInfoWithExpandedHla> hlaNamesToImport)
+        public async Task<IDictionary<string, int>> ImportHla(IList<DonorInfoWithExpandedHla> donorsToImport)
         {
-            var pGroupLookup = await pGroupRepository.EnsureAllPGroupsExist(hlaNamesToImport.AllPGroupNames());
+            await EnsureProcessedHlaCacheIsUpToDate();
 
-            var hlaLookup = await hlaNamesRepository.EnsureAllHlaNamesExist(hlaNamesToImport.AllHlaNames());
+            var pGroupLookup = await pGroupRepository.EnsureAllPGroupsExist(donorsToImport.AllPGroupNames());
+            var hlaNameLookup = await hlaNamesRepository.EnsureAllHlaNamesExist(donorsToImport.AllHlaNames());
 
-            var hlaToInsert = hlaNamesToImport.Select(donor => new PhenotypeInfo<IList<HlaNamePGroupRelation>>((locus, position) =>
+            var hlaToInsert = donorsToImport.Select(donor => new PhenotypeInfo<IList<HlaNamePGroupRelation>>((locus, position) =>
                     donor?.MatchingHla?.GetPosition(locus, position)?.MatchingPGroups
                         .Select(pGroup =>
                         {
-                            var hlaName = donor.HlaNames.GetPosition(locus, position);
-                            return hlaName == null
+                            var hlaName = donor.MatchingHla.GetPosition(locus, position).LookupName;
+                            var hlaNameId = hlaNameLookup.GetValueOrDefault(hlaName);
+                            return hlaName == null || processedHlaIds.GetLocus(locus).Contains(hlaNameId)
                                 ? null
                                 : new HlaNamePGroupRelation
                                 {
-                                    HlaNameId = hlaLookup[hlaName],
+                                    HlaNameId = hlaNameId,
                                     PGroupId = pGroupLookup[pGroup]
                                 };
                         })
@@ -70,12 +80,35 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
                             return position1Relations.Concat(position2Relations);
                         })
                         .Where(x => x != null)
+                        .Distinct()
                         .ToList();
                 });
 
             await ImportHla(flattenedHlaToInsert);
 
-            return hlaLookup;
+            return hlaNameLookup;
+        }
+
+        private async Task EnsureProcessedHlaCacheIsUpToDate()
+        {
+            if (processedHlaIds == null)
+            {
+                await ForceProcessedHlaCacheGeneration();
+            }
+        }
+
+        private async Task ForceProcessedHlaCacheGeneration()
+        {
+            processedHlaIds = new LociInfo<ISet<int>>();
+
+            // Distributed transactions are not yet supported in .Net core - see https://github.com/dotnet/runtime/issues/715
+            // Until they are, we cannot update loci in parallel while also in a transaction scope. But if we are not in a transaction, it is quicker to run in parallel.
+            // Therefore, we check for an open transaction here and either allow parallel execution across loci (via WhenAll), or do not (via WhenEach)
+            var shouldRestrictParallelism = Transaction.Current != null;
+            await new LociInfo<int>().WhenAllLoci(async (l, _) =>
+            {
+                processedHlaIds = processedHlaIds.SetLocus(l, await GetExistingHlaAtLocus(l));
+            }, shouldRestrictParallelism);
         }
 
         private async Task ImportHla(LociInfo<IList<HlaNamePGroupRelation>> hlaNamesToImport)
@@ -83,21 +116,19 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             // Distributed transactions are not yet supported in .Net core - see https://github.com/dotnet/runtime/issues/715
             // Until they are, we cannot update loci in parallel while also in a transaction scope. But if we are not in a transaction, it is quicker to run in parallel.
             // Therefore, we check for an open transaction here and either allow parallel execution across loci (via WhenAll), or do not (via WhenEach)
-            if (Transaction.Current != null)
-            {
-                await hlaNamesToImport.WhenEachLocus(async (l, v) => await ImportHlaAtLocus(l, v));
-            }
-            else
-            {
-                await hlaNamesToImport.WhenAllLoci(async (l, v) => await ImportHlaAtLocus(l, v));
-            }
+            var shouldRestrictParallelism = Transaction.Current != null;
+            await hlaNamesToImport.WhenAllLoci(async (l, v) => await ImportHlaAtLocus(l, v), shouldRestrictParallelism);
+
+            processedHlaIds = processedHlaIds.Map((l, existing) =>
+                (ISet<int>) existing.Concat(hlaNamesToImport.GetLocus(l).Select(hla => hla.HlaNameId)).ToHashSet()
+            );
         }
 
         private async Task ImportHlaAtLocus(Locus locus, IList<HlaNamePGroupRelation> hla)
         {
-            var existingHla = await GetExistingHlaAtLocus(locus, hla.Select(h => h.HlaNameId).Distinct().ToList());
-            var newHla = hla.Where(h => !existingHla.Contains(h.HlaNameId)).ToList();
-            await ImportProcessedHla(locus, newHla);
+            // Use known new Hla strings to determine which relations to ignore! i.e. if not new, ignore it
+            // This is safe as hla -> pgroup relation cannot change without a nomenclature change i.e. full data refresh
+            await ImportProcessedHla(locus, hla);
         }
 
         private async Task ImportProcessedHla(Locus locus, IList<HlaNamePGroupRelation> newHlaRelations)
@@ -124,25 +155,18 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             }
         }
 
-        private async Task<ISet<int>> GetExistingHlaAtLocus(Locus locus, IList<int> hlaIds)
+        private async Task<ISet<int>> GetExistingHlaAtLocus(Locus locus)
         {
-            if (!hlaIds.Any() || !LocusSettings.MatchingOnlyLoci.Contains(locus))
+            if (!LocusSettings.MatchingOnlyLoci.Contains(locus))
             {
                 return new HashSet<int>();
             }
 
-            var tableName = HlaNamePGroupRelation.TableName(locus);
-            var tempTableConfig = SqlTempTableFiltering.PrepareTempTableFiltering("h", nameof(HlaNamePGroupRelation.HlaNameId), hlaIds);
-
-            var sql = $@"
-SELECT DISTINCT h.{nameof(HlaNamePGroupRelation.HlaNameId)} FROM {tableName} h
-{tempTableConfig.FilteredJoinQueryString} 
-";
+            var sql = $@"SELECT DISTINCT h.{nameof(HlaNamePGroupRelation.HlaNameId)} FROM {HlaNamePGroupRelation.TableName(locus)} h";
 
             await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
             {
-                await tempTableConfig.BuildTempTableFactory(conn);
-                return (await conn.QueryAsync<int>(sql, new {hlaIds})).ToHashSet();
+                return (await conn.QueryAsync<int>(sql)).ToHashSet();
             }
         }
     }

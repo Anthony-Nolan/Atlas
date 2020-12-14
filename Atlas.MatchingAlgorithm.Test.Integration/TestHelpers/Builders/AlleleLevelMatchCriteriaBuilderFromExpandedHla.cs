@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         /// the specified number of mismatches at the locus under test.
         /// </summary>
         public AlleleLevelMatchCriteria GetAlleleLevelMatchCriteria(
-            PhenotypeInfo<IHlaMatchingMetadata> phenotype,
+            PhenotypeInfo<INullHandledHlaMatchingMetadata> phenotype,
             int mismatchCount = 0)
         {
             var builder = GetDefaultBuilder(phenotype);
@@ -42,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
             return builder.Build();
         }
 
-        private AlleleLevelMatchCriteriaBuilder GetDefaultBuilder(PhenotypeInfo<IHlaMatchingMetadata> phenotype)
+        private AlleleLevelMatchCriteriaBuilder GetDefaultBuilder(PhenotypeInfo<INullHandledHlaMatchingMetadata> phenotype)
         {
             const int zeroMismatchCount = 0;
             return new AlleleLevelMatchCriteriaBuilder()
@@ -56,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders
         private static AlleleLevelLocusMatchCriteria GetLocusMatchCriteria(
             Locus locus,
             int mismatchCount,
-            PhenotypeInfo<IHlaMatchingMetadata> phenotype)
+            PhenotypeInfo<INullHandledHlaMatchingMetadata> phenotype)
         {
             return new AlleleLevelLocusMatchCriteria
             {

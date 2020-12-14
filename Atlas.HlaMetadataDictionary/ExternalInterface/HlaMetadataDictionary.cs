@@ -40,7 +40,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         /// </summary>
         public Task<string> ConvertSmallGGroupToPGroup(Locus locus, string smallGGroup);
 
-        Task<LocusInfo<IHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
+        Task<LocusInfo<INullHandledHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
         Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
         Task<IEnumerable<string>> GetAllPGroups();
@@ -182,7 +182,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             });
         }
 
-        public async Task<LocusInfo<IHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping)
+        public async Task<LocusInfo<INullHandledHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping)
         {
             return await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(locus, locusTyping, ActiveHlaNomenclatureVersion);
         }

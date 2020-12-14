@@ -291,7 +291,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 return DonorResultBuilder
                     .WithDefaultRequiredHla(new TestHlaMetadata
                     {
-                        OriginalName = "hla-name",
+                        LookupName = "hla-name",
                         MatchingPGroups = matchingPGroups
                     })
                     .Build();

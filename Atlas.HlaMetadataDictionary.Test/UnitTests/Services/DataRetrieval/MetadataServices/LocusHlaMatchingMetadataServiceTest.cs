@@ -54,7 +54,14 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
                 MatchedLocus,
                 new LocusInfo<string>(hlaString1, hlaString2), "hla-db-version");
 
-            actualResults.Should().BeEquivalentTo(expectedResults);
+            actualResults.Position2.MatchingPGroups.Should().NotBeEquivalentTo(actualResults.Position1.MatchingPGroups);
+            actualResults.Position2.LookupName.Should().NotBe(actualResults.Position1.LookupName);
+
+            actualResults.Position1.MatchingPGroups.Should().BeEquivalentTo(pGroup1);
+            actualResults.Position1.LookupName.Should().Be(hlaString1);
+
+            actualResults.Position2.MatchingPGroups.Should().BeEquivalentTo(pGroup2);
+            actualResults.Position2.LookupName.Should().Be(hlaString2);
         }
 
         [TestCase(Molecular)]
@@ -75,19 +82,18 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
                 .GetHlaMetadata(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
                 .Returns(expressedHlaResult, nullAlleleResult);
 
-            var nullAlleleResultWithExpressedPGroup = new HlaMatchingMetadata(
-                MatchedLocus,
-                NullAlleleHandling.CombineAlleleNames(nullExpressingPosition2, expressingPosition1),
-                Molecular,
-                new[] {pGroup});
-
-            var expectedResults = new LocusInfo<IHlaMatchingMetadata>(expressedHlaResult, nullAlleleResultWithExpressedPGroup);
-
             var actualResults = await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(
                 MatchedLocus,
                 new LocusInfo<string>(expressingPosition1, nullExpressingPosition2), "hla-db-version");
 
-            actualResults.Should().BeEquivalentTo(expectedResults);
+            actualResults.Position2.MatchingPGroups.Should().BeEquivalentTo(actualResults.Position1.MatchingPGroups);
+            actualResults.Position2.LookupName.Should().NotBe(actualResults.Position1.LookupName);
+
+            actualResults.Position1.MatchingPGroups.Should().BeEquivalentTo(pGroup);
+            actualResults.Position1.LookupName.Should().Be(expressingPosition1);
+            
+            actualResults.Position2.LookupName.Should().Be(NullAlleleHandling.CombineAlleleNames(nullExpressingPosition2, expressingPosition1));
+            actualResults.Position2.MatchingPGroups.Should().BeEquivalentTo(pGroup);
         }
 
         [TestCase(Molecular)]
@@ -108,20 +114,19 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
                 .GetHlaMetadata(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
                 .Returns(nullAlleleResult, expressedHlaResult);
 
-            var nullAlleleResultWithExpressedPGroup = new HlaMatchingMetadata(
-                MatchedLocus,
-                NullAlleleHandling.CombineAlleleNames(nullExpressionPosition1, expressingPosition2),
-                Molecular,
-                new[] {pGroup});
-
-            var expectedResults = new LocusInfo<IHlaMatchingMetadata>(nullAlleleResultWithExpressedPGroup, expressedHlaResult);
-
             var actualResults = await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(
                 MatchedLocus,
                 new LocusInfo<string>(nullExpressionPosition1, expressingPosition2),
                 "hla-db-version");
 
-            actualResults.Should().BeEquivalentTo(expectedResults);
+            actualResults.Position2.MatchingPGroups.Should().BeEquivalentTo(actualResults.Position1.MatchingPGroups);
+            actualResults.Position2.LookupName.Should().NotBe(actualResults.Position1.LookupName);
+
+            actualResults.Position2.MatchingPGroups.Should().BeEquivalentTo(pGroup);
+            actualResults.Position2.LookupName.Should().Be(expressingPosition2);
+            
+            actualResults.Position1.LookupName.Should().Be(NullAlleleHandling.CombineAlleleNames(nullExpressionPosition1, expressingPosition2));
+            actualResults.Position1.MatchingPGroups.Should().BeEquivalentTo(pGroup);
         }
     }
 }
