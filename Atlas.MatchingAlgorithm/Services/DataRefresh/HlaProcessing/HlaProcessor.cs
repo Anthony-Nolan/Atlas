@@ -235,60 +235,12 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 
             var donorEntries = hlaExpansionResults.ProcessingResults.Select(r => r.ToDonorInfoForPreProcessing(hlaName => hlaNameLookup[hlaName]));
 
-            using (timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewPGroupInsertion_Overall_TimerKey))
-            {
-                await EnsureAllPGroupsExist(hlaExpansionResults.ProcessingResults, timerCollection);
-            }
-            
-            using (timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewHlaNameInsertion_Overall_TimerKey))
-            {
-                await EnsureAllHlaNamesExist(hlaExpansionResults.ProcessingResults, timerCollection);
-            }
-            
             await donorImportRepository.AddMatchingRelationsForExistingDonorBatch(
                 donorEntries,
                 settings.DataRefreshDonorUpdatesShouldBeFullyTransactional,
                 timerCollection);
 
             return hlaExpansionResults.FailedDonors;
-        }
-
-        /// <remarks>
-        /// See notes in FindOrCreatePGroupIds.
-        /// In practice this will never do anything in Prod code, because of the InsertPGroups prep step, below.
-        /// But it means that during tests the DonorUpdate code behaves more like
-        /// "the real thing", since the PGroups have already been inserted into the DB.
-        ///
-        /// Note that over the course of a 2M donor import, this is flattening a total of ~1B records, which
-        /// ends up taking 2-3 minutes. The EnsureAllPGroupsExist check also takes 2-3 minutes.
-        /// </remarks>
-        private async Task<IDictionary<string, int>> EnsureAllPGroupsExist(
-            IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHlas,
-            LongStopwatchCollection timerCollection
-        )
-        {
-            var flatteningTimer = timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewPGroupInsertion_Flattening_TimerKey);
-            var allPGroups = donorsWithHlas
-                .SelectMany(d =>
-                    d.MatchingHla?.ToEnumerable().SelectMany(hla =>
-                        hla?.MatchingPGroups ?? new string[0]
-                    ) ?? new List<string>()
-                ).ToList();
-            flatteningTimer.Dispose();
-
-            return await pGroupRepository.EnsureAllPGroupsExist(allPGroups, timerCollection);
-        }
-
-        private async Task<IDictionary<string, int>> EnsureAllHlaNamesExist(
-            IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHlas,
-            LongStopwatchCollection timerCollection
-        )
-        {
-            var flatteningTimer = timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewHlaNameInsertion_Flattening_TimerKey);
-            var allHlaNames = donorsWithHlas.AllHlaNames();
-            flatteningTimer.Dispose();
-
-            return await hlaNamesRepository.EnsureAllHlaNamesExist(allHlaNames, timerCollection);
         }
 
         private async Task PerformUpfrontSetup(string hlaNomenclatureVersion)

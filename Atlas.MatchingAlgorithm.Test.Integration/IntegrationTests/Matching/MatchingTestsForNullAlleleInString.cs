@@ -53,11 +53,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         private IDonorUpdateRepository donorUpdateRepository;
         private IMatchingService matchingService;
 
-        private PhenotypeInfo<IHlaMatchingMetadata> patientWithNullAlleleInStringAndExpressingAllele;
-        private PhenotypeInfo<IHlaMatchingMetadata> patientWithTwoCopiesOfExpressingAllele;
-        private PhenotypeInfo<IHlaMatchingMetadata> patientWithExpressingAlleleInStringAndNullAlleleInString;
-        private PhenotypeInfo<IHlaMatchingMetadata> patientWithTwoCopiesOfExpressingAlleleInStrings;
-        private PhenotypeInfo<IHlaMatchingMetadata> patientWithTwoNullAllelesInTwoStrings;
+        private PhenotypeInfo<INullHandledHlaMatchingMetadata> patientWithNullAlleleInStringAndExpressingAllele;
+        private PhenotypeInfo<INullHandledHlaMatchingMetadata> patientWithTwoCopiesOfExpressingAllele;
+        private PhenotypeInfo<INullHandledHlaMatchingMetadata> patientWithExpressingAlleleInStringAndNullAlleleInString;
+        private PhenotypeInfo<INullHandledHlaMatchingMetadata> patientWithTwoCopiesOfExpressingAlleleInStrings;
+        private PhenotypeInfo<INullHandledHlaMatchingMetadata> patientWithTwoNullAllelesInTwoStrings;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -482,7 +482,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 BuildExpandedHlaPhenotype(NullAlleleInString1, ExpressingAlleleAndRelatedNullInString);
         }
 
-        private PhenotypeInfo<IHlaMatchingMetadata> BuildExpandedHlaPhenotype(string hla1, string hla2)
+        private PhenotypeInfo<INullHandledHlaMatchingMetadata> BuildExpandedHlaPhenotype(string hla1, string hla2)
         {
             var newPhenotype = originalHlaPhenotype.Map((l, p, hla) => hla)
                 .SetPosition(LocusUnderTest, LocusPosition.One, hla1)
@@ -493,7 +493,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             return expandedDonor.MatchingHla;
         }
 
-        private async Task<int> AddSingleDonorPhenotypeToDonorRepository(PhenotypeInfo<IHlaMatchingMetadata> donorPhenotype)
+        private async Task<int> AddSingleDonorPhenotypeToDonorRepository(PhenotypeInfo<INullHandledHlaMatchingMetadata> donorPhenotype)
         {
             var donor = new DonorInfoWithTestHlaBuilder(DonorIdGenerator.NextId())
                 .WithHla(donorPhenotype)

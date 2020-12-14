@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
@@ -18,6 +19,52 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
 
         [NotNull]
         public int PGroupId { get; set; }
+
+        #region Equality members
+
+        protected bool Equals(HlaNamePGroupRelation other)
+        {
+            return Id == other.Id && HlaNameId == other.HlaNameId && PGroupId == other.PGroupId;
+        }
+
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
+            return Equals((HlaNamePGroupRelation) obj);
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, HlaNameId, PGroupId);
+        }
+
+        public static bool operator ==(HlaNamePGroupRelation left, HlaNamePGroupRelation right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(HlaNamePGroupRelation left, HlaNamePGroupRelation right)
+        {
+            return !Equals(left, right);
+        }
+
+        #endregion
     }
 
     [Table("HlaNamePGroupRelationAtA")]

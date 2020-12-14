@@ -33,7 +33,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
             hlaMetadataDictionary.GetLocusHlaMatchingMetadata(default, default).ReturnsForAnyArgs(call =>
             {
                 call.Arg<LocusInfo<string>>();
-                return Task.FromResult(new LocusInfo<IHlaMatchingMetadata>(default, default));
+                return Task.FromResult(new LocusInfo<INullHandledHlaMatchingMetadata>(default, default));
             });
 
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
@@ -84,7 +84,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Donors
 
             hlaMetadataDictionary
                 .GetLocusHlaMatchingMetadata(default, default)
-                .ReturnsForAnyArgs(new LocusInfo<IHlaMatchingMetadata>(null));
+                .ReturnsForAnyArgs(new LocusInfo<INullHandledHlaMatchingMetadata>(null));
                 
             var result = await donorHlaExpander.ExpandDonorHlaBatchAsync(new List<DonorInfo>
             {
