@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.GeneticData;
@@ -10,6 +9,7 @@ using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
 using Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing;
 using Atlas.MatchingAlgorithm.Services.Search;
+using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Builders;
 using Atlas.MatchingAlgorithm.Test.Integration.TestHelpers.Repositories;
 using Atlas.MatchingAlgorithm.Test.TestHelpers.Builders;
@@ -34,9 +34,12 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
         {
             DependencyInjection.DependencyInjection.NewScope();
             dataRefreshHistoryRepository = DependencyInjection.DependencyInjection.Provider.GetService<ITestDataRefreshHistoryRepository>();
-
-            refreshRecordId =
-                dataRefreshHistoryRepository.InsertDummySuccessfulRefreshRecord(FileBackedHlaMetadataRepositoryBaseReader.OlderTestHlaVersion);
+            
+            // The data refresh is triggered as a two step process in this suite - (a) insert unprocessed donors (b) run pre-processing on all donors
+            // Without clearing the data between test runs, processing is re-run on all existing donors, without making use of the data refresh continue mechanism 
+            // Leading to duplicate donor relations, causing some tests to erroneously fail.
+            DatabaseManager.ClearDatabases();
+            refreshRecordId = dataRefreshHistoryRepository.InsertDummySuccessfulRefreshRecord();
 
             var repositoryFactory = DependencyInjection.DependencyInjection.Provider.GetService<IDormantRepositoryFactory>();
             importRepo = repositoryFactory.GetDonorImportRepository();
@@ -114,8 +117,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 
             var donorInfo1 = new DonorInfoBuilder().WithHlaAtLocus(Locus.A, LocusPosition.One, hlaWithKnownPGroups).Build();
             var donorInfo2 = new DonorInfoBuilder().WithHlaAtLocus(Locus.A, LocusPosition.One, hlaWithKnownPGroups).Build();
+            var donorInfo3 = new DonorInfoBuilder().WithHlaAtLocus(Locus.A, LocusPosition.One, hlaWithKnownPGroups).Build();
             
             await importRepo.InsertBatchOfDonors(new List<DonorInfo> {donorInfo1, donorInfo2});
+            await importRepo.InsertBatchOfDonors(new List<DonorInfo> {donorInfo3});
 
             await processor.UpdateDonorHla(
                 DefaultHlaNomenclatureVersion,
