@@ -8,7 +8,7 @@ using Atlas.MatchingAlgorithm.Common.Config;
 
 namespace Atlas.MatchingAlgorithm.Data.Models.Entities
 {
-    public class HlaNamePGroupRelation
+    public class HlaNamePGroupRelation : IEquatable<HlaNamePGroupRelation>
     {
         internal static string TableName(Locus locus) => $"HlaNamePGroupRelationAt{locus.ToString().ToUpperInvariant()}";
 
@@ -22,7 +22,7 @@ namespace Atlas.MatchingAlgorithm.Data.Models.Entities
 
         #region Equality members
 
-        protected bool Equals(HlaNamePGroupRelation other)
+        public bool Equals(HlaNamePGroupRelation other)
         {
             return Id == other.Id && HlaNameId == other.HlaNameId && PGroupId == other.PGroupId;
         }

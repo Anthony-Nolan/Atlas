@@ -157,7 +157,7 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
             action(Locus.Dqb1, Dqb1);
             action(Locus.Drb1, Drb1);
         }
-        
+
         /// <summary>
         /// Runs the provided action asynchronously at each locus.
         ///
@@ -168,27 +168,37 @@ namespace Atlas.Common.GeneticData.PhenotypeInfo
         /// If set to true, will enforce that the loci are processed in series.
         /// </param>
         /// <returns></returns>
-        public async Task WhenAllLoci(Func<Locus, T, Task> action, bool restrictParallelism = false)
+        public async Task WhenEachLocusWithOptionalParallelism(Func<Locus, T, Task> action, bool restrictParallelism = false)
         {
             if (restrictParallelism)
             {
-                await action(Locus.A, A);
-                await action(Locus.B, B);
-                await action(Locus.C, C);
-                await action(Locus.Dpb1, Dpb1);
-                await action(Locus.Dqb1, Dqb1);
-                await action(Locus.Drb1, Drb1);
+                await WhenEachLocus(action);
             }
             else
             {
-                var a = action(Locus.A, A);
-                var b = action(Locus.B, B);
-                var c = action(Locus.C, C);
-                var dpb1 = action(Locus.Dpb1, Dpb1);
-                var dqb1 = action(Locus.Dqb1, Dqb1);
-                var drb1 = action(Locus.Drb1, Drb1);
-                await Task.WhenAll(a, b, c, dpb1, dqb1, drb1);
+                await WhenAllLoci(action);
             }
+        }
+
+        public async Task WhenAllLoci(Func<Locus, T, Task> action)
+        {
+            var a = action(Locus.A, A);
+            var b = action(Locus.B, B);
+            var c = action(Locus.C, C);
+            var dpb1 = action(Locus.Dpb1, Dpb1);
+            var dqb1 = action(Locus.Dqb1, Dqb1);
+            var drb1 = action(Locus.Drb1, Drb1);
+            await Task.WhenAll(a, b, c, dpb1, dqb1, drb1);
+        }
+
+        public async Task WhenEachLocus(Func<Locus, T, Task> action)
+        {
+            await action(Locus.A, A);
+            await action(Locus.B, B);
+            await action(Locus.C, C);
+            await action(Locus.Dpb1, Dpb1);
+            await action(Locus.Dqb1, Dqb1);
+            await action(Locus.Drb1, Drb1);
         }
 
         public R Reduce<R>(Func<Locus, T, R, R> reducer, R initialValue = default)
