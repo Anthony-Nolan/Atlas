@@ -48,14 +48,9 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
                 .GetHlaMetadata(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
                 .Returns(metadata1, metadata2);
 
-            var expectedResults = new LocusInfo<IHlaMatchingMetadata>(metadata1, metadata2);
-
             var actualResults = await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(
                 MatchedLocus,
                 new LocusInfo<string>(hlaString1, hlaString2), "hla-db-version");
-
-            actualResults.Position2.MatchingPGroups.Should().NotBeEquivalentTo(actualResults.Position1.MatchingPGroups);
-            actualResults.Position2.LookupName.Should().NotBe(actualResults.Position1.LookupName);
 
             actualResults.Position1.MatchingPGroups.Should().BeEquivalentTo(pGroup1);
             actualResults.Position1.LookupName.Should().Be(hlaString1);
@@ -85,14 +80,12 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
             var actualResults = await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(
                 MatchedLocus,
                 new LocusInfo<string>(expressingPosition1, nullExpressingPosition2), "hla-db-version");
-
-            actualResults.Position2.MatchingPGroups.Should().BeEquivalentTo(actualResults.Position1.MatchingPGroups);
-            actualResults.Position2.LookupName.Should().NotBe(actualResults.Position1.LookupName);
+            var expectedMergedName = NullAlleleHandling.CombineAlleleNames(nullExpressingPosition2, expressingPosition1);
 
             actualResults.Position1.MatchingPGroups.Should().BeEquivalentTo(pGroup);
             actualResults.Position1.LookupName.Should().Be(expressingPosition1);
-            
-            actualResults.Position2.LookupName.Should().Be(NullAlleleHandling.CombineAlleleNames(nullExpressingPosition2, expressingPosition1));
+
+            actualResults.Position2.LookupName.Should().Be(expectedMergedName);
             actualResults.Position2.MatchingPGroups.Should().BeEquivalentTo(pGroup);
         }
 
@@ -118,14 +111,12 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
                 MatchedLocus,
                 new LocusInfo<string>(nullExpressionPosition1, expressingPosition2),
                 "hla-db-version");
-
-            actualResults.Position2.MatchingPGroups.Should().BeEquivalentTo(actualResults.Position1.MatchingPGroups);
-            actualResults.Position2.LookupName.Should().NotBe(actualResults.Position1.LookupName);
+            var expectedMergedName = NullAlleleHandling.CombineAlleleNames(nullExpressionPosition1, expressingPosition2);
 
             actualResults.Position2.MatchingPGroups.Should().BeEquivalentTo(pGroup);
             actualResults.Position2.LookupName.Should().Be(expressingPosition2);
-            
-            actualResults.Position1.LookupName.Should().Be(NullAlleleHandling.CombineAlleleNames(nullExpressionPosition1, expressingPosition2));
+
+            actualResults.Position1.LookupName.Should().Be(expectedMergedName);
             actualResults.Position1.MatchingPGroups.Should().BeEquivalentTo(pGroup);
         }
     }

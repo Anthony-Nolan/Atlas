@@ -105,10 +105,8 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             // Until they are, we cannot update loci in parallel while also in a transaction scope. But if we are not in a transaction, it is quicker to run in parallel.
             // Therefore, we check for an open transaction here and either allow parallel execution across loci (via WhenAll), or do not (via WhenEach)
             var shouldRestrictParallelism = Transaction.Current != null;
-            await new LociInfo<int>().WhenAllLoci(async (l, _) =>
-            {
-                processedHlaIds = processedHlaIds.SetLocus(l, await GetExistingHlaAtLocus(l));
-            }, shouldRestrictParallelism);
+            await new LociInfo<int>().WhenEachLocusWithOptionalParallelism(
+                async (l, _) => { processedHlaIds = processedHlaIds.SetLocus(l, await GetExistingHlaAtLocus(l)); }, shouldRestrictParallelism);
         }
 
         private async Task ImportHla(LociInfo<IList<HlaNamePGroupRelation>> hlaNamesToImport)
@@ -117,7 +115,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
             // Until they are, we cannot update loci in parallel while also in a transaction scope. But if we are not in a transaction, it is quicker to run in parallel.
             // Therefore, we check for an open transaction here and either allow parallel execution across loci (via WhenAll), or do not (via WhenEach)
             var shouldRestrictParallelism = Transaction.Current != null;
-            await hlaNamesToImport.WhenAllLoci(async (l, v) => await ImportHlaAtLocus(l, v), shouldRestrictParallelism);
+            await hlaNamesToImport.WhenEachLocusWithOptionalParallelism(async (l, v) => await ImportHlaAtLocus(l, v), shouldRestrictParallelism);
 
             processedHlaIds = processedHlaIds.Map((l, existing) =>
                 (ISet<int>) existing.Concat(hlaNamesToImport.GetLocus(l).Select(hla => hla.HlaNameId)).ToHashSet()

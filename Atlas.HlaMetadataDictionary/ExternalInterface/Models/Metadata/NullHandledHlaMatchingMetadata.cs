@@ -24,6 +24,12 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata
 
     internal class NullHandledHlaMatchingMetadata : HlaMatchingMetadata, INullHandledHlaMatchingMetadata
     {
+        /// <param name="original">
+        /// The default <see cref="IHlaMatchingMetadata"/> details for this allele.
+        /// If only this is provided, this class will be nothing more than a subset of its values.
+        /// </param>
+        /// <param name="mergedLookupName"><see cref="LookupName"/> for details on when this should be set.</param>
+        /// <param name="mergedPGroups"><see cref="MatchingPGroups"/> for details on when this should be specified.</param>
         public NullHandledHlaMatchingMetadata(IHlaMatchingMetadata original, string mergedLookupName = null, IList<string> mergedPGroups = null) :
             base(original.Locus, original.LookupName, original.TypingMethod, original.MatchingPGroups)
         {

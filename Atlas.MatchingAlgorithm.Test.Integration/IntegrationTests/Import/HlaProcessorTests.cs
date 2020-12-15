@@ -107,8 +107,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             actualPGroupCount.Should().Be(2);
         }
         
+        /// <summary>
+        /// During initial development of normalisation of pre-processed hla data, an issue was introduced where p-groups were processed for the
+        /// same HLA name multiple times, causing huge data inflation and corresponding performance degradation.
+        ///
+        /// This test exists to ensure we do not repeat such an error, as it does not invalidate any searches - so will not be caught by purely functional tests 
+        /// </summary>
         [Test]
-        public async Task UpdateDonorHla_MultipleDonorsWithSameHla_DoesNotInsertDuplicateRows()
+        public async Task UpdateDonorHla_MultipleDonorsWithSameHla_DoesNotInsertDuplicateHlaPGroupRelations_OrDuplicateDonorIdHlaRelations()
         {
             // We know the number of p-groups for a given hla string from the in-memory metadata dictionary.
             // If the underlying data changes, this may become incorrect.
@@ -130,6 +136,16 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             actualPGroupCount.Should().Be(expectedPGroupCount);
         }
 
+        /// <summary>
+        /// <see cref="UpdateDonorHla_WhenHlaUpdateIsContinued_DonorWithDuplicatePGroupsIsReturnedFromSearchWithNoErrors"/> proves that in this case,
+        /// search will not be detrimentally affected.
+        /// This test shows that in the case of a continued restart - some donors' hla will be processed twice, leading to some duplicate data.
+        /// This duplicate data does not cause functional issues - and as long as the duplication is minimal (i.e. it only happens for the overlap
+        /// batches of a continued refresh), it does not significantly alter performance.
+        ///
+        /// <see cref="UpdateDonorHla_MultipleDonorsWithSameHla_DoesNotInsertDuplicateHlaPGroupRelations_OrDuplicateDonorIdHlaRelations"/> ensures
+        /// that such duplication does not occur in other circumstances.
+        /// </summary>
         [Test]
         public async Task UpdateDonorHla_WhenHlaUpdateIsContinued_AddsDuplicatePGroups()
         {
