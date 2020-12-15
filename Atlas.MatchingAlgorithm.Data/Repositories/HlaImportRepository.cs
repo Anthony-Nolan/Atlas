@@ -99,7 +99,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories
 
         private async Task ForceProcessedHlaCacheGeneration()
         {
-            processedHlaIds = new LociInfo<ISet<int>>();
+            processedHlaIds = new LociInfo<ISet<int>>(new HashSet<int>());
 
             // Distributed transactions are not yet supported in .Net core - see https://github.com/dotnet/runtime/issues/715
             // Until they are, we cannot update loci in parallel while also in a transaction scope. But if we are not in a transaction, it is quicker to run in parallel.

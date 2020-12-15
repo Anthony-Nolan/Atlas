@@ -114,8 +114,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
 
             var donorInfo1 = new DonorInfoBuilder().WithHlaAtLocus(Locus.A, LocusPosition.One, hlaWithKnownPGroups).Build();
             var donorInfo2 = new DonorInfoBuilder().WithHlaAtLocus(Locus.A, LocusPosition.One, hlaWithKnownPGroups).Build();
+            var donorInfo3 = new DonorInfoBuilder().WithHlaAtLocus(Locus.A, LocusPosition.One, hlaWithKnownPGroups).Build();
             
             await importRepo.InsertBatchOfDonors(new List<DonorInfo> {donorInfo1, donorInfo2});
+            await importRepo.InsertBatchOfDonors(new List<DonorInfo> {donorInfo3});
 
             await processor.UpdateDonorHla(
                 DefaultHlaNomenclatureVersion,
