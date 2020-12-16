@@ -79,32 +79,36 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
 
         private void RemoveTestData()
         {
-            if (TransientDatabaseExists() && DonorTableExists())
+            // HlaNames and PGroups are not deleted between test runs, as these stay constant - and not needing to add them every test run saves test runtime.
+            // If any issues arise from this in future, consider deleting them here also. 
+            if (TransientDatabaseExists())
             {
-                // HlaNames and PGroups are not deleted between test runs, as these stay constant - and not needing to add them every test run saves test runtime.
-                // If any issues arise from this in future, consider deleting them here also. 
-                
-                context.Database.ExecuteSqlRaw(@"
-                TRUNCATE TABLE [HlaNamePGroupRelationAtA]
-                TRUNCATE TABLE [HlaNamePGroupRelationAtB]
-                TRUNCATE TABLE [HlaNamePGroupRelationAtC]
-                TRUNCATE TABLE [HlaNamePGroupRelationAtDrb1]
-                TRUNCATE TABLE [HlaNamePGroupRelationAtDqb1]
-                
-                TRUNCATE TABLE [MatchingHlaAtA]
-                TRUNCATE TABLE [MatchingHlaAtB]
-                TRUNCATE TABLE [MatchingHlaAtC]
-                TRUNCATE TABLE [MatchingHlaAtDrb1]
-                TRUNCATE TABLE [MatchingHlaAtDqb1]
-                
-                TRUNCATE TABLE [Donors]
-                ");
-                
+                TruncateTableIfExists("HlaNamePGroupRelationAtA");
+                TruncateTableIfExists("HlaNamePGroupRelationAtB");
+                TruncateTableIfExists("HlaNamePGroupRelationAtC");
+                TruncateTableIfExists("HlaNamePGroupRelationAtDrb1");
+                TruncateTableIfExists("HlaNamePGroupRelationAtDqb1");
+
+                TruncateTableIfExists("MatchingHlaAtA");
+                TruncateTableIfExists("MatchingHlaAtB");
+                TruncateTableIfExists("MatchingHlaAtC");
+                TruncateTableIfExists("MatchingHlaAtDrb1");
+                TruncateTableIfExists("MatchingHlaAtDqb1");
+
+                TruncateTableIfExists("Donors");
+            }
+        }
+
+        private void TruncateTableIfExists(string tableName)
+        {
+            if (TableExists(tableName))
+            {
+                context.Database.ExecuteSqlRaw($"TRUNCATE TABLE [{tableName}]");
                 context.SaveChanges();
             }
         }
 
-        private bool DonorTableExists()
+        private bool TableExists(string tableName)
         {
             var conn = context.Database.GetDbConnection();
             if (conn.State.Equals(ConnectionState.Closed))
@@ -114,10 +118,10 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories
 
             using (var command = conn.CreateCommand())
             {
-                command.CommandText = @"
+                command.CommandText = @$"
     SELECT 1 FROM sys.tables AS T 
         INNER JOIN sys.schemas AS S ON T.schema_id = S.schema_id
-    WHERE T.Name = 'Donors'";
+    WHERE T.Name = '{tableName}'";
                 return command.ExecuteScalar() != null;
             }
         }
