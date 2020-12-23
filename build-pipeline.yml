@@ -1,6 +1,3 @@
-trigger:
-
-
 variables:
   - group: Terraform
 
