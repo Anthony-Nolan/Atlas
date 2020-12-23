@@ -25,6 +25,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IHlaScoringMetadataRepository scoringMetadataRepository;
         private readonly IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository;
         private readonly IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository;
+        private readonly ISmallGGroupsMetadataRepository smallGGroupsMetadataRepository;
+        private readonly ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository;
 
         public HlaMetadataCacheControl(
             string hlaNomenclatureVersion,
@@ -32,8 +34,9 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IHlaMatchingMetadataRepository matchingMetadataRepository,
             IHlaScoringMetadataRepository scoringMetadataRepository,
             IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository,
-            IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository
-        )
+            IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository,
+            ISmallGGroupsMetadataRepository smallGGroupsMetadataRepository,
+            ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository)
         {
             this.hlaNomenclatureVersion = hlaNomenclatureVersion;
 
@@ -42,6 +45,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.scoringMetadataRepository = scoringMetadataRepository;
             this.dpb1TceGroupsMetadataRepository = dpb1TceGroupsMetadataRepository;
             this.gGroupToPGroupMetadataRepository = gGroupToPGroupMetadataRepository;
+            this.smallGGroupsMetadataRepository = smallGGroupsMetadataRepository;
+            this.smallGGroupToPGroupMetadataRepository = smallGGroupToPGroupMetadataRepository;
         }
 
         public async Task PreWarmAllCaches()
@@ -52,6 +57,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             await scoringMetadataRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
             await dpb1TceGroupsMetadataRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
             await gGroupToPGroupMetadataRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
+            await smallGGroupsMetadataRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
+            await smallGGroupToPGroupMetadataRepository.LoadDataIntoMemory(hlaNomenclatureVersion);
         }
 
         public async Task PreWarmAlleleNameCache()

@@ -78,6 +78,5 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
         {
             return await typedMatchingRepository.GetAllPGroups(hlaNomenclatureVersion);
         }
-
     }
 }

@@ -20,12 +20,15 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 {
     public class DonorUpdateRepository : DonorUpdateRepositoryBase, IDonorUpdateRepository
     {
+        private readonly IHlaImportRepository hlaImportRepository;
+
         public DonorUpdateRepository(
-            IPGroupRepository pGroupRepository,
+            IHlaImportRepository hlaImportRepository,
             IConnectionStringProvider connectionStringProvider,
             ILogger logger)
-            :base(pGroupRepository, connectionStringProvider, logger)
+            : base(connectionStringProvider, logger)
         {
+            this.hlaImportRepository = hlaImportRepository;
         }
 
         public async Task SetDonorBatchAsUnavailableForSearch(IEnumerable<int> donorIds)
@@ -49,10 +52,12 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                 return;
             }
 
+            var hlaLookup = await hlaImportRepository.ImportHla(donors.ToList());
+            var processedDonorRecords = donors.Select(d => d.ToDonorInfoForPreProcessing(hla => hlaLookup[hla]));
             using (var transactionScope = new OptionalAsyncTransactionScope(runAllHlaInsertionsInASingleTransactionScope))
             {
                 await InsertBatchOfDonors(donors);
-                await AddMatchingPGroupsForExistingDonorBatch(donors, runAllHlaInsertionsInASingleTransactionScope);
+                await AddMatchingRelationsForExistingDonorBatch(processedDonorRecords, runAllHlaInsertionsInASingleTransactionScope);
                 transactionScope.Complete();
             }
         }
@@ -70,18 +75,18 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
 
             using (var outerTransactionScope = new OptionalAsyncTransactionScope(runAllHlaInsertionsInASingleTransactionScope))
             {
-                var donorsWhereHlaHasChanged = new List<DonorWithChangedMatchingLoci>();
+                var donorsWhereHlaHasChanged = new List<(DonorInfoWithExpandedHla, ISet<Locus>)>();
 
                 using (var innerNonHlaTransactionScope = new AsyncTransactionScope())
                 await using (var conn = new SqlConnection(ConnectionStringProvider.GetConnectionString()))
                 {
                     conn.Open();
+                    //TODO: ATLAS-501. Once we've established that this is a complete waste of time ... Delete this extra DB query!
                     var existingDonors = (await conn.QueryAsync<Donor>($@"
                     SELECT * FROM Donors 
                     WHERE DonorId IN ({string.Join(",", donorsToUpdate.Select(d => d.DonorId))})
                     ", commandTimeout: 300)
-                        ).ToDictionary(d =>
-                            d.DonorId); //TODO: ATLAS-501. Once we've established that this is a complete waste of time ... Delete this extra DB query!
+                        ).ToDictionary(d => d.DonorId); 
 
                     await SetAvailabilityOfDonorBatch(donorsToUpdate.Select(d => d.DonorId), true, conn);
 
@@ -110,7 +115,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                         if (DonorHlaHasChanged(existingDonorResult, donorToUpdate))
                         {
                             var changedLoci = GetChangedMatchingOnlyLoci(existingDonorResult, donorToUpdate);
-                            donorsWhereHlaHasChanged.Add(new DonorWithChangedMatchingLoci(donorToUpdate, changedLoci));
+                            donorsWhereHlaHasChanged.Add((donorToUpdate, changedLoci));
                             await UpdateDonorHla(donorToUpdate, conn);
                         }
                     }
@@ -122,7 +127,14 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
                     innerNonHlaTransactionScope.Complete();
                 }
 
-                await UpsertMatchingPGroupsAtSpecifiedLoci(donorsWhereHlaHasChanged, false, runAllHlaInsertionsInASingleTransactionScope);
+                var hlaLookup = await hlaImportRepository.ImportHla(donorsWhereHlaHasChanged.Select(d => d.Item1).ToList());
+                var donorUpdates = donorsWhereHlaHasChanged.Select(d =>
+                {
+                    var donorUpdate = d.Item1.ToDonorInfoForPreProcessing(hla => hlaLookup[hla]);
+                    return new DonorWithChangedMatchingLoci(donorUpdate, d.Item2);
+                }).ToList();
+
+                await UpsertMatchingPGroupsAtSpecifiedLoci(donorUpdates, false, runAllHlaInsertionsInASingleTransactionScope);
                 outerTransactionScope.Complete();
             }
         }
@@ -168,7 +180,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
             await connection.ExecuteAsync($@"
                         UPDATE Donors 
                         SET 
-                            DonorType = {(int)donorInfo.DonorType}
+                            DonorType = {(int) donorInfo.DonorType}
                         WHERE DonorId = {donorInfo.DonorId}
                         ", commandTimeout: 600);
         }
@@ -177,7 +189,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates
         // ~0.04 seconds to update 333 records vs. ~1.2 seconds to updated 333 records even in a single connection.
         private static async Task UpdateDonorTypes(List<DonorInfo> donorInfos, IDbConnection connection)
         {
-            var updatedDonorTypeMaps = donorInfos.Select(d => $" WHEN {d.DonorId} THEN {(int)d.DonorType} ").StringJoinWithNewline();
+            var updatedDonorTypeMaps = donorInfos.Select(d => $" WHEN {d.DonorId} THEN {(int) d.DonorType} ").StringJoinWithNewline();
             var allUpdatedDonorIds = donorInfos.Select(d => d.DonorId.ToString()).StringJoin(", ");
 
             await connection.ExecuteAsync($@"

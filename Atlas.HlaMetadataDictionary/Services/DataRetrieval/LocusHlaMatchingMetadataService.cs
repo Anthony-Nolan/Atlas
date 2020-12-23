@@ -12,7 +12,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
     /// </summary>
     internal interface ILocusHlaMatchingMetadataService
     {
-        Task<LocusInfo<IHlaMatchingMetadata>> GetHlaMatchingMetadata(
+        Task<LocusInfo<INullHandledHlaMatchingMetadata>> GetHlaMatchingMetadata(
             Locus locus,
             LocusInfo<string> locusTyping,
             string hlaNomenclatureVersion);
@@ -28,7 +28,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             this.singleHlaMetadataService = singleHlaMetadataService;
         }
 
-        public async Task<LocusInfo<IHlaMatchingMetadata>> GetHlaMatchingMetadata(
+        public async Task<LocusInfo<INullHandledHlaMatchingMetadata>> GetHlaMatchingMetadata(
             Locus locus,
             LocusInfo<string> locusTyping,
             string hlaNomenclatureVersion)
@@ -38,7 +38,7 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
             var result1 = HandleNullAlleles(locusMetadata[0], locusMetadata[1]);
             var result2 = HandleNullAlleles(locusMetadata[1], locusMetadata[0]);
 
-            return new LocusInfo<IHlaMatchingMetadata>(result1, result2);
+            return new LocusInfo<INullHandledHlaMatchingMetadata>(result1, result2);
         }
 
         private async Task<IHlaMatchingMetadata[]> GetLocusMetadata(
@@ -51,26 +51,19 @@ namespace Atlas.HlaMetadataDictionary.Services.DataRetrieval
                 singleHlaMetadataService.GetHlaMetadata(locus, locusHlaTyping.Position2, hlaNomenclatureVersion));
         }
 
-        private static IHlaMatchingMetadata HandleNullAlleles(
-            IHlaMatchingMetadata metadata,
-            IHlaMatchingMetadata otherMetadata)
+        private static INullHandledHlaMatchingMetadata HandleNullAlleles(IHlaMatchingMetadata metadata, IHlaMatchingMetadata otherMetadata)
         {
             return metadata.IsNullExpressingTyping
                 ? MergeMatchingHla(metadata, otherMetadata)
-                : metadata;
+                : new NullHandledHlaMatchingMetadata(metadata);
         }
 
-        private static IHlaMatchingMetadata MergeMatchingHla(
-            IHlaMatchingMetadata metadata,
-            IHlaMatchingMetadata otherMetadata)
+        private static INullHandledHlaMatchingMetadata MergeMatchingHla(IHlaMatchingMetadata metadata, IHlaMatchingMetadata otherMetadata)
         {
             var mergedPGroups = metadata.MatchingPGroups.Union(otherMetadata.MatchingPGroups).ToList();
-            return new HlaMatchingMetadata(
-                metadata.Locus,
-                metadata.LookupName,
-                metadata.TypingMethod,
-                mergedPGroups
-                );
+            var mergedLookupName = NullAlleleHandling.CombineAlleleNames(metadata.LookupName, otherMetadata.LookupName);
+
+            return new NullHandledHlaMatchingMetadata(metadata, mergedLookupName, mergedPGroups);
         }
     }
 }

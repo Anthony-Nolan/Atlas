@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping
+﻿namespace Atlas.Common.GeneticData.Hla.Models.MolecularHlaTyping
 {
     public static class MolecularTypingNameConstants
     {

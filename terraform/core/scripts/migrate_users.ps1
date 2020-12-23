@@ -11,7 +11,10 @@ $variablesArray =
 "donorImportPassword=$env:donorImportPassword", 
 "donorImportSchema=Donors",
 "matchingUsernameForDonorDB=$env:matchingUsernameForDonorDB",
-"matchingPasswordForDonorDB=$env:matchingPasswordForDonorDB" 
+"matchingPasswordForDonorDB=$env:matchingPasswordForDonorDB",
+"repeatSearchUsername=$env:repeatSearchUsername",
+"repeatSearchPassword=$env:repeatSearchPassword",
+"repeatSearchSchema=RepeatSearch"
 
 Write-Host $variablesArray
 
@@ -22,3 +25,5 @@ Invoke-Sqlcmd -InputFile "sql/createUsers/matchingTransient.sql" -ServerInstance
 Invoke-Sqlcmd -InputFile "sql/createUsers/matchingPersistent.sql" -ServerInstance $env:sqlServer -Database $env:matchingAlgorithmDatabasePersistentName -Username $env:sqlServerLogin -Password $env:sqlServerLoginPassword -Variable $variablesArray
 
 Invoke-Sqlcmd -InputFile "sql/createUsers/donorImport.sql" -ServerInstance $env:sqlServer -Database $env:donorImportDatabase -Username $env:sqlServerLogin -Password $env:sqlServerLoginPassword -Variable $variablesArray
+
+Invoke-Sqlcmd -InputFile "sql/createUsers/repeatSearch.sql" -ServerInstance $env:sqlServer -Database $env:repeatSearchDatabase -Username $env:sqlServerLogin -Password $env:sqlServerLoginPassword -Variable $variablesArray

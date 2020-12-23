@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.MatchingAlgorithm.Data.Context;
+using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Persistent.Context;
 using Atlas.MatchingAlgorithm.Data.Persistent.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.ConnectionStringProviders;
@@ -53,10 +55,11 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
             var persistentContext = DependencyInjection.DependencyInjection.Provider.GetService<SearchAlgorithmPersistentContext>();
             Task.WaitAll(ClearPersistentDatabase(persistentContext));
         }
-        
+
         public static void ClearTransientDatabases()
         {
-            var connStringFactory = DependencyInjection.DependencyInjection.Provider.GetService<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
+            var connStringFactory = DependencyInjection.DependencyInjection.Provider
+                .GetService<StaticallyChosenTransientSqlConnectionStringProviderFactory>();
             var connStringA = connStringFactory.GenerateConnectionStringProvider(TransientDatabase.DatabaseA).GetConnectionString();
             var connStringB = connStringFactory.GenerateConnectionStringProvider(TransientDatabase.DatabaseB).GetConnectionString();
 
@@ -72,16 +75,26 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.TestHelpers
         {
             if (context != null)
             {
-                return context.Database.ExecuteSqlRawAsync(@"
-TRUNCATE TABLE [DonorManagementLogs];
-TRUNCATE TABLE [Donors];
-TRUNCATE TABLE [MatchingHlaAtA];
-TRUNCATE TABLE [MatchingHlaAtB];
-TRUNCATE TABLE [MatchingHlaAtC];
-TRUNCATE TABLE [MatchingHlaAtDrb1];
-TRUNCATE TABLE [MatchingHlaAtDqb1];
-DELETE FROM [PGroupNames];");
+                return context.Database.ExecuteSqlRawAsync(@$"
+                TRUNCATE TABLE [HlaNamePGroupRelationAtA]
+                TRUNCATE TABLE [HlaNamePGroupRelationAtB]
+                TRUNCATE TABLE [HlaNamePGroupRelationAtC]
+                TRUNCATE TABLE [HlaNamePGroupRelationAtDrb1]
+                TRUNCATE TABLE [HlaNamePGroupRelationAtDqb1]
+                
+                TRUNCATE TABLE [MatchingHlaAtA]
+                TRUNCATE TABLE [MatchingHlaAtB]
+                TRUNCATE TABLE [MatchingHlaAtC]
+                TRUNCATE TABLE [MatchingHlaAtDrb1]
+                TRUNCATE TABLE [MatchingHlaAtDqb1]
+                
+                TRUNCATE TABLE [PGroupNames]
+                TRUNCATE TABLE [HlaNames]
+                
+                TRUNCATE TABLE [Donors]
+                ");
             }
+
             return Task.CompletedTask;
         }
 

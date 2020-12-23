@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 using Atlas.MatchPrediction.Test.Verification.Data.Models.Entities;
 
 namespace Atlas.MatchPrediction.Test.Verification.Services

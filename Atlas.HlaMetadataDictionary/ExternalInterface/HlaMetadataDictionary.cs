@@ -7,6 +7,7 @@ using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata.ScoringMetadata;
+using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
@@ -33,7 +34,13 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         /// </summary>
         public Task<string> ConvertGGroupToPGroup(Locus locus, string gGroup);
 
-        Task<LocusInfo<IHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
+        /// <summary>
+        /// Functionally the same as calling ConvertHla on small g group typed hla, with a target type of P group.
+        /// As small g groups are guaranteed to correspond to exactly 0 or 1 PGroups, this method makes this specific conversion much faster.  
+        /// </summary>
+        public Task<string> ConvertSmallGGroupToPGroup(Locus locus, string smallGGroup);
+
+        Task<LocusInfo<INullHandledHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping);
         Task<IHlaScoringMetadata> GetHlaScoringMetadata(Locus locus, string hlaName);
         Task<string> GetDpb1TceGroup(string dpb1HlaName);
         Task<IEnumerable<string>> GetAllPGroups();
@@ -62,11 +69,13 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
 
         private readonly IRecreateHlaMetadataService recreateMetadataService;
         private readonly IHlaConverter hlaConverter;
+        private readonly IHlaValidator hlaValidator;
         private readonly IHlaMatchingMetadataService hlaMatchingMetadataService;
         private readonly ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
         private readonly IHlaScoringMetadataService hlaScoringMetadataService;
         private readonly IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
         private readonly IGGroupToPGroupMetadataService gGroupToPGroupMetadataService;
+        private readonly ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService;
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
@@ -75,11 +84,13 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             string activeHlaNomenclatureVersionOrDefault,
             IRecreateHlaMetadataService recreateMetadataService,
             IHlaConverter hlaConverter,
+            IHlaValidator hlaValidator,
             IHlaMatchingMetadataService hlaMatchingMetadataService,
             ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService,
             IHlaScoringMetadataService hlaScoringMetadataService,
             IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
             IGGroupToPGroupMetadataService gGroupToPGroupMetadataService,
+            ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger)
@@ -87,11 +98,13 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.activeHlaNomenclatureVersionOrDefault = activeHlaNomenclatureVersionOrDefault;
             this.recreateMetadataService = recreateMetadataService;
             this.hlaConverter = hlaConverter;
+            this.hlaValidator = hlaValidator;
             this.hlaMatchingMetadataService = hlaMatchingMetadataService;
             this.locusHlaMatchingMetadataService = locusHlaMatchingMetadataService;
             this.hlaScoringMetadataService = hlaScoringMetadataService;
             this.dpb1TceGroupMetadataService = dpb1TceGroupMetadataService;
             this.gGroupToPGroupMetadataService = gGroupToPGroupMetadataService;
+            this.smallGGroupToPGroupMetadataService = smallGGroupToPGroupMetadataService;
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
@@ -131,7 +144,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         /// <inheritdoc />
         public async Task<bool> ValidateHla(Locus locus, string hlaName, TargetHlaCategory targetHlaCategory)
         {
-            return await hlaConverter.ValidateHla(locus, hlaName, new HlaConversionBehaviour
+            return await hlaValidator.ValidateHla(locus, hlaName, new HlaConversionBehaviour
             {
                 HlaNomenclatureVersion = ActiveHlaNomenclatureVersion,
                 TargetHlaCategory = targetHlaCategory
@@ -169,7 +182,7 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             });
         }
 
-        public async Task<LocusInfo<IHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping)
+        public async Task<LocusInfo<INullHandledHlaMatchingMetadata>> GetLocusHlaMatchingMetadata(Locus locus, LocusInfo<string> locusTyping)
         {
             return await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(locus, locusTyping, ActiveHlaNomenclatureVersion);
         }
@@ -187,6 +200,11 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         public async Task<string> ConvertGGroupToPGroup(Locus locus, string gGroup)
         {
             return await gGroupToPGroupMetadataService.ConvertGGroupToPGroup(locus, gGroup, ActiveHlaNomenclatureVersion);
+        }
+
+        public async Task<string> ConvertSmallGGroupToPGroup(Locus locus, string smallGGroup)
+        {
+            return await smallGGroupToPGroupMetadataService.ConvertSmallGGroupToPGroup(locus, smallGGroup, ActiveHlaNomenclatureVersion);
         }
 
         public async Task<IEnumerable<string>> GetAllPGroups()

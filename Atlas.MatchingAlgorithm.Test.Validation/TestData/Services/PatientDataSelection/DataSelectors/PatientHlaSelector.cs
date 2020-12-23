@@ -1,5 +1,4 @@
 ﻿using Atlas.Common.GeneticData;
-using Atlas.Common.GeneticData.Hla.Services;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Maths;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Exceptions;
@@ -10,6 +9,7 @@ using Atlas.MatchingAlgorithm.Test.Validation.TestData.Repositories;
 using Atlas.MatchingAlgorithm.Test.Validation.TestData.Resources.Alleles;
 using System;
 using System.Linq;
+using Atlas.Common.GeneticData.Hla.Services.AlleleNameUtils;
 
 namespace Atlas.MatchingAlgorithm.Test.Validation.TestData.Services.PatientDataSelection.DataSelectors
 {

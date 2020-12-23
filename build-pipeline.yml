@@ -57,6 +57,9 @@ jobs:
             Atlas.MatchPrediction.Data
             Atlas.MatchPrediction.Test
             Atlas.MatchPrediction.Functions
+            Atlas.RepeatSearch.Data
+            Atlas.RepeatSearch.Test
+            Atlas.RepeatSearch.Functions
           arguments: '--configuration Release --no-restore'
       - task: DotNetCoreCLI@2
         displayName: 'Run Unit Tests'
@@ -174,6 +177,7 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/MatchPredictionFunctions-$(Build.BuildId).zip'
           ArtifactName: functions
+          
       - task: CopyFiles@2
         displayName: 'Copy DonorImport Functions Build'
         inputs:
@@ -193,6 +197,28 @@ jobs:
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/DonorImportFunctions-$(Build.BuildId).zip'
           ArtifactName: functions
+          
+
+      - task: CopyFiles@2
+        displayName: 'Copy RepeatSearch Functions Build'
+        inputs:
+          SourceFolder: 'Atlas.RepeatSearch.Functions'
+          Contents: |
+            bin/**
+            *.config
+          TargetFolder: 'repeatSearchFunctionsBuild'
+      - task: ArchiveFiles@2
+        displayName: 'Archive RepeatSearch Functions Build'
+        inputs:
+          rootFolderOrFile: '$(System.DefaultWorkingDirectory)/repeatSearchFunctionsBuild/bin'
+          includeRootFolder: false
+          archiveFile: '$(Build.ArtifactStagingDirectory)/RepeatSearchFunctions-$(Build.BuildId).zip'
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: RepeatSearch Functions'
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/RepeatSearchFunctions-$(Build.BuildId).zip'
+          ArtifactName: functions
+          
       - task: DotNetCoreCLI@2
         displayName: 'Generate MatchingAlgorithm Persistent Migration'
         inputs:
@@ -217,6 +243,12 @@ jobs:
           command: custom
           custom: ef
           arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/DonorImportMigrationScript.sql --context DonorContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.DonorImport.Data --project $(System.DefaultWorkingDirectory)/Atlas.DonorImport.Data'
+      - task: DotNetCoreCLI@2
+        displayName: 'Generate Repeat Search Migration'
+        inputs:
+          command: custom
+          custom: ef
+          arguments: 'migrations script  --output $(Build.ArtifactStagingDirectory)/SQL/RepeatSearchMigrationScript.sql --context RepeatSearchContext --idempotent --startup-project  $(System.DefaultWorkingDirectory)/Atlas.RepeatSearch.Data --project $(System.DefaultWorkingDirectory)/Atlas.RepeatSearch.Data'
       - task: PublishBuildArtifacts@1
         displayName: 'Publish Artifact: sql'
         inputs:

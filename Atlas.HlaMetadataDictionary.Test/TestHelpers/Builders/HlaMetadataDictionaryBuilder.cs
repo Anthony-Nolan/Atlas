@@ -1,6 +1,7 @@
 ﻿using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
@@ -13,11 +14,13 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
     {
         private IRecreateHlaMetadataService recreate;
         private IHlaConverter converter;
+        private IHlaValidator validator;
         private IHlaMatchingMetadataService matching;
         private ILocusHlaMatchingMetadataService locus;
         private IHlaScoringMetadataService scoring;
         private IDpb1TceGroupMetadataService dpb1;
-        private IGGroupToPGroupMetadataService pGroup;
+        private IGGroupToPGroupMetadataService gGroupToPGroup;
+        private ISmallGGroupToPGroupMetadataService smallGGroupToPGroup;
         private IHlaMetadataGenerationOrchestrator metadata;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private ILogger logger;
@@ -32,11 +35,13 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
         {
             recreate = Substitute.For<IRecreateHlaMetadataService>();
             converter = Substitute.For<IHlaConverter>();
+            validator = Substitute.For<IHlaValidator>();
             matching = Substitute.For<IHlaMatchingMetadataService>();
             locus = Substitute.For<ILocusHlaMatchingMetadataService>();
             scoring = Substitute.For<IHlaScoringMetadataService>();
             dpb1 = Substitute.For<IDpb1TceGroupMetadataService>();
-            pGroup = Substitute.For<IGGroupToPGroupMetadataService>();
+            gGroupToPGroup = Substitute.For<IGGroupToPGroupMetadataService>();
+            smallGGroupToPGroup = Substitute.For<ISmallGGroupToPGroupMetadataService>();
             metadata = Substitute.For<IHlaMetadataGenerationOrchestrator>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
             logger = Substitute.For<ILogger>();
@@ -58,6 +63,9 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                 case IHlaConverter typedDependency:
                     converter = typedDependency;
                     break;
+                case IHlaValidator typedDependency:
+                    validator = typedDependency;
+                    break;
                 case IHlaMatchingMetadataService typedDependency:
                     matching = typedDependency;
                     break;
@@ -71,7 +79,10 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                     dpb1 = typedDependency;
                     break;
                 case IGGroupToPGroupMetadataService typedDependency:
-                    pGroup = typedDependency;
+                    gGroupToPGroup = typedDependency;
+                    break;
+                case ISmallGGroupToPGroupMetadataService typedDependency:
+                    smallGGroupToPGroup = typedDependency;
                     break;
                 case IHlaMetadataGenerationOrchestrator typedDependency:
                     metadata = typedDependency;
@@ -93,15 +104,17 @@ namespace Atlas.HlaMetadataDictionary.Test.TestHelpers.Builders
                 return cannedResponse;
             }
 
-            return new Atlas.HlaMetadataDictionary.ExternalInterface.HlaMetadataDictionary(
+            return new ExternalInterface.HlaMetadataDictionary(
                 activeVersion,
                 recreate,
                 converter,
+                validator,
                 matching,
                 locus,
                 scoring,
                 dpb1,
-                pGroup,
+                gGroupToPGroup,
+                smallGGroupToPGroup,
                 metadata,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger

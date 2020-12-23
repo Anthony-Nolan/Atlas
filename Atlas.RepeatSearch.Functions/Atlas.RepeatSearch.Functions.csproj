@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <AzureFunctionsVersion>v3</AzureFunctionsVersion>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <OutputPath>bin/</OutputPath>
+    </PropertyGroup>
+    
+    <Target Name="Scaffold local settings file" BeforeTargets="Build" Condition="!EXISTS('$(ProjectDir)\local.settings.json')">
+        <Copy SourceFiles="$(ProjectDir)\local.settings.template.json" DestinationFiles="$(ProjectDir)\local.settings.json" />
+    </Target>
+    
+    <ItemGroup>
+        <PackageReference Include="AzureExtensions.Swashbuckle" Version="3.2.2" />
+        <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.3.7" />
+        <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
+        <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventGrid" Version="2.1.0" />
+        <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="4.1.2" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.4" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.4" />
+        <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="3.0.11" />
+        <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.7" />
+        <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Update="host.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="local.settings.template.json">
+            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+        </None>
+        <None Update="local.settings.json">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
+      <ProjectReference Include="..\Atlas.RepeatSearch\Atlas.RepeatSearch.csproj" />
+    </ItemGroup>
+</Project>

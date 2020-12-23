@@ -3,6 +3,7 @@ using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.Hla.Models;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
+using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using FluentAssertions;
 using NSubstitute;
@@ -47,13 +48,15 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
                 .GetHlaMetadata(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
                 .Returns(metadata1, metadata2);
 
-            var expectedResults = new LocusInfo<IHlaMatchingMetadata>(metadata1, metadata2);
-
             var actualResults = await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(
                 MatchedLocus,
                 new LocusInfo<string>(hlaString1, hlaString2), "hla-db-version");
 
-            actualResults.Should().BeEquivalentTo(expectedResults);
+            actualResults.Position1.MatchingPGroups.Should().BeEquivalentTo(pGroup1);
+            actualResults.Position1.LookupName.Should().Be(hlaString1);
+
+            actualResults.Position2.MatchingPGroups.Should().BeEquivalentTo(pGroup2);
+            actualResults.Position2.LookupName.Should().Be(hlaString2);
         }
 
         [TestCase(Molecular)]
@@ -61,29 +64,29 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
         public async Task GetHlaMatchingMetadataForLocus_WhenPositionOneIsExpressedTyping_AndPositionTwoIsNullAllele_PGroupOfOneCopiedToTwo(
             TypingMethod expressedHlaTypingMethod)
         {
-            const string typingInPosition1 = "expressed-hla";
-            const string typingInPosition2 = "null-allele";
+            const string expressingPosition1 = "expressed-hla";
+            const string nullExpressingPosition2 = "null-allele";
             const string pGroup = "expressed-hla-p-group";
 
             var expressedHlaResult =
-                new HlaMatchingMetadata(MatchedLocus, typingInPosition1, expressedHlaTypingMethod, new[] {pGroup});
+                new HlaMatchingMetadata(MatchedLocus, expressingPosition1, expressedHlaTypingMethod, new[] {pGroup});
             var nullAlleleResult =
-                new HlaMatchingMetadata(MatchedLocus, typingInPosition2, Molecular, new string[] { });
+                new HlaMatchingMetadata(MatchedLocus, nullExpressingPosition2, Molecular, new string[] { });
 
             matchingMetadataService
                 .GetHlaMetadata(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
                 .Returns(expressedHlaResult, nullAlleleResult);
 
-            var nullAlleleResultWithExpressedPGroup =
-                new HlaMatchingMetadata(MatchedLocus, typingInPosition2, Molecular, new[] {pGroup});
-
-            var expectedResults = new LocusInfo<IHlaMatchingMetadata>(expressedHlaResult, nullAlleleResultWithExpressedPGroup);
-
             var actualResults = await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(
                 MatchedLocus,
-                new LocusInfo<string>(typingInPosition1, typingInPosition2), "hla-db-version");
+                new LocusInfo<string>(expressingPosition1, nullExpressingPosition2), "hla-db-version");
+            var expectedMergedName = NullAlleleHandling.CombineAlleleNames(nullExpressingPosition2, expressingPosition1);
 
-            actualResults.Should().BeEquivalentTo(expectedResults);
+            actualResults.Position1.MatchingPGroups.Should().BeEquivalentTo(pGroup);
+            actualResults.Position1.LookupName.Should().Be(expressingPosition1);
+
+            actualResults.Position2.LookupName.Should().Be(expectedMergedName);
+            actualResults.Position2.MatchingPGroups.Should().BeEquivalentTo(pGroup);
         }
 
         [TestCase(Molecular)]
@@ -91,30 +94,30 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.DataRetrieval.Meta
         public async Task GetHlaMatchingMetadataForLocus_WhenPositionOneIsNullAllele_AndPositionTwoIsExpressedTyping_PGroupOfTwoCopiedToOne(
             TypingMethod expressedHlaTypingMethod)
         {
-            const string typingInPosition1 = "null-allele";
-            const string typingInPosition2 = "expressed-hla";
+            const string nullExpressionPosition1 = "null-allele";
+            const string expressingPosition2 = "expressed-hla";
             const string pGroup = "expressed-hla-p-group";
 
             var nullAlleleResult =
-                new HlaMatchingMetadata(MatchedLocus, typingInPosition1, Molecular, new string[] { });
+                new HlaMatchingMetadata(MatchedLocus, nullExpressionPosition1, Molecular, new string[] { });
             var expressedHlaResult =
-                new HlaMatchingMetadata(MatchedLocus, typingInPosition2, expressedHlaTypingMethod, new[] {pGroup});
+                new HlaMatchingMetadata(MatchedLocus, expressingPosition2, expressedHlaTypingMethod, new[] {pGroup});
 
             matchingMetadataService
                 .GetHlaMetadata(MatchedLocus, Arg.Any<string>(), Arg.Any<string>())
                 .Returns(nullAlleleResult, expressedHlaResult);
 
-            var nullAlleleResultWithExpressedPGroup =
-                new HlaMatchingMetadata(MatchedLocus, typingInPosition1, Molecular, new[] {pGroup});
-
-            var expectedResults = new LocusInfo<IHlaMatchingMetadata>(nullAlleleResultWithExpressedPGroup, expressedHlaResult);
-
             var actualResults = await locusHlaMatchingMetadataService.GetHlaMatchingMetadata(
                 MatchedLocus,
-                new LocusInfo<string>(typingInPosition1, typingInPosition2), 
+                new LocusInfo<string>(nullExpressionPosition1, expressingPosition2),
                 "hla-db-version");
+            var expectedMergedName = NullAlleleHandling.CombineAlleleNames(nullExpressionPosition1, expressingPosition2);
 
-            actualResults.Should().BeEquivalentTo(expectedResults);
+            actualResults.Position2.MatchingPGroups.Should().BeEquivalentTo(pGroup);
+            actualResults.Position2.LookupName.Should().Be(expressingPosition2);
+
+            actualResults.Position1.LookupName.Should().Be(expectedMergedName);
+            actualResults.Position1.MatchingPGroups.Should().BeEquivalentTo(pGroup);
         }
     }
 }

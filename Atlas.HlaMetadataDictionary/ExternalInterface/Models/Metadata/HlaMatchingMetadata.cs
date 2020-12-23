@@ -8,8 +8,9 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata
 {
     /// <summary>
     /// Metadata required to match HLA pairings.
+    /// If handling of null alleles at a locus is required, instead use <see cref="INullHandledHlaMatchingMetadata"/>
     /// </summary>
-    public interface IHlaMatchingMetadata : ISerialisableHlaMetadata
+    internal interface IHlaMatchingMetadata : ISerialisableHlaMetadata
     {
         IList<string> MatchingPGroups { get; } //This must NOT be an IEnumerable. IReadOnlyCollection would be fine, if we wanted to enforce Immutability.
         bool IsNullExpressingTyping { get; }

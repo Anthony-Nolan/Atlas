@@ -4,13 +4,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.ApplicationInsights.Timing;
+using Atlas.Common.GeneticData;
+using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Notifications;
 using Atlas.Common.Utils;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
+using Atlas.HlaMetadataDictionary.ExternalInterface.Models.Metadata;
 using Atlas.MatchingAlgorithm.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Data.Helpers;
 using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+using Atlas.MatchingAlgorithm.Data.Models.Entities;
 using Atlas.MatchingAlgorithm.Data.Repositories;
 using Atlas.MatchingAlgorithm.Data.Repositories.DonorUpdates;
 using Atlas.MatchingAlgorithm.Models;
@@ -18,6 +22,9 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDataba
 using Atlas.MatchingAlgorithm.Services.Donors;
 using Atlas.MatchingAlgorithm.Settings;
 using LoggingStopwatch;
+using MoreLinq;
+using Atlas.MatchingAlgorithm.Data.Models.DonorInfo;
+
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
 {
@@ -48,6 +55,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
         private readonly IDonorImportRepository donorImportRepository;
         private readonly IDataRefreshRepository dataRefreshRepository;
         private readonly IPGroupRepository pGroupRepository;
+        private readonly IHlaNamesRepository hlaNamesRepository;
+        private readonly IHlaImportRepository hlaImportRepository;
 
         public const int NumberOfBatchesOverlapOnRestart = 3;
 
@@ -67,6 +76,8 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             donorImportRepository = repositoryFactory.GetDonorImportRepository();
             dataRefreshRepository = repositoryFactory.GetDataRefreshRepository();
             pGroupRepository = repositoryFactory.GetPGroupRepository();
+            hlaNamesRepository = repositoryFactory.GetHlaNamesRepository();
+            hlaImportRepository = repositoryFactory.GetHlaImportRepository();
         }
 
         public async Task UpdateDonorHla(
@@ -132,6 +143,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_Overall_TimerKey, " * Ensuring all PGroups exist in the DB, during HlaProcessing (no actual DB writing, just processing)")) 
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_Flattening_TimerKey, " * * Flatten the donors' PGroups, during EnsureAllPGroupsExist, during HlaProcessing")) 
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewPGroupInsertion_FindNew_TimerKey, " * * Check PGroups against known dictionary, during EnsureAllPGroupsExist, during HlaProcessing"))
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewHlaNameInsertion_Overall_TimerKey, " * * Check HLA Names against known dictionary, during HlaProcessing"))
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewHlaNameInsertion_Flattening_TimerKey, " * * Flatten HLA Names, during HlaProcessing"))
+            using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.NewHlaNameInsertion_FindNew_TimerKey, " * * Check HLA Names against known dictionary, during EnsureAllHlaNamesExist, during HlaProcessing"))
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_Overall_TimerKey, " * UpsertMatchingPGroupsAtSpecifiedLoci, during HlaProcessing")) 
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_Overall_TimerKey, " * * Time setting up Hla BulkInsert statements, during HlaProcessing")) 
             using (timerCollection.InitialiseStopwatch(DataRefreshTimingKeys.HlaUpsert_BulkInsertSetup_BuildDataTable_Overall_TimerKey, " * * * Data Table Build, in Hla BulkInsert SETUP, during HlaProcessing"))
@@ -217,43 +231,16 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
             var hlaExpansionResults = await donorHlaExpander.ExpandDonorHlaBatchAsync(donorBatch, HlaFailureEventName);
             timedInnerOperation.Dispose();
 
-            using (timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewPGroupInsertion_Overall_TimerKey))
-            {
-                EnsureAllPGroupsExist(hlaExpansionResults.ProcessingResults, timerCollection);
-            }
+            var hlaNameLookup = await hlaImportRepository.ImportHla(hlaExpansionResults.ProcessingResults);
 
-            await donorImportRepository.AddMatchingPGroupsForExistingDonorBatch(
-                hlaExpansionResults.ProcessingResults,
+            var donorEntries = hlaExpansionResults.ProcessingResults.Select(r => r.ToDonorInfoForPreProcessing(hlaName => hlaNameLookup[hlaName]));
+
+            await donorImportRepository.AddMatchingRelationsForExistingDonorBatch(
+                donorEntries,
                 settings.DataRefreshDonorUpdatesShouldBeFullyTransactional,
                 timerCollection);
 
             return hlaExpansionResults.FailedDonors;
-        }
-
-        /// <remarks>
-        /// See notes in FindOrCreatePGroupIds.
-        /// In practice this will never do anything in Prod code, because of the InsertPGroups prep step, below.
-        /// But it means that during tests the DonorUpdate code behaves more like
-        /// "the real thing", since the PGroups have already been inserted into the DB.
-        ///
-        /// Note that over the course of a 2M donor import, this is flattening a total of ~1B records, which
-        /// ends up taking 2-3 minutes. The EnsureAllPGroupsExist check also takes 2-3 minutes.
-        /// </remarks>
-        private void EnsureAllPGroupsExist(
-            IReadOnlyCollection<DonorInfoWithExpandedHla> donorsWithHlas,
-            LongStopwatchCollection timerCollection
-        )
-        {
-            var flatteningTimer = timerCollection.TimeInnerOperation(DataRefreshTimingKeys.NewPGroupInsertion_Flattening_TimerKey);
-            var allPGroups = donorsWithHlas
-                .SelectMany(d =>
-                    d.MatchingHla?.ToEnumerable().SelectMany(hla =>
-                        hla?.MatchingPGroups ?? new string[0]
-                    ) ?? new List<string>()
-                ).ToList();
-            flatteningTimer.Dispose();
-
-            pGroupRepository.EnsureAllPGroupsExist(allPGroups, timerCollection);
         }
 
         private async Task PerformUpfrontSetup(string hlaNomenclatureVersion)
@@ -284,7 +271,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh.HlaProcessing
                     // bad out-come from allowing it to re-run.
                     var hlaDictionary = hlaMetadataDictionaryFactory.BuildDictionary(hlaNomenclatureVersion);
                     var pGroups = await hlaDictionary.GetAllPGroups();
-                    pGroupRepository.InsertPGroups(pGroups);
+                    await pGroupRepository.InsertPGroups(pGroups);
                 }
             }
             catch (Exception e)

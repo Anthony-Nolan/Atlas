@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Models;
+using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
@@ -18,11 +19,13 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
 
         private IRecreateHlaMetadataService recreateMetadataService;
         private IHlaConverter hlaConverter;
+        private IHlaValidator hlaValidator;
         private IHlaMatchingMetadataService hlaMatchingMetadataService;
         private ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
         private IHlaScoringMetadataService hlaScoringMetadataService;
         private IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
         private IGGroupToPGroupMetadataService gGroupToPGroupMetadataService;
+        private ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService;
         private IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private ILogger logger;
@@ -34,11 +37,13 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
         {
             recreateMetadataService = Substitute.For<IRecreateHlaMetadataService>();
             hlaConverter = Substitute.For<IHlaConverter>();
+            hlaValidator = Substitute.For<IHlaValidator>();
             hlaMatchingMetadataService = Substitute.For<IHlaMatchingMetadataService>();
             locusHlaMatchingMetadataService = Substitute.For<ILocusHlaMatchingMetadataService>();
             hlaScoringMetadataService = Substitute.For<IHlaScoringMetadataService>();
             dpb1TceGroupMetadataService = Substitute.For<IDpb1TceGroupMetadataService>();
             gGroupToPGroupMetadataService = Substitute.For<IGGroupToPGroupMetadataService>();
+            smallGGroupToPGroupMetadataService = Substitute.For<ISmallGGroupToPGroupMetadataService>();
             hlaMetadataGenerationOrchestrator = Substitute.For<IHlaMetadataGenerationOrchestrator>();
             wmdaHlaNomenclatureVersionAccessor = Substitute.For<IWmdaHlaNomenclatureVersionAccessor>();
             logger = Substitute.For<ILogger>();
@@ -47,11 +52,13 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.ExternalInterface
                 DefaultVersion,
                 recreateMetadataService,
                 hlaConverter,
+                hlaValidator,
                 hlaMatchingMetadataService,
                 locusHlaMatchingMetadataService,
                 hlaScoringMetadataService,
                 dpb1TceGroupMetadataService,
                 gGroupToPGroupMetadataService,
+                smallGGroupToPGroupMetadataService,
                 hlaMetadataGenerationOrchestrator,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger);

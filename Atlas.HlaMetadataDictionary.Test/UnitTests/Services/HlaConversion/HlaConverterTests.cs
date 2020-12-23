@@ -25,6 +25,7 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
 
         private IHlaNameToTwoFieldAlleleConverter hlaNameToTwoFieldAlleleConverter;
         private IHlaScoringMetadataService scoringMetadataService;
+        private ISmallGGroupMetadataService smallGGroupMetadataService;
 
         private IHlaConverter hlaConverter;
 
@@ -33,9 +34,12 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
         {
             hlaNameToTwoFieldAlleleConverter = Substitute.For<IHlaNameToTwoFieldAlleleConverter>();
             scoringMetadataService = Substitute.For<IHlaScoringMetadataService>();
-            var logger = Substitute.For<ILogger>();
+            smallGGroupMetadataService = Substitute.For<ISmallGGroupMetadataService>();
 
-            hlaConverter = new HlaConverter(hlaNameToTwoFieldAlleleConverter, scoringMetadataService);
+            hlaConverter = new HlaConverter(
+                hlaNameToTwoFieldAlleleConverter,
+                scoringMetadataService,
+                smallGGroupMetadataService);
         }
 
         [TestCase(null)]
@@ -109,6 +113,40 @@ namespace Atlas.HlaMetadataDictionary.Test.UnitTests.Services.HlaConversion
 
             const TargetHlaCategory targetHla = TargetHlaCategory.GGroup;
             const string version = "version";
+            var result = await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
+            {
+                TargetHlaCategory = targetHla,
+                HlaNomenclatureVersion = version
+            });
+
+            result.Should().BeEquivalentTo(gGroups);
+        }
+
+        [Test]
+        public async Task ConvertHla_TargetIsSmallGGroup_CallsCorrectConverter()
+        {
+            const TargetHlaCategory targetHla = TargetHlaCategory.SmallGGroup;
+            const string version = "version";
+
+            await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
+            {
+                TargetHlaCategory = targetHla,
+                HlaNomenclatureVersion = version
+            });
+
+            await smallGGroupMetadataService.Received()
+                .GetSmallGGroups(DefaultLocus, DefaultHlaName, version);
+        }
+
+        [Test]
+        public async Task ConvertHla_TargetIsSmallGGroup_ReturnsSmallGGroups()
+        {
+            var gGroups = new List<string> {"g-group1", "g-group-2"};
+            smallGGroupMetadataService.GetSmallGGroups(default, default, default).ReturnsForAnyArgs(gGroups);
+
+            const TargetHlaCategory targetHla = TargetHlaCategory.SmallGGroup;
+            const string version = "version";
+
             var result = await hlaConverter.ConvertHla(DefaultLocus, DefaultHlaName, new HlaConversionBehaviour
             {
                 TargetHlaCategory = targetHla,

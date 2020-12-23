@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using Atlas.MatchingAlgorithm.Data.Models.Entities;
-using Atlas.MatchingAlgorithm.Data.Models.Entities.MatchingHla;
 using Microsoft.EntityFrameworkCore;
 
 namespace Atlas.MatchingAlgorithm.Data.Context
@@ -51,11 +50,22 @@ namespace Atlas.MatchingAlgorithm.Data.Context
         }
 
         public DbSet<Donor> Donors { get; set; }
+        
         public DbSet<MatchingHlaAtA> MatchingHlaAtA { get; set; }
         public DbSet<MatchingHlaAtB> MatchingHlaAtB { get; set; }
         public DbSet<MatchingHlaAtC> MatchingHlaAtC { get; set; }
         public DbSet<MatchingHlaAtDrb1> MatchingHlaAtDrb1 { get; set; }
         public DbSet<MatchingHlaAtDqb1> MatchingHlaAtDqb1 { get; set; }
+        
+        public DbSet<HlaNamePGroupRelationAtA> HlaNamePGroupRelationsAtA { get; set; }
+        public DbSet<HlaNamePGroupRelationAtB> HlaNamePGroupRelationAtB { get; set; }
+        public DbSet<HlaNamePGroupRelationAtC> HlaNamePGroupRelationAtC { get; set; }
+        public DbSet<HlaNamePGroupRelationAtDrb1> HlaNamePGroupRelationAtDrb1 { get; set; }
+        public DbSet<HlaNamePGroupRelationAtDqb1> HlaNamePGroupRelationAtDqb1 { get; set; }
+
         public DbSet<DonorManagementLog> DonorManagementLogs { get; set; }
+        
+        public DbSet<PGroupName> PGroupNames { get; set; }
+        public DbSet<HlaName> HlaNames { get; set; }
     }
 }

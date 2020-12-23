@@ -60,11 +60,11 @@ namespace Atlas.MatchingAlgorithm.Services.Donors
             };
         }
 
-        private async Task<LocusInfo<IHlaMatchingMetadata>> GetExpandedHla(Locus locus, LocusInfo<string> hla)
+        private async Task<LocusInfo<INullHandledHlaMatchingMetadata>> GetExpandedHla(Locus locus, LocusInfo<string> hla)
         {
             if (string.IsNullOrEmpty(hla.Position1) || string.IsNullOrEmpty(hla.Position2))
             {
-                return new LocusInfo<IHlaMatchingMetadata>(null);
+                return new LocusInfo<INullHandledHlaMatchingMetadata>(null);
             }
 
             return await hlaMetadataDictionary.GetLocusHlaMatchingMetadata(locus, hla);

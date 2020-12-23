@@ -118,6 +118,8 @@ The end-to-end tests, however, contact external dependencies, and require connec
     - `NotificationsServiceBus.ConnectionString`
   - But just copying all secrets from the API project will work fine.
 - Ensure that the Azure Storage Emulator is running
+- Ensure that you have recreated the HLA Metadata Dictionary to version 3330 locally (or have overridden the storage connection string to use a deployed environment with this
+ version generated.) This can be done by hitting `{{matchingFunctionBaseUrl}}/RefreshHlaMetadataDictionaryToSpecificVersion`
 
 ### Terraform
 

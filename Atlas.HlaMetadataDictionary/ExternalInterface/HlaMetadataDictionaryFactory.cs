@@ -2,6 +2,7 @@ using System;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Caching;
 using Atlas.HlaMetadataDictionary.Repositories.MetadataRepositories;
+using Atlas.HlaMetadataDictionary.Services;
 using Atlas.HlaMetadataDictionary.Services.DataGeneration;
 using Atlas.HlaMetadataDictionary.Services.DataRetrieval;
 using Atlas.HlaMetadataDictionary.Services.HlaConversion;
@@ -39,11 +40,13 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         //For Dictionary
         private readonly IRecreateHlaMetadataService recreateMetadataService;
         private readonly IHlaConverter hlaConverter;
+        private readonly IHlaValidator hlaValidator;
         private readonly IHlaMatchingMetadataService hlaMatchingMetadataService;
         private readonly ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService;
         private readonly IHlaScoringMetadataService hlaScoringMetadataService;
         private readonly IDpb1TceGroupMetadataService dpb1TceGroupMetadataService;
         private readonly IGGroupToPGroupMetadataService gGroupToPGroupMetadataService;
+        private readonly ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService;
         private readonly IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator;
         private readonly IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor;
         private readonly ILogger logger;
@@ -54,6 +57,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
         private readonly IHlaScoringMetadataRepository scoringMetadataRepository;
         private readonly IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository;
         private readonly IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository;
+        private readonly ISmallGGroupsMetadataRepository smallGGroupsMetadataRepository;
+        private readonly ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository;
 
         public HlaMetadataDictionaryFactory(
             IPersistentCacheProvider cacheProvider,
@@ -61,11 +66,13 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             //For Dictionary
             IRecreateHlaMetadataService recreateMetadataService,
             IHlaConverter hlaConverter,
+            IHlaValidator hlaValidator,
             IHlaMatchingMetadataService hlaMatchingMetadataService,
             ILocusHlaMatchingMetadataService locusHlaMatchingMetadataService,
             IHlaScoringMetadataService hlaScoringMetadataService,
             IDpb1TceGroupMetadataService dpb1TceGroupMetadataService,
             IGGroupToPGroupMetadataService gGroupToPGroupMetadataService,
+            ISmallGGroupToPGroupMetadataService smallGGroupToPGroupMetadataService,
             IHlaMetadataGenerationOrchestrator hlaMetadataGenerationOrchestrator,
             IWmdaHlaNomenclatureVersionAccessor wmdaHlaNomenclatureVersionAccessor,
             ILogger logger,
@@ -75,19 +82,22 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             IHlaMatchingMetadataRepository matchingMetadataRepository,
             IHlaScoringMetadataRepository scoringMetadataRepository,
             IDpb1TceGroupsMetadataRepository dpb1TceGroupsMetadataRepository,
-            IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository
-        )
+            IGGroupToPGroupMetadataRepository gGroupToPGroupMetadataRepository,
+            ISmallGGroupsMetadataRepository smallGGroupsMetadataRepository,
+            ISmallGGroupToPGroupMetadataRepository smallGGroupToPGroupMetadataRepository)
         {
             this.cache = cacheProvider.Cache;
 
             //For Dictionary
             this.recreateMetadataService = recreateMetadataService;
             this.hlaConverter = hlaConverter;
+            this.hlaValidator = hlaValidator;
             this.hlaMatchingMetadataService = hlaMatchingMetadataService;
             this.locusHlaMatchingMetadataService = locusHlaMatchingMetadataService;
             this.hlaScoringMetadataService = hlaScoringMetadataService;
             this.dpb1TceGroupMetadataService = dpb1TceGroupMetadataService;
             this.gGroupToPGroupMetadataService = gGroupToPGroupMetadataService;
+            this.smallGGroupToPGroupMetadataService = smallGGroupToPGroupMetadataService;
             this.hlaMetadataGenerationOrchestrator = hlaMetadataGenerationOrchestrator;
             this.wmdaHlaNomenclatureVersionAccessor = wmdaHlaNomenclatureVersionAccessor;
             this.logger = logger;
@@ -98,6 +108,8 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
             this.scoringMetadataRepository = scoringMetadataRepository;
             this.dpb1TceGroupsMetadataRepository = dpb1TceGroupsMetadataRepository;
             this.gGroupToPGroupMetadataRepository = gGroupToPGroupMetadataRepository;
+            this.smallGGroupsMetadataRepository = smallGGroupsMetadataRepository;
+            this.smallGGroupToPGroupMetadataRepository = smallGGroupToPGroupMetadataRepository;
         }
 
         /// <summary>
@@ -145,11 +157,13 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 activeHlaNomenclatureVersion,
                 recreateMetadataService,
                 hlaConverter,
+                hlaValidator,
                 hlaMatchingMetadataService,
                 locusHlaMatchingMetadataService,
                 hlaScoringMetadataService,
                 dpb1TceGroupMetadataService,
                 gGroupToPGroupMetadataService,
+                smallGGroupToPGroupMetadataService,
                 hlaMetadataGenerationOrchestrator,
                 wmdaHlaNomenclatureVersionAccessor,
                 logger);
@@ -163,7 +177,9 @@ namespace Atlas.HlaMetadataDictionary.ExternalInterface
                 matchingMetadataRepository,
                 scoringMetadataRepository,
                 dpb1TceGroupsMetadataRepository,
-                gGroupToPGroupMetadataRepository);
+                gGroupToPGroupMetadataRepository,
+                smallGGroupsMetadataRepository,
+                smallGGroupToPGroupMetadataRepository);
         }
     }
 }

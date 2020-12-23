@@ -13,6 +13,9 @@ namespace Atlas.MatchingAlgorithm.Data.Helpers
         public const string NewPGroupInsertion_Overall_TimerKey = "newPGroupInsertion";
         public const string NewPGroupInsertion_Flattening_TimerKey = "newPGroupInsertion_Flattening";
         public const string NewPGroupInsertion_FindNew_TimerKey = "newPGroupInsertion_FindNew";
+        public const string NewHlaNameInsertion_Overall_TimerKey = "newHlaNameInsertion";
+        public const string NewHlaNameInsertion_Flattening_TimerKey = "newHlaNameInsertion_Flattening";
+        public const string NewHlaNameInsertion_FindNew_TimerKey = "newHlaNameInsertion_FindNew";
         public const string HlaUpsert_Overall_TimerKey = "upsert";
         public const string HlaUpsert_BulkInsertSetup_Overall_TimerKey = "pGroupInsertSetup";
         public const string HlaUpsert_BulkInsertSetup_BuildDataTable_Overall_TimerKey = "pGroupInsertSetup_BuildDataTable";

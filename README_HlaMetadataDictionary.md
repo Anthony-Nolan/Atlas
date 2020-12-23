@@ -1,10 +1,26 @@
 # Summary
 
 The HLA Metadata Dictionary (HMD) Library is responsible for knowing how to interpret HLA descriptor strings in various forms; the "HLA Nomenclature".
-It gets its original data primarily from files published by the WMDA, plus some data about MACs from NMDP.
+
+## Data sources
+The HMD gets its original data primarily from files published by the WMDA, plus some data about MACs from NMDP.
 
 On command (expected to be roughly quarterly), the HMD library will read the latest version of the HLA Nomenclature published by the WMDA (read from a mirror hosted by Anthony Nolan Bioinformatics). Having read it from raw data files from the WMDA, the HMD converts it into a the format that is of most use for itself, and slow-caches all of that formatted data in its own Azure CloudStorage Table.
-When used, the HMD then caches the contents of those CloudTables in memory, although that initial caching is slightly slow. Cache-Warming methods are available to trigger that cache-to-memory action, if desired.
+
+### Allele groups
+These are the different allele grouping that the HMD currently handles:
+- G group: alleles that share the same DNA sequence at the ABD (Antigen Binding Domain) region.
+- P group: alleles that share the same protein sequence at the ABD region - excludes null alleles, as they do not result in a protein.
+- Small g group: alleles that share the same protein sequence at the ABD region - includes null alleles.
+
+P group and G group definitions are directly extracted from the WMDA files.
+There is currently no WMDA file for small g groups; instead they are built by logic held in the HMD using P group and G group data.
+
+Due to the use of the camel-case in the codebase, the word "small" is used to differentiate between the two types of G group.
+I.e., "GGroup" without the qualifier refers to the nucleotide-level group, and "SmallGGroup" refers to the protein-level group.
+
+## Caching
+When used, the HMD then caches the contents of its CloudTables in memory, although that initial caching is slightly slow. Cache-Warming methods are available to trigger that cache-to-memory action, if desired.
 
 The run-time consumer of the HMD doesn't need to know much of those details though; all it needs to know is that the HMD will return data from an in-memory cache, and that if you want to ensure the first usage of the HMD is already fast, then you can pre-warm the cache.
 
