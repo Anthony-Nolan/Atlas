@@ -22,7 +22,7 @@ const fileContent = generateSearchRequest(
 );
 
 function generateSearchRequest(patientHlaData) {
-    const rawData = patientHlaData.split(/\s/);
+    const rawData = patientHlaData.includes(",") ? patientHlaData.split(","): patientHlaData.split(/\s/);
     return `
         {
     "SearchDonorType": "${config.searchType}",
