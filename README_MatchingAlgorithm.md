@@ -245,6 +245,17 @@ These tests are primarily for the benefit of non-developers, intended to confirm
 
 See [The Validation Test README](Atlas.MatchingAlgorithm.Test.Validation/ValidationTests/Features/README_MatchingValidationTests.md) for a more detailed, non-technical overview
 
+*Test Logging*
+
+Some filesystem logging is configurable for the validation test suite, which will log the searched patient HLA and returned donor HLA, as well as 
+match details.
+
+This logging can be enabled for successful tests via the `app.config` file in the test project.
+
+This can be particularly useful for debugging tests with auto-generated test data, to be sure of what searches are being run.
+
+The logs are written to a sub-folder within the `bin` folder of the project.____  
+
 *Test Data Errors*
 
 - Note that there is a known, but infrequent, situation in which invalid test data can be selected.

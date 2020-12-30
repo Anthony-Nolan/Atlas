@@ -39,19 +39,20 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         {
             try
             {
+                serviceProvider = ServiceConfiguration.CreateProvider();
+                
                 SetupLogging();
 
-                serviceProvider = ServiceConfiguration.CreateProvider();
                 var testDataService = serviceProvider.GetService<ITestDataService>();
 
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
 
                 testDataService.SetupTestData();
-                
+
                 logger.Log(LogLevel.Info, $"Set up test data: {stopwatch.Elapsed}");
                 stopwatch.Restart();
-                
+
                 AlgorithmTestingService.StartServer();
                 logger.Log(LogLevel.Info, $"Start test server: {stopwatch.Elapsed}");
                 stopwatch.Restart();
@@ -71,9 +72,11 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.StepDefinition
         {
             config = new LoggingConfiguration();
 
-            var traceFileInfo = new FileTarget("logfile") {FileName = "${basedir}\\trace.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2};
-            var logfileInfo = new FileTarget("logfile") {FileName = "${basedir}\\info.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2};
-            var logfileError = new FileTarget("logfile") {FileName = "${basedir}\\error.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2};
+            var baseDirectory = "${basedir}\\" + OptionsReaderFor<ValidationTestSettings>()(serviceProvider).LogFileDirectory;
+
+            var traceFileInfo = new FileTarget("logfile") {FileName = $"{baseDirectory}\\trace.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2};
+            var logfileInfo = new FileTarget("logfile") {FileName = $"{baseDirectory}\\info.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2};
+            var logfileError = new FileTarget("logfile") {FileName = $"{baseDirectory}\\error.log", ArchiveOldFileOnStartup = true, MaxArchiveDays = 2};
 
             config.AddRule(LogLevel.Trace, LogLevel.Trace, traceFileInfo);
             config.AddRule(LogLevel.Info, LogLevel.Info, logfileInfo);

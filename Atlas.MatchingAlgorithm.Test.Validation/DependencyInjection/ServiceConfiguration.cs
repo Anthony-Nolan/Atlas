@@ -56,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.DependencyInjection
             services.AddTransient<IPatientHlaSelector, PatientHlaSelector>();
 
             RegisterDataServices(services);
-            
+
             return services.BuildServiceProvider();
         }
 
