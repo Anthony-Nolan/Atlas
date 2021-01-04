@@ -11,79 +11,79 @@
     <Target Name="AfterUpdateFeatureFilesInProject">
         <!-- include any generated SpecFlow files in the compilation of the project if not included yet -->
         <ItemGroup>
-            <Compile Include="**\*.feature.cs" Exclude="@(Compile)" />
+            <Compile Include="**\*.feature.cs" Exclude="@(Compile)"/>
         </ItemGroup>
     </Target>
 
     <ItemGroup>
-        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\Mismatches.feature" />
-        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\Search.feature" />
-        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\BetterMatches.feature" />
-        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\EightOutOfTenMatches.feature" />
-        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\WorseMatches.feature" />
-        <Content Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\FullMatches.feature" />
-        <Content Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\Mismatches.feature" />
-        <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Mismatches.feature" />
-        <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Search.feature" />
-        <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\Mismatches.feature" />
-        <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\MultiplePatients.feature" />
-        <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\Search.feature" />
-        <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\TypingResolutions.feature" />
-        <Content Include="ValidationTests\Features\AlleleNames\AlleleNames.feature" />
-        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\FourMismatches.feature" />
-        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\MoreThanFourMismatches.feature" />
-        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\Search.feature" />
-        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\SingleMismatch.feature" />
-        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\ThreeMismatches.feature" />
-        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\TwoMismatches.feature" />
-        <Content Include="ValidationTests\Features\NullAlleles\NullAlleles.feature" />
-        <Content Include="ValidationTests\Features\Scoring\MatchCategorisation.feature" />
-        <Content Include="ValidationTests\Features\Scoring\MatchConfidences.feature" />
-        <Content Include="ValidationTests\Features\Scoring\MatchGrades.feature" />
-        <Content Include="ValidationTests\Features\Scoring\Ranking\MatchCountRanking.feature" />
-        <Content Include="ValidationTests\Features\Scoring\TypedLociCount.feature" />
-        <Content Include="ValidationTests\Features\README_MatchingValidationTests.md" />
+        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\Mismatches.feature"/>
+        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfEightSearch\Search.feature"/>
+        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\BetterMatches.feature"/>
+        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\EightOutOfTenMatches.feature"/>
+        <Content Include="ValidationTests\Features\AdultSearch\EightOutOfTenSearch\WorseMatches.feature"/>
+        <Content Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\FullMatches.feature"/>
+        <Content Include="ValidationTests\Features\AdultSearch\NineOutOfTenSearch\Mismatches.feature"/>
+        <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Mismatches.feature"/>
+        <Content Include="ValidationTests\Features\AdultSearch\SixOutOfSixSearch\Search.feature"/>
+        <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\Mismatches.feature"/>
+        <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\MultiplePatients.feature"/>
+        <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\Search.feature"/>
+        <Content Include="ValidationTests\Features\AdultSearch\TenOutOfTenSearch\TypingResolutions.feature"/>
+        <Content Include="ValidationTests\Features\AlleleNames\AlleleNames.feature"/>
+        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\FourMismatches.feature"/>
+        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\MoreThanFourMismatches.feature"/>
+        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\Search.feature"/>
+        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\SingleMismatch.feature"/>
+        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\ThreeMismatches.feature"/>
+        <Content Include="ValidationTests\Features\CordSearch\FourOutOfEightSearch\TwoMismatches.feature"/>
+        <Content Include="ValidationTests\Features\NullAlleles\NullAlleles.feature"/>
+        <Content Include="ValidationTests\Features\Scoring\MatchCategorisation.feature"/>
+        <Content Include="ValidationTests\Features\Scoring\MatchConfidences.feature"/>
+        <Content Include="ValidationTests\Features\Scoring\MatchGrades.feature"/>
+        <Content Include="ValidationTests\Features\Scoring\Ranking\MatchCountRanking.feature"/>
+        <Content Include="ValidationTests\Features\Scoring\TypedLociCount.feature"/>
+        <Content Include="ValidationTests\Features\README_MatchingValidationTests.md"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="EnumStringValues" Version="4.0.2" />
-        <PackageReference Include="FluentAssertions" Version="5.10.3" />
+        <PackageReference Include="EnumStringValues" Version="4.0.2"/>
+        <PackageReference Include="FluentAssertions" Version="5.10.3"/>
         <PackageReference Include="InternalsVisibleTo.MSBuild" Version="1.0.4">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.1.3" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.4" />
-        <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.4" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
-        <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-        <PackageReference Include="NLog" Version="4.7.0" />
-        <PackageReference Include="NSubstitute" Version="4.2.1" />
-        <PackageReference Include="NUnit" Version="3.12.0" />
-        <PackageReference Include="NUnit.ConsoleRunner" Version="3.11.1" />
-        <PackageReference Include="NUnit.Extension.NUnitProjectLoader" Version="3.6.0" />
-        <PackageReference Include="NUnit3TestAdapter" Version="3.16.1" />
-        <PackageReference Include="Pickles.CommandLine" Version="2.20.1" />
-        <PackageReference Include="SpecFlow" Version="3.5.5" />
-        <PackageReference Include="SpecFlow.NUnit" Version="3.5.5" />
-        <PackageReference Include="SpecFlow.NUnit.Runners" Version="3.5.5" />
-        <PackageReference Include="SpecFlow.Tools.MsBuild.Generation" Version="3.5.5" />
+        <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.1.3"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.4"/>
+        <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.4"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1"/>
+        <PackageReference Include="Newtonsoft.Json" Version="12.0.3"/>
+        <PackageReference Include="NLog" Version="4.7.0"/>
+        <PackageReference Include="NSubstitute" Version="4.2.1"/>
+        <PackageReference Include="NUnit" Version="3.12.0"/>
+        <PackageReference Include="NUnit.ConsoleRunner" Version="3.11.1"/>
+        <PackageReference Include="NUnit.Extension.NUnitProjectLoader" Version="3.6.0"/>
+        <PackageReference Include="NUnit3TestAdapter" Version="3.16.1"/>
+        <PackageReference Include="Pickles.CommandLine" Version="2.20.1"/>
+        <PackageReference Include="SpecFlow" Version="3.5.5"/>
+        <PackageReference Include="SpecFlow.NUnit" Version="3.5.5"/>
+        <PackageReference Include="SpecFlow.NUnit.Runners" Version="3.5.5"/>
+        <PackageReference Include="SpecFlow.Tools.MsBuild.Generation" Version="3.5.5"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Atlas.Common.Test\Atlas.Common.Test.csproj" />
-        <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj" />
-        <ProjectReference Include="..\Atlas.MatchingAlgorithm.Api\Atlas.MatchingAlgorithm.Api.csproj" />
-        <ProjectReference Include="..\Atlas.MatchingAlgorithm.Data\Atlas.MatchingAlgorithm.Data.csproj" />
-        <ProjectReference Include="..\Atlas.MatchingAlgorithm.Test.Integration\Atlas.MatchingAlgorithm.Test.Integration.csproj" />
-        <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
-        <ProjectReference Include="..\Atlas.MatchingAlgorithm.Common\Atlas.MatchingAlgorithm.Common.csproj" />
+        <ProjectReference Include="..\Atlas.Common.Test\Atlas.Common.Test.csproj"/>
+        <ProjectReference Include="..\Atlas.Common\Atlas.Common.csproj"/>
+        <ProjectReference Include="..\Atlas.MatchingAlgorithm.Api\Atlas.MatchingAlgorithm.Api.csproj"/>
+        <ProjectReference Include="..\Atlas.MatchingAlgorithm.Data\Atlas.MatchingAlgorithm.Data.csproj"/>
+        <ProjectReference Include="..\Atlas.MatchingAlgorithm.Test.Integration\Atlas.MatchingAlgorithm.Test.Integration.csproj"/>
+        <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj"/>
+        <ProjectReference Include="..\Atlas.MatchingAlgorithm.Common\Atlas.MatchingAlgorithm.Common.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="appsettings.json">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
+        <None Update="appsettings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
-
+    
 </Project>
