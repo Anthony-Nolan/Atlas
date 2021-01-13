@@ -115,6 +115,23 @@ In theory this is not possible, but it could happen due to either a bug in ATLAS
  
 Check the Application Insights logs for the search request id, looking out for any `Exceptions` in particular. 
 
+### Matching Algorithm running out of memory
+
+For particularly large searches, some test cases have caused OOM exceptions on deployed hardware. If this happens, first determine whether the solution has been configured appropriately on your 
+environment - if it is still deemed to have too high memory usage, development investigation may be needed. The configuration options that affect memory usage are: 
+
+- Service plan
+    - The smallest available elastic service plan is an EP1 elastic plan. This should be enough for most search use cases, but if other configuration options lead to high memory usage, scaling up to a higher 
+    plan is an easy step to take to prevent OOM errors.
+- Number of allowed invocations per instance
+    - As the elastic plan scales out to multiple instances, each instance will be allowed more memory as per the service plan (and charged accordingly), so this is not a concern for memory
+    - Each instance has a certain number of allowed concurrent processes - the more parallel searches per instance, the higher the memory usage.
+    - This can be configured in [the relevant host.json](Atlas.MatchingAlgorithm.Functions/host.json)
+- The matching batch size
+    - This determines the size of batches used internally in the matching process. Broadly speaking, a higher batch size leads to faster searches, but higher memory usage
+    
+Testing on a search with ~20,000 donor results (on a dataset of ~30M donors) indicates that, with a batch size of 250,000, a single search uses a peak of *roughly* 1.2GB. Of this, ~400Mb are used for cached reference data, 
+and will therefore be a constant baseline rather than scaling with concurrent searches. This test case is expected to be a reasonable "worst-case" scenario for memory usage, in the a 30M donor test environment.   
 
 ## MACs
 
