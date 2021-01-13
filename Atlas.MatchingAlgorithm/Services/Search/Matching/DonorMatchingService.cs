@@ -171,29 +171,54 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 .WhereAsync(result => allLoci.All(l => matchFilteringService.FulfilsPerLocusMatchCriteria(result, criteria, l)));
         }
 
+        /// <summary>
+        /// Consolidates results by locus.
+        /// </summary>
+        /// <param name="locus"> The locus in question.</param>
+        /// <param name="relationEnumerator">
+        /// "Stream" of donors at this locus. Should not be reified, as this may be extremely large for early loci, and cause memory issues.
+        /// </param>
+        /// <param name="mustMatchAtLocus">
+        /// Determines whether or not all existing results should be returned.
+        /// If true - any donor that is not returned by <see cref="relationEnumerator"/> *cannot* be included in the final result set, and so can be dropped.
+        /// If false - this locus cannot be considered to independently determine whether any donor should be included in the final result set, so all donors from
+        /// <see cref="relationEnumerator"/> should be returned - even if they do not match at this locus.
+        /// </param>
+        /// <param name="existingResults">
+        /// Optional.
+        /// If null, implies this is the first locus to be searches upon.
+        /// If non-null, this is a reified collection of existing donors - as such this should never contain a number of donors greater than the matching batch size.
+        ///
+        /// This dictionary is modified as part of this method, so the caller must agree to not rely on the contents of the provided dictionary being stable once called.
+        /// If this becomes an issue, this method should be refactored to clone the input dictionary, at the expense of requiring higher memory usage while running large searches. 
+        /// </param>
+        /// <returns>
+        /// All results matching at the current loci, with match details populated at that locus.
+        /// For results which have been matched at other loci, such matching details are maintained.
+        /// If a match is not *required* at this locus, all provided existing results will be returned, with matching details at this locus iff it is a match at this locus.
+        /// </returns>
         private static async IAsyncEnumerable<MatchResult> ConsolidateResults(
             Locus locus,
             IAsyncEnumerable<(int, LocusMatchDetails)> relationEnumerator,
             bool mustMatchAtLocus,
             IDictionary<int, MatchResult> existingResults = null)
         {
-            var results = existingResults ?? new Dictionary<int, MatchResult>();
-
             await foreach (var (donorId, locusMatchDetails) in relationEnumerator)
             {
-                var result = results.GetOrAdd(donorId, () => new MatchResult(donorId));
+                var result = existingResults?.GetValueOrDefault(donorId) ?? new MatchResult(donorId);
                 result.SetMatchDetailsForLocus(locus, locusMatchDetails);
-                // If match is not required at locus, all existing results must be returned, not just those that match at this locus.
-                // Do not return here to avoid keeping track of which donors were matched at this locus and which were not.
-                if (mustMatchAtLocus)
-                {
-                    yield return result;
-                }
+
+                // This is destructive to the original object passed by reference. This is on purpose, to reduce memory footprint.
+                existingResults?.Remove(donorId);
+                yield return result;
             }
 
-            if (!mustMatchAtLocus)
+            // If match is not required at locus, all existing results must be returned, not just those that match at this locus.
+            // Matches at the current locus have already been returned and removed from the result dictionary, so this process only returns donors that 
+            // were previously matched, but don't match at the current locus.
+            if (!mustMatchAtLocus && existingResults != null)
             {
-                foreach (var result in results)
+                foreach (var result in existingResults)
                 {
                     yield return result.Value;
                 }
