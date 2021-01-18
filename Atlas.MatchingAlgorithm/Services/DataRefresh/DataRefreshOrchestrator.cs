@@ -126,8 +126,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private async Task ScaleDownDatabaseToDormantLevel(string databaseName)
         {
             var dormantSize = dataRefreshSettings.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>();
+            var dormantAutoPause = dataRefreshSettings.DormantDatabaseAutoPauseTimeout;
             logger.SendTrace($"DATA REFRESH TEAR DOWN: Scaling down database: {databaseName} to dormant size: {dormantSize}");
-            await azureDatabaseManager.UpdateDatabaseSize(databaseName, dormantSize);
+            await azureDatabaseManager.UpdateDatabaseSize(databaseName, dormantSize, dormantAutoPause);
         }
 
         private async Task MarkDataHistoryRecordAsComplete(int recordId, bool wasSuccess, string wmdaHlaNomenclatureVersion)

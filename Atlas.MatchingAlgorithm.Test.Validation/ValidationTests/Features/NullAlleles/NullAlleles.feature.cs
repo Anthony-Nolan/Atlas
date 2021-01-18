@@ -82,7 +82,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.NullA
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Null Alleles - Same typing", null, tagsOfScenario, argumentsOfScenario);
-#line 8
+#line 6
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -102,19 +102,19 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.NullA
             else
             {
                 this.ScenarioStart();
-#line 9
+#line 7
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 10
+#line 8
     testRunner.And("the donor has a null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 11
+#line 9
     testRunner.And("the match orientation is direct at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 12
+#line 10
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 13
+#line 11
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -128,7 +128,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.NullA
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Null Alleles - Same expressing allele, different null allele", null, tagsOfScenario, argumentsOfScenario);
-#line 15
+#line 13
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -148,22 +148,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.NullA
             else
             {
                 this.ScenarioStart();
-#line 16
+#line 14
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 17
+#line 15
     testRunner.And("the donor has a null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 18
+#line 16
     testRunner.And("the patient has a different null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 19
+#line 17
     testRunner.And("the match orientation is direct at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 20
+#line 18
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 21
+#line 19
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -177,7 +177,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.NullA
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Null Alleles - Homozygous donor", null, tagsOfScenario, argumentsOfScenario);
-#line 23
+#line 21
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -197,22 +197,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.NullA
             else
             {
                 this.ScenarioStart();
-#line 24
+#line 22
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 25
+#line 23
     testRunner.And("the donor is homozygous at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 26
+#line 24
     testRunner.And("the patient has a null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 27
+#line 25
     testRunner.And("the match orientation is direct at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 28
+#line 26
     testRunner.When("I run a 10/10 search", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 29
+#line 27
     testRunner.Then("the results should contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -226,7 +226,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.NullA
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Null Alleles - Same null allele, different expressing allele", null, tagsOfScenario, argumentsOfScenario);
-#line 31
+#line 29
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -246,22 +246,22 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.NullA
             else
             {
                 this.ScenarioStart();
-#line 32
+#line 30
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 33
+#line 31
     testRunner.And("the donor has a null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 34
+#line 32
     testRunner.And("the donor has a mismatch at locus A at position 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 35
+#line 33
     testRunner.And("the match orientation is direct at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 36
+#line 34
     testRunner.When("I run a 9/10 search at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 37
+#line 35
     testRunner.Then("the results should not contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
@@ -275,7 +275,7 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.NullA
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Null Alleles - Different null allele, different expressing allele", null, tagsOfScenario, argumentsOfScenario);
-#line 39
+#line 37
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -295,25 +295,25 @@ namespace Atlas.MatchingAlgorithm.Test.Validation.ValidationTests.Features.NullA
             else
             {
                 this.ScenarioStart();
-#line 40
+#line 38
     testRunner.Given("a patient has a match", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 41
+#line 39
     testRunner.And("the donor has a null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 42
+#line 40
     testRunner.And("the donor has a mismatch at locus A at position 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 43
+#line 41
     testRunner.And("the patient has a different null allele at locus A at position 1", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 44
+#line 42
     testRunner.And("the match orientation is direct at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-#line 45
+#line 43
     testRunner.When("I run a 9/10 search at locus A", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 46
+#line 44
     testRunner.Then("the results should not contain the specified donor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }

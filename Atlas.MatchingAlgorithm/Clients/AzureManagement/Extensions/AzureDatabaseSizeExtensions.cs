@@ -14,12 +14,15 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement.Extensions
         // Used for "Serverless" tier
         private const string GeneralPurposeTier = "GeneralPurpose";
 
-        public static string ToAzureApiUpdateBody(this AzureDatabaseSize databaseSize)
+        public static string ToAzureApiUpdateBody(this AzureDatabaseSize databaseSize, int? autoPauseDuration)
         {
             string tier;
             int? capacity = null;
             string name = null;
 
+            // do not initialise, even if "autoPauseDuration" parameter is set - we only want to set this if the target tier can accept auto-pause
+            int? autoPause = null;
+            
             switch (databaseSize)
             {
                 case AzureDatabaseSize.Basic:
@@ -101,6 +104,9 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement.Extensions
                 case AzureDatabaseSize.GP_S_Gen5_40:
                     tier = GeneralPurposeTier;
                     name = databaseSize.ToString();
+                    
+                    // -1 = no auto-pause.
+                    autoPause = autoPauseDuration ?? -1;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(databaseSize), databaseSize, null);
@@ -111,8 +117,15 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement.Extensions
             skuObject.capacity = capacity;
             skuObject.name = name;
 
+            dynamic propertiesObject = new ExpandoObject();
+            if (autoPause.HasValue)
+            {
+                propertiesObject.autoPauseDelay = autoPause.Value;
+            }
+
             dynamic body = new ExpandoObject();
             body.sku = skuObject;
+            body.properties = propertiesObject;
 
             return JsonConvert.SerializeObject(body);
         }

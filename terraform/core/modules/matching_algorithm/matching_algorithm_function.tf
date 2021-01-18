@@ -1,5 +1,5 @@
 locals {
-  matching_func_app_settings = {
+  matching_func_app_settings           = {
     // APPINSIGHTS_INSTRUMENTATIONKEY
     //      The azure functions dashboard requires the instrumentation key with this name to integrate with application insights.
     // MessagingServiceBus:ConnectionString & NotificationsServiceBus:ConnectionString
@@ -19,6 +19,7 @@ locals {
     "AzureStorage:ConnectionString"           = var.azure_storage.primary_connection_string
     "AzureStorage:SearchResultsBlobContainer" = azurerm_storage_container.search_matching_results_blob_container.name
 
+    "DataRefresh:ActiveDatabaseAutoPauseTimeout"                                            = var.DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE
     "DataRefresh:ActiveDatabaseSize"                                                        = var.DATA_REFRESH_DB_SIZE_ACTIVE
     "DataRefresh:RequestsTopic"                                                             = azurerm_servicebus_topic.data-refresh-requests.name
     "DataRefresh:RequestsTopicSubscription"                                                 = azurerm_servicebus_subscription.matching-algorithm-data-refresh-requests.name
@@ -27,6 +28,7 @@ locals {
     "DataRefresh:DatabaseAName"                                                             = azurerm_sql_database.atlas-matching-transient-a.name
     "DataRefresh:DatabaseBName"                                                             = azurerm_sql_database.atlas-matching-transient-b.name
     "DataRefresh:DataRefreshDonorUpdatesShouldBeFullyTransactional"                         = var.DONOR_WRITE_TRANSACTIONALITY__DATA_REFRESH
+    "DataRefresh:DormantDatabaseAutoPauseTimeout"                                           = var.DATA_REFRESH_DB_AUTO_PAUSE_DORMANT
     "DataRefresh:DormantDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_DORMANT
     "DataRefresh:RefreshDatabaseSize"                                                       = var.DATA_REFRESH_DB_SIZE_REFRESH
     "DataRefresh:DonorManagement:BatchSize"                                                 = var.MESSAGING_BUS_DONOR_BATCH_SIZE
@@ -78,7 +80,7 @@ resource "azurerm_function_app" "atlas_matching_algorithm_function" {
 
   site_config {
     pre_warmed_instance_count = 1
-    ip_restriction = [for ip in var.IP_RESTRICTION_SETTINGS : {
+    ip_restriction            = [for ip in var.IP_RESTRICTION_SETTINGS : {
       ip_address = ip
       subnet_id  = null
     }]

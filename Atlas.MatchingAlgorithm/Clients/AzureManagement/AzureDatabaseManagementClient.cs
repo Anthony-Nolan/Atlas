@@ -16,7 +16,7 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
     public interface IAzureDatabaseManagementClient
     {
         /// <returns>The DateTime at which the scaling operation began</returns>
-        Task<DateTime> TriggerDatabaseScaling(string databaseName, AzureDatabaseSize databaseSize);
+        Task<DateTime> TriggerDatabaseScaling(string databaseName, AzureDatabaseSize databaseSize, int? autoPauseDuration);
 
         Task<IEnumerable<DatabaseOperation>> GetDatabaseOperations(string databaseName);
     }
@@ -38,7 +38,7 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
             databaseServerName = azureSettings.ServerName;
         }
 
-        public async Task<DateTime> TriggerDatabaseScaling(string databaseName, AzureDatabaseSize databaseSize)
+        public async Task<DateTime> TriggerDatabaseScaling(string databaseName, AzureDatabaseSize databaseSize, int? autoPauseDuration)
         {
             await Authenticate();
 
@@ -46,7 +46,7 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
 
             var response = await HttpClient.PatchAsync(
                 updateSizeUrl,
-                new StringContent(databaseSize.ToAzureApiUpdateBody(), Encoding.UTF8, "application/json")
+                new StringContent(databaseSize.ToAzureApiUpdateBody(autoPauseDuration), Encoding.UTF8, "application/json")
             );
 
             if (!response.IsSuccessStatusCode)
