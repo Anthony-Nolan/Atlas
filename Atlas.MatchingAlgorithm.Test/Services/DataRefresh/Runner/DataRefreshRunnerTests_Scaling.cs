@@ -28,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, Arg.Any<AzureDatabaseSize>());
+            await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, Arg.Any<AzureDatabaseSize>(), Arg.Any<int?>());
         }
 
         [Test]
@@ -41,7 +41,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await azureDatabaseManager.Received().UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15);
+            await azureDatabaseManager.Received().UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15, Arg.Any<int?>());
         }
 
         [Test]
@@ -54,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await azureDatabaseManager.Received().UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.S4);
+            await azureDatabaseManager.Received().UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.S4, Arg.Any<int?>());
         }
 
         [Test]
@@ -69,7 +69,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             Received.InOrder(() =>
             {
-                azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15);
+                azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15, Arg.Any<int?>());
                 donorImporter.ImportDonors();
             });
         }
@@ -87,7 +87,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             Received.InOrder(() =>
             {
                 donorImporter.ImportDonors();
-                azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.S4);
+                azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.S4, Arg.Any<int?>());
             });
         }
 
@@ -104,8 +104,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             Received.InOrder(() =>
             {
-                azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15);
-                azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.S4);
+                azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15, Arg.Any<int?>());
+                azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.S4, Arg.Any<int?>());
             });
         }
 
@@ -126,7 +126,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             }
             catch (Exception)
             {
-                await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+                await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0, Arg.Any<int?>());
             }
         }
 
@@ -147,7 +147,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             }
             catch (Exception)
             {
-                await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+                await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0, Arg.Any<int?>());
             }
         }
 
@@ -168,7 +168,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             }
             catch (Exception)
             {
-                await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+                await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0, Arg.Any<int?>());
             }
         }
     }

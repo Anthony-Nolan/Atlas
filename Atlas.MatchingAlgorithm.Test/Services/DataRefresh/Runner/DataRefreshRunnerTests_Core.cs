@@ -134,7 +134,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             activeDatabaseProvider.GetDormantDatabase().Returns(TransientDatabase.DatabaseA);
             hlaProcessor.UpdateDonorHla(default, default).ThrowsForAnyArgs(new Exception());
-            azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), databaseSize).Throws(new Exception());
+            azureDatabaseManager.UpdateDatabaseSize(Arg.Any<string>(), databaseSize, Arg.Any<int?>()).Throws(new Exception());
 
             try
             {

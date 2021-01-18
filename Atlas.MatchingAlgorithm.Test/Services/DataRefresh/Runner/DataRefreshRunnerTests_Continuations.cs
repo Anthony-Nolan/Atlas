@@ -89,7 +89,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await donorImportRepository.DidNotReceive().RemoveHlaTableIndexes();
             await donorImportRepository.Received(1).RemoveAllDonorInformation();
-            await azureDatabaseManager.Received(1).UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15);
+            await azureDatabaseManager.Received(1).UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15, Arg.Any<int?>());
         }
 
         [Test]
@@ -108,7 +108,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await donorImportRepository.DidNotReceive().RemoveAllDonorInformation();
             await donorImportRepository.DidNotReceive().RemoveHlaTableIndexes();
-            await azureDatabaseManager.Received(1).UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15);
+            await azureDatabaseManager.Received(1).UpdateDatabaseSize(Arg.Any<string>(), AzureDatabaseSize.P15, Arg.Any<int?>());
         }
 
         [Test]
@@ -125,7 +125,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.P15);
+            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.P15, Arg.Any<int?>());
             await donorImporter.Received(1).ImportDonors();
         }
 
@@ -162,7 +162,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             await donorImportRepository.DidNotReceive().RemoveAllProcessedDonorHla();
             await hlaProcessor.DidNotReceiveWithAnyArgs().UpdateDonorHla(default, default);
             await donorImportRepository.Received(1).CreateHlaTableIndexes();
-            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4);
+            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4, Arg.Any<int?>());
         }
 
         [Test]
@@ -183,7 +183,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             await donorImportRepository.DidNotReceive().RemoveAllProcessedDonorHla();
             await hlaProcessor.DidNotReceiveWithAnyArgs().UpdateDonorHla(default, default);
             await donorImportRepository.DidNotReceive().CreateHlaTableIndexes();
-            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4);
+            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4, Arg.Any<int?>());
         }
 
         [Test]
@@ -200,7 +200,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4);
+            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4, Arg.Any<int?>());
             await donorUpdateProcessor.ReceivedWithAnyArgs(1).ApplyDifferentialDonorUpdatesDuringRefresh(default, default);
         }
 
@@ -218,7 +218,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4);
+            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4, Arg.Any<int?>());
             await donorUpdateProcessor.ReceivedWithAnyArgs(1).ApplyDifferentialDonorUpdatesDuringRefresh(default, default);
         }
 
@@ -236,7 +236,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await azureDatabaseManager.DidNotReceive().UpdateDatabaseSize(default, AzureDatabaseSize.P15);
+            await azureDatabaseManager.DidNotReceive().UpdateDatabaseSize(default, AzureDatabaseSize.P15, Arg.Any<int?>());
         }
 
         [Test]
@@ -253,7 +253,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
 
             await dataRefreshRunner.RefreshData(default);
 
-            await azureDatabaseManager.DidNotReceive().UpdateDatabaseSize(default, AzureDatabaseSize.P15);
+            await azureDatabaseManager.DidNotReceive().UpdateDatabaseSize(default, AzureDatabaseSize.P15, Arg.Any<int?>());
         }
 
         [Test]
@@ -322,8 +322,11 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
         [Test]
         public async Task ContinuedRefreshData_WhenAPreviousContinuationHasAlreadyBeenAttempted_ContinuesAppropriately()
         {
+            const AzureDatabaseSize azureDatabaseSize = AzureDatabaseSize.S4;
+            const int autoPauseDuration = 120;
             var settings = DataRefreshSettingsBuilder.New
-                .With(s => s.ActiveDatabaseSize, AzureDatabaseSize.S4.ToString())
+                .With(s => s.ActiveDatabaseSize, azureDatabaseSize.ToString())
+                .With(s => s.ActiveDatabaseAutoPauseTimeout, autoPauseDuration)
                 .Build();
             dataRefreshRunner = BuildDataRefreshRunner(settings);
 
@@ -340,7 +343,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh.Runner
             await donorImportRepository.DidNotReceive().RemoveAllProcessedDonorHla();
             await hlaProcessor.DidNotReceiveWithAnyArgs().UpdateDonorHla(default, default);
             await donorImportRepository.Received(1).CreateHlaTableIndexes();
-            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, AzureDatabaseSize.S4);
+            await azureDatabaseManager.Received(1).UpdateDatabaseSize(default, azureDatabaseSize, autoPauseDuration);
         }
 
     }

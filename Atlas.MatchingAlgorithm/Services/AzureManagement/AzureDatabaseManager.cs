@@ -15,7 +15,7 @@ namespace Atlas.MatchingAlgorithm.Services.AzureManagement
 {
     public interface IAzureDatabaseManager
     {
-        Task UpdateDatabaseSize(string databaseName, AzureDatabaseSize databaseSize);
+        Task UpdateDatabaseSize(string databaseName, AzureDatabaseSize databaseSize, int? autoPauseDuration);
     }
 
     public class AzureDatabaseManager : IAzureDatabaseManager
@@ -42,7 +42,7 @@ namespace Atlas.MatchingAlgorithm.Services.AzureManagement
             pollingRetryIntervalMilliseconds = long.Parse(settings.PollingRetryIntervalMilliseconds);
         }
 
-        public async Task UpdateDatabaseSize(string databaseName, AzureDatabaseSize databaseSize)
+        public async Task UpdateDatabaseSize(string databaseName, AzureDatabaseSize databaseSize, int? autoPauseDuration)
         {
             if (isLocal)
             {
@@ -54,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Services.AzureManagement
             var scaleDescription = $"{databaseName} to size: {databaseSize}";
             using (logger.RunTimed($"Scaling of database: {scaleDescription}", LogLevel.Info, true))
             {
-                var operationStartTime = await databaseManagementClient.TriggerDatabaseScaling(databaseName, databaseSize);
+                var operationStartTime = await databaseManagementClient.TriggerDatabaseScaling(databaseName, databaseSize, autoPauseDuration);
 
                 threadSleeper.Sleep(10);
                 var databaseOperation = await GetDatabaseOperation(databaseName, operationStartTime);

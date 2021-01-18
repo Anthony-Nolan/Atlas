@@ -54,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             var record = DataRefreshRecordBuilder.New
                 .With(r => r.Id, DefaultRecordId)
                 .Build();
-            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new[] { record });
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new[] {record});
         }
 
         private DataRefreshOrchestrator BuildDataRefreshOrchestrator(DataRefreshSettings dataRefreshSettings = null)
@@ -64,7 +64,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             activeHlaVersionAccessor.GetActiveHlaNomenclatureVersion().Returns(ExistingHlaVersion);
 
             var settings = dataRefreshSettings ?? DataRefreshSettingsBuilder.New.Build();
-            
+
             return new DataRefreshOrchestrator(
                 logger,
                 settings,
@@ -104,7 +104,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
                 .With(r => r.Id, recordId)
                 .With(r => r.RefreshAttemptedCount, currentAttemptNumber - 1)
                 .Build();
-            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new[] { record });
+            dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new[] {record});
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(recordId);
 
@@ -191,13 +191,15 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
             var settings = DataRefreshSettingsBuilder.New
                 .With(s => s.DatabaseAName, "db-a")
                 .With(s => s.DormantDatabaseSize, "S0")
+                .With(s => s.DormantDatabaseAutoPauseTimeout, 60)
                 .Build();
             dataRefreshOrchestrator = BuildDataRefreshOrchestrator(settings);
             activeDatabaseProvider.GetActiveDatabase().Returns(TransientDatabase.DatabaseA);
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+            await azureDatabaseManager.Received()
+                .UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0, settings.DormantDatabaseAutoPauseTimeout);
         }
 
         [Test]
@@ -218,7 +220,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+            await azureDatabaseManager.Received().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0, Arg.Any<int?>());
         }
 
         [Test]
@@ -234,7 +236,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshOrchestrator.OrchestrateDataRefresh(DefaultRecordId);
 
-            await azureDatabaseManager.DidNotReceive().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0);
+            await azureDatabaseManager.DidNotReceive().UpdateDatabaseSize(settings.DatabaseAName, AzureDatabaseSize.S0, Arg.Any<int?>());
         }
 
         [Test]
