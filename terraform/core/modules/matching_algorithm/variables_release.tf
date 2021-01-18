@@ -12,6 +12,14 @@ variable "AZURE_CLIENT_SECRET" {
   type = string
 }
 
+variable "DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE" {
+  type = number
+}
+
+variable "DATA_REFRESH_DB_AUTO_PAUSE_DORMANT" {
+  type = number
+}
+
 variable "DATA_REFRESH_DB_SIZE_ACTIVE" {
   type = string
 }

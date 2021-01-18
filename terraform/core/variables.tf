@@ -130,6 +130,20 @@ variable "MATCHING_DATABASE_TRANSIENT_TIMEOUT" {
   description = "The timeout to be used in the connection string for the transient matching database. The default is half an hour - which may not be enough for particularly large ATLAS installations."
 }
 
+
+variable "MATCHING_DATA_REFRESH_DB_AUTO_PAUSE_ACTIVE" {
+  type = number
+  default = -1
+  description = "The 'auto-pause' duration for the active matching database, in minutes. Only relevant for serverless database tier - will be ignored for other tiers. -1 = auto-pause disabled. Minimum 60."
+}
+
+variable "MATCHING_DATA_REFRESH_DB_AUTO_PAUSE_DORMANT" {
+  type = number
+  default = -1
+  description = "The 'auto-pause' duration for the dormant matching database, in minutes. Only relevant for serverless database tier - will be ignored for other tiers. -1 = auto-pause disabled. Minimum 60."
+}
+
+
 variable "MATCHING_DATA_REFRESH_DB_SIZE_ACTIVE" {
   type        = string
   default     = "S4"

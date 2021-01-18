@@ -75,9 +75,10 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
         private async Task ScaleDatabase()
         {
             var targetSize = dataRefreshSettings.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>();
+            var targetAutoPause = dataRefreshSettings.DormantDatabaseAutoPauseTimeout;
             var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetDormantDatabase());
             logger.SendTrace($"DATA REFRESH CLEANUP: Scaling database: {databaseName} to size {targetSize}");
-            await azureDatabaseManager.UpdateDatabaseSize(databaseName, targetSize);
+            await azureDatabaseManager.UpdateDatabaseSize(databaseName, targetSize, targetAutoPause);
         }
 
         private async Task UpdateStalledDataRefreshHistoryRecords()

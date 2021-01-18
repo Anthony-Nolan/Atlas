@@ -47,7 +47,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
 
             await dataRefreshCleanupService.RunDataRefreshCleanup();
 
-            await azureDatabaseManager.DidNotReceive().UpdateDatabaseSize(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>());
+            await azureDatabaseManager.DidNotReceive().UpdateDatabaseSize(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>(), Arg.Any<int?>());
         }
 
         [Test]
@@ -64,13 +64,16 @@ namespace Atlas.MatchingAlgorithm.Test.Services.DataRefresh
         public async Task RunDataRefreshCleanup_ScalesDormantDatabaseToDormantSize()
         {
             const string databaseName = "db-name";
+            var dataRefreshSettings = new DataRefreshSettings {DormantDatabaseSize = "S1", DormantDatabaseAutoPauseTimeout = 120};
+
             dataRefreshHistoryRepository.GetIncompleteRefreshJobs().Returns(new List<DataRefreshRecord> {new DataRefreshRecord()});
             azureDatabaseNameProvider.GetDatabaseName(Arg.Any<TransientDatabase>()).Returns(databaseName);
-            dataRefreshCleanupService = BuildDataRefreshCleanupService(new DataRefreshSettings {DormantDatabaseSize = "S1"});
+            dataRefreshCleanupService = BuildDataRefreshCleanupService(dataRefreshSettings);
 
             await dataRefreshCleanupService.RunDataRefreshCleanup();
 
-            await azureDatabaseManager.Received().UpdateDatabaseSize(databaseName, AzureDatabaseSize.S1);
+            await azureDatabaseManager.Received()
+                .UpdateDatabaseSize(databaseName, AzureDatabaseSize.S1, dataRefreshSettings.DormantDatabaseAutoPauseTimeout);
         }
 
         [Test]
