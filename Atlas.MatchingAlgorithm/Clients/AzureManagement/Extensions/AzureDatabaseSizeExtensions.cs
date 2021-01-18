@@ -10,11 +10,15 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement.Extensions
         private const string BasicTier = "Basic";
         private const string StandardTier = "Standard";
         private const string PremiumTier = "Premium";
+        
+        // Used for "Serverless" tier
+        private const string GeneralPurposeTier = "GeneralPurpose";
 
         public static string ToAzureApiUpdateBody(this AzureDatabaseSize databaseSize)
         {
             string tier;
             int? capacity = null;
+            string name = null;
 
             switch (databaseSize)
             {
@@ -81,6 +85,23 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement.Extensions
                     tier = PremiumTier;
                     capacity = 4000;
                     break;
+                case AzureDatabaseSize.GP_S_Gen5_1:
+                case AzureDatabaseSize.GP_S_Gen5_2:
+                case AzureDatabaseSize.GP_S_Gen5_4:
+                case AzureDatabaseSize.GP_S_Gen5_6:
+                case AzureDatabaseSize.GP_S_Gen5_8:
+                case AzureDatabaseSize.GP_S_Gen5_10:
+                case AzureDatabaseSize.GP_S_Gen5_12:
+                case AzureDatabaseSize.GP_S_Gen5_14:
+                case AzureDatabaseSize.GP_S_Gen5_16:
+                case AzureDatabaseSize.GP_S_Gen5_18:
+                case AzureDatabaseSize.GP_S_Gen5_20:
+                case AzureDatabaseSize.GP_S_Gen5_24:
+                case AzureDatabaseSize.GP_S_Gen5_32:
+                case AzureDatabaseSize.GP_S_Gen5_40:
+                    tier = GeneralPurposeTier;
+                    name = databaseSize.ToString();
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(databaseSize), databaseSize, null);
             }
@@ -88,6 +109,7 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement.Extensions
             dynamic skuObject = new ExpandoObject();
             skuObject.tier = tier;
             skuObject.capacity = capacity;
+            skuObject.name = name;
 
             dynamic body = new ExpandoObject();
             body.sku = skuObject;
