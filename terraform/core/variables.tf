@@ -28,6 +28,12 @@ variable "DATABASE_SERVER_ADMIN_LOGIN_PASSWORD" {
   type = string
 }
 
+variable "DATABASE_SHARED_EDITION" {
+  type        = string
+  default     = "Standard"
+  description = "Database edition. Defaults to 'Standard' for SKU (S0, P1, etc.) pricing model. For VCore (including Serverless) model, must be changed to 'GeneralPurpose'"
+}
+
 variable "DATABASE_SHARED_MAX_SIZE" {
   type        = string
   default     = "32212254720"
@@ -37,7 +43,7 @@ variable "DATABASE_SHARED_MAX_SIZE" {
 variable "DATABASE_SHARED_SKU_SIZE" {
   type        = string
   default     = "S2"
-  description = "This database will be on the Standard tier, so only standard sku sizes are appropriate e.g. S0, S2, S3."
+  description = "Appropriate values determined by DATABASE_SHARED_EDITION. Defaults to 'Standard', where only standard sku sizes are appropriate e.g. S0, S2, S3. Updating to 'GeneralPurpose' instead allows VCore/Serverless tiers, e.g. GP_S_Gen5_2"
 }
 
 variable "DONOR_DATABASE_PASSWORD" {

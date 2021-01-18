@@ -22,7 +22,7 @@ resource "azurerm_sql_database" "atlas-database-shared" {
   resource_group_name = azurerm_resource_group.atlas_resource_group.name
   server_name         = azurerm_sql_server.atlas_sql_server.name
 
-  edition                          = "Standard"
+  edition                          = var.DATABASE_SHARED_EDITION
   max_size_bytes                   = var.DATABASE_SHARED_MAX_SIZE
   requested_service_objective_name = var.DATABASE_SHARED_SKU_SIZE
 
