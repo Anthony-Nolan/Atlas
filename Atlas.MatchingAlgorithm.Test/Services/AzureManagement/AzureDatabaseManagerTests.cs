@@ -32,7 +32,8 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
             logger = Substitute.For<IMatchingAlgorithmImportLogger>();
 
             var defaultOperationTime = DateTime.UtcNow;
-            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>()).Returns(defaultOperationTime);
+            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>(), Arg.Any<int?>())
+                .Returns(defaultOperationTime);
             azureManagementClient.GetDatabaseOperations(Arg.Any<string>()).Returns(new List<DatabaseOperation>
             {
                 new DatabaseOperation
@@ -59,9 +60,9 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
             const string databaseName = "db";
             const AzureDatabaseSize size = AzureDatabaseSize.P15;
 
-            await azureDatabaseManager.UpdateDatabaseSize(databaseName, size);
+            await azureDatabaseManager.UpdateDatabaseSize(databaseName, size, null);
 
-            await azureManagementClient.Received().TriggerDatabaseScaling(databaseName, size);
+            await azureManagementClient.Received().TriggerDatabaseScaling(databaseName, size, null);
         }
 
         [Test]
@@ -70,7 +71,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
             const string databaseName = "db";
 
             var operationTime = DateTime.UtcNow;
-            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>()).Returns(operationTime);
+            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>(), Arg.Any<int?>()).Returns(operationTime);
             azureManagementClient.GetDatabaseOperations(Arg.Any<string>()).Returns(
                 new List<DatabaseOperation>
                 {
@@ -94,7 +95,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
                     }
                 });
 
-            await azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3);
+            await azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3, null);
 
             await azureManagementClient.Received(3).GetDatabaseOperations(databaseName);
         }
@@ -105,7 +106,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
             const string databaseName = "db";
 
             var operationTime = DateTime.UtcNow;
-            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>()).Returns(operationTime);
+            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>(), Arg.Any<int?>()).Returns(operationTime);
             azureManagementClient.GetDatabaseOperations(Arg.Any<string>()).Returns(
                 new List<DatabaseOperation>
                 {
@@ -115,7 +116,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
                     }
                 });
 
-            await azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3);
+            await azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3, null);
 
             threadSleeper.Received(1).Sleep(Arg.Is<int>(sleepTime => sleepTime < 250));
         }
@@ -126,7 +127,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
             const string databaseName = "db";
 
             var operationTime = DateTime.UtcNow;
-            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>()).Returns(operationTime);
+            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>(), Arg.Any<int?>()).Returns(operationTime);
             azureManagementClient.GetDatabaseOperations(Arg.Any<string>()).Returns(
                 new List<DatabaseOperation>
                 {
@@ -143,7 +144,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
                     }
                 });
 
-            await azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3);
+            await azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3, null);
 
             threadSleeper.Received(2).Sleep(Arg.Any<int>());
         }
@@ -154,7 +155,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
             const string databaseName = "db";
 
             var operationTime = DateTime.UtcNow;
-            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>()).Returns(operationTime);
+            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>(), Arg.Any<int?>()).Returns(operationTime);
             azureManagementClient.GetDatabaseOperations(Arg.Any<string>()).Returns(
                 x => throw new Exception(),
                 x => new List<DatabaseOperation>
@@ -165,7 +166,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
                     }
                 });
 
-            await azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3);
+            await azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3, null);
 
             await azureManagementClient.Received(2).GetDatabaseOperations(Arg.Any<string>());
         }
@@ -176,10 +177,10 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
             const string databaseName = "db";
 
             var operationTime = DateTime.UtcNow;
-            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>()).Returns(operationTime);
+            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>(), Arg.Any<int?>()).Returns(operationTime);
             azureManagementClient.GetDatabaseOperations(Arg.Any<string>()).Throws(new Exception());
 
-            Assert.ThrowsAsync<Exception>(() => azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3));
+            Assert.ThrowsAsync<Exception>(() => azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3, null));
         }
 
         [Test]
@@ -188,7 +189,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
             const string databaseName = "db";
 
             var operationTime = DateTime.UtcNow;
-            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>()).Returns(operationTime);
+            azureManagementClient.TriggerDatabaseScaling(Arg.Any<string>(), Arg.Any<AzureDatabaseSize>(), Arg.Any<int?>()).Returns(operationTime);
             azureManagementClient.GetDatabaseOperations(Arg.Any<string>()).Returns(
                 new List<DatabaseOperation>
                 {
@@ -198,7 +199,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.AzureManagement
                     }
                 });
 
-            Assert.ThrowsAsync<AzureManagementException>(() => azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3));
+            Assert.ThrowsAsync<AzureManagementException>(() => azureDatabaseManager.UpdateDatabaseSize(databaseName, AzureDatabaseSize.S3, null));
         }
     }
 }
