@@ -203,3 +203,33 @@ It is possible to run each of the results categorisation processes - "Scoring" (
 on a per-donor basis.
 
 These routes are not officially supported, so have not been rigorously load tested / documented - but the option is available.
+
+## Search Concurrency Configuration
+
+There are a few different factors to affecting the concurrency of search operations. These may need tweaking on a per-installation basis, so a summary of the various options is available here.
+
+### Number of concurrent processes
+
+This is a multi-faceted configuration option due to horizontal scaling. 
+
+First we must consider how many concurrent processes can run on each worker. 
+
+This is configured by `maxConcurrentCalls` for regular functions (e.g. matching), and `maxConcurrentActivityFunctions` for durable functions (e.g. match prediction).
+
+TODO: ATLAS-903: Make these values configurable via terraform variables.
+
+Next we must consider how many horizontal instances can be spun out.
+
+This is configured by the minimum of `WEBSITE_MAX_DYNAMIC_SCALE_OUT` (sets it per-functions app), and `maximum elastic worker count` (sets it per service plan).
+These can both be set via terraform configuration values.  
+
+
+### Database Connection Limit
+
+Within a single process, multiple database connections may be concurrently opened.
+
+There is a hard limit on concurrent connections set by Azure - docs available for [vCore](https://docs.microsoft.com/en-us/azure/azure-sql/database/resource-limits-vcore-single-databases) 
+and [DTU](https://docs.microsoft.com/en-us/azure/azure-sql/database/resource-limits-dtu-single-databases) pricing models.
+
+If the concurrency settings of Atlas searches involve more concurrent connections than the provisioned database tier, requests will fail. Ensure that the database provisioned is large enough to 
+handle the required number of concurrent connections.
