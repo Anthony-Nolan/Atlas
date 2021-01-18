@@ -21,6 +21,10 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
         Task<IEnumerable<DatabaseOperation>> GetDatabaseOperations(string databaseName);
     }
 
+    
+    /// <summary>
+    /// See Azure documentation for this API: https://docs.microsoft.com/en-us/rest/api/sql/databases
+    /// </summary>
     public class AzureDatabaseManagementClient : AzureManagementClientBase, IAzureDatabaseManagementClient
     {
         protected override string AzureApiVersion => "2017-10-01-preview";

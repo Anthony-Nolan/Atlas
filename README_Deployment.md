@@ -107,7 +107,12 @@ Once terraform has created ATLAS resources for the first time, certain actions m
   - Active Directory (Optional)
         - If you would like to be able to access the database server using Active Directory authentication, this should be manually configured
   - IP Whitelisting (Optional)
-    - By default, only other azure services will be allowed to access the database server through the firewall. For development access, any known IP addresses should be manually added to the IP whitelist in Azure.  
+    - By default, only other azure services will be allowed to access the database server through the firewall. For development access, any known IP addresses should be manually added to the IP whitelist in Azure.
+  - Serverless database auto-pause
+    - The default configuration will use the Standard SKU pricing model for Atlas databases. In some cases, when very varied load is expected, a "serverless" database tier may be appropriate, which auto-scales with load. In such cases, 
+    terraform will automatically create a database with an "auto-pause" time of one hour - i.e. after one hour of inactivity, the database will shut off, saving on provisioned CPU cost. This comes with the trade-off that cold starts become
+    much slower, and the first few requests to the database will fail as it "wakes up". To increase the auto-pause delay, or to disable it entirely, is not currently an available feature of terraform, so must be done manually.
+    Any manual configuration of this setting will not be overridden by later terraform releases.    
 
 ## System Tests
 
