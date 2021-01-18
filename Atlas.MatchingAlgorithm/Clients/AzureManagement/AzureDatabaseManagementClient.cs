@@ -27,7 +27,7 @@ namespace Atlas.MatchingAlgorithm.Clients.AzureManagement
     /// </summary>
     public class AzureDatabaseManagementClient : AzureManagementClientBase, IAzureDatabaseManagementClient
     {
-        protected override string AzureApiVersion => "2017-10-01-preview";
+        protected override string AzureApiVersion => "2019-06-01-preview";
 
         private readonly string databaseServerName;
 
