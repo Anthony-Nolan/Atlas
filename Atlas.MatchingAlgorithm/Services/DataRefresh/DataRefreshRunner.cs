@@ -270,7 +270,7 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     await donorImportRepository.RemoveAllDonorInformation();
                     break;
                 case DataRefreshStage.DatabaseScalingSetup:
-                    await ScaleDatabase(dataRefreshSettings.RefreshDatabaseSize.ParseToEnum<AzureDatabaseSize>());
+                    await ScaleDatabase(dataRefreshSettings.RefreshDatabaseSize.ParseToEnum<AzureDatabaseSize>(), -1);
                     break;
                 case DataRefreshStage.DonorImport:
                     if (executionMode == DataRefreshStageExecutionMode.Continuation)
@@ -297,7 +297,9 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
                     break;
 
                 case DataRefreshStage.DatabaseScalingTearDown:
-                    await ScaleDatabase(dataRefreshSettings.ActiveDatabaseSize.ParseToEnum<AzureDatabaseSize>());
+                    await ScaleDatabase(
+                        dataRefreshSettings.ActiveDatabaseSize.ParseToEnum<AzureDatabaseSize>(), 
+                        dataRefreshSettings.ActiveDatabaseAutoPauseTimeout);
                     break;
                 case DataRefreshStage.QueuedDonorUpdateProcessing:
                     var dbBeingRefreshed = refreshRecord.Database.ParseToEnum<TransientDatabase>();
@@ -311,17 +313,19 @@ namespace Atlas.MatchingAlgorithm.Services.DataRefresh
             await dataRefreshHistoryRepository.MarkStageAsComplete(refreshRecord, dataRefreshStage);
         }
 
-        private async Task ScaleDatabase(AzureDatabaseSize targetSize)
+        private async Task ScaleDatabase(AzureDatabaseSize targetSize, int? autoPauseDuration = null)
         {
             var databaseName = azureDatabaseNameProvider.GetDatabaseName(activeDatabaseProvider.GetDormantDatabase());
-            await azureDatabaseManager.UpdateDatabaseSize(databaseName, targetSize);
+            await azureDatabaseManager.UpdateDatabaseSize(databaseName, targetSize, autoPauseDuration);
         }
 
         private async Task FailureTearDown(int recordId)
         {
             try
             {
-                await ScaleDatabase(dataRefreshSettings.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>());
+                await ScaleDatabase(
+                    dataRefreshSettings.DormantDatabaseSize.ParseToEnum<AzureDatabaseSize>(),
+                    dataRefreshSettings.DormantDatabaseAutoPauseTimeout);
             }
             catch (Exception e)
             {
