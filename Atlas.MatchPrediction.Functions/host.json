@@ -14,6 +14,10 @@
         "maxConcurrentCalls": 2,
         "maxAutoRenewDuration": "02:00:00"
       }
+    },
+    "durableTask": {
+      "maxConcurrentActivityFunctions": 10,
+      "maxConcurrentOrchestratorFunctions": 10
     }
   },
   "functionTimeout": "01:30:00"
