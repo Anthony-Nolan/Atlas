@@ -81,6 +81,10 @@ variable "MATCHING_BATCH_SIZE" {
   type = number
 }
 
+variable MAX_CONCURRENT_SERVICEBUS_FUNCTIONS {
+  type = number
+}
+
 variable "MESSAGING_BUS_DONOR_BATCH_SIZE" {
   type = number
 }
