@@ -234,6 +234,12 @@ variable "REPEAT_SEARCH_DATABASE_USERNAME" {
   default = "repeat_search"
 }
 
+variable "SERVICE_PLAN_MAX_SCALE_OUT" {
+  type = number
+  default = 50
+  description = "The maximum number of workers that can be scaled out on the service plan. Affects all functions apps - which can be further restricted, but can never exceed this limit."
+}
+
 variable "SERVICE_PLAN_SKU" {
   type = object({
     tier = string,
