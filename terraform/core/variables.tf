@@ -127,7 +127,13 @@ variable "MATCHING_BATCH_SIZE" {
 variable "MATCHING_MAX_CONCURRENT_PROCESSES" {
   type = number
   default = 3
-  description = "The number of concurrent search requests that can run on each instance of the matching algorithm."
+  description = "The maximum number of concurrent search requests that can run on each instance of the matching algorithm."
+}
+
+variable "MATCHING_MAX_SCALE_OUT" {
+  type = number
+  default = 3
+  description = "The maximum number of instances of the matching algorithm that can be scaled out."
 }
 
 variable "MATCHING_DATABASE_TRANSIENT_TIMEOUT" {

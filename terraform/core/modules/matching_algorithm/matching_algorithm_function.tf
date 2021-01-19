@@ -10,7 +10,7 @@ locals {
     "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
     "AzureFunctionsJobHost__extensions__serviceBus__messageHandlerOptions__maxConcurrentCalls" = var.MAX_CONCURRENT_SERVICEBUS_FUNCTIONS
-    
+
     "AzureManagement:Authentication:ClientId"                   = var.AZURE_CLIENT_ID
     "AzureManagement:Authentication:ClientSecret"               = var.AZURE_CLIENT_SECRET
     "AzureManagement:Database:ServerName"                       = var.sql_server.name
@@ -64,7 +64,7 @@ locals {
     // maximum running instances of the algorithm = maximum_worker_count * maxConcurrentCalls (in host.json).
     // together these must ensure that the number of allowed concurrent SQL connections to the matching SQL DB is not exceeded.
     // Note that this is 200 workers for an S3 plan, and that each algorithm invocation can open up to 4 concurrent connections.
-    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = "3"
+    "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT" = var.MAX_SCALE_OUT
     "WEBSITE_RUN_FROM_PACKAGE"                  = var.WEBSITE_RUN_FROM_PACKAGE
   }
   matching_algorithm_function_app_name = "${var.general.environment}-ATLAS-MATCHING-ALGORITHM-FUNCTIONS"
