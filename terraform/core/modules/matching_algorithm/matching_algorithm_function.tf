@@ -9,6 +9,8 @@ locals {
     "APPINSIGHTS_INSTRUMENTATIONKEY" = var.application_insights.instrumentation_key
     "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
+    "AzureFunctionsJobHost__extensions__serviceBus__messageHandlerOptions__maxConcurrentCalls" = var.MAX_CONCURRENT_SERVICEBUS_FUNCTIONS
+    
     "AzureManagement:Authentication:ClientId"                   = var.AZURE_CLIENT_ID
     "AzureManagement:Authentication:ClientSecret"               = var.AZURE_CLIENT_SECRET
     "AzureManagement:Database:ServerName"                       = var.sql_server.name
