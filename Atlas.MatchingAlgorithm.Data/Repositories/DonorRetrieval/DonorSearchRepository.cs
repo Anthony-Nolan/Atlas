@@ -159,7 +159,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                     var sql = $@"
 SELECT * INTO #Pos1 FROM 
 (
-SELECT m.DonorId as DonorId1, TypePosition as TypePosition1
+SELECT DISTINCT m.DonorId as DonorId1, TypePosition as TypePosition1
 FROM {hlaPGroupRelationTableName} hlaPGroupRelations
 {pGroups1TempTableJoinConfig.FilteredJoinQueryString}
 JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
@@ -170,7 +170,7 @@ CREATE INDEX IX_Temp_Position1 ON #Pos1(DonorId1);
 
 SELECT * INTO #Pos2 FROM 
 (
-SELECT m.DonorId as DonorId2, TypePosition as TypePosition2
+SELECT DISTINCT m.DonorId as DonorId2, TypePosition as TypePosition2
 FROM {hlaPGroupRelationTableName} hlaPGroupRelations
 {pGroups2TempTableJoinConfig.FilteredJoinQueryString}
 JOIN {matchingHlaTableName} m ON m.HlaNameId = hlaPGroupRelations.HlaNameId
