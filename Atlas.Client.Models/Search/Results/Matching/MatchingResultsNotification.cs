@@ -14,6 +14,10 @@ namespace Atlas.Client.Models.Search.Results.Matching
         public SearchRequest SearchRequest { get; set; }
 
         public string SearchRequestId { get; set; }
+        /// <summary>
+        ///     In the case of an original search this ID will be null
+        /// </summary>
+        public string RepeatSearchRequestId { get; set; }
         public bool WasSuccessful { get; set; }
         public int? NumberOfResults { get; set; }
 

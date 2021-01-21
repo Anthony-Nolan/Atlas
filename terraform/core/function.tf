@@ -133,6 +133,9 @@ resource "azurerm_function_app" "atlas_public_api_function" {
     "Matching:MessagingServiceBus:SearchRequestsTopic" = module.matching_algorithm.service_bus.matching_requests_topic
     "Matching:MessagingServiceBus:SearchResultsTopic"  = module.matching_algorithm.service_bus.matching_results_topic
 
+    "RepeatSearch:MessagingServiceBus:ConnectionString"          = azurerm_servicebus_namespace_authorization_rule.read-write.primary_connection_string
+    "RepeatSearch:MessagingServiceBus:RepeatSearchRequestsTopic" = module.repeat_search.service_bus.repeat_search_requests_topic
+
     "NotificationsServiceBus:AlertsTopic"        = module.support.general.alerts_servicebus_topic.name
     "NotificationsServiceBus:ConnectionString"   = azurerm_servicebus_namespace_authorization_rule.write-only.primary_connection_string
     "NotificationsServiceBus:NotificationsTopic" = module.support.general.notifications_servicebus_topic.name
