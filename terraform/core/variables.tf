@@ -118,7 +118,7 @@ variable "MATCHING_BATCH_SIZE" {
   description = "Batch size at which donors will be iterated in the matching algorithm. Larger = quicker, but higher memory footprint."
 }
 
-variable "MATCHING_MAX_CONCURRENT_PROCESSES" {
+variable "MATCHING_MAX_CONCURRENT_PROCESSES_PER_INSTANCE" {
   type = number
   default = 3
   description = "The maximum number of concurrent search requests that can run on each instance of the matching algorithm."
