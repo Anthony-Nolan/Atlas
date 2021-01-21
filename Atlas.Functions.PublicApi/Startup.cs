@@ -3,7 +3,9 @@ using Atlas.Common.Notifications;
 using Atlas.Functions.PublicApi;
 using Atlas.MatchingAlgorithm.DependencyInjection;
 using Atlas.MatchingAlgorithm.Settings.ServiceBus;
+using Atlas.RepeatSearch.Settings.ServiceBus;
 using Atlas.MatchPrediction.ExternalInterface.DependencyInjection;
+using Atlas.RepeatSearch.DependencyInjection;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using static Atlas.Common.Utils.Extensions.DependencyInjectionUtils;
@@ -18,8 +20,10 @@ namespace Atlas.Functions.PublicApi
         {
             RegisterSettings(builder.Services);
 
-            builder.Services.RegisterMatchingAlgorithmOrchestration(OptionsReaderFor<MessagingServiceBusSettings>());
-            
+            builder.Services.RegisterMatchingAlgorithmOrchestration(OptionsReaderFor<MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings>());
+
+            builder.Services.RegisterRepeatSearchOrchestration(OptionsReaderFor<RepeatSearch.Settings.ServiceBus.MessagingServiceBusSettings>());
+
             builder.Services.RegisterMatchPredictionValidator();
         }
 
@@ -30,7 +34,10 @@ namespace Atlas.Functions.PublicApi
             services.RegisterAsOptions<NotificationsServiceBusSettings>("NotificationsServiceBus");
 
             // Matching Algorithm - initiation services only
-            services.RegisterAsOptions<MessagingServiceBusSettings>("Matching:MessagingServiceBus");
+            services.RegisterAsOptions<MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings>("Matching:MessagingServiceBus");
+
+            // Repeat Search - initiation services only
+            services.RegisterAsOptions<RepeatSearch.Settings.ServiceBus.MessagingServiceBusSettings>("RepeatSearch:MessagingServiceBus");
         }
     }
 }

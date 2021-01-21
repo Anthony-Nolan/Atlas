@@ -5,6 +5,7 @@ using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
 using Atlas.MatchPrediction.ExternalInterface;
 using Atlas.MatchPrediction.ExternalInterface.Models;
+using Atlas.RepeatSearch.Services.Search;
 using AzureFunctions.Extensions.Swashbuckle.Attribute;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
@@ -18,11 +19,13 @@ namespace Atlas.Functions.PublicApi.Functions
     public class SearchFunctions
     {
         private readonly ISearchDispatcher searchDispatcher;
+        private readonly IRepeatSearchDispatcher repeatSearchDispatcher;
         private readonly IMatchPredictionAlgorithmValidator matchPredictionAlgorithmValidator;
 
-        public SearchFunctions(ISearchDispatcher searchDispatcher, IMatchPredictionAlgorithmValidator matchPredictionAlgorithmValidator)
+        public SearchFunctions(ISearchDispatcher searchDispatcher, IRepeatSearchDispatcher repeatSearchDispatcher, IMatchPredictionAlgorithmValidator matchPredictionAlgorithmValidator)
         {
             this.searchDispatcher = searchDispatcher;
+            this.repeatSearchDispatcher = repeatSearchDispatcher;
             this.matchPredictionAlgorithmValidator = matchPredictionAlgorithmValidator;
         }
 
@@ -49,6 +52,31 @@ namespace Atlas.Functions.PublicApi.Functions
 
             var id = await searchDispatcher.DispatchSearch(searchRequest);
             return new JsonResult(new SearchInitiationResponse {SearchIdentifier = id});
+        }
+
+        [FunctionName(nameof(RepeatSearch))]
+        public async Task<IActionResult> RepeatSearch(
+            [HttpTrigger(AuthorizationLevel.Function, "post")]
+            [RequestBodyType(typeof(RepeatSearchRequest), nameof(RepeatSearchRequest))]
+            HttpRequest request)
+        {
+            var repeatSearchRequest = JsonConvert.DeserializeObject<RepeatSearchRequest>(await new StreamReader(request.Body).ReadToEndAsync());
+
+            var matchingValidationResult = await new SearchRequestValidator().ValidateAsync(repeatSearchRequest.SearchRequest);
+            if (!matchingValidationResult.IsValid)
+            {
+                return BuildValidationResponse(matchingValidationResult);
+            }
+
+            var probabilityRequestToValidate = repeatSearchRequest.SearchRequest.ToPartialMatchProbabilitySearchRequest();
+            var probabilityValidationResult = matchPredictionAlgorithmValidator.ValidateMatchPredictionAlgorithmInput(probabilityRequestToValidate);
+            if (!probabilityValidationResult.IsValid)
+            {
+                return BuildValidationResponse(probabilityValidationResult);
+            }
+
+            var id = await repeatSearchDispatcher.DispatchSearch(repeatSearchRequest);
+            return new JsonResult(new SearchInitiationResponse { SearchIdentifier = id });
         }
 
         private static IActionResult BuildValidationResponse(ValidationResult validationResult) =>

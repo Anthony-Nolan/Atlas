@@ -14,6 +14,7 @@ namespace Atlas.Client.Models.Search.Results.Matching
         public SearchRequest SearchRequest { get; set; }
 
         public string SearchRequestId { get; set; }
+        public string RepeatSearchRequestId { get; set; }
         public bool WasSuccessful { get; set; }
         public int? NumberOfResults { get; set; }
 
