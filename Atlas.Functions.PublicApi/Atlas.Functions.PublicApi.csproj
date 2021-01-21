@@ -42,5 +42,6 @@
       <ProjectReference Include="..\Atlas.MatchingAlgorithm.Client.Models\Atlas.MatchingAlgorithm.Client.Models.csproj" />
       <ProjectReference Include="..\Atlas.MatchingAlgorithm\Atlas.MatchingAlgorithm.csproj" />
       <ProjectReference Include="..\Atlas.MatchPrediction\Atlas.MatchPrediction.csproj" />
+      <ProjectReference Include="..\Atlas.RepeatSearch\Atlas.RepeatSearch.csproj" />
     </ItemGroup>
 </Project>

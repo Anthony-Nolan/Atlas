@@ -9,6 +9,9 @@
     "Matching:MessagingServiceBus:SearchRequestsTopic": "matching-requests",
     "Matching:MessagingServiceBus:SearchResultsTopic": "matching-results-ready",
 
+    "RepeatSearch:MessagingServiceBus:ConnectionString": "override-this",
+    "RepeatSearch:MessagingServiceBus:RepeatSearchRequestsTopic": "repeat-search-requests",
+
     "NotificationsServiceBus:AlertsTopic": "alerts",
     "NotificationsServiceBus:ConnectionString": "override-this",
     "NotificationsServiceBus:NotificationsTopic": "notifications"
