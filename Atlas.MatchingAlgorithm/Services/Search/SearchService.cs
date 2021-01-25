@@ -56,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             var criteria = await GetMatchCriteria(matchingRequest);
             expansionTimer.Dispose();
 
-            var matches = matchingService.GetMatches(criteria);
+            var matches = matchingService.GetMatches(criteria, null);
 
             var request = new StreamingMatchResultsScoringRequest
             {

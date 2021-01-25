@@ -144,14 +144,14 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithNoAllowedMismatches_MatchesDonorWithTwoOfTwoHomozygousMatchesAtLocus()
         {
-            var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build()).ToListAsync();
+            var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build(), null).ToListAsync();
             results.ShouldContainDonor(DonorInfoWithFullHomozygousMatchAtLocus.DonorId);
         }
 
         [Test]
         public async Task Search_WithNoAllowedMismatches_MatchesDonorWithTwoOfTwoHeterozygousMatchesAtLocus()
         {
-            var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build()).ToListAsync();
+            var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build(), null).ToListAsync();
 
             results.ShouldContainDonor(DonorInfoWithFullExactHeterozygousMatchAtLocus.DonorId);
             results.ShouldContainDonor(DonorInfoWithFullCrossHeterozygousMatchAtLocus.DonorId);
@@ -160,7 +160,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task Search_WithNoAllowedMismatches_DoesNotMatchDonorsWithFewerThanTwoMatchesAtLocus()
         {
-            var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build()).ToListAsync();
+            var results = await matchingService.GetMatches(GetDefaultCriteriaBuilder().Build(), null).ToListAsync();
             results.ShouldNotContainDonor(DonorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
             results.ShouldNotContainDonor(DonorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
             results.ShouldNotContainDonor(DonorInfoWithNoMatchAtLocus.DonorId);
@@ -174,7 +174,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1))
                 .Build();
 
-            var results = await matchingService.GetMatches(criteria).ToListAsync();
+            var results = await matchingService.GetMatches(criteria, null).ToListAsync();
 
             results.ShouldContainDonor(DonorInfoWithFullExactHeterozygousMatchAtLocus.DonorId);
             results.ShouldContainDonor(DonorInfoWithFullCrossHeterozygousMatchAtLocus.DonorId);
@@ -189,7 +189,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1))
                 .Build();
 
-            var results = await matchingService.GetMatches(criteria).ToListAsync();
+            var results = await matchingService.GetMatches(criteria, null).ToListAsync();
 
             results.ShouldContainDonor(DonorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
         }
@@ -202,7 +202,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1))
                 .Build();
 
-            var results = await matchingService.GetMatches(criteria).ToListAsync();
+            var results = await matchingService.GetMatches(criteria, null).ToListAsync();
 
             results.ShouldContainDonor(DonorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);
         }
@@ -215,7 +215,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(1))
                 .Build();
 
-            var results = await matchingService.GetMatches(criteria).ToListAsync();
+            var results = await matchingService.GetMatches(criteria, null).ToListAsync();
 
             results.ShouldNotContainDonor(DonorInfoWithNoMatchAtLocus.DonorId);
         }
@@ -228,7 +228,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2))
                 .Build();
 
-            var results = await matchingService.GetMatches(criteria).ToListAsync();
+            var results = await matchingService.GetMatches(criteria, null).ToListAsync();
 
             results.ShouldContainDonor(DonorInfoWithNoMatchAtLocus.DonorId);
         }
@@ -241,7 +241,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2))
                 .Build();
 
-            var results = await matchingService.GetMatches(criteria).ToListAsync();
+            var results = await matchingService.GetMatches(criteria, null).ToListAsync();
 
             results.ShouldContainDonor(DonorInfoWithFullExactHeterozygousMatchAtLocus.DonorId);
             results.ShouldContainDonor(DonorInfoWithFullCrossHeterozygousMatchAtLocus.DonorId);
@@ -256,7 +256,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 .WithLocusMatchCriteria(locus, DefaultPatientLocusCriteriaBuilder().WithMismatchCount(2))
                 .Build();
 
-            var results = await matchingService.GetMatches(criteria).ToListAsync();
+            var results = await matchingService.GetMatches(criteria, null).ToListAsync();
 
             results.ShouldContainDonor(DonorInfoWithHalfMatchInHvGDirectionAndFullMatchInGvHAtLocus.DonorId);
             results.ShouldContainDonor(DonorInfoWithHalfMatchInBothHvGAndGvHDirectionsAtLocus.DonorId);

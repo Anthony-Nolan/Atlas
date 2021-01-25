@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Atlas.Common.ApplicationInsights;
 using Atlas.Common.GeneticData;
@@ -28,6 +29,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             Locus locus,
             AlleleLevelLocusMatchCriteria criteria,
             DonorType searchType,
+            DateTime? cutOffDate,
             HashSet<int> donorIds = null);
     }
 
@@ -49,6 +51,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             Locus locus,
             AlleleLevelLocusMatchCriteria criteria,
             DonorType searchType,
+            DateTime? cutOffDate,
             HashSet<int> donorIds = null)
         {
             var repoCriteria = new LocusSearchCriteria
@@ -65,7 +68,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                 DonorIds = donorIds
             };
 
-            var donorMatchRelations = donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions);
+            var donorMatchRelations = donorSearchRepository.GetDonorMatchesAtLocus(locus, repoCriteria, filteringOptions, cutOffDate);
 
             (int, LocusMatchDetails) aggregatedDonorRelations = default;
 
