@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Common.ApplicationInsights;
@@ -27,7 +28,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
         /// A dictionary of PotentialSearchResults, keyed by donor id.
         /// MatchDetails will be populated only for the specified loci.
         /// </returns>
-        Task<IAsyncEnumerable<MatchResult>> FindMatchingDonors(AlleleLevelMatchCriteria criteria);
+        Task<IAsyncEnumerable<MatchResult>> FindMatchingDonors(AlleleLevelMatchCriteria criteria, DateTime? cutOffDate);
     }
 
     internal class DonorMatchingService : IDonorMatchingService
@@ -53,7 +54,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             this.matchingConfigurationSettings = matchingConfigurationSettings;
         }
 
-        public async Task<IAsyncEnumerable<MatchResult>> FindMatchingDonors(AlleleLevelMatchCriteria criteria)
+        public async Task<IAsyncEnumerable<MatchResult>> FindMatchingDonors(AlleleLevelMatchCriteria criteria, DateTime? cutOffDate)
         {
             var orderedLoci = matchCriteriaAnalyser.LociInMatchingOrder(criteria);
             searchLogger.SendTrace($"Will match loci in the following order: {orderedLoci.Select(l => l.ToString()).StringJoin(", ")}");
@@ -66,7 +67,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                         var (partialResultStream, matchedLoci) = aggregator;
 
                         return (
-                            MatchAtLocus(criteria, locus, matchedLoci, partialResultStream),
+                            MatchAtLocus(criteria, locus, matchedLoci, cutOffDate, partialResultStream),
                             matchedLoci.Concat(new HashSet<Locus> {locus}).ToHashSet()
                         );
                     }
@@ -91,6 +92,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
             AlleleLevelMatchCriteria criteria,
             Locus locus,
             ICollection<Locus> matchedLoci,
+            DateTime? cutOffDate,
             IAsyncEnumerable<MatchResult> previousLociResultStream = null)
         {
             using (searchLogger.RunTimed($"Matching at Locus {locus}. (Timing cumulative across loci.)"))
@@ -105,7 +107,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                         // If this still causes OutOfMemory exceptions, we may need to look into Zipping multiple ordered streams from different loci.
                         : (await System.Linq.AsyncEnumerable.ToListAsync(previousLociResultStream)).ToDictionary(x => x.DonorId, x => x);
 
-                    var locusStream = perLocusDonorMatchingService.FindMatchesAtLocus(locus, locusCriteria, criteria.SearchType);
+                    var locusStream = perLocusDonorMatchingService.FindMatchesAtLocus(locus, locusCriteria, criteria.SearchType, cutOffDate);
 
                     var filteredResults = await ConsolidateAndFilterResults(criteria, matchedLoci, locus, locusStream, results);
                     await foreach (var result in filteredResults)
@@ -123,7 +125,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search.Matching
                         var donorIds = donorBatch.Keys.ToHashSet();
 
                         var locusBatchStream =
-                            perLocusDonorMatchingService.FindMatchesAtLocus(locus, locusCriteria, criteria.SearchType, donorIds);
+                            perLocusDonorMatchingService.FindMatchesAtLocus(locus, locusCriteria, criteria.SearchType, cutOffDate, donorIds);
 
                         var filteredResults = await ConsolidateAndFilterResults(criteria, matchedLoci, locus, locusBatchStream, donorBatch);
                         await foreach (var result in filteredResults)

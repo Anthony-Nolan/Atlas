@@ -342,7 +342,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         /// <returns>List of matching donor IDs.</returns>
         private async Task<IEnumerable<int>> GetMatchingDonorIds(AlleleLevelMatchCriteria alleleLevelMatchCriteria)
         {
-            var results = await matchingService.GetMatches(alleleLevelMatchCriteria).ToListAsync();
+            var results = await matchingService.GetMatches(alleleLevelMatchCriteria, null).ToListAsync();
             return results.Select(d => d.DonorId);
         }
     }
