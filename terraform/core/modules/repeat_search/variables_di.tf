@@ -21,6 +21,24 @@ variable "azure_storage" {
   })
 }
 
+variable "mac_import_table" {
+  type = object({
+    name = string
+  })
+}
+
+variable "matching_persistent_database_connection_string" {
+  type = string
+}
+
+variable "matching_transient_a_database_connection_string" {
+  type = string
+}
+
+variable "matching_transient_b_database_connection_string" {
+  type = string
+}
+
 variable "servicebus_namespace" {
   type = object({
     name = string

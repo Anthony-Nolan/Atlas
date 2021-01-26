@@ -25,7 +25,7 @@ namespace Atlas.MatchingAlgorithm.Api.Controllers
         {
             try
             {
-                var results = (await searchService.Search(searchRequest)).ToList();
+                var results = (await searchService.Search(searchRequest, null)).ToList();
 
                 return new MatchingAlgorithmResultSet
                 {
