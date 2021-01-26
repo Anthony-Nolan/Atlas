@@ -211,7 +211,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Import
             
             var searchService = DependencyInjection.DependencyInjection.Provider.GetService<ISearchService>();
             var searchRequest = new SearchRequestBuilder().WithSearchHla(donorInfo.HlaNames).Build();
-            var searchResults = await searchService.Search(searchRequest);
+            var searchResults = await searchService.Search(searchRequest, null);
         
             searchResults.Should().ContainSingle(r => r.AtlasDonorId == donorInfo.DonorId);
         }

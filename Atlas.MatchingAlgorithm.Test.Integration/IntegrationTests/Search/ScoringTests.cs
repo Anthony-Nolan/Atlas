@@ -68,7 +68,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithLociToScore(new List<Locus>())
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             result.ScoringResult.TypedLociCountAtScoredLoci.Should().BeNull();
@@ -87,7 +87,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithLociToScore(new List<Locus>())
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             result?.MatchingResult.TypedLociCount.Should().Be(6);
@@ -103,7 +103,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithLociToScore(new List<Locus> { Locus.A })
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             result.ScoringResult.TypedLociCountAtScoredLoci.Should().Be(1);
@@ -122,7 +122,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithAllLociScored()
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             result.ScoringResult.TypedLociCountAtScoredLoci.Should().Be(6);
@@ -141,7 +141,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithLociToScore(new List<Locus> { Locus.Dpb1 })
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.Single(d => d.AtlasDonorId == testDonor.DonorId);
 
             var scoredLocus = result.ScoringResult.ScoringResultsByLocus.Dpb1;
@@ -173,7 +173,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithAllLociScored()
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             var expectedMatchCategories = new List<MatchCategory?> { MatchCategory.Definite, MatchCategory.Exact };
@@ -190,7 +190,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithAllLociScored()
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             var expectedMatchCategories = new List<MatchCategory?> { MatchCategory.Definite, MatchCategory.Exact };
@@ -207,7 +207,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithAllLociScored()
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             result.ScoringResult.MatchCategory.Should().Be(MatchCategory.Potential);
@@ -223,7 +223,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithAllLociScored()
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             result.ScoringResult.MatchCategory.Should().Be(MatchCategory.Potential);
@@ -243,7 +243,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithAllLociScored()
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             // Should be 6/6
@@ -283,7 +283,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithAllLociScored()
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             // Should be 5/6
@@ -322,7 +322,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithAllLociScored()
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             // Should be 2x potential P group matches at C
@@ -357,7 +357,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithLociToScore(new List<Locus> { Locus.C, Locus.Dpb1, Locus.Dqb1 })
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == testDonor.DonorId);
 
             // Should be 2x potential G group matches (XX code vs. Allele) at C

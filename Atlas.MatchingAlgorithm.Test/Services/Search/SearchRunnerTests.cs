@@ -56,7 +56,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
 
             await searchRunner.RunSearch(new IdentifiedSearchRequest {SearchRequest = searchRequest});
 
-            await searchService.Received().Search(searchRequest);
+            await searchService.Received().Search(searchRequest, null);
         }
 
         [Test]
@@ -98,7 +98,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         public async Task RunSearch_WhenSearchFails_PublishesFailureNotification()
         {
             const string id = "id";
-            searchService.Search(default).ThrowsForAnyArgs(new AtlasHttpException(HttpStatusCode.InternalServerError, "dummy error message"));
+            searchService.Search(default, null).ThrowsForAnyArgs(new AtlasHttpException(HttpStatusCode.InternalServerError, "dummy error message"));
 
             try
             {
@@ -118,7 +118,7 @@ namespace Atlas.MatchingAlgorithm.Test.Services.Search
         [Test]
         public async Task RunSearch_WhenSearchFails_ReThrowsException()
         {
-            searchService.Search(default).ThrowsForAnyArgs(new AtlasHttpException(HttpStatusCode.InternalServerError, "dummy error message"));
+            searchService.Search(default, null).ThrowsForAnyArgs(new AtlasHttpException(HttpStatusCode.InternalServerError, "dummy error message"));
 
             await searchRunner.Invoking(r => r.RunSearch(new IdentifiedSearchRequest {Id = "id", SearchRequest = DefaultMatchingRequest}))
                 .Should().ThrowAsync<AtlasHttpException>();

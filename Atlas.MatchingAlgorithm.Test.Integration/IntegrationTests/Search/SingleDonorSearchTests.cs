@@ -76,7 +76,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .SixOutOfSix()
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
 
             results.Should().Contain(d => d.AtlasDonorId == donor.DonorId);
         }
@@ -89,7 +89,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithPositionOneOfSearchHlaMismatchedAt(Locus.A)
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
 
             results.Should().BeEmpty();
         }
@@ -102,7 +102,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithPositionOneOfSearchHlaMismatchedAt(Locus.B)
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
 
             results.Should().BeEmpty();
         }
@@ -115,7 +115,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithPositionOneOfSearchHlaMismatchedAt(Locus.Drb1)
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
 
             results.Should().BeEmpty();
         }
@@ -130,7 +130,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithPositionOneOfSearchHlaMismatchedAt(Locus.Drb1)
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
 
             results.Should().BeEmpty();
         }
@@ -143,7 +143,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithLociToScore(new List<Locus> {Locus.C, Locus.Dqb1})
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
             result?.ScoringResult.ScoringResultsByLocus.C.MatchCount.Should().Be(2);
@@ -158,7 +158,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithLociToScore(new List<Locus> {Locus.C, Locus.Dqb1})
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
             // 3 match loci (A, B, DRB1) x 2
@@ -173,7 +173,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithLociToScore(new List<Locus> {Locus.C})
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
             // C is typed but not included in matching
@@ -188,7 +188,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithLociToScore(new List<Locus> {Locus.A})
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
             // A is typed and included in search
@@ -203,7 +203,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithLociToScore(new List<Locus> {Locus.Dqb1})
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == donor.DonorId);
 
             // DQB1 is not typed and not included in search
