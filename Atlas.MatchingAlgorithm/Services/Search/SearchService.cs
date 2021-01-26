@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Requests;
@@ -23,7 +24,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 {
     public interface ISearchService
     {
-        Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest matchingRequest);
+        Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest matchingRequest, DateTime? cutOffDate = null);
     }
 
     internal class SearchService : ISearchService
@@ -50,13 +51,13 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
-        public async Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest matchingRequest)
+        public async Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest matchingRequest, DateTime? cutOffDate)
         {
             var expansionTimer = searchLogger.RunTimed($"{LoggingPrefix}Expand patient HLA");
             var criteria = await GetMatchCriteria(matchingRequest);
             expansionTimer.Dispose();
 
-            var matches = matchingService.GetMatches(criteria, null);
+            var matches = matchingService.GetMatches(criteria, cutOffDate);
 
             var request = new StreamingMatchResultsScoringRequest
             {
