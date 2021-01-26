@@ -60,7 +60,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             {
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
-                var results = (await searchService.Search(identifiedSearchRequest.SearchRequest)).ToList();
+                var results = (await searchService.Search(identifiedSearchRequest.SearchRequest, null)).ToList();
                 stopwatch.Stop();
 
                 var blobContainerName = resultsBlobStorageClient.GetResultsContainerName();

@@ -4,7 +4,18 @@
     "ApplicationInsights:InstrumentationKey": "dummy-key",
     "ApplicationInsights:LogLevel": "Info",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet"
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "HlaMetadataDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
+    "MacDictionary:AzureStorageConnectionString": "UseDevelopmentStorage=true",
+    "MacDictionary:TableName": "AtlasMultipleAlleleCodes",
+    "MatchingConfiguration:MatchingBatchSize": 250000,
+    "MessagingServiceBus:ConnectionString": "override-this",
+    "MessagingServiceBus:RepeatSearchRequestsTopic": "repeat-search-requests",
+    "MessagingServiceBus:RepeatSearchRequestsSubscription": "repeat-search",
+    "MessagingServiceBus:RepeatSearchResultsTopic": "repeat-search-results-ready",
+    "NotificationsServiceBus:AlertsTopic": "alerts",
+    "NotificationsServiceBus:ConnectionString": "override-this",
+    "NotificationsServiceBus:NotificationsTopic": "notifications"
   },
 
   "ConnectionStrings": {
