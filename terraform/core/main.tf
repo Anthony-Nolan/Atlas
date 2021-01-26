@@ -194,22 +194,26 @@ module "repeat_search" {
   default_servicebus_settings = local.service-bus
 
   // DI Variables
-  application_insights                     = azurerm_application_insights.atlas
-  app_service_plan                         = azurerm_app_service_plan.atlas-elastic-plan
-  azure_storage                            = azurerm_storage_account.azure_storage
-  servicebus_namespace                     = azurerm_servicebus_namespace.general
-  servicebus_namespace_authorization_rules = {
+  application_insights                            = azurerm_application_insights.atlas
+  app_service_plan                                = azurerm_app_service_plan.atlas-elastic-plan
+  azure_storage                                   = azurerm_storage_account.azure_storage
+  mac_import_table                                = module.multiple_allele_code_lookup.storage_table
+  matching_persistent_database_connection_string  = module.matching_algorithm.matching_persistent_database_connection_string
+  matching_transient_a_database_connection_string = module.matching_algorithm.matching_transient_database_a_connection_string
+  matching_transient_b_database_connection_string = module.matching_algorithm.matching_transient_database_b_connection_string
+  servicebus_namespace                            = azurerm_servicebus_namespace.general
+  servicebus_namespace_authorization_rules        = {
     read-write = azurerm_servicebus_namespace_authorization_rule.read-write
     read-only  = azurerm_servicebus_namespace_authorization_rule.read-only
     write-only = azurerm_servicebus_namespace_authorization_rule.write-only
   }
-  servicebus_topics                        = {
+  servicebus_topics                               = {
     alerts        = module.support.general.alerts_servicebus_topic
     notifications = module.support.general.notifications_servicebus_topic
   }
-  shared_function_storage                  = azurerm_storage_account.function_storage
-  sql_database                             = azurerm_sql_database.atlas-database-shared
-  sql_server                               = azurerm_sql_server.atlas_sql_server
+  shared_function_storage                         = azurerm_storage_account.function_storage
+  sql_database                                    = azurerm_sql_database.atlas-database-shared
+  sql_server                                      = azurerm_sql_server.atlas_sql_server
 
 
   // Release variables
@@ -217,6 +221,7 @@ module "repeat_search" {
   DATABASE_PASSWORD              = var.REPEAT_SEARCH_DATABASE_PASSWORD
   DATABASE_USERNAME              = var.REPEAT_SEARCH_DATABASE_USERNAME
   IP_RESTRICTION_SETTINGS        = var.IP_RESTRICTION_SETTINGS
+  MATCHING_BATCH_SIZE            = var.MATCHING_BATCH_SIZE
 }
 
 module "support" {
