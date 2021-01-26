@@ -20,7 +20,13 @@ resource "azurerm_function_app" "atlas_repeat_search_function" {
     "APPINSIGHTS_INSTRUMENTATIONKEY" = var.application_insights.instrumentation_key
     "ApplicationInsights:LogLevel"   = var.APPLICATION_INSIGHTS_LOG_LEVEL
 
-    "FUNCTIONS_WORKER_RUNTIME" : "dotnet"
+    "FUNCTIONS_WORKER_RUNTIME" = "dotnet"
+
+    "MessagingServiceBus:ConnectionString"                 = var.servicebus_namespace_authorization_rules.read-write.primary_connection_string
+    "MessagingServiceBus:RepeatSearchRequestsTopic"        = azurerm_servicebus_topic.repeat-search-requests.name
+    "MessagingServiceBus:RepeatSearchRequestsSubscription" = azurerm_servicebus_subscription.repeat-search-repeat-search-requests.name
+    "MessagingServiceBus:RepeatSearchResultsTopic"         = azurerm_servicebus_topic.repeat-search-results-ready.name
+
     "WEBSITE_RUN_FROM_PACKAGE" = "1"
   }
 

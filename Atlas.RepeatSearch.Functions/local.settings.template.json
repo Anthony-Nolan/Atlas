@@ -4,7 +4,11 @@
     "ApplicationInsights:InstrumentationKey": "dummy-key",
     "ApplicationInsights:LogLevel": "Info",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet"
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "MessagingServiceBus:ConnectionString": "override-this",
+    "MessagingServiceBus:RepeatSearchRequestsTopic": "repeat-search-requests",
+    "MessagingServiceBus:RepeatSearchRequestsSubscription": "repeat-search",
+    "MessagingServiceBus:RepeatSearchResultsTopic": "repeat-search-results-ready"
   },
 
   "ConnectionStrings": {
