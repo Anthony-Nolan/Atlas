@@ -5,7 +5,7 @@ using Atlas.RepeatSearch.Services.Search;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Atlas.RepeatSearch.DependencyInjection
+namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
 {
     /// <summary>
     /// Contains registrations necessary to set up a project-project interface for orchestration of repeat searching.

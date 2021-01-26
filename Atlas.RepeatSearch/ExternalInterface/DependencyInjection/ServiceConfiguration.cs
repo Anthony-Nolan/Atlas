@@ -8,8 +8,8 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
     {
         public static void RegisterRepeatSearch(
             this IServiceCollection services,
-            Func<IServiceProvider, ApplicationInsightsSettings> optionsReaderFor,
-            Func<IServiceProvider, string> connectionStringReader)
+            Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, string> fetchSqlConnectionString)
         {
         }
     }
