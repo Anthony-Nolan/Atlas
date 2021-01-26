@@ -73,7 +73,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .WithAllLociScored()
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == originalNullAlleleDonorId);
 
             // Position under test
@@ -93,7 +93,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .WithAllLociScored()
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == originalNullAlleleDonorId);
 
             // Position under test
@@ -113,7 +113,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .WithAllLociScored()
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == originalNullAlleleDonorId);
 
             // Position under test
@@ -133,7 +133,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .WithAllLociScored()
                 .Build();
 
-            var results = await searchService.Search(searchRequest);
+            var results = await searchService.Search(searchRequest, null);
             var result = results.SingleOrDefault(d => d.AtlasDonorId == homozygousLocusDonorId);
 
             // Position under test

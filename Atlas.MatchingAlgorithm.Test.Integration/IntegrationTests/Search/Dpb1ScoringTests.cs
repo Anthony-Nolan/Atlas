@@ -180,7 +180,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithDpb1ExcludedFromScoringAggregation()
                 .Build();
 
-            var searchResults = await searchService.Search(searchRequest);
+            var searchResults = await searchService.Search(searchRequest, null);
             var result = searchResults.SingleOrDefault(d => d.AtlasDonorId == testDonorId);
 
             result.ScoringResult.MatchCategory.Should().NotBe(MatchCategory.Mismatch);
@@ -232,7 +232,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search
                 .WithAllLociScored()
                 .Build();
 
-            var searchResults = await searchService.Search(searchRequest);
+            var searchResults = await searchService.Search(searchRequest, null);
             return searchResults.SingleOrDefault(d => d.AtlasDonorId == testDonorId);
         }
     }

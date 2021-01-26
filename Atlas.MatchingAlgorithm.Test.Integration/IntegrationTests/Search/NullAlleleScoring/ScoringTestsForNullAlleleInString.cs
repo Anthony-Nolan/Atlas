@@ -978,7 +978,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .WithAllLociScored()
                 .Build();
 
-            var searchResults = await searchService.Search(searchRequest);
+            var searchResults = await searchService.Search(searchRequest, null);
             return searchResults.Single(d => d.AtlasDonorId == donorId);
         }
 
@@ -990,7 +990,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .WithAllLociScored()
                 .Build();
 
-            var searchResults = await searchService.Search(searchRequest);
+            var searchResults = await searchService.Search(searchRequest, null);
             return searchResults.Single(d => d.AtlasDonorId == donorId);
         }
 
@@ -1002,7 +1002,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Search.NullA
                 .WithAllLociScored()
                 .Build();
 
-            var searchResults = await searchService.Search(searchRequest);
+            var searchResults = await searchService.Search(searchRequest, null);
             return searchResults.Single(d => d.AtlasDonorId == donorId);
         }
 

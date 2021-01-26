@@ -1,66 +1,66 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
+using System.Linq;
 using System.Threading.Tasks;
 using Atlas.Client.Models.Search.Results.Matching;
 using Atlas.Common.ApplicationInsights;
 using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
 using Atlas.MatchingAlgorithm.Clients.AzureStorage;
-using Atlas.MatchingAlgorithm.Clients.ServiceBus;
-using Atlas.MatchingAlgorithm.Common.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
+using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Validators.SearchRequest;
+using Atlas.RepeatSearch.Clients;
+using Atlas.RepeatSearch.Models;
 using FluentValidation;
 
-namespace Atlas.MatchingAlgorithm.Services.Search
+namespace Atlas.RepeatSearch.Services.Search
 {
-    public interface ISearchRunner
+    public interface IRepeatSearchRunner
     {
-        Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedSearchRequest identifiedSearchRequest);
+        Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest);
     }
-
-    public class SearchRunner : ISearchRunner
+    public class RepeatSearchRunner : IRepeatSearchRunner
     {
-        private readonly ISearchServiceBusClient searchServiceBusClient;
+        private readonly IRepeatSearchServiceBusClient repeatSearchServiceBusClient;
         private readonly ISearchService searchService;
         private readonly IResultsBlobStorageClient resultsBlobStorageClient;
-        private readonly ILogger searchLogger;
-        private readonly MatchingAlgorithmSearchLoggingContext searchLoggingContext;
+        private readonly ILogger repeatSearchLogger;
+        private readonly MatchingAlgorithmSearchLoggingContext repeatSearchLoggingContext;
         private readonly IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor;
 
-        public SearchRunner(
-            ISearchServiceBusClient searchServiceBusClient,
+        public RepeatSearchRunner(
+            IRepeatSearchServiceBusClient repeatSearchServiceBusClient,
             ISearchService searchService,
             IResultsBlobStorageClient resultsBlobStorageClient,
             // ReSharper disable once SuggestBaseTypeForParameter
-            IMatchingAlgorithmSearchLogger searchLogger,
-            MatchingAlgorithmSearchLoggingContext searchLoggingContext,
+            IMatchingAlgorithmSearchLogger repeatSearchLogger,
+            MatchingAlgorithmSearchLoggingContext repeatSearchLoggingContext,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
         {
-            this.searchServiceBusClient = searchServiceBusClient;
+            this.repeatSearchServiceBusClient = repeatSearchServiceBusClient;
             this.searchService = searchService;
             this.resultsBlobStorageClient = resultsBlobStorageClient;
-            this.searchLogger = searchLogger;
-            this.searchLoggingContext = searchLoggingContext;
+            this.repeatSearchLogger = repeatSearchLogger;
+            this.repeatSearchLoggingContext = repeatSearchLoggingContext;
             this.hlaNomenclatureVersionAccessor = hlaNomenclatureVersionAccessor;
         }
 
-        public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedSearchRequest identifiedSearchRequest)
+        public async Task<MatchingAlgorithmResultSet> RunSearch(IdentifiedRepeatSearchRequest identifiedRepeatSearchRequest)
         {
-            await new SearchRequestValidator().ValidateAndThrowAsync(identifiedSearchRequest.SearchRequest);
-            
-            var searchRequestId = identifiedSearchRequest.Id;
-            searchLoggingContext.SearchRequestId = searchRequestId;
+            await new SearchRequestValidator().ValidateAndThrowAsync(identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest);
+
+            var searchRequestId = identifiedRepeatSearchRequest.RepeatSearchId;
+            repeatSearchLoggingContext.SearchRequestId = searchRequestId;
             var searchAlgorithmServiceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
             var hlaNomenclatureVersion = hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion();
-            searchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
-
+            repeatSearchLoggingContext.HlaNomenclatureVersion = hlaNomenclatureVersion;
             try
             {
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
-                var results = (await searchService.Search(identifiedSearchRequest.SearchRequest, null)).ToList();
+                var results = (await searchService.Search(identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest, identifiedRepeatSearchRequest.RepeatSearchRequest.SearchCutoffDate)).ToList();
                 stopwatch.Stop();
 
                 var blobContainerName = resultsBlobStorageClient.GetResultsContainerName();
@@ -78,7 +78,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
                 var notification = new MatchingResultsNotification
                 {
-                    SearchRequest = identifiedSearchRequest.SearchRequest,
+                    SearchRequest = identifiedRepeatSearchRequest.RepeatSearchRequest.SearchRequest,
                     SearchRequestId = searchRequestId,
                     MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
                     HlaNomenclatureVersion = hlaNomenclatureVersion,
@@ -88,12 +88,12 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     BlobStorageResultsFileName = searchResultSet.ResultsFileName,
                     ElapsedTime = stopwatch.Elapsed
                 };
-                await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
+                await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
                 return searchResultSet;
             }
             catch (Exception e)
             {
-                searchLogger.SendTrace($"Failed to run search with id {searchRequestId}. Exception: {e}", LogLevel.Error);
+                repeatSearchLogger.SendTrace($"Failed to run search with id {searchRequestId}. Exception: {e}", LogLevel.Error);
                 var notification = new MatchingResultsNotification
                 {
                     WasSuccessful = false,
@@ -101,7 +101,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
                     MatchingAlgorithmServiceVersion = searchAlgorithmServiceVersion,
                     HlaNomenclatureVersion = hlaNomenclatureVersion
                 };
-                await searchServiceBusClient.PublishToResultsNotificationTopic(notification);
+                await repeatSearchServiceBusClient.PublishToResultsNotificationTopic(notification);
                 throw;
             }
         }
