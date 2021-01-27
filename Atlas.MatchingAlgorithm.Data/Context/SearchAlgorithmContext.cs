@@ -28,6 +28,9 @@ namespace Atlas.MatchingAlgorithm.Data.Context
                 .HasIndex(d => d.DonorId)
                 .IsUnique();
 
+            modelBuilder.Entity<DonorManagementLog>()
+                .HasIndex(d => new { d.DonorId, d.LastUpdateDateTime });
+
             // Note: The Model Builder seems to have a bug
             // where it will drop the Locus C filtered index
             // when generating the DQB1 filtered index.
@@ -50,13 +53,13 @@ namespace Atlas.MatchingAlgorithm.Data.Context
         }
 
         public DbSet<Donor> Donors { get; set; }
-        
+
         public DbSet<MatchingHlaAtA> MatchingHlaAtA { get; set; }
         public DbSet<MatchingHlaAtB> MatchingHlaAtB { get; set; }
         public DbSet<MatchingHlaAtC> MatchingHlaAtC { get; set; }
         public DbSet<MatchingHlaAtDrb1> MatchingHlaAtDrb1 { get; set; }
         public DbSet<MatchingHlaAtDqb1> MatchingHlaAtDqb1 { get; set; }
-        
+
         public DbSet<HlaNamePGroupRelationAtA> HlaNamePGroupRelationsAtA { get; set; }
         public DbSet<HlaNamePGroupRelationAtB> HlaNamePGroupRelationAtB { get; set; }
         public DbSet<HlaNamePGroupRelationAtC> HlaNamePGroupRelationAtC { get; set; }
@@ -64,7 +67,7 @@ namespace Atlas.MatchingAlgorithm.Data.Context
         public DbSet<HlaNamePGroupRelationAtDqb1> HlaNamePGroupRelationAtDqb1 { get; set; }
 
         public DbSet<DonorManagementLog> DonorManagementLogs { get; set; }
-        
+
         public DbSet<PGroupName> PGroupNames { get; set; }
         public DbSet<HlaName> HlaNames { get; set; }
     }
