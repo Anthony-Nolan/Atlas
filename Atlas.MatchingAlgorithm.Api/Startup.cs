@@ -67,6 +67,7 @@ namespace Atlas.MatchingAlgorithm.Api
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
+                OptionsReaderFor<DonorManagementSettings>(),
                 ConnectionStringReader("PersistentSql"),
                 ConnectionStringReader("SqlA"),
                 ConnectionStringReader("SqlB"),

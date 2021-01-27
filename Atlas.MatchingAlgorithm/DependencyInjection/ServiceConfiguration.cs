@@ -96,6 +96,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings,
             Func<IServiceProvider, NotificationsServiceBusSettings> fetchNotificationsServiceBusSettings,
+            Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
             Func<IServiceProvider, string> fetchPersistentSqlConnectionString,
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
             Func<IServiceProvider, string> fetchTransientBSqlConnectionString,
@@ -121,6 +122,7 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                 fetchAzureAuthenticationSettings,
                 fetchAzureDatabaseManagementSettings,
                 fetchDataRefreshSettings,
+                fetchDonorManagementSettings,
                 fetchMessagingServiceBusSettings
             );
         }
@@ -156,6 +158,47 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
             services.RegisterSearchServices(fetchMatchingConfigurationSettings);
         }
 
+
+        /// <summary>
+        /// Register services only needed for Data Refresh, and not for matching or donor management
+        /// </summary>
+        private static void RegisterDataRefreshServices(
+            this IServiceCollection services,
+            Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings,
+            Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
+            Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
+            Func<IServiceProvider, DonorManagementSettings> fetchDonorManagementSettings,
+            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
+        {
+            // The last step of the Data Refresh is applying a backlog of donor updates - so it needs to know how to perform queued donor updates as well. 
+            services.RegisterDonorManagementServices(fetchDonorManagementSettings, fetchMessagingServiceBusSettings);
+
+            services.RegisterSettingsForDataRefresh(
+                fetchAzureAuthenticationSettings,
+                fetchAzureDatabaseManagementSettings,
+                fetchDataRefreshSettings,
+                fetchMessagingServiceBusSettings
+            );
+
+            // Azure interaction services
+            services.AddScoped<IThreadSleeper, ThreadSleeper>();
+            services.AddScoped<IAzureDatabaseManagementClient, AzureDatabaseManagementClient>();
+            services.AddScoped<IAzureAuthenticationClient, AzureAuthenticationClient>();
+            services.AddScoped<IAzureDatabaseManager, AzureDatabaseManager>();
+            services.AddScoped<IAzureDatabaseNameProvider, AzureDatabaseNameProvider>();
+
+            // Data Refresh services
+            services.AddScoped<IDataRefreshRequester, DataRefreshRequester>();
+            services.AddScoped<IDataRefreshOrchestrator, DataRefreshOrchestrator>();
+            services.AddScoped<IDataRefreshRunner, DataRefreshRunner>();
+            services.AddScoped<IDataRefreshSupportNotificationSender, DataRefreshSupportNotificationSender>();
+            services.AddScoped<IDataRefreshCompletionNotifier, DataRefreshCompletionNotifier>();
+            services.AddScoped<IDataRefreshCleanupService, DataRefreshCleanupService>();
+            services.AddScoped<IDataRefreshServiceBusClient, DataRefreshServiceBusClient>();
+
+            services.AddScoped<IHlaProcessor, HlaProcessor>();
+            services.AddScoped<IDonorImporter, DonorImporter>();
+        }
 
         /// <summary>
         /// Register services only needed for ongoing donor management 
@@ -211,43 +254,6 @@ namespace Atlas.MatchingAlgorithm.DependencyInjection
                     logger,
                     loggingContext);
             });
-        }
-
-        /// <summary>
-        /// Register services only needed for Data Refresh, and not for matching or donor management
-        /// </summary>
-        private static void RegisterDataRefreshServices(
-            this IServiceCollection services,
-            Func<IServiceProvider, AzureAuthenticationSettings> fetchAzureAuthenticationSettings,
-            Func<IServiceProvider, AzureDatabaseManagementSettings> fetchAzureDatabaseManagementSettings,
-            Func<IServiceProvider, DataRefreshSettings> fetchDataRefreshSettings,
-            Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
-        {
-            services.RegisterSettingsForDataRefresh(
-                fetchAzureAuthenticationSettings,
-                fetchAzureDatabaseManagementSettings,
-                fetchDataRefreshSettings,
-                fetchMessagingServiceBusSettings
-            );
-
-            // Azure interaction services
-            services.AddScoped<IThreadSleeper, ThreadSleeper>();
-            services.AddScoped<IAzureDatabaseManagementClient, AzureDatabaseManagementClient>();
-            services.AddScoped<IAzureAuthenticationClient, AzureAuthenticationClient>();
-            services.AddScoped<IAzureDatabaseManager, AzureDatabaseManager>();
-            services.AddScoped<IAzureDatabaseNameProvider, AzureDatabaseNameProvider>();
-
-            // Data Refresh services
-            services.AddScoped<IDataRefreshRequester, DataRefreshRequester>();
-            services.AddScoped<IDataRefreshOrchestrator, DataRefreshOrchestrator>();
-            services.AddScoped<IDataRefreshRunner, DataRefreshRunner>();
-            services.AddScoped<IDataRefreshSupportNotificationSender, DataRefreshSupportNotificationSender>();
-            services.AddScoped<IDataRefreshCompletionNotifier, DataRefreshCompletionNotifier>();
-            services.AddScoped<IDataRefreshCleanupService, DataRefreshCleanupService>();
-            services.AddScoped<IDataRefreshServiceBusClient, DataRefreshServiceBusClient>();
-
-            services.AddScoped<IHlaProcessor, HlaProcessor>();
-            services.AddScoped<IDonorImporter, DonorImporter>();
         }
 
         /// <summary>

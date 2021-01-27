@@ -65,6 +65,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.DependencyInjection
                 _ => new MacDictionarySettings(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 _ => new NotificationsServiceBusSettings(),
+                OptionsReaderFor<DonorManagementSettings>(),
                 ConnectionStringReader(PersistentSqlConnectionStringKey),
                 ConnectionStringReader(TransientASqlConnectionStringKey),
                 ConnectionStringReader(TransientBSqlConnectionStringKey),
