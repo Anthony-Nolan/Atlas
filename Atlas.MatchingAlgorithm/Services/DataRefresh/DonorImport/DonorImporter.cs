@@ -13,13 +13,15 @@ using Atlas.MatchingAlgorithm.Exceptions;
 using Atlas.MatchingAlgorithm.Mapping;
 using Atlas.MatchingAlgorithm.Models;
 using Atlas.MatchingAlgorithm.Services.ConfigurationProviders.TransientSqlDatabase.RepositoryFactories;
+using Atlas.MatchingAlgorithm.Services.DonorManagement;
 using Atlas.MatchingAlgorithm.Services.Donors;
 using MoreLinq;
 
 namespace Atlas.MatchingAlgorithm.Services.DataRefresh.DonorImport
 {
     /// <summary>
-    /// Responsible for fetching all eligible donors for the search algorithm
+    /// Responsible for fetching all eligible donors for the search algorithm.
+    /// Only responsible for one off import of all donors into the matching algorithm's data store. For individual updates, <see cref="IDonorUpdateProcessor"/>
     /// </summary>
     public interface IDonorImporter
     {
