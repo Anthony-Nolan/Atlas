@@ -20,7 +20,7 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
         public override void Configure(IFunctionsHostBuilder builder)
         {
             RegisterSettings(builder.Services);
-            builder.Services.RegisterMatchingAlgorithmAndDonorManagementOnly(
+            builder.Services.RegisterDonorManagement(
                 OptionsReaderFor<ApplicationInsightsSettings>(),
                 OptionsReaderFor<AzureStorageSettings>(),
                 OptionsReaderFor<DonorManagementSettings>(),
@@ -28,7 +28,6 @@ namespace Atlas.MatchingAlgorithm.Functions.DonorManagement
                 OptionsReaderFor<MacDictionarySettings>(),
                 OptionsReaderFor<MessagingServiceBusSettings>(),
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
-                _ => new MatchingConfigurationSettings(),
                 ConnectionStringReader("PersistentSql"),
                 ConnectionStringReader("SqlA"),
                 ConnectionStringReader("SqlB")
