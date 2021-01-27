@@ -43,6 +43,15 @@ namespace Atlas.Client.Models.Search.Requests
         /// Must match registry code format uploaded with haplotype frequency sets.  
         /// </summary>
         public string PatientRegistryCode { get; set; }
+
+        /// <summary>
+        /// Optional, defaults to true.
+        /// Allows consumer to optionally disable match prediction for search results - match prediction is the most computationally
+        /// expensive and time consuming portion of a search, so if results are not needed, results can be returned much faster without it.
+        ///
+        /// TODO: ATLAS-493: Until this card is completed, matching results without match prediction will be useless to consumers, as they will include the wrong format of donor id. 
+        /// </summary>
+        public bool RunMatchPrediction { get; set; } = true;
     }
     
     public class MismatchCriteria
