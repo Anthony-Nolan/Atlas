@@ -153,7 +153,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                         : "";
 
                     var donorUpdatedJoin = cutOffDate != null
-                        ? $@"INNER JOIN DonorManagementLogs dml ON {selectDonorIdStatement} = dml.DonorId AND dml.LastUpdateDateTime > {cutOffDate}"
+                        ? $@"INNER JOIN DonorManagementLogs dml ON m.DonorId = dml.DonorId AND dml.LastUpdateDateTime >= '{cutOffDate}'"
                         : "";
 
                     var donorIdTempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering(
