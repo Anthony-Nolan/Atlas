@@ -6,6 +6,21 @@ using Microsoft.Data.SqlClient;
 
 namespace Atlas.Common.Sql
 {
+    public class TempTableFilterConfiguration
+    {
+        /// <summary>
+        /// By default, will create a temp table named "temp".
+        /// If specified, a custom name can be used for the temp join table - e.g. if multiple temp tables are needed within the same connection.
+        /// </summary>
+        public string TempTableName { get; set; } = "temp";
+
+        /// <summary>
+        /// Timeout used when inserting values for filtering into the temp table.
+        /// Defaults to null, which will imply the implicit <see cref="SqlBulkCopy"/> timeout. (30s at time of writing).
+        /// </summary>
+        public int? InsertTimeoutInSeconds { get; set; } = null;
+    }
+    
     public class TempTableFilterDetails
     {
         public string TempTableName { get; set; }
@@ -32,7 +47,7 @@ namespace Atlas.Common.Sql
             {typeof(long), "bigint"},
             {typeof(string), "varchar(8000)"},
         };
-        
+
         /// <summary>
         /// For SQL queries of the form WHERE x IN (y1, y2...), when the number of values is very large, the query becomes infeasibly slow to run.
         /// Quicker is to create a temp table of ids and join to it.
@@ -40,23 +55,26 @@ namespace Atlas.Common.Sql
         /// This method creates such a temp table, using SqbBulkCopy for speedy inserts.
         /// 
         /// Usage:
-        ///
+        /// 
         /// (a) In your query, INNER JOIN the column being filtered to this table.
         /// (b) Once an SqlConnection has been created, call the returned factory to create and populate the temp table before running your query.
         /// </summary>
         /// <param name="filteredTableAlias">Used in the join string to join your table by alias to the temp table.</param>
         /// <param name="filteredColumnName">Column name to filter</param>
         /// <param name="ids">The ids to filter by</param>
-        /// <param name="tempTableName">
-        ///     By default, will create a temp table named "temp".
-        ///     If specified, a custom name can be used for the temp join table - e.g. if multiple temp tables are needed within the same connection.
+        /// <param name="configuration">
+        /// Optional configuration for controlling inner details of the temp table insert/filter process.
+        /// <see cref="TempTableFilterConfiguration"/> for details of available configuration.
         /// </param>
         public static TempTableFilterDetails PrepareTempTableFiltering<T>(
             string filteredTableAlias,
             string filteredColumnName,
             IEnumerable<T> ids,
-            string tempTableName = "temp")
+            TempTableFilterConfiguration configuration = null)
         {
+            configuration ??= new TempTableFilterConfiguration();
+            var tempTableName = configuration.TempTableName;
+            
             if (!tempTableName.StartsWith("#"))
             {
                 tempTableName = $"#{tempTableName}";
@@ -94,6 +112,10 @@ namespace Atlas.Common.Sql
 
                 using (var bulkCopy = new SqlBulkCopy(connection))
                 {
+                    if (configuration.InsertTimeoutInSeconds.HasValue)
+                    {
+                        bulkCopy.BulkCopyTimeout = configuration.InsertTimeoutInSeconds.Value;
+                    }
                     bulkCopy.DestinationTableName = tempTableName;
                     await bulkCopy.WriteToServerAsync(dataTable);
                 }

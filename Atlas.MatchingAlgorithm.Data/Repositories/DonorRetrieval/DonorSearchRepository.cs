@@ -146,7 +146,7 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
 
                     var matchingHlaTableName = MatchingHla.TableName(locus);
                     var hlaPGroupRelationTableName = HlaNamePGroupRelation.TableName(locus);
-                    
+
                     var donorTypeFilteredJoin = filteringOptions.ShouldFilterOnDonorType
                         // ReSharper disable once PossibleInvalidOperationException - implicitly checked via ShouldFilterOnDonorType
                         ? $@"INNER JOIN Donors d ON {selectDonorIdStatement} = d.DonorId AND d.DonorType = {(int) filteringOptions.DonorType}"
@@ -156,9 +156,24 @@ namespace Atlas.MatchingAlgorithm.Data.Repositories.DonorRetrieval
                         ? $@"INNER JOIN DonorManagementLogs dml ON {selectDonorIdStatement} = dml.DonorId AND dml.LastUpdateDateTime > {cutOffDate}"
                         : "";
 
-                    var donorIdTempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("m", "DonorId", filteringOptions.DonorIds, "DonorIds");
-                    var pGroups1TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("hlaPGroupRelations", "PGroupId", pGroups.Position1, "PGroups1");
-                    var pGroups2TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering("hlaPGroupRelations", "PGroupId", pGroups.Position2, "PGroups2");
+                    var donorIdTempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering(
+                        "m",
+                        "DonorId",
+                        filteringOptions.DonorIds,
+                        new TempTableFilterConfiguration {TempTableName = "Donors", InsertTimeoutInSeconds = 300}
+                    );
+                    var pGroups1TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering(
+                        "hlaPGroupRelations",
+                        "PGroupId",
+                        pGroups.Position1,
+                        new TempTableFilterConfiguration {TempTableName = "PGroups1", InsertTimeoutInSeconds = 300}
+                    );
+                    var pGroups2TempTableJoinConfig = SqlTempTableFiltering.PrepareTempTableFiltering(
+                        "hlaPGroupRelations",
+                        "PGroupId",
+                        pGroups.Position2,
+                        new TempTableFilterConfiguration {TempTableName = "PGroups2", InsertTimeoutInSeconds = 300}
+                    );
 
                     var donorIdTempTableJoin = filteringOptions.ShouldFilterOnDonorIds ? donorIdTempTableJoinConfig.FilteredJoinQueryString : "";
 
