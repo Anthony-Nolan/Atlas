@@ -40,7 +40,7 @@ namespace Atlas.Functions.DurableFunctions.Search.Client
             [DurableClient] IDurableOrchestrationClient starter)
         {
             var searchId = resultsNotification.SearchRequestId;
-            if (!resultsNotification.SearchRequest.RunMatchPrediction)
+            if (!resultsNotification.SearchRequest?.RunMatchPrediction ?? false)
             {
                 logger.SendTrace($"Match prediction for search request '{searchId}' was not requested, so will not be run.");
                 // TODO: ATLAS-493: Make the matching only results usable. 
