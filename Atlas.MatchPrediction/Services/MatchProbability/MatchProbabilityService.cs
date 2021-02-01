@@ -211,7 +211,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var convertedDonorGenotypes = await ConvertGenotypes(donorGenotypes, "donor", donorGenotypeLikelihoods);
             var allPatientDonorCombinations = CombineGenotypes(convertedPatientGenotypes, convertedDonorGenotypes);
 
-            using (var matchCountLogger = MatchCountLogger(allPatientDonorCombinations.Count))
+            using (var matchCountLogger = MatchCountLogger(convertedDonorGenotypes.Count * convertedPatientGenotypes.Count))
             {
                 var patientDonorMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, allowedLoci, matchCountLogger);
 
@@ -268,18 +268,18 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             }
         }
 
-        private List<Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>> CombineGenotypes(
+        private IEnumerable<Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>> CombineGenotypes(
             List<GenotypeAtDesiredResolutions> patientGenotypes,
             List<GenotypeAtDesiredResolutions> donorGenotypes)
         {
             using (logger.RunTimed("Combining patient/donor genotypes", LogLevel.Verbose))
             {
+                var combinationCount = patientGenotypes.Count * donorGenotypes.Count;
                 var combinations = patientGenotypes.SelectMany(patientHla =>
-                        donorGenotypes.Select(donorHla =>
-                            new Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>(patientHla, donorHla)))
-                    .ToList();
+                    donorGenotypes.Select(donorHla =>
+                        new Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>(patientHla, donorHla)));
 
-                logger.SendTrace($"Patient/donor pairs: {combinations.Count:n0}");
+                logger.SendTrace($"Patient/donor pairs: {combinationCount:n0}");
 
                 return combinations;
             }
