@@ -30,6 +30,8 @@ namespace Atlas.Common.Maths
             return shouldIncludeSelfPairs ? nonSelfPairs + selfPairs : nonSelfPairs;
         }
 
+        public static long NumberOfPairsOfCartesianProduct<T>(ICollection<T> collection1, ICollection<T> collection2) => collection1.Count * collection2.Count;
+
         /// <param name="collection">Array of initial values to form pairs from.</param>
         /// <param name="shouldIncludeSelfPairs">
         /// When false, returns pairs of items in the list.
