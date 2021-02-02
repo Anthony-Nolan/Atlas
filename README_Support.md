@@ -133,6 +133,25 @@ environment - if it is still deemed to have too high memory usage, development i
 Testing on a search with ~20,000 donor results (on a dataset of ~30M donors) indicates that, with a batch size of 250,000, a single search uses a peak of *roughly* 1.2GB. Of this, ~400Mb are used for cached reference data, 
 and will therefore be a constant baseline rather than scaling with concurrent searches. This test case is expected to be a reasonable "worst-case" scenario for memory usage, in the a 30M donor test environment.   
 
+### Matching requests appear to not be processing
+
+The matching algorithm has a high SQL timeout, as it's expected that expensive searches under high load can take a while to run.
+
+In the case of some transient database failures, connections will not be closed, and this timeout will be hit before the search fails. (One example of this is if the provisioned database is too small for the concurrent searches
+run on it. If this is the case, either the provisioned database must be increased in processing power, or the number of concurrent searches should be reduced - [see settings above for how to change this](#matching-algorithm-running-out-of-memory))
+ 
+This problem may manifest itself as follows:
+
+- A single search appears to have hung and is not read from the matching queue
+    - This will be the case if Atlas was not running at capacity when the transient failure occured.
+    - Without manual changes, the search will restart after the SQL timeout expires (approx. one hour)
+    - To expedite this, restart the matching algorithm function
+- No searches are read from the matching queue
+    - This will be the case if Atlas was running at capacity when the transient failure occured.
+    - Without manual changes, no searches will be processed until the SQL timeout expires (approx. one hour)
+    - To expedite this, restart the matching algorithm function
+
+
 ## MACs
 
 ### New MAC is showing as unrecognised
