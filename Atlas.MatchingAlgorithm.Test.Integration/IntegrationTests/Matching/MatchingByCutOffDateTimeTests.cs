@@ -27,10 +27,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
     {
         private const DonorType DefaultDonorType = DonorType.Adult;
         private static readonly DateTimeOffset CutOffDateTime = new DateTimeOffset(2020, 1, 1, 1, 1, 1, TimeSpan.Zero);
-
-        private AlleleLevelMatchCriteria matchCriteria;
-        private PhenotypeInfo<string> matchingDonorHla;
-        private PhenotypeInfo<string> nonMatchingDonorHla;
+        private static readonly PhenotypeInfo<string> MatchingDonorHla = new SampleTestHlas.HeterozygousSet1().ThreeLocus_SingleExpressingAlleles;
+        private static readonly PhenotypeInfo<string> NonMatchingDonorHla = new SampleTestHlas.HeterozygousSet2().ThreeLocus_SingleExpressingAlleles;
+        
         private TransientDatabase activeDb;
         private string hlaVersion;
 
@@ -55,19 +54,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
 
                 var versionProvider = DependencyInjection.DependencyInjection.Provider.GetService<IActiveHlaNomenclatureVersionAccessor>();
                 hlaVersion = versionProvider.GetActiveHlaNomenclatureVersion();
-
-                SetupTestData();
             });
-        }
-
-        private void SetupTestData()
-        {
-            matchingDonorHla = new SampleTestHlas.HeterozygousSet1().ThreeLocus_SingleExpressingAlleles;
-            nonMatchingDonorHla = new SampleTestHlas.HeterozygousSet2().ThreeLocus_SingleExpressingAlleles;
-
-            var matchCriteriaMapper = DependencyInjection.DependencyInjection.Provider.GetService<IMatchCriteriaMapper>();
-            var searchRequest = new SearchRequestFromHlasBuilder(matchingDonorHla).SixOutOfSix().Build();
-            matchCriteria = Task.Run(() => matchCriteriaMapper.MapRequestToAlleleLevelMatchCriteria(searchRequest)).Result;
         }
 
         [OneTimeTearDown]
@@ -77,9 +64,10 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         }
 
         [Test]
-        public async Task GetMatches_MatchingDonorUpdatedOnMatchingCutOffDateTime_ReturnsDonor()
+        public async Task GetMatches_MatchingDonorUpdatedAtMatchingCutOffDateTime_ReturnsDonor()
         {
-            var donorId = await CreateDonorInActiveDatabase(matchingDonorHla, CutOffDateTime);
+            var donorId = await CreateDonorInActiveDatabase(MatchingDonorHla, CutOffDateTime);
+            var matchCriteria = await GetSixOutOfSixMatchCriteria();
 
             // TODO: ATLAS-843>ATLAS-917 change cut-off arg type to datetimeoffset
             var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime.DateTime).ToListAsync();
@@ -97,7 +85,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             int secondsIncrement)
         {
             var donorModifiedDateTime = CutOffDateTime.Add(new TimeSpan(daysIncrement, hoursIncrement, minutesIncrement, secondsIncrement));
-            var donorId = await CreateDonorInActiveDatabase(matchingDonorHla, donorModifiedDateTime);
+            var donorId = await CreateDonorInActiveDatabase(MatchingDonorHla, donorModifiedDateTime);
+            var matchCriteria = await GetSixOutOfSixMatchCriteria();
 
             // TODO: ATLAS-843>ATLAS-917 change cut-off arg type to datetimeoffset
             var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime.DateTime).ToListAsync();
@@ -115,7 +104,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             int secondsDecrement)
         {
             var donorModifiedDateTime = CutOffDateTime.Subtract(new TimeSpan(daysDecrement, hoursDecrement, minutesDecrement, secondsDecrement));
-            var donorId = await CreateDonorInActiveDatabase(matchingDonorHla, donorModifiedDateTime);
+            var donorId = await CreateDonorInActiveDatabase(MatchingDonorHla, donorModifiedDateTime);
+            var matchCriteria = await GetSixOutOfSixMatchCriteria();
 
             // TODO: ATLAS-843>ATLAS-917 change cut-off arg type to datetimeoffset
             var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime.DateTime).ToListAsync();
@@ -125,16 +115,18 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task GetMatches_NoCutOffDate_ReturnsMatchingDonor()
         {
-            var donorId = await CreateDonorInActiveDatabase(matchingDonorHla, CutOffDateTime);
+            var donorId = await CreateDonorInActiveDatabase(MatchingDonorHla, CutOffDateTime);
+            var matchCriteria = await GetSixOutOfSixMatchCriteria();
 
             var matches = await matchingService.GetMatches(matchCriteria, null).ToListAsync();
             matches.ShouldContainDonor(donorId);
         }
 
         [Test]
-        public async Task GetMatches_NonMatchingDonorUpdatedOnMatchingCutOffDateTime_DoesNotReturnDonor()
+        public async Task GetMatches_NonMatchingDonorUpdatedAtMatchingCutOffDateTime_DoesNotReturnDonor()
         {
-            var donorId = await CreateDonorInActiveDatabase(nonMatchingDonorHla, CutOffDateTime);
+            var donorId = await CreateDonorInActiveDatabase(NonMatchingDonorHla, CutOffDateTime);
+            var matchCriteria = await GetSixOutOfSixMatchCriteria();
 
             // TODO: ATLAS-843>ATLAS-917 change cut-off arg type to datetimeoffset
             var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime.DateTime).ToListAsync();
@@ -152,7 +144,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             int secondsIncrement)
         {
             var donorModifiedDateTime = CutOffDateTime.Add(new TimeSpan(daysIncrement, hoursIncrement, minutesIncrement, secondsIncrement));
-            var donorId = await CreateDonorInActiveDatabase(nonMatchingDonorHla, donorModifiedDateTime);
+            var donorId = await CreateDonorInActiveDatabase(NonMatchingDonorHla, donorModifiedDateTime);
+            var matchCriteria = await GetSixOutOfSixMatchCriteria();
 
             // TODO: ATLAS-843>ATLAS-917 change cut-off arg type to datetimeoffset
             var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime.DateTime).ToListAsync();
@@ -170,7 +163,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             int secondsDecrement)
         {
             var donorModifiedDateTime = CutOffDateTime.Subtract(new TimeSpan(daysDecrement, hoursDecrement, minutesDecrement, secondsDecrement));
-            var donorId = await CreateDonorInActiveDatabase(nonMatchingDonorHla, donorModifiedDateTime);
+            var donorId = await CreateDonorInActiveDatabase(NonMatchingDonorHla, donorModifiedDateTime);
+            var matchCriteria = await GetSixOutOfSixMatchCriteria();
 
             // TODO: ATLAS-843>ATLAS-917 change cut-off arg type to datetimeoffset
             var matches = await matchingService.GetMatches(matchCriteria, CutOffDateTime.DateTime).ToListAsync();
@@ -180,7 +174,8 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
         [Test]
         public async Task GetMatches_NoCutOffDate_DoesNotReturnNonMatchingDonor()
         {
-            var donorId = await CreateDonorInActiveDatabase(nonMatchingDonorHla, CutOffDateTime);
+            var donorId = await CreateDonorInActiveDatabase(NonMatchingDonorHla, CutOffDateTime);
+            var matchCriteria = await GetSixOutOfSixMatchCriteria();
 
             var matches = await matchingService.GetMatches(matchCriteria, null).ToListAsync();
             matches.ShouldNotContainDonor(donorId);
@@ -196,7 +191,7 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             return donorId;
         }
 
-        private DonorAvailabilityUpdate BuildUpdate(int donorId, PhenotypeInfo<string> donorHla, DateTimeOffset updatedDateTime)
+        private static DonorAvailabilityUpdate BuildUpdate(int donorId, PhenotypeInfo<string> donorHla, DateTimeOffset updatedDateTime)
         {
             var donorInfo = new DonorInfo
             {
@@ -213,6 +208,13 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
                 DonorInfo = donorInfo,
                 IsAvailableForSearch = true
             };
+        }
+
+        private async Task<AlleleLevelMatchCriteria> GetSixOutOfSixMatchCriteria()
+        {
+            var matchCriteriaMapper = DependencyInjection.DependencyInjection.Provider.GetService<IMatchCriteriaMapper>();
+            var searchRequest = new SearchRequestFromHlasBuilder(MatchingDonorHla).SixOutOfSix().Build();
+            return await matchCriteriaMapper.MapRequestToAlleleLevelMatchCriteria(searchRequest);
         }
     }
 }
