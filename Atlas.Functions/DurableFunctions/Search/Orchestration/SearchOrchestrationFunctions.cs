@@ -81,6 +81,52 @@ namespace Atlas.Functions.DurableFunctions.Search.Orchestration
             }
         }
 
+        [FunctionName(nameof(RepeatSearchOrchestrator))]
+        public async Task<SearchOrchestrationOutput> RepeatSearchOrchestrator([OrchestrationTrigger] IDurableOrchestrationContext context)
+        {
+            var notification = context.GetInput<MatchingResultsNotification>();
+            var repeatSearchId = notification.RepeatSearchRequestId;
+
+            try
+            {
+                var orchestrationInitiated = context.CurrentUtcDateTime;
+                if (!notification.WasSuccessful)
+                {
+                    await SendFailureNotification(context, "Matching Algorithm", repeatSearchId);
+                    return null;
+                }
+
+                var matchPredictionRequestLocations = await PrepareMatchPrediction(context, notification);
+                var matchPredictionResultLocations = await RunMatchPredictionAlgorithm(context, repeatSearchId, matchPredictionRequestLocations);
+                await PersistSearchResults(context, new SearchActivityFunctions.PersistSearchResultsParameters
+                {
+                    SearchInitiated = orchestrationInitiated,
+                    MatchingResultsNotification = notification,
+                    MatchPredictionResultLocations = matchPredictionResultLocations
+                });
+
+                // "return" populates the "output" property on the status check GET endpoint set up by the durable functions framework
+                return new SearchOrchestrationOutput
+                {
+                    TotalSearchTime = context.CurrentUtcDateTime.Subtract(orchestrationInitiated),
+                    MatchingDonorCount = notification.NumberOfResults ?? -1,
+                };
+            }
+            catch (HandledOrchestrationException)
+            {
+                // Exceptions wrapper in "HandleOrchestrationException" have already been handled, and failure notifications sent.
+                // In this case we should just re-throw so the function is tracked as a failure.
+                throw;
+            }
+            catch (Exception e)
+            {
+                logger.SendTrace($"Failure during orchestration. Exception: {e.Message}, {e.InnerException?.Message}");
+                // An unexpected exception occurred in the *orchestration* code. Ensure we send a failure notification
+                await SendFailureNotification(context, "Orchestrator", repeatSearchId);
+                throw;
+            }
+        }
+
         private async Task<TimedResultSet<IList<string>>> PrepareMatchPrediction(
             IDurableOrchestrationContext context,
             MatchingResultsNotification notification)
