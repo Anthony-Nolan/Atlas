@@ -27,13 +27,13 @@ namespace Atlas.MatchingAlgorithm.Services.Search
     {
         private const string LoggingPrefix = "Matching Algorithm: ";
 
-        private readonly IMatchCriteriaBuilder matchCriteriaBuilder;
+        private readonly IMatchCriteriaMapper matchCriteriaMapper;
         private readonly IMatchScoringService scoringService;
         private readonly IMatchingService matchingService;
         private readonly ILogger searchLogger;
 
         public SearchService(
-            IMatchCriteriaBuilder matchCriteriaBuilder,
+            IMatchCriteriaMapper matchCriteriaMapper,
             IMatchScoringService scoringService,
             IMatchingService matchingService,
             // ReSharper disable once SuggestBaseTypeForParameter
@@ -42,13 +42,13 @@ namespace Atlas.MatchingAlgorithm.Services.Search
             this.scoringService = scoringService;
             this.matchingService = matchingService;
             this.searchLogger = searchLogger;
-            this.matchCriteriaBuilder = matchCriteriaBuilder;
+            this.matchCriteriaMapper = matchCriteriaMapper;
         }
 
         public async Task<IEnumerable<MatchingAlgorithmResult>> Search(SearchRequest matchingRequest, DateTime? cutOffDate)
         {
             var expansionTimer = searchLogger.RunTimed($"{LoggingPrefix}Expand patient HLA");
-            var criteria = await matchCriteriaBuilder.BuildAlleleLevelMatchCriteria(matchingRequest);
+            var criteria = await matchCriteriaMapper.MapRequestToAlleleLevelMatchCriteria(matchingRequest);
             expansionTimer.Dispose();
 
             var matches = matchingService.GetMatches(criteria, cutOffDate);

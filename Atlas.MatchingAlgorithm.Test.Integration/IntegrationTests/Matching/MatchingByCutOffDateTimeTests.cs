@@ -65,9 +65,9 @@ namespace Atlas.MatchingAlgorithm.Test.Integration.IntegrationTests.Matching
             matchingDonorHla = new SampleTestHlas.HeterozygousSet1().ThreeLocus_SingleExpressingAlleles;
             nonMatchingDonorHla = new SampleTestHlas.HeterozygousSet2().ThreeLocus_SingleExpressingAlleles;
 
-            var matchCriteriaBuilder = DependencyInjection.DependencyInjection.Provider.GetService<IMatchCriteriaBuilder>();
+            var matchCriteriaMapper = DependencyInjection.DependencyInjection.Provider.GetService<IMatchCriteriaMapper>();
             var searchRequest = new SearchRequestFromHlasBuilder(matchingDonorHla).SixOutOfSix().Build();
-            matchCriteria = Task.Run(() => matchCriteriaBuilder.BuildAlleleLevelMatchCriteria(searchRequest)).Result;
+            matchCriteria = Task.Run(() => matchCriteriaMapper.MapRequestToAlleleLevelMatchCriteria(searchRequest)).Result;
         }
 
         [OneTimeTearDown]

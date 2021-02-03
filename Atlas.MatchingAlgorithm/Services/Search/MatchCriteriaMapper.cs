@@ -10,26 +10,26 @@ using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
 
 namespace Atlas.MatchingAlgorithm.Services.Search
 {
-    internal interface IMatchCriteriaBuilder
+    internal interface IMatchCriteriaMapper
     {
-        Task<AlleleLevelMatchCriteria> BuildAlleleLevelMatchCriteria(SearchRequest matchingRequest);
+        Task<AlleleLevelMatchCriteria> MapRequestToAlleleLevelMatchCriteria(SearchRequest searchRequest);
     }
 
-    internal class MatchCriteriaBuilder : IMatchCriteriaBuilder
+    internal class MatchCriteriaMapper : IMatchCriteriaMapper
     {
         private readonly IHlaMetadataDictionary hlaMetadataDictionary;
 
-        public MatchCriteriaBuilder(
+        public MatchCriteriaMapper(
             IHlaMetadataDictionaryFactory factory,
             IActiveHlaNomenclatureVersionAccessor hlaNomenclatureVersionAccessor)
         {
             hlaMetadataDictionary = factory.BuildDictionary(hlaNomenclatureVersionAccessor.GetActiveHlaNomenclatureVersion());
         }
 
-        public async Task<AlleleLevelMatchCriteria> BuildAlleleLevelMatchCriteria(SearchRequest matchingRequest)
+        public async Task<AlleleLevelMatchCriteria> MapRequestToAlleleLevelMatchCriteria(SearchRequest searchRequest)
         {
-            var matchCriteria = matchingRequest.MatchCriteria;
-            var searchHla = matchingRequest.SearchHlaData.ToPhenotypeInfo();
+            var matchCriteria = searchRequest.MatchCriteria;
+            var searchHla = searchRequest.SearchHlaData.ToPhenotypeInfo();
 
             var criteriaMappings = await Task.WhenAll(
                 MapLocusInformationToMatchCriteria(Locus.A, matchCriteria.LocusMismatchCriteria.A, searchHla.A),
@@ -40,7 +40,7 @@ namespace Atlas.MatchingAlgorithm.Services.Search
 
             return new AlleleLevelMatchCriteria
             {
-                SearchType = matchingRequest.SearchDonorType.ToMatchingAlgorithmDonorType(),
+                SearchType = searchRequest.SearchDonorType.ToMatchingAlgorithmDonorType(),
                 DonorMismatchCount = matchCriteria.DonorMismatchCount,
                 LocusCriteria = new LociInfo<AlleleLevelLocusMatchCriteria>(
                     criteriaMappings[0],
