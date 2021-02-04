@@ -59,18 +59,18 @@ resource "azurerm_function_app" "atlas_repeat_search_function" {
   connection_string {
     name  = "MatchingPersistentSql"
     type  = "SQLAzure"
-    value = local.matching_persistent_database_connection_string
+    value = var.matching_persistent_database_connection_string
   }
 
 connection_string {
     name  = "MatchingSqlA"
     type  = "SQLAzure"
-    value = local.matching_transient_a_database_connection_string
+    value = var.matching_transient_a_database_connection_string
   }
 
 connection_string {
     name  = "MatchingSqlB"
     type  = "SQLAzure"
-    value = local.matching_transient_b_database_connection_string
+    value = var.matching_transient_b_database_connection_string
   }
 }
