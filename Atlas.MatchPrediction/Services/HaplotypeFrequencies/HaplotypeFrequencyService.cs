@@ -182,6 +182,7 @@ namespace Atlas.MatchPrediction.Services.HaplotypeFrequencies
                 using (logger.RunTimed("Get All Frequencies from HF set - from SQL database", LogLevel.Verbose))
                 {
                     var allFrequencies = await frequencyRepository.GetAllHaplotypeFrequencies(setId);
+                    // allFrequencies = allFrequencies.Take(70000).ToDictionary(x => x.Key, x => x.Value);
                     return new ConcurrentDictionary<HaplotypeHla, HaplotypeFrequency>(allFrequencies);
                 }
             });

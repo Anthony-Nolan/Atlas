@@ -8,6 +8,7 @@ using Atlas.Common.ApplicationInsights.Timing;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.GeneticData.PhenotypeInfo.TransferModels;
+using Atlas.Common.Matching.Services;
 using static Atlas.Common.Maths.Combinations;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface;
@@ -41,6 +42,10 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
     internal class GenotypeAtDesiredResolutions
     {
+        // Dictionary - quick way to check both (a) existence (b) quick lookup of index (vs. index of)
+        // Add to it in order so .Keys gives same indexes as values!
+        public static readonly Dictionary<LocusInfo<string>, int> LocusIndexes = new Dictionary<LocusInfo<string>, int>();
+
         /// <summary>
         /// HLA at the resolution at which they were stored.
         /// i.e. G group, or P group if any null alleles are present in the haplotype.
@@ -54,6 +59,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         public StringGenotype StringMatchableResolution { get; }
 
         /// <summary>
+        /// Each value = integer representation of an allele pair at a locus
+        /// </summary>
+        public LociInfo<int?> IndexResolution { get; }
+
+        /// <summary>
         /// Likelihood of this genotype.
         ///
         /// Stored with the genotype to avoid dictionary lookups when calculating final likelihoods, as looking up the same genotype multiple times
@@ -65,6 +75,10 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         {
             HaplotypeResolution = haplotypeResolution.ToHlaNames();
             StringMatchableResolution = stringMatchableResolution;
+
+            IndexResolution =
+                stringMatchableResolution.Map((l, hla) => hla == null ? null as int? : LocusIndexes.GetOrAdd(hla, () => LocusIndexes.Count));
+
             GenotypeLikelihood = genotypeLikelihood;
         }
 
@@ -104,6 +118,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         private readonly ILogger logger;
         private readonly MatchPredictionLoggingContext matchPredictionLoggingContext;
         private readonly IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory;
+        private readonly IStringBasedLocusMatchCalculator stringBasedLocusMatchCalculator;
 
         public MatchProbabilityService(
             ICompressedPhenotypeExpander compressedPhenotypeExpander,
@@ -114,7 +129,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             // ReSharper disable once SuggestBaseTypeForParameter
             IMatchPredictionLogger logger,
             MatchPredictionLoggingContext matchPredictionLoggingContext,
-            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory)
+            IHlaMetadataDictionaryFactory hlaMetadataDictionaryFactory,
+            IStringBasedLocusMatchCalculator stringBasedLocusMatchCalculator)
         {
             this.compressedPhenotypeExpander = compressedPhenotypeExpander;
             this.genotypeLikelihoodService = genotypeLikelihoodService;
@@ -124,6 +140,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             this.logger = logger;
             this.matchPredictionLoggingContext = matchPredictionLoggingContext;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
+            this.stringBasedLocusMatchCalculator = stringBasedLocusMatchCalculator;
         }
 
         public async Task<MatchProbabilityResponse> CalculateMatchProbability(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput)
@@ -212,9 +229,15 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var convertedDonorGenotypes = await ConvertGenotypes(donorGenotypes, "donor", donorGenotypeLikelihoods);
             var allPatientDonorCombinations = CombineGenotypes(convertedPatientGenotypes, convertedDonorGenotypes);
 
+            var matchCounts = GenotypeAtDesiredResolutions.LocusIndexes.Keys.Select(locusHlaOuter =>
+                GenotypeAtDesiredResolutions.LocusIndexes.Keys
+                    .Select(locusHlaInner => stringBasedLocusMatchCalculator.MatchCount(locusHlaOuter, locusHlaInner)).ToList()
+            ).ToList();
+
+
             using (var matchCountLogger = MatchCountLogger(NumberOfPairsOfCartesianProduct(convertedDonorGenotypes, convertedPatientGenotypes)))
             {
-                var patientDonorMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, allowedLoci, matchCountLogger);
+                var patientDonorMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, allowedLoci, matchCountLogger, matchCounts);
 
                 // Sum likelihoods outside of loop, so they are not calculated millions of times
                 var sumOfPatientLikelihoods = patientGenotypeLikelihoods.Values.SumDecimals();
@@ -301,7 +324,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         private IEnumerable<GenotypeMatchDetails> CalculatePairsMatchCounts(
             IEnumerable<Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>> allPatientDonorCombinations,
             ISet<Locus> allowedLoci,
-            ILongOperationLoggingStopwatch stopwatch)
+            ILongOperationLoggingStopwatch stopwatch,
+            List<List<int>> matchCounts)
         {
             return allPatientDonorCombinations
                 .Select(pd =>
@@ -316,10 +340,11 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                             DonorGenotypeLikelihood = donor.GenotypeLikelihood,
                             PatientGenotype = patient.HaplotypeResolution,
                             PatientGenotypeLikelihood = patient.GenotypeLikelihood,
-                            MatchCounts = matchCalculationService.CalculateMatchCounts_Fast(
-                                patient.StringMatchableResolution,
-                                donor.StringMatchableResolution,
-                                allowedLoci
+                            MatchCounts = matchCalculationService.CalculateMatchCounts_Faster_Still(
+                                patient.IndexResolution,
+                                donor.IndexResolution,
+                                allowedLoci,
+                                matchCounts
                             )
                         };
                     }

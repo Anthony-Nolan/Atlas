@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 
 namespace Atlas.Common.Matching.Services
@@ -28,6 +29,12 @@ namespace Atlas.Common.Matching.Services
         int MatchCount(
             LocusInfo<string> patientHla,
             LocusInfo<string> donorHla,
+            UntypedLocusBehaviour untypedLocusBehaviour = UntypedLocusBehaviour.TreatAsMatch);
+
+        int IndexBasedMatchCount(
+            int? patientHla,
+            int? donorHla,
+            List<List<int>> matchCounts,
             UntypedLocusBehaviour untypedLocusBehaviour = UntypedLocusBehaviour.TreatAsMatch);
     }
 
@@ -79,6 +86,29 @@ namespace Atlas.Common.Matching.Services
 
             // relies on 2/2 being calculated first
             return match_1_1 || match_1_2 || match_2_1 || match_2_2 ? 1 : 0;
+        }
+
+        /// <inheritdoc />
+        public int IndexBasedMatchCount(
+            int? patientHla,
+            int? donorHla,
+            List<List<int>> matchCounts,
+            UntypedLocusBehaviour untypedLocusBehaviour = UntypedLocusBehaviour.TreatAsMatch)
+        {
+            if (patientHla == null || donorHla == null)
+            {
+                return untypedLocusBehaviour switch
+                {
+                    // Untyped loci are considered to have a "potential" match count of 2 - as they are not guaranteed not to match.
+                    UntypedLocusBehaviour.TreatAsMatch => 2,
+                    UntypedLocusBehaviour.TreatAsMismatch => 0,
+                    UntypedLocusBehaviour.Throw => throw new ArgumentException(
+                        $"Locus is untyped, and {nameof(UntypedLocusBehaviour)} is set to {UntypedLocusBehaviour.Throw}"),
+                    _ => throw new ArgumentOutOfRangeException(nameof(untypedLocusBehaviour))
+                };
+            }
+
+            return matchCounts[patientHla.Value][donorHla.Value];
         }
 
         private static bool ExpressingHlaMatch(string locus1, string locus2)

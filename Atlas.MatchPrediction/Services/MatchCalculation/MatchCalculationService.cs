@@ -33,6 +33,20 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
             PhenotypeInfo<string> patientGenotype,
             PhenotypeInfo<string> donorGenotype,
             ISet<Locus> allowedLoci);
+
+        /// <returns>
+        /// null for non calculated, 0, 1, or 2 if calculated representing the match count.
+        ///
+        /// This is a performance-optimised version of <see cref="CalculateMatchCounts"/>, and as such has some more stringent requirements.
+        /// 
+        /// Patient genotype and donor genotype *MUST* be provided at a resolution for which match counts can be calculated by string comparison.
+        /// i.e. PGroups, or G-Groups when a null allele is present.
+        /// </returns>
+        public LociInfo<int?> CalculateMatchCounts_Faster_Still(
+            LociInfo<int?> patientGenotype,
+            LociInfo<int?> donorGenotype,
+            ISet<Locus> allowedLoci,
+            List<List<int>> matchCounts);
     }
 
     internal class MatchCalculationService : IMatchCalculationService
@@ -71,6 +85,18 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
             return new LociInfo<int?>(l => allowedLoci.Contains(l)
                     ? stringBasedLocusMatchCalculator.MatchCount(patientGenotype.GetLocus(l), donorGenotype.GetLocus(l))
                     : (int?) null);
+        }
+
+        /// <inheritdoc />
+        public LociInfo<int?> CalculateMatchCounts_Faster_Still(
+            LociInfo<int?> patientGenotype,
+            LociInfo<int?> donorGenotype,
+            ISet<Locus> allowedLoci,
+            List<List<int>> matchCounts)
+        {
+            return new LociInfo<int?>(l => allowedLoci.Contains(l)
+                ? stringBasedLocusMatchCalculator.IndexBasedMatchCount(patientGenotype.GetLocus(l), donorGenotype.GetLocus(l), matchCounts)
+                : (int?) null);
         }
     }
 }
