@@ -234,10 +234,12 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     .Select(locusHlaInner => stringBasedLocusMatchCalculator.MatchCount(locusHlaOuter, locusHlaInner)).ToList()
             ).ToList();
 
+            var flatMatchCounts = matchCounts.SelectMany(x => x).ToArray();
+
 
             using (var matchCountLogger = MatchCountLogger(NumberOfPairsOfCartesianProduct(convertedDonorGenotypes, convertedPatientGenotypes)))
             {
-                var patientDonorMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, allowedLoci, matchCountLogger, matchCounts);
+                var patientDonorMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, allowedLoci, matchCountLogger, matchCounts, flatMatchCounts, matchCounts.Count);
 
                 // Sum likelihoods outside of loop, so they are not calculated millions of times
                 var sumOfPatientLikelihoods = patientGenotypeLikelihoods.Values.SumDecimals();
@@ -325,7 +327,9 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             IEnumerable<Tuple<GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions>> allPatientDonorCombinations,
             ISet<Locus> allowedLoci,
             ILongOperationLoggingStopwatch stopwatch,
-            List<List<int>> matchCounts)
+            List<List<int>> matchCounts,
+            int[] flatMatchCounts,
+            int nestedArrayCount)
         {
             return allPatientDonorCombinations
                 .Select(pd =>
@@ -344,7 +348,7 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                                 patient.IndexResolution,
                                 donor.IndexResolution,
                                 allowedLoci,
-                                matchCounts
+                                (flatMatchCounts, nestedArrayCount)
                             )
                         };
                     }

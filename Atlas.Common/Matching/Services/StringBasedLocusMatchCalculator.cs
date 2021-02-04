@@ -31,10 +31,11 @@ namespace Atlas.Common.Matching.Services
             LocusInfo<string> donorHla,
             UntypedLocusBehaviour untypedLocusBehaviour = UntypedLocusBehaviour.TreatAsMatch);
 
+        // Just lookup, no count here
         int IndexBasedMatchCount(
             int? patientHla,
             int? donorHla,
-            List<List<int>> matchCounts,
+            (int[] flatMatchCounts, int nestedArrayCount) matchCounts,
             UntypedLocusBehaviour untypedLocusBehaviour = UntypedLocusBehaviour.TreatAsMatch);
     }
 
@@ -92,7 +93,7 @@ namespace Atlas.Common.Matching.Services
         public int IndexBasedMatchCount(
             int? patientHla,
             int? donorHla,
-            List<List<int>> matchCounts,
+            (int[] flatMatchCounts, int nestedArrayCount) matchCounts,
             UntypedLocusBehaviour untypedLocusBehaviour = UntypedLocusBehaviour.TreatAsMatch)
         {
             if (patientHla == null || donorHla == null)
@@ -108,7 +109,18 @@ namespace Atlas.Common.Matching.Services
                 };
             }
 
-            return matchCounts[patientHla.Value][donorHla.Value];
+            var combinedIndex = patientHla.Value * matchCounts.nestedArrayCount + donorHla.Value;
+            return matchCounts.flatMatchCounts[combinedIndex];
+
+            // unsafe
+            // {
+            //     fixed (int* pntr = matchCounts.flatMatchCounts)
+            //     {
+            //         
+            //         var combinedIndex = patientHla.Value * matchCounts.nestedArrayCount + donorHla.Value;
+            //         return pntr[combinedIndex];
+            //     }
+            // }
         }
 
         private static bool ExpressingHlaMatch(string locus1, string locus2)

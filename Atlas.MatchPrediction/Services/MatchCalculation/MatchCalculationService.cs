@@ -46,7 +46,7 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
             LociInfo<int?> patientGenotype,
             LociInfo<int?> donorGenotype,
             ISet<Locus> allowedLoci,
-            List<List<int>> matchCounts);
+            (int[] flatMatchCounts, int nestedArrayCount) matchCounts);
     }
 
     internal class MatchCalculationService : IMatchCalculationService
@@ -88,11 +88,12 @@ namespace Atlas.MatchPrediction.Services.MatchCalculation
         }
 
         /// <inheritdoc />
+        ///  Doesn't actually calculate counts, actually looks them up!
         public LociInfo<int?> CalculateMatchCounts_Faster_Still(
             LociInfo<int?> patientGenotype,
             LociInfo<int?> donorGenotype,
             ISet<Locus> allowedLoci,
-            List<List<int>> matchCounts)
+            (int[] flatMatchCounts, int nestedArrayCount) matchCounts)
         {
             return new LociInfo<int?>(l => allowedLoci.Contains(l)
                 ? stringBasedLocusMatchCalculator.IndexBasedMatchCount(patientGenotype.GetLocus(l), donorGenotype.GetLocus(l), matchCounts)

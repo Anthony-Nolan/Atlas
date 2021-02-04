@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Atlas.Common.GeneticData;
 using Atlas.Common.GeneticData.PhenotypeInfo;
 using Atlas.Common.Matching.Services;
@@ -20,11 +21,24 @@ namespace Atlas.Common.Test.Matching.Services
 
 
         private IStringBasedLocusMatchCalculator matchCalculator;
+        private int[] array;
+        private int nestedArrayCount;
 
         [SetUp]
         public void SetUp()
         {
             matchCalculator = new StringBasedLocusMatchCalculator();
+            
+            
+        }
+
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            
+            var hlaIds = Enumerable.Range(0, 3_000).ToArray();
+            nestedArrayCount = 3000;
+            array = hlaIds.SelectMany(i => Enumerable.Range(0, nestedArrayCount).Select(j => j + nestedArrayCount * i)).ToArray();
         }
 
         [TestCase(LocusPosition.One)]
@@ -173,8 +187,8 @@ namespace Atlas.Common.Test.Matching.Services
 
         [Test]
         // Each iteration runs 7 variations of the calculation
-        [Repeat(100_000)]
-        [IgnoreExceptOnCiPerfTest("Ran in ~1s")]
+        [Repeat(142_857)]
+        // [IgnoreExceptOnCiPerfTest("Ran in ~1s")]
         public void MatchCount_PerformanceTest()
         {
             var nonMatchingHla = new List<LocusInfo<string>>
@@ -189,6 +203,22 @@ namespace Atlas.Common.Test.Matching.Services
                 matchCalculator.MatchCount(defaultPGroups, hla);
                 matchCalculator.MatchCount(hla, defaultPGroups);
             }
+        }
+
+        [Test]
+        // Each iteration runs 7 variations of the calculation
+        [Repeat(142_857)]
+        // [IgnoreExceptOnCiPerfTest("Ran in ~1s")]
+        public void MatchCount_PerformanceTest2()
+        {
+
+            matchCalculator.IndexBasedMatchCount(1, 1, (array, nestedArrayCount));
+            matchCalculator.IndexBasedMatchCount(1, 2999, (array, nestedArrayCount));
+            matchCalculator.IndexBasedMatchCount(2999, 1, (array, nestedArrayCount));
+            matchCalculator.IndexBasedMatchCount(2999, 2999, (array, nestedArrayCount));
+            matchCalculator.IndexBasedMatchCount(2999, 252, (array, nestedArrayCount));
+            matchCalculator.IndexBasedMatchCount(2999, 122, (array, nestedArrayCount));
+            matchCalculator.IndexBasedMatchCount(2999, 11, (array, nestedArrayCount));
         }
     }
 }
