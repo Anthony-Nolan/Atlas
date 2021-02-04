@@ -11,6 +11,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests.MatchPredictio
         [TestCase(new[] {Locus.C}, 14, 29, 36)]
         [TestCase(new[] {Locus.Dqb1}, 21, 30, 41)]
         [TestCase(new[] {Locus.C, Locus.Dqb1}, 14, 25, 38)]
+        [Repeat(30)]
         public async Task MatchPrediction_WithExcludedLoci(
             Locus[] excludedLoci,
             int? expected0Mm,
