@@ -30,9 +30,8 @@ namespace Atlas.RepeatSearch.Functions
                 OptionsReaderFor<NotificationsServiceBusSettings>(),
                 ConnectionStringReader("RepeatSearchSql"),
                 ConnectionStringReader("MatchingPersistentSql"),
-                ConnectionStringReader("MatchingSqlA"),
-                ConnectionStringReader("MatchingSqlB")
-            );
+                ConnectionStringReader("MatchingSqlA"), 
+                ConnectionStringReader("MatchingSqlB"));
         }
 
         private static void RegisterSettings(IServiceCollection services)
