@@ -22,13 +22,13 @@ resource "azurerm_servicebus_subscription" "audit-repeat-search-matching-results
 
 resource "azurerm_servicebus_subscription" "match-prediction-orchestration-repeat-search-results-ready" {
   name                                 = "match-prediction-orchestration"
-  resource_group_name                  = azurerm_resource_group.atlas_resource_group.name
-  namespace_name                       = azurerm_servicebus_namespace.general.name
+  resource_group_name                  = var.app_service_plan.resource_group_name
+  namespace_name                       = var.servicebus_namespace.name
   topic_name                           = azurerm_servicebus_topic.repeat-search-matching-results-ready.name
-  auto_delete_on_idle                  = local.service-bus.long-expiry
-  default_message_ttl                  = local.service-bus.long-expiry
-  lock_duration                        = local.service-bus.default-read-lock
-  max_delivery_count                   = local.service-bus.default-message-retries
+  auto_delete_on_idle                  = var.default_servicebus_settings.long-expiry
+  default_message_ttl                  = var.default_servicebus_settings.long-expiry
+  lock_duration                        = var.default_servicebus_settings.default-read-lock
+  max_delivery_count                   = var.default_servicebus_settings.default-message-retries
   dead_lettering_on_message_expiration = false
 }
 
