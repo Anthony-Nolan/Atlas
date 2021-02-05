@@ -20,7 +20,7 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
         public static void RegisterRepeatSearch(
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
-            Func<IServiceProvider, AzureStorageSettings> fetchAzureStorageSettings,
+            Func<IServiceProvider, RepeatSearch.Settings.Azure.AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, HlaMetadataDictionarySettings> fetchHlaMetadataDictionarySettings,
             Func<IServiceProvider, MacDictionarySettings> fetchMacDictionarySettings,
             Func<IServiceProvider, MatchingConfigurationSettings> fetchMatchingConfigurationSettings,
@@ -31,16 +31,17 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             Func<IServiceProvider, string> fetchTransientASqlConnectionString,
             Func<IServiceProvider, string> fetchTransientBSqlConnectionString)
         {
-            services.RegisterSettings(fetchApplicationInsightsSettings, fetchMessagingServiceBusSettings);
+            services.RegisterSettings(fetchApplicationInsightsSettings, fetchAzureStorageSettings, fetchMessagingServiceBusSettings);
             services.RegisterServices();
 
             services.RegisterSearch(
                 fetchApplicationInsightsSettings,
-                fetchAzureStorageSettings,
+                // Matching algorithm doesn't require an azure storage connection, as results upload is handled by repeat search.
+                _ => new AzureStorageSettings(),
                 fetchHlaMetadataDictionarySettings,
                 fetchMacDictionarySettings,
-                //Matching algorithm doesn't require a service bus setting as these are handled by repeat search.
-                _=> new MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings(),
+                // Matching algorithm doesn't require a service bus setting as results notifications are handled by repeat search.
+                _ => new MatchingAlgorithm.Settings.ServiceBus.MessagingServiceBusSettings(),
                 fetchNotificationsServiceBusSettings,
                 fetchMatchingConfigurationSettings,
                 fetchPersistentSqlConnectionString,
@@ -51,14 +52,15 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
         private static void RegisterSettings(
             this IServiceCollection services,
             Func<IServiceProvider, ApplicationInsightsSettings> fetchApplicationInsightsSettings,
+            Func<IServiceProvider, RepeatSearch.Settings.Azure.AzureStorageSettings> fetchAzureStorageSettings,
             Func<IServiceProvider, MessagingServiceBusSettings> fetchMessagingServiceBusSettings)
         {
             services.MakeSettingsAvailableForUse(fetchApplicationInsightsSettings);
+            services.MakeSettingsAvailableForUse(fetchAzureStorageSettings);
             services.MakeSettingsAvailableForUse(fetchMessagingServiceBusSettings);
         }
 
-        private static void RegisterServices(
-            this IServiceCollection services)
+        private static void RegisterServices(this IServiceCollection services)
         {
             services.AddScoped<IRepeatSearchDispatcher, RepeatSearchDispatcher>();
             services.AddScoped<IRepeatSearchRunner, RepeatSearchRunner>();
