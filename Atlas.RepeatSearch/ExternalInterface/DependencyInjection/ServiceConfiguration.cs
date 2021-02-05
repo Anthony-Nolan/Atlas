@@ -1,20 +1,17 @@
-﻿using System;
-using Atlas.Common.ApplicationInsights;
+﻿using Atlas.Common.ApplicationInsights;
 using Atlas.Common.Notifications;
 using Atlas.Common.Utils.Extensions;
 using Atlas.HlaMetadataDictionary.ExternalInterface.Settings;
-using Atlas.MatchingAlgorithm.ApplicationInsights.ContextAwareLogging;
-using Atlas.MatchingAlgorithm.Clients.AzureStorage;
 using Atlas.MatchingAlgorithm.DependencyInjection;
-using Atlas.MatchingAlgorithm.Services.ConfigurationProviders;
-using Atlas.MatchingAlgorithm.Services.Search;
 using Atlas.MatchingAlgorithm.Settings;
 using Atlas.MatchingAlgorithm.Settings.Azure;
 using Atlas.MultipleAlleleCodeDictionary.Settings;
 using Atlas.RepeatSearch.Clients;
+using Atlas.RepeatSearch.Clients.AzureStorage;
 using Atlas.RepeatSearch.Services.Search;
 using Atlas.RepeatSearch.Settings.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
 {
@@ -64,8 +61,9 @@ namespace Atlas.RepeatSearch.ExternalInterface.DependencyInjection
             this IServiceCollection services)
         {
             services.AddScoped<IRepeatSearchDispatcher, RepeatSearchDispatcher>();
+            services.AddScoped<IRepeatSearchRunner, RepeatSearchRunner>();
+            services.AddScoped<IRepeatSearchResultsBlobStorageClient, RepeatSearchResultsBlobStorageClient>();
             services.AddScoped<IRepeatSearchServiceBusClient, RepeatSearchServiceBusClient>();
-            services.AddScoped<IResultsBlobStorageClient, ResultsBlobStorageClient>();
         }
     }
 }
