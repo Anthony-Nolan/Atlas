@@ -17,7 +17,7 @@ namespace Atlas.MatchPrediction.Test.Integration.IntegrationTests
         private static void ResetDatabase()
         {
             DatabaseManager.SetupDatabase();
-            DatabaseManager.ClearDatabases();
+            // DatabaseManager.ClearDatabases();
         }
     }
 }

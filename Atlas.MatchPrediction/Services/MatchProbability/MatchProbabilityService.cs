@@ -40,11 +40,67 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
         public Task<MatchProbabilityResponse> CalculateMatchProbability(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput);
     }
 
+    internal class Buckets<T>
+    {
+        public ISet<T> Twos { get; } = new HashSet<T>();
+        public ISet<T> Ones { get; } = new HashSet<T>();
+        public ISet<T> Zeros { get; } = new HashSet<T>();
+
+        public void AddToBucket(T hlaPair, int matchCount)
+        {
+            switch (matchCount)
+            {
+                case 0:
+                    Zeros.Add(hlaPair);
+                    return;
+                case 1:
+                    Ones.Add(hlaPair);
+                    return;
+                case 2:
+                    Twos.Add(hlaPair);
+                    return;
+                default:
+                    throw new ArgumentException("match count per locus can only be 0, 1, or 2", nameof(matchCount));
+            }
+        }
+        public void AddToBucket(HashSet<T> hlaPairs, int matchCount)
+        {
+            switch (matchCount)
+            {
+                case 0:
+                    Zeros.UnionWith(hlaPairs);
+                    return;
+                case 1:
+                    Ones.UnionWith(hlaPairs);
+                    return;
+                case 2:
+                    Twos.UnionWith(hlaPairs);
+                    return;
+                default:
+                    throw new ArgumentException("match count per locus can only be 0, 1, or 2", nameof(matchCount));
+            }
+        }
+
+        public ISet<T> GetBucket(int matchCount)
+        {
+            return matchCount switch
+            {
+                0 => Zeros,
+                1 => Ones,
+                2 => Twos,
+                _ => throw new ArgumentException("match count per locus can only be 0, 1, or 2", nameof(matchCount))
+            };
+        }
+    }
+
     internal class GenotypeAtDesiredResolutions
     {
         // Dictionary - quick way to check both (a) existence (b) quick lookup of index (vs. index of)
         // Add to it in order so .Keys gives same indexes as values!
         public static readonly Dictionary<LocusInfo<string>, int> LocusIndexes = new Dictionary<LocusInfo<string>, int>();
+
+        public static readonly LociInfo<Dictionary<LocusInfo<string>, int>> PerLocusPairIndexes =
+            new LociInfo<Dictionary<LocusInfo<string>, int>>(_ => new Dictionary<LocusInfo<string>, int>());
 
         /// <summary>
         /// HLA at the resolution at which they were stored.
@@ -77,7 +133,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             StringMatchableResolution = stringMatchableResolution;
 
             IndexResolution =
-                stringMatchableResolution.Map((l, hla) => hla == null ? null as int? : LocusIndexes.GetOrAdd(hla, () => LocusIndexes.Count));
+                stringMatchableResolution.Map((l, hla) => hla == null
+                    ? null as int?
+                    : LocusIndexes.GetOrAdd(hla, () =>
+                    {
+                        PerLocusPairIndexes.GetLocus(l).GetOrAdd(hla, () => LocusIndexes.Count);
+                        return LocusIndexes.Count;
+                    }));
 
             GenotypeLikelihood = genotypeLikelihood;
         }
@@ -141,6 +203,32 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             this.matchPredictionLoggingContext = matchPredictionLoggingContext;
             this.hlaMetadataDictionaryFactory = hlaMetadataDictionaryFactory;
             this.stringBasedLocusMatchCalculator = stringBasedLocusMatchCalculator;
+        }
+
+        private static List<LociInfo<int?>> GetMatchCountsOfEightOrBetter()
+        {
+            var counts = new List<LociInfo<int?>>();
+            for (var a = 0; a <= 2; a++)
+            {
+                for (var b = 0; b <= 2; b++)
+                {
+                    for (var c = 0; c <= 2; c++)
+                    {
+                        for (var dqb1 = 0; dqb1 <= 2; dqb1++)
+                        {
+                            for (var drb1 = 0; drb1 <= 2; drb1++)
+                            {
+                                if (a + b + c + dqb1 + drb1 >= 8)
+                                {
+                                    counts.Add(new LociInfo<int?>(a, b, c, null, dqb1, drb1));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return counts;
         }
 
         public async Task<MatchProbabilityResponse> CalculateMatchProbability(SingleDonorMatchProbabilityInput singleDonorMatchProbabilityInput)
@@ -237,9 +325,124 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             var flatMatchCounts = matchCounts.SelectMany(x => x).ToArray();
 
 
+            var loggerBuckets = logger.RunTimed("Calculate buckets");
+            var buckets = GenotypeAtDesiredResolutions.PerLocusPairIndexes.Map((l, hla) =>
+            {
+                var perLocusHashTable = new Dictionary<LocusInfo<string>, Buckets<LocusInfo<string>>>();
+
+                foreach (var hlaPair in hla.Keys)
+                {
+                    var buckets = new Buckets<LocusInfo<string>>();
+
+                    var others = GenotypeAtDesiredResolutions.PerLocusPairIndexes.GetLocus(l);
+                    // TODO: This double counts, can improve 2x with cleverness
+                    foreach (var other in others.Keys)
+                    {
+                        var matchCount = stringBasedLocusMatchCalculator.MatchCount(hlaPair, other);
+                        buckets.AddToBucket(other, matchCount);
+                    }
+
+                    perLocusHashTable[hlaPair] = buckets;
+                }
+
+                return perLocusHashTable;
+            });
+            loggerBuckets.Dispose();
+
+            var loggerMatchCounts = logger.RunTimed("Calculate allowed match counts");
+            var allowedMatchCounts = GetMatchCountsOfEightOrBetter();
+            loggerMatchCounts.Dispose();
+
+            
+            var loggerBuckets2 = logger.RunTimed("Calculate donor buckets");
+            var donorBuckets = buckets.Map((l, bucketDict) =>
+            {
+                return bucketDict.ToDictionary(k => k.Key, kvp =>
+                {
+                    var singleDonorBuckets = new Buckets<GenotypeAtDesiredResolutions>();
+                    var twos = convertedDonorGenotypes.Where(dg => kvp.Value.Twos.Contains(dg.StringMatchableResolution.GetLocus(l))).ToHashSet();
+                    var ones = convertedDonorGenotypes.Where(dg => kvp.Value.Ones.Contains(dg.StringMatchableResolution.GetLocus(l))).ToHashSet();
+                    var zeros = convertedDonorGenotypes.Where(dg => kvp.Value.Zeros.Contains(dg.StringMatchableResolution.GetLocus(l))).ToHashSet();
+                    singleDonorBuckets.AddToBucket(twos, 2);
+                    singleDonorBuckets.AddToBucket(ones, 1);
+                    singleDonorBuckets.AddToBucket(zeros, 0);
+                    return singleDonorBuckets;
+                });
+            });
+            loggerBuckets2.Dispose();
+            
+            
+            HashSet<StringGenotype> CombineToGenotypes(LociInfo<ISet<LocusInfo<string>>> options)
+            {
+                var genotypes = new HashSet<StringGenotype>();
+                
+                foreach (var a in options.A)
+                {
+                    foreach (var b in options.B)
+                    {
+                        foreach (var c in options.C)
+                        {
+                            foreach (var dqb1 in options.Dqb1)
+                            {
+                                foreach (var drb1 in options.Drb1)
+                                {
+                                    genotypes.Add(new StringGenotype(a, b, c, null, dqb1, drb1));
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return genotypes;
+            }
+
+            HashSet<StringGenotype> GetAllMatchingGenotypes(StringGenotype genotype)
+            {
+                var allGenotypes = new HashSet<StringGenotype>();
+                
+                foreach (var matchCountSet in allowedMatchCounts)
+                {
+                    var bucketsToCombine = matchCountSet.Map((l, mc) =>
+                        mc == null
+                            ? null
+                            : buckets.GetLocus(l)[genotype.GetLocus(l)].GetBucket(mc.Value));
+
+                    var matches = CombineToGenotypes(bucketsToCombine);
+                    allGenotypes.UnionWith(matches);
+                }
+
+                return allGenotypes;
+            }
+
+            Dictionary<StringGenotype, List<StringGenotype>> GetAllMatchingPairs()
+            {
+                var totalMatches = 0;
+                foreach (var patientGenotype in patientGenotypes)
+                {
+                    var allPairs = new HashSet<StringGenotype>();
+                    
+                    var matches = GetAllMatchingGenotypes(patientGenotype.ToHlaNames());
+
+                    allPairs.UnionWith(matches);
+                    
+                    
+                    totalMatches += matches.Count;
+                    Console.WriteLine($"Cumulative match pairs: {totalMatches}");
+                    // Get donors at resolution based on matching genotypes
+                    var donors = 0;
+                }
+                
+                return new Dictionary<StringGenotype, List<StringGenotype>>();
+            }
+
+            var loggerGenotypePairs = logger.RunTimed("Calculate match pairs");
+            var pairs = GetAllMatchingPairs();
+            loggerGenotypePairs.Dispose();
+
             using (var matchCountLogger = MatchCountLogger(NumberOfPairsOfCartesianProduct(convertedDonorGenotypes, convertedPatientGenotypes)))
             {
-                var patientDonorMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, allowedLoci, matchCountLogger, matchCounts, flatMatchCounts, matchCounts.Count);
+                var patientDonorMatchDetails = CalculatePairsMatchCounts(allPatientDonorCombinations, allowedLoci, matchCountLogger, matchCounts,
+                    flatMatchCounts, matchCounts.Count);
 
                 // Sum likelihoods outside of loop, so they are not calculated millions of times
                 var sumOfPatientLikelihoods = patientGenotypeLikelihoods.Values.SumDecimals();
