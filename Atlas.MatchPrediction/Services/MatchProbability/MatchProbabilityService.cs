@@ -355,24 +355,35 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
 
             
             var loggerBuckets2 = logger.RunTimed("Calculate donor buckets");
+
+            var loggerDonorBuckets = logger.RunLongOperationWithTimer("creating donor buckets", new LongLoggingSettings
+            {
+                ExpectedNumberOfIterations = buckets.ToEnumerable().Aggregate(0, (x, y) => x + y.Count),
+                InnerOperationLoggingPeriod = 1000
+            });
             var donorBuckets = buckets.Map((l, bucketDict) =>
             {
+                // This is probably double counting pairs and can be more efficient
                 return bucketDict.ToDictionary(k => k.Key, kvp =>
                 {
-                    var singleDonorBuckets = new Buckets<GenotypeAtDesiredResolutions>();
-                    var twos = convertedDonorGenotypes.Where(dg => kvp.Value.Twos.Contains(dg.StringMatchableResolution.GetLocus(l))).ToHashSet();
-                    var ones = convertedDonorGenotypes.Where(dg => kvp.Value.Ones.Contains(dg.StringMatchableResolution.GetLocus(l))).ToHashSet();
-                    var zeros = convertedDonorGenotypes.Where(dg => kvp.Value.Zeros.Contains(dg.StringMatchableResolution.GetLocus(l))).ToHashSet();
-                    singleDonorBuckets.AddToBucket(twos, 2);
-                    singleDonorBuckets.AddToBucket(ones, 1);
-                    singleDonorBuckets.AddToBucket(zeros, 0);
-                    return singleDonorBuckets;
+                    using (loggerDonorBuckets.TimeInnerOperation())
+                    {
+                        var singleDonorBuckets = new Buckets<GenotypeAtDesiredResolutions>();
+                        var twos = convertedDonorGenotypes.Where(dg => kvp.Value.Twos.Contains(dg.StringMatchableResolution.GetLocus(l))).ToHashSet();
+                        var ones = convertedDonorGenotypes.Where(dg => kvp.Value.Ones.Contains(dg.StringMatchableResolution.GetLocus(l))).ToHashSet();
+                        var zeros = convertedDonorGenotypes.Where(dg => kvp.Value.Zeros.Contains(dg.StringMatchableResolution.GetLocus(l))).ToHashSet();
+                        singleDonorBuckets.AddToBucket(twos, 2);
+                        singleDonorBuckets.AddToBucket(ones, 1);
+                        singleDonorBuckets.AddToBucket(zeros, 0);
+                        return singleDonorBuckets;
+                    }
                 });
             });
             loggerBuckets2.Dispose();
-            
-            
-            HashSet<StringGenotype> CombineToGenotypes(LociInfo<ISet<LocusInfo<string>>> options)
+            loggerDonorBuckets.Dispose();
+
+
+            static HashSet<StringGenotype> CombineToGenotypes(LociInfo<ISet<LocusInfo<string>>> options)
             {
                 var genotypes = new HashSet<StringGenotype>();
                 
@@ -396,47 +407,51 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 return genotypes;
             }
 
-            HashSet<StringGenotype> GetAllMatchingGenotypes(StringGenotype genotype)
+            HashSet<GenotypeAtDesiredResolutions> GetAllMatchingGenotypes(StringGenotype genotype)
             {
-                var allGenotypes = new HashSet<StringGenotype>();
+                var allGenotypes = new HashSet<GenotypeAtDesiredResolutions>();
                 
                 foreach (var matchCountSet in allowedMatchCounts)
                 {
                     var bucketsToCombine = matchCountSet.Map((l, mc) =>
                         mc == null
                             ? null
-                            : buckets.GetLocus(l)[genotype.GetLocus(l)].GetBucket(mc.Value));
+                            : donorBuckets.GetLocus(l)[genotype.GetLocus(l)].GetBucket(mc.Value));
 
-                    var matches = CombineToGenotypes(bucketsToCombine);
-                    allGenotypes.UnionWith(matches);
+                    var allDonorsToCombine = bucketsToCombine.ToEnumerable().SelectMany(x => x ?? new HashSet<GenotypeAtDesiredResolutions>()).ToHashSet();
+                    allGenotypes.UnionWith(allDonorsToCombine);
                 }
 
                 return allGenotypes;
             }
 
-            Dictionary<StringGenotype, List<StringGenotype>> GetAllMatchingPairs()
+            IEnumerable<(GenotypeAtDesiredResolutions, GenotypeAtDesiredResolutions)> GetAllMatchingPairs()
             {
                 var totalMatches = 0;
-                foreach (var patientGenotype in patientGenotypes)
+                using (var longLog = logger.RunLongOperationWithTimer("get all matching pairs", new LongLoggingSettings
                 {
-                    var allPairs = new HashSet<StringGenotype>();
-                    
-                    var matches = GetAllMatchingGenotypes(patientGenotype.ToHlaNames());
-
-                    allPairs.UnionWith(matches);
-                    
-                    
-                    totalMatches += matches.Count;
-                    Console.WriteLine($"Cumulative match pairs: {totalMatches}");
-                    // Get donors at resolution based on matching genotypes
-                    var donors = 0;
+                    ExpectedNumberOfIterations = convertedPatientGenotypes.Count,
+                    InnerOperationLoggingPeriod = 250
+                }))
+                {
+                    foreach (var patientGenotype in convertedPatientGenotypes)
+                    {
+                        using (longLog.TimeInnerOperation())
+                        {
+                            var matchingDonorGenotypes = GetAllMatchingGenotypes(patientGenotype.StringMatchableResolution);
+                            totalMatches += matchingDonorGenotypes.Count;
+                            Console.WriteLine($"Cumulative match pairs: {totalMatches}");
+                            foreach (var matchingDonorGenotype in matchingDonorGenotypes)
+                            {
+                                yield return (patientGenotype, matchingDonorGenotype);
+                            }
+                        }
+                    }
                 }
-                
-                return new Dictionary<StringGenotype, List<StringGenotype>>();
             }
 
             var loggerGenotypePairs = logger.RunTimed("Calculate match pairs");
-            var pairs = GetAllMatchingPairs();
+            var pairs = GetAllMatchingPairs().ToList();
             loggerGenotypePairs.Dispose();
 
             using (var matchCountLogger = MatchCountLogger(NumberOfPairsOfCartesianProduct(convertedDonorGenotypes, convertedPatientGenotypes)))
