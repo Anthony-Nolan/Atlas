@@ -112,12 +112,13 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 {
                     var zeroMismatch = matchProbabilityNumerators.ZeroMismatchProbabilityPerLocus.ToLociInfo().GetLocus(locus);
                     var oneMismatch = matchProbabilityNumerators.OneMismatchProbabilityPerLocus.ToLociInfo().GetLocus(locus);
-                    var twoMismatch = matchProbabilityNumerators.TwoMismatchProbabilityPerLocus.ToLociInfo().GetLocus(locus);
                     return new MatchProbabilityPerLocusResponse(new MatchProbabilities
                     {
                         ZeroMismatchProbability = zeroMismatch.HasValue ? new Probability(MatchProbability(zeroMismatch.Value)) : null,
                         OneMismatchProbability = oneMismatch.HasValue ? new Probability(MatchProbability(oneMismatch.Value)) : null,
-                        TwoMismatchProbability = twoMismatch.HasValue ? new Probability(MatchProbability(twoMismatch.Value)) : null
+                        TwoMismatchProbability = oneMismatch.HasValue && zeroMismatch.HasValue
+                            ? new Probability(1m - (MatchProbability(zeroMismatch.Value) + MatchProbability(oneMismatch.Value)))
+                            : null
                     });
                 })
             };
@@ -136,6 +137,8 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 );
         }
 
+        // TODO: This would need to keep track of how much of the patient/donor frequency totals is accounted for in the numerators, and use the "unaccounted" frequency as the two mismatch prob per locus,
+        // which will otherwise be artifically much too low!   
         private static MatchProbabilityEquationNumerators AggregateNumerators(
             GenotypeMatchDetails pair,
             MatchProbabilityEquationNumerators numerators)
@@ -163,9 +166,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 case 1:
                     numerators.OneMismatchProbabilityPerLocus.A += pairLikelihood;
                     break;
-                case 0:
-                    numerators.TwoMismatchProbabilityPerLocus.A += pairLikelihood;
-                    break;
             }
 
             switch (pair.MatchCounts.B)
@@ -175,9 +175,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     break;
                 case 1:
                     numerators.OneMismatchProbabilityPerLocus.B += pairLikelihood;
-                    break;
-                case 0:
-                    numerators.TwoMismatchProbabilityPerLocus.B += pairLikelihood;
                     break;
             }
 
@@ -189,9 +186,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 case 1:
                     numerators.OneMismatchProbabilityPerLocus.C += pairLikelihood;
                     break;
-                case 0:
-                    numerators.TwoMismatchProbabilityPerLocus.C += pairLikelihood;
-                    break;
             }
 
             switch (pair.MatchCounts.Dqb1)
@@ -202,9 +196,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                 case 1:
                     numerators.OneMismatchProbabilityPerLocus.Dqb1 += pairLikelihood;
                     break;
-                case 0:
-                    numerators.TwoMismatchProbabilityPerLocus.Dqb1 += pairLikelihood;
-                    break;
             }
 
             switch (pair.MatchCounts.Drb1)
@@ -214,9 +205,6 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
                     break;
                 case 1:
                     numerators.OneMismatchProbabilityPerLocus.Drb1 += pairLikelihood;
-                    break;
-                case 0:
-                    numerators.TwoMismatchProbabilityPerLocus.Drb1 += pairLikelihood;
                     break;
             }
 

@@ -327,28 +327,47 @@ namespace Atlas.MatchPrediction.Services.MatchProbability
             ILongOperationLoggingStopwatch stopwatch,
             List<List<int>> matchCounts)
         {
-            return allPatientDonorCombinations
-                .Select(pd =>
+            foreach (var pd in allPatientDonorCombinations)
+            {
+                using (stopwatch.TimeInnerOperation())
                 {
-                    using (stopwatch.TimeInnerOperation())
+                    var (patient, donor) = pd;
+                    var comboMatchCounts = new LociInfo<int?>(_ => null);
+
+                    var countedMismatches = 0;
+                    foreach (var allowedLocus in allowedLoci)
                     {
-                        var (patient, donor) = pd;
-                        return new GenotypeMatchDetails
+                        var locusMatch = stringBasedLocusMatchCalculator.IndexBasedMatchCount(
+                            patient.IndexResolution.GetLocus(allowedLocus),
+                            donor.IndexResolution.GetLocus(allowedLocus),
+                            matchCounts
+                        );
+
+                        comboMatchCounts = comboMatchCounts.SetLocus(allowedLocus, locusMatch);
+                        
+                        countedMismatches += 2 - locusMatch;
+                        if (countedMismatches > 2)
                         {
-                            AvailableLoci = allowedLoci,
-                            DonorGenotype = donor.HaplotypeResolution,
-                            DonorGenotypeLikelihood = donor.GenotypeLikelihood,
-                            PatientGenotype = patient.HaplotypeResolution,
-                            PatientGenotypeLikelihood = patient.GenotypeLikelihood,
-                            MatchCounts = matchCalculationService.CalculateMatchCounts_Faster_Still(
-                                patient.IndexResolution,
-                                donor.IndexResolution,
-                                allowedLoci,
-                                matchCounts
-                            )
-                        };
+                            break;
+                        }
                     }
-                });
+
+                    if (countedMismatches > 2)
+                    {
+                        continue;
+                    }
+                    
+                    yield return new GenotypeMatchDetails
+                    {
+                        AvailableLoci = allowedLoci,
+                        DonorGenotype = donor.HaplotypeResolution,
+                        DonorGenotypeLikelihood = donor.GenotypeLikelihood,
+                        PatientGenotype = patient.HaplotypeResolution,
+                        PatientGenotypeLikelihood = patient.GenotypeLikelihood,
+                        MatchCounts = comboMatchCounts
+                    };
+                }
+            }
         }
 
         private async Task<Dictionary<StringGenotype, decimal>> CalculateGenotypeLikelihoods(
